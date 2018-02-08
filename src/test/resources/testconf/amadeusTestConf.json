@@ -1,0 +1,138 @@
+{
+  "auth" : {
+    "required" : true,
+    "queryParams" : [ ],
+    "headerParams" : [ ]
+  },
+  "testConfiguration" : {
+    "testPaths" : [ {
+      "testPath" : "/hotels/search-airport",
+      "operations" : [ {
+        "operationId" : "HotelAirportSearch",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "location",
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/IATACodes.csv"]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "check_in",
+          "generator" : {
+            "type" : "RandomDate",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "check_out",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "radius",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "lang",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "currency",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "chain",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "max_rate",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "number_of_results",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "all_rooms",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "show_sold_out",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "amenity",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    } ]
+  }
+}

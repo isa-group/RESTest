@@ -1,0 +1,43 @@
+{
+	"auth": {
+		"required":true,
+		"queryParams": [{
+			"name": "Parameter name",
+			"value": "Parameter value"
+		}],
+		"headerParams": [{
+			"name": "Parameter name",
+			"value": "Parameter value"
+		}]
+	},
+	
+	"testConfiguration": {
+		"testPaths": [{
+        "testPath": "Path 1",
+        "operations": [{
+        	"operationId": "Operation ID",
+        	"method": "get", 
+        	"testParameters": [{
+                "name": "Property name",
+                "generator": {
+                	"type": "Generator type",
+                	"genParameters": [{
+	        						"name": "Parameter name",
+	        						"values": [
+	        							"Parameter value"
+	        						]
+	        					},
+	        					{
+	        						"name": "Parameter name 2",
+	        						"values": [
+	        							"Parameter value"
+	        						]
+	        					}]
+                	},
+                "filter": true
+				}],
+        		"expectedResponse": "Expected HTTP code"
+      }]
+	}]
+	}
+}

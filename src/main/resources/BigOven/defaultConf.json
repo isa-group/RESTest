@@ -1,0 +1,408 @@
+{
+  "auth" : {
+    "required" : true,
+    "queryParams" : [ ],
+    "headerParams" : [ ]
+  },
+  "testConfiguration" : {
+    "testPaths" : [ {
+      "testPath" : "/recipes",
+      "operations" : [ {
+        "operationId" : "Recipe_RecipeSearch",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "any_kw",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "folder",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "coll",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "filter",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "title_kw",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "userId",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "username",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "token",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "photos",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "boostmine",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "include_cat",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "exclude_cat",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "include_primarycat",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "exclude_primarycat",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "include_ing",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "exclude_ing",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "cuisine",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "db",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "userset",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "servingsMin",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "totalMins",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "maxIngredients",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "minIngredients",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "rpp",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "pg",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "vtn",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "vgn",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "chs",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "glf",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "ntf",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "dyf",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "sff",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "slf",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "tnf",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "wmf",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "rmf",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "cps",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "champion",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        }, {
+          "name" : "synonyms",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    } ]
+  }
+}

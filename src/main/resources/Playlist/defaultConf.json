@@ -1,0 +1,152 @@
+{
+  "auth" : {
+    "required" : true,
+    "queryParams" : [ ],
+    "headerParams" : [ ]
+  },
+  "testConfiguration" : {
+    "testPaths" : [ {
+      "testPath" : "/songs/{id}",
+      "operations" : [ {
+        "operationId" : "getSong",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "id",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      }, {
+        "operationId" : "deleteSong",
+        "method" : "delete",
+        "testParameters" : [ {
+          "name" : "id",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/songs",
+      "operations" : [ {
+        "operationId" : "getAllSongs",
+        "method" : "get",
+        "testParameters" : [ ],
+        "expectedResponse" : "200"
+      }, {
+        "operationId" : "putSong",
+        "method" : "put",
+        "testParameters" : [ {
+          "name" : "body",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      }, {
+        "operationId" : "postSong",
+        "method" : "post",
+        "testParameters" : [ {
+          "name" : "body",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/lists/{id}",
+      "operations" : [ {
+        "operationId" : "getList",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "id",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      }, {
+        "operationId" : "deleteList",
+        "method" : "delete",
+        "testParameters" : [ {
+          "name" : "id",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/lists",
+      "operations" : [ {
+        "operationId" : "getAllLists",
+        "method" : "get",
+        "testParameters" : [ ],
+        "expectedResponse" : "200"
+      }, {
+        "operationId" : "putList",
+        "method" : "put",
+        "testParameters" : [ {
+          "name" : "body",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      }, {
+        "operationId" : "postList",
+        "method" : "post",
+        "testParameters" : [ {
+          "name" : "body",
+          "generator" : {
+            "type" : "RandomInputValueIterator",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          },
+          "filter" : false
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    } ]
+  }
+}
