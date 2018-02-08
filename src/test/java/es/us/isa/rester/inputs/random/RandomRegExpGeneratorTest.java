@@ -16,7 +16,7 @@ public class RandomRegExpGeneratorTest {
 		for(int i=0; i<100;i++) {
 			String value = gen.nextValue();
 			assertTrue("The string does not match the regular expression", value.matches(regExp));
-			System.out.println("String: " + value);
+			//System.out.println("String: " + value);
 		}
 	}
 	
@@ -30,7 +30,7 @@ public class RandomRegExpGeneratorTest {
 			String value = gen.nextValue();
 			assertTrue("The string does not match the regular expression", value.matches(regExp));
 			assertTrue("The string does not match the requested lengthn", value.length() >= 2 && value.length() <= 4);
-			System.out.println("Bounded string: " + value);
+			//System.out.println("Bounded string: " + value);
 		}
 	}
 	

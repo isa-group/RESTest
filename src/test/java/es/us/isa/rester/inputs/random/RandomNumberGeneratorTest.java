@@ -18,7 +18,7 @@ public class RandomNumberGeneratorTest {
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not an Integer", number instanceof Integer);
-			System.out.println("Unbounded Integer: " + (Integer) number);
+			//System.out.println("Unbounded Integer: " + (Integer) number);
 		}
 	}
 	
@@ -33,7 +33,7 @@ public class RandomNumberGeneratorTest {
 			Object number = gen.nextValue();
 			assertTrue("Not an Integer", number instanceof Integer);
 			assertTrue("Out of range", (Integer)number >= min && (Integer)number <= max);
-			System.out.println("Bounded Integer: " + (Integer) number);
+			//System.out.println("Bounded Integer: " + (Integer) number);
 		}
 	}
 	
@@ -43,7 +43,7 @@ public class RandomNumberGeneratorTest {
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Long", number instanceof Long);
-			System.out.println("Unbounded Long: " + (Long) number);
+			//System.out.println("Unbounded Long: " + (Long) number);
 		}
 	}
 	
@@ -58,7 +58,7 @@ public class RandomNumberGeneratorTest {
 			Object number = gen.nextValue();
 			assertTrue("Not a Long", number instanceof Long);
 			assertTrue("Out of range", (Long) number >= min && (Long) number <= max);
-			System.out.println("Bounded Long: " + (Long) number);
+			//System.out.println("Bounded Long: " + (Long) number);
 		}
 	}
 	
@@ -68,7 +68,7 @@ public class RandomNumberGeneratorTest {
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Float", number instanceof Float);
-			System.out.println("Unbounded Float: " + (Float) number);
+			//System.out.println("Unbounded Float: " + (Float) number);
 		}
 	}
 	
@@ -83,7 +83,7 @@ public class RandomNumberGeneratorTest {
 			Object number = gen.nextValue();
 			assertTrue("Not a Float", number instanceof Float);
 			assertTrue("Out of range", (Float) number >= min && (Float) number <= max);
-			System.out.println("Bounded Float: " + (Float) number);
+			//System.out.println("Bounded Float: " + (Float) number);
 		}
 	}
 	
@@ -93,7 +93,7 @@ public class RandomNumberGeneratorTest {
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Double", number instanceof Double);
-			System.out.println("Unbounded Float: " + (Double) number);
+			//System.out.println("Unbounded Float: " + (Double) number);
 		}
 	}
 	
@@ -108,7 +108,7 @@ public class RandomNumberGeneratorTest {
 			Object number = gen.nextValue();
 			assertTrue("Not a Double", number instanceof Double);
 			assertTrue("Out of range", (Double) number >= min && (Double) number <= max);
-			System.out.println("Bounded Double: " + (Double) number);
+			//System.out.println("Bounded Double: " + (Double) number);
 		}
 	}
 	

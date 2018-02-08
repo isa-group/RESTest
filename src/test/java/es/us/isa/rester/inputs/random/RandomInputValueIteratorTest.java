@@ -32,7 +32,7 @@ public class RandomInputValueIteratorTest {
 		while (stringSet.size()!=stringValues.size()) {
 			String value = (String) iterator.nextValue();
 			stringSet.add(value);
-			System.out.println("Value: " + value);
+			//System.out.println("Value: " + value);
 		}	
 	}
 	

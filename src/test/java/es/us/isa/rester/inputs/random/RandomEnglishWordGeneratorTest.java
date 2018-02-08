@@ -19,7 +19,7 @@ public class RandomEnglishWordGeneratorTest {
 			String value = gen.nextValue();
 			int nWords = numberOfWords(value);
 			assertTrue("Incorrect number of words", nWords>=1 && nWords<=3);
-			System.out.println(i + ". Generate words: " + value + " (" + nWords + ")");
+			//System.out.println(i + ". Generate words: " + value + " (" + nWords + ")");
 		}	
 	}
 	
@@ -32,7 +32,7 @@ public class RandomEnglishWordGeneratorTest {
 			String value = gen.nextValue();
 			int nWords = numberOfWords(value);
 			assertTrue("Incorrect number of words", nWords==1);
-			System.out.println(i + ". Generate words: " + value + " (" + nWords + ")");
+			//System.out.println(i + ". Generate words: " + value + " (" + nWords + ")");
 		}	
 	}
 	
@@ -45,7 +45,7 @@ public class RandomEnglishWordGeneratorTest {
 			String value = gen.nextValue();
 			int nWords = numberOfWords(value);
 			assertTrue("Incorrect number of words", nWords>=2 && nWords<=6);
-			System.out.println(i + ". Generate words: " + value + " (" + nWords + ")");
+			//System.out.println(i + ". Generate words: " + value + " (" + nWords + ")");
 		}	
 	}
 	
@@ -59,7 +59,7 @@ public class RandomEnglishWordGeneratorTest {
 			String value = gen.nextValue();
 			int nWords = numberOfWords(value);
 			assertTrue("Incorrect number of words", nWords>=2 && nWords<=6);
-			System.out.println(i + ". Generate words: " + value + " (" + nWords + ")");
+			//System.out.println(i + ". Generate words: " + value + " (" + nWords + ")");
 		}	
 	}
 	

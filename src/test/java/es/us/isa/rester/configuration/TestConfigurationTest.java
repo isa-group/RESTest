@@ -13,7 +13,7 @@ public class TestConfigurationTest {
 		String path = "src/main/resources/TestConfigurationMetamodel/configuration-model";
 		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(path +".json");
 		assertEquals("Wrong deseralization", 2, conf.getTestConfiguration().getTestPaths().get(0).getOperations().get(0).getTestParameters().get(0).getGenerator().getGenParameters().size());
-		System.out.println(TestConfigurationIO.toString(conf)); // Print to String
+		//System.out.println(TestConfigurationIO.toString(conf)); // Print to String
 		TestConfigurationIO.toFile(conf, path + "-output.json");
 	}
 

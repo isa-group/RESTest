@@ -26,9 +26,11 @@ public class TestDataGeneratorFactoryTest {
 		
 		assertEquals("Wrong number of values", 521, gen.getValues().size());
 		
+		/*
 		for(int i=0; i<100; i++) {
 			System.out.println("Value " + i + ": " + gen.nextValueAsString());
 		}
+		*/
 		
 	}
 
