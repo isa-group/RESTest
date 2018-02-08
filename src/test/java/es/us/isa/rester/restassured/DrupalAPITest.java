@@ -1,6 +1,7 @@
 package es.us.isa.rester.restassured;
 
 import org.hamcrest.CoreMatchers;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.fge.jsonschema.SchemaVersion;
@@ -12,6 +13,7 @@ import io.restassured.RestAssured;
 public class DrupalAPITest {
 	
 	@Test
+	@Ignore
 	public void httpRequestDrupal(){
 		RestAssured.baseURI = "https://api.github.com";
 	    RestAssured
@@ -23,6 +25,7 @@ public class DrupalAPITest {
 	}
 	
 	@Test
+	@Ignore
 	public void JsonSchemaDrupal() {
 		JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.newBuilder()
 				.setValidationConfiguration(ValidationConfiguration.newBuilder()

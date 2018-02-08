@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import org.hamcrest.CoreMatchers;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.atlassian.oai.validator.restassured.SwaggerValidationFilter;
@@ -27,6 +28,7 @@ public class MarvelAPITest {
 	}
 	
 	@Test
+	@Ignore
 	  public void v1publiccharactersGETTest() {
 	    
 		try {
@@ -90,6 +92,7 @@ public class MarvelAPITest {
 	  }
 	
 	@Test
+	@Ignore
 	  public void v1publiccharactersGETTest2() {
 	    
 	    Response response = RestAssured
