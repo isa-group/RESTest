@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import es.us.isa.rester.inputs.random.RandomDateGenerator;
@@ -28,20 +29,50 @@ public class RandomDateGeneratorTest {
 	}
 	
 	@Test
-	public void testRandomBoundedDateGeneration() throws ParseException {
+	public void testRandomDateGenerationFromToday() {
 		RandomDateGenerator gen = new RandomDateGenerator();
-		Date startDate = new SimpleDateFormat("yyyy-MM-dd").parse("2015-06-12");
-		Date endDate = new SimpleDateFormat("yyyy-MM-dd").parse("2017-08-15");
-		gen.setStartDate(startDate);
-		gen.setEndDate(endDate);
+		gen.setFromToday(true);
 		for(int i=0; i<100;i++) {
 			Date value = gen.nextValue();
 			assertTrue("Not a date", value instanceof Date);
-			assertTrue("Out of range", value.before(endDate));
-			assertTrue("Out of range", value.after(startDate));
+			assertTrue("Out of range", value.after(new Date()));
 			SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String date = sdfDate.format(value).replaceAll(" ", "T") + "z";
-			//System.out.println("Unbounded date: " +  date);
+			//System.out.println("Unbounded date (from today): " +  date);
+		}
+	}
+	
+	@Test
+	public void testRandomBoundedDateGeneration() throws ParseException {
+		RandomDateGenerator gen = new RandomDateGenerator();
+		gen.setStartDate("2015-06-12");
+		gen.setEndDate("2017-08-15");
+		for(int i=0; i<100;i++) {
+			Date value = gen.nextValue();
+			assertTrue("Not a date", value instanceof Date);
+			assertTrue("Out of range", value.before(gen.getEndDate()));
+			assertTrue("Out of range", value.after(gen.getStartDate()));
+			SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String date = sdfDate.format(value).replaceAll(" ", "T") + "z";
+			//System.out.println("Bounded date: " +  date);
+		}
+	}
+	
+	@Test
+	public void testRandomDaysBasedBoundedDateGeneration() throws ParseException {
+		int startDays = 30;
+		int endDays = 90;
+		RandomDateGenerator gen = new RandomDateGenerator();
+		gen.setStartDays(startDays);
+		gen.setEndDays(endDays);
+		for(int i=0; i<100;i++) {
+			Date value = gen.nextValue();
+			assertTrue("Not a date", value instanceof Date);
+			assertTrue("Out of range", value.after(new DateTime(new Date()).plusDays(startDays).toDate()));
+			assertTrue("Out of range", value.before(new DateTime(new Date()).plusDays(startDays + endDays).toDate()));
+			SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String date = sdfDate.format(value).replaceAll(" ", "T") + "z";
+			//System.out.println("Bounded date: " +  date);
 		}
 	}
 	

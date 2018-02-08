@@ -32,106 +32,136 @@
             "genParameters" : [ {
               "name" : "format",
               "values" : [ "yyyy-MM-dd" ]
+            }, {
+              "name" : "startDays",
+              "values" : [ "15" ]
+            }, {
+              "name" : "endDays",
+              "values" : [ "30" ]
             } ]
           },
           "filter" : false
         }, {
           "name" : "check_out",
           "generator" : {
-            "type" : "RandomInputValueIterator",
-            "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+            "type" : "RandomInputValue",
+              "genParameters" : [ {
+              "name" : "format",
+              "values" : [ "yyyy-MM-dd" ]
+            }, {
+              "name" : "startDays",
+              "values" : [ "31" ]
+            }, {
+              "name" : "endDays",
+              "values" : [ "45" ]
             } ]
           },
           "filter" : false
         }, {
           "name" : "radius",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomNumber",
             "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
-            } ]
+              "name" : "type",
+              "values" : [ "integer"]
+            }, {
+              "name" : "min",
+              "values" : [ "5"]
+            }, {
+              "name" : "max",
+              "values" : [ "50"]
+            }   ]
           },
           "filter" : false
         }, {
           "name" : "lang",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/ISO-639-LangCodes.csv"]
             } ]
           },
           "filter" : false
         }, {
           "name" : "currency",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/ISO-4217-CurrencyCodes.csv"]
             } ]
           },
           "filter" : false
         }, {
           "name" : "chain",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/HotelChainCodes.csv"]
             } ]
           },
           "filter" : false
         }, {
           "name" : "max_rate",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomNumber",
             "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
-            } ]
+              "name" : "type",
+              "values" : [ "number"]
+            }, {
+              "name" : "min",
+              "values" : [ "150"]
+            }, {
+              "name" : "max",
+              "values" : [ "500"]
+            }   ]
           },
           "filter" : false
         }, {
           "name" : "number_of_results",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomNumber",
             "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
-            } ]
+              "name" : "type",
+              "values" : [ "integer"]
+            }, {
+              "name" : "min",
+              "values" : [ "10"]
+            }, {
+              "name" : "max",
+              "values" : [ "30"]
+            }   ]
           },
           "filter" : false
         }, {
           "name" : "all_rooms",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "values" : [ "true", "false" ]
             } ]
           },
           "filter" : false
         }, {
           "name" : "show_sold_out",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "values" : [ "true", "false" ]
             } ]
           },
           "filter" : false
         }, {
           "name" : "amenity",
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/HotelAmenities.csv"]
             } ]
           },
           "filter" : false

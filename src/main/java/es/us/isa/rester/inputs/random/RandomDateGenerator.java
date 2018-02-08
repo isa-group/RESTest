@@ -1,19 +1,24 @@
 package es.us.isa.rester.inputs.random;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.apache.commons.math3.random.RandomDataGenerator;
 import org.joda.time.DateTime;
 
 /** 
- * @author Sergio
+ * @author Sergio Segura
  *
  */
 public class RandomDateGenerator extends RandomGenerator {
 
-    private Date startDate;		// Optional: Specifies a min-max range to generate the values 
-    private Date endDate;
-    private String format;		// SimpleDateFormat
+    private Date startDate;				// Optional: Specifies a min-max range to generate the values 
+    private Date endDate;				
+    private int startDays;				// Set the min date as a number of days from today
+    private int endDays;				// Set the max date as a number of days from today
+    private boolean fromToday=false; 	// Set true to generate dates from today on
+    
+    private String format;				// SimpleDateFormat
 	
     public RandomDateGenerator() {
     	super();
@@ -47,16 +52,26 @@ public class RandomDateGenerator extends RandomGenerator {
 		return startDate;
 	}
 
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
+	public void setStartDate(String startDate) {
+		try {
+			this.startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
+		} catch (ParseException e) {
+			System.err.println("Error parsing date " + startDate + " : " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 	public Date getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
+	public void setEndDate(String endDate) {
+		try {
+			this.endDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
+		} catch (ParseException e) {
+			System.err.println("Error parsing date " + startDate + " : " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 	public String getFormat() {
@@ -65,6 +80,38 @@ public class RandomDateGenerator extends RandomGenerator {
 
 	public void setFormat(String format) {
 		this.format = format;
+	}
+
+	public boolean fromToday() {
+		return fromToday;
+	}
+
+	public void setFromToday(boolean fromToday) {
+		Date today = new Date();
+		if (fromToday)
+			startDate = today;
+		else {
+	    	// Set default start date range 10 years ago
+	    	this.startDate = new DateTime(today).minusYears(10).toDate();
+		}
+	}
+
+	public int getStartDays() {
+		return startDays;
+	}
+
+	public void setStartDays(int startDays) {
+		this.startDays = startDays;
+    	this.startDate = new DateTime(new Date()).plusDays(startDays).toDate();
+	}
+
+	public int getEndDays() {
+		return endDays;
+	}
+
+	public void setEndDays(int endDays) {
+		this.endDays = endDays;
+    	this.endDate = new DateTime(new Date()).plusDays(endDays).toDate();
 	}
 
 
