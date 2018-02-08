@@ -58,13 +58,17 @@ public class RESTAssuredWritter {
 	}
 
 	private String generateImports(String packageName) {
-		String content =  "package " + packageName + ";\n\n"
-						+ "import org.junit.*;\n"
-						+ "import io.restassured.RestAssured;\n"
-						+ "import io.restassured.response.Response;\n"
-						+ "import org.junit.FixMethodOrder;\n"
-						+ "import static org.junit.Assert.fail;\n"
-						+ "import org.junit.runners.MethodSorters;\n";
+		String content = "";
+		
+		if (packageName!=null)
+			content += "package " + packageName + ";\n\n";
+				
+		content += "import org.junit.*;\n"
+				 + "import io.restassured.RestAssured;\n"
+				 + "import io.restassured.response.Response;\n"
+				 + "import org.junit.FixMethodOrder;\n"
+				 + "import static org.junit.Assert.fail;\n"
+				 + "import org.junit.runners.MethodSorters;\n";
 		
 		// OAIValidation (Optional)
 		if (OAIValidation)

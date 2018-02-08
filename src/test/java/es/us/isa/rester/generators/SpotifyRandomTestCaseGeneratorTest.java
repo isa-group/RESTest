@@ -48,7 +48,7 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		RESTAssuredWritter writer = new RESTAssuredWritter();
 		writer.setOAIValidation(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/main/java/es/us/isa/rester/generatedtests", "SpotifyGetAlbum", "es.us.isa.rester.generatedtests", basePath.toLowerCase(), testCases);
+		writer.write(OAISpecPath, "src/generation/java", "SpotifyGetAlbum", null, basePath.toLowerCase(), testCases);
 
 	}
 	
@@ -85,7 +85,7 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/main/java/es/us/isa/rester/generatedtests", "SpotifySearch", "es.us.isa.rester.generatedtests", basePath.toLowerCase(), testCases);
+		writer.write(OAISpecPath, "src/generation/java", "SpotifySearch", null, basePath.toLowerCase(), testCases);
 
 	}
 	
