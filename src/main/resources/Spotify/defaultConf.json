@@ -12,24 +12,24 @@
         "method" : "get",
         "testParameters" : [ {
           "name" : "ids",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "market",
+          "weight" : 0.5,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       } ]
@@ -40,54 +40,54 @@
         "method" : "get",
         "testParameters" : [ {
           "name" : "limit",
+          "weight" : 0.5,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "offset",
+          "weight" : 0.5,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "q",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "type",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "market",
+          "weight" : 0.5,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       } ]

@@ -12,14 +12,14 @@
         "method" : "get",
         "testParameters" : [ {
           "name" : "id",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       }, {
@@ -27,14 +27,14 @@
         "method" : "delete",
         "testParameters" : [ {
           "name" : "id",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       } ]
@@ -50,14 +50,14 @@
         "method" : "put",
         "testParameters" : [ {
           "name" : "body",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       }, {
@@ -65,14 +65,14 @@
         "method" : "post",
         "testParameters" : [ {
           "name" : "body",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       } ]
@@ -83,14 +83,14 @@
         "method" : "get",
         "testParameters" : [ {
           "name" : "id",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       }, {
@@ -98,14 +98,14 @@
         "method" : "delete",
         "testParameters" : [ {
           "name" : "id",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       } ]
@@ -121,14 +121,14 @@
         "method" : "put",
         "testParameters" : [ {
           "name" : "body",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       }, {
@@ -136,14 +136,14 @@
         "method" : "post",
         "testParameters" : [ {
           "name" : "body",
+          "weight" : null,
           "generator" : {
-            "type" : "RandomInputValueIterator",
+            "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : [ "value 1", "value 2" ]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       } ]

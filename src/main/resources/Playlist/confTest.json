@@ -18,8 +18,7 @@
               "name" : "values",
               "values" : [ "s0", "s1", "s2", "s3", "s4"]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       } ]

@@ -6,9 +6,9 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import es.us.isa.rester.configuration.*;
 import es.us.isa.rester.configuration.generators.DefaultTestConfigurationGeneratorTest;
+import es.us.isa.rester.generators.AmadeusRandomTestCaseGenerator;
 import es.us.isa.rester.generators.PlaylistRandomTestCaseGeneratorTest;
 import es.us.isa.rester.generators.SpotifyRandomTestCaseGeneratorTest;
-import es.us.isa.rester.inputs.TestDataGeneratorFactoryTest;
 import es.us.isa.rester.inputs.fixed.InputValueIteratorTest;
 import es.us.isa.rester.inputs.random.*;
 import es.us.isa.rester.specification.*;
@@ -28,7 +28,7 @@ import es.us.isa.rester.testcases.writters.RESTAssuredWritterTest;
 	DefaultTestConfigurationGeneratorTest.class,
 	SpotifyRandomTestCaseGeneratorTest.class,
 	PlaylistRandomTestCaseGeneratorTest.class,
-	TestDataGeneratorFactoryTest.class})
+	AmadeusRandomTestCaseGenerator.class})
 
 public class AllTests {
 

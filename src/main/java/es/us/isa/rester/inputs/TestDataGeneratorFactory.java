@@ -1,9 +1,8 @@
 package es.us.isa.rester.inputs;
 
-import java.util.Iterator;
-import java.util.List;
 import es.us.isa.rester.configuration.pojos.GenParameter;
 import es.us.isa.rester.configuration.pojos.Generator;
+import es.us.isa.rester.inputs.random.RandomDateGenerator;
 import es.us.isa.rester.inputs.random.RandomEnglishWordGenerator;
 import es.us.isa.rester.inputs.random.RandomInputValueIterator;
 import es.us.isa.rester.inputs.random.RandomNumberGenerator;
@@ -34,10 +33,45 @@ public class TestDataGeneratorFactory {
 			gen = createRandomNumber(generator);
 			break;
 		case "RandomDate":
-			// TODO
+			gen = createRandomDate(generator);
 			break;	
 		default:
 			throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
+		}
+		
+		return gen;
+	}
+
+
+	// Create a random date generator
+	private static ITestDataGenerator createRandomDate(Generator generator) {
+		
+		RandomDateGenerator gen = new RandomDateGenerator();
+		
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+			
+			case "startDate":
+				gen.setStartDate(param.getValues().get(0));
+				break;
+			case "endDate":
+				gen.setEndDate(param.getValues().get(0));
+				break;
+			case "fromToday":
+				gen.setFromToday(Boolean.parseBoolean(param.getValues().get(0)));
+				break;
+			case "startDays":
+				gen.setStartDays(Integer.parseInt(param.getValues().get(0)));
+				break;
+			case "endDays":
+				gen.setEndDays(Integer.parseInt(param.getValues().get(0)));
+				break;
+			case "format":
+				gen.setFormat(param.getValues().get(0));
+				break;
+			default:
+				throw new IllegalArgumentException("Unexpected parameter for random date generator: " + param.getName());
+			}	
 		}
 		
 		return gen;

@@ -113,11 +113,14 @@ public class DefaultTestConfigurationGenerator {
 		for(Parameter param: parameters) {
 			TestParameter testParam = new TestParameter();
 			testParam.setName(param.getName());
-			testParam.setFilter(false);
+			
+			// Set default weight for optional parameters
+			if (!param.getRequired())
+				testParam.setWeight(0.5f);
 			
 			// Set default generator (String)
 			Generator gen = new Generator();
-			gen.setType("RandomInputValueIterator");
+			gen.setType("RandomInputValue");
 			
 			List<GenParameter> genParams = new ArrayList<GenParameter>();
 			

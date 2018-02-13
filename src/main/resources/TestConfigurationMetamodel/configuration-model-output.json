@@ -17,7 +17,8 @@
         "operationId" : "Operation ID",
         "method" : "get",
         "testParameters" : [ {
-          "name" : "Property name",
+          "name" : "Test parameter name",
+          "weight" : 0.5,
           "generator" : {
             "type" : "Generator type",
             "genParameters" : [ {
@@ -27,8 +28,7 @@
               "name" : "Parameter name 2",
               "values" : [ "Parameter value" ]
             } ]
-          },
-          "filter" : true
+          }
         } ],
         "expectedResponse" : "Expected HTTP code"
       } ]

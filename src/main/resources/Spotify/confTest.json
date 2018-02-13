@@ -30,18 +30,17 @@
 	              "0swM8EuQkgYV2knrZ8rFl2" 
 	              ]
             } ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "market",
+          "weight" : 0.5,
           "generator" : {
             "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : ["AD", "AR", "AT", "AU", "BE", "BG", "BO", "BR", "CA", "CH", "CL", "CO", "CR", "CY", "CZ", "DE", "DK", "DO", "EC", "EE", "ES", "FI", "FR", "GB", "GR", "GT", "HK", "HN", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MC", "MT", "MX", "MY", "NI", "NL", "NO", "NZ", "PA", "PE", "PH", "PT", "PY", "RO", "SE", "SG", "SI", "SK", "SV", "TW", "UY"]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       }]
@@ -52,6 +51,7 @@
         "method" : "get",
         "testParameters" : [ {
           "name" : "limit",
+          "weight" : 0.5,
           "generator" : {
             "type" : "RandomNumber",
             "genParameters" : [ {
@@ -64,10 +64,10 @@
               "name" : "max",
               "values" : [ "50"]
             }   ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "offset",
+          "weight" : 0.5,
           "generator" : {
             "type" : "RandomNumber",
             "genParameters" : [ {
@@ -80,15 +80,13 @@
               "name" : "max",
               "values" : [ "5"]
             }  ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "q",
           "generator" : {
             "type" : "RandomEnglishWord",
             "genParameters" : []
-          },
-          "filter" : false
+          }
         }, {
           "name" : "type",
           "generator" : {
@@ -97,18 +95,17 @@
               "name" : "values",
               "values" : [ "album", "artist", "track", "playlist", "track,playlist", "album,track", "album,artist", "artist,album,track", "artist,album,track,playlist" ]
             } ]
-          },
-          "filter" : false
+          }
         }, {
           "name" : "market",
+          "weight" : 0.5,
           "generator" : {
             "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
               "values" : ["AD", "AR", "AT", "AU", "BE", "BG", "BO", "BR", "CA", "CH", "CL", "CO", "CR", "CY", "CZ", "DE", "DK", "DO", "EC", "EE", "ES", "FI", "FR", "GB", "GR", "GT", "HK", "HN", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MC", "MT", "MX", "MY", "NI", "NL", "NO", "NZ", "PA", "PE", "PH", "PT", "PY", "RO", "SE", "SG", "SI", "SK", "SV", "TW", "UY"]
             } ]
-          },
-          "filter" : false
+          }
         } ],
         "expectedResponse" : "200"
       } ]

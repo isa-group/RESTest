@@ -5,8 +5,8 @@ package es.us.isa.rester.configuration.pojos;
 public class TestParameter {
 
     private String name;
+    private Float weight;
     private Generator generator;
-    private Boolean filter;
 
     public String getName() {
         return name;
@@ -16,20 +16,20 @@ public class TestParameter {
         this.name = name;
     }
 
+    public Float getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Float weight) {
+        this.weight = weight;
+    }
+
     public Generator getGenerator() {
         return generator;
     }
 
     public void setGenerator(Generator generator) {
         this.generator = generator;
-    }
-
-    public Boolean getFilter() {
-        return filter;
-    }
-
-    public void setFilter(Boolean filter) {
-        this.filter = filter;
     }
 
 }

@@ -7,14 +7,12 @@ import es.us.isa.rester.configuration.generators.DefaultTestConfigurationGenerat
 import es.us.isa.rester.specification.OpenAPISpecification;
 import es.us.isa.rester.util.TestConfigurationFilter;
 
-public class DefaultTestConfigurationGeneration {
+public class Main {
 
-	
-	
 	
 	public static void main(String[] args) {
 
-		// Playlist API
+		// Generate default test configuration file for Playlist API
 		generatePlaylistConfig();
 
 	}
@@ -35,5 +33,4 @@ public class DefaultTestConfigurationGeneration {
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
 		gen.generate(spec, confPath, filters);
 	}
-
 }
