@@ -76,7 +76,7 @@
 		<dependency>
 			<groupId>com.atlassian.oai</groupId>
 			<artifactId>swagger-request-validator-restassured</artifactId>
-			<version>1.3.3</version>
+			<version>1.4.7</version>
 		</dependency>
 
 		<!-- JUnit 4 -->
