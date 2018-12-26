@@ -6,7 +6,12 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
+
+import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import es.us.isa.rester.configuration.pojos.TestConfigurationObject;
 import es.us.isa.rester.specification.OpenAPISpecification;
 
@@ -53,7 +58,14 @@ public class TestConfigurationIO {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			confFile = new FileWriter(path);
-			confFile.write(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf));
+			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf);
+//			JsonNode jsonNode = mapper.readTree(json);
+//
+//			// Convert JSON to YAML and write file
+//			YAMLMapper yamlMapper = new YAMLMapper();
+//			yamlMapper.configure(YAMLGenerator.Feature.MINIMIZE_QUOTES, true);
+//			String yaml = yamlMapper.writeValueAsString(jsonNode);
+			confFile.write(json);
 			confFile.flush();
 			confFile.close();
 		} catch (IOException e) {
