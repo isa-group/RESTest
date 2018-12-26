@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JsonSchemaMappingsProjectConfiguration">
+    <state>
+      <map>
+        <entry key="IntelliJ Themes">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="IntelliJ Themes" />
+              <option name="relativePathToSchema" value="$APPLICATION_HOME_DIR$/plugins/devkit/lib/devkit.jar!/schemes/theme.schema.json" />
+              <option name="applicationDefined" value="true" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="path" value="src/test/resources/specifications/petstore.json" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+      </map>
+    </state>
+  </component>
+</project>
