@@ -25,23 +25,27 @@ public class PlaylistRandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Playlist/confTest.json");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Playlist/defaultConf.json");
 		
 		// Set number of test cases to be generated on each path
-		int numTestCases = 10;
+		int numTestCases = 3;
 		
 		// Create generator and filter
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 		
 		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
 		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/songs/{id}");
-		filter.addGetMethod();
+		filter.setPath(null);
 		filters.add(filter);
+
+		//TestConfigurationFilter filter2 = new TestConfigurationFilter();
+		//filter2.setPath("/songs");
+		//filter2.addGetMethod();
+		//filters.add(filter2);
 		
 		Collection<TestCase> testCases = generator.generate(filters);
 		
-		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
+		assertEquals("Incorrect number of test cases", 30, testCases.size());
 		
 		// Write test cases
 		RESTAssuredWritter writer = new RESTAssuredWritter();

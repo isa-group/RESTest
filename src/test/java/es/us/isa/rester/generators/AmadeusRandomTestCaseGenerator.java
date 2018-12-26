@@ -28,7 +28,7 @@ public class AmadeusRandomTestCaseGenerator {
 		// Load configuration
 		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Amadeus/confTest.json");
 		
-		// Set number of test cases to be generated on each path
+		// Set number of test cases to be generated on each path, on each operation
 		int numTestCases = 10;
 		
 		// Create generator and filter

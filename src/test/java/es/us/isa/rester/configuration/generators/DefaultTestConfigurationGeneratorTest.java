@@ -50,6 +50,12 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter2.setPath("/search");
 		filter2.addGetMethod();
 		filters.add(filter2);
+
+		// Filter 3
+		TestConfigurationFilter filter3 = new TestConfigurationFilter();
+		filter3.setPath("/artists");
+		filter3.addGetMethod();
+		filters.add(filter3);
 		
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
 		gen.generate(spec, confPath, filters);

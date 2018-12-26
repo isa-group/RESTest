@@ -3,6 +3,8 @@ package es.us.isa.rester.inputs.random;
 import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.sun.org.apache.regexp.internal.CharacterArrayCharacterIterator;
 import org.junit.Test;
 
 import es.us.isa.rester.inputs.random.RandomRegExpGenerator;
@@ -24,12 +26,13 @@ public class RandomRegExpGeneratorTest {
 	public void testRandomBoundedRegExpGeneration() {
 		String regExp = "[0-3]([a-c]|[e-g]{1,5})";
 		RandomRegExpGenerator gen = new RandomRegExpGenerator(regExp);
-		gen.setMinLength(2);
+		gen.setMinLength(3);
 		gen.setMaxLength(4);
 		for(int i=0; i<100;i++) {
 			String value = gen.nextValue();
 			assertTrue("The string does not match the regular expression", value.matches(regExp));
-			assertTrue("The string does not match the requested lengthn", value.length() >= 2 && value.length() <= 4);
+			assertTrue("The string does not match the requested length", value.length() >= 3 && value.length() <= 4);
+			assertTrue("The string has a forbidden pattern", !value.substring(1,2).matches("[a-c]"));
 			//System.out.println("Bounded string: " + value);
 		}
 	}
