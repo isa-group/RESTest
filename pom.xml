@@ -65,7 +65,6 @@
 			<groupId>io.rest-assured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<version>3.0.6</version>
-			<scope>test</scope>
 		</dependency>
 
 		<!-- JSON Schema Validation -->
@@ -92,6 +91,14 @@
 			<artifactId>commons-csv</artifactId>
 			<version>1.5</version>
 		</dependency>
+
+		<!-- YAML parsing library -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>2.9.8</version>
+		</dependency>
+
 
 	</dependencies>
 </project>
