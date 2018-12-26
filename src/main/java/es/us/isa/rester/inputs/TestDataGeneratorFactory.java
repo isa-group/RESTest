@@ -2,10 +2,7 @@ package es.us.isa.rester.inputs;
 
 import es.us.isa.rester.configuration.pojos.GenParameter;
 import es.us.isa.rester.configuration.pojos.Generator;
-import es.us.isa.rester.inputs.random.RandomDateGenerator;
-import es.us.isa.rester.inputs.random.RandomEnglishWordGenerator;
-import es.us.isa.rester.inputs.random.RandomInputValueIterator;
-import es.us.isa.rester.inputs.random.RandomNumberGenerator;
+import es.us.isa.rester.inputs.random.*;
 import es.us.isa.rester.util.CSVManager;
 import es.us.isa.rester.util.DataType;
 import es.us.isa.rester.util.TestConfigurationVisitor;
@@ -34,7 +31,9 @@ public class TestDataGeneratorFactory {
 			break;
 		case "RandomDate":
 			gen = createRandomDate(generator);
-			break;	
+			break;
+		case "RandomRegExp":
+			gen = createRandomRegExp(generator);
 		default:
 			throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
 		}
@@ -264,6 +263,33 @@ public class TestDataGeneratorFactory {
 			}	
 		}
 		
+		return gen;
+	}
+
+	// Create a random regexp generator
+	private static RandomRegExpGenerator createRandomRegExp(Generator generator) {
+		RandomRegExpGenerator gen = null;
+
+		GenParameter regExpParam = TestConfigurationVisitor.searchGenParameter("regExp",generator.getGenParameters());
+		if (regExpParam==null || regExpParam.getValues().get(0) == null)
+			throw new IllegalArgumentException("Missing regular expression parameter");
+		else
+			gen = new RandomRegExpGenerator(regExpParam.getValues().get(0));
+
+		// Set parameters
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+				case "minLength":
+					gen.setMinLength(Integer.parseInt(param.getValues().get(0)));
+					break;
+				case "maxLength":
+					gen.setMaxLength(Integer.parseInt(param.getValues().get(0)));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for random regExp generator: " + param.getName());
+			}
+		}
+
 		return gen;
 	}
 }
