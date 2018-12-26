@@ -5,10 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import es.us.isa.rester.configuration.pojos.HeaderParam;
-import es.us.isa.rester.configuration.pojos.QueryParam;
-import es.us.isa.rester.configuration.pojos.TestConfigurationObject;
-import es.us.isa.rester.configuration.pojos.TestParameter;
+
+import es.us.isa.rester.configuration.pojos.*;
 import es.us.isa.rester.inputs.ITestDataGenerator;
 import es.us.isa.rester.inputs.TestDataGeneratorFactory;
 import es.us.isa.rester.specification.OpenAPISpecification;
@@ -30,15 +28,46 @@ public abstract class AbstractTestCaseGenerator {
 	 * @return Generated test cases (duplicates are possible)
 	 */
 	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
-		
+
 		List<TestCase> testCases = new ArrayList<TestCase>();
+
+		// If there's only one filter configured and its path is null, generate test cases for all paths and all methods
+		if (filters.size() == 1 && filters.iterator().next().getPath() == null) {
+			filters.clear();
+
+			for (TestPath testPath: conf.getTestConfiguration().getTestPaths()) {
+				TestConfigurationFilter filter = new TestConfigurationFilter();
+				filter.setPath(testPath.getTestPath());
+				for (es.us.isa.rester.configuration.pojos.Operation operation: testPath.getOperations()) {
+					switch(operation.getMethod().toLowerCase()) {
+						case "get":
+							filter.addGetMethod();
+							break;
+						case "post":
+							filter.addPostMethod();
+							break;
+						case "put":
+							filter.addPutMethod();
+							break;
+						case "delete":
+							filter.addDeleteMethod();
+							break;
+						default:
+							throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
+									"allowed in the test configuration file");
+					}
+				}
+				filters.add(filter);
+			}
+		}
 		
 		// Generate test cases for each path and method
 		for(TestConfigurationFilter filter:filters) {
 			
-			if (filter.getPath()==null)
+			if (filter.getPath()==null) {
 				throw new IllegalArgumentException("Specify the path(s) to be tested");
-			
+			}
+
 			for(HttpMethod method: filter.getMethods()) {
 				// Generate test cases for the operation
 				testCases.addAll(generate(filter.getPath(), method));
@@ -84,7 +113,7 @@ public abstract class AbstractTestCaseGenerator {
 			test.setExpectedOutputs(specOperation.getResponses());
 			
 			// Set expected output in case the request is successful
-			test.setExpectedSucessfulOutput(specOperation.getResponses().get(testOperation.getExpectedResponse()));
+			test.setExpectedSuccessfulOutput(specOperation.getResponses().get(testOperation.getExpectedResponse()));
 			
 			// Add test case to the collection
 			testCases.add(test);
