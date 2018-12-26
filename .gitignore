@@ -4,3 +4,4 @@ src/main/java/es/us/isa/rester/generatedtests/PlaylistTest.java
 src/main/java/es/us/isa/rester/generatedtests/SpotifyGetAlbumTest.java
 src/main/java/es/us/isa/rester/generatedtests/SpotifySearchTest.java
 src/main/java/es/us/isa/rester/generatedtests/petstoreTest.java
+.idea/workspace.xml
