@@ -133,13 +133,13 @@ public class TestDataGeneratorFactory {
 		
 		switch (typeParam.getValues().get(0)) {
 		case "integer":
-			gen = createRandomIntengerGenerator(DataType.INTEGER,generator);
+			gen = createRandomIntegerGenerator(DataType.INTEGER,generator);
 			break;
 		case "int32":
-			gen = createRandomIntengerGenerator(DataType.INT32,generator);
+			gen = createRandomIntegerGenerator(DataType.INT32,generator);
 			break;
 		case "int64":
-			gen = createRandomIntengerGenerator(DataType.INT64,generator);
+			gen = createRandomIntegerGenerator(DataType.INT64,generator);
 			break;
 		case "double":
 			gen = createRandomDoubleGenerator(DataType.DOUBLE,generator);
@@ -243,7 +243,7 @@ public class TestDataGeneratorFactory {
 
 
 	// Create a random integer generator
-	private static RandomNumberGenerator createRandomIntengerGenerator(DataType intType, Generator generator) {
+	private static RandomNumberGenerator createRandomIntegerGenerator(DataType intType, Generator generator) {
 		RandomNumberGenerator gen = new RandomNumberGenerator(intType);
 		
 		// Set parameters
