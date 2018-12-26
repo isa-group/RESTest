@@ -140,8 +140,11 @@ public class RESTAssuredWritter {
 
 
 	private String generateMethodHeader(TestCase t, int instance) {
-		return "\t@Test\n"
-			 + "\tpublic void " + t.getOperationId() +  "Test" + instance + "() {\n";	
+		return "\t@Test\n" +
+				"\tpublic void " + t.getOperationId()
+				.replaceAll(" ", "")
+				.replaceAll("-", "") +
+				"Test" + instance + "() {\n";
 	}
 
 	private String generateRESTAssuredObject(TestCase t) {
