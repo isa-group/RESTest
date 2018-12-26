@@ -64,7 +64,10 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
 	// Returns true if there are more test cases to be generated
 	protected boolean hasNext() {
-		return (index<numberOfTest);
+		Boolean res = index<numberOfTest;
+		if (index == numberOfTest)
+			index = 0;
+		return res;
 	}
 	
 	private long getSeed() {
