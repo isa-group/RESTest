@@ -20,7 +20,7 @@ public class TestCase {
 	private Map<String, String> pathParameters;				// Path parameters
 	private Map<String, String> queryParameters;			// Input parameters and values
 	private Map<String, Response> expectedOutputs;			// Possible outputs
-	private Response expectedSucessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
+	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
 	public TestCase(String operationId, String path, HttpMethod method) {
 		this.operationId = operationId;
@@ -32,12 +32,12 @@ public class TestCase {
 		this.pathParameters = new HashMap<String,String>();
 	}
 
-	public Response getExpectedSucessfulOutput() {
-		return expectedSucessfulOutput;
+	public Response getExpectedSuccessfulOutput() {
+		return expectedSuccessfulOutput;
 	}
 
-	public void setExpectedSucessfulOutput(Response expectedSucessfulOutput) {
-		this.expectedSucessfulOutput = expectedSucessfulOutput;
+	public void setExpectedSuccessfulOutput(Response expectedSuccessfulOutput) {
+		this.expectedSuccessfulOutput = expectedSuccessfulOutput;
 	}
 
 	public HttpMethod getMethod() {
