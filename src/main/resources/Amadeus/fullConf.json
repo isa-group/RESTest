@@ -1,0 +1,1774 @@
+{
+  "auth" : {
+    "required" : true,
+    "queryParams" : [ ],
+    "headerParams" : [ ]
+  },
+  "testConfiguration" : {
+    "testPaths" : [ {
+      "testPath" : "/airports/autocomplete",
+      "operations" : [ {
+        "operationId" : "Airport Autocomplete",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "term",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "country",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "all_airports",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/airports/nearest-relevant",
+      "operations" : [ {
+        "operationId" : "Nearest Relevant Airport",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "latitude",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "longitude",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/cars/search-airport",
+      "operations" : [ {
+        "operationId" : "Car Rental Airport Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "location",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "pick_up",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "drop_off",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "provider",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "rate_class",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "rate_plan",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "rate_filter",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "vehicle",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/cars/search-circle",
+      "operations" : [ {
+        "operationId" : "Car Rental Geosearch",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "latitude",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "longitude",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "radius",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "pick_up",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "drop_off",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "provider",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "rate_class",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "rate_plan",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "rate_filter",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "vehicle",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/flights/affiliate-search",
+      "operations" : [ {
+        "operationId" : "Flight Affiliate Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "destination",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "departure_date",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "return_date",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "adults",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "children",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "infants",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "include_merchants",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "exclude_merchants",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "max_price",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "mobile",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/flights/extensive-search",
+      "operations" : [ {
+        "operationId" : "Flight Extensive Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "destination",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "departure_date",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "one-way",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "duration",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "direct",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "max_price",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "aggregation_mode",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/flights/inspiration-search",
+      "operations" : [ {
+        "operationId" : "Flight Inspiration Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "destination",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "departure_date",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "one-way",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "duration",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "direct",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "max_price",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "aggregation_mode",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/flights/low-fare-search",
+      "operations" : [ {
+        "operationId" : "Flight Low-Fare Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "destination",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "departure_date",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "return_date",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "arrive_by",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "return_by",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "adults",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "children",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "infants",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "include_airlines",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "exclude_airlines",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "nonstop",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "max_price",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "travel_class",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/hotels/search-airport",
+      "operations" : [ {
+        "operationId" : "Hotel Airport Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "location",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "check_in",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "check_out",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "radius",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "chain",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "max_rate",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "all_rooms",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "show_sold_out",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "amenity",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/hotels/search-box",
+      "operations" : [ {
+        "operationId" : "Hotel Geosearch by box",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "south_west_corner",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "north_east_corner",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "check_in",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "check_out",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "chain",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "max_rate",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "all_rooms",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "show_sold_out",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "amenity",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/hotels/search-circle",
+      "operations" : [ {
+        "operationId" : "Hotel Geosearch by circle",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "latitude",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "longitude",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "radius",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "check_in",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "check_out",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "chain",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "max_rate",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "all_rooms",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "show_sold_out",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "amenity",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/hotels/{property_code}",
+      "operations" : [ {
+        "operationId" : "Hotel Property Code Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "property_code",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "check_in",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "check_out",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "all_rooms",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "show_sold_out",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/location/{code}",
+      "operations" : [ {
+        "operationId" : "Location Information",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "code",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/points-of-interest/yapq-search-circle",
+      "operations" : [ {
+        "operationId" : "YapQ Geosearch",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "latitude",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "longitude",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "radius",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "category",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "geonames",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "vibes",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "social_media",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "image_size",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_images",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/points-of-interest/yapq-search-text",
+      "operations" : [ {
+        "operationId" : "YapQ City Name Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "city_name",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "category",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "geonames",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "vibes",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "social_media",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "image_size",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_images",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/rail-station/{id}",
+      "operations" : [ {
+        "operationId" : "Rail-Station Information",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "id",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/rail-stations/autocomplete",
+      "operations" : [ {
+        "operationId" : "Rail-Station Autocomplete",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "term",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/trains/extensive-search",
+      "operations" : [ {
+        "operationId" : "Train Extensive Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "destination",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "departure_date",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/trains/schedule-search",
+      "operations" : [ {
+        "operationId" : "Train Schedule Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "departure_date",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/travel-intelligence/flight-traffic",
+      "operations" : [ {
+        "operationId" : "Flight Traffic API",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "period",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "destination",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results_per_period",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/travel-intelligence/top-destinations",
+      "operations" : [ {
+        "operationId" : "Top Flight Destinations",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "period",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/travel-intelligence/top-searches",
+      "operations" : [ {
+        "operationId" : "Top Flight Searches",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "period",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "origin",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "destination",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "country",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }, {
+      "testPath" : "/travel-record/{record_locator}",
+      "operations" : [ {
+        "operationId" : "Travel Record Retrieve",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "record_locator",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "last_name",
+          "weight" : null,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        }, {
+          "name" : "env",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "value 1", "value 2" ]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    } ]
+  }
+}

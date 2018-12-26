@@ -22,6 +22,15 @@
         } ],
         "expectedResponse" : "200"
       } ]
-    } ]
+    },
+    {
+      "testPath" : "/songs",
+      "operations" : [ {
+        "operationId" : "getAllSongs",
+        "method" : "get",
+        "testParameters" : [ ],
+        "expectedResponse" : "200"
+      }]
+    }]
   }
 }

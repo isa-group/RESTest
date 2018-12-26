@@ -1,8 +1,6 @@
 {
   "auth" : {
-    "required" : true,
-    "queryParams" : [ ],
-    "headerParams" : [ ]
+    "required" : false
   },
   "testConfiguration" : {
     "testPaths" : [ {
@@ -17,7 +15,7 @@
             "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "values" : [ "s0", "s1", "s2", "s3", "s4"]
             } ]
           }
         } ],
@@ -32,7 +30,7 @@
             "type" : "RandomInputValue",
             "genParameters" : [ {
               "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "values" : [ "s0", "s1", "s2", "s3", "s4"]
             } ]
           }
         } ],
@@ -85,11 +83,16 @@
           "name" : "id",
           "weight" : null,
           "generator" : {
-            "type" : "RandomInputValue",
-            "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
-            } ]
+            "type" : "RandomEnglishWord",
+            "genParameters" : [
+              {
+                "name": "minWords",
+                "values": ["1"]
+              },
+              {
+                "name": "maxWords",
+                "values": ["2"]
+              }]
           }
         } ],
         "expectedResponse" : "200"
@@ -140,8 +143,8 @@
           "generator" : {
             "type" : "RandomInputValue",
             "genParameters" : [ {
-              "name" : "values",
-              "values" : [ "value 1", "value 2" ]
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/HotelChainCodes.csv"]
             } ]
           }
         } ],

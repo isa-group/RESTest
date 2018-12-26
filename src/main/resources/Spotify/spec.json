@@ -1664,6 +1664,10 @@
           },
           "type": "array"
         },
+        "label": {
+          "description": "",
+          "type": "string"
+        },
         "name": {
           "description": "The name of the album.",
           "type": "string"
@@ -1679,6 +1683,10 @@
         "release_date_precision": {
           "description": "The precision with which release_date value is known: 'year', 'month', or 'day'.",
           "type": "string"
+        },
+        "total_tracks": {
+          "description": "",
+          "type": "integer"
         },
         "tracks": {
           "$ref": "#/definitions/track-simple-page"
@@ -2618,6 +2626,10 @@
         "id": {
           "description": "The Spotify ID for the track.",
           "type": "string"
+        },
+        "is_local": {
+          "description": "",
+          "type": "boolean"
         },
         "is_playable": {
           "description": "Part of the response when Track Relinking is applied. If true, the track is playable in the given market. Otherwise false.",
