@@ -11,10 +11,10 @@ public class TestConfigurationTest {
 	@Test
 	public void testLoadConfiguration() {
 		String path = "src/main/resources/TestConfigurationMetamodel/configuration-model";
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(path +".json");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(path +".yaml");
 		assertEquals("Wrong deseralization", 2, conf.getTestConfiguration().getTestPaths().get(0).getOperations().get(0).getTestParameters().get(0).getGenerator().getGenParameters().size());
 		//System.out.println(TestConfigurationIO.toString(conf)); // Print to String
-		TestConfigurationIO.toFile(conf, path + "-output.json");
+		TestConfigurationIO.toFile(conf, path + "-output.yaml");
 	}
 
 }

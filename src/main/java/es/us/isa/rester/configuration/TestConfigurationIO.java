@@ -25,11 +25,11 @@ public class TestConfigurationIO {
 	/** Load test configuration file
 	 */
 	public static TestConfigurationObject loadConfiguration(String path) {
-	    ObjectMapper mapper = new ObjectMapper();
+	    YAMLMapper mapper = new YAMLMapper();
 	    TestConfigurationObject conf=null;
 		try {
 			conf = mapper.readValue(new File(path), TestConfigurationObject.class);
-			
+
 			// Print with format
 			//String prettyConf = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf);
 			//System.out.println(prettyConf);
@@ -59,13 +59,13 @@ public class TestConfigurationIO {
 		try {
 			confFile = new FileWriter(path);
 			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf);
-//			JsonNode jsonNode = mapper.readTree(json);
-//
-//			// Convert JSON to YAML and write file
-//			YAMLMapper yamlMapper = new YAMLMapper();
-//			yamlMapper.configure(YAMLGenerator.Feature.MINIMIZE_QUOTES, true);
-//			String yaml = yamlMapper.writeValueAsString(jsonNode);
-			confFile.write(json);
+			JsonNode jsonNode = mapper.readTree(json);
+
+			// Convert JSON to YAML and write file
+			YAMLMapper yamlMapper = new YAMLMapper();
+			yamlMapper.configure(YAMLGenerator.Feature.MINIMIZE_QUOTES, true);
+			String yaml = yamlMapper.writeValueAsString(jsonNode);
+			confFile.write(yaml);
 			confFile.flush();
 			confFile.close();
 		} catch (IOException e) {
