@@ -1,0 +1,351 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+testConfiguration:
+  testPaths:
+  - testPath: /pet
+    operations:
+    - operationId: updatePet
+      method: put
+      testParameters:
+      - name: body
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+    - operationId: addPet
+      method: post
+      testParameters:
+      - name: body
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /pet/findByStatus
+    operations:
+    - operationId: findPetsByStatus
+      method: get
+      testParameters:
+      - name: status
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - available
+            - pending
+            - sold
+      expectedResponse: 200
+  - testPath: /pet/findByTags
+    operations:
+    - operationId: findPetsByTags
+      method: get
+      testParameters:
+      - name: tags
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /pet/{petId}
+    operations:
+    - operationId: getPetById
+      method: get
+      testParameters:
+      - name: petId
+        weight: null
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+          - name: min
+            values:
+            - 1
+          - name: max
+            values:
+            - 1000
+      expectedResponse: 200
+    - operationId: updatePetWithForm
+      method: post
+      testParameters:
+      - name: petId
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      - name: name
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      - name: status
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+    - operationId: deletePet
+      method: delete
+      testParameters:
+      - name: api_key
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      - name: petId
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /pet/{petId}/uploadImage
+    operations:
+    - operationId: uploadFile
+      method: post
+      testParameters:
+      - name: petId
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      - name: additionalMetadata
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      - name: file
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /store/inventory
+    operations:
+    - operationId: getInventory
+      method: get
+      testParameters: []
+      expectedResponse: 200
+  - testPath: /store/order
+    operations:
+    - operationId: placeOrder
+      method: post
+      testParameters:
+      - name: body
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /store/order/{orderId}
+    operations:
+    - operationId: getOrderById
+      method: get
+      testParameters:
+      - name: orderId
+        weight: null
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+          - name: min
+            values:
+            - 1
+          - name: max
+            values:
+            - 15
+      expectedResponse: 200
+    - operationId: deleteOrder
+      method: delete
+      testParameters:
+      - name: orderId
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /user
+    operations:
+    - operationId: createUser
+      method: post
+      testParameters:
+      - name: body
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /user/createWithArray
+    operations:
+    - operationId: createUsersWithArrayInput
+      method: post
+      testParameters:
+      - name: body
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /user/createWithList
+    operations:
+    - operationId: createUsersWithListInput
+      method: post
+      testParameters:
+      - name: body
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /user/login
+    operations:
+    - operationId: loginUser
+      method: get
+      testParameters:
+      - name: username
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      - name: password
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+  - testPath: /user/logout
+    operations:
+    - operationId: logoutUser
+      method: get
+      testParameters: []
+      expectedResponse: 200
+  - testPath: /user/{username}
+    operations:
+    - operationId: getUserByName
+      method: get
+      testParameters:
+      - name: username
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+    - operationId: updateUser
+      method: put
+      testParameters:
+      - name: username
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      - name: body
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200
+    - operationId: deleteUser
+      method: delete
+      testParameters:
+      - name: username
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200

@@ -113,4 +113,21 @@ public class DefaultTestConfigurationGeneratorTest {
 		gen.generate(spec, confPath, filters);
 	}
 
+	@Test
+	public void testPetstoreFullTestConfigurationGeneration() {
+
+		String specPath="src/main/resources/Petstore/swagger.yaml";
+		String confPath="src/main/resources/Petstore/fullConf.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(specPath);
+
+		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath(null);
+		filter.addAllMethods();
+		filters.add(filter);
+
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
+		gen.generate(spec, confPath, filters);
+	}
+
 }
