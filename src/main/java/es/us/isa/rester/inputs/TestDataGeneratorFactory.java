@@ -20,22 +20,29 @@ public class TestDataGeneratorFactory {
 		
 		switch(generator.getType()) {
 		
-		case "RandomInputValue":
-			gen = createRandomInputValueGenerator(generator);
-			break;
-		case "RandomEnglishWord":
-			gen = createRandomEnglishWordGenerator(generator);
-			break;
-		case "RandomNumber":
-			gen = createRandomNumber(generator);
-			break;
-		case "RandomDate":
-			gen = createRandomDate(generator);
-			break;
-		case "RandomRegExp":
-			gen = createRandomRegExp(generator);
-		default:
-			throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
+			case "RandomInputValue":
+				gen = createRandomInputValueGenerator(generator);
+				break;
+			case "RandomEnglishWord":
+				gen = createRandomEnglishWordGenerator(generator);
+				break;
+			case "RandomNumber":
+				gen = createRandomNumber(generator);
+				break;
+			case "RandomDate":
+				gen = createRandomDate(generator);
+				break;
+			case "RandomRegExp":
+				gen = createRandomRegExpGenerator(generator);
+				break;
+			case "RandomBoolean":
+				gen = createRandomBooleanGenerator(generator);
+				break;
+			case "RandomObject":
+				gen = createRandomObjectGenerator(generator);
+				break;
+			default:
+				throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
 		}
 		
 		return gen;
@@ -267,7 +274,7 @@ public class TestDataGeneratorFactory {
 	}
 
 	// Create a random regexp generator
-	private static RandomRegExpGenerator createRandomRegExp(Generator generator) {
+	private static RandomRegExpGenerator createRandomRegExpGenerator(Generator generator) {
 		RandomRegExpGenerator gen = null;
 
 		GenParameter regExpParam = TestConfigurationVisitor.searchGenParameter("regExp",generator.getGenParameters());
@@ -291,5 +298,30 @@ public class TestDataGeneratorFactory {
 		}
 
 		return gen;
+	}
+
+	// Create a random boolean generator
+	private static RandomBooleanGenerator createRandomBooleanGenerator(Generator generator) {
+		RandomBooleanGenerator gen = new RandomBooleanGenerator();
+
+		// Set parameters
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+
+				case "trueProbability":
+					gen.setTrueProbability(Double.parseDouble(param.getValues().get(0)));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for random boolean generator: " + param.getName());
+			}
+		}
+
+		return gen;
+	}
+
+	// Create a random object generator
+	private static RandomObjectGenerator createRandomObjectGenerator(Generator generator) {
+
+		return null;
 	}
 }
