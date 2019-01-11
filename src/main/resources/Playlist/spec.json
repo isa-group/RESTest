@@ -111,7 +111,7 @@
         "operationId": "postSong",
         "parameters": [
           {
-            "in": "query",
+            "in": "body",
             "name": "body",
             "description": "Song object",
             "required": true,
@@ -140,7 +140,7 @@
         "operationId": "putSong",
         "parameters": [
           {
-            "in": "query",
+            "in": "body",
             "name": "body",
             "description": "Song object",
             "required": true,
@@ -258,7 +258,7 @@
         "operationId": "postList",
         "parameters": [
           {
-            "in": "query",
+            "in": "body",
             "name": "body",
             "description": "List object",
             "required": true,
@@ -287,7 +287,7 @@
         "operationId": "putList",
         "parameters": [
           {
-            "in": "query",
+            "in": "body",
             "name": "body",
             "description": "List object",
             "required": true,

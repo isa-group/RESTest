@@ -129,7 +129,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected abstract TestCase generateNextTestCase(Operation specOperation,
 			es.us.isa.rester.configuration.pojos.Operation testOperation, String path, HttpMethod method);
 	
-	// Generate the next test case and update the generation index
+	// Create all generators needed for the parameters of an operation
 	private void createGenerators(List<TestParameter> testParameters) {
 		
 		this.generators = new HashMap<String,ITestDataGenerator>();
