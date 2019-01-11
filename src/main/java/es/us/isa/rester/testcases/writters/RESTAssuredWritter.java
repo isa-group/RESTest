@@ -14,7 +14,7 @@ import io.swagger.models.Response;
 
 /** REST Assured test writer
  * 
- * @author Sergio Segura
+ * @author Sergio Segura & Alberto Martin-Lopez
  *
  */
 public class RESTAssuredWritter {
@@ -129,7 +129,7 @@ public class RESTAssuredWritter {
 		content += generateHTTPRequest(t);
 		
 		// Generate basic response validation
-		if(!OAIValidation)
+		//if(!OAIValidation)
 			content += generateResponseValidation(t);
 		
 		// Close test method
@@ -200,23 +200,49 @@ public class RESTAssuredWritter {
 		
 		// Create response log
 		if (logging)
-			content += "\n\t\t\tresponse.then().log().all();\n\n";
+			content += "\n\t\t\tresponse.then().log().all();\n";
 			
 		
-		if (OAIValidation)
-			content += "\t\t} catch (RuntimeException ex) {\n"
-					+  "\t\t\tSystem.err.println(\"Validation results: \" + ex.getMessage());\n"
-					+  "\t\t\tfail(\"Validation failed\");\n"
-					+	"\t\t}\n";
+//		if (OAIValidation)
+//			content += "\t\t} catch (RuntimeException ex) {\n"
+//					+  "\t\t\tSystem.err.println(\"Validation results: \" + ex.getMessage());\n"
+//					+  "\t\t\tfail(\"Validation failed\");\n"
+//					+	"\t\t}\n";
 		
-		content += "\n";
+		//content += "\n";
 		
 		return content;
 	}
 	
 	
 	private String generateResponseValidation(TestCase t) {
-		String content = "\t\tswitch(response.getStatusCode()) {\n";
+		String expectedStatusCode = null;
+
+		// Get status code of the expected response
+		for (Entry<String, Response> response: t.getExpectedOutputs().entrySet()) {
+			if (response.getValue().equals(t.getExpectedSuccessfulOutput())) {
+				expectedStatusCode = response.getKey();
+			}
+		}
+
+		if (expectedStatusCode == null) {
+			//TODO: change exception type to the most suitable one
+			throw new NullPointerException("The expected status code for this test case is not included among the possible response codes for this operation");
+		}
+
+		String content = "\t\t\tresponse.then().statusCode("
+				+ expectedStatusCode
+				+ ");\n";
+
+
+		content += "\t\t} catch (RuntimeException ex) {\n"
+				+  "\t\t\tSystem.err.println(\"Validation results: \" + ex.getMessage());\n"
+				+  "\t\t\tfail(\"Validation failed\");\n"
+				+	"\t\t}\n";
+
+		return content;
+
+		/*String content = "\t\tswitch(response.getStatusCode()) {\n";
 		boolean hasDefaultCase = false;
 		
 		for(Entry<String, Response> response: t.getExpectedOutputs().entrySet()) {
@@ -244,7 +270,7 @@ public class RESTAssuredWritter {
 		// Close switch sentence
 		content += "\t\t}\n";
 		
-		return content;
+		return content;*/
 	}
 		
 	private void saveToFile(String path, String className, String contentFile) {
