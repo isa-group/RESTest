@@ -130,4 +130,21 @@ public class DefaultTestConfigurationGeneratorTest {
 		gen.generate(spec, confPath, filters);
 	}
 
+	@Test
+	public void testSimpleAPIFullTestConfigurationGeneration() {
+
+		String specPath="src/main/resources/SimpleAPI/swagger.yaml";
+		String confPath="src/main/resources/SimpleAPI/fullConf.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(specPath);
+
+		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath(null);
+		filter.addAllMethods();
+		filters.add(filter);
+
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
+		gen.generate(spec, confPath, filters);
+	}
+
 }
