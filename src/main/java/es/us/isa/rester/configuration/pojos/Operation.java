@@ -8,6 +8,7 @@ public class Operation {
     private String operationId;
     private String method;
     private List<TestParameter> testParameters = null;
+    private List<ParamDependency> paramDependencies = null;
     private String expectedResponse;
 
     public String getOperationId() {
@@ -32,6 +33,14 @@ public class Operation {
 
     public void setTestParameters(List<TestParameter> testParameters) {
         this.testParameters = testParameters;
+    }
+
+    public List<ParamDependency> getParamDependencies() {
+        return paramDependencies;
+    }
+
+    public void setParamDependencies(List<ParamDependency> paramDependencies) {
+        this.paramDependencies = paramDependencies;
     }
 
     public String getExpectedResponse() {
