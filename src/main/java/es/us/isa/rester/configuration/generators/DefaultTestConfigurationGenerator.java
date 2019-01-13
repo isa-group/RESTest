@@ -22,6 +22,7 @@ import es.us.isa.rester.util.TestConfigurationFilter;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Path;
 import io.swagger.models.parameters.Parameter;
+import io.swagger.models.parameters.AbstractSerializableParameter;
 
 public class DefaultTestConfigurationGenerator {
 
@@ -117,25 +118,86 @@ public class DefaultTestConfigurationGenerator {
 			// Set default weight for optional parameters
 			if (!param.getRequired())
 				testParam.setWeight(0.5f);
-			
-			// Set default generator (String)
+
+			// Set generator for the parameter
 			Generator gen = new Generator();
-			gen.setType("RandomInputValue");
-			
-			List<GenParameter> genParams = new ArrayList<GenParameter>();
-			
-			GenParameter valuesParam = new GenParameter();
-			valuesParam.setName("values");
-			List<String> values = new ArrayList<String>();
-			values.add("value 1");
-			values.add("value 2");
-			valuesParam.setValues(values);
-		
-			genParams.add(valuesParam);
-			
-			gen.setGenParameters(genParams);
+			List<GenParameter> genParams = new ArrayList<>();
+			GenParameter genParam1 = new GenParameter();
+			GenParameter genParam2 = new GenParameter();
+			GenParameter genParam3 = new GenParameter();
+			List<String> genParam1Values = new ArrayList<>();
+			List<String> genParam2Values = new ArrayList<>();
+			List<String> genParam3Values = new ArrayList<>();
+
+			// If it's a path or query parameter, get type to set a useful generator
+			if (param.getIn() == "query" || param.getIn() == "path") {
+				String paramType = ((AbstractSerializableParameter) param).getType();
+				List<String> paramEnumValues = ((AbstractSerializableParameter) param).getEnum();
+
+				// If the param type is array, get its item type
+				if (paramType == "array") {
+					paramType = ((AbstractSerializableParameter) param).getItems().getType();
+				}
+
+				// If the param is enum, set generator to input value iterator with the values defined in the enum
+				if (paramEnumValues != null) {
+					paramType = "enum";
+				}
+
+				switch (paramType) {
+					case "string":
+						gen.setType("RandomEnglishWord");     // English words generator
+						genParam1.setName("maxWords");        // maxWords generator parameter
+						genParam1Values.add("1");
+						genParam1.setValues(genParam1Values);
+						genParams.add(genParam1);
+						gen.setGenParameters(genParams);
+						break;
+					case "number":
+					case "integer":
+						gen.setType("RandomNumber");          // Random number generator
+						genParam1.setName("type");            // Type parameter
+						genParam1Values.add("integer");       // Integer works for integers and floats
+						genParam1.setValues(genParam1Values);
+						genParams.add(genParam1);
+						genParam2.setName("min");             // Min parameter
+						genParam2Values.add("1");
+						genParam2.setValues(genParam2Values);
+						genParams.add(genParam2);
+						genParam3.setName("max");             // Max parameter
+						genParam3Values.add("100");
+						genParam3.setValues(genParam3Values);
+						genParams.add(genParam3);
+						gen.setGenParameters(genParams);
+						break;
+					case "boolean":
+						gen.setType("RandomBoolean");         // Random number generator
+						gen.setGenParameters(genParams);
+						break;
+					case "enum":
+						gen.setType("RandomInputValue");
+						genParam1.setName("values");
+						genParam1.setValues(paramEnumValues);
+						genParams.add(genParam1);
+						gen.setGenParameters(genParams);
+						break;
+					default:
+						throw new IllegalArgumentException("The parameter type " + paramType + " is not allowed in query or path");
+				}
+			}
+			// TODO: set smarter generators for body parameters (and maybe others like headers or form-data)
+			else {
+				// Set default generator (String)
+				gen.setType("RandomInputValue");
+				genParam1.setName("values");
+				genParam1Values.add("value 1");
+				genParam1Values.add("value 2");
+				genParam1.setValues(genParam1Values);
+				genParams.add(genParam1);
+				gen.setGenParameters(genParams);
+			}
+
 			testParam.setGenerator(gen);
-			
 			testParameters.add(testParam);
 		}
 		
