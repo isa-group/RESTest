@@ -214,23 +214,32 @@ public class RESTAssuredWritter {
 	
 	
 	private String generateResponseValidation(TestCase t) {
+		String content = "";
 		String expectedStatusCode = null;
+		boolean thereIsDefault = false;
 
 		// Get status code of the expected response
 		for (Entry<String, Response> response: t.getExpectedOutputs().entrySet()) {
 			if (response.getValue().equals(t.getExpectedSuccessfulOutput())) {
 				expectedStatusCode = response.getKey();
 			}
+			// If there is a default response, use it if the expected status code is not found
+			if (response.getKey().equals("default")) {
+				thereIsDefault = true;
+			}
 		}
 
-		if (expectedStatusCode == null) {
+		if (expectedStatusCode == null && !thereIsDefault) {
 			//TODO: change exception type to the most suitable one
 			throw new NullPointerException("The expected status code for this test case is not included among the possible response codes for this operation");
 		}
 
-		String content = "\t\t\tresponse.then().statusCode("
-				+ expectedStatusCode
-				+ ");\n";
+		// Assert status code only if it was found among possible status codes. Otherwise, only JSON structure will be validated
+		if (expectedStatusCode != null) {
+			content = "\t\t\tresponse.then().statusCode("
+					+ expectedStatusCode
+					+ ");\n";
+		}
 
 
 		content += "\t\t} catch (RuntimeException ex) {\n"
