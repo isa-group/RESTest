@@ -141,9 +141,7 @@ public class RESTAssuredWritter {
 
 	private String generateMethodHeader(TestCase t, int instance) {
 		return "\t@Test\n" +
-				"\tpublic void " + t.getOperationId()
-				.replaceAll(" ", "")
-				.replaceAll("-", "") +
+				"\tpublic void " + removeCharacters(t.getOperationId()) +
 				"Test" + instance + "() {\n";
 	}
 
@@ -284,6 +282,10 @@ public class RESTAssuredWritter {
 			System.err.println("Error writing test file: " + ex.getMessage());
 			ex.printStackTrace();
 		} 
+	}
+
+	private String removeCharacters(String s) {
+		return s.replaceAll("[^A-Za-z0-9]", "");
 	}
 
 	public boolean OAIValidation() {
