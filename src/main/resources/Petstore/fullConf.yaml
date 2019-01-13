@@ -41,13 +41,11 @@ testConfiguration:
       - name: status
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - available
-            - pending
-            - sold
+            - 1
       expectedResponse: 200
   - testPath: /pet/findByTags
     operations:
@@ -57,12 +55,11 @@ testConfiguration:
       - name: tags
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
       expectedResponse: 200
   - testPath: /pet/{petId}
     operations:
@@ -82,7 +79,7 @@ testConfiguration:
             - 1
           - name: max
             values:
-            - 1000
+            - 100
       expectedResponse: 200
     - operationId: updatePetWithForm
       method: post
@@ -90,12 +87,17 @@ testConfiguration:
       - name: petId
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomNumber
           genParameters:
-          - name: values
+          - name: type
             values:
-            - value 1
-            - value 2
+            - integer
+          - name: min
+            values:
+            - 1
+          - name: max
+            values:
+            - 100
       - name: name
         weight: 0.5
         generator:
@@ -130,12 +132,17 @@ testConfiguration:
       - name: petId
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomNumber
           genParameters:
-          - name: values
+          - name: type
             values:
-            - value 1
-            - value 2
+            - integer
+          - name: min
+            values:
+            - 1
+          - name: max
+            values:
+            - 100
       expectedResponse: 200
   - testPath: /pet/{petId}/uploadImage
     operations:
@@ -145,12 +152,17 @@ testConfiguration:
       - name: petId
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomNumber
           genParameters:
-          - name: values
+          - name: type
             values:
-            - value 1
-            - value 2
+            - integer
+          - name: min
+            values:
+            - 1
+          - name: max
+            values:
+            - 100
       - name: additionalMetadata
         weight: 0.5
         generator:
@@ -209,7 +221,7 @@ testConfiguration:
             - 1
           - name: max
             values:
-            - 15
+            - 10
       expectedResponse: 200
     - operationId: deleteOrder
       method: delete
@@ -217,12 +229,17 @@ testConfiguration:
       - name: orderId
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomNumber
           genParameters:
-          - name: values
+          - name: type
             values:
-            - value 1
-            - value 2
+            - integer
+          - name: min
+            values:
+            - 1
+          - name: max
+            values:
+            - 100
       expectedResponse: 200
   - testPath: /user
     operations:
@@ -277,21 +294,19 @@ testConfiguration:
       - name: username
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
       - name: password
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
       expectedResponse: 200
   - testPath: /user/logout
     operations:
@@ -307,12 +322,11 @@ testConfiguration:
       - name: username
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
       expectedResponse: 200
     - operationId: updateUser
       method: put
@@ -320,12 +334,11 @@ testConfiguration:
       - name: username
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
       - name: body
         weight: null
         generator:
@@ -342,10 +355,9 @@ testConfiguration:
       - name: username
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
       expectedResponse: 200

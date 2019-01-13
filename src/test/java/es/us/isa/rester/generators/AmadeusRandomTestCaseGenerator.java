@@ -22,11 +22,11 @@ public class AmadeusRandomTestCaseGenerator {
 		
 
 		// Load specification
-		String OAISpecPath = "src/main/resources/Amadeus/spec.json";
+		String OAISpecPath = "src/main/resources/Amadeus/spec.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Amadeus/confTest.json");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Amadeus/confTest.yaml");
 		
 		// Set number of test cases to be generated on each path, on each operation
 		int numTestCases = 10;

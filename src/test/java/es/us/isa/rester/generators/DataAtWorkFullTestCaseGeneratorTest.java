@@ -15,33 +15,33 @@ import es.us.isa.rester.testcases.TestCase;
 import es.us.isa.rester.testcases.writters.RESTAssuredWritter;
 import es.us.isa.rester.util.TestConfigurationFilter;
 
-public class SimpleAPIFullTestCaseGenerator {
+public class DataAtWorkFullTestCaseGeneratorTest {
 
     @Test
-    public void simpleAPIFullTestCaseGenerator() {
+    public void dataAtWorkFullTestCaseGeneratorTest() {
         // Load specification
-        String OAISpecPath = "src/main/resources/SimpleAPI/swagger.yaml";
+        String OAISpecPath = "src/main/resources/DataAtWork/swagger.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/SimpleAPI/fullConfRight.yaml");
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/DataAtWork/fullConf.yaml");
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 5;
+        int numTestCases = 1;
 
         // Create generator and filter
         AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
         Collection<TestCase> testCases = generator.generate();
 
-        assertEquals("Incorrect number of test cases", 15, testCases.size());
+        assertEquals("Incorrect number of test cases", 13, testCases.size());
 
         // Write RESTAssured test cases
         RESTAssuredWritter writer = new RESTAssuredWritter();
         writer.setOAIValidation(true);
         writer.setLogging(true);
         String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        writer.write(OAISpecPath, "src/generation/java", "SimpleAPI", null, basePath.toLowerCase(), testCases);
+        writer.write(OAISpecPath, "src/generation/java", "DataAtWork", null, basePath.toLowerCase(), testCases);
 
     }
 }

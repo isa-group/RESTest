@@ -120,6 +120,13 @@ paths:
         description: "The country where the artist comes from (must be a country code)"
         required: false
         type: "string"
+      - name: "age"
+        in: "query"
+        description: "Age of the artist. If it's present, neither ageUnder nor ageOver\
+              \ can be included in the request"
+        required: false
+        type: "integer"
+        format: "int32"
       - name: "ageUnder"
         in: "query"
         description: "Maximum age of the artist. Must be higher than ageOver if it's\
@@ -142,7 +149,10 @@ paths:
             items:
               $ref: "#/definitions/Artist"
         400:
-          description: "At least one filter needed"
+          description: "One of the following problems related to parameter\
+            \ dependencies occured: a) no parameter was included in the request,\
+            \ b) ageOver higher than ageUnder, c) age included together with\
+            \ ageUnder or ageOver."
         404:
           description: "Artist not found"
       x-swagger-router-controller: "Artist"
