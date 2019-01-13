@@ -30,36 +30,6 @@ public abstract class AbstractTestCaseGenerator {
 	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
 
 		List<TestCase> testCases = new ArrayList<TestCase>();
-
-		// If there's only one filter configured and its path is null, generate test cases for all paths and all methods
-		if (filters.size() == 1 && filters.iterator().next().getPath() == null) {
-			filters.clear();
-
-			for (TestPath testPath: conf.getTestConfiguration().getTestPaths()) {
-				TestConfigurationFilter filter = new TestConfigurationFilter();
-				filter.setPath(testPath.getTestPath());
-				for (es.us.isa.rester.configuration.pojos.Operation operation: testPath.getOperations()) {
-					switch(operation.getMethod().toLowerCase()) {
-						case "get":
-							filter.addGetMethod();
-							break;
-						case "post":
-							filter.addPostMethod();
-							break;
-						case "put":
-							filter.addPutMethod();
-							break;
-						case "delete":
-							filter.addDeleteMethod();
-							break;
-						default:
-							throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
-									"allowed in the test configuration file");
-					}
-				}
-				filters.add(filter);
-			}
-		}
 		
 		// Generate test cases for each path and method
 		for(TestConfigurationFilter filter:filters) {
@@ -75,6 +45,41 @@ public abstract class AbstractTestCaseGenerator {
 		}
 		
 		return testCases;
+	}
+
+	/**
+	 * Generate a fully random set of test cases for the whole configuration file (all paths, all operations)
+	 * @return Generated test cases (duplicates are possible)
+	 */
+	public Collection<TestCase> generate() {
+		List<TestConfigurationFilter> filters = new ArrayList<>();
+
+		for (TestPath testPath: conf.getTestConfiguration().getTestPaths()) {
+			TestConfigurationFilter filter = new TestConfigurationFilter();
+			filter.setPath(testPath.getTestPath());
+			for (es.us.isa.rester.configuration.pojos.Operation operation: testPath.getOperations()) {
+				switch(operation.getMethod().toLowerCase()) {
+					case "get":
+						filter.addGetMethod();
+						break;
+					case "post":
+						filter.addPostMethod();
+						break;
+					case "put":
+						filter.addPutMethod();
+						break;
+					case "delete":
+						filter.addDeleteMethod();
+						break;
+					default:
+						throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
+								"allowed in the test configuration file");
+				}
+			}
+			filters.add(filter);
+		}
+
+		return generate(filters);
 	}
 
 	protected Collection<? extends TestCase> generate(String path, HttpMethod method) {
