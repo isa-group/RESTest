@@ -321,7 +321,19 @@ public class TestDataGeneratorFactory {
 
 	// Create a random object generator
 	private static RandomObjectGenerator createRandomObjectGenerator(Generator generator) {
+		RandomObjectGenerator gen = new RandomObjectGenerator();
 
-		return null;
+		// Set parameters
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+
+				case "values":
+					gen.setValues(param.getObjectValues());
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for generator RandomInputValue: " + param.getName());
+			}
+		}
+		return gen;
 	}
 }
