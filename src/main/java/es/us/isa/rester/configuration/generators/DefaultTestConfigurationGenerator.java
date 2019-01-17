@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import es.us.isa.rester.configuration.TestConfigurationIO;
 import es.us.isa.rester.configuration.pojos.Auth;
 import es.us.isa.rester.configuration.pojos.GenParameter;
@@ -23,6 +24,8 @@ import io.swagger.models.HttpMethod;
 import io.swagger.models.Path;
 import io.swagger.models.parameters.Parameter;
 import io.swagger.models.parameters.AbstractSerializableParameter;
+import io.swagger.models.parameters.BodyParameter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class DefaultTestConfigurationGenerator {
 
@@ -190,15 +193,52 @@ public class DefaultTestConfigurationGenerator {
 				}
 			}
 			// TODO: set smarter generators for body parameters (and maybe others like headers or form-data)
+			else if (param.getIn() == "body") {
+				String bodyParam = null;
+				ObjectMapper objectMapper = new ObjectMapper();
+
+				// Try to get an example body from the Swagger specification
+				// Look for 'examples' field in the parameter object
+				if (((BodyParameter) param).getExamples() != null) {
+					try {
+						bodyParam = objectMapper.writeValueAsString(((BodyParameter) param).getExamples().entrySet().iterator().next().getValue());
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
+				}
+
+				// Look for 'example' field in the schema object
+				else if (((BodyParameter) param).getSchema().getExample() != null) {
+					try {
+						bodyParam = objectMapper.writeValueAsString(((BodyParameter) param).getSchema().getExample());
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
+				}
+
+				// Look for 'example' field in the schema object among Swagger definitions
+				else if (((BodyParameter) param).getSchema().getReference() != null) {
+					String bodyReference = ((BodyParameter) param).getSchema().getReference();
+					try {
+						bodyParam = objectMapper.writeValueAsString(spec.getSpecification().getDefinitions().get(bodyReference.replaceAll("#/definitions/", "")).getExample());
+					} catch (JsonProcessingException e) {
+						e.printStackTrace();
+					}
+				}
+
+				if (bodyParam != null && !bodyParam.equals("null")) {
+					gen.setType("RandomInputValue");
+					genParam1.setName("values");
+					genParam1Values.add(bodyParam);
+					genParam1.setValues(genParam1Values);
+					genParams.add(genParam1);
+					gen.setGenParameters(genParams);
+				} else {
+					setDefaultGenerator(gen);
+				}
+			}
 			else {
-				// Set default generator (String)
-				gen.setType("RandomInputValue");
-				genParam1.setName("values");
-				genParam1Values.add("value 1");
-				genParam1Values.add("value 2");
-				genParam1.setValues(genParam1Values);
-				genParams.add(genParam1);
-				gen.setGenParameters(genParams);
+				setDefaultGenerator(gen);
 			}
 
 			testParam.setGenerator(gen);
@@ -206,6 +246,21 @@ public class DefaultTestConfigurationGenerator {
 		}
 		
 		return testParameters;
+	}
+
+	// Default generator when no smarter one can be found for a given parameter
+	private void setDefaultGenerator(Generator gen) {
+		List<GenParameter> genParams = new ArrayList<>();
+		GenParameter genParam1 = new GenParameter();
+		List<String> genParam1Values = new ArrayList<>();
+
+		gen.setType("RandomInputValue");
+		genParam1.setName("values");
+		genParam1Values.add("value 1");
+		genParam1Values.add("value 2");
+		genParam1.setValues(genParam1Values);
+		genParams.add(genParam1);
+		gen.setGenParameters(genParams);
 	}
 
 	// Default authentication setting (required = false)

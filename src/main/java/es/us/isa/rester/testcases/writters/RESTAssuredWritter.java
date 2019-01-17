@@ -11,6 +11,7 @@ import com.atlassian.oai.validator.restassured.SwaggerValidationFilter;
 import es.us.isa.rester.specification.OpenAPISpecification;
 import es.us.isa.rester.testcases.TestCase;
 import io.swagger.models.Response;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 /** REST Assured test writer
  * 
@@ -20,7 +21,7 @@ import io.swagger.models.Response;
 public class RESTAssuredWritter {
 	
 	
-	private boolean OAIValidation = false;
+	private boolean OAIValidation = true;
 	private boolean logging = false;
 	
 	public void write(String specPath, String testFilePath, String className, String packageName, String baseURI, Collection<TestCase> testCases) {
@@ -64,11 +65,14 @@ public class RESTAssuredWritter {
 			content += "package " + packageName + ";\n\n";
 				
 		content += "import org.junit.*;\n"
-				 + "import io.restassured.RestAssured;\n"
-				 + "import io.restassured.response.Response;\n"
-				 + "import org.junit.FixMethodOrder;\n"
-				 + "import static org.junit.Assert.fail;\n"
-				 + "import org.junit.runners.MethodSorters;\n";
+				+  "import io.restassured.RestAssured;\n"
+				+  "import io.restassured.response.Response;\n"
+				+  "import com.fasterxml.jackson.databind.JsonNode;\n"
+				+  "import com.fasterxml.jackson.databind.ObjectMapper;\n"
+				+  "import java.io.IOException;\n"
+				+  "import org.junit.FixMethodOrder;\n"
+				+  "import static org.junit.Assert.fail;\n"
+				+  "import org.junit.runners.MethodSorters;\n";
 		
 		// OAIValidation (Optional)
 		if (OAIValidation)
@@ -108,6 +112,12 @@ public class RESTAssuredWritter {
 		
 		// Generate test method header
 		content += generateMethodHeader(t,instance);
+
+		// Generate the start of the try block
+		content += generateTryBlockStart();
+
+		// Generate all stuff needed before the RESTAssured request
+		content += generatePreRequest(t);
 		
 		// Generate RESTAssured object pointing to the right path
 		content += generateRESTAssuredObject(t);
@@ -120,9 +130,12 @@ public class RESTAssuredWritter {
 		
 		// Generate path parameters
 		content += generatePathParameters(t);
+
+		// Generate body parameter
+		content += generateBodyParameter(t);
 		
 		// OAI validation
-		if (OAIValidation)
+		//if (OAIValidation)
 			content += generateOAIValidationFilter();
 		
 		// Generate HTTP request
@@ -131,9 +144,15 @@ public class RESTAssuredWritter {
 		// Generate basic response validation
 		//if(!OAIValidation)
 			content += generateResponseValidation(t);
+
+		// Generate all stuff needed after the RESTAssured response validation
+		content += generatePostResponseValidation(t);
+
+		// Generate the end of the try block, including its corresponding catch
+		content += generateTryBlockEnd();
 		
 		// Close test method
-		content += "  }\n\n";
+		content += "\t}\n\n";
 		
 		return content;
 	}
@@ -145,14 +164,37 @@ public class RESTAssuredWritter {
 				"Test" + instance + "() {\n";
 	}
 
+	private String generateTryBlockStart() {
+		return "\t\ttry {\n";
+	}
+
+	private String generatePreRequest(TestCase t) {
+		String content = "";
+
+		if (t.getBodyParameter() != null) {
+			content += generateJSONtoObjectConversion(t);
+		}
+
+		return content;
+	}
+
+	private String generateJSONtoObjectConversion(TestCase t) {
+		String content = "";
+		String bodyParameter = StringEscapeUtils.escapeJava(t.getBodyParameter());
+
+		content += "\t\t\tObjectMapper objectMapper = new ObjectMapper();\n"
+				+  "\t\t\tJsonNode jsonBody =  objectMapper.readTree(\""
+				+  bodyParameter
+				+  "\");\n\n";
+
+		return content;
+	}
+
 	private String generateRESTAssuredObject(TestCase t) {
 		String content = "";
-		
-		if (OAIValidation)
-			content += "\t\ttry {\n";
 			
-			content += "\t\t\tResponse response = RestAssured\n"
-						+ "\t\t\t.given()\n";
+		content += "\t\t\tResponse response = RestAssured\n"
+				+  "\t\t\t.given()\n";
 			
 		if (logging)
 			content +="\t\t\t\t.log().all()\n";
@@ -184,6 +226,17 @@ public class RESTAssuredWritter {
 		for(Entry<String,String> param: t.getPathParameters().entrySet())
 			content += "\t\t\t\t.pathParam(\"" + param.getKey() + "\", \"" + param.getValue() + "\")\n";
 		
+		return content;
+	}
+
+	private String generateBodyParameter(TestCase t) {
+		String content = "";
+
+		if (t.getBodyParameter() != null) {
+			content += "\t\t\t\t.contentType(\"application/json\")\n"
+					+  "\t\t\t\t.body(jsonBody)\n";
+		}
+
 		return content;
 	}
 	
@@ -241,12 +294,6 @@ public class RESTAssuredWritter {
 					+ ");\n";
 		}
 
-
-		content += "\t\t} catch (RuntimeException ex) {\n"
-				+  "\t\t\tSystem.err.println(\"Validation results: \" + ex.getMessage());\n"
-				+  "\t\t\tfail(\"Validation failed\");\n"
-				+	"\t\t}\n";
-
 		return content;
 
 		/*String content = "\t\tswitch(response.getStatusCode()) {\n";
@@ -278,6 +325,24 @@ public class RESTAssuredWritter {
 		content += "\t\t}\n";
 		
 		return content;*/
+	}
+
+	private String generatePostResponseValidation(TestCase t) {
+		String content = "";
+
+		if (t.getBodyParameter() != null) {
+			content += "\t\t} catch (IOException e) {\n"
+					+  "\t\t\te.printStackTrace();\n";
+		}
+
+		return content;
+	}
+
+	private String generateTryBlockEnd() {
+		return "\t\t} catch (RuntimeException ex) {\n"
+				+  "\t\t\tSystem.err.println(\"Validation results: \" + ex.getMessage());\n"
+				+  "\t\t\tfail(\"Validation failed\");\n"
+				+  "\t\t}\n";
 	}
 		
 	private void saveToFile(String path, String className, String contentFile) {

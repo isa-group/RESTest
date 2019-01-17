@@ -51,6 +51,9 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 				case "path":
 					test.addPathParameter(confParam.getName(), generator.nextValueAsString());
 					break;
+				case "body":
+					test.setBodyParameter(generator.nextValueAsString());
+					break;
 				default:
 					throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
 				}

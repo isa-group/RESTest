@@ -19,6 +19,7 @@ public class TestCase {
 	private Map<String, String> headerParameters;			// Header parameters
 	private Map<String, String> pathParameters;				// Path parameters
 	private Map<String, String> queryParameters;			// Input parameters and values
+	private String bodyParameter;							// Body parameter
 	private Map<String, Response> expectedOutputs;			// Possible outputs
 	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
@@ -126,5 +127,13 @@ public class TestCase {
 
 	public void setPathParameters(Map<String, String> pathParameters) {
 		this.pathParameters = pathParameters;
+	}
+
+	public String getBodyParameter() {
+		return bodyParameter;
+	}
+
+	public void setBodyParameter(String bodyParameter) {
+		this.bodyParameter = bodyParameter;
 	}
 }
