@@ -121,4 +121,5 @@ testConfiguration:
       - 'name || isAlive || nationality || ageOver || ageUnder'
       - 'IF isAlive == true THEN !nationality'
       - 'IF !name THEN (ageUnder && ageOver)'
+      - 'IF age>150 THEN isAlive=false'
       expectedResponse: 200

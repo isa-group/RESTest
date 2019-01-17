@@ -49,6 +49,8 @@ paths:
           schema:
             $ref: '#/definitions/Pet'
       responses:
+        '200':
+          description: Succesful request
         '405':
           description: Invalid input
       security:
@@ -75,6 +77,8 @@ paths:
           schema:
             $ref: '#/definitions/Pet'
       responses:
+        '200':
+          description: Succesful request
         '400':
           description: Invalid ID supplied
         '404':
@@ -321,6 +325,14 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/Order'
+          examples:
+            application/json:
+              id: 100
+              petId: 200
+              quantity: 3
+              shipDate: "2018-12-23T15:21:30Z"
+              status: "placed"
+              complete: true
       responses:
         '200':
           description: successful operation
@@ -394,7 +406,36 @@ paths:
           description: Created user object
           required: true
           schema:
-            $ref: '#/definitions/User'
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int64
+              username:
+                type: string
+              firstName:
+                type: string
+              lastName:
+                type: string
+              email:
+                type: string
+              password:
+                type: string
+              phone:
+                type: string
+              userStatus:
+                type: integer
+                format: int32
+                description: User Status
+            example:
+              id: 425354
+              username: thfjntn
+              firstName: dghrtghewtg
+              lastName: dgdgestg
+              email: dfsgrthryj
+              password: sghrthrth
+              phone: hn43643hg4w
+              userStatus: 435
       responses:
         default:
           description: successful operation
@@ -684,6 +725,20 @@ definitions:
           - sold
     xml:
       name: Pet
+    example:
+      id: 1000
+      category:
+        id: 1000000
+        name: category1
+      name: Toby
+      photoUrls:
+        - www
+        - xxx
+      tags:
+        - id: 999
+          name: puppy
+        - id: 888
+          name: brown
   ApiResponse:
     type: object
     properties:

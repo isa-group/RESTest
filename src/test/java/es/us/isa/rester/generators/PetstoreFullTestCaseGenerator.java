@@ -43,9 +43,25 @@ public class PetstoreFullTestCaseGenerator {
         filter2.addGetMethod();
         filters.add(filter2);
 
+        TestConfigurationFilter filter3 = new TestConfigurationFilter();
+        filter3.setPath("/pet");
+        filter3.addPostMethod();
+        filter3.addPutMethod();
+        filters.add(filter3);
+
+        TestConfigurationFilter filter4 = new TestConfigurationFilter();
+        filter4.setPath("/store/order");
+        filter4.addPostMethod();
+        filters.add(filter4);
+
+        TestConfigurationFilter filter5 = new TestConfigurationFilter();
+        filter5.setPath("/user");
+        filter5.addPostMethod();
+        filters.add(filter5);
+
         Collection<TestCase> testCases = generator.generate(filters);
 
-        assertEquals("Incorrect number of test cases", numTestCases*filters.size(), testCases.size());
+        assertEquals("Incorrect number of test cases", 24, testCases.size());
 
         // Write RESTAssured test cases
         RESTAssuredWritter writer = new RESTAssuredWritter();

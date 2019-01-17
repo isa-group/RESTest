@@ -38,6 +38,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /artists/{artistId}
     operations:
@@ -58,6 +59,7 @@ testConfiguration:
           - name: max
             values:
             - 100
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /artists
     operations:
@@ -127,4 +129,5 @@ testConfiguration:
           - name: max
             values:
             - 100
+      paramDependencies: null
       expectedResponse: 200

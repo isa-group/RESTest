@@ -141,6 +141,14 @@ paths:
         required: false
         type: "integer"
         format: "int32"
+      x-parameter-dependencies:
+        - '!(age && ageOver)'
+        - '!(age && ageUnder)'
+        - 'ageOver <= ageUnder'
+        - 'name || isAlive || nationality || ageOver || ageUnder'
+        - 'IF isAlive == true THEN !nationality'
+        - 'IF !name THEN (ageUnder && ageOver)'
+        - 'IF age>150 THEN isAlive=false'
       responses:
         200:
           description: "successful operation"
