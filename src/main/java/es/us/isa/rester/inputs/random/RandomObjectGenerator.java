@@ -1,5 +1,6 @@
 package es.us.isa.rester.inputs.random;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -11,6 +12,7 @@ public class RandomObjectGenerator extends RandomGenerator {
 
     public RandomObjectGenerator() {
         super();
+        values = new ArrayList<>();
     }
 
     public RandomObjectGenerator(List<Object> values) {
