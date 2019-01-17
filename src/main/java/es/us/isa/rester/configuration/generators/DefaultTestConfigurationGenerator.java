@@ -26,15 +26,19 @@ import io.swagger.models.parameters.AbstractSerializableParameter;
 
 public class DefaultTestConfigurationGenerator {
 
-	
+	private OpenAPISpecification spec;
+
+	public DefaultTestConfigurationGenerator(OpenAPISpecification spec) {
+		this.spec = spec;
+	}
+
 	/**
 	 * Generate a default test configuration file for a given Open API specification
-	 * @param spec Open API specification
 	 * @param destination Path of the output test configuration file
 	 * @param filters Set the paths and HTTP methods to be included in the test configuration file
 	 * @return
 	 */
-	public TestConfigurationObject generate (OpenAPISpecification spec, String destination, Collection<TestConfigurationFilter> filters) {
+	public TestConfigurationObject generate (String destination, Collection<TestConfigurationFilter> filters) {
 		
 		TestConfigurationObject conf = new TestConfigurationObject();
 		
@@ -44,7 +48,7 @@ public class DefaultTestConfigurationGenerator {
 		
 		// Paths
 		TestConfiguration testConf = new TestConfiguration();
-		testConf.setTestPaths(generatePaths(spec,filters));
+		testConf.setTestPaths(generatePaths(filters));
 			
 		conf.setTestConfiguration(testConf);
 		
@@ -55,7 +59,7 @@ public class DefaultTestConfigurationGenerator {
 	}
 	
 	// Generate the test configuration data for paths
-	private List<TestPath> generatePaths(OpenAPISpecification spec, Collection<TestConfigurationFilter> filters) {
+	private List<TestPath> generatePaths(Collection<TestConfigurationFilter> filters) {
 		
 		List<TestPath> confPaths = new ArrayList<TestPath>();
 		

@@ -30,7 +30,7 @@ public class Main {
 		filter.addGetMethod();
 		filters.add(filter);
 		
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 }

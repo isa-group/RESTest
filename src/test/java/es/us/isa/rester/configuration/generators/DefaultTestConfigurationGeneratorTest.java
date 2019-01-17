@@ -25,8 +25,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter.addGetMethod();
 		filters.add(filter);
 		
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 	
 	
@@ -57,8 +57,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter3.addGetMethod();
 		filters.add(filter3);
 		
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 		
 	}
 	
@@ -75,8 +75,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter.addGetMethod();
 		filters.add(filter);
 		
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 	
 	@Test
@@ -92,8 +92,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter.addAllMethods();
 		filters.add(filter);
 		
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 
 	@Test
@@ -109,8 +109,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter.addAllMethods();
 		filters.add(filter);
 
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 
 	@Test
@@ -126,8 +126,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter.addAllMethods();
 		filters.add(filter);
 
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 
 	@Test
@@ -143,8 +143,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter.addAllMethods();
 		filters.add(filter);
 
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 
 	@Test
@@ -160,8 +160,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter.addAllMethods();
 		filters.add(filter);
 
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 
 	@Test
@@ -177,8 +177,8 @@ public class DefaultTestConfigurationGeneratorTest {
 		filter.addAllMethods();
 		filters.add(filter);
 
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator();
-		gen.generate(spec, confPath, filters);
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
 	}
 
 }
