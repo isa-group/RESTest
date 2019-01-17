@@ -9,9 +9,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import es.us.isa.rester.inputs.random.RandomObjectGenerator;
-import es.us.isa.rester.util.DataType;
-
 public class RandomObjectGeneratorTest {
 
     @Test
