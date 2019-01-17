@@ -7,6 +7,7 @@ public class GenParameter {
 
     private String name;
     private List<String> values = null;
+    private List<Object> objectValues = null;
 
     public String getName() {
         return name;
@@ -22,6 +23,14 @@ public class GenParameter {
 
     public void setValues(List<String> values) {
         this.values = values;
+    }
+
+    public List<Object> getObjectValues() {
+        return objectValues;
+    }
+
+    public void setObjectValues(List<Object> objectValues) {
+        this.objectValues = objectValues;
     }
 
 }
