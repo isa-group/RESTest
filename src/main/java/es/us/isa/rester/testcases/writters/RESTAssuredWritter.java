@@ -11,7 +11,7 @@ import com.atlassian.oai.validator.restassured.SwaggerValidationFilter;
 import es.us.isa.rester.specification.OpenAPISpecification;
 import es.us.isa.rester.testcases.TestCase;
 import io.swagger.models.Response;
-import org.apache.commons.lang3.StringEscapeUtils;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
 /** REST Assured test writer
  * 
@@ -180,7 +180,7 @@ public class RESTAssuredWritter {
 
 	private String generateJSONtoObjectConversion(TestCase t) {
 		String content = "";
-		String bodyParameter = StringEscapeUtils.escapeJava(t.getBodyParameter());
+		String bodyParameter = escapeJava(t.getBodyParameter());
 
 		content += "\t\t\tObjectMapper objectMapper = new ObjectMapper();\n"
 				+  "\t\t\tJsonNode jsonBody =  objectMapper.readTree(\""
@@ -206,7 +206,7 @@ public class RESTAssuredWritter {
 		String content = "";
 		
 		for(Entry<String,String> param: t.getHeaderParameters().entrySet())
-			content += "\t\t\t\t.header(\"" + param.getKey() + "\", \"" + param.getValue() + "\")\n";
+			content += "\t\t\t\t.header(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
 		
 		return content;
 	}
@@ -215,7 +215,7 @@ public class RESTAssuredWritter {
 		String content = "";
 		
 		for(Entry<String,String> param: t.getQueryParameters().entrySet())
-			content += "\t\t\t\t.param(\"" + param.getKey() + "\", \"" + param.getValue() + "\")\n";
+			content += "\t\t\t\t.param(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
 		
 		return content;
 	}
@@ -224,7 +224,7 @@ public class RESTAssuredWritter {
 		String content = "";
 		
 		for(Entry<String,String> param: t.getPathParameters().entrySet())
-			content += "\t\t\t\t.pathParam(\"" + param.getKey() + "\", \"" + param.getValue() + "\")\n";
+			content += "\t\t\t\t.pathParam(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
 		
 		return content;
 	}

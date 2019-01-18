@@ -36,7 +36,7 @@ public class RandomStringGeneratorTest {
         RandomStringGenerator strGen = new RandomStringGenerator(25, 30, false, false, false);
         String testString = strGen.nextValue();
         System.out.println(testString);
-        assertTrue("The generated string should not contain any character", !testString.matches(".*[0-9A-Za-z].*"));
+        assertTrue("The generated string should not contain any character", testString.matches("^$"));
     }
 
     @Test
