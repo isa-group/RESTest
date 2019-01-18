@@ -41,6 +41,9 @@ public class TestDataGeneratorFactory {
 			case "RandomObject":
 				gen = createRandomObjectGenerator(generator);
 				break;
+			case "RandomString":
+				gen = createRandomStringGenerator(generator);
+				break;
 			default:
 				throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
 		}
@@ -334,6 +337,37 @@ public class TestDataGeneratorFactory {
 					throw new IllegalArgumentException("Unexpected parameter for generator RandomInputValue: " + param.getName());
 			}
 		}
+		return gen;
+	}
+
+	// Create a random string generator
+	private static RandomStringGenerator createRandomStringGenerator(Generator generator) {
+		RandomStringGenerator gen = new RandomStringGenerator();
+
+		// Set parameters
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+
+				case "minLength":
+					gen.setMinLength(Integer.parseInt(param.getValues().get(0)));
+					break;
+				case "maxLength":
+					gen.setMaxLength(Integer.parseInt(param.getValues().get(0)));
+					break;
+				case "includeSpecialCharacters":
+					gen.setIncludeSpecialCharacters(Boolean.parseBoolean(param.getValues().get(0)));
+					break;
+				case "includeNumbers":
+					gen.setIncludeNumbers(Boolean.parseBoolean(param.getValues().get(0)));
+					break;
+				case "includeAlphabetic":
+					gen.setIncludeAlphabetic(Boolean.parseBoolean(param.getValues().get(0)));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for random string generator: " + param.getName());
+			}
+		}
+
 		return gen;
 	}
 }
