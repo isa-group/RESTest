@@ -2,6 +2,8 @@ package es.us.isa.rester.inputs;
 
 import es.us.isa.rester.configuration.pojos.GenParameter;
 import es.us.isa.rester.configuration.pojos.Generator;
+import es.us.isa.rester.inputs.boundary.BoundaryStringConfigurator;
+import es.us.isa.rester.inputs.fixed.InputValueIterator;
 import es.us.isa.rester.inputs.random.*;
 import es.us.isa.rester.util.CSVManager;
 import es.us.isa.rester.util.DataType;
@@ -46,6 +48,10 @@ public class TestDataGeneratorFactory {
 				break;
 			case "RandomString":
 				gen = createRandomStringGenerator(generator);
+				break;
+			case "RandomBoundaryString":
+			case "BoundaryString":
+				gen = createBoundaryStringGenerator(generator);
 				break;
 			default:
 				throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
@@ -388,6 +394,44 @@ public class TestDataGeneratorFactory {
 					throw new IllegalArgumentException("Unexpected parameter for random string generator: " + param.getName());
 			}
 		}
+
+		return gen;
+	}
+
+	private static ITestDataGenerator createBoundaryStringGenerator(Generator generator) {
+		ITestDataGenerator gen = null;
+		BoundaryStringConfigurator boundStrConf = new BoundaryStringConfigurator();
+
+		// Set parameters of the BoundaryStringConfigurator
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+
+				case "minLength":
+					boundStrConf.setMinLength(Integer.parseInt(param.getValues().get(0)));
+					break;
+				case "maxLength":
+					boundStrConf.setMaxLength(Integer.parseInt(param.getValues().get(0)));
+					break;
+				case "delta":
+					boundStrConf.setDelta(Integer.parseInt(param.getValues().get(0)));
+					break;
+				case "includeEmptyString":
+					boundStrConf.setIncludeEmptyString(Boolean.parseBoolean(param.getValues().get(0)));
+					break;
+				case "includeNullCharacter":
+					boundStrConf.setIncludeNullCharacter(Boolean.parseBoolean(param.getValues().get(0)));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for random boundary string generator: " + param.getName());
+			}
+		}
+
+		// Create random generator or iterator, depending on the type
+		// Once we have configured the boundary strings to be generated, add them to the set of values of the generator
+		if (generator.getType().equals("RandomBoundaryString"))
+			gen = new RandomInputValueIterator<>(boundStrConf.returnValues());
+		else
+			gen = new InputValueIterator<>(boundStrConf.returnValues());
 
 		return gen;
 	}
