@@ -319,19 +319,43 @@ testConfiguration:
       - name: username
         weight: null
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-          - name: maxWords
+          - name: maxLength
             values:
-            - 1
+            - 50
+          - name: minLength
+            values:
+            - 20
+          - name: includeAlphabetic
+            values:
+            - false
+          - name: includeSpecialCharacters
+            values:
+            - true
+          - name: includeNumbers
+            values:
+            - false
       - name: password
         weight: null
         generator:
-          type: RandomEnglishWord
+          type: BoundaryString
           genParameters:
-          - name: maxWords
-            values:
-            - 1
+            - name: maxLength
+              values:
+              - 128
+            - name: minLength
+              values:
+              - 2
+            - name: delta
+              values:
+              - 1
+            - name: includeEmptyString
+              values:
+              - false
+            - name: includeNullCharacter
+              values:
+              - false
       paramDependencies: null
       expectedResponse: 200
   - testPath: /user/logout
