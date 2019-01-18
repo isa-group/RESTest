@@ -19,7 +19,10 @@ public class TestDataGeneratorFactory {
 		ITestDataGenerator gen=null;
 		
 		switch(generator.getType()) {
-		
+
+			case "InputValue":
+				gen = createInputValueIterator(generator);
+				break;
 			case "RandomInputValue":
 				gen = createRandomInputValueGenerator(generator);
 				break;
@@ -109,10 +112,9 @@ public class TestDataGeneratorFactory {
 	}
 
 
-
 	private static ITestDataGenerator createRandomInputValueGenerator(Generator generator) {
 		
-		RandomInputValueIterator<String> gen = new RandomInputValueIterator<String>();
+		RandomInputValueIterator<String> gen = new RandomInputValueIterator<>();
 		
 		// Set parameters
 		for(GenParameter param: generator.getGenParameters()) {
@@ -129,6 +131,25 @@ public class TestDataGeneratorFactory {
 			}	
 		}
 		
+		return gen;
+	}
+
+	private static ITestDataGenerator createInputValueIterator(Generator generator) {
+
+		InputValueIterator<String> gen = null;
+
+		// Set parameters
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+
+				case "values":
+					gen = new InputValueIterator<>(param.getValues());
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for InputValueIterator: " + param.getName());
+			}
+		}
+
 		return gen;
 	}
 	

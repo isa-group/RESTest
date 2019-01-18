@@ -14,17 +14,33 @@ public class InputValueIterator<T> implements ITestDataGenerator{
 
     private List<T> values;
     private Iterator<T> iterator;
+
+    public InputValueIterator() {
+
+	}
     
     public InputValueIterator(List<T> values) {
     	this.values = values;
     	this.iterator = values.iterator();
     }
 
+	public List<T> getValues() {
+		return values;
+	}
+
+	public void setValues(List<T> values) {
+		this.values = values;
+	}
+
 	public Object nextValue() {
-		Object value=null;
+		Object value = null;
 		
 		if (iterator.hasNext())
-			value= iterator.next();
+			value = iterator.next();
+		else {
+			this.resetIterator();
+			value = iterator.next();
+		}
 		
 		return value;
 	}

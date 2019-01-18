@@ -10,7 +10,9 @@ public class RandomInputValueIterator<T> extends RandomGenerator{
 
     private List<T> values;
      
-    public RandomInputValueIterator() {}
+    public RandomInputValueIterator() {
+    	super();
+    }
     
     public RandomInputValueIterator(List<T> values) {
     	super();
