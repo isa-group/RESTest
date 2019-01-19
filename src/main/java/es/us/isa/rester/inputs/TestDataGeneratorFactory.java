@@ -2,6 +2,7 @@ package es.us.isa.rester.inputs;
 
 import es.us.isa.rester.configuration.pojos.GenParameter;
 import es.us.isa.rester.configuration.pojos.Generator;
+import es.us.isa.rester.inputs.boundary.BoundaryNumberConfigurator;
 import es.us.isa.rester.inputs.boundary.BoundaryStringConfigurator;
 import es.us.isa.rester.inputs.fixed.InputValueIterator;
 import es.us.isa.rester.inputs.random.*;
@@ -52,6 +53,9 @@ public class TestDataGeneratorFactory {
 			case "RandomBoundaryString":
 			case "BoundaryString":
 				gen = createBoundaryStringGenerator(generator);
+				break;
+			case "BoundaryNumber":
+				gen = createBoundaryNumberGenerator(generator);
 				break;
 			default:
 				throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
@@ -422,7 +426,7 @@ public class TestDataGeneratorFactory {
 					boundStrConf.setIncludeNullCharacter(Boolean.parseBoolean(param.getValues().get(0)));
 					break;
 				default:
-					throw new IllegalArgumentException("Unexpected parameter for random boundary string generator: " + param.getName());
+					throw new IllegalArgumentException("Unexpected parameter for boundary string generator: " + param.getName());
 			}
 		}
 
@@ -432,6 +436,53 @@ public class TestDataGeneratorFactory {
 			gen = new RandomInputValueIterator<>(boundStrConf.returnValues());
 		else
 			gen = new InputValueIterator<>(boundStrConf.returnValues());
+
+		return gen;
+	}
+
+	private static ITestDataGenerator createBoundaryNumberGenerator(Generator generator) {
+		ITestDataGenerator gen = null;
+		BoundaryNumberConfigurator boundNumbConf = new BoundaryNumberConfigurator();
+
+		GenParameter typeParam = TestConfigurationVisitor.searchGenParameter("type",generator.getGenParameters());
+		if (typeParam==null || typeParam.getValues().get(0) == null)
+			throw new IllegalArgumentException("Missing number type");
+		if (!typeParam.getValues().get(0).equals("integer") &&
+				!typeParam.getValues().get(0).equals("int32") &&
+				!typeParam.getValues().get(0).equals("int64") &&
+				!typeParam.getValues().get(0).equals("long") &&
+				!typeParam.getValues().get(0).equals("float") &&
+				!typeParam.getValues().get(0).equals("double") &&
+				!typeParam.getValues().get(0).equals("number"))
+			throw new IllegalArgumentException("'" + typeParam.getValues().get(0) + "' is not a valid number type");
+
+		// Set parameters of the BoundaryNumberConfigurator
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+
+				case "min":
+					boundNumbConf.setMin(Double.parseDouble(param.getValues().get(0)));
+					break;
+				case "max":
+					boundNumbConf.setMax(Double.parseDouble(param.getValues().get(0)));
+					break;
+				case "delta":
+					boundNumbConf.setDelta(Double.parseDouble(param.getValues().get(0)));
+					break;
+				case "type":
+					boundNumbConf.setType(DataType.getDataType(param.getValues().get(0)));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for boundary number generator: " + param.getName());
+			}
+		}
+
+		// Create random generator or iterator, depending on the type
+		// Once we have configured the boundary numbers to be generated, add them to the set of values of the generator
+		if (generator.getType().equals("RandomBoundaryNumber"))
+			gen = new RandomInputValueIterator<>(boundNumbConf.returnValues());
+		else
+			gen = new InputValueIterator<>(boundNumbConf.returnValues());
 
 		return gen;
 	}

@@ -46,7 +46,7 @@ public class BoundaryStringConfiguratorTest {
     }
 
     @Test
-    public void testReturnValues() {
+    public void testValuesIterator() {
         // Create BoundaryStringConfigurator
         BoundaryStringConfigurator boundStrConf = new BoundaryStringConfigurator();
 
@@ -54,7 +54,7 @@ public class BoundaryStringConfiguratorTest {
         Generator gen = new Generator();
         List<GenParameter> genParams = new ArrayList<>();
 
-        // Set minLength parameter so that  minLength-delta cases can be tested too
+        // Set minLength parameter so that minLength-delta cases can be tested too
         GenParameter minLengthParam = new GenParameter();
         minLengthParam.setName("minLength");
         List<String> paramValues = new ArrayList<>();
@@ -66,24 +66,24 @@ public class BoundaryStringConfiguratorTest {
         gen.setType("BoundaryString");
 
         // Generate InputValueIterator of boundary strings
-        ITestDataGenerator abstractBoundStrIter = TestDataGeneratorFactory.createTestDataGenerator(gen);
+        ITestDataGenerator boundStrIter = TestDataGeneratorFactory.createTestDataGenerator(gen);
 
-        assertEquals("Wrong next value obtained", "", abstractBoundStrIter.nextValue());
-        assertEquals("Wrong next value obtained", "\0", abstractBoundStrIter.nextValue());
-        assertEquals("Wrong string length for next value", 4, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 6, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 1024, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 1026, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 514, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 4, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 6, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 1024, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 1026, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 514, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 2, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 2, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 1022, abstractBoundStrIter.nextValueAsString().length());
-        assertEquals("Wrong string length for next value", 1022, abstractBoundStrIter.nextValueAsString().length());
+        assertEquals("Wrong next value obtained", "", boundStrIter.nextValue());
+        assertEquals("Wrong next value obtained", "\0", boundStrIter.nextValue());
+        assertEquals("Wrong string length for next value", 4, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 6, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 1024, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 1026, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 514, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 4, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 6, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 1024, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 1026, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 514, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 2, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 2, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 1022, boundStrIter.nextValueAsString().length());
+        assertEquals("Wrong string length for next value", 1022, boundStrIter.nextValueAsString().length());
     }
 
 }

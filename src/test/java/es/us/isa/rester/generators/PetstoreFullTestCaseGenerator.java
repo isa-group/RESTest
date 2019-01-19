@@ -27,42 +27,41 @@ public class PetstoreFullTestCaseGenerator {
         TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Petstore/fullConf.yaml");
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 20;
+        int numTestCases = 7;
 
         // Create generator and filter
         AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
         List<TestConfigurationFilter> filters = new ArrayList<>();
-
-        //TestConfigurationFilter filter = new TestConfigurationFilter();
-        //filter.setPath("/store/order/{orderId}");
-        //filter.addGetMethod();
-        //filters.add(filter);
+        TestConfigurationFilter filter = new TestConfigurationFilter();
+        filter.setPath("/store/order/{orderId}");
+        filter.addGetMethod();
+        filters.add(filter);
 
         TestConfigurationFilter filter2 = new TestConfigurationFilter();
         filter2.setPath("/user/login");
         filter2.addGetMethod();
         filters.add(filter2);
 
-        //TestConfigurationFilter filter3 = new TestConfigurationFilter();
-        //filter3.setPath("/pet");
-        //filter3.addPostMethod();
-        //filter3.addPutMethod();
-        //filters.add(filter3);
-//
-        //TestConfigurationFilter filter4 = new TestConfigurationFilter();
-        //filter4.setPath("/store/order");
-        //filter4.addPostMethod();
-        //filters.add(filter4);
-//
-        //TestConfigurationFilter filter5 = new TestConfigurationFilter();
-        //filter5.setPath("/user");
-        //filter5.addPostMethod();
-        //filters.add(filter5);
+        TestConfigurationFilter filter3 = new TestConfigurationFilter();
+        filter3.setPath("/pet");
+        filter3.addPostMethod();
+        filter3.addPutMethod();
+        filters.add(filter3);
+
+        TestConfigurationFilter filter4 = new TestConfigurationFilter();
+        filter4.setPath("/store/order");
+        filter4.addPostMethod();
+        filters.add(filter4);
+
+        TestConfigurationFilter filter5 = new TestConfigurationFilter();
+        filter5.setPath("/user");
+        filter5.addPostMethod();
+        filters.add(filter5);
 
         Collection<TestCase> testCases = generator.generate(filters);
 
-        assertEquals("Incorrect number of test cases", 20, testCases.size());
+        assertEquals("Incorrect number of test cases", 42, testCases.size());
 
         // Write RESTAssured test cases
         RESTAssuredWritter writer = new RESTAssuredWritter();

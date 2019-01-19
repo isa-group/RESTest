@@ -232,17 +232,20 @@ testConfiguration:
       - name: orderId
         weight: null
         generator:
-          type: RandomNumber
+          type: BoundaryNumber
           genParameters:
-          - name: type
+          - name: delta
             values:
-            - integer
+            - 1
           - name: min
             values:
             - 1
           - name: max
             values:
             - 10
+          - name: type
+            values:
+            - integer
       paramDependencies: null
       expectedResponse: 200
     - operationId: deleteOrder
