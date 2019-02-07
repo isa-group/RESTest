@@ -1,14 +1,9 @@
 package es.us.isa.rester.testcases.writters;
 
-import static org.junit.Assert.fail;
-
 import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Map.Entry;
 
-import com.atlassian.oai.validator.restassured.SwaggerValidationFilter;
-
-import es.us.isa.rester.specification.OpenAPISpecification;
 import es.us.isa.rester.testcases.TestCase;
 import io.swagger.models.Response;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
@@ -291,7 +286,7 @@ public class RESTAssuredWritter {
 		if (expectedStatusCode != null) {
 			content = "\t\t\tresponse.then().statusCode("
 					+ expectedStatusCode
-					+ ");\n";
+					+ ");\n\n";
 		}
 
 		return content;
@@ -328,7 +323,7 @@ public class RESTAssuredWritter {
 	}
 
 	private String generatePostResponseValidation(TestCase t) {
-		String content = "";
+		String content = "\t\t\tSystem.out.println(\"Test passed.\");\n";
 
 		if (t.getBodyParameter() != null) {
 			content += "\t\t} catch (IOException e) {\n"
@@ -340,8 +335,8 @@ public class RESTAssuredWritter {
 
 	private String generateTryBlockEnd() {
 		return "\t\t} catch (RuntimeException ex) {\n"
-				+  "\t\t\tSystem.err.println(\"Validation results: \" + ex.getMessage());\n"
-				+  "\t\t\tfail(\"Validation failed\");\n"
+				+  "\t\t\tSystem.err.println(ex.getMessage());\n"
+				+  "\t\t\tfail(ex.getMessage());\n"
 				+  "\t\t}\n";
 	}
 		
