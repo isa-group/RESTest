@@ -33,7 +33,7 @@ public class RESTAssuredWritterTest {
 		// Write test case
 		RESTAssuredWritter writer = new RESTAssuredWritter();
 		writer.setOAIValidation(true);
-		writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "petstore", null, "http://petstore.swagger.io", testCases);
+		writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "Petstore", null, "http://petstore.swagger.io", testCases);
 		
 	}
 
