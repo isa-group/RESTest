@@ -8,7 +8,6 @@ import es.us.isa.rester.configuration.pojos.Operation;
 import es.us.isa.rester.configuration.pojos.TestConfigurationObject;
 import es.us.isa.rester.configuration.pojos.TestParameter;
 import es.us.isa.rester.configuration.pojos.TestPath;
-import io.swagger.models.parameters.Parameter;
 
 public class TestConfigurationVisitor {
 

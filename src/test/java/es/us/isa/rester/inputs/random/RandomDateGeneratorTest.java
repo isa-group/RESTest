@@ -24,7 +24,7 @@ public class RandomDateGeneratorTest {
 			assertTrue("Not a date", value instanceof Date);
 			SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String date = sdfDate.format(value).replaceAll(" ", "T") + "Z";
-			//System.out.println("Unbounded date: " +  date);
+			System.out.println("Unbounded date: " +  date);
 		}
 	}
 	
@@ -38,7 +38,7 @@ public class RandomDateGeneratorTest {
 			assertTrue("Out of range", value.after(new Date()));
 			SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String date = sdfDate.format(value).replaceAll(" ", "T") + "Z";
-			//System.out.println("Unbounded date (from today): " +  date);
+			System.out.println("Unbounded date (from today): " +  date);
 		}
 	}
 	
@@ -54,7 +54,7 @@ public class RandomDateGeneratorTest {
 			assertTrue("Out of range", value.after(gen.getStartDate()));
 			SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String date = sdfDate.format(value).replaceAll(" ", "T") + "Z";
-			//System.out.println("Bounded date: " +  date);
+			System.out.println("Bounded date: " +  date);
 		}
 	}
 	
@@ -72,7 +72,7 @@ public class RandomDateGeneratorTest {
 			assertTrue("Out of range", value.before(new DateTime(new Date()).plusDays(endDays).toDate()));
 			SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String date = sdfDate.format(value).replaceAll(" ", "T") + "Z";
-			//System.out.println("Bounded date: " +  date);
+			System.out.println("Bounded date: " +  date);
 		}
 	}
 	

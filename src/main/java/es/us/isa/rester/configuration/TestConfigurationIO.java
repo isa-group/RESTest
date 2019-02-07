@@ -10,10 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
-
-import com.fasterxml.jackson.dataformat.yaml.YAMLParser;
 import es.us.isa.rester.configuration.pojos.TestConfigurationObject;
-import es.us.isa.rester.specification.OpenAPISpecification;
 
 /** Utility class to load and save test configuration files
  * 

@@ -6,7 +6,6 @@ import es.us.isa.rester.configuration.pojos.GenParameter;
 import es.us.isa.rester.configuration.pojos.Generator;
 import es.us.isa.rester.inputs.ITestDataGenerator;
 import es.us.isa.rester.inputs.TestDataGeneratorFactory;
-import es.us.isa.rester.inputs.fixed.InputValueIterator;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -47,9 +46,6 @@ public class BoundaryStringConfiguratorTest {
 
     @Test
     public void testValuesIterator() {
-        // Create BoundaryStringConfigurator
-        BoundaryStringConfigurator boundStrConf = new BoundaryStringConfigurator();
-
         // Create generator and parameters
         Generator gen = new Generator();
         List<GenParameter> genParams = new ArrayList<>();

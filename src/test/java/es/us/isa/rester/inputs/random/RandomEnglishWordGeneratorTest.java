@@ -2,10 +2,6 @@ package es.us.isa.rester.inputs.random;
 
 import static org.junit.Assert.*;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import es.us.isa.rester.inputs.random.RandomEnglishWordGenerator;

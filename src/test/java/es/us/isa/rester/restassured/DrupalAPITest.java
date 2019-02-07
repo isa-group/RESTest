@@ -4,9 +4,9 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.github.fge.jsonschema.SchemaVersion;
-import com.github.fge.jsonschema.cfg.ValidationConfiguration;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
+// import com.github.fge.jsonschema.SchemaVersion;
+// import com.github.fge.jsonschema.cfg.ValidationConfiguration;
+// import com.github.fge.jsonschema.main.JsonSchemaFactory;
 
 import io.restassured.RestAssured;
 
@@ -24,19 +24,19 @@ public class DrupalAPITest {
 	        .body("id", CoreMatchers.notNullValue());
 	}
 	
-	@Test
-	@Ignore
-	public void JsonSchemaDrupal() {
-		JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.newBuilder()
-				.setValidationConfiguration(ValidationConfiguration.newBuilder()
-						.setDefaultVersion(SchemaVersion.DRAFTV4).freeze()).freeze();
+	// @Test
+	// @Ignore
+	// public void JsonSchemaDrupal() {
+	// 	JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.newBuilder()
+	// 			.setValidationConfiguration(ValidationConfiguration.newBuilder()
+	// 					.setDefaultVersion(SchemaVersion.DRAFTV4).freeze()).freeze();
 
-		RestAssured.baseURI = "https://api.github.com";
-		/*
-		RestAssured.get("/repos/drupal/drupal")
-			.then().assertThat();
-				.body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schemas/drupal-schema.json")
-					.using(jsonSchemaFactory));
-		*/
-	}
+	// 	RestAssured.baseURI = "https://api.github.com";
+	// 	/*
+	// 	RestAssured.get("/repos/drupal/drupal")
+	// 		.then().assertThat();
+	// 			.body(JsonSchemaValidator.matchesJsonSchemaInClasspath("schemas/drupal-schema.json")
+	// 				.using(jsonSchemaFactory));
+	// 	*/
+	// }
 }

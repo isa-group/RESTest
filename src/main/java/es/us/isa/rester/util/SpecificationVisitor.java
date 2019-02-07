@@ -1,7 +1,6 @@
 package es.us.isa.rester.util;
 
 import java.util.Iterator;
-import java.util.List;
 
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;

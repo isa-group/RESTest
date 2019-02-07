@@ -2,9 +2,7 @@ package es.us.isa.rester.generators;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -13,7 +11,6 @@ import es.us.isa.rester.configuration.pojos.TestConfigurationObject;
 import es.us.isa.rester.specification.OpenAPISpecification;
 import es.us.isa.rester.testcases.TestCase;
 import es.us.isa.rester.testcases.writters.RESTAssuredWritter;
-import es.us.isa.rester.util.TestConfigurationFilter;
 
 public class SimpleAPIFullTestCaseGenerator {
 

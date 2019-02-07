@@ -72,12 +72,4 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			index = 0;
 		return res;
 	}
-	
-	private long getSeed() {
-		return seed;
-	}
-
-	private void setSeed(long seed) {
-		this.seed = seed;
-	}
 }

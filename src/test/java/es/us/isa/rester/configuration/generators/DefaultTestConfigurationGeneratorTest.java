@@ -1,7 +1,5 @@
 package es.us.isa.rester.configuration.generators;
 
-import static org.junit.Assert.*;
-
 import java.util.ArrayList;
 import java.util.List;
 

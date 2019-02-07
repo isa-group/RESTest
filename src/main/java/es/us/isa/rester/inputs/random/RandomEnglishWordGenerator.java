@@ -1,7 +1,5 @@
 package es.us.isa.rester.inputs.random;
 
-import java.util.Random;
-
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
@@ -116,7 +114,7 @@ public class RandomEnglishWordGenerator extends RandomGenerator {
 		this.ignoreLinkindWords = ignoreLinkindWords;
 	}
 
-	private int getMinWords() {
+	public int getMinWords() {
 		return minWords;
 	}
 

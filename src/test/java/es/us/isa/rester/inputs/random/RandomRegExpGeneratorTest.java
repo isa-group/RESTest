@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.sun.org.apache.regexp.internal.CharacterArrayCharacterIterator;
 import org.junit.Test;
 
 import es.us.isa.rester.inputs.random.RandomRegExpGenerator;

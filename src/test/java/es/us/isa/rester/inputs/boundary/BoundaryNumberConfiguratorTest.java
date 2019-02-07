@@ -29,7 +29,7 @@ public class BoundaryNumberConfiguratorTest {
     public void testDefaultReturnedValues() {
         BoundaryNumberConfigurator boundNumbConf = new BoundaryNumberConfigurator();
         List<? extends Number> values = boundNumbConf.returnValues();
-        Iterator iterator = values.iterator();
+        Iterator<? extends Number> iterator = values.iterator();
 
         assertEquals("Wrong next value", Integer.valueOf(Integer.MIN_VALUE).longValue(), iterator.next());
         assertEquals("Wrong next value", Integer.valueOf(Integer.MIN_VALUE).longValue()-1, iterator.next());
@@ -42,9 +42,6 @@ public class BoundaryNumberConfiguratorTest {
 
     @Test
     public void testValuesIterator() {
-        // Create BoundaryNumberConfigurator
-        BoundaryNumberConfigurator boundNumbConf = new BoundaryNumberConfigurator();
-
         // Create generator and parameters
         Generator gen = new Generator();
         List<GenParameter> genParams = new ArrayList<>();
