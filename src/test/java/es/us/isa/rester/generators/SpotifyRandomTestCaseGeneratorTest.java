@@ -22,11 +22,11 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		
 
 		// Load specification
-		String OAISpecPath = "src/main/resources/Spotify/spec.json";
+		String OAISpecPath = "src/main/resources/Spotify/spec.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Spotify/confTest.json");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Spotify/confTest.yaml");
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 10;
@@ -48,7 +48,7 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		RESTAssuredWritter writer = new RESTAssuredWritter();
 		writer.setOAIValidation(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java", "SpotifyGetAlbum", null, basePath.toLowerCase(), testCases);
+		writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "SpotifyGetAlbum", null, basePath.toLowerCase(), testCases);
 
 	}
 
@@ -83,7 +83,7 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		RESTAssuredWritter writer = new RESTAssuredWritter();
 		writer.setOAIValidation(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java", "SpotifyGetArtist", null, basePath.toLowerCase(), testCases);
+		writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "SpotifyGetArtist", null, basePath.toLowerCase(), testCases);
 
 	}
 	
@@ -93,11 +93,11 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		
 
 		// Load specification
-		String OAISpecPath = "src/main/resources/Spotify/spec.json";
+		String OAISpecPath = "src/main/resources/Spotify/spec.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Spotify/confTest.json");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/main/resources/Spotify/confTest.yaml");
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 20;
@@ -120,7 +120,7 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java", "SpotifySearch", null, basePath.toLowerCase(), testCases);
+		writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "SpotifySearch", null, basePath.toLowerCase(), testCases);
 
 	}
 	

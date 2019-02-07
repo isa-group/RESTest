@@ -278,8 +278,8 @@ public class RESTAssuredWritter {
 		}
 
 		if (expectedStatusCode == null && !thereIsDefault) {
-			//TODO: change exception type to the most suitable one
-			throw new NullPointerException("The expected status code for this test case is not included among the possible response codes for this operation");
+			// Default expected status code to 200
+			expectedStatusCode = "200";
 		}
 
 		// Assert status code only if it was found among possible status codes. Otherwise, only JSON structure will be validated

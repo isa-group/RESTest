@@ -13,8 +13,8 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testBigOvenTestConfigurationGeneration() {
 		
-		String specPath="src/main/resources/BigOven/spec.json";
-		String confPath="src/main/resources/BigOven/defaultConf.json";
+		String specPath="src/main/resources/BigOven/spec.yaml";
+		String confPath="src/main/resources/BigOven/defaultConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 		
 		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
@@ -31,8 +31,8 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testSpotifyTestConfigurationGeneration() {
 		
-		String specPath="src/main/resources/Spotify/spec.json";
-		String confPath="src/main/resources/Spotify/defaultConf.json";
+		String specPath="src/main/resources/Spotify/spec.yaml";
+		String confPath="src/main/resources/Spotify/defaultConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 		
 		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
@@ -63,8 +63,8 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testAmadeusTestConfigurationGeneration() {
 		
-		String specPath="src/main/resources/Amadeus/spec.json";
-		String confPath="src/main/resources/Amadeus/defaultConf.json";
+		String specPath="src/main/resources/Amadeus/spec.yaml";
+		String confPath="src/main/resources/Amadeus/defaultConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 		
 		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
@@ -80,8 +80,8 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testPlaylistTestConfigurationGeneration() {
 		
-		String specPath="src/main/resources/Playlist/spec.json";
-		String confPath="src/main/resources/Playlist/defaultConf.json";
+		String specPath="src/main/resources/Playlist/spec.yaml";
+		String confPath="src/main/resources/Playlist/defaultConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 		
 		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
@@ -97,8 +97,8 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testAmadeusFullTestConfigurationGeneration() {
 
-		String specPath="src/main/resources/Amadeus/spec.json";
-		String confPath="src/main/resources/Amadeus/fullConf.json";
+		String specPath="src/main/resources/Amadeus/spec.yaml";
+		String confPath="src/main/resources/Amadeus/fullConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
 		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();

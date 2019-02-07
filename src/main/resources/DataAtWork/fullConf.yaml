@@ -18,12 +18,15 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
       - name: limit
         weight: 0.5
         generator:
@@ -32,12 +35,16 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /jobs/autocomplete
     operations:
@@ -52,6 +59,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: contains
         weight: 0.5
         generator:
@@ -60,6 +68,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: ends_with
         weight: 0.5
         generator:
@@ -68,6 +77,8 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /jobs/normalize
     operations:
@@ -82,6 +93,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: limit
         weight: 0.5
         generator:
@@ -90,18 +102,23 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /jobs/unusual_titles
     operations:
     - operationId: <SET OPERATION ID>
       method: get
       testParameters: []
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /jobs/{id}
     operations:
@@ -116,6 +133,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: fips
         weight: 0.5
         generator:
@@ -124,6 +142,8 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /jobs/{id}/related_jobs
     operations:
@@ -138,6 +158,8 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /jobs/{id}/related_skills
     operations:
@@ -152,6 +174,8 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /skills
     operations:
@@ -166,12 +190,15 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
       - name: limit
         weight: 0.5
         generator:
@@ -180,12 +207,16 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /skills/autocomplete
     operations:
@@ -200,6 +231,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: contains
         weight: 0.5
         generator:
@@ -208,6 +240,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: ends_with
         weight: 0.5
         generator:
@@ -216,6 +249,8 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /skills/normalize
     operations:
@@ -230,6 +265,8 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /skills/{id}
     operations:
@@ -244,6 +281,8 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /skills/{id}/related_jobs
     operations:
@@ -258,6 +297,8 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200
   - testPath: /skills/{id}/related_skills
     operations:
@@ -272,4 +313,6 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
+      paramDependencies: null
       expectedResponse: 200

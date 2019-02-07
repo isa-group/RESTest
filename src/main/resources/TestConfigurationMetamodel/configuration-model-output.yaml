@@ -22,7 +22,10 @@ testConfiguration:
           - name: Parameter name
             values:
             - Parameter value
+            objectValues: null
           - name: Parameter name 2
             values:
             - Parameter value
+            objectValues: null
+      paramDependencies: null
       expectedResponse: Expected HTTP code

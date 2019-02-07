@@ -35,8 +35,7 @@ public class InputValueIteratorTest {
 		assertEquals("Wrong value", "medium",iterator.nextValue());
 		assertEquals("Wrong value", "large", iterator.nextValue());
 		assertEquals("Wrong value", "enormous", iterator.nextValue());
-		assertNull("Wrong value", iterator.nextValue());
-	}
+		assertEquals("Wrong value", "short", iterator.nextValue());	}
 	
 	@Test
 	public void testIntIterator() {
@@ -45,7 +44,7 @@ public class InputValueIteratorTest {
 		assertEquals("Wrong value", 20, iterator.nextValue());
 		assertEquals("Wrong value", 30, iterator.nextValue());
 		assertEquals("Wrong value", 40, iterator.nextValue());
-		assertNull("Wrong value", iterator.nextValue());
+		assertEquals("Wrong value", 10, iterator.nextValue());
 	}
 	
 	@Test
@@ -58,6 +57,6 @@ public class InputValueIteratorTest {
 		assertEquals("Wrong value", "medium",iterator.nextValue());
 		assertEquals("Wrong value", "large", iterator.nextValue());
 		assertEquals("Wrong value", "enormous", iterator.nextValue());
-		assertNull("Wrong value", iterator.nextValue());
+		assertEquals("Wrong value", "short", iterator.nextValue());
 	}
 }

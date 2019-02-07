@@ -18,6 +18,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: type
         weight: 0.5
         generator:
@@ -30,6 +31,7 @@ testConfiguration:
             - artist
             - album
             - playlist
+            objectValues: null
       - name: market
         weight: 0.5
         generator:
@@ -38,6 +40,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       paramDependencies: null
       expectedResponse: 200
   - testPath: /artists/{artistId}
@@ -53,12 +56,15 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
       paramDependencies: null
       expectedResponse: 200
   - testPath: /artists
@@ -74,6 +80,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: isAlive
         weight: 0.5
         generator:
@@ -87,6 +94,7 @@ testConfiguration:
           - name: maxWords
             values:
             - 1
+            objectValues: null
       - name: age
         weight: 0.5
         generator:
@@ -95,12 +103,15 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
       - name: ageUnder
         weight: 0.5
         generator:
@@ -109,12 +120,15 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
       - name: ageOver
         weight: 0.5
         generator:
@@ -123,11 +137,14 @@ testConfiguration:
           - name: type
             values:
             - integer
+            objectValues: null
           - name: min
             values:
             - 1
+            objectValues: null
           - name: max
             values:
             - 100
+            objectValues: null
       paramDependencies: null
       expectedResponse: 200
