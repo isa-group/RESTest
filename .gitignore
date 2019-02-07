@@ -1,7 +1,5 @@
 /target/
 TODO.txt
-src/main/java/es/us/isa/rester/generatedtests/PlaylistTest.java
-src/main/java/es/us/isa/rester/generatedtests/SpotifyGetAlbumTest.java
-src/main/java/es/us/isa/rester/generatedtests/SpotifySearchTest.java
-src/main/java/es/us/isa/rester/generatedtests/petstoreTest.java
+src/test/java/es/us/isa/generatedtests/
 .idea/workspace.xml
+.vscode
