@@ -39,7 +39,7 @@ public class AmadeusFullTestCaseGenerator {
         writer.setOAIValidation(true);
         writer.setLogging(true);
         String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "Amadeus", null, basePath.toLowerCase(), testCases);
+        writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "Amadeus", "es.us.isa.generatedtests", basePath.toLowerCase(), testCases);
 
     }
 }

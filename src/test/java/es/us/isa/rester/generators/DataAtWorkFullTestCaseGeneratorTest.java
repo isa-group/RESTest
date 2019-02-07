@@ -38,7 +38,7 @@ public class DataAtWorkFullTestCaseGeneratorTest {
         writer.setOAIValidation(true);
         writer.setLogging(true);
         String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "DataAtWork", null, basePath.toLowerCase(), testCases);
+        writer.write(OAISpecPath, "src/test/java/es/us/isa/generatedtests", "DataAtWork", "es.us.isa.generatedtests", basePath.toLowerCase(), testCases);
 
     }
 }
