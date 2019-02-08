@@ -8,6 +8,7 @@ import es.us.isa.rester.inputs.fixed.InputValueIterator;
 import es.us.isa.rester.inputs.random.*;
 import es.us.isa.rester.util.CSVManager;
 import es.us.isa.rester.util.DataType;
+import es.us.isa.rester.util.JSONManager;
 import es.us.isa.rester.util.TestConfigurationVisitor;
 
 public class TestDataGeneratorFactory {
@@ -54,6 +55,7 @@ public class TestDataGeneratorFactory {
 			case "BoundaryString":
 				gen = createBoundaryStringGenerator(generator);
 				break;
+			case "RandomBoundaryNumber":
 			case "BoundaryNumber":
 				gen = createBoundaryNumberGenerator(generator);
 				break;
@@ -364,8 +366,11 @@ public class TestDataGeneratorFactory {
 				case "values":
 					gen.setValues(param.getObjectValues());
 					break;
+				case "files":
+					gen.setValues(JSONManager.readValues(param.getValues()));
+					break;
 				default:
-					throw new IllegalArgumentException("Unexpected parameter for generator RandomInputValue: " + param.getName());
+					throw new IllegalArgumentException("Unexpected parameter for object generator: " + param.getName());
 			}
 		}
 		return gen;

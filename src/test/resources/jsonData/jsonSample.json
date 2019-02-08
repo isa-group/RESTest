@@ -1,0 +1,22 @@
+{
+    "id": 1000,
+    "category": {
+        "id": 1000000,
+        "name": "category1"
+    },
+    "name": "Toby",
+    "photoUrls": [
+        "www",
+        "xxx"
+    ],
+    "tags": [
+        {
+            "id": 999,
+            "name": "puppy"
+        },
+        {
+            "id": 888,
+            "name": "brown"
+        }
+    ]
+}

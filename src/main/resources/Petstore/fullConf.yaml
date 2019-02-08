@@ -13,12 +13,12 @@ testConfiguration:
       - name: body
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomObject
           genParameters:
-          - name: values
+          - name: files
             values:
-            - '{"id":1000,"category":{"id":1000000,"name":"category1"},"name":"Toby","photoUrls":["www","xxx"],"tags":[{"id":999,"name":"puppy"},{"id":888,"name":"brown"}]}'
-            objectValues: null
+            - 'src/test/resources/jsonData/jsonSample.json'
+            - 'src/test/resources/jsonData/jsonSample2.json'
       paramDependencies: null
       expectedResponse: 200
     - operationId: addPet
@@ -27,12 +27,44 @@ testConfiguration:
       - name: body
         weight: null
         generator:
-          type: RandomInputValue
+          type: RandomObject
           genParameters:
           - name: values
-            values:
-            - '{"id":1000,"category":{"id":1000000,"name":"category1"},"name":"Toby","photoUrls":["www","xxx"],"tags":[{"id":999,"name":"puppy"},{"id":888,"name":"brown"}]}'
-            objectValues: null
+            objectValues:
+            - {
+                  "id": 1000,
+                  "category": {
+                      "id": 1000000,
+                      "name": "category1"
+                  },
+                  "name": "Toby",
+                  "photoUrls": [
+                      "www",
+                      "xxx"
+                  ],
+                  "tags": [
+                      {
+                          "id": 999,
+                          "name": "puppy"
+                      },
+                      {
+                          "id": 888,
+                          "name": "brown"
+                      }
+                  ]
+              }
+            - {
+                  "name": "Toby",
+                  "photoUrls": [
+                      "yyy"
+                  ],
+                  "tags": [
+                      {
+                          "id": 777,
+                          "name": "white"
+                      }
+                  ]
+              }
       paramDependencies: null
       expectedResponse: 200
   - testPath: /pet/findByStatus
