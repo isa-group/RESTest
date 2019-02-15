@@ -1,7 +1,6 @@
 package es.us.isa.rester.util;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,15 +19,12 @@ public class JSONManagerTest {
 
         List<Object> jsonObjects = JSONManager.readValues(jsonPaths);
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> objectMap = objectMapper.convertValue(jsonObjects.get(0), Map.class);
-
-        System.out.println(objectMap.get("id"));
-        System.out.println(objectMap.get("name"));
-        System.out.println(objectMap.get("photoUrls"));
-        System.out.println(objectMap.get("category"));
+        Map<String, Object> objectMap1 = objectMapper.convertValue(jsonObjects.get(0), Map.class);
+        Map<String, Object> objectMap2 = objectMapper.convertValue(jsonObjects.get(1), Map.class);
 
         assertEquals("Wrong number of elements", 2, jsonObjects.size());
-        assertEquals("Wrong id field", 1000, objectMap.get("id"));
-        assertTrue("Wrong name field", objectMap.get("name").equals("Toby"));
+        assertEquals("Wrong id field", 1000, objectMap1.get("id"));
+        assertTrue("Wrong name field", objectMap1.get("name").equals("Toby"));
+        assertTrue("Wrong name field", objectMap2.get("name").equals("Max"));
     }
 }
