@@ -79,6 +79,9 @@
               "write:pets",
               "read:pets"
             ]
+          },
+          {
+            "api_key": []
           }
         ]
       },
@@ -395,6 +398,25 @@
             "required": true,
             "type": "integer",
             "format": "int64"
+          },
+          {
+            "name": "convertToJPG",
+            "in": "query",
+            "description": "whether to convert image to JPG when uploaded",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "destinationFormat",
+            "in": "query",
+            "description": "Format to convert the image to",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "JPG",
+              "PNG",
+              "GIF"
+            ]
           },
           {
             "name": "additionalMetadata",
