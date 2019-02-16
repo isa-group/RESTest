@@ -4,10 +4,15 @@ import es.us.isa.rester.specification.OpenAPISpecification;
 import es.us.isa.rester.coverage.CoverageCriterion;
 import static es.us.isa.rester.coverage.CriterionType.*;
 
+import io.swagger.models.Model;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
+import io.swagger.models.Response;
 import io.swagger.models.parameters.AbstractSerializableParameter;
 import io.swagger.models.parameters.Parameter;
+import io.swagger.models.properties.Property;
+import io.swagger.models.properties.RefProperty;
+import io.swagger.models.properties.ArrayProperty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,7 +110,7 @@ public class CoverageGatherer {
                 coverageCriteria.addAll(getStatusCodeClassCoverageCriteria());
                 break;
             case RESPONSE_BODY_PROPERTIES:
-
+                coverageCriteria.addAll(getResponseBodyPropertiesCoverageCriteria());
                 break;
             case OUTPUT_CONTENT_TYPE:
                 coverageCriteria.addAll(getContentTypeCoverageCriteria(OUTPUT_CONTENT_TYPE));
@@ -138,16 +143,13 @@ public class CoverageGatherer {
      */
     private List<CoverageCriterion> getOperationCoverageCriteria() {
         List<CoverageCriterion> operationsCriteria = new ArrayList<>(); // list of criteria to be returned
-        List<String> operationsList = new ArrayList<>();                // list of operations per criterion
-        CoverageCriterion operationsCriterion = null;                   // criterion to add to the list to be returned
-        Entry<String, Path> currentPathEntry = null;                    // path containing operations to add to the criterion
 
         // iterate over the paths
         Iterator<Entry<String, Path>> pathsIterator = spec.getSpecification().getPaths().entrySet().iterator();
         while (pathsIterator.hasNext()) {
-            currentPathEntry = pathsIterator.next();
-            operationsList.clear();
-            operationsCriterion = new CoverageCriterion(OPERATION); // create operation criterion for this path
+            Entry<String, Path> currentPathEntry = pathsIterator.next();
+            List<String> operationsList = new ArrayList<>(); // list of operations per criterion
+            CoverageCriterion operationsCriterion = new CoverageCriterion(OPERATION); // create operation criterion for this path
 
             for (Operation operation : currentPathEntry.getValue().getOperations()) {
                 operationsList.add(operation.getOperationId()); // collect operations for this path
@@ -167,22 +169,18 @@ public class CoverageGatherer {
      */
     private List<CoverageCriterion> getParameterCoverageCriteria() {
         List<CoverageCriterion> parametersCriteria = new ArrayList<>(); // list of criteria to be returned
-        List<String> parametersList = new ArrayList<>();                // list of parameters per criterion
-        CoverageCriterion parametersCriterion = null;                   // criterion to add to the list to be returned
-        Entry<String, Path> currentPathEntry = null;                    // path containing operations where to look for parameters
-        Operation currentOperation = null;                              // operation containing parameters to add to the criterion
 
         // iterate over the paths
         Iterator<Entry<String, Path>> pathsIterator = spec.getSpecification().getPaths().entrySet().iterator();
         while (pathsIterator.hasNext()) {
-            currentPathEntry = pathsIterator.next();
+            Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
             Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
             while (operationsIterator.hasNext()) {
-                currentOperation = operationsIterator.next();
-                parametersList.clear();
-                parametersCriterion = new CoverageCriterion(PARAMETER); // create parameter criterion for this operation
+                Operation currentOperation = operationsIterator.next();
+                List<String> parametersList = new ArrayList<>(); // list of parameters per criterion
+                CoverageCriterion parametersCriterion = new CoverageCriterion(PARAMETER); // create parameter criterion for this operation
 
                 for (Parameter parameter : currentOperation.getParameters()) {
                     parametersList.add(parameter.getName()); // collect parameters for this operation
@@ -203,35 +201,30 @@ public class CoverageGatherer {
      * the parameter can take
      */
     private List<CoverageCriterion> getParameterValueCoverageCriteria() {
-        List<CoverageCriterion> parameterValuesCriteria = new ArrayList<>();    // list of criteria to be returned
-        List<Object> parameterValuesList = new ArrayList<>();                   // list of parameter values per criterion
-        CoverageCriterion parameterValuesCriterion = null;                      // criterion to add to the list to be returned
-        Entry<String, Path> currentPathEntry = null;                            // path containing operations where to look for parameters
-        Operation currentOperation = null;                                      // operation containing parameters where to look for values
-        Parameter currentParameter = null;                                      // parameter with a number of possible values to add to the criterion
+        List<CoverageCriterion> parameterValuesCriteria = new ArrayList<>(); // list of criteria to be returned
 
         // iterate over the paths
         Iterator<Entry<String, Path>> pathsIterator = spec.getSpecification().getPaths().entrySet().iterator();
         while (pathsIterator.hasNext()) {
-            currentPathEntry = pathsIterator.next();
+            Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
             Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
             while (operationsIterator.hasNext()) {
-                currentOperation = operationsIterator.next();
+                Operation currentOperation = operationsIterator.next();
 
                 // iterate over the parameters of that operation
                 Iterator<Parameter> parametersIterator = currentOperation.getParameters().iterator();
                 while (parametersIterator.hasNext()) {
-                    currentParameter = parametersIterator.next();
+                    Parameter currentParameter = parametersIterator.next();
 
                     if (currentParameter.getIn() == "query" || currentParameter.getIn() == "header") { // this criterion only applies for header and query parameters
                         String paramType = ((AbstractSerializableParameter) currentParameter).getType();
                         List<String> paramEnumValues = ((AbstractSerializableParameter) currentParameter).getEnum();
 
                         if (paramType == "boolean" || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
-                            parameterValuesList.clear();
-                            parameterValuesCriterion = new CoverageCriterion(PARAMETER_VALUE); // create parameter value criterion for this parameter
+                            List<Object> parameterValuesList = new ArrayList<>(); // list of parameter values per criterion
+                            CoverageCriterion parameterValuesCriterion = new CoverageCriterion(PARAMETER_VALUE); // create parameter value criterion for this parameter
 
                             if (paramType == "boolean") {
                                 parameterValuesList.addAll(Arrays.asList(new Boolean(true), new Boolean(false))); // add both boolean values to test
@@ -263,22 +256,18 @@ public class CoverageGatherer {
      */
     private List<CoverageCriterion> getContentTypeCoverageCriteria(CriterionType type) {
         List<CoverageCriterion> contentTypesCriteria = new ArrayList<>();   // list of criteria to be returned
-        List<String> contentTypesList = new ArrayList<>();                  // list of parameters per criterion
-        CoverageCriterion contentTypesCriterion = null;                     // criterion to add to the list to be returned
-        Entry<String, Path> currentPathEntry = null;                        // path containing operations where to look for content types
-        Operation currentOperation = null;                                  // operation containing content-types to add to the criterion
 
         // iterate over the paths
         Iterator<Entry<String, Path>> pathsIterator = spec.getSpecification().getPaths().entrySet().iterator();
         while (pathsIterator.hasNext()) {
-            currentPathEntry = pathsIterator.next();
+            Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
             Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
             while (operationsIterator.hasNext()) {
-                currentOperation = operationsIterator.next();
-                contentTypesList.clear();
-                contentTypesCriterion = new CoverageCriterion(type); // create content-type criterion for this operation
+                Operation currentOperation = operationsIterator.next();
+                List<String> contentTypesList = new ArrayList<>(); // list of parameters per criterion
+                CoverageCriterion contentTypesCriterion = new CoverageCriterion(type); // create content-type criterion for this operation
 
                 // Set content-types to iterate over depending on the 'type' passed and whether or not the property is present in the OAS
                 List<String> contentTypes = type == INPUT_CONTENT_TYPE && currentOperation.getConsumes() != null ? currentOperation.getConsumes() :
@@ -305,22 +294,18 @@ public class CoverageGatherer {
      */
     private List<CoverageCriterion> getAuthenticationCoverageCriteria() {
         List<CoverageCriterion> authenticationCriteria = new ArrayList<>(); // list of criteria to be returned
-        List<String> authenticationList = new ArrayList<>();                // list of authentications per criterion
-        CoverageCriterion authenticationCriterion = null;                   // criterion to add to the list to be returned
-        Entry<String, Path> currentPathEntry = null;                        // path containing operations where to look for authentications
-        Operation currentOperation = null;                                  // operation containing authentications to add to the criterion
 
         // iterate over the paths
         Iterator<Entry<String, Path>> pathsIterator = spec.getSpecification().getPaths().entrySet().iterator();
         while (pathsIterator.hasNext()) {
-            currentPathEntry = pathsIterator.next();
+            Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
             Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
             while (operationsIterator.hasNext()) {
-                currentOperation = operationsIterator.next();
-                authenticationList.clear();
-                authenticationCriterion = new CoverageCriterion(AUTHENTICATION); // create authentication criterion for this operation
+                Operation currentOperation = operationsIterator.next();
+                List<String> authenticationList = new ArrayList<>(); // list of authentications per criterion
+                CoverageCriterion authenticationCriterion = new CoverageCriterion(AUTHENTICATION); // create authentication criterion for this operation
 
                 if (currentOperation.getSecurity() != null) { // there could be no 'security' property, so check it before
                     for (Map<String, List<String>> authenticationScheme : currentOperation.getSecurity()) {
@@ -343,22 +328,18 @@ public class CoverageGatherer {
      */
     private List<CoverageCriterion> getStatusCodeCoverageCriteria() {
         List<CoverageCriterion> statusCodesCriteria = new ArrayList<>();    // list of criteria to be returned
-        List<String> statusCodesList = new ArrayList<>();                   // list of statusCodes per criterion
-        CoverageCriterion statusCodesCriterion = null;                      // criterion to add to the list to be returned
-        Entry<String, Path> currentPathEntry = null;                        // path containing operations where to look for statusCodes
-        Operation currentOperation = null;                                  // operation containing statusCodes to add to the criterion
 
         // iterate over the paths
         Iterator<Entry<String, Path>> pathsIterator = spec.getSpecification().getPaths().entrySet().iterator();
         while (pathsIterator.hasNext()) {
-            currentPathEntry = pathsIterator.next();
+            Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
             Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
             while (operationsIterator.hasNext()) {
-                currentOperation = operationsIterator.next();
-                statusCodesList.clear();
-                statusCodesCriterion = new CoverageCriterion(STATUS_CODE); // create statusCode criterion for this operation
+                Operation currentOperation = operationsIterator.next();
+                List<String> statusCodesList = new ArrayList<>(); // list of statusCodes per criterion
+                CoverageCriterion statusCodesCriterion = new CoverageCriterion(STATUS_CODE); // create statusCode criterion for this operation
 
                 for (String statusCode : currentOperation.getResponses().keySet()) {
                     statusCodesList.add(statusCode); // collect statusCodes for this operation
@@ -379,22 +360,18 @@ public class CoverageGatherer {
      */
     private List<CoverageCriterion> getStatusCodeClassCoverageCriteria() {
         List<CoverageCriterion> statusCodeClassesCriteria = new ArrayList<>();  // list of criteria to be returned
-        List<String> statusCodeClassesList = new ArrayList<>();                 // list of statusCodeClasses per criterion
-        CoverageCriterion statusCodeClassesCriterion = null;                    // criterion to add to the list to be returned
-        Entry<String, Path> currentPathEntry = null;                            // path containing operations where to look for statusCodeClasses
-        Operation currentOperation = null;                                      // operation containing statusCodeClasses to add to the criterion
 
         // iterate over the paths
         Iterator<Entry<String, Path>> pathsIterator = spec.getSpecification().getPaths().entrySet().iterator();
         while (pathsIterator.hasNext()) {
-            currentPathEntry = pathsIterator.next();
+            Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
             Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
             while (operationsIterator.hasNext()) {
-                currentOperation = operationsIterator.next();
-                statusCodeClassesList.clear();
-                statusCodeClassesCriterion = new CoverageCriterion(STATUS_CODE_CLASS); // create statusCodeClass criterion for this operation
+                Operation currentOperation = operationsIterator.next();
+                List<String> statusCodeClassesList = new ArrayList<>(); // list of statusCodeClasses per criterion
+                CoverageCriterion statusCodeClassesCriterion = new CoverageCriterion(STATUS_CODE_CLASS); // create statusCodeClass criterion for this operation
 
                 statusCodeClassesList.add("2XX"); // it is assumed that all API operation should have a successful response
 
@@ -411,6 +388,61 @@ public class CoverageGatherer {
         }
         
         return statusCodeClassesCriteria;
+    }
+
+    /**
+     * @return A list of CoverageCriterion, one per operation per path. Every
+     * criterion contains a number of elements equal to the properties defined
+     * in the response body of that operation
+     */
+    private List<CoverageCriterion> getResponseBodyPropertiesCoverageCriteria() {
+        List<CoverageCriterion> responseBodyPropertiesCriteria = new ArrayList<>(); // list of criteria to be returned
+
+        // iterate over the paths
+        Iterator<Entry<String, Path>> pathsIterator = spec.getSpecification().getPaths().entrySet().iterator();
+        while (pathsIterator.hasNext()) {
+            Entry<String, Path> currentPathEntry = pathsIterator.next();
+
+            // iterate over the operations of that path
+            Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
+            while (operationsIterator.hasNext()) {
+                Operation currentOperation = operationsIterator.next();
+                
+                // iterate over the responses of that operation
+                Iterator<Entry<String, Response>> responsesIterator = currentOperation.getResponses().entrySet().iterator();
+                while (responsesIterator.hasNext()) {
+                    Entry<String, Response> currentResponseEntry = responsesIterator.next();
+
+                    Property responseSchema = currentResponseEntry.getValue().getSchema();
+                    if (responseSchema != null) { // if the response actually returns a body
+                        String currentResponseRef = null;
+                        if (responseSchema.getType() == "array") {
+                            if (((ArrayProperty)responseSchema).getItems().getType() == "ref") {
+                                currentResponseRef = ((RefProperty)((ArrayProperty)responseSchema).getItems()).getSimpleRef();
+                            }
+                        } else if (responseSchema.getType() == "ref") {
+                            currentResponseRef = ((RefProperty)responseSchema).getSimpleRef();
+                        }
+
+                        if (currentResponseRef != null) { // if the response body is an object
+                            List<Object> responseBodyPropertiesList = new ArrayList<>(); // list of responseBodyProperties per criterion
+                            CoverageCriterion responseBodyPropertiesCriterion = new CoverageCriterion(RESPONSE_BODY_PROPERTIES); // create responseBodyProperties criterion for this response
+                            Model currentSwaggerModel = spec.getSpecification().getDefinitions().get(currentResponseRef); // get Swagger Definition associated to the Ref defined in the response
+                            responseBodyPropertiesList.addAll(new ArrayList<>(Arrays.asList(currentSwaggerModel.getProperties().keySet().toArray()))); // add response body properties to the criterion
+                            responseBodyPropertiesCriterion.setAllElements(new ArrayList<>(responseBodyPropertiesList)); // add all response body properties to be tested to the criterion created
+                            responseBodyPropertiesCriterion.setRootPath(
+                                currentPathEntry.getKey() + "->" +
+                                currentOperation.getOperationId() + "->" +
+                                currentResponseEntry.getKey()
+                            ); // put together API path, operationID and response code to create a unique rootPath
+                            responseBodyPropertiesCriteria.add(responseBodyPropertiesCriterion);
+                        }
+                    }
+                }
+            }
+        }
+        
+        return responseBodyPropertiesCriteria;
     }
 
     /**
