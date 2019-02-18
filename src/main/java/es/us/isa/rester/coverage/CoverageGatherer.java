@@ -117,7 +117,7 @@ public class CoverageGatherer {
                 coverageCriteria.addAll(getContentTypeCoverageCriteria(OUTPUT_CONTENT_TYPE));
                 break;
             default:
-                throw new IllegalArgumentException("Unknow coverage criterion type: " + criterionType.toString());
+                throw new IllegalArgumentException("Unknown coverage criterion type: " + criterionType.toString());
             }
         }
     }
@@ -131,7 +131,6 @@ public class CoverageGatherer {
 
         CoverageCriterion pathsCriterion = new CoverageCriterion(PATH);
         pathsCriterion.setAllElements(new ArrayList<>(spec.getSpecification().getPaths().keySet()));
-        pathsCriterion.setRootPath(""); // the paths criterion is the only one without a parent element (highest in the hierarchy)
         pathsCriteria.add(pathsCriterion);
 
         return pathsCriteria;
