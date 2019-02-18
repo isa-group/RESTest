@@ -17,16 +17,19 @@ public class CoverageCriterion {
     private List<Object> allElements;       // All elements to cover to reach 100% coverage
     private List<Object> coveredElements;   // Elements already covered
 
-    // The following property's purpose is to locate the criterion inside the API resources hierarchy. There could be several parameter values
-    // criteria having all the same parameter name. Therefore, it is necessary to uniquely identify each criterion to check if they are
-    // covered when analysing the abstract test cases. This property makes sense for all criteria except for paths, since there is only one
-    // of this kind. The longest allowed path contains 3 elements: "{path}->{operationId}->{parameterName}"
+    /**
+     * The following property's purpose is to locate the criterion inside the API resources hierarchy. There could be several parameter values
+     * criteria having all the same parameter name. Therefore, it is necessary to uniquely identify each criterion to check if they are covered
+     * when analysing the abstract test cases. This property makes sense for all criteria except for paths, since there is only one of this
+     * kind. The longest allowed path contains 3 elements: "{path}->{operationId}->{parameterName}" OR "{path}->{operationId}->{statusCode}"
+     */
     private String rootPath;
 
     public CoverageCriterion(CriterionType type) {
         this.type = type;
         this.allElements = new ArrayList<>();
         this.coveredElements = new ArrayList<>();
+        this.rootPath = "";
     }
 
     public CriterionType getType() {
