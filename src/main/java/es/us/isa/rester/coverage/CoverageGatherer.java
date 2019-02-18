@@ -13,6 +13,7 @@ import io.swagger.models.parameters.Parameter;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
 import io.swagger.models.properties.ArrayProperty;
+import io.swagger.models.properties.ObjectProperty;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -416,19 +417,24 @@ public class CoverageGatherer {
                     Property responseSchema = currentResponseEntry.getValue().getSchema();
                     if (responseSchema != null) { // if the response actually returns a body
                         String currentResponseRef = null;
+                        List<Object> responseBodyPropertiesList = new ArrayList<>(); // list of responseBodyProperties per criterion
+                        
                         if (responseSchema.getType() == "array") {
                             if (((ArrayProperty)responseSchema).getItems().getType() == "ref") {
                                 currentResponseRef = ((RefProperty)((ArrayProperty)responseSchema).getItems()).getSimpleRef();
                             }
                         } else if (responseSchema.getType() == "ref") {
                             currentResponseRef = ((RefProperty)responseSchema).getSimpleRef();
+                        } else if (responseSchema.getType() == "object" && responseSchema instanceof ObjectProperty) {
+                            responseBodyPropertiesList.addAll(new ArrayList<>(Arrays.asList(((ObjectProperty)responseSchema).getProperties().keySet().toArray()))); // add response body properties to the criterion
                         }
 
-                        if (currentResponseRef != null) { // if the response body is an object
-                            List<Object> responseBodyPropertiesList = new ArrayList<>(); // list of responseBodyProperties per criterion
-                            CoverageCriterion responseBodyPropertiesCriterion = new CoverageCriterion(RESPONSE_BODY_PROPERTIES); // create responseBodyProperties criterion for this response
+                        if (currentResponseRef != null) { // if the response body refers to a Swagger definition, get properties from that object
                             Model currentSwaggerModel = spec.getSpecification().getDefinitions().get(currentResponseRef); // get Swagger Definition associated to the Ref defined in the response
                             responseBodyPropertiesList.addAll(new ArrayList<>(Arrays.asList(currentSwaggerModel.getProperties().keySet().toArray()))); // add response body properties to the criterion
+                        }
+                        if (responseBodyPropertiesList.size() > 0) { // if the response body is an object containing some properties, create criterion
+                            CoverageCriterion responseBodyPropertiesCriterion = new CoverageCriterion(RESPONSE_BODY_PROPERTIES); // create responseBodyProperties criterion for this response
                             responseBodyPropertiesCriterion.setAllElements(new ArrayList<>(responseBodyPropertiesList)); // add all response body properties to be tested to the criterion created
                             responseBodyPropertiesCriterion.setRootPath(
                                 currentPathEntry.getKey() + "->" +
