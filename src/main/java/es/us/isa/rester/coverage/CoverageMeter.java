@@ -19,6 +19,7 @@ public class CoverageMeter {
 
     public CoverageMeter(CoverageGatherer coverageGatherer) {
         this.coverageGatherer = coverageGatherer;
+        this.testSuite = null;
     }
 
     public CoverageMeter(CoverageGatherer coverageGatherer, List<TestCase> testSuite) {
@@ -66,6 +67,12 @@ public class CoverageMeter {
         return getCoveredElements("output");
     }
 
+    /**
+     * Get all elements to cover from all coverage criteria in the API
+     * 
+     * @param criterionType Type of criteria to consider: "input", "output" or null for all
+     * @return Number of elements collected among all coverage criteria
+     */
     private int getAllElements(String criterionType) {
         return coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> CriterionType.getTypes(criterionType).contains(c.getType()))
@@ -73,6 +80,12 @@ public class CoverageMeter {
                 .sum();
     }
 
+    /**
+     * Get covered elements from all coverage criteria in the API
+     * 
+     * @param criterionType Type of criteria to consider: "input", "output" or null for all
+     * @return Number of covered elements collected among all coverage criteria
+     */
     private int getCoveredElements(String criterionType) {
         return coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> CriterionType.getTypes(criterionType).contains(c.getType()))
@@ -117,9 +130,10 @@ public class CoverageMeter {
     }
 
     /**
-     * Get coverage of a single criterion (e.g. PATH, STATUS_CODE, etc.)
+     * Get coverage of all criteria of a given type
      * 
-     * @return coverage percentage
+     * @param type Type of criterion to check coverage (e.g. PATH, STATUS_CODE, etc.)
+     * @return Coverage percentage
      */
     public float getCriterionTypeCoverage(CriterionType type) {
         int allElements = coverageGatherer.getCoverageCriteria().stream()
@@ -137,5 +151,48 @@ public class CoverageMeter {
                 .sum();
         
         return 100 * (float) coveredElements / (float) allElements;
+    }
+
+    /**
+     * Get coverage of a single criterion, identified by its type and rootPath
+     * 
+     * @param type Type of criterion (e.g. PATH, STATUS_CODE, etc.)
+     * @param rootPath path that uniquely identifies the criterion (e.g. "/pet->getPetById->id")
+     * @return Coverage percentage
+     */
+    public float getCriterionCoverage(CriterionType type, String rootPath) {
+        int allElements = coverageGatherer.getCoverageCriteria().stream()
+                .filter(c -> c.getType() == type && c.getRootPath().equals(rootPath))
+                .findFirst()
+                .orElse(new CoverageCriterion(type)) // if no matching criterion is found, return an empty made-up one (100% coverage)
+                .getAllElements().size();
+
+        if (allElements == 0) {
+            return 100;
+        }
+
+        int coveredElements = coverageGatherer.getCoverageCriteria().stream()
+                .filter(c -> c.getType() == type && c.getRootPath().equals(rootPath))
+                .findFirst()
+                .get()
+                .getCoveredElements().size();
+        
+        return 100 * (float) coveredElements / (float) allElements;
+    }
+
+    /**
+     * Set 'coveredElements' field of every input CoverageCriterion. Only works
+     * once testSuite has been initialized.
+     * 
+     * @return true if coveredElements were set, false otherwise
+     */
+    public boolean setCoveredInputElements() {
+        if(testSuite == null) {
+            return false;
+        }
+
+        
+
+        return true;
     }
 }

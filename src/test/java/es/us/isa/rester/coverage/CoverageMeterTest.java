@@ -34,6 +34,7 @@ public class CoverageMeterTest {
 
         CoverageMeter covMeter = new CoverageMeter(covGath);
 
+        System.out.println(covMeter.getCriterionCoverage(PARAMETER_VALUE, "/pet/{petId}/uploadImage->uploadFile->destinationFormat"));
         System.out.println(covGath.getCoverageCriteria().get(1).getAllElements().get(1));
     }
 }
