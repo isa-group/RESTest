@@ -8,10 +8,11 @@ import java.util.List;
 import org.junit.Test;
 
 import es.us.isa.rester.coverage.CoverageGatherer;
+import es.us.isa.rester.coverage.CoverageMeter;
 import static es.us.isa.rester.coverage.CriterionType.*;
 import es.us.isa.rester.specification.OpenAPISpecification;
 
-public class CoverageGathererTest {
+public class CoverageMeterTest {
 
     @Test
     public void debugging() {
@@ -30,6 +31,8 @@ public class CoverageGathererTest {
         coverageCriterionTypes.add(RESPONSE_BODY_PROPERTIES);
         coverageCriterionTypes.add(OUTPUT_CONTENT_TYPE);
         CoverageGatherer covGath = new CoverageGatherer(oas, coverageCriterionTypes);
+
+        CoverageMeter covMeter = new CoverageMeter(covGath);
 
         System.out.println(covGath.getCoverageCriteria().get(1).getAllElements().get(1));
     }
