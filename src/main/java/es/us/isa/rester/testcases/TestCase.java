@@ -15,11 +15,13 @@ public class TestCase {
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
+	private String inputFormat;								// Input format
 	private String outputFormat;							// Output format
 	private Map<String, String> headerParameters;			// Header parameters
 	private Map<String, String> pathParameters;				// Path parameters
 	private Map<String, String> queryParameters;			// Input parameters and values
 	private String bodyParameter;							// Body parameter
+	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none used
 	private Map<String, Response> expectedOutputs;			// Possible outputs
 	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
@@ -27,10 +29,12 @@ public class TestCase {
 		this.operationId = operationId;
 		this.path = path;
 		this.method = method;
+		this.inputFormat = "application/json";
 		this.outputFormat = "application/json";
 		this.headerParameters = new HashMap<String,String>();
 		this.queryParameters = new HashMap<String,String>();
 		this.pathParameters = new HashMap<String,String>();
+		this.authentication = null;
 	}
 
 	public Response getExpectedSuccessfulOutput() {
@@ -81,12 +85,28 @@ public class TestCase {
 		this.operationId = operationId;
 	}
 
+	public String getInputFormat() {
+		return inputFormat;
+	}
+
+	public void setInputFormat(String inputFormat) {
+		this.inputFormat = inputFormat;
+	}
+
 	public String getOutputFormat() {
 		return outputFormat;
 	}
 
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
+	}
+
+	public String getAuthentication() {
+		return authentication;
+	}
+
+	public void setAuthentication(String authentication) {
+		this.authentication = authentication;
 	}
 
 	public Map<String, String> getHeaderParameters() {

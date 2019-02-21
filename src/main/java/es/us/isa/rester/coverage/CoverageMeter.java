@@ -1,8 +1,9 @@
 package es.us.isa.rester.coverage;
 
 import java.util.List;
+import java.util.Map.Entry;
 
-import es.us.isa.rester.coverage.CriterionType;
+import static es.us.isa.rester.coverage.CriterionType.*;
 import es.us.isa.rester.testcases.TestCase;
 
 /**
@@ -41,6 +42,7 @@ public class CoverageMeter {
 
     public void setTestSuite(List<TestCase> testSuite) {
         this.testSuite = testSuite;
+        setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
     }
 
     public int getAllTotalElements() {
@@ -181,18 +183,40 @@ public class CoverageMeter {
     }
 
     /**
-     * Set 'coveredElements' field of every input CoverageCriterion. Only works
-     * once testSuite has been initialized.
-     * 
-     * @return true if coveredElements were set, false otherwise
+     * Set 'coveredElements' field of every input CoverageCriterion
      */
-    public boolean setCoveredInputElements() {
-        if(testSuite == null) {
-            return false;
+    private void setCoveredInputElements() {
+        // Traverse all test cases and, for each one, modify the coverage criteria it affects, by adding new covered elements
+        for (TestCase testCase: testSuite) {
+            updateCriterion(PATH, "", testCase.getPath());
+            updateCriterion(OPERATION, testCase.getPath(), testCase.getOperationId());
+            for (Entry<String, String> parameter: testCase.getHeaderParameters().entrySet()) {
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getOperationId(), parameter.getKey());
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getOperationId() + "->" + parameter.getKey(), parameter.getValue());
+            }
+            for (Entry<String, String> parameter: testCase.getPathParameters().entrySet()) {
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getOperationId(), parameter.getKey());
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getOperationId() + "->" + parameter.getKey(), parameter.getValue());
+            }
+            for (Entry<String, String> parameter: testCase.getQueryParameters().entrySet()) {
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getOperationId(), parameter.getKey());
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getOperationId() + "->" + parameter.getKey(), parameter.getValue());
+            }
+            updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getOperationId(), testCase.getAuthentication());
+            updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getOperationId(), testCase.getInputFormat());
+
         }
+    }
 
-        
+    private void updateCriterion(CriterionType type, String rootPath, String element) {
+        // Find unique criterion by type and rootPath
+        CoverageCriterion criterion = coverageGatherer.getCoverageCriteria().stream()
+                .filter(c -> c.getType() == type && c.getRootPath().equals(rootPath))
+                .findFirst()
+                .orElse(null);
 
-        return true;
+        if (criterion != null && !criterion.getCoveredElements().contains(element)) {
+            criterion.addCoveredElement(element); // add element to the already covered elements of the criterion
+        }
     }
 }

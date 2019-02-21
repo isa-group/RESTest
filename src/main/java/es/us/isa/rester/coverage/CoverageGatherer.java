@@ -227,7 +227,7 @@ public class CoverageGatherer {
                             CoverageCriterion parameterValuesCriterion = new CoverageCriterion(PARAMETER_VALUE); // create parameter value criterion for this parameter
 
                             if (paramType == "boolean") {
-                                parameterValuesList.addAll(Arrays.asList(new Boolean(true), new Boolean(false))); // add both boolean values to test
+                                parameterValuesList.addAll(Arrays.asList("true", "false")); // add both boolean values to test
                             } else {
                                 parameterValuesList.addAll(paramEnumValues); // add all enum values to test
                             }
