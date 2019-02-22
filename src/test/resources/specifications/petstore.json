@@ -319,14 +319,14 @@
           },
           {
             "name": "name",
-            "in": "formData",
+            "in": "query",
             "description": "Updated name of the pet",
             "required": false,
             "type": "string"
           },
           {
             "name": "status",
-            "in": "formData",
+            "in": "query",
             "description": "Updated status of the pet",
             "required": false,
             "type": "string"
@@ -435,14 +435,14 @@
           },
           {
             "name": "additionalMetadata",
-            "in": "formData",
+            "in": "query",
             "description": "Additional data to pass to server",
             "required": false,
             "type": "string"
           },
           {
             "name": "file",
-            "in": "formData",
+            "in": "query",
             "description": "file to upload",
             "required": false,
             "type": "file"

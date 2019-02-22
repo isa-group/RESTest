@@ -1,5 +1,6 @@
 package es.us.isa.rester.coverage;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -14,8 +15,8 @@ import es.us.isa.rester.testcases.TestCase;
 public class CoverageMeter {
 
     CoverageGatherer coverageGatherer;  // coverage gatherer already containing all criteria to be covered
-    List<TestCase> testSuite;           // full set of abstract test cases addressing the API
-    // List<TestResult> testResults;       // test outputs generated after running the test suite against the API
+    Collection<TestCase> testSuite;     // full set of abstract test cases addressing the API
+    // Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
 
 
     public CoverageMeter(CoverageGatherer coverageGatherer) {
@@ -23,9 +24,10 @@ public class CoverageMeter {
         this.testSuite = null;
     }
 
-    public CoverageMeter(CoverageGatherer coverageGatherer, List<TestCase> testSuite) {
+    public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite) {
         this.coverageGatherer = coverageGatherer;
         this.testSuite = testSuite;
+        setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
     }
 
     public CoverageGatherer getCoverageGatherer() {
@@ -36,11 +38,11 @@ public class CoverageMeter {
         this.coverageGatherer = coverageGatherer;
     }
 
-    public List<TestCase> getTestSuite() {
+    public Collection<TestCase> getTestSuite() {
         return this.testSuite;
     }
 
-    public void setTestSuite(List<TestCase> testSuite) {
+    public void setTestSuite(Collection<TestCase> testSuite) {
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
     }

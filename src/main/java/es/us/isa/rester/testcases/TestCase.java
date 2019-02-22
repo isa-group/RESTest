@@ -21,7 +21,7 @@ public class TestCase {
 	private Map<String, String> pathParameters;				// Path parameters
 	private Map<String, String> queryParameters;			// Input parameters and values
 	private String bodyParameter;							// Body parameter
-	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none used
+	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none
 	private Map<String, Response> expectedOutputs;			// Possible outputs
 	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
