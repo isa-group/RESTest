@@ -4,6 +4,7 @@ import es.us.isa.rester.specification.OpenAPISpecification;
 import es.us.isa.rester.coverage.CoverageCriterion;
 import static es.us.isa.rester.coverage.CriterionType.*;
 
+import io.swagger.models.HttpMethod;
 import io.swagger.models.Model;
 import io.swagger.models.Operation;
 import io.swagger.models.Path;
@@ -93,10 +94,10 @@ public class CoverageGatherer {
                 coverageCriteria.addAll(getParameterValueCoverageCriteria());
                 break;
             case PARAMETER_CONDITION:
-
+                //TODO
                 break;
             case OPERATIONS_FLOW:
-
+                //TODO
                 break;
             case INPUT_CONTENT_TYPE:
                 coverageCriteria.addAll(getContentTypeCoverageCriteria(INPUT_CONTENT_TYPE));
@@ -151,8 +152,8 @@ public class CoverageGatherer {
             List<String> operationsList = new ArrayList<>(); // list of operations per criterion
             CoverageCriterion operationsCriterion = new CoverageCriterion(OPERATION); // create operation criterion for this path
 
-            for (Operation operation : currentPathEntry.getValue().getOperations()) {
-                operationsList.add(operation.getOperationId()); // collect operations for this path
+            for (Entry<HttpMethod, Operation> operation : currentPathEntry.getValue().getOperationMap().entrySet()) {
+                operationsList.add(operation.getKey().toString()); // collect operations for this path
             }
             operationsCriterion.setAllElements(new ArrayList<>(operationsList)); // add all operations to be tested to the criterion created
             operationsCriterion.setRootPath(currentPathEntry.getKey()); // set rootPath to the API path (it is unique)
@@ -176,17 +177,17 @@ public class CoverageGatherer {
             Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
-            Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
+            Iterator<Entry<HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().getOperationMap().entrySet().iterator();
             while (operationsIterator.hasNext()) {
-                Operation currentOperation = operationsIterator.next();
+                Entry<HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
                 List<String> parametersList = new ArrayList<>(); // list of parameters per criterion
                 CoverageCriterion parametersCriterion = new CoverageCriterion(PARAMETER); // create parameter criterion for this operation
 
-                for (Parameter parameter : currentOperation.getParameters()) {
+                for (Parameter parameter : currentOperationEntry.getValue().getParameters()) {
                     parametersList.add(parameter.getName()); // collect parameters for this operation
                 }
                 parametersCriterion.setAllElements(new ArrayList<>(parametersList)); // add all parameters to be tested to the criterion created
-                parametersCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperation.getOperationId()); // put together API path and operationID to create a unique rootPath
+                parametersCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                 parametersCriteria.add(parametersCriterion);
             }
         }
@@ -209,12 +210,12 @@ public class CoverageGatherer {
             Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
-            Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
+            Iterator<Entry<HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().getOperationMap().entrySet().iterator();
             while (operationsIterator.hasNext()) {
-                Operation currentOperation = operationsIterator.next();
+                Entry<HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
 
                 // iterate over the parameters of that operation
-                Iterator<Parameter> parametersIterator = currentOperation.getParameters().iterator();
+                Iterator<Parameter> parametersIterator = currentOperationEntry.getValue().getParameters().iterator();
                 while (parametersIterator.hasNext()) {
                     Parameter currentParameter = parametersIterator.next();
 
@@ -235,7 +236,7 @@ public class CoverageGatherer {
                             parameterValuesCriterion.setAllElements(new ArrayList<>(parameterValuesList)); // add all parameter values to be tested to the criterion created
                             parameterValuesCriterion.setRootPath(
                                 currentPathEntry.getKey() + "->" +
-                                currentOperation.getOperationId() + "->" +
+                                currentOperationEntry.getKey().toString() + "->" +
                                 currentParameter.getName()
                             ); // put together API path, operationID and parameter name to create a unique rootPath
                             parameterValuesCriteria.add(parameterValuesCriterion);
@@ -263,22 +264,22 @@ public class CoverageGatherer {
             Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
-            Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
+            Iterator<Entry<HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().getOperationMap().entrySet().iterator();
             while (operationsIterator.hasNext()) {
-                Operation currentOperation = operationsIterator.next();
+                Entry<HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
                 List<String> contentTypesList = new ArrayList<>(); // list of parameters per criterion
                 CoverageCriterion contentTypesCriterion = new CoverageCriterion(type); // create content-type criterion for this operation
 
                 // Set content-types to iterate over depending on the 'type' passed and whether or not the property is present in the OAS
-                List<String> contentTypes = type == INPUT_CONTENT_TYPE && currentOperation.getConsumes() != null ? currentOperation.getConsumes() :
-                                            type == OUTPUT_CONTENT_TYPE && currentOperation.getProduces() != null ? currentOperation.getProduces() : null;
+                List<String> contentTypes = type == INPUT_CONTENT_TYPE && currentOperationEntry.getValue().getConsumes() != null ? currentOperationEntry.getValue().getConsumes() :
+                                            type == OUTPUT_CONTENT_TYPE && currentOperationEntry.getValue().getProduces() != null ? currentOperationEntry.getValue().getProduces() : null;
 
                 if (contentTypes != null) { // there could be no 'consumes' or 'produces' property, so check it before
                     for (String contentType : contentTypes) {
                         contentTypesList.add(contentType); // collect content-types for this operation
                     }
                     contentTypesCriterion.setAllElements(new ArrayList<>(contentTypesList)); // add all content-types to be tested to the criterion created
-                    contentTypesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperation.getOperationId()); // put together API path and operationID to create a unique rootPath
+                    contentTypesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                     contentTypesCriteria.add(contentTypesCriterion);
                 }
             }
@@ -301,18 +302,18 @@ public class CoverageGatherer {
             Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
-            Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
+            Iterator<Entry<HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().getOperationMap().entrySet().iterator();
             while (operationsIterator.hasNext()) {
-                Operation currentOperation = operationsIterator.next();
+                Entry<HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
                 List<String> authenticationList = new ArrayList<>(); // list of authentications per criterion
                 CoverageCriterion authenticationCriterion = new CoverageCriterion(AUTHENTICATION); // create authentication criterion for this operation
 
-                if (currentOperation.getSecurity() != null) { // there could be no 'security' property, so check it before
-                    for (Map<String, List<String>> authenticationScheme : currentOperation.getSecurity()) {
+                if (currentOperationEntry.getValue().getSecurity() != null) { // there could be no 'security' property, so check it before
+                    for (Map<String, List<String>> authenticationScheme : currentOperationEntry.getValue().getSecurity()) {
                         authenticationList.add(authenticationScheme.keySet().iterator().next()); // collect authentications for this operation
                     }
                     authenticationCriterion.setAllElements(new ArrayList<>(authenticationList)); // add all authentications to be tested to the criterion created
-                    authenticationCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperation.getOperationId()); // put together API path and operationID to create a unique rootPath
+                    authenticationCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                     authenticationCriteria.add(authenticationCriterion);
                 }
             }
@@ -335,17 +336,17 @@ public class CoverageGatherer {
             Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
-            Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
+            Iterator<Entry<HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().getOperationMap().entrySet().iterator();
             while (operationsIterator.hasNext()) {
-                Operation currentOperation = operationsIterator.next();
+                Entry<HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
                 List<String> statusCodesList = new ArrayList<>(); // list of statusCodes per criterion
                 CoverageCriterion statusCodesCriterion = new CoverageCriterion(STATUS_CODE); // create statusCode criterion for this operation
 
-                for (String statusCode : currentOperation.getResponses().keySet()) {
+                for (String statusCode : currentOperationEntry.getValue().getResponses().keySet()) {
                     statusCodesList.add(statusCode); // collect statusCodes for this operation
                 }
                 statusCodesCriterion.setAllElements(new ArrayList<>(statusCodesList)); // add all statusCodes to be tested to the criterion created
-                statusCodesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperation.getOperationId()); // put together API path and operationID to create a unique rootPath
+                statusCodesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                 statusCodesCriteria.add(statusCodesCriterion);
             }
         }
@@ -367,22 +368,22 @@ public class CoverageGatherer {
             Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
-            Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
+            Iterator<Entry<HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().getOperationMap().entrySet().iterator();
             while (operationsIterator.hasNext()) {
-                Operation currentOperation = operationsIterator.next();
+                Entry<HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
                 List<String> statusCodeClassesList = new ArrayList<>(); // list of statusCodeClasses per criterion
                 CoverageCriterion statusCodeClassesCriterion = new CoverageCriterion(STATUS_CODE_CLASS); // create statusCodeClass criterion for this operation
 
                 statusCodeClassesList.add("2XX"); // it is assumed that all API operation should have a successful response
 
-                for (String statusCodeClass : currentOperation.getResponses().keySet()) {
+                for (String statusCodeClass : currentOperationEntry.getValue().getResponses().keySet()) {
                     if (statusCodeClass.charAt(0) == '4') {
                         statusCodeClassesList.add("4XX"); // add the faulty response case too
                         break;
                     }
                 }
                 statusCodeClassesCriterion.setAllElements(new ArrayList<>(statusCodeClassesList)); // add all statusCodeClasses to be tested to the criterion created
-                statusCodeClassesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperation.getOperationId()); // put together API path and operationID to create a unique rootPath
+                statusCodeClassesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                 statusCodeClassesCriteria.add(statusCodeClassesCriterion);
             }
         }
@@ -404,12 +405,12 @@ public class CoverageGatherer {
             Entry<String, Path> currentPathEntry = pathsIterator.next();
 
             // iterate over the operations of that path
-            Iterator<Operation> operationsIterator = currentPathEntry.getValue().getOperations().iterator();
+            Iterator<Entry<HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().getOperationMap().entrySet().iterator();
             while (operationsIterator.hasNext()) {
-                Operation currentOperation = operationsIterator.next();
+                Entry<HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
                 
                 // iterate over the responses of that operation
-                Iterator<Entry<String, Response>> responsesIterator = currentOperation.getResponses().entrySet().iterator();
+                Iterator<Entry<String, Response>> responsesIterator = currentOperationEntry.getValue().getResponses().entrySet().iterator();
                 while (responsesIterator.hasNext()) {
                     Entry<String, Response> currentResponseEntry = responsesIterator.next();
 
@@ -437,7 +438,7 @@ public class CoverageGatherer {
                             responseBodyPropertiesCriterion.setAllElements(new ArrayList<>(responseBodyPropertiesList)); // add all response body properties to be tested to the criterion created
                             responseBodyPropertiesCriterion.setRootPath(
                                 currentPathEntry.getKey() + "->" +
-                                currentOperation.getOperationId() + "->" +
+                                currentOperationEntry.getKey().toString() + "->" +
                                 currentResponseEntry.getKey()
                             ); // put together API path, operationID and response code to create a unique rootPath
                             responseBodyPropertiesCriteria.add(responseBodyPropertiesCriterion);
