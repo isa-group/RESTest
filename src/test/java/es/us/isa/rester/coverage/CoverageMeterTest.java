@@ -12,7 +12,7 @@ import es.us.isa.rester.coverage.CoverageMeter;
 import static es.us.isa.rester.coverage.CriterionType.*;
 import es.us.isa.rester.specification.OpenAPISpecification;
 import es.us.isa.rester.testcases.TestCase;
-
+import es.us.isa.rester.testcases.TestResult;
 import io.swagger.models.HttpMethod;
 
 public class CoverageMeterTest {
@@ -52,19 +52,36 @@ public class CoverageMeterTest {
 
         covMeter.setTestSuite(testSuite);
 
+        List<TestResult> testResults = new ArrayList<>();
+        TestResult testResult1 = new TestResult("201", "", "application/json", testCase1);
+        TestResult testResult2 = new TestResult("200", "", "application/json", testCase2);
+        TestResult testResult3 = new TestResult("404", "", "application/json", testCase3);
+
+        testResults.add(testResult1);
+        testResults.add(testResult2);
+        testResults.add(testResult3);
+
+        covMeter.setTestResults(testResults);
+
         System.out.println("covMeter.getTotalCoverage(): " + covMeter.getTotalCoverage());
         System.out.println("covMeter.getInputCoverage(): " + covMeter.getInputCoverage());
+        System.out.println("covMeter.getOutputCoverage(): " + covMeter.getOutputCoverage());
         System.out.println("covMeter.getCriterionTypeCoverage(PATH): " + covMeter.getCriterionTypeCoverage(PATH));
         System.out.println("covMeter.getCriterionTypeCoverage(OPERATION): " + covMeter.getCriterionTypeCoverage(OPERATION));
         System.out.println("covMeter.getCriterionTypeCoverage(PARAMETER): " + covMeter.getCriterionTypeCoverage(PARAMETER));
         System.out.println("covMeter.getCriterionTypeCoverage(PARAMETER_VALUE): " + covMeter.getCriterionTypeCoverage(PARAMETER_VALUE));
         System.out.println("covMeter.getCriterionTypeCoverage(INPUT_CONTENT_TYPE): " + covMeter.getCriterionTypeCoverage(INPUT_CONTENT_TYPE));
         System.out.println("covMeter.getCriterionTypeCoverage(AUTHENTICATION): " + covMeter.getCriterionTypeCoverage(AUTHENTICATION));
+        System.out.println("covMeter.getCriterionTypeCoverage(STATUS_CODE_CLASS): " + covMeter.getCriterionTypeCoverage(STATUS_CODE_CLASS));
+        System.out.println("covMeter.getCriterionTypeCoverage(STATUS_CODE): " + covMeter.getCriterionTypeCoverage(STATUS_CODE));
+        System.out.println("covMeter.getCriterionTypeCoverage(OUTPUT_CONTENT_TYPE): " + covMeter.getCriterionTypeCoverage(OUTPUT_CONTENT_TYPE));
+        System.out.println("covMeter.getCriterionTypeCoverage(RESPONSE_BODY_PROPERTIES): " + covMeter.getCriterionTypeCoverage(RESPONSE_BODY_PROPERTIES));
         System.out.println("covMeter.getCriterionCoverage(OPERATION, /pet: " + covMeter.getCriterionCoverage(OPERATION, "/pet"));
         System.out.println("covMeter.getCriterionCoverage(PARAMETER, /pet/findByStatus->GET: " + covMeter.getCriterionCoverage(PARAMETER, "/pet/findByStatus->GET"));
         System.out.println("covMeter.getCriterionCoverage(AUTHENTICATION, /pet/findByStatus->GET: " + covMeter.getCriterionCoverage(AUTHENTICATION, "/pet/findByStatus->GET"));
         System.out.println("covMeter.getCriterionCoverage(PARAMETER, /pet/{petId}/uploadImage->POST: " + covMeter.getCriterionCoverage(PARAMETER, "/pet/{petId}/uploadImage->POST"));
         System.out.println("covMeter.getCriterionCoverage(PARAMETER_VALUE, /pet/{petId}/uploadImage->POST->destinationFormat: " + covMeter.getCriterionCoverage(PARAMETER_VALUE, "/pet/{petId}/uploadImage->POST->destinationFormat"));
+        System.out.println("covMeter.getCriterionCoverage(STATUS_CODE, /pet/findByStatus->GET: " + covMeter.getCriterionCoverage(STATUS_CODE, "/pet/findByStatus->GET"));
 
         System.out.println(covGath.getCoverageCriteria().get(1).getAllElements().get(1));
     }

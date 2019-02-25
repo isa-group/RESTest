@@ -374,7 +374,7 @@ public class CoverageGatherer {
                 List<String> statusCodeClassesList = new ArrayList<>(); // list of statusCodeClasses per criterion
                 CoverageCriterion statusCodeClassesCriterion = new CoverageCriterion(STATUS_CODE_CLASS); // create statusCodeClass criterion for this operation
 
-                statusCodeClassesList.add("2XX"); // it is assumed that all API operation should have a successful response
+                statusCodeClassesList.add("2XX"); // it is assumed that all API operations should have a successful response
 
                 for (String statusCodeClass : currentOperationEntry.getValue().getResponses().keySet()) {
                     if (statusCodeClass.charAt(0) == '4') {

@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import static es.us.isa.rester.coverage.CriterionType.*;
 import es.us.isa.rester.testcases.TestCase;
+import es.us.isa.rester.testcases.TestResult;
 
 /**
  * Class for the measurement of test coverage
@@ -16,18 +17,27 @@ public class CoverageMeter {
 
     CoverageGatherer coverageGatherer;  // coverage gatherer already containing all criteria to be covered
     Collection<TestCase> testSuite;     // full set of abstract test cases addressing the API
-    // Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
+    Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
 
 
     public CoverageMeter(CoverageGatherer coverageGatherer) {
         this.coverageGatherer = coverageGatherer;
         this.testSuite = null;
+        this.testResults = null;
     }
 
     public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite) {
         this.coverageGatherer = coverageGatherer;
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+    }
+
+    public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite, Collection<TestResult> testResults) {
+        this.coverageGatherer = coverageGatherer;
+        this.testSuite = testSuite;
+        setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+        this.testResults = testResults;
+        setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
     }
 
     public CoverageGatherer getCoverageGatherer() {
@@ -45,6 +55,15 @@ public class CoverageMeter {
     public void setTestSuite(Collection<TestCase> testSuite) {
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+    }
+
+    public Collection<TestResult> getTestResults() {
+        return this.testResults;
+    }
+
+    public void setTestResults(Collection<TestResult> testResults) {
+        this.testResults = testResults;
+        setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
     }
 
     public int getAllTotalElements() {
@@ -207,6 +226,17 @@ public class CoverageMeter {
             updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getAuthentication());
             updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getInputFormat());
 
+        }
+    }
+
+    private void setCoveredOutputElements() {
+        // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
+        for (TestResult testResult: testResults) {
+            String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
+            updateCriterion(STATUS_CODE, testResult.getStatusCode(), testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString());
+            if (statusCodeClass != null)
+                updateCriterion(STATUS_CODE_CLASS, statusCodeClass, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString());
+            updateCriterion(OUTPUT_CONTENT_TYPE, testResult.getOutputFormat(), testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString());
         }
     }
 
