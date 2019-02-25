@@ -100,7 +100,7 @@ public class CoverageMeter {
     /**
      * Get total coverage (input and output) considering all criteria
      * 
-     * @return coverage percentage
+     * @return Coverage percentage
      */
     public float getTotalCoverage() {
         if (getAllTotalElements() == 0) {
@@ -112,7 +112,7 @@ public class CoverageMeter {
     /**
      * Get input coverage considering all input criteria
      * 
-     * @return coverage percentage
+     * @return Coverage percentage
      */
     public float getInputCoverage() {
         if (getAllInputElements() == 0) {
@@ -124,7 +124,7 @@ public class CoverageMeter {
     /**
      * Get output coverage considering all output criteria
      * 
-     * @return coverage percentage
+     * @return Coverage percentage
      */
     public float getOutputCoverage() {
         if (getAllOutputElements() == 0) {
@@ -191,21 +191,21 @@ public class CoverageMeter {
         // Traverse all test cases and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestCase testCase: testSuite) {
             updateCriterion(PATH, "", testCase.getPath());
-            updateCriterion(OPERATION, testCase.getPath(), testCase.getOperationId());
+            updateCriterion(OPERATION, testCase.getPath(), testCase.getMethod().toString());
             for (Entry<String, String> parameter: testCase.getHeaderParameters().entrySet()) {
-                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getOperationId(), parameter.getKey());
-                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getOperationId() + "->" + parameter.getKey(), parameter.getValue());
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey());
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue());
             }
             for (Entry<String, String> parameter: testCase.getPathParameters().entrySet()) {
-                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getOperationId(), parameter.getKey());
-                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getOperationId() + "->" + parameter.getKey(), parameter.getValue());
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey());
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue());
             }
             for (Entry<String, String> parameter: testCase.getQueryParameters().entrySet()) {
-                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getOperationId(), parameter.getKey());
-                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getOperationId() + "->" + parameter.getKey(), parameter.getValue());
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey());
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue());
             }
-            updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getOperationId(), testCase.getAuthentication());
-            updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getOperationId(), testCase.getInputFormat());
+            updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getAuthentication());
+            updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getInputFormat());
 
         }
     }

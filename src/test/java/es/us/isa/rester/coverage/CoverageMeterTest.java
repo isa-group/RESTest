@@ -61,10 +61,10 @@ public class CoverageMeterTest {
         System.out.println("covMeter.getCriterionTypeCoverage(INPUT_CONTENT_TYPE): " + covMeter.getCriterionTypeCoverage(INPUT_CONTENT_TYPE));
         System.out.println("covMeter.getCriterionTypeCoverage(AUTHENTICATION): " + covMeter.getCriterionTypeCoverage(AUTHENTICATION));
         System.out.println("covMeter.getCriterionCoverage(OPERATION, /pet: " + covMeter.getCriterionCoverage(OPERATION, "/pet"));
-        System.out.println("covMeter.getCriterionCoverage(PARAMETER, /pet/findByStatus->findPetsByStatus: " + covMeter.getCriterionCoverage(PARAMETER, "/pet/findByStatus->findPetsByStatus"));
-        System.out.println("covMeter.getCriterionCoverage(AUTHENTICATION, /pet/findByStatus->findPetsByStatus: " + covMeter.getCriterionCoverage(AUTHENTICATION, "/pet/findByStatus->findPetsByStatus"));
-        System.out.println("covMeter.getCriterionCoverage(PARAMETER, /pet/{petId}/uploadImage->uploadFile: " + covMeter.getCriterionCoverage(PARAMETER, "/pet/{petId}/uploadImage->uploadFile"));
-        System.out.println("covMeter.getCriterionCoverage(PARAMETER_VALUE, /pet/{petId}/uploadImage->uploadFile->destinationFormat: " + covMeter.getCriterionCoverage(PARAMETER_VALUE, "/pet/{petId}/uploadImage->uploadFile->destinationFormat"));
+        System.out.println("covMeter.getCriterionCoverage(PARAMETER, /pet/findByStatus->GET: " + covMeter.getCriterionCoverage(PARAMETER, "/pet/findByStatus->GET"));
+        System.out.println("covMeter.getCriterionCoverage(AUTHENTICATION, /pet/findByStatus->GET: " + covMeter.getCriterionCoverage(AUTHENTICATION, "/pet/findByStatus->GET"));
+        System.out.println("covMeter.getCriterionCoverage(PARAMETER, /pet/{petId}/uploadImage->POST: " + covMeter.getCriterionCoverage(PARAMETER, "/pet/{petId}/uploadImage->POST"));
+        System.out.println("covMeter.getCriterionCoverage(PARAMETER_VALUE, /pet/{petId}/uploadImage->POST->destinationFormat: " + covMeter.getCriterionCoverage(PARAMETER_VALUE, "/pet/{petId}/uploadImage->POST->destinationFormat"));
 
         System.out.println(covGath.getCoverageCriteria().get(1).getAllElements().get(1));
     }
