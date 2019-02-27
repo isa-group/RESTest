@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Given a Swagger specification, obtain coverage level needed to reach 100% for
@@ -131,7 +132,12 @@ public class CoverageGatherer {
         List<CoverageCriterion> pathsCriteria = new ArrayList<>(); // list of criteria to be returned
 
         CoverageCriterion pathsCriterion = new CoverageCriterion(PATH);
-        pathsCriterion.setAllElements(new ArrayList<>(spec.getSpecification().getPaths().keySet()));
+        Map<String, Boolean> elements = spec.getSpecification().getPaths().keySet().stream()
+                .collect(Collectors.toMap(
+                    e -> e,
+                    e -> Boolean.FALSE
+                ));
+        pathsCriterion.setElements(elements);
         pathsCriteria.add(pathsCriterion);
 
         return pathsCriteria;
@@ -155,7 +161,12 @@ public class CoverageGatherer {
             for (Entry<HttpMethod, Operation> operation : currentPathEntry.getValue().getOperationMap().entrySet()) {
                 operationsList.add(operation.getKey().toString()); // collect operations for this path
             }
-            operationsCriterion.setAllElements(new ArrayList<>(operationsList)); // add all operations to be tested to the criterion created
+            Map<String, Boolean> elements = operationsList.stream()
+                    .collect(Collectors.toMap(
+                        e -> e,
+                        e -> Boolean.FALSE
+                    ));
+            operationsCriterion.setElements(elements); // add all operations to be tested to the criterion created
             operationsCriterion.setRootPath(currentPathEntry.getKey()); // set rootPath to the API path (it is unique)
             operationsCriteria.add(operationsCriterion);
         }
@@ -186,7 +197,12 @@ public class CoverageGatherer {
                 for (Parameter parameter : currentOperationEntry.getValue().getParameters()) {
                     parametersList.add(parameter.getName()); // collect parameters for this operation
                 }
-                parametersCriterion.setAllElements(new ArrayList<>(parametersList)); // add all parameters to be tested to the criterion created
+                Map<String, Boolean> elements = parametersList.stream()
+                    .collect(Collectors.toMap(
+                        e -> e,
+                        e -> Boolean.FALSE
+                    ));
+                parametersCriterion.setElements(elements); // add all parameters to be tested to the criterion created
                 parametersCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                 parametersCriteria.add(parametersCriterion);
             }
@@ -224,7 +240,7 @@ public class CoverageGatherer {
                         List<String> paramEnumValues = ((AbstractSerializableParameter) currentParameter).getEnum();
 
                         if (paramType == "boolean" || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
-                            List<Object> parameterValuesList = new ArrayList<>(); // list of parameter values per criterion
+                            List<String> parameterValuesList = new ArrayList<>(); // list of parameter values per criterion
                             CoverageCriterion parameterValuesCriterion = new CoverageCriterion(PARAMETER_VALUE); // create parameter value criterion for this parameter
 
                             if (paramType == "boolean") {
@@ -233,7 +249,12 @@ public class CoverageGatherer {
                                 parameterValuesList.addAll(paramEnumValues); // add all enum values to test
                             }
 
-                            parameterValuesCriterion.setAllElements(new ArrayList<>(parameterValuesList)); // add all parameter values to be tested to the criterion created
+                            Map<String, Boolean> elements = parameterValuesList.stream()
+                                    .collect(Collectors.toMap(
+                                        e -> e,
+                                        e -> Boolean.FALSE
+                                    ));
+                            parameterValuesCriterion.setElements(elements); // add all parameter values to be tested to the criterion created
                             parameterValuesCriterion.setRootPath(
                                 currentPathEntry.getKey() + "->" +
                                 currentOperationEntry.getKey().toString() + "->" +
@@ -278,7 +299,12 @@ public class CoverageGatherer {
                     for (String contentType : contentTypes) {
                         contentTypesList.add(contentType); // collect content-types for this operation
                     }
-                    contentTypesCriterion.setAllElements(new ArrayList<>(contentTypesList)); // add all content-types to be tested to the criterion created
+                    Map<String, Boolean> elements = contentTypesList.stream()
+                            .collect(Collectors.toMap(
+                                e -> e,
+                                e -> Boolean.FALSE
+                            ));
+                    contentTypesCriterion.setElements(elements); // add all content-types to be tested to the criterion created
                     contentTypesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                     contentTypesCriteria.add(contentTypesCriterion);
                 }
@@ -312,7 +338,12 @@ public class CoverageGatherer {
                     for (Map<String, List<String>> authenticationScheme : currentOperationEntry.getValue().getSecurity()) {
                         authenticationList.add(authenticationScheme.keySet().iterator().next()); // collect authentications for this operation
                     }
-                    authenticationCriterion.setAllElements(new ArrayList<>(authenticationList)); // add all authentications to be tested to the criterion created
+                    Map<String, Boolean> elements = authenticationList.stream()
+                            .collect(Collectors.toMap(
+                                e -> e,
+                                e -> Boolean.FALSE
+                            ));
+                    authenticationCriterion.setElements(elements); // add all authentications to be tested to the criterion created
                     authenticationCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                     authenticationCriteria.add(authenticationCriterion);
                 }
@@ -345,7 +376,12 @@ public class CoverageGatherer {
                 for (String statusCode : currentOperationEntry.getValue().getResponses().keySet()) {
                     statusCodesList.add(statusCode); // collect statusCodes for this operation
                 }
-                statusCodesCriterion.setAllElements(new ArrayList<>(statusCodesList)); // add all statusCodes to be tested to the criterion created
+                Map<String, Boolean> elements = statusCodesList.stream()
+                        .collect(Collectors.toMap(
+                            e -> e,
+                            e -> Boolean.FALSE
+                        ));
+                statusCodesCriterion.setElements(elements); // add all statusCodes to be tested to the criterion created
                 statusCodesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                 statusCodesCriteria.add(statusCodesCriterion);
             }
@@ -382,7 +418,12 @@ public class CoverageGatherer {
                         break;
                     }
                 }
-                statusCodeClassesCriterion.setAllElements(new ArrayList<>(statusCodeClassesList)); // add all statusCodeClasses to be tested to the criterion created
+                Map<String, Boolean> elements = statusCodeClassesList.stream()
+                        .collect(Collectors.toMap(
+                            e -> e,
+                            e -> Boolean.FALSE
+                        ));
+                statusCodeClassesCriterion.setElements(elements); // add all statusCodeClasses to be tested to the criterion created
                 statusCodeClassesCriterion.setRootPath(currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()); // put together API path and operationID to create a unique rootPath
                 statusCodeClassesCriteria.add(statusCodeClassesCriterion);
             }
@@ -417,7 +458,7 @@ public class CoverageGatherer {
                     Property responseSchema = currentResponseEntry.getValue().getSchema();
                     if (responseSchema != null) { // if the response actually returns a body
                         String currentResponseRef = null;
-                        List<Object> responseBodyPropertiesList = new ArrayList<>(); // list of responseBodyProperties per criterion
+                        List<String> responseBodyPropertiesList = new ArrayList<>(); // list of responseBodyProperties per criterion
                         
                         if (responseSchema.getType() == "array") {
                             if (((ArrayProperty)responseSchema).getItems().getType() == "ref") {
@@ -426,16 +467,21 @@ public class CoverageGatherer {
                         } else if (responseSchema.getType() == "ref") {
                             currentResponseRef = ((RefProperty)responseSchema).getSimpleRef();
                         } else if (responseSchema.getType() == "object" && responseSchema instanceof ObjectProperty) {
-                            responseBodyPropertiesList.addAll(new ArrayList<>(Arrays.asList(((ObjectProperty)responseSchema).getProperties().keySet().toArray()))); // add response body properties to the criterion
+                            responseBodyPropertiesList.addAll(((ObjectProperty)responseSchema).getProperties().keySet()); // add response body properties to the criterion
                         }
 
                         if (currentResponseRef != null) { // if the response body refers to a Swagger definition, get properties from that object
                             Model currentSwaggerModel = spec.getSpecification().getDefinitions().get(currentResponseRef); // get Swagger Definition associated to the Ref defined in the response
-                            responseBodyPropertiesList.addAll(new ArrayList<>(Arrays.asList(currentSwaggerModel.getProperties().keySet().toArray()))); // add response body properties to the criterion
+                            responseBodyPropertiesList.addAll(currentSwaggerModel.getProperties().keySet()); // add response body properties to the criterion
                         }
                         if (responseBodyPropertiesList.size() > 0) { // if the response body is an object containing some properties, create criterion
                             CoverageCriterion responseBodyPropertiesCriterion = new CoverageCriterion(RESPONSE_BODY_PROPERTIES); // create responseBodyProperties criterion for this response
-                            responseBodyPropertiesCriterion.setAllElements(new ArrayList<>(responseBodyPropertiesList)); // add all response body properties to be tested to the criterion created
+                            Map<String, Boolean> elements = responseBodyPropertiesList.stream()
+                                    .collect(Collectors.toMap(
+                                        e -> e,
+                                        e -> Boolean.FALSE
+                                    ));
+                            responseBodyPropertiesCriterion.setElements(elements); // add all response body properties to be tested to the criterion created
                             responseBodyPropertiesCriterion.setRootPath(
                                 currentPathEntry.getKey() + "->" +
                                 currentOperationEntry.getKey().toString() + "->" +

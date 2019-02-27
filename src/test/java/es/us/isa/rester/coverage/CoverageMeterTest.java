@@ -86,6 +86,6 @@ public class CoverageMeterTest {
         System.out.println("covMeter.getCriterionCoverage(RESPONSE_BODY_PROPERTIES, /pet/findByStatus->GET->200): " + covMeter.getCriterionCoverage(RESPONSE_BODY_PROPERTIES, "/pet/findByStatus->GET->200"));
         System.out.println("covMeter.getCriterionCoverage(RESPONSE_BODY_PROPERTIES, /pet/{petId}/uploadImage->POST->200): " + covMeter.getCriterionCoverage(RESPONSE_BODY_PROPERTIES, "/pet/{petId}/uploadImage->POST->200"));
 
-        System.out.println(covGath.getCoverageCriteria().get(1).getAllElements().get(1));
+        System.out.println(covGath.getCoverageCriteria().get(1).getElements().entrySet().iterator().next().getKey());
     }
 }
