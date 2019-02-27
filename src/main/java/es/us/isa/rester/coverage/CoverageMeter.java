@@ -233,10 +233,10 @@ public class CoverageMeter {
         // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestResult testResult: testResults) {
             String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
-            updateCriterion(STATUS_CODE, testResult.getStatusCode(), testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString());
+            updateCriterion(STATUS_CODE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getStatusCode());
             if (statusCodeClass != null)
-                updateCriterion(STATUS_CODE_CLASS, statusCodeClass, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString());
-            updateCriterion(OUTPUT_CONTENT_TYPE, testResult.getOutputFormat(), testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString());
+                updateCriterion(STATUS_CODE_CLASS, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), statusCodeClass);
+            updateCriterion(OUTPUT_CONTENT_TYPE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getOutputFormat());
         }
     }
 
