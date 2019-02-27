@@ -1,8 +1,14 @@
 package es.us.isa.rester.coverage;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map.Entry;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static es.us.isa.rester.coverage.CriterionType.*;
 import es.us.isa.rester.testcases.TestCase;
@@ -18,7 +24,6 @@ public class CoverageMeter {
     CoverageGatherer coverageGatherer;  // coverage gatherer already containing all criteria to be covered
     Collection<TestCase> testSuite;     // full set of abstract test cases addressing the API
     Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
-
 
     public CoverageMeter(CoverageGatherer coverageGatherer) {
         this.coverageGatherer = coverageGatherer;
@@ -233,10 +238,27 @@ public class CoverageMeter {
         // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestResult testResult: testResults) {
             String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
-            updateCriterion(STATUS_CODE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getStatusCode());
             if (statusCodeClass != null)
                 updateCriterion(STATUS_CODE_CLASS, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), statusCodeClass);
+            updateCriterion(STATUS_CODE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getStatusCode());
             updateCriterion(OUTPUT_CONTENT_TYPE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getOutputFormat());
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                JsonNode jsonResponse = objectMapper.readTree(testResult.getResponseBody());
+                Iterator<Entry<String,JsonNode>> responseIterator = null;
+                if (jsonResponse instanceof ObjectNode) {
+                    responseIterator = jsonResponse.fields();
+                } else if (jsonResponse instanceof ArrayNode && jsonResponse.get(0) != null) {
+                    responseIterator = jsonResponse.get(0).fields();
+                }
+                while (responseIterator != null && responseIterator.hasNext()) {
+                    String responseProperty = responseIterator.next().getKey();
+                    updateCriterion(RESPONSE_BODY_PROPERTIES, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
+                }
+            } catch (IOException e) {
+                System.out.println("This response is not formatted in JSON: " + testResult.getResponseBody());
+            }
         }
     }
 
