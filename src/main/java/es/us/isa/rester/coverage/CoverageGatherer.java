@@ -10,6 +10,7 @@ import io.swagger.models.Operation;
 import io.swagger.models.Path;
 import io.swagger.models.Response;
 import io.swagger.models.parameters.AbstractSerializableParameter;
+import io.swagger.models.parameters.BodyParameter;
 import io.swagger.models.parameters.Parameter;
 import io.swagger.models.properties.Property;
 import io.swagger.models.properties.RefProperty;
@@ -92,7 +93,7 @@ public class CoverageGatherer {
      * criterion, it iterates over all paths, operations of those paths and parameters of those
      * operations.
      * 
-     * @param type {@link CriterionType} to consider for the creation of {@link CoverageCriterion}'s
+     * @param type {@link CriterionType} to consider for the creation of {@link CoverageCriterion}s
      * @return A list containing all coverage criteria that could be created for that type
      */
     private List<CoverageCriterion> getCoverageCriteria(CriterionType type) {
@@ -124,8 +125,12 @@ public class CoverageGatherer {
 
                         if (type == PARAMETER) {
                             List<String> parametersList = new ArrayList<>(); // list of parameters per criterion
-                            for (Parameter parameter : currentOperationEntry.getValue().getParameters()) {
-                                parametersList.add(parameter.getName()); // collect parameters for this operation
+                            for (Parameter parameter : currentOperationEntry.getValue().getParameters()) { // collect parameters for this operation
+                                if (parameter instanceof BodyParameter) { // if the parameter is the body
+                                    parametersList.add("body"); // instead of adding the body parameter name, add "body"
+                                } else {
+                                    parametersList.add(parameter.getName()); // add parameter name
+                                }
                             }
                             criteria.add(createCriterion(parametersList, PARAMETER, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
 
