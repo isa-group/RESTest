@@ -239,6 +239,26 @@ testConfiguration:
             - value 1
             - value 2
             objectValues: null
+      - name: convertToJPG
+        weight: 0.5
+        generator:
+          type: RandomBoolean
+          genParameters:
+          - name: trueProbability
+            values:
+            - 0.5
+            objectValues: null
+      - name: destinationFormat
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - JPG
+            - PNG
+            - GIF
+            objectValues: null
       paramDependencies: null
       expectedResponse: 200
   - testPath: /store/inventory
