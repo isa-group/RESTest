@@ -289,7 +289,7 @@ paths:
           in: query
           description: file to upload
           required: false
-          type: file
+          type: string
         - name: convertToJPG
           in: query
           description: whether to convert image to JPG when uploaded
