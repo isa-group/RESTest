@@ -9,6 +9,45 @@
 
 	<name>RESTest</name>
 	<url>http://maven.apache.org</url>
+	
+	  <licenses>
+        <license>
+            <name> GNU Lesser General Public License (LGPL), version 3</name>
+            <url>http://www.gnu.org/licenses/lgpl-3.0.en.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/isa-group/RESTest/issues</url>
+	</issueManagement>
+	
+	    <developers>
+        <developer>
+            <id>Martin-Lopez</id>
+            <name>Alberto Martin-Lopez</name>
+            <email>amarlop@us.es</email>
+            <url>http://personal.us.es/amarlop/</url>
+            <organization>University of Seville</organization>
+            <organizationUrl>http://www.us.es</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>segura</id>
+            <name>Sergio Segura</name>
+            <email>sergiosegura@us.es</email>
+            <url>http://personal.us.es/sergiosegura/</url>
+             <organization>University of Seville</organization>
+            <organizationUrl>http://www.us.es</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
+
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
