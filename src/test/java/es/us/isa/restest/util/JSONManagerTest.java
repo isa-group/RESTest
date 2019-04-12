@@ -8,12 +8,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import es.us.isa.restest.util.JSONManager;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class JSONManagerTest {
 
     @Test
+    @Ignore
     public void testJsonParse() {
         List<String> jsonPaths = new ArrayList<>();
         jsonPaths.add("src/test/resources/jsonData/jsonSample.json");
