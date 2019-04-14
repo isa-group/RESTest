@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Map.Entry;
 
 import es.us.isa.restest.testcases.TestCase;
+import io.qameta.allure.restassured.AllureRestAssured;
 import io.swagger.models.Response;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
@@ -18,6 +19,7 @@ public class RESTAssuredWritter {
 	
 	private boolean OAIValidation = true;
 	private boolean logging = false;
+	private boolean allureReport = false;
 	
 	public void write(String specPath, String testFilePath, String className, String packageName, String baseURI, Collection<TestCase> testCases) {
 		
@@ -67,7 +69,8 @@ public class RESTAssuredWritter {
 				+  "import java.io.IOException;\n"
 				+  "import org.junit.FixMethodOrder;\n"
 				+  "import static org.junit.Assert.fail;\n"
-				+  "import org.junit.runners.MethodSorters;\n";
+				+  "import org.junit.runners.MethodSorters;\n"
+		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n";
 		
 		// OAIValidation (Optional)
 		if (OAIValidation)
@@ -241,8 +244,13 @@ public class RESTAssuredWritter {
 	}
 	
 	private String generateHTTPRequest(TestCase t) {
-		String content = "\t\t\t.when()\n" +
-						 "\t\t\t\t." + t.getMethod().name().toLowerCase() + "(\"" + t.getPath() + "\");\n";
+		String content = "\t\t\t.when()\n";
+		
+		if (allureReport)
+			content +=  "\t\t\t\t.filter(new AllureRestAssured())\n";
+		
+
+		content +=	 "\t\t\t\t." + t.getMethod().name().toLowerCase() + "(\"" + t.getPath() + "\");\n";
 		
 		// Create response log
 		if (logging)
@@ -323,6 +331,7 @@ public class RESTAssuredWritter {
 	}
 
 	private String generatePostResponseValidation(TestCase t) {
+		
 		String content = "\t\t\tSystem.out.println(\"Test passed.\");\n";
 
 		if (t.getBodyParameter() != null) {
@@ -371,5 +380,13 @@ public class RESTAssuredWritter {
 
 	public void setLogging(boolean logging) {
 		this.logging = logging;
+	}
+	
+	public boolean allureReport() {
+		return allureReport;
+	}
+
+	public void setAllureReport(boolean ar) {
+		this.allureReport = ar;
 	}
 }
