@@ -40,7 +40,7 @@ public class PlaylistRandomTestCaseGeneratorTest {
 		RESTAssuredWritter writer = new RESTAssuredWritter();
 		writer.setOAIValidation(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java/restassured", "Playlist", "restassured", basePath.toLowerCase(), testCases);	
+		writer.write(OAISpecPath, "src/generation/java/restassured", "PlaylistTest", "restassured", basePath.toLowerCase(), testCases);	
 		}
 	
 	

@@ -18,8 +18,8 @@ public class RESTAssuredWritter {
 	
 	
 	private boolean OAIValidation = true;
-	private boolean logging = false;
-	private boolean allureReport = false;
+	private boolean logging = false;				// Log everything (ONLY IF THE TEST FAILS)
+	private boolean allureReport = false;			// Generate request and response attachment for allure reports
 	
 	public void write(String specPath, String testFilePath, String className, String packageName, String baseURI, Collection<TestCase> testCases) {
 		
@@ -83,7 +83,7 @@ public class RESTAssuredWritter {
 	
 	private String generateClassName(String className) {
 		return "@FixMethodOrder(MethodSorters.NAME_ASCENDING)\n"
-			 + "public class " + className + "Test {\n\n";
+			 + "public class " + className + " {\n\n";
 	}
 	
 	private String generateAttributes(String specPath) {
@@ -158,8 +158,7 @@ public class RESTAssuredWritter {
 
 	private String generateMethodHeader(TestCase t, int instance) {
 		return "\t@Test\n" +
-				"\tpublic void " + removeCharacters(t.getOperationId()) +
-				"Test" + instance + "() {\n";
+				"\tpublic void " + t.getId() + "() {\n";
 	}
 
 	private String generateTryBlockStart() {
@@ -195,7 +194,7 @@ public class RESTAssuredWritter {
 				+  "\t\t\t.given()\n";
 			
 		if (logging)
-			content +="\t\t\t\t.log().all()\n";
+			content +="\t\t\t\t.log().ifValidationFails()\n";
 			
 		return content;
 	}
@@ -253,9 +252,10 @@ public class RESTAssuredWritter {
 		content +=	 "\t\t\t\t." + t.getMethod().name().toLowerCase() + "(\"" + t.getPath() + "\");\n";
 		
 		// Create response log
-		if (logging)
-			content += "\n\t\t\tresponse.then().log().all();\n";
-			
+		if (logging) {
+			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
+			         + "\n\t\t\tresponse.then().log().ifError();\n";
+		}
 		
 //		if (OAIValidation)
 //			content += "\t\t} catch (RuntimeException ex) {\n"
@@ -352,7 +352,7 @@ public class RESTAssuredWritter {
 	private void saveToFile(String path, String className, String contentFile) {
 		FileWriter testClass = null;
 		try {
-			testClass = new FileWriter(path + "/" + className + "Test.java");
+			testClass = new FileWriter(path + "/" + className + ".java");
 			testClass.write(contentFile);
 			testClass.flush();
 			testClass.close();
@@ -360,10 +360,6 @@ public class RESTAssuredWritter {
 			System.err.println("Error writing test file: " + ex.getMessage());
 			ex.printStackTrace();
 		} 
-	}
-
-	private String removeCharacters(String s) {
-		return s.replaceAll("[^A-Za-z0-9]", "");
 	}
 
 	public boolean OAIValidation() {

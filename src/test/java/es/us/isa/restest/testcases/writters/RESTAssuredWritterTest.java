@@ -21,7 +21,7 @@ public class RESTAssuredWritterTest {
 		
 		// Create test case
 		List<TestCase> testCases = new ArrayList<TestCase>();
-		TestCase tc = new TestCase("findPetsByStatus","/pet/findByStatus" ,HttpMethod.GET);
+		TestCase tc = new TestCase("findPetsByStatusId","findPetsByStatus","/pet/findByStatus" ,HttpMethod.GET);
 		tc.setOutputFormat("application/json");
 		
 		tc.addHeaderParameter("Authorization", "Bearer sklfhskdlafjsklf092359wejtu0349");

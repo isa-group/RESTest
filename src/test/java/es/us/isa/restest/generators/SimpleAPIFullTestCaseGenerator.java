@@ -40,7 +40,7 @@ public class SimpleAPIFullTestCaseGenerator {
         writer.setOAIValidation(true);
         writer.setLogging(true);
         String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        writer.write(OAISpecPath, "src/generation/java/restassured", "SimpleAPI", "restassured", basePath.toLowerCase(), testCases);
+        writer.write(OAISpecPath, "src/generation/java/restassured", "SimpleAPITest", "restassured", basePath.toLowerCase(), testCases);
 
     }
 }

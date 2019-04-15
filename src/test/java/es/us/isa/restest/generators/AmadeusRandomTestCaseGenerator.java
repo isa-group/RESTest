@@ -51,7 +51,7 @@ public class AmadeusRandomTestCaseGenerator {
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelSearch", "restassured", basePath.toLowerCase(), testCases);
+		writer.write(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelSearchTest", "restassured", basePath.toLowerCase(), testCases);
 
 	}
 

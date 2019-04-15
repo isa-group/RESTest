@@ -12,6 +12,7 @@ import io.swagger.models.Response;
  */
 public class TestCase {
 	
+	private String id;										// Test unique identifer
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
@@ -25,7 +26,8 @@ public class TestCase {
 	private Map<String, Response> expectedOutputs;			// Possible outputs
 	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
-	public TestCase(String operationId, String path, HttpMethod method) {
+	public TestCase(String id, String operationId, String path, HttpMethod method) {
+		this.id = id;
 		this.operationId = operationId;
 		this.path = path;
 		this.method = method;
@@ -155,5 +157,13 @@ public class TestCase {
 
 	public void setBodyParameter(String bodyParameter) {
 		this.bodyParameter = bodyParameter;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }

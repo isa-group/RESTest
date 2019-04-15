@@ -40,7 +40,7 @@ public class BikewiseFullTestCaseGenerator {
         writer.setOAIValidation(true);
         writer.setLogging(true);
         String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        writer.write(OAISpecPath, "src/generation/java/restassured", "Bikewise", "restassured", basePath.toLowerCase(), testCases);
+        writer.write(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase(), testCases);
 
     }
 }

@@ -7,6 +7,7 @@ import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
+import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
@@ -25,16 +26,17 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.numberOfTest = nTests;
 		this.index =0;
 		
-    	this.rand = new Random();
-    	this.seed = rand.nextLong();
-    	rand.setSeed(seed);
+		this.rand = new Random();
+		this.seed = rand.nextLong();
+		rand.setSeed(this.seed);
 	}
 	
 
 	// Generate the next test case and update the generation index
 	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method) {
 		
-		TestCase test = new TestCase(testOperation.getOperationId(), path, method);
+		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId(rand);
+		TestCase test = new TestCase(testId,testOperation.getOperationId(), path, method);
 		
 		// Set parameters
 		for(TestParameter confParam: testOperation.getTestParameters()) {
@@ -72,5 +74,18 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		if (index == numberOfTest)
 			index = 0;
 		return res;
+	}
+
+	private long getSeed() {
+		return this.seed;
+	}
+
+	private void setSeed(long seed) {
+		this.seed = seed;
+		rand.setSeed(seed);
+	}
+	
+	private String removeNotAlfanumericCharacters(String s) {
+		return s.replaceAll("[^A-Za-z0-9]", "");
 	}
 }
