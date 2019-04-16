@@ -1,0 +1,34 @@
+[
+	{
+		"name": "Ignored tests",
+		"matchedStatuses": [
+			"skipped"
+		]
+	},
+	{
+		"name": "Status 500",
+		"messageRegex": ".*status 500.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "Validation failures",
+		"traceRegex": ".*Validation failed.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "Failures",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "Broken tests",
+		"matchedStatuses": [
+			"broken"
+		]
+	}
+]

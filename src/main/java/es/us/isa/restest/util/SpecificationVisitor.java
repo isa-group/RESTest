@@ -5,6 +5,10 @@ import java.util.Iterator;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
 
+/**
+ * 
+ * @author Sergio Segura
+ */
 public class SpecificationVisitor {
 
 	/**

@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import es.us.isa.restest.configuration.TestConfigurationFilter;
+import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.TestConfigurationFilter;
-import es.us.isa.restest.util.TestConfigurationVisitor;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 

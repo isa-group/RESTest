@@ -11,15 +11,25 @@ public class IDGeneratorTest {
 
 
 	@Test
-	public void shortIdTest() {
-		Random rand = new Random();
+	public void shortIdWithoutSeedTest() {
+		
+		String id1= IDGenerator.generateId();
+		String id2= IDGenerator.generateId();
+		
+		System.out.println("ID1: " + id1);
+		System.out.println("ID2: " + id2);
+		assertTrue("The ids are equal", !id1.equals(id2));
+	}
+	
+	@Test
+	public void shortIdWithSeedTest() {
 		long seed = 28;
 		
-		rand.setSeed(seed);
-		String id1= IDGenerator.generateId(rand);
+		IDGenerator.setSeed(seed);
+		String id1= IDGenerator.generateId();
 		
-		rand.setSeed(seed);
-		String id2= IDGenerator.generateId(rand);
+		IDGenerator.setSeed(seed);
+		String id2= IDGenerator.generateId();
 		
 		System.out.println("ID1: " + id1);
 		System.out.println("ID2: " + id2);

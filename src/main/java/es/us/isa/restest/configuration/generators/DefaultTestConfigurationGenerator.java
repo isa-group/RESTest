@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.Auth;
 import es.us.isa.restest.configuration.pojos.GenParameter;
@@ -20,7 +21,6 @@ import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.configuration.pojos.TestPath;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.util.TestConfigurationFilter;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Path;
 import io.swagger.models.parameters.Parameter;

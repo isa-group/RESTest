@@ -12,6 +12,8 @@ import es.us.isa.restest.inputs.fixed.InputValueIteratorTest;
 import es.us.isa.restest.inputs.random.*;
 import es.us.isa.restest.specification.*;
 import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
+import es.us.isa.restest.util.AllureReportManagerTest;
+import es.us.isa.restest.util.IDGeneratorTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({
@@ -36,6 +38,8 @@ import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
 	PlaylistRandomTestCaseGeneratorTest.class,
 	SimpleAPIFullTestCaseGenerator.class,
 	SpotifyRandomTestCaseGeneratorTest.class,
+	AllureReportManagerTest.class,
+	IDGeneratorTest.class
 })
 
 public class AllTests {

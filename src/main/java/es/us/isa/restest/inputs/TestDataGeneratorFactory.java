@@ -1,5 +1,6 @@
 package es.us.isa.restest.inputs;
 
+import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Generator;
 import es.us.isa.restest.inputs.boundary.BoundaryNumberConfigurator;
@@ -9,7 +10,6 @@ import es.us.isa.restest.inputs.random.*;
 import es.us.isa.restest.util.CSVManager;
 import es.us.isa.restest.util.DataType;
 import es.us.isa.restest.util.JSONManager;
-import es.us.isa.restest.util.TestConfigurationVisitor;
 
 public class TestDataGeneratorFactory {
 

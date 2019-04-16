@@ -12,6 +12,10 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
+/**
+ * 
+ * @author Sergio Segura
+ */
 public class ClassLoader {
 
 	

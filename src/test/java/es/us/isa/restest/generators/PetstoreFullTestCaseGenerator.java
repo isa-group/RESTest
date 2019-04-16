@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
@@ -18,7 +19,6 @@ import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writters.RESTAssuredWritter;
-import es.us.isa.restest.util.TestConfigurationFilter;
 
 public class PetstoreFullTestCaseGenerator {
 
