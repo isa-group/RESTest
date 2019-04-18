@@ -18,7 +18,7 @@ import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.writters.RESTAssuredWritter;
+import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 
 public class PetstoreFullTestCaseGenerator {
 
@@ -81,11 +81,11 @@ public class PetstoreFullTestCaseGenerator {
         System.out.println("INPUT_CONTENT_TYPE coverage: " + coverageMeter.getCriterionTypeCoverage(OPERATION));
 
         // Write RESTAssured test cases
-        RESTAssuredWritter writer = new RESTAssuredWritter();
+        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PetstoreTest", "restassured", basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        writer.write(OAISpecPath, "src/generation/java/restassured", "PetstoreTest", "restassured", basePath.toLowerCase(), testCases);
+        writer.write(testCases);
 
     }
 }

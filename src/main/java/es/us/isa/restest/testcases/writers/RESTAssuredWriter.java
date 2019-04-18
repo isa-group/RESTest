@@ -1,4 +1,4 @@
-package es.us.isa.restest.testcases.writters;
+package es.us.isa.restest.testcases.writers;
 
 import java.io.FileWriter;
 import java.util.Collection;
@@ -14,14 +14,31 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
  * @author Sergio Segura & Alberto Martin-Lopez
  *
  */
-public class RESTAssuredWritter {
+public class RESTAssuredWriter implements IWriter {
 	
 	
 	private boolean OAIValidation = true;
 	private boolean logging = false;				// Log everything (ONLY IF THE TEST FAILS)
 	private boolean allureReport = false;			// Generate request and response attachment for allure reports
+	private String specPath;						// Path to OAS specification file
+	private String testFilePath;					// Path to test configuration file
+	private String className;						// Test class name
+	private String packageName;						// Package name
+	private String baseURI;							// API base URI
 	
-	public void write(String specPath, String testFilePath, String className, String packageName, String baseURI, Collection<TestCase> testCases) {
+	public RESTAssuredWriter(String specPath, String testFilePath, String className, String packageName, String baseURI) {
+		this.specPath = specPath;
+		this.testFilePath = testFilePath;
+		this.className = className;
+		this.packageName = packageName;
+		this.baseURI = baseURI;
+	}
+	
+	/* (non-Javadoc)
+	 * @see es.us.isa.restest.testcases.writers.IWriter#write(java.util.Collection)
+	 */
+	@Override
+	public void write(Collection<TestCase> testCases) {
 		
 		// Initializing content
 		String contentFile = "";
@@ -384,5 +401,45 @@ public class RESTAssuredWritter {
 
 	public void setAllureReport(boolean ar) {
 		this.allureReport = ar;
+	}
+
+	public String getSpecPath() {
+		return specPath;
+	}
+
+	public void setSpecPath(String specPath) {
+		this.specPath = specPath;
+	}
+
+	public String getTestFilePath() {
+		return testFilePath;
+	}
+
+	public void setTestFilePath(String testFilePath) {
+		this.testFilePath = testFilePath;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
+	}
+
+	public String getBaseURI() {
+		return baseURI;
+	}
+
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
 	}
 }

@@ -12,7 +12,7 @@ import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.writters.RESTAssuredWritter;
+import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 
 public class BikewiseFullTestCaseGenerator {
 
@@ -36,11 +36,11 @@ public class BikewiseFullTestCaseGenerator {
         assertEquals("Incorrect number of test cases", 20, testCases.size());
 
         // Write RESTAssured test cases
-        RESTAssuredWritter writer = new RESTAssuredWritter();
+        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        writer.write(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase(), testCases);
+        writer.write(testCases);
 
     }
 }

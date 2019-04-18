@@ -10,7 +10,7 @@ import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.writters.RESTAssuredWritter;
+import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.AllureReportManager;
 import es.us.isa.restest.util.ClassLoader;
 import es.us.isa.restest.util.PropertyManager;
@@ -67,12 +67,12 @@ public class BikeWise {
         Collection<TestCase> testCases = generator.generate();
 
         // Write RESTAssured test cases
-        RESTAssuredWritter writer = new RESTAssuredWritter();
+        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDir, testClassName, packageName, basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.setAllureReport(true);
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        writer.write(OAISpecPath, targetDir, testClassName, packageName, basePath.toLowerCase(), testCases);
+        writer.write(testCases);
 	}
 	
 	

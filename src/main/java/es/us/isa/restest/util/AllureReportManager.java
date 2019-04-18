@@ -15,7 +15,7 @@ public class AllureReportManager {
 	private String resultsDirPath;
 	private String reportDirPath;
 	private String allureCommand;
-	private Boolean historyTrend = true;
+	private Boolean historyTrend = false;
 	private Boolean loadCategories = true;
 	
 	
@@ -94,29 +94,52 @@ public class AllureReportManager {
 		}
 	}
 
-	Boolean historyTrend() {
+	public Boolean historyTrend() {
 		return historyTrend;
 	}
-	void setHistoryTrend(Boolean historyTrend) {
+	
+	public void setHistoryTrend(Boolean historyTrend) {
 		this.historyTrend = historyTrend;
 	}
-	Boolean loadCategories() {
+	
+	public Boolean loadCategories() {
 		return loadCategories;
 	}
-	void setLoadCategories(Boolean loadCategories) {
+	
+	public void setLoadCategories(Boolean loadCategories) {
 		this.loadCategories = loadCategories;
 	}
-	String getResultsDir() {
+	
+	public String getResultsDir() {
 		return resultsDirPath;
 	}
-	void setResultsDir(String resultsDir) {
+	
+	public void setResultsDir(String resultsDir) {
 		this.resultsDirPath = resultsDir;
 	}
-	String getReportDir() {
+	
+	public String getReportDir() {
 		return reportDirPath;
 	}
-	void setReportDir(String reportDir) {
+	
+	public void setReportDir(String reportDir) {
 		this.reportDirPath = reportDir;
+	}
+
+	public String getResultsDirPath() {
+		return resultsDirPath;
+	}
+
+	public void setResultsDirPath(String resultsDirPath) {
+		this.resultsDirPath = resultsDirPath;
+	}
+
+	public String getReportDirPath() {
+		return reportDirPath;
+	}
+
+	public void setReportDirPath(String reportDirPath) {
+		this.reportDirPath = reportDirPath;
 	}
 
 }

@@ -161,6 +161,20 @@
 			<version>2.10.0</version>
 		</dependency>
 
+		<!-- Apache log4j2 API -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.11.2</version>
+		</dependency>
+
+		<!-- Apache log4j2 core -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.11.2</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

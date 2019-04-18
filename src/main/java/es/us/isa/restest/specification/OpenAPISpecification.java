@@ -6,12 +6,18 @@ import io.swagger.models.Swagger;
 public class OpenAPISpecification 
 {
 	Swagger specification;
+	private String path;
 	
 	public OpenAPISpecification(String location) {
-		specification = new SwaggerParser().read(location);
+		this.specification = new SwaggerParser().read(location);
+		this.path = location;
 	}
 	
 	public Swagger getSpecification() {
 	   return specification;
    }
+
+	public String getPath() {
+		return path;
+	}
 }
