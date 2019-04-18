@@ -1,12 +1,10 @@
-
-
 package es.us.isa.restest.main;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
@@ -16,24 +14,28 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.AllureReportManager;
+import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.PropertyManager;
 
 /**
- * Basic test scenario example: Random test case generation, execution and test report generation. 
+ * Iterative test scenario example: Test are generated, and executed incrementally in different iterations updating the test report at each step.
+ * An optional time delay can be set between every two iterations.
+ * Classes are named uniquely to avoid the same class being loaded and executed everytime. 
  * @author Sergio Segura
  *
  */
-public class BikeWiseExample {
+public class BikeWiseIterativeExample {
 
-	private static int numTestCases = 5;												// Number of test cases per operation
+	private static int numTestCases = 2;												// Number of test cases per operation
 	private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		// Path to OAS specification file
 	private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		// Path to test configuration file
-	private static String targetDir = "src/generation/java/bikewise";					// Directory where tests will be generated.
+	private static String targetDir = "src/generation/java/bikewise";					// Directory where tests will be generated. 
+	private static String packageName = "bikewise";										// Package name.
 	private static String APIName = "Bikewise";											// API name
-	private static String packageName = "bikewise";										// Package name of the test class.
-	private static String testClassName = "BikewiseTest";								// Name of the class to be generated
+	private static String testClassName = "BikewiseTest";								// Name prefix of the class to be generated
 	private static OpenAPISpecification spec;
-
+	private static int totalNumTestCases = 50;											// Total number of test cases to be generated
+	private static int timeDelay = -1;													// Optional time delay between iterations (in seconds)
 	
 	public static void main(String[] args) {
 		
@@ -43,28 +45,39 @@ public class BikeWiseExample {
 		// RESTest runner
 		AbstractTestCaseGenerator generator = createGenerator();		// Test case generator
 		IWriter writer = createWriter();								// Test case writer
-		AllureReportManager reportManager = createReportManager();		// Allure test case reporter (It delete previous report, if any)
+		AllureReportManager reportManager = createReportManager();		// Allure test case reporter
 		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager);
 		
-		// Test case generation + execution + test report generation
-		runner.run();
-		
-		// Delete targetDir
-		// WATCH OUT: If the test classes are not deleted, they will be loaded and run in the next execution.
-		deleteDir(targetDir);
+		int iteration = 1;
+		while (runner.getNumTestCases() < totalNumTestCases) {
+			
+			// Introduce optional delay
+			if (iteration!=1 && timeDelay!=-1)
+				delay();
+			
+			// Generate unique test class name to avoid the same class being loaded everytime
+			String className = testClassName + "_" + IDGenerator.generateId();
+			((RESTAssuredWriter) writer).setClassName(className);
+			runner.setTestClassName(className);
+			
+			// Test case generation + execution + test report generation
+			runner.run();
+			
+			System.out.println("Iteration "  + iteration + ". " +  runner.getNumTestCases() + " test cases generated.");
+			iteration++;		
+		}
 
 	}
 	
-	// Delete a directory
-	private static void deleteDir(String dirPath) {
-		File dir = new File(dirPath);
+	private static void delay() {
 		
 		try {
-			FileUtils.deleteDirectory(dir);
-		} catch (IOException e) {
-			System.err.println("Error deleting target dir");
+			TimeUnit.SECONDS.sleep(timeDelay);
+		} catch (InterruptedException e) {
+			System.err.println("Error introducing delay: " + e.getMessage());
 			e.printStackTrace();
 		}
+		
 	}
 
 	// Create target dir if it does not exist
@@ -107,8 +120,19 @@ public class BikeWiseExample {
 		deleteDir(allureReportDir);
 		
 		AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir);
-		
+		arm.setHistoryTrend(true);
 		return arm;
 	}
 
+	// Delete a directory
+	private static void deleteDir(String dirPath) {
+		File dir = new File(dirPath);
+		
+		try {
+			FileUtils.deleteDirectory(dir);
+		} catch (IOException e) {
+			System.err.println("Error deleting target dir");
+			e.printStackTrace();
+		}
+	}
 }

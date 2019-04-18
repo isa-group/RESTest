@@ -29,7 +29,8 @@ public class RESTestRunner {
 	AbstractTestCaseGenerator generator;   		// Test case generator
 	IWriter writer;								// RESTAssured writer
 	AllureReportManager reportManager;			// Allure report manager
-	 private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
+	int numTestCases = 0;						// Number of test cases generated so far
+	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 	
 	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager) {
 		this.targetDir = targetDir;
@@ -43,14 +44,12 @@ public class RESTestRunner {
 	public void run() {
 
 		// Test generation and writing (RESTAssured)
-		logger.info("Generating tests");
-		//System.out.println("Generating test...");
 		testGeneration();
 		
 		// Load test class
 		String filePath = targetDir + "/" + testClassName + ".java";
 		String className = packageName + "." + testClassName;
-		logger.info("Compiling and loading test class " + className);
+		logger.info("Compiling and loading test class " + className + ".java");
 		Class<?> testClass = ClassLoader.loadClass(filePath, className);
 		
 		// Test execution
@@ -67,9 +66,13 @@ public class RESTestRunner {
 	private void testGeneration() {
 	    
 		// Generate test cases
+		logger.info("Generating tests");
         Collection<TestCase> testCases = generator.generate();
+        this.numTestCases += testCases.size();
         
         // Write test cases
+        String filePath = targetDir + "/" + testClassName + ".java";
+        logger.info("Writing " + testCases.size() + " test cases to test class " + filePath);
         writer.write(testCases);
 
 	}
@@ -101,6 +104,12 @@ public class RESTestRunner {
 	public void setTestClassName(String testClassName) {
 		this.testClassName = testClassName;
 	}
+
+	public int getNumTestCases() {
+		return numTestCases;
+	}
 	
-	
+	public void resetNumTestCases() {
+		this.numTestCases=0;
+	}
 }

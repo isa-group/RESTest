@@ -20,10 +20,10 @@ public abstract class AbstractTestCaseGenerator {
 
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
-	protected Map<String,ITestDataGenerator> generators;
+	protected Map<String,ITestDataGenerator> generators;			// Test data generators (random, boundaryValue, fixedlist...)
 
 	/**
-	 * Generate a fully random set of test cases
+	 * Generate a set of test cases
 	 * @param filters Set the paths and HTTP methods to be included in the test configuration file
 	 * @return Generated test cases (duplicates are possible)
 	 */
@@ -48,7 +48,7 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	/**
-	 * Generate a fully random set of test cases for the whole configuration file (all paths, all operations)
+	 * Generate a set of test cases for the whole configuration file (all paths, all operations)
 	 * @return Generated test cases (duplicates are possible)
 	 */
 	public Collection<TestCase> generate() {

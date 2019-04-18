@@ -15,8 +15,8 @@ public class AllureReportManager {
 	private String resultsDirPath;
 	private String reportDirPath;
 	private String allureCommand;
-	private Boolean historyTrend = false;
-	private Boolean loadCategories = true;
+	private Boolean historyTrend = false;					// If true, it show history information by copying the 'history' directory from previous report
+	private Boolean loadCategories = true;					// If true, it uses the custom categories defined in the properties file located in src/main/resources
 	
 	
 	public AllureReportManager() {
