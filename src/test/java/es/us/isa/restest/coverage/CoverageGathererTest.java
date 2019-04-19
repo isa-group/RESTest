@@ -32,6 +32,6 @@ public class CoverageGathererTest {
         coverageCriterionTypes.add(OUTPUT_CONTENT_TYPE);
         CoverageGatherer covGath = new CoverageGatherer(oas, coverageCriterionTypes);
 
-        System.out.println(covGath.getCoverageCriteria().get(1).getAllElements().get(1));
+        System.out.println(covGath.getCoverageCriteria().get(1).getElements().entrySet().iterator().next().getKey());
     }
 }

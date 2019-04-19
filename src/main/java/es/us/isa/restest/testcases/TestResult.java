@@ -11,14 +11,13 @@ public class TestResult {
     private String statusCode;      // Status code returned in the response
     private String responseBody;    // Body (if any) returned in the response
     private String outputFormat;    // Format of the response (JSON, XML, etc.)
+    private TestCase testCase;      // Test case that corresponds to this test result
 
-    public TestResult() {
-    }
-
-    public TestResult(String statusCode, String responseBody, String outputFormat) {
+    public TestResult(String statusCode, String responseBody, String outputFormat, TestCase testCase) {
         this.statusCode = statusCode;
         this.responseBody = responseBody;
         this.outputFormat = outputFormat;
+        this.testCase = testCase;
     }
 
     public String getStatusCode() {
@@ -43,5 +42,13 @@ public class TestResult {
 
     public void setOutputFormat(String outputFormat) {
         this.outputFormat = outputFormat;
+    }
+
+    public TestCase getTestCase() {
+        return this.testCase;
+    }
+
+    public void setTestCase(TestCase testCase) {
+        this.testCase = testCase;
     }
 }

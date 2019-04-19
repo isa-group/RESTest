@@ -10,7 +10,7 @@
       <src_folder value="file://$MODULE_DIR$/src/generation/java" expected_position="4" />
     </src_description>
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
@@ -79,5 +79,17 @@
     <orderEntry type="library" name="Maven: org.apache.commons:commons-csv:1.5" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8" level="project" />
     <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.23" level="project" />
+    <orderEntry type="library" name="Maven: io.qameta.allure:allure-junit4:2.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.qameta.allure:allure-java-commons:2.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.qameta.allure:allure2-model-api:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: io.qameta.allure:allure2-model-pojo:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.tika:tika-core:1.14" level="project" />
+    <orderEntry type="library" name="Maven: io.qameta.allure:allure2-model-jackson:1.0.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.7.0" level="project" />
+    <orderEntry type="library" name="Maven: org.aspectj:aspectjrt:1.9.1" level="project" />
+    <orderEntry type="library" name="Maven: org.jooq:joor-java-8:0.9.9" level="project" />
+    <orderEntry type="library" name="Maven: io.qameta.allure:allure-rest-assured:2.10.0" level="project" />
+    <orderEntry type="library" name="Maven: io.qameta.allure:allure-attachments:2.10.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: org.freemarker:freemarker:2.3.28" level="project" />
   </component>
 </module>

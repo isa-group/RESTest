@@ -25,14 +25,14 @@ public class PetstoreFullTestCaseGenerator {
     @Test
     public void petstoreFullTestCaseGenerator() {
         // Load specification
-        String OAISpecPath = "src/test/resources/specifications/petstore.json";
+        String OAISpecPath = "src/test/resources/specifications/petstore.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
         TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Petstore/fullConf.yaml");
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 10;
+        int numTestCases = 3;
 
         // Create generator and filter
         AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);

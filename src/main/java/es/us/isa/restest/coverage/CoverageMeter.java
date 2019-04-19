@@ -2,11 +2,20 @@ package es.us.isa.restest.coverage;
 
 import static es.us.isa.restest.coverage.CriterionType.*;
 
+import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import es.us.isa.restest.testcases.TestCase;
+import static es.us.isa.restest.coverage.CriterionType.*;
+import es.us.isa.restest.testcases.TestResult;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 /**
  * Class for the measurement of test coverage
@@ -17,18 +26,26 @@ public class CoverageMeter {
 
     CoverageGatherer coverageGatherer;  // coverage gatherer already containing all criteria to be covered
     Collection<TestCase> testSuite;     // full set of abstract test cases addressing the API
-    // Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
-
+    Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
 
     public CoverageMeter(CoverageGatherer coverageGatherer) {
         this.coverageGatherer = coverageGatherer;
         this.testSuite = null;
+        this.testResults = null;
     }
 
     public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite) {
         this.coverageGatherer = coverageGatherer;
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+    }
+
+    public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite, Collection<TestResult> testResults) {
+        this.coverageGatherer = coverageGatherer;
+        this.testSuite = testSuite;
+        setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+        this.testResults = testResults;
+        setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
     }
 
     public CoverageGatherer getCoverageGatherer() {
@@ -48,27 +65,36 @@ public class CoverageMeter {
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
     }
 
-    public int getAllTotalElements() {
+    public Collection<TestResult> getTestResults() {
+        return this.testResults;
+    }
+
+    public void setTestResults(Collection<TestResult> testResults) {
+        this.testResults = testResults;
+        setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
+    }
+
+    public long getAllTotalElements() {
         return getAllElements(null);
     }
 
-    public int getAllInputElements() {
+    public long getAllInputElements() {
         return getAllElements("input");
     }
 
-    public int getAllOutputElements() {
+    public long getAllOutputElements() {
         return getAllElements("output");
     }
 
-    public int getCoveredTotalElements() {
+    public long getCoveredTotalElements() {
         return getCoveredElements(null);
     }
 
-    public int getCoveredInputElements() {
+    public long getCoveredInputElements() {
         return getCoveredElements("input");
     }
 
-    public int getCoveredOutputElements() {
+    public long getCoveredOutputElements() {
         return getCoveredElements("output");
     }
 
@@ -78,10 +104,10 @@ public class CoverageMeter {
      * @param criterionType Type of criteria to consider: "input", "output" or null for all
      * @return Number of elements collected among all coverage criteria
      */
-    private int getAllElements(String criterionType) {
+    private long getAllElements(String criterionType) {
         return coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> CriterionType.getTypes(criterionType).contains(c.getType()))
-                .mapToInt(c -> c.getAllElements().size())
+                .mapToLong(c -> c.getElementsCount())
                 .sum();
     }
 
@@ -91,10 +117,10 @@ public class CoverageMeter {
      * @param criterionType Type of criteria to consider: "input", "output" or null for all
      * @return Number of covered elements collected among all coverage criteria
      */
-    private int getCoveredElements(String criterionType) {
+    private long getCoveredElements(String criterionType) {
         return coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> CriterionType.getTypes(criterionType).contains(c.getType()))
-                .mapToInt(c -> c.getCoveredElements().size())
+                .mapToLong(c -> c.getCoveredElementsCount())
                 .sum();
     }
 
@@ -141,18 +167,18 @@ public class CoverageMeter {
      * @return Coverage percentage
      */
     public float getCriterionTypeCoverage(CriterionType type) {
-        int allElements = coverageGatherer.getCoverageCriteria().stream()
+        long allElements = coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> c.getType() == type)
-                .mapToInt(c -> c.getAllElements().size())
+                .mapToLong(c -> c.getElementsCount())
                 .sum();
 
         if (allElements == 0) {
             return 100;
         }
 
-        int coveredElements = coverageGatherer.getCoverageCriteria().stream()
+        long coveredElements = coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> c.getType() == type)
-                .mapToInt(c -> c.getCoveredElements().size())
+                .mapToLong(c -> c.getCoveredElementsCount())
                 .sum();
         
         return 100 * (float) coveredElements / (float) allElements;
@@ -166,23 +192,16 @@ public class CoverageMeter {
      * @return Coverage percentage
      */
     public float getCriterionCoverage(CriterionType type, String rootPath) {
-        int allElements = coverageGatherer.getCoverageCriteria().stream()
+        CoverageCriterion criterion = coverageGatherer.getCoverageCriteria().stream() // find criterion
                 .filter(c -> c.getType() == type && c.getRootPath().equals(rootPath))
                 .findFirst()
-                .orElse(new CoverageCriterion(type)) // if no matching criterion is found, return an empty made-up one (100% coverage)
-                .getAllElements().size();
+                .orElse(null);
 
-        if (allElements == 0) {
-            return 100;
+        if (criterion != null) {
+            return criterion.getCoverage();
         }
 
-        int coveredElements = coverageGatherer.getCoverageCriteria().stream()
-                .filter(c -> c.getType() == type && c.getRootPath().equals(rootPath))
-                .findFirst()
-                .get()
-                .getCoveredElements().size();
-        
-        return 100 * (float) coveredElements / (float) allElements;
+        return 100; // if the criterion doesn't exist, return 100% coverage by default
     }
 
     /**
@@ -205,9 +224,38 @@ public class CoverageMeter {
                 updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey());
                 updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue());
             }
+            updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), "body");
             updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getAuthentication());
             updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getInputFormat());
 
+        }
+    }
+
+    private void setCoveredOutputElements() {
+        // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
+        for (TestResult testResult: testResults) {
+            String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
+            if (statusCodeClass != null)
+                updateCriterion(STATUS_CODE_CLASS, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), statusCodeClass);
+            updateCriterion(STATUS_CODE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getStatusCode());
+            updateCriterion(OUTPUT_CONTENT_TYPE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getOutputFormat());
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                JsonNode jsonResponse = objectMapper.readTree(testResult.getResponseBody());
+                Iterator<Entry<String,JsonNode>> responseIterator = null;
+                if (jsonResponse instanceof ObjectNode) {
+                    responseIterator = jsonResponse.fields();
+                } else if (jsonResponse instanceof ArrayNode && jsonResponse.get(0) != null) {
+                    responseIterator = jsonResponse.get(0).fields();
+                }
+                while (responseIterator != null && responseIterator.hasNext()) {
+                    String responseProperty = responseIterator.next().getKey();
+                    updateCriterion(RESPONSE_BODY_PROPERTIES, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
+                }
+            } catch (IOException e) {
+                System.out.println("This response is not formatted in JSON: " + testResult.getResponseBody());
+            }
         }
     }
 
@@ -218,8 +266,8 @@ public class CoverageMeter {
                 .findFirst()
                 .orElse(null);
 
-        if (criterion != null && !criterion.getCoveredElements().contains(element)) {
-            criterion.addCoveredElement(element); // add element to the already covered elements of the criterion
+        if (criterion != null) { // if the criterion exists
+            criterion.coverElement(element); // add element to the already covered elements of the criterion
         }
     }
 }
