@@ -18,13 +18,14 @@ import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.PropertyManager;
 
 /**
- * Iterative test scenario example: Tests are generated, and executed incrementally in different iterations updating the test report at each step.
+ * Reliability test scenario example: n tests are generated and executed on each iteration.
+ * Tests have always the same names and are therefore considered as the same tests by Allure.
+ * This allows to check the trend of passess and failures on each iteration (out of n tests)
  * An optional time delay can be set between every two iterations.
- * Classes are named uniquely to avoid the same class being loaded and executed everytime. 
  * @author Sergio Segura
  *
  */
-public class BikeWiseIterativeExample {
+public class BikeWiseReliabilityExample {
 
 	private static int numTestCases = 2;												// Number of test cases per operation
 	private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		// Path to OAS specification file
@@ -34,8 +35,9 @@ public class BikeWiseIterativeExample {
 	private static String APIName = "Bikewise";											// API name
 	private static String testClassName = "BikewiseTest";								// Name prefix of the class to be generated
 	private static OpenAPISpecification spec;
-	private static int totalNumTestCases = 50;											// Total number of test cases to be generated
+	private static int nIterations = 5;													// Total number of iterations
 	private static int timeDelay = -1;													// Optional time delay between iterations (in seconds)
+	private static long seed=28;														// Seed for IDGenerator
 	
 	public static void main(String[] args) {
 		
@@ -49,16 +51,14 @@ public class BikeWiseIterativeExample {
 		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager);
 		
 		int iteration = 1;
-		while (runner.getNumTestCases() < totalNumTestCases) {
+		while (iteration <= nIterations) {
 			
 			// Introduce optional delay
 			if (iteration!=1 && timeDelay!=-1)
 				delay();
 			
-			// Generate unique test class name to avoid the same class being loaded everytime
-			String className = testClassName + "_" + IDGenerator.generateId();
-			((RESTAssuredWriter) writer).setClassName(className);
-			runner.setTestClassName(className);
+			// Set seed to generate the same test methods' names
+			IDGenerator.setSeed(seed);
 			
 			// Test case generation + execution + test report generation
 			runner.run();
@@ -66,6 +66,10 @@ public class BikeWiseIterativeExample {
 			System.out.println("Iteration "  + iteration + ". " +  runner.getNumTestCases() + " test cases generated.");
 			iteration++;		
 		}
+		
+		// Delete targetDir
+		// WATCH OUT: If the test class is not deleted, it will be loaded and run in the next execution.
+		//deleteDir(targetDir);
 
 	}
 	
