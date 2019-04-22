@@ -6,6 +6,8 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import es.us.isa.restest.configuration.*;
 import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGeneratorTest;
+import es.us.isa.restest.coverage.CoverageGathererTest;
+import es.us.isa.restest.coverage.CoverageMeterTest;
 import es.us.isa.restest.generators.*;
 import es.us.isa.restest.inputs.boundary.*;
 import es.us.isa.restest.inputs.fixed.InputValueIteratorTest;
@@ -14,6 +16,7 @@ import es.us.isa.restest.specification.*;
 import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
 import es.us.isa.restest.util.AllureReportManagerTest;
 import es.us.isa.restest.util.IDGeneratorTest;
+import es.us.isa.restest.util.JSONManagerTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({
@@ -27,8 +30,12 @@ import es.us.isa.restest.util.IDGeneratorTest;
 	RandomInputValueIteratorTest.class,
 	RandomNumberGeneratorTest.class, 
 	RandomRegExpGeneratorTest.class,
+	RandomObjectGeneratorTest.class,
 	RandomStringGeneratorTest.class,
 	OpenAPISpecificationTest.class,
+	CoverageGathererTest.class,
+	CoverageMeterTest.class,
+    JSONManagerTest.class,
 	RESTAssuredWritterTest.class,
 	AmadeusFullTestCaseGenerator.class,
 	AmadeusRandomTestCaseGenerator.class,
