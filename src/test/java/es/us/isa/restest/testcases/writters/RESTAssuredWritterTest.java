@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.writters.RESTAssuredWritter;
+import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import io.swagger.models.HttpMethod;
 
 public class RESTAssuredWritterTest {
@@ -21,7 +21,7 @@ public class RESTAssuredWritterTest {
 		
 		// Create test case
 		List<TestCase> testCases = new ArrayList<TestCase>();
-		TestCase tc = new TestCase("findPetsByStatus","/pet/findByStatus" ,HttpMethod.GET);
+		TestCase tc = new TestCase("findPetsByStatusId","findPetsByStatus","/pet/findByStatus" ,HttpMethod.GET);
 		tc.setOutputFormat("application/json");
 		
 		tc.addHeaderParameter("Authorization", "Bearer sklfhskdlafjsklf092359wejtu0349");
@@ -32,9 +32,9 @@ public class RESTAssuredWritterTest {
 		testCases.add(tc);
 		
 		// Write test case
-		RESTAssuredWritter writer = new RESTAssuredWritter();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "Petstore", "restassured", "http://petstore.swagger.io");
 		writer.setOAIValidation(true);
-		writer.write(OAISpecPath, "src/generation/java/restassured", "Petstore", "restassured", "http://petstore.swagger.io", testCases);
+		writer.write(testCases);
 		
 	}
 

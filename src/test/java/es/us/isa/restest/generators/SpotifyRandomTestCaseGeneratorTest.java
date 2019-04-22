@@ -8,14 +8,14 @@ import java.util.List;
 
 import org.junit.Test;
 
+import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.writters.RESTAssuredWritter;
-import es.us.isa.restest.util.TestConfigurationFilter;
+import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 
 public class SpotifyRandomTestCaseGeneratorTest {
 
@@ -47,10 +47,10 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
 		
 		// Write RESTAssured test cases
-		RESTAssuredWritter writer = new RESTAssuredWritter();
-		writer.setOAIValidation(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java/restassured", "SpotifyGetAlbum", "restassured", basePath.toLowerCase(), testCases);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "SpotifyGetAlbumTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.write(testCases);
 
 	}
 
@@ -82,10 +82,10 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
 
 		// Write RESTAssured test cases
-		RESTAssuredWritter writer = new RESTAssuredWritter();
-		writer.setOAIValidation(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java/restassured", "SpotifyGetArtist", "restassured", basePath.toLowerCase(), testCases);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "SpotifyGetArtistTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.write(testCases);
 
 	}
 	
@@ -118,11 +118,11 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
 		
 		// Write RESTAssured test cases
-		RESTAssuredWritter writer = new RESTAssuredWritter();
+		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "SpotifySearchTest", "restassured", basePath.toLowerCase());
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
-		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java/restassured", "SpotifySearch", "restassured", basePath.toLowerCase(), testCases);
+		writer.write(testCases);
 
 	}
 	

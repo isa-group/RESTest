@@ -1,4 +1,4 @@
-package es.us.isa.restest.testcases.writters;
+package es.us.isa.restest.testcases.writers;
 
 import java.io.FileWriter;
 import java.util.Collection;
@@ -14,14 +14,31 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
  * @author Sergio Segura & Alberto Martin-Lopez
  *
  */
-public class RESTAssuredWritter {
+public class RESTAssuredWriter implements IWriter {
 	
 	
 	private boolean OAIValidation = true;
-	private boolean logging = false;
-	private boolean allureReport = false;
+	private boolean logging = false;				// Log everything (ONLY IF THE TEST FAILS)
+	private boolean allureReport = false;			// Generate request and response attachment for allure reports
+	private String specPath;						// Path to OAS specification file
+	private String testFilePath;					// Path to test configuration file
+	private String className;						// Test class name
+	private String packageName;						// Package name
+	private String baseURI;							// API base URI
 	
-	public void write(String specPath, String testFilePath, String className, String packageName, String baseURI, Collection<TestCase> testCases) {
+	public RESTAssuredWriter(String specPath, String testFilePath, String className, String packageName, String baseURI) {
+		this.specPath = specPath;
+		this.testFilePath = testFilePath;
+		this.className = className;
+		this.packageName = packageName;
+		this.baseURI = baseURI;
+	}
+	
+	/* (non-Javadoc)
+	 * @see es.us.isa.restest.testcases.writers.IWriter#write(java.util.Collection)
+	 */
+	@Override
+	public void write(Collection<TestCase> testCases) {
 		
 		// Initializing content
 		String contentFile = "";
@@ -83,7 +100,7 @@ public class RESTAssuredWritter {
 	
 	private String generateClassName(String className) {
 		return "@FixMethodOrder(MethodSorters.NAME_ASCENDING)\n"
-			 + "public class " + className + "Test {\n\n";
+			 + "public class " + className + " {\n\n";
 	}
 	
 	private String generateAttributes(String specPath) {
@@ -158,8 +175,7 @@ public class RESTAssuredWritter {
 
 	private String generateMethodHeader(TestCase t, int instance) {
 		return "\t@Test\n" +
-				"\tpublic void " + removeCharacters(t.getOperationId()) +
-				"Test" + instance + "() {\n";
+				"\tpublic void " + t.getId() + "() {\n";
 	}
 
 	private String generateTryBlockStart() {
@@ -195,7 +211,7 @@ public class RESTAssuredWritter {
 				+  "\t\t\t.given()\n";
 			
 		if (logging)
-			content +="\t\t\t\t.log().all()\n";
+			content +="\t\t\t\t.log().ifValidationFails()\n";
 			
 		return content;
 	}
@@ -253,9 +269,10 @@ public class RESTAssuredWritter {
 		content +=	 "\t\t\t\t." + t.getMethod().name().toLowerCase() + "(\"" + t.getPath() + "\");\n";
 		
 		// Create response log
-		if (logging)
-			content += "\n\t\t\tresponse.then().log().all();\n";
-			
+		if (logging) {
+			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
+			         + "\n\t\t\tresponse.then().log().ifError();\n";
+		}
 		
 //		if (OAIValidation)
 //			content += "\t\t} catch (RuntimeException ex) {\n"
@@ -352,7 +369,7 @@ public class RESTAssuredWritter {
 	private void saveToFile(String path, String className, String contentFile) {
 		FileWriter testClass = null;
 		try {
-			testClass = new FileWriter(path + "/" + className + "Test.java");
+			testClass = new FileWriter(path + "/" + className + ".java");
 			testClass.write(contentFile);
 			testClass.flush();
 			testClass.close();
@@ -360,10 +377,6 @@ public class RESTAssuredWritter {
 			System.err.println("Error writing test file: " + ex.getMessage());
 			ex.printStackTrace();
 		} 
-	}
-
-	private String removeCharacters(String s) {
-		return s.replaceAll("[^A-Za-z0-9]", "");
 	}
 
 	public boolean OAIValidation() {
@@ -388,5 +401,45 @@ public class RESTAssuredWritter {
 
 	public void setAllureReport(boolean ar) {
 		this.allureReport = ar;
+	}
+
+	public String getSpecPath() {
+		return specPath;
+	}
+
+	public void setSpecPath(String specPath) {
+		this.specPath = specPath;
+	}
+
+	public String getTestFilePath() {
+		return testFilePath;
+	}
+
+	public void setTestFilePath(String testFilePath) {
+		this.testFilePath = testFilePath;
+	}
+
+	public String getClassName() {
+		return className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
+	}
+
+	public String getPackageName() {
+		return packageName;
+	}
+
+	public void setPackageName(String packageName) {
+		this.packageName = packageName;
+	}
+
+	public String getBaseURI() {
+		return baseURI;
+	}
+
+	public void setBaseURI(String baseURI) {
+		this.baseURI = baseURI;
 	}
 }

@@ -12,7 +12,7 @@ import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.writters.RESTAssuredWritter;
+import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 
 public class PlaylistRandomTestCaseGeneratorTest {
 
@@ -37,10 +37,10 @@ public class PlaylistRandomTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", 30, testCases.size());
 		
 		// Write test cases
-		RESTAssuredWritter writer = new RESTAssuredWritter();
-		writer.setOAIValidation(true);
 		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-		writer.write(OAISpecPath, "src/generation/java/restassured", "Playlist", "restassured", basePath.toLowerCase(), testCases);	
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PlaylistTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.write(testCases);	
 		}
 	
 	

@@ -5,9 +5,9 @@ import java.util.List;
 
 import org.junit.Test;
 
+import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.util.TestConfigurationFilter;
 
 public class DefaultTestConfigurationGeneratorTest {
 

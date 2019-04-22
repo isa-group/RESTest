@@ -1,4 +1,4 @@
-package es.us.isa.restest.util;
+package es.us.isa.restest.configuration;
 
 import java.util.Iterator;
 import java.util.List;

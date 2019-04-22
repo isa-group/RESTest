@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import es.us.isa.restest.configuration.TestConfigurationFilter;
+import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.TestConfigurationFilter;
-import es.us.isa.restest.util.TestConfigurationVisitor;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 
@@ -20,10 +20,10 @@ public abstract class AbstractTestCaseGenerator {
 
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
-	protected Map<String,ITestDataGenerator> generators;
+	protected Map<String,ITestDataGenerator> generators;			// Test data generators (random, boundaryValue, fixedlist...)
 
 	/**
-	 * Generate a fully random set of test cases
+	 * Generate a set of test cases
 	 * @param filters Set the paths and HTTP methods to be included in the test configuration file
 	 * @return Generated test cases (duplicates are possible)
 	 */
@@ -48,7 +48,7 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	/**
-	 * Generate a fully random set of test cases for the whole configuration file (all paths, all operations)
+	 * Generate a set of test cases for the whole configuration file (all paths, all operations)
 	 * @return Generated test cases (duplicates are possible)
 	 */
 	public Collection<TestCase> generate() {
