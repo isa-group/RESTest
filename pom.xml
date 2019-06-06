@@ -151,14 +151,14 @@
 		<dependency>
 			<groupId>io.qameta.allure</groupId>
 			<artifactId>allure-junit4</artifactId>
-			<version>2.7.0</version>
+			<version>2.12.1</version>
 		</dependency>
 
 		<!-- Allure RESTAsured -->
 		<dependency>
 			<groupId>io.qameta.allure</groupId>
 			<artifactId>allure-rest-assured</artifactId>
-			<version>2.10.0</version>
+			<version>2.12.1</version>
 		</dependency>
 
 		<!-- Apache log4j2 API -->
@@ -212,7 +212,7 @@
 			<plugin>
 				<groupId>io.qameta.allure</groupId>
 				<artifactId>allure-maven</artifactId>
-				<version>2.9</version>
+				<version>2.10.0</version>
 				<configuration>
 					<reportVersion>2.3.1</reportVersion>
 				</configuration>
