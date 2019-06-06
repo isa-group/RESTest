@@ -172,13 +172,13 @@ public class CoverageGatherer {
                             }
 
                         } else if (type == AUTHENTICATION) {
-                            List<String> authenticationList = new ArrayList<>(); // list of authentications per criterion
-                            if (currentOperationEntry.getValue().getSecurity() != null) { // there could be no 'security' property, so check it before
-                                for (Map<String, List<String>> authenticationScheme : currentOperationEntry.getValue().getSecurity()) {
-                                    authenticationList.add(authenticationScheme.keySet().iterator().next()); // collect authentications for this operation
-                                }
-                                criteria.add(createCriterion(authenticationList, AUTHENTICATION, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
-                            }
+//                            List<String> authenticationList = new ArrayList<>(); // list of authentications per criterion
+//                            if (currentOperationEntry.getValue().getSecurity() != null) { // there could be no 'security' property, so check it before
+//                                for (Map<String, List<String>> authenticationScheme : currentOperationEntry.getValue().getSecurity()) {
+//                                    authenticationList.add(authenticationScheme.keySet().iterator().next()); // collect authentications for this operation
+//                                }
+//                                criteria.add(createCriterion(authenticationList, AUTHENTICATION, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
+//                            }
 
                         } else if (type == STATUS_CODE_CLASS) {
                             List<String> statusCodeClassesList = new ArrayList<>(); // list of statusCodeClasses per criterion
@@ -282,10 +282,10 @@ public class CoverageGatherer {
         coverageCriterionTypes.add(OPERATION);
         coverageCriterionTypes.add(PARAMETER);
         coverageCriterionTypes.add(PARAMETER_VALUE);
-        coverageCriterionTypes.add(PARAMETER_CONDITION);
-        coverageCriterionTypes.add(OPERATIONS_FLOW);
+//        coverageCriterionTypes.add(PARAMETER_CONDITION);
+//        coverageCriterionTypes.add(OPERATIONS_FLOW);
         coverageCriterionTypes.add(INPUT_CONTENT_TYPE);
-        coverageCriterionTypes.add(AUTHENTICATION);
+//        coverageCriterionTypes.add(AUTHENTICATION);
         coverageCriterionTypes.add(STATUS_CODE);
         coverageCriterionTypes.add(STATUS_CODE_CLASS);
         coverageCriterionTypes.add(RESPONSE_BODY_PROPERTIES);

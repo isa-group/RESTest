@@ -20,7 +20,7 @@ import es.us.isa.restest.util.PropertyManager;
 /**
  * Reliability test scenario example: n tests are generated and executed on each iteration.
  * Tests have always the same names and are therefore considered as the same tests by Allure.
- * This allows to check the trend of passess and failures on each iteration (out of n tests)
+ * This allows to check the trend of passes and failures on each iteration (out of n tests)
  * An optional time delay can be set between every two iterations.
  * @author Sergio Segura
  *

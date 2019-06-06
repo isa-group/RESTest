@@ -23,8 +23,8 @@ public class CoverageCriterion {
      * The following property's purpose is to locate the criterion inside the API resources hierarchy. There could be several parameter values
      * criteria having all the same parameter name. Therefore, it is necessary to uniquely identify each criterion to check if they are covered
      * when analysing the abstract test cases. This property makes sense for all criteria except for paths, since there is only one of this
-     * kind. The longest allowed path contains 3 elements: "{path}->{operationId}->{parameterName}" (parameter value criterion) OR 
-     * "{path}->{operationId}->{statusCode}" (response body properties crtierion)
+     * kind. The longest allowed rootPath contains 3 elements: "{path}->{operationId}->{parameterName}" (parameter value criterion) OR
+     * "{path}->{operationId}->{statusCode}" (response body properties criterion)
      */
     private String rootPath;
 
