@@ -232,13 +232,50 @@ public class CoverageMeter {
     }
 
     private void setCoveredOutputElements() {
+//        // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
+//        for (TestResult testResult: testResults) {
+//            String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
+//            if (statusCodeClass != null)
+//                updateCriterion(STATUS_CODE_CLASS, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), statusCodeClass);
+//            updateCriterion(STATUS_CODE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getStatusCode());
+//            updateCriterion(OUTPUT_CONTENT_TYPE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getOutputFormat());
+//
+//            ObjectMapper objectMapper = new ObjectMapper();
+//            try {
+//                JsonNode jsonResponse = objectMapper.readTree(testResult.getResponseBody());
+//                Iterator<Entry<String,JsonNode>> responseIterator = null;
+//                if (jsonResponse instanceof ObjectNode) {
+//                    responseIterator = jsonResponse.fields();
+//                } else if (jsonResponse instanceof ArrayNode && jsonResponse.get(0) != null) {
+//                    responseIterator = jsonResponse.get(0).fields();
+//                }
+//                while (responseIterator != null && responseIterator.hasNext()) {
+//                    String responseProperty = responseIterator.next().getKey();
+//                    updateCriterion(RESPONSE_BODY_PROPERTIES, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
+//                }
+//            } catch (IOException e) {
+//                System.out.println("This response is not formatted in JSON: " + testResult.getResponseBody());
+//            }
+//        }
+
+
+
+
+
+
+
+
+
+
+
+
         // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestResult testResult: testResults) {
             String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
             if (statusCodeClass != null)
                 updateCriterion(STATUS_CODE_CLASS, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), statusCodeClass);
-            updateCriterion(STATUS_CODE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getStatusCode());
-            updateCriterion(OUTPUT_CONTENT_TYPE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getOutputFormat());
+            updateCriterion(STATUS_CODE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getStatusCode());
+            updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getOutputFormat());
 
             ObjectMapper objectMapper = new ObjectMapper();
             try {
@@ -251,14 +288,36 @@ public class CoverageMeter {
                 }
                 while (responseIterator != null && responseIterator.hasNext()) {
                     String responseProperty = responseIterator.next().getKey();
-                    updateCriterion(RESPONSE_BODY_PROPERTIES, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
+                    updateCriterion(RESPONSE_BODY_PROPERTIES, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
                 }
             } catch (IOException e) {
                 System.out.println("This response is not formatted in JSON: " + testResult.getResponseBody());
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
+    /**
+     * Find a specific coverage criterion and cover the element passed in.
+     * @param type Type of coverage criterion to look for (PATH, STATUS_CODE, etc.)
+     * @param rootPath Path to the criterion, e.g. "/pets->GET->type". Together with {@code type},
+     *                 uniquely identifies a coverage criterion
+     * @param element Element to cover among all the elements present in the coverage criterion, e.g.
+     *                {@code "sold"} for a parameter value
+     */
     private void updateCriterion(CriterionType type, String rootPath, String element) {
         // Find unique criterion by type and rootPath
         CoverageCriterion criterion = coverageGatherer.getCoverageCriteria().stream()
@@ -269,5 +328,17 @@ public class CoverageMeter {
         if (criterion != null) { // if the criterion exists
             criterion.coverElement(element); // add element to the already covered elements of the criterion
         }
+    }
+
+    /**
+     * Given a test case ID (or test result ID), return the test case
+     * @param id ID of the test case
+     * @return Test case matching the ID passed in
+     */
+    private TestCase findTestCase(String id) {
+        return testSuite.stream()
+                .filter(tc -> tc.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 }

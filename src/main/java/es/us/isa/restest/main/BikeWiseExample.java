@@ -44,7 +44,7 @@ public class BikeWiseExample {
 		AbstractTestCaseGenerator generator = createGenerator();		// Test case generator
 		IWriter writer = createWriter();								// Test case writer
 		AllureReportManager reportManager = createReportManager();		// Allure test case reporter (It delete previous report, if any)
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager);
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, false);
 		
 		// Test case generation + execution + test report generation
 		runner.run();

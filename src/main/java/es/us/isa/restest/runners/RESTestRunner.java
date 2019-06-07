@@ -5,6 +5,10 @@ package es.us.isa.restest.runners;
 
 import java.util.Collection;
 
+import es.us.isa.restest.coverage.CoverageGatherer;
+import es.us.isa.restest.coverage.CoverageMeter;
+import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.testcases.TestResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
@@ -30,18 +34,32 @@ public class RESTestRunner {
 	IWriter writer;								// RESTAssured writer
 	AllureReportManager reportManager;			// Allure report manager
 	int numTestCases = 0;						// Number of test cases generated so far
+	boolean enableCoverage;						// Whether to get coverage statistics or not
+	OpenAPISpecification spec;					// OAS (used if enableCoverage is set to true)
+	CoverageGatherer covGath;					// Coverage gatherer (used if enableCoverage is set to true)
+	CoverageMeter covMeter;						// Coverage meter (used if enableCoverage is set to true)
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 	
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, boolean enableCoverage, String OAISpecPath) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
 		this.generator = generator;
 		this.writer = writer;
 		this.reportManager = reportManager;
+		this.enableCoverage = enableCoverage;
+		if (enableCoverage && OAISpecPath != null) {
+			this.spec = new OpenAPISpecification(OAISpecPath);
+		}
 	}
 	
 	public void run() {
+
+		// Coverage gathering and meter initialization (if coverage is enabled)
+		if (spec != null) {
+			covGath = new CoverageGatherer(spec);
+			covMeter = new CoverageMeter(covGath);
+		}
 
 		// Test generation and writing (RESTAssured)
 		testGeneration();
@@ -67,8 +85,13 @@ public class RESTestRunner {
 	    
 		// Generate test cases
 		logger.info("Generating tests");
-        Collection<TestCase> testCases = generator.generate();
+		Collection<TestCase> testCases = generator.generate();
         this.numTestCases += testCases.size();
+
+        // Update CoverageMeter with recently created test suite (if coverage is enabled)
+		if (spec != null) {
+			covMeter.setTestSuite(testCases);
+		}
         
         // Write test cases
         String filePath = targetDir + "/" + testClassName + ".java";

@@ -24,7 +24,7 @@ public class CoverageGathererTest {
         coverageCriterionTypes.add(OPERATION);
         coverageCriterionTypes.add(PARAMETER);
         coverageCriterionTypes.add(PARAMETER_VALUE);
-        coverageCriterionTypes.add(AUTHENTICATION);
+//        coverageCriterionTypes.add(AUTHENTICATION);
         coverageCriterionTypes.add(INPUT_CONTENT_TYPE);
         coverageCriterionTypes.add(STATUS_CODE);
         coverageCriterionTypes.add(STATUS_CODE_CLASS);

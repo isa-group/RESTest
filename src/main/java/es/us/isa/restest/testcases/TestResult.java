@@ -8,16 +8,26 @@ package es.us.isa.restest.testcases;
  */
 public class TestResult {
 
+    private String id;              // Test result unique identifier. Coincides with the test case one
     private String statusCode;      // Status code returned in the response
     private String responseBody;    // Body (if any) returned in the response
     private String outputFormat;    // Format of the response (JSON, XML, etc.)
     private TestCase testCase;      // Test case that corresponds to this test result
 
-    public TestResult(String statusCode, String responseBody, String outputFormat, TestCase testCase) {
+    public TestResult(String id, String statusCode, String responseBody, String outputFormat, TestCase testCase) {
+        this.id = id;
         this.statusCode = statusCode;
         this.responseBody = responseBody;
         this.outputFormat = outputFormat;
         this.testCase = testCase;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getStatusCode() {

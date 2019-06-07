@@ -12,7 +12,7 @@ import io.swagger.models.Response;
  */
 public class TestCase {
 	
-	private String id;										// Test unique identifer
+	private String id;										// Test unique identifier
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
