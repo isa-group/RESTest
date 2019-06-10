@@ -55,9 +55,9 @@ public class CoverageMeterTest {
         covMeter.setTestSuite(testSuite);
 
         List<TestResult> testResults = new ArrayList<>();
-        TestResult testResult1 = new TestResult(testCase1.getId(), "201", "[]", "application/json", testCase1);
-        TestResult testResult2 = new TestResult(testCase2.getId(), "200", "[{\"a\": \"b\", \"c\": \"d\"}, {\"a\": \"b\", \"c\": \"d\"}]", "application/json", testCase2);
-        TestResult testResult3 = new TestResult(testCase3.getId(), "200", "{\"a\": \"b\", \"c\": \"d\"}", "application/json", testCase3);
+        TestResult testResult1 = new TestResult(testCase1.getId(), "201", "[]", "application/json");
+        TestResult testResult2 = new TestResult(testCase2.getId(), "200", "[{\"a\": \"b\", \"c\": \"d\"}, {\"a\": \"b\", \"c\": \"d\"}]", "application/json");
+        TestResult testResult3 = new TestResult(testCase3.getId(), "200", "{\"a\": \"b\", \"c\": \"d\"}", "application/json");
 
         testResults.add(testResult1);
         testResults.add(testResult2);
@@ -89,5 +89,8 @@ public class CoverageMeterTest {
         System.out.println("covMeter.getCriterionCoverage(RESPONSE_BODY_PROPERTIES, /pet/{petId}/uploadImage->POST->200): " + covMeter.getCriterionCoverage(RESPONSE_BODY_PROPERTIES, "/pet/{petId}/uploadImage->POST->200"));
 
         System.out.println(covGath.getCoverageCriteria().get(1).getElements().entrySet().iterator().next().getKey());
+
+        // Test export to CSV
+        covMeter.exportCoverageToCSV("src/test/resources/csvData/csvSample.csv", null, true);
     }
 }

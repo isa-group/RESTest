@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import es.us.isa.restest.testcases.TestCase;
 import static es.us.isa.restest.coverage.CriterionType.*;
 import es.us.isa.restest.testcases.TestResult;
+import static es.us.isa.restest.util.CSVManager.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -100,7 +101,7 @@ public class CoverageMeter {
 
     /**
      * Get all elements to cover from all coverage criteria in the API
-     * 
+     *
      * @param criterionType Type of criteria to consider: "input", "output" or null for all
      * @return Number of elements collected among all coverage criteria
      */
@@ -232,48 +233,11 @@ public class CoverageMeter {
     }
 
     private void setCoveredOutputElements() {
-//        // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
-//        for (TestResult testResult: testResults) {
-//            String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
-//            if (statusCodeClass != null)
-//                updateCriterion(STATUS_CODE_CLASS, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), statusCodeClass);
-//            updateCriterion(STATUS_CODE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getStatusCode());
-//            updateCriterion(OUTPUT_CONTENT_TYPE, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), testResult.getOutputFormat());
-//
-//            ObjectMapper objectMapper = new ObjectMapper();
-//            try {
-//                JsonNode jsonResponse = objectMapper.readTree(testResult.getResponseBody());
-//                Iterator<Entry<String,JsonNode>> responseIterator = null;
-//                if (jsonResponse instanceof ObjectNode) {
-//                    responseIterator = jsonResponse.fields();
-//                } else if (jsonResponse instanceof ArrayNode && jsonResponse.get(0) != null) {
-//                    responseIterator = jsonResponse.get(0).fields();
-//                }
-//                while (responseIterator != null && responseIterator.hasNext()) {
-//                    String responseProperty = responseIterator.next().getKey();
-//                    updateCriterion(RESPONSE_BODY_PROPERTIES, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
-//                }
-//            } catch (IOException e) {
-//                System.out.println("This response is not formatted in JSON: " + testResult.getResponseBody());
-//            }
-//        }
-
-
-
-
-
-
-
-
-
-
-
-
         // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestResult testResult: testResults) {
             String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
             if (statusCodeClass != null)
-                updateCriterion(STATUS_CODE_CLASS, testResult.getTestCase().getPath() + "->" + testResult.getTestCase().getMethod().toString(), statusCodeClass);
+                updateCriterion(STATUS_CODE_CLASS, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), statusCodeClass);
             updateCriterion(STATUS_CODE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getStatusCode());
             updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getOutputFormat());
 
@@ -294,20 +258,6 @@ public class CoverageMeter {
                 System.out.println("This response is not formatted in JSON: " + testResult.getResponseBody());
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
     /**
@@ -340,5 +290,25 @@ public class CoverageMeter {
                 .filter(tc -> tc.getId() == id)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * Export coverage data to external file (CSV). You can export input, output or both
+     * types of coverage data.
+     *
+     * @param path Path where to save the output file
+     * @param criterionType Type of criteria to consider: "input", "output" or null for all
+     * @param overwrite Whether to overwrite existing file or not
+     */
+    public void exportCoverageToCSV(String path, String criterionType, boolean overwrite) {
+        if (overwrite)
+            createFileWithHeader(path, "criterionType,rootPath,element,isCovered");
+        coverageGatherer.getCoverageCriteria().stream()
+            .filter(criterion -> CriterionType.getTypes(criterionType).contains(criterion.getType()))
+            .forEach(criterion -> criterion.getElements()
+                .forEach((element, isCovered) -> {
+                    writeRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered);
+                })
+            );
     }
 }

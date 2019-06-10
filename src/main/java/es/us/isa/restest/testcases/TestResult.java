@@ -12,14 +12,14 @@ public class TestResult {
     private String statusCode;      // Status code returned in the response
     private String responseBody;    // Body (if any) returned in the response
     private String outputFormat;    // Format of the response (JSON, XML, etc.)
-    private TestCase testCase;      // Test case that corresponds to this test result
+//    private TestCase testCase;      // Test case that corresponds to this test result
 
-    public TestResult(String id, String statusCode, String responseBody, String outputFormat, TestCase testCase) {
+    public TestResult(String id, String statusCode, String responseBody, String outputFormat) {
         this.id = id;
         this.statusCode = statusCode;
         this.responseBody = responseBody;
         this.outputFormat = outputFormat;
-        this.testCase = testCase;
+//        this.testCase = testCase;
     }
 
     public String getId() {
@@ -54,11 +54,11 @@ public class TestResult {
         this.outputFormat = outputFormat;
     }
 
-    public TestCase getTestCase() {
-        return this.testCase;
-    }
-
-    public void setTestCase(TestCase testCase) {
-        this.testCase = testCase;
-    }
+//    public TestCase getTestCase() {
+//        return this.testCase;
+//    }
+//
+//    public void setTestCase(TestCase testCase) {
+//        this.testCase = testCase;
+//    }
 }
