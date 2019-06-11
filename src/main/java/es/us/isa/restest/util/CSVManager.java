@@ -35,13 +35,19 @@ public class CSVManager {
 		return values;
 	}
 
+	/**
+	 * Create a new CSV file in the given path and with the given header.
+	 * @param path Path where to place the file. Parent folders must be already created
+	 * @param header Header to add to the first line. If null, no header will be added
+	 */
 	public static void createFileWithHeader(String path, String header) {
 		File csvFile = new File(path);
 		csvFile.delete(); // delete file if it exists
 		try {
 			csvFile.createNewFile();
 			FileOutputStream oCsvFile = new FileOutputStream(csvFile, true);
-			header += "\n";
+			if (header != null)
+				header += "\n";
 			oCsvFile.write(header.getBytes());
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -5,6 +5,9 @@ import java.util.Map;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
 
+import static es.us.isa.restest.util.CSVManager.*;
+import static es.us.isa.restest.util.FileManager.*;
+
 /** Domain-independent test case
  * 
  * @author Sergio Segura
@@ -165,5 +168,18 @@ public class TestCase {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public void exportToCSV(String path) {
+		if (!checkIfExists(path))
+			createFileWithHeader(path, "testCaseId,operationId,path,httpMethod,inputContentType,outputContentType," +
+					"headerParameters,pathParameters,queryParameters,bodyParameter,authentication,expectedOutputs," +
+					"expectedSuccessfulOutput");
+		String row = id + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		headerParameters.forEach((k,v) -> {
+			row += k + ":" + v;
+		});
+
+//		writeRow(path, );
 	}
 }
