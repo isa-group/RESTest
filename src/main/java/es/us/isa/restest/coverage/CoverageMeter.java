@@ -243,21 +243,11 @@ public class CoverageMeter {
             updateCriterion(STATUS_CODE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getStatusCode());
             updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getOutputFormat());
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            try {
-                JsonNode jsonResponse = objectMapper.readTree(testResult.getResponseBody());
-                Iterator<Entry<String,JsonNode>> responseIterator = null;
-                if (jsonResponse instanceof ObjectNode) {
-                    responseIterator = jsonResponse.fields();
-                } else if (jsonResponse instanceof ArrayNode && jsonResponse.get(0) != null) {
-                    responseIterator = jsonResponse.get(0).fields();
-                }
-                while (responseIterator != null && responseIterator.hasNext()) {
-                    String responseProperty = responseIterator.next().getKey();
-                    updateCriterion(RESPONSE_BODY_PROPERTIES, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
-                }
-            } catch (IOException e) {
-                System.out.println("This response is not formatted in JSON: " + testResult.getResponseBody());
+            // Response body properties criteria
+            Iterator<Entry<String,JsonNode>> responseIterator = getBodyProperties(testResult.getResponseBody());
+            while (responseIterator != null && responseIterator.hasNext()) {
+                String responseProperty = responseIterator.next().getKey();
+                updateCriterion(RESPONSE_BODY_PROPERTIES, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
             }
         }
     }
@@ -374,26 +364,32 @@ public class CoverageMeter {
         writeRow(path, row);
 
         // Output content-type criterion
-        row = tr.getId() + ",OUTPUT_CONTENT_TYPE," + tr.getStatusCode();
+        row = tr.getId() + ",OUTPUT_CONTENT_TYPE," + tr.getOutputFormat();
         writeRow(path, row);
 
         // Response body properties criteria
+        Iterator<Entry<String,JsonNode>> responseIterator = getBodyProperties(tr.getResponseBody());
+        while (responseIterator != null && responseIterator.hasNext()) {
+            String responseProperty = responseIterator.next().getKey();
+            row = tr.getId() + ",RESPONSE_BODY_PROPERTIES," + responseProperty;
+            writeRow(path, row);
+        }
+    }
+
+    private static Iterator<Entry<String,JsonNode>> getBodyProperties(String body) {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
-            JsonNode jsonResponse = objectMapper.readTree(tr.getResponseBody());
+            JsonNode jsonResponse = objectMapper.readTree(body);
             Iterator<Entry<String,JsonNode>> responseIterator = null;
             if (jsonResponse instanceof ObjectNode) {
                 responseIterator = jsonResponse.fields();
             } else if (jsonResponse instanceof ArrayNode && jsonResponse.get(0) != null) {
                 responseIterator = jsonResponse.get(0).fields();
             }
-            while (responseIterator != null && responseIterator.hasNext()) {
-                String responseProperty = responseIterator.next().getKey();
-                row = tr.getId() + ",RESPONSE_BODY_PROPERTIES," + responseProperty;
-                writeRow(path, row);
-            }
+            return responseIterator;
         } catch (IOException e) {
-            System.out.println("This response is not formatted in JSON: " + tr.getResponseBody());
+            System.out.println("This body is not formatted in JSON: " + body);
+            return null;
         }
     }
 }

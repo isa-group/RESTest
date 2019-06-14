@@ -3,3 +3,4 @@ TODO.txt
 .idea/workspace.xml
 .vscode
 /.allure
+/allure-results
