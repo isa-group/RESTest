@@ -33,7 +33,7 @@ public class BikeWiseExample {
 	private static String packageName = "bikewise";										// Package name of the test class.
 	private static String testClassName = "BikewiseTest";								// Name of the class to be generated
 	private static OpenAPISpecification spec;											// OAS
-	private static boolean enableCoverage = true;										// Collect coverage statistics
+	private static boolean enableStats = true;											// Collect coverage statistics
 
 	
 	public static void main(String[] args) {
@@ -45,7 +45,7 @@ public class BikeWiseExample {
 		AbstractTestCaseGenerator generator = createGenerator();		// Test case generator
 		IWriter writer = createWriter();								// Test case writer
 		AllureReportManager reportManager = createReportManager();		// Allure test case reporter (It delete previous report, if any)
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, enableCoverage, OAISpecPath);
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, enableStats);
 		
 		// Test case generation + execution + test report generation
 		runner.run();

@@ -20,6 +20,7 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.util.AllureReportManager;
 import es.us.isa.restest.util.ClassLoader;
+import static es.us.isa.restest.util.FileManager.*;
 
 /**
  * This class a basic test workflow: test generation -> test writing -> class compilation and loading -> test execution -> test report generation
@@ -35,7 +36,7 @@ public class RESTestRunner {
 	IWriter writer;								// RESTAssured writer
 	AllureReportManager reportManager;			// Allure report manager
 	int numTestCases = 0;						// Number of test cases generated so far
-	boolean enableStats;
+	boolean enableStats;						// Whether to output stats to external files (CSV) or not
 	boolean enableCoverage;						// Whether to get coverage statistics or not
 	OpenAPISpecification spec;					// OAS (used if enableCoverage is set to true)
 	CoverageGatherer covGath;					// Coverage gatherer (used if enableCoverage is set to true)
@@ -81,8 +82,20 @@ public class RESTestRunner {
 		Collection<TestCase> testCases = generator.generate();
         this.numTestCases += testCases.size();
 
-        // Export test cases to CSV.
+        // Export test cases to CSV if enableStats is true
+		if (enableStats) {
+			String csvTcPath = "target/coverage-results/test-cases.csv";
+			removeFile(csvTcPath);
+			testCases.forEach(tc -> {
+				tc.exportToCSV(csvTcPath);
+			});
 
+			String csvTcCoveragePath = "target/coverage-results/test-cases-coverage.csv";
+			removeFile(csvTcCoveragePath);
+			testCases.forEach(tc -> {
+				CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc);
+			});
+		}
 
         // Update CoverageMeter with recently created test suite (if coverage is enabled).
 		// Export input coverage data to external file (CSV). This will be further populated

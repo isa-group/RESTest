@@ -46,7 +46,7 @@ public class BikeWiseIterativeExample {
 		AbstractTestCaseGenerator generator = createGenerator();		// Test case generator
 		IWriter writer = createWriter();								// Test case writer
 		AllureReportManager reportManager = createReportManager();		// Allure test case reporter
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, false, null);
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, false);
 		
 		int iteration = 1;
 		while (runner.getNumTestCases() < totalNumTestCases) {

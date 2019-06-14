@@ -1,6 +1,12 @@
 package es.us.isa.restest.testcases;
 
 
+import java.util.Map;
+
+import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
+import static es.us.isa.restest.util.CSVManager.writeRow;
+import static es.us.isa.restest.util.FileManager.checkIfExists;
+
 /**
  * Domain-independent test result
  * 
@@ -54,11 +60,12 @@ public class TestResult {
         this.outputFormat = outputFormat;
     }
 
-//    public TestCase getTestCase() {
-//        return this.testCase;
-//    }
-//
-//    public void setTestCase(TestCase testCase) {
-//        this.testCase = testCase;
-//    }
+    public void exportToCSV(String filePath) {
+        if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
+            createFileWithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType");
+
+        // Generate row
+        String row = id + "," + statusCode + "," + responseBody.replaceAll("\n", "\\\\n") + "," + outputFormat;
+        writeRow(filePath, row);
+    }
 }

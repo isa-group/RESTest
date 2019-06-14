@@ -5,12 +5,14 @@ import static es.us.isa.restest.coverage.CriterionType.*;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import es.us.isa.restest.testcases.TestCase;
 import static es.us.isa.restest.coverage.CriterionType.*;
 import es.us.isa.restest.testcases.TestResult;
 import static es.us.isa.restest.util.CSVManager.*;
+import static es.us.isa.restest.util.FileManager.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -310,5 +312,88 @@ public class CoverageMeter {
                     writeRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered);
                 })
             );
+    }
+
+    public static void exportCoverageOfTestCaseToCSV(String path, TestCase tc) {
+        if (!checkIfExists(path)) // If the file doesn't exist, create it (only once)
+            createFileWithHeader(path, "testCaseId,criterionType,rootPath,element");
+
+        String row;
+
+        // Path criterion
+        row = tc.getId() + ",PATH,," + tc.getPath();
+        writeRow(path, row);
+
+        // Operation criterion
+        row = tc.getId() + ",OPERATION," + tc.getPath() + "," + tc.getMethod().toString();
+        writeRow(path, row);
+
+        // Parameters and parameter values criteria
+        for (Map.Entry<String, String> h: tc.getHeaderParameters().entrySet()) {
+            row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + h.getKey();
+            writeRow(path, row);
+            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + h.getValue();
+            writeRow(path, row);
+        }
+        for (Map.Entry<String, String> p: tc.getPathParameters().entrySet()) {
+            row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + p.getKey();
+            writeRow(path, row);
+            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + p.getValue();
+            writeRow(path, row);
+        }
+        for (Map.Entry<String, String> q: tc.getQueryParameters().entrySet()) {
+            row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + q.getKey();
+            writeRow(path, row);
+            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + q.getValue();
+            writeRow(path, row);
+        }
+        // For the body parameter, we do not consider parameter values, only the parameter itself
+        if (tc.getBodyParameter() != null) {
+            row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + ",body";
+            writeRow(path, row);
+        }
+
+        // Input content-type criterion
+        row = tc.getId() + ",INPUT_CONTENT_TYPE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + tc.getInputFormat();
+        writeRow(path, row);
+    }
+
+    public static void exportCoverageOfTestResultToCSV(String path, TestResult tr) {
+        if (!checkIfExists(path)) // If the file doesn't exist, create it (only once)
+            createFileWithHeader(path, "testResultId,criterionType,element");
+
+        String row;
+
+        // Status code class criterion
+        String statusCodeClass = tr.getStatusCode().charAt(0) == '4' ? "4XX" : tr.getStatusCode().charAt(0) == '2' ? "2XX" : null;
+        row = tr.getId() + ",STATUS_CODE_CLASS," + statusCodeClass;
+        writeRow(path, row);
+
+        // Status code criterion
+        row = tr.getId() + ",STATUS_CODE," + tr.getStatusCode();
+        writeRow(path, row);
+
+        // Output content-type criterion
+        row = tr.getId() + ",OUTPUT_CONTENT_TYPE," + tr.getStatusCode();
+        writeRow(path, row);
+
+        // Response body properties criteria
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            JsonNode jsonResponse = objectMapper.readTree(tr.getResponseBody());
+            Iterator<Entry<String,JsonNode>> responseIterator = null;
+            if (jsonResponse instanceof ObjectNode) {
+                responseIterator = jsonResponse.fields();
+            } else if (jsonResponse instanceof ArrayNode && jsonResponse.get(0) != null) {
+                responseIterator = jsonResponse.get(0).fields();
+            }
+            while (responseIterator != null && responseIterator.hasNext()) {
+                String responseProperty = responseIterator.next().getKey();
+                row = tr.getId() + ",RESPONSE_BODY_PROPERTIES," + responseProperty;
+                writeRow(path, row);
+            }
+        } catch (IOException e) {
+            System.out.println("This response is not formatted in JSON: " + tr.getResponseBody());
+        }
     }
 }

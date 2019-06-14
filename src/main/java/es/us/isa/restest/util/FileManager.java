@@ -15,9 +15,15 @@ public class FileManager {
         }
         return created;
     }
+
     public static boolean checkIfExists(String path) {
         File file = new File(path);
         return file.exists();
+    }
+
+    public static boolean removeFile(String path) {
+        File file = new File(path);
+        return file.delete();
     }
 
 }

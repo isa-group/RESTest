@@ -170,16 +170,25 @@ public class TestCase {
 		this.id = id;
 	}
 
-	public void exportToCSV(String path) {
-		if (!checkIfExists(path))
-			createFileWithHeader(path, "testCaseId,operationId,path,httpMethod,inputContentType,outputContentType," +
+	public void exportToCSV(String filePath) {
+		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
+			createFileWithHeader(filePath, "testCaseId,operationId,path,httpMethod,inputContentType,outputContentType," +
 					"headerParameters,pathParameters,queryParameters,bodyParameter,authentication,expectedOutputs," +
 					"expectedSuccessfulOutput");
-		String row = id + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
-		headerParameters.forEach((k,v) -> {
-			row += k + ":" + v;
-		});
 
-//		writeRow(path, );
+		// Generate row
+		String row = id + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		for (Map.Entry<String, String> h: headerParameters.entrySet()) {
+			row += h.getKey() + ":" + h.getValue() + ";";
+		}
+		for (Map.Entry<String, String> p: pathParameters.entrySet()) {
+			row += p.getKey() + ":" + p.getValue() + ";";
+		}
+		for (Map.Entry<String, String> q: queryParameters.entrySet()) {
+			row += q.getKey() + ":" + q.getValue() + ";";
+		}
+		row += "," + bodyParameter + ",,,";
+
+		writeRow(filePath, row);
 	}
 }
