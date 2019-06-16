@@ -322,19 +322,19 @@ public class CoverageMeter {
         for (Map.Entry<String, String> h: tc.getHeaderParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + h.getKey();
             writeRow(path, row);
-            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + h.getValue();
+            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + h.getKey() + "," + h.getValue();
             writeRow(path, row);
         }
         for (Map.Entry<String, String> p: tc.getPathParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + p.getKey();
             writeRow(path, row);
-            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + p.getValue();
+            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + p.getKey() + "," + p.getValue();
             writeRow(path, row);
         }
         for (Map.Entry<String, String> q: tc.getQueryParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + q.getKey();
             writeRow(path, row);
-            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + q.getValue();
+            row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + q.getKey() + "," + q.getValue();
             writeRow(path, row);
         }
         // For the body parameter, we do not consider parameter values, only the parameter itself
@@ -388,7 +388,7 @@ public class CoverageMeter {
             }
             return responseIterator;
         } catch (IOException e) {
-            System.out.println("This body is not formatted in JSON: " + body);
+            System.out.println("Unable to get body properties, body is not formatted in JSON");
             return null;
         }
     }

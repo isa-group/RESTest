@@ -20,6 +20,8 @@ public class RESTAssuredWriter implements IWriter {
 	private boolean OAIValidation = true;
 	private boolean logging = false;				// Log everything (ONLY IF THE TEST FAILS)
 	private boolean allureReport = false;			// Generate request and response attachment for allure reports
+
+	private boolean enableStats = false;			// If true, export test results and output coverage data to CSV
 	private String specPath;						// Path to OAS specification file
 	private String testFilePath;					// Path to test configuration file
 	private String className;						// Test class name
@@ -92,6 +94,10 @@ public class RESTAssuredWriter implements IWriter {
 		// OAIValidation (Optional)
 		if (OAIValidation)
 			content += 	"import com.atlassian.oai.validator.restassured.SwaggerValidationFilter;\n";
+
+		// Coverage filter (optional)
+		if (enableStats)
+			content += 	"import es.us.isa.restest.coverage.CoverageFilter;\n";
 		
 		content +="\n";
 		
@@ -128,6 +134,9 @@ public class RESTAssuredWriter implements IWriter {
 		// Generate test method header
 		content += generateMethodHeader(t,instance);
 
+		// Generate test case ID (only if stats enabled)
+		content += generateTestCaseId(t.getId());
+
 		// Generate the start of the try block
 		content += generateTryBlockStart();
 
@@ -148,10 +157,9 @@ public class RESTAssuredWriter implements IWriter {
 
 		// Generate body parameter
 		content += generateBodyParameter(t);
-		
-		// OAI validation
-		//if (OAIValidation)
-			content += generateOAIValidationFilter();
+
+		// Generate filters
+		content += generateFilters();
 		
 		// Generate HTTP request
 		content += generateHTTPRequest(t);
@@ -176,6 +184,16 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateMethodHeader(TestCase t, int instance) {
 		return "\t@Test\n" +
 				"\tpublic void " + t.getId() + "() {\n";
+	}
+
+	private String generateTestCaseId(String testCaseId) {
+		String content = "";
+
+		if (enableStats) {
+			content += "\t\tString testResultId = \"" + testCaseId + "\";\n\n";
+		}
+
+		return content;
 	}
 
 	private String generateTryBlockStart() {
@@ -253,18 +271,22 @@ public class RESTAssuredWriter implements IWriter {
 
 		return content;
 	}
-	
 
-	private String generateOAIValidationFilter() {
-		return "\t\t\t\t.filter(validationFilter)\n";
+	private String generateFilters() {
+		String content = "";
+
+//		if (OAIValidation)
+			content += "\t\t\t\t.filter(validationFilter)\n";
+		if (allureReport)
+			content += "\t\t\t\t.filter(new AllureRestAssured())\n";
+		if (enableStats)
+			content += "\t\t\t\t.filter(new CoverageFilter(testResultId))\n";
+
+		return content;
 	}
 	
 	private String generateHTTPRequest(TestCase t) {
 		String content = "\t\t\t.when()\n";
-		
-		if (allureReport)
-			content +=  "\t\t\t\t.filter(new AllureRestAssured())\n";
-		
 
 		content +=	 "\t\t\t\t." + t.getMethod().name().toLowerCase() + "(\"" + t.getPath() + "\");\n";
 		
@@ -401,6 +423,14 @@ public class RESTAssuredWriter implements IWriter {
 
 	public void setAllureReport(boolean ar) {
 		this.allureReport = ar;
+	}
+
+	public boolean getEnableStats() {
+		return enableStats;
+	}
+
+	public void setEnableStats(boolean enableStats) {
+		this.enableStats = enableStats;
 	}
 
 	public String getSpecPath() {

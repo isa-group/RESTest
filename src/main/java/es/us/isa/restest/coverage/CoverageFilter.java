@@ -11,12 +11,24 @@ import io.restassured.specification.FilterableResponseSpecification;
 import static es.us.isa.restest.coverage.CoverageMeter.exportCoverageOfTestResultToCSV;
 
 public class CoverageFilter implements OrderedFilter {
+
+    private String testResultId;
+
+    public CoverageFilter() {
+        super();
+    }
+
+    public CoverageFilter(String testResultId) {
+        super();
+        this.testResultId = testResultId;
+    }
+
     @Override
     public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
         Response response = ctx.next(requestSpec, responseSpec);
 
         // Export output coverage data after receiving API response
-        TestResult tr = new TestResult("GETversionincidentsidformatTest_t4a277aq7msz", Integer.toString(response.statusCode()), response.body().print(), response.contentType());
+        TestResult tr = new TestResult(testResultId, Integer.toString(response.statusCode()), response.asString(), response.contentType());
         tr.exportToCSV("target/coverage-results/test-results.csv");
         exportCoverageOfTestResultToCSV("target/coverage-results/test-results-coverage.csv", tr);
 
