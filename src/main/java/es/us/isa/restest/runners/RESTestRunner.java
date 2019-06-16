@@ -37,10 +37,10 @@ public class RESTestRunner {
 	AllureReportManager reportManager;			// Allure report manager
 	int numTestCases = 0;						// Number of test cases generated so far
 	boolean enableStats;						// Whether to output stats to external files (CSV) or not
-	boolean enableCoverage;						// Whether to get coverage statistics or not
-	OpenAPISpecification spec;					// OAS (used if enableCoverage is set to true)
-	CoverageGatherer covGath;					// Coverage gatherer (used if enableCoverage is set to true)
-	CoverageMeter covMeter;						// Coverage meter (used if enableCoverage is set to true)
+//	boolean enableCoverage;						// Whether to get coverage statistics or not
+//	OpenAPISpecification spec;					// OAS (used if enableCoverage is set to true)
+//	CoverageGatherer covGath;					// Coverage gatherer (used if enableCoverage is set to true)
+//	CoverageMeter covMeter;						// Coverage meter (used if enableCoverage is set to true)
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 	
 	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, boolean enableStats) {
@@ -86,24 +86,19 @@ public class RESTestRunner {
 		if (enableStats) {
 			String csvTcPath = "target/coverage-results/test-cases.csv";
 			removeFile(csvTcPath);
-			testCases.forEach(tc -> {
-				tc.exportToCSV(csvTcPath);
-			});
+			testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
 
 			String csvTcCoveragePath = "target/coverage-results/test-cases-coverage.csv";
 			removeFile(csvTcCoveragePath);
-			testCases.forEach(tc -> {
-				CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc);
-			});
+			testCases.forEach(tc -> CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc));
 		}
 
-        // Update CoverageMeter with recently created test suite (if coverage is enabled).
-		// Export input coverage data to external file (CSV). This will be further populated
-		// with output coverage after test cases are executed.
-		if (spec != null) {
-			covMeter.setTestSuite(testCases);
-			covMeter.exportCoverageToCSV(PropertyManager.readProperty("coverage.results.path"), "input", true);
-		}
+//      // Update CoverageMeter with recently created test suite (if coverage is enabled).
+//		// Export input coverage data to external file (CSV).
+//		if (spec != null) {
+//			covMeter.setTestSuite(testCases);
+//			covMeter.exportCoverageToCSV(PropertyManager.readProperty("coverage.results.path"), "input", true);
+//		}
         
         // Write test cases
         String filePath = targetDir + "/" + testClassName + ".java";
