@@ -20,13 +20,15 @@ public class RESTAssuredWriter implements IWriter {
 	private boolean OAIValidation = true;
 	private boolean logging = false;				// Log everything (ONLY IF THE TEST FAILS)
 	private boolean allureReport = false;			// Generate request and response attachment for allure reports
-
 	private boolean enableStats = false;			// If true, export test results and output coverage data to CSV
+
 	private String specPath;						// Path to OAS specification file
 	private String testFilePath;					// Path to test configuration file
 	private String className;						// Test class name
 	private String packageName;						// Package name
 	private String baseURI;							// API base URI
+
+	private String APIName;							// API name (necessary for folder name of exported data)
 	
 	public RESTAssuredWriter(String specPath, String testFilePath, String className, String packageName, String baseURI) {
 		this.specPath = specPath;
@@ -115,6 +117,9 @@ public class RESTAssuredWriter implements IWriter {
 		if (OAIValidation)
 			content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
 					+  "\tprivate final SwaggerValidationFilter validationFilter = new SwaggerValidationFilter(OAI_JSON_URL);\n";
+
+		if (enableStats) // This is only needed to export output data to the proper folder
+			content += "\tprivate final String APIName = \"" + APIName + "\";\n";
 		
 		content += "\n";
 		
@@ -280,7 +285,7 @@ public class RESTAssuredWriter implements IWriter {
 		if (allureReport)
 			content += "\t\t\t\t.filter(new AllureRestAssured())\n";
 		if (enableStats)
-			content += "\t\t\t\t.filter(new CoverageFilter(testResultId))\n";
+			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
 
 		return content;
 	}
@@ -471,5 +476,13 @@ public class RESTAssuredWriter implements IWriter {
 
 	public void setBaseURI(String baseURI) {
 		this.baseURI = baseURI;
+	}
+
+	public String getAPIName() {
+		return APIName;
+	}
+
+	public void setAPIName(String APIName) {
+		this.APIName = APIName;
 	}
 }

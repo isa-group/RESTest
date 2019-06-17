@@ -2,6 +2,7 @@ package es.us.isa.restest.coverage;
 
 //import io.restassured.filter.Filter;
 import es.us.isa.restest.testcases.TestResult;
+import es.us.isa.restest.util.PropertyManager;
 import io.restassured.filter.FilterContext;
 import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
@@ -12,15 +13,17 @@ import static es.us.isa.restest.coverage.CoverageMeter.exportCoverageOfTestResul
 
 public class CoverageFilter implements OrderedFilter {
 
+    private String APIName;
     private String testResultId;
 
     public CoverageFilter() {
         super();
     }
 
-    public CoverageFilter(String testResultId) {
+    public CoverageFilter(String testResultId, String APIName) {
         super();
         this.testResultId = testResultId;
+        this.APIName = APIName;
     }
 
     @Override
@@ -28,9 +31,11 @@ public class CoverageFilter implements OrderedFilter {
         Response response = ctx.next(requestSpec, responseSpec);
 
         // Export output coverage data after receiving API response
+        String testDataFile = PropertyManager.readProperty("data.tests.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.tests.testresults.file");
+        String coverageDataFile = PropertyManager.readProperty("data.coverage.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.coverage.testresults.file");
         TestResult tr = new TestResult(testResultId, Integer.toString(response.statusCode()), response.asString(), response.contentType());
-        tr.exportToCSV("target/coverage-results/test-results.csv");
-        exportCoverageOfTestResultToCSV("target/coverage-results/test-results-coverage.csv", tr);
+        tr.exportToCSV(testDataFile);
+        exportCoverageOfTestResultToCSV(coverageDataFile, tr);
 
         return response;
     }
