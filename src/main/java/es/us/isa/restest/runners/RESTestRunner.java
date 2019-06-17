@@ -5,10 +5,8 @@ package es.us.isa.restest.runners;
 
 import java.util.Collection;
 
-import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
-import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.testcases.TestResult;
+import es.us.isa.restest.util.CSVReportManager;
 import es.us.isa.restest.util.PropertyManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,23 +32,19 @@ public class RESTestRunner {
 	String packageName;							// Package name
 	AbstractTestCaseGenerator generator;   		// Test case generator
 	IWriter writer;								// RESTAssured writer
-	AllureReportManager reportManager;			// Allure report manager
+	AllureReportManager allureReportManager;	// Allure report manager
+	CSVReportManager csvReportManager;			// CSV report manager
 	int numTestCases = 0;						// Number of test cases generated so far
-	boolean enableStats;						// Whether to output stats to external files (CSV) or not
-//	boolean enableCoverage;						// Whether to get coverage statistics or not
-//	OpenAPISpecification spec;					// OAS (used if enableCoverage is set to true)
-//	CoverageGatherer covGath;					// Coverage gatherer (used if enableCoverage is set to true)
-//	CoverageMeter covMeter;						// Coverage meter (used if enableCoverage is set to true)
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 	
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, boolean enableStats) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, CSVReportManager csvReportManager) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
 		this.generator = generator;
 		this.writer = writer;
-		this.reportManager = reportManager;
-		this.enableStats = enableStats;
+		this.allureReportManager = reportManager;
+		this.csvReportManager = csvReportManager;
 	}
 	
 	public void run() {
@@ -66,12 +60,12 @@ public class RESTestRunner {
 		
 		// Test execution
 		logger.info("Running tests");
-		System.setProperty("allure.results.directory", reportManager.getResultsDirPath());
+		System.setProperty("allure.results.directory", allureReportManager.getResultsDirPath());
 		testExecution(testClass);
 		
 		// Generate test report
 		logger.info("Generating test report");
-		reportManager.generateReport();
+		allureReportManager.generateReport();
 	}
 	
 	
@@ -83,13 +77,11 @@ public class RESTestRunner {
         this.numTestCases += testCases.size();
 
         // Export test cases to CSV if enableStats is true
-		if (enableStats) {
-			String csvTcPath = "target/coverage-results/test-cases.csv";
-			removeFile(csvTcPath);
+		if (csvReportManager.getEnableStats()) {
+			String csvTcPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
 			testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
 
-			String csvTcCoveragePath = "target/coverage-results/test-cases-coverage.csv";
-			removeFile(csvTcCoveragePath);
+			String csvTcCoveragePath = csvReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.testcases.file");
 			testCases.forEach(tc -> CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc));
 		}
 
