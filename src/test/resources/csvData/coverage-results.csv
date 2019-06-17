@@ -145,8 +145,8 @@ RESPONSE_BODY_PROPERTIES,/pet->POST->405,code,false
 RESPONSE_BODY_PROPERTIES,/pet->POST->405,message,false
 RESPONSE_BODY_PROPERTIES,/pet->POST->405,type,false
 RESPONSE_BODY_PROPERTIES,/pet/findByStatus->GET->200,photoUrls,false
-RESPONSE_BODY_PROPERTIES,/pet/findByStatus->GET->200,name,false
-RESPONSE_BODY_PROPERTIES,/pet/findByStatus->GET->200,id,false
+RESPONSE_BODY_PROPERTIES,/pet/findByStatus->GET->200,name,true
+RESPONSE_BODY_PROPERTIES,/pet/findByStatus->GET->200,id,true
 RESPONSE_BODY_PROPERTIES,/pet/findByStatus->GET->200,category,false
 RESPONSE_BODY_PROPERTIES,/pet/findByStatus->GET->200,status,false
 RESPONSE_BODY_PROPERTIES,/pet/findByStatus->GET->200,tags,false

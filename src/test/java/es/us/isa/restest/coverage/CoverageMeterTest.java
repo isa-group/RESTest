@@ -15,6 +15,7 @@ import es.us.isa.restest.coverage.CriterionType;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
+import static es.us.isa.restest.util.FileManager.*;
 import io.swagger.models.HttpMethod;
 
 public class CoverageMeterTest {
@@ -56,7 +57,7 @@ public class CoverageMeterTest {
 
         List<TestResult> testResults = new ArrayList<>();
         TestResult testResult1 = new TestResult(testCase1.getId(), "201", "[]", "application/json");
-        TestResult testResult2 = new TestResult(testCase2.getId(), "200", "[{\"a\": \"b\", \"c\": \"d\"}, {\"a\": \"b\", \"c\": \"d\"}]", "application/json");
+        TestResult testResult2 = new TestResult(testCase2.getId(), "200", "[{\"name\": \"b\", \"id\": \"d\"}, {\"a\": \"b\", \"c\": \"d\"}]", "application/json");
         TestResult testResult3 = new TestResult(testCase3.getId(), "200", "{\"a\": \"b\", \"c\": \"d\"}", "application/json");
 
         testResults.add(testResult1);
@@ -90,7 +91,23 @@ public class CoverageMeterTest {
 
         System.out.println(covGath.getCoverageCriteria().get(1).getElements().entrySet().iterator().next().getKey());
 
+        // Delete dir and recreate it
+        deleteDir("src/test/resources/csvData");
+        createDir("src/test/resources/csvData");
+
         // Test export to CSV
-        covMeter.exportCoverageToCSV("src/test/resources/csvData/csvSample.csv", null, true);
+        covMeter.exportCoverageToCSV("src/test/resources/csvData/coverage-results.csv", null, true);
+
+        // Export test case 1 to CSV
+        testCase1.exportToCSV("src/test/resources/csvData/test-cases.csv");
+
+        // Export coverage of test case 2 to CSV
+        CoverageMeter.exportCoverageOfTestCaseToCSV("src/test/resources/csvData/test-cases-coverage.csv", testCase2);
+
+        // Export test result 2 to CSV
+        testResult2.exportToCSV("src/test/resources/csvData/test-results.csv");
+
+        // Export coverage of test result 3 to CSV
+        CoverageMeter.exportCoverageOfTestResultToCSV("src/test/resources/csvData/test-results-coverage.csv", testResult3);
     }
 }

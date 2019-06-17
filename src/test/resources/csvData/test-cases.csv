@@ -1,0 +1,2 @@
+testCaseId,operationId,path,httpMethod,inputContentType,outputContentType,headerParameters,pathParameters,queryParameters,bodyParameter,authentication,expectedOutputs,expectedSuccessfulOutput
+rhda0ie37bdt,addPet,/pet,POST,application/json,application/json,,null,,,

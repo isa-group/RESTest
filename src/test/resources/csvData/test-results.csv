@@ -1,0 +1,2 @@
+testResultId,statusCode,responseBody,outputContentType
+qxkzvy42j8kw,200,"[{\"name\": \"b\", \"id\": \"d\"}, {\"a\": \"b\", \"c\": \"d\"}]",application/json
