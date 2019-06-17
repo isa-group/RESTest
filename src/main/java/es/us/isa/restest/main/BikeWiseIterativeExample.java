@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import es.us.isa.restest.util.CSVReportManager;
 import org.apache.commons.io.FileUtils;
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
@@ -16,6 +17,7 @@ import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.AllureReportManager;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.PropertyManager;
+import static es.us.isa.restest.util.FileManager.*;
 
 /**
  * Iterative test scenario example: Tests are generated, and executed incrementally in different iterations updating the test report at each step.
@@ -29,7 +31,9 @@ public class BikeWiseIterativeExample {
 	private static int numTestCases = 2;												// Number of test cases per operation
 	private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		// Path to OAS specification file
 	private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		// Path to test configuration file
-	private static String targetDir = "src/generation/java/bikewise";					// Directory where tests will be generated. 
+	private static String targetDirJava = "src/generation/java/bikewise";				// Directory where tests will be generated.
+//	private static String targetDirTestData = "target/test-data";						// Directory where tests will be exported to CSV.
+//	private static String targetDirCoverageData = "target/coverage-data";				// Directory where coverage will be exported to CSV.
 	private static String packageName = "bikewise";										// Package name.
 	private static String APIName = "Bikewise";											// API name
 	private static String testClassName = "BikewiseTest";								// Name prefix of the class to be generated
@@ -40,13 +44,14 @@ public class BikeWiseIterativeExample {
 	public static void main(String[] args) {
 		
 		// Create target directory if it does not exists
-		createTargetDir();
+		createDir(targetDirJava);
 
 		// RESTest runner
-		AbstractTestCaseGenerator generator = createGenerator();		// Test case generator
-		IWriter writer = createWriter();								// Test case writer
-		AllureReportManager reportManager = createReportManager();		// Allure test case reporter
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, true);
+		AbstractTestCaseGenerator generator = createGenerator();				// Test case generator
+		IWriter writer = createWriter();										// Test case writer
+		AllureReportManager reportManager = createAllureReportManager();		// Allure test case reporter
+		CSVReportManager csvReportManager = createCSVReportManager();			// CSV test case reporter
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, csvReportManager);
 		
 		int iteration = 1;
 		while (runner.getNumTestCases() < totalNumTestCases) {
@@ -80,12 +85,6 @@ public class BikeWiseIterativeExample {
 		
 	}
 
-	// Create target dir if it does not exist
-	private static void createTargetDir() {
-		File dir = new File(targetDir + "/");
-		dir.mkdirs();
-	}
-
 	// Create a random test case generator
 	private static AbstractTestCaseGenerator createGenerator() {
 		
@@ -104,15 +103,17 @@ public class BikeWiseIterativeExample {
 	// Create a writer for RESTAssured
 	private static IWriter createWriter() {
         String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDir, testClassName, packageName, basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName, basePath.toLowerCase());
         writer.setLogging(true);
         writer.setAllureReport(true);
 		writer.setEnableStats(true);
+//		writer.setEnableStats(false);
+		writer.setAPIName(APIName);
 		return writer;
 	}
 	
 	// Create an Allure report manager
-	private static AllureReportManager createReportManager() {
+	private static AllureReportManager createAllureReportManager() {
 		String allureResultsDir = PropertyManager.readProperty("allure.results.dir") + "/" + APIName;
 		String allureReportDir = PropertyManager.readProperty("allure.report.dir") + "/" + APIName;
 		
@@ -125,15 +126,23 @@ public class BikeWiseIterativeExample {
 		return arm;
 	}
 
-	// Delete a directory
-	private static void deleteDir(String dirPath) {
-		File dir = new File(dirPath);
-		
-		try {
-			FileUtils.deleteDirectory(dir);
-		} catch (IOException e) {
-			System.err.println("Error deleting target dir");
-			e.printStackTrace();
-		}
+	// Create a CSV report manager
+	private static CSVReportManager createCSVReportManager() {
+		String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + APIName;
+		String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + APIName;
+
+		// Delete previous results (if any)
+		deleteDir(testDataDir);
+		deleteDir(coverageDataDir);
+
+		// Recreate directories
+		createDir(testDataDir);
+		createDir(coverageDataDir);
+
+		return new CSVReportManager(testDataDir, coverageDataDir);
+
+//		CSVReportManager csvReportManager = new CSVReportManager();
+//		csvReportManager.setEnableStats(false);
+//		return csvReportManager;
 	}
 }

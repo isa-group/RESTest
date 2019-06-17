@@ -48,7 +48,7 @@ public class BikeWiseReliabilityExample {
 		AbstractTestCaseGenerator generator = createGenerator();		// Test case generator
 		IWriter writer = createWriter();								// Test case writer
 		AllureReportManager reportManager = createReportManager();		// Allure test case reporter
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, false);
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, null);
 		
 		int iteration = 1;
 		while (iteration <= nIterations) {
