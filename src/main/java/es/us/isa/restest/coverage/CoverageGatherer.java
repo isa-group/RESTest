@@ -36,6 +36,7 @@ public class CoverageGatherer {
     private OpenAPISpecification spec;                  // OpenAPI specification to deduce coverage levels from
     private List<CriterionType> coverageCriterionTypes; // Types of criteria to be covered
     private List<CoverageCriterion> coverageCriteria;   // Coverage criteria to keep track of
+//    private int bodyPropertyDepthLevel = 0;
 
     public CoverageGatherer(OpenAPISpecification spec) {
         this.spec = spec;
@@ -160,25 +161,12 @@ public class CoverageGatherer {
                             }
                             
                         } else if (type == INPUT_CONTENT_TYPE || type == OUTPUT_CONTENT_TYPE) {
-                            List<String> contentTypesList = new ArrayList<>(); // list of content-types per criterion
                             // Set content-types to iterate over depending on the 'type' passed and whether or not the property is present in the OAS
                             List<String> contentTypes = type == INPUT_CONTENT_TYPE && currentOperationEntry.getValue().getConsumes() != null ? currentOperationEntry.getValue().getConsumes() :
                                                         type == OUTPUT_CONTENT_TYPE && currentOperationEntry.getValue().getProduces() != null ? currentOperationEntry.getValue().getProduces() : null;
                             if (contentTypes != null) { // there could be no 'consumes' or 'produces' property, so check it before
-                                for (String contentType : contentTypes) {
-                                    contentTypesList.add(contentType); // collect content-types for this operation
-                                }
-                                criteria.add(createCriterion(contentTypesList, type, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
+                                criteria.add(createCriterion(new ArrayList<>(contentTypes), type, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
                             }
-
-                        } else if (type == AUTHENTICATION) {
-//                            List<String> authenticationList = new ArrayList<>(); // list of authentications per criterion
-//                            if (currentOperationEntry.getValue().getSecurity() != null) { // there could be no 'security' property, so check it before
-//                                for (Map<String, List<String>> authenticationScheme : currentOperationEntry.getValue().getSecurity()) {
-//                                    authenticationList.add(authenticationScheme.keySet().iterator().next()); // collect authentications for this operation
-//                                }
-//                                criteria.add(createCriterion(authenticationList, AUTHENTICATION, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
-//                            }
 
                         } else if (type == STATUS_CODE_CLASS) {
                             List<String> statusCodeClassesList = new ArrayList<>(); // list of statusCodeClasses per criterion
@@ -192,50 +180,42 @@ public class CoverageGatherer {
                             criteria.add(createCriterion(statusCodeClassesList, STATUS_CODE_CLASS, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
                         
                         } else if (type == STATUS_CODE) {
-                            List<String> statusCodesList = new ArrayList<>(); // list of statusCodes per criterion
-                            for (String statusCode : currentOperationEntry.getValue().getResponses().keySet()) {
-                                statusCodesList.add(statusCode); // collect statusCodes for this operation
-                            }
-                            criteria.add(createCriterion(statusCodesList, STATUS_CODE, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
+                            criteria.add(createCriterion(
+                                    new ArrayList<>(currentOperationEntry.getValue().getResponses().keySet()), // list of status codes for that operation
+                                    STATUS_CODE,
+                                    currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()
+                            ));
                         
                         } else if (type == RESPONSE_BODY_PROPERTIES) {
                             // iterate over the responses of that operation
                             Iterator<Entry<String, Response>> responsesIterator = currentOperationEntry.getValue().getResponses().entrySet().iterator();
                             while (responsesIterator.hasNext()) {
                                 Entry<String, Response> currentResponseEntry = responsesIterator.next();
-
                                 Property responseSchema = currentResponseEntry.getValue().getSchema();
+
                                 if (responseSchema != null) { // if the response actually returns a body
-                                    String currentResponseRef = null;
-                                    List<String> responseBodyPropertiesList = new ArrayList<>(); // list of responseBodyProperties per criterion
-                                    if (responseSchema.getType() == "array") {
-                                        if (((ArrayProperty)responseSchema).getItems().getType() == "ref") {
-                                            currentResponseRef = ((RefProperty)((ArrayProperty)responseSchema).getItems()).getSimpleRef();
-                                        }
-                                    } else if (responseSchema.getType() == "ref") {
-                                        currentResponseRef = ((RefProperty)responseSchema).getSimpleRef();
-                                    } else if (responseSchema.getType() == "object" && responseSchema instanceof ObjectProperty) {
-                                        responseBodyPropertiesList.addAll(((ObjectProperty)responseSchema).getProperties().keySet()); // add response body properties to the criterion
-                                    }
-                                    if (currentResponseRef != null) { // if the response body refers to a Swagger definition, get properties from that object
-                                        Model currentSwaggerModel = spec.getSpecification().getDefinitions().get(currentResponseRef); // get Swagger Definition associated to the Ref defined in the response
-                                        responseBodyPropertiesList.addAll(currentSwaggerModel.getProperties().keySet()); // add response body properties to the criterion
-                                    }
-                                    if (responseBodyPropertiesList.size() > 0) { // if the response body is an object containing some properties, create criterion
-                                        criteria.add(createCriterion(responseBodyPropertiesList, RESPONSE_BODY_PROPERTIES,
-                                                currentPathEntry.getKey() + "->" +
-                                                currentOperationEntry.getKey().toString() + "->" +
-                                                currentResponseEntry.getKey()
-                                        ));
-                                    }
+                                    addResponseBodyPropertiesCriterion(responseSchema, criteria,
+                                    currentPathEntry.getKey() + "->" +
+                                            currentOperationEntry.getKey().toString() + "->" +
+                                            currentResponseEntry.getKey() + "->" // note the final arrow, since new elements will be added to the rootPath
+                                    );
                                 }
                             }
-                        
+                        } else if (type == AUTHENTICATION) {
+                            //TODO: Remove
+//                            List<String> authenticationList = new ArrayList<>(); // list of authentications per criterion
+//                            if (currentOperationEntry.getValue().getSecurity() != null) { // there could be no 'security' property, so check it before
+//                                for (Map<String, List<String>> authenticationScheme : currentOperationEntry.getValue().getSecurity()) {
+//                                    authenticationList.add(authenticationScheme.keySet().iterator().next()); // collect authentications for this operation
+//                                }
+//                                criteria.add(createCriterion(authenticationList, AUTHENTICATION, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
+//                            }
+
                         } else if (type == PARAMETER_CONDITION) {
-                            //TODO
+                            //TODO: Probably remove
                         
                         } else if (type == OPERATIONS_FLOW) {
-                            //TODO
+                            //TODO: In a distant future
                         
                         } else {
                             throw new IllegalArgumentException("Unknown coverage criterion type: " + type.toString());
@@ -249,6 +229,50 @@ public class CoverageGatherer {
 
         return criteria;
     }
+
+    /**
+     * Given a Swagger property (either a root response property or a sub-property), if it contains some
+     * sub-properties (i.e. it is an object or an array of objects), add a new RESPONSE_BODY_PROPERTIES
+     * criterion to the list of criteria passed in as an argument, updating the baseRootPath according
+     * to the depth level of the sub-property. This function is to be called recursively, so as to cover
+     * all sub-properties of an object.
+     *
+     * @param responseSchema Swagger property to check if it contains sub-properties to cover
+     * @param criteria List of coverage criteria where to include the RESPONSE_BODY_PROPERTIES criteria
+     * @param baseRootPath Initial rootPath: "{path}->{httpMethod}->{statusCode}->". Example of
+     *                     baseRootPath after 2 iterations: "{path}->{httpMethod}->{statusCode}->{prop1[{prop2"
+     */
+    private void addResponseBodyPropertiesCriterion(Property responseSchema, List<CoverageCriterion> criteria, String baseRootPath) {
+        String rootPathSuffix = "";
+        String currentResponseRef = null;
+        Map<String, Property> swaggerProperties = null;
+
+        if (responseSchema.getType() == "array") { // the response is an array
+            if (((ArrayProperty)responseSchema).getItems().getType() == "ref") { // each item of the array has the schema of the Swagger 'ref' tag
+                currentResponseRef = ((RefProperty)((ArrayProperty)responseSchema).getItems()).getSimpleRef();
+                rootPathSuffix += "[{"; // update rootPathSuffix to reflect depth level inside the response body
+            }
+        } else if (responseSchema.getType() == "ref") { // the response is an object and its schema is defined in the Swagger 'ref' tag
+            currentResponseRef = ((RefProperty)responseSchema).getSimpleRef();
+            rootPathSuffix += "{"; // update rootPathSuffix
+        } else if (responseSchema.getType() == "object" && responseSchema instanceof ObjectProperty) { // the response is an object and its schema is defined right after
+            swaggerProperties = ((ObjectProperty)responseSchema).getProperties();
+            rootPathSuffix += "{"; // update rootPathSuffix
+        }
+        if (currentResponseRef != null) { // if the response body refers to a Swagger definition, get properties from that object
+            swaggerProperties = spec.getSpecification().getDefinitions().get(currentResponseRef).getProperties();
+        }
+
+        if (swaggerProperties != null) { // if there are properties to cover in this iteration, add new criterion
+            baseRootPath += rootPathSuffix; // update rootPath with the suffix, since a new criterion will be added
+            criteria.add(createCriterion(new ArrayList<>(swaggerProperties.keySet()), RESPONSE_BODY_PROPERTIES, baseRootPath));
+            for (Entry<String, Property> swaggerProperty: swaggerProperties.entrySet()) { // Recursively add criteria for each property
+                addResponseBodyPropertiesCriterion(swaggerProperty.getValue(), criteria, baseRootPath+swaggerProperty.getKey()); // update rootPath with the name of the property
+            }
+        }
+    }
+
+
 
     /**
      * Helper function to create a coverage criterion. Given a list of elements
