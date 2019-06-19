@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import es.us.isa.restest.testcases.TestCase;
 import static es.us.isa.restest.coverage.CriterionType.*;
 import es.us.isa.restest.testcases.TestResult;
@@ -228,7 +229,7 @@ public class CoverageMeter {
                 updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue());
             }
             updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), "body");
-            updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getAuthentication());
+//            updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getAuthentication());
             updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getInputFormat());
 
         }
@@ -244,11 +245,89 @@ public class CoverageMeter {
             updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getOutputFormat());
 
             // Response body properties criteria
-            Iterator<Entry<String,JsonNode>> responseIterator = getBodyProperties(testResult.getResponseBody());
-            while (responseIterator != null && responseIterator.hasNext()) {
-                String responseProperty = responseIterator.next().getKey();
-                updateCriterion(RESPONSE_BODY_PROPERTIES, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
+//            Iterator<Entry<String,JsonNode>> responseIterator = getBodyProperties(testResult.getResponseBody());
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                JsonNode jsonResponse = objectMapper.readTree(testResult.getResponseBody());
+//                Iterator<Entry<String,JsonNode>> responseIterator = null;
+                String rootPath = findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString() + "->" + testResult.getStatusCode() + "->";
+
+                iterateOverJsonNode(jsonResponse, rootPath);
+//                if (jsonResponse instanceof ObjectNode) {
+//                    rootPath += "{";
+//                    responseIterator = jsonResponse.fields();
+//                } else if (jsonResponse instanceof ArrayNode) {
+//                    rootPath += "[";
+//                    while (jsonResponse.elements().hasNext()) {
+//                        JsonNode arrayItem = jsonResponse.elements().next();
+//                        if (arrayItem instanceof ObjectNode) {
+//                            rootPath += "{";
+//                            responseIterator = arrayItem.fields();
+//                        }
+//                    }
+////                    jsonResponse.forEach(arrayItem -> {
+////                        if (arrayItem instanceof ObjectNode) {
+////                            rootPath += "{";
+////                        }
+////                    });
+////                    responseIterator = jsonResponse.get(0).fields();
+//                }
+
+                // updateResponseBodyPropertiesCriteria(responseIterator, rootPath);
+
+
+//                while (responseIterator != null && responseIterator.hasNext()) {
+//                    String responseProperty = responseIterator.next().getKey();
+//                    updateCriterion(RESPONSE_BODY_PROPERTIES, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
+//                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+
+        }
+    }
+
+    private void iterateOverJsonNode(JsonNode jsonNode, String rootPath) {
+        Iterator<Entry<String,JsonNode>> responseIterator = null;
+
+        if (jsonNode instanceof ObjectNode) {
+            rootPath += "{";
+            responseIterator = jsonNode.fields();
+            updateResponseBodyPropertiesCriteria(responseIterator, rootPath);
+        } else if (jsonNode instanceof ArrayNode) {
+            if (jsonNode.get(0) instanceof ObjectNode) {
+                rootPath += "[{";
+                for (int i = 0; i<jsonNode.size(); i++) {
+                    JsonNode arrayItem = jsonNode.get(i);
+                    responseIterator = arrayItem.fields();
+                    updateResponseBodyPropertiesCriteria(responseIterator, rootPath);
+                }
+//                while (jsonNode.elements().hasNext()) {
+//                    JsonNode arrayItem = jsonNode.elements().next();
+//                    responseIterator = arrayItem.fields();
+//                    updateResponseBodyPropertiesCriteria(responseIterator, rootPath);
+//                }
+            }
+//                    jsonNode.forEach(arrayItem -> {
+//                        if (arrayItem instanceof ObjectNode) {
+//                            rootPath += "{";
+//                        }
+//                    });
+//                    responseIterator = jsonNode.get(0).fields();
+        }
+
+//        while (responseIterator != null && responseIterator.hasNext()) {
+//            String responseProperty = responseIterator.next().getKey();
+//            updateCriterion(RESPONSE_BODY_PROPERTIES, rootPath, responseProperty);
+//        }
+    }
+
+    private void updateResponseBodyPropertiesCriteria(Iterator<Entry<String,JsonNode>> responseIterator, String rootPath) {
+        while (responseIterator != null && responseIterator.hasNext()) {
+            Entry<String,JsonNode> responseProperty = responseIterator.next();
+//            String responseProperty = responseIterator.next().getKey();
+            updateCriterion(RESPONSE_BODY_PROPERTIES, rootPath, responseProperty.getKey());
+            iterateOverJsonNode(responseProperty.getValue(), rootPath+responseProperty.getKey());
         }
     }
 
