@@ -141,7 +141,8 @@ public class CoverageGatherer {
                             while (parametersIterator.hasNext()) {
                                 Parameter currentParameter = parametersIterator.next();
 
-                                if (currentParameter.getIn() == "query" || currentParameter.getIn() == "header") { // this criterion only applies for header and query parameters
+                                // this criterion only applies for header, query and path parameters
+                                if (currentParameter.getIn().equals("query") || currentParameter.getIn().equals("header") || currentParameter.getIn().equals("path")) {
                                     String paramType = ((AbstractSerializableParameter) currentParameter).getType();
                                     List<String> paramEnumValues = ((AbstractSerializableParameter) currentParameter).getEnum();
                                     if (paramType == "boolean" || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
