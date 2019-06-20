@@ -3,9 +3,7 @@ package es.us.isa.restest.coverage;
 import static es.us.isa.restest.coverage.CriterionType.*;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -214,23 +212,23 @@ public class CoverageMeter {
     private void setCoveredInputElements() {
         // Traverse all test cases and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestCase testCase: testSuite) {
-            updateCriterion(PATH, "", testCase.getPath());
-            updateCriterion(OPERATION, testCase.getPath(), testCase.getMethod().toString());
+            updateCriterion(PATH, "", testCase.getPath(), coverageGatherer);
+            updateCriterion(OPERATION, testCase.getPath(), testCase.getMethod().toString(), coverageGatherer);
             for (Entry<String, String> parameter: testCase.getHeaderParameters().entrySet()) {
-                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey());
-                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue());
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey(), coverageGatherer);
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue(), coverageGatherer);
             }
             for (Entry<String, String> parameter: testCase.getPathParameters().entrySet()) {
-                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey());
-                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue());
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey(), coverageGatherer);
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue(), coverageGatherer);
             }
             for (Entry<String, String> parameter: testCase.getQueryParameters().entrySet()) {
-                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey());
-                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue());
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey(), coverageGatherer);
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue(), coverageGatherer);
             }
-            updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), "body");
+            updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), "body", coverageGatherer);
 //            updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getAuthentication());
-            updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getInputFormat());
+            updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getInputFormat(), coverageGatherer);
 
         }
     }
@@ -240,46 +238,18 @@ public class CoverageMeter {
         for (TestResult testResult: testResults) {
             String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
             if (statusCodeClass != null)
-                updateCriterion(STATUS_CODE_CLASS, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), statusCodeClass);
-            updateCriterion(STATUS_CODE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getStatusCode());
-            updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getOutputFormat());
+                updateCriterion(STATUS_CODE_CLASS, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), statusCodeClass, coverageGatherer);
+            updateCriterion(STATUS_CODE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getStatusCode(), coverageGatherer);
+            updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getOutputFormat(), coverageGatherer);
 
             // Response body properties criteria
-//            Iterator<Entry<String,JsonNode>> responseIterator = getBodyProperties(testResult.getResponseBody());
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 JsonNode jsonResponse = objectMapper.readTree(testResult.getResponseBody());
-//                Iterator<Entry<String,JsonNode>> responseIterator = null;
-                String rootPath = findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString() + "->" + testResult.getStatusCode() + "->";
-
-                iterateOverJsonNode(jsonResponse, rootPath);
-//                if (jsonResponse instanceof ObjectNode) {
-//                    rootPath += "{";
-//                    responseIterator = jsonResponse.fields();
-//                } else if (jsonResponse instanceof ArrayNode) {
-//                    rootPath += "[";
-//                    while (jsonResponse.elements().hasNext()) {
-//                        JsonNode arrayItem = jsonResponse.elements().next();
-//                        if (arrayItem instanceof ObjectNode) {
-//                            rootPath += "{";
-//                            responseIterator = arrayItem.fields();
-//                        }
-//                    }
-////                    jsonResponse.forEach(arrayItem -> {
-////                        if (arrayItem instanceof ObjectNode) {
-////                            rootPath += "{";
-////                        }
-////                    });
-////                    responseIterator = jsonResponse.get(0).fields();
-//                }
-
-                // updateResponseBodyPropertiesCriteria(responseIterator, rootPath);
-
-
-//                while (responseIterator != null && responseIterator.hasNext()) {
-//                    String responseProperty = responseIterator.next().getKey();
-//                    updateCriterion(RESPONSE_BODY_PROPERTIES, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString() + "->" + testResult.getStatusCode(), responseProperty);
-//                }
+                String baseRootPath = findTestCase(testResult.getId()).getPath() +
+                        "->" + findTestCase(testResult.getId()).getMethod().toString() +
+                        "->" + testResult.getStatusCode() + "->"; // note the final arrow, since new elements will be added to the rootPath
+                iterateOverJsonNode(jsonResponse, baseRootPath, coverageGatherer, null, null, null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -287,47 +257,79 @@ public class CoverageMeter {
         }
     }
 
-    private void iterateOverJsonNode(JsonNode jsonNode, String rootPath) {
-        Iterator<Entry<String,JsonNode>> responseIterator = null;
+    /**
+     * This method can be used in two ways: a) to mark several RESPONSE_BODY_PROPERTIES as 'covered'
+     * in the CoverageGatherer of the class, or b) to export that same data to CSV. Given a JSON node, if
+     * it is a JSON object or an array of JSON objects, apply one of the two processes mentioned for
+     * every RESPONSE_BODY_PROPERTIES criterion affected. This function is to be called recursively,
+     * so as to cover all sub-properties of the root element.
+     *
+     * @param jsonNode JsonNode object that may contain some properties which will be marked as 'covered'
+     *                 on the {@link CoverageGatherer} object, or exported to CSV. A JsonNode can be a
+     *                 JSON object, an array or any other data type (such as an integer or a string)
+     * @param baseRootPath Case a): Initial rootPath: "{path}->{httpMethod}->{statusCode}->". Example of
+     *                     baseRootPath after 2 iterations: "{path}->{httpMethod}->{statusCode}->{prop1[{prop2".
+     *                     Case b): Initial rootPath: "". Example of baseRootPath after 2 iterations:
+     *                     "{prop1[{prop2"
+     * @param covGath CoverageGatherer where to update the criteria. {@code null} for case a)
+     * @param filePath Path to the CSV file where to export the data. {@code null} for case b)
+     * @param testResultId ID of the test result that is being exported (must added in the row of the CSV file).
+     *                     {@code null} for case b)
+     * @param coveredRootPaths List of rootPaths that have already been covered (added to the CSV file). This
+     *                         is necessary because, for an array, the same element could be written multiple
+     *                         times (e.g. thousands of duplicated lines for an array with thousands of
+     *                         elements). {@code null} for case b)
+     */
+    private static void iterateOverJsonNode(JsonNode jsonNode, String baseRootPath, CoverageGatherer covGath, String filePath, String testResultId, List<String> coveredRootPaths) {
+        Iterator<Entry<String,JsonNode>> objectPropertiesIterator = null;
 
-        if (jsonNode instanceof ObjectNode) {
-            rootPath += "{";
-            responseIterator = jsonNode.fields();
-            updateResponseBodyPropertiesCriteria(responseIterator, rootPath);
-        } else if (jsonNode instanceof ArrayNode) {
-            if (jsonNode.get(0) instanceof ObjectNode) {
-                rootPath += "[{";
-                for (int i = 0; i<jsonNode.size(); i++) {
+        if (jsonNode instanceof ObjectNode) { // if the jsonNode is actually a JSON object
+            baseRootPath += "{"; // update rootPath accordingly
+            objectPropertiesIterator = jsonNode.fields(); // get all properties from the JSON object
+            updateResponseBodyPropertiesCriteria(objectPropertiesIterator, baseRootPath, covGath, filePath, testResultId, coveredRootPaths);
+        } else if (jsonNode instanceof ArrayNode) { // if the jsonNode is an array...
+            if (jsonNode.get(0) instanceof ObjectNode) { // ... of JSON objects
+                baseRootPath += "[{"; // update rootPath
+                for (int i = 0; i<jsonNode.size(); i++) { // for every element of the array
                     JsonNode arrayItem = jsonNode.get(i);
-                    responseIterator = arrayItem.fields();
-                    updateResponseBodyPropertiesCriteria(responseIterator, rootPath);
+                    objectPropertiesIterator = arrayItem.fields(); // get all properties from the JSON object
+                    updateResponseBodyPropertiesCriteria(objectPropertiesIterator, baseRootPath, covGath, filePath, testResultId, coveredRootPaths);
                 }
-//                while (jsonNode.elements().hasNext()) {
-//                    JsonNode arrayItem = jsonNode.elements().next();
-//                    responseIterator = arrayItem.fields();
-//                    updateResponseBodyPropertiesCriteria(responseIterator, rootPath);
-//                }
             }
-//                    jsonNode.forEach(arrayItem -> {
-//                        if (arrayItem instanceof ObjectNode) {
-//                            rootPath += "{";
-//                        }
-//                    });
-//                    responseIterator = jsonNode.get(0).fields();
         }
-
-//        while (responseIterator != null && responseIterator.hasNext()) {
-//            String responseProperty = responseIterator.next().getKey();
-//            updateCriterion(RESPONSE_BODY_PROPERTIES, rootPath, responseProperty);
-//        }
     }
 
-    private void updateResponseBodyPropertiesCriteria(Iterator<Entry<String,JsonNode>> responseIterator, String rootPath) {
-        while (responseIterator != null && responseIterator.hasNext()) {
-            Entry<String,JsonNode> responseProperty = responseIterator.next();
-//            String responseProperty = responseIterator.next().getKey();
-            updateCriterion(RESPONSE_BODY_PROPERTIES, rootPath, responseProperty.getKey());
-            iterateOverJsonNode(responseProperty.getValue(), rootPath+responseProperty.getKey());
+    /**
+     * Given some object properties, iterate over all of them and update the affected RESPONSE_BODY_PROPERTIES
+     * criteria accordingly. For each property, iterate over all of their sub-properties again (recursively)
+     * to continue covering all sub-properties.
+     *
+     * @param objectPropertiesIterator Iterator of entries where the key is the name of the property and the
+     *                                 value is the JsonNode property
+     * @param rootPath Root path to locate the coverage criterion among all criteria of the
+     *                 {@link CoverageGatherer} object. To be updated with the name of the property when
+     *                 calling {@link #iterateOverJsonNode(JsonNode, String, CoverageGatherer, String, String, List) iterateOverJsonNode}
+     * @param covGath CoverageGatherer where to update the criteria
+     * @param filePath Path to the CSV file where to export the data
+     * @param testResultId ID of the test result that is being exported (must added in the row of the CSV file).
+     * @param coveredRootPaths List of rootPaths that have already been covered (added to the CSV file). This
+     *                         is necessary because, for an array, the same element could be written multiple
+     *                         times (e.g. thousands of duplicated lines for an array with thousands of
+     *                         elements).
+     */
+    private static void updateResponseBodyPropertiesCriteria(Iterator<Entry<String,JsonNode>> objectPropertiesIterator, String rootPath, CoverageGatherer covGath, String filePath, String testResultId, List<String> coveredRootPaths) {
+        while (objectPropertiesIterator != null && objectPropertiesIterator.hasNext()) { // iterate over all properties of the object
+            Entry<String,JsonNode> responseProperty = objectPropertiesIterator.next();
+            if (filePath == null)
+                updateCriterion(RESPONSE_BODY_PROPERTIES, rootPath, responseProperty.getKey(), covGath); // set the property as 'covered'
+            else {
+                String updatedRootPath = rootPath + responseProperty.getKey();
+                if (!coveredRootPaths.contains(updatedRootPath)) {
+                    writeRow(filePath, testResultId + ",RESPONSE_BODY_PROPERTIES," + rootPath + responseProperty.getKey());
+                    coveredRootPaths.add(updatedRootPath); // add the rootPath to the list of covered ones, in order not to duplicate lines in the CSV file
+                }
+            }
+            iterateOverJsonNode(responseProperty.getValue(), rootPath+responseProperty.getKey(), covGath, filePath, testResultId, coveredRootPaths); // iterate over the sub-properties of that property
         }
     }
 
@@ -339,9 +341,9 @@ public class CoverageMeter {
      * @param element Element to cover among all the elements present in the coverage criterion, e.g.
      *                {@code "sold"} for a parameter value
      */
-    private void updateCriterion(CriterionType type, String rootPath, String element) {
+    private static void updateCriterion(CriterionType type, String rootPath, String element, CoverageGatherer covGath) {
         // Find unique criterion by type and rootPath
-        CoverageCriterion criterion = coverageGatherer.getCoverageCriteria().stream()
+        CoverageCriterion criterion = covGath.getCoverageCriteria().stream()
                 .filter(c -> c.getType() == type && c.getRootPath().equals(rootPath))
                 .findFirst()
                 .orElse(null);
@@ -447,28 +449,14 @@ public class CoverageMeter {
         writeRow(path, row);
 
         // Response body properties criteria
-        Iterator<Entry<String,JsonNode>> responseIterator = getBodyProperties(tr.getResponseBody());
-        while (responseIterator != null && responseIterator.hasNext()) {
-            String responseProperty = responseIterator.next().getKey();
-            row = tr.getId() + ",RESPONSE_BODY_PROPERTIES," + responseProperty;
-            writeRow(path, row);
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            JsonNode jsonResponse = objectMapper.readTree(tr.getResponseBody());
+            iterateOverJsonNode(jsonResponse, "", null, path, tr.getId(), new ArrayList<>());
+        } catch (IOException e) {
+//            e.printStackTrace();
+            System.out.println("Unable to get body properties, body is not formatted in JSON");
         }
     }
 
-    private static Iterator<Entry<String,JsonNode>> getBodyProperties(String body) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            JsonNode jsonResponse = objectMapper.readTree(body);
-            Iterator<Entry<String,JsonNode>> responseIterator = null;
-            if (jsonResponse instanceof ObjectNode) {
-                responseIterator = jsonResponse.fields();
-            } else if (jsonResponse instanceof ArrayNode && jsonResponse.get(0) != null) {
-                responseIterator = jsonResponse.get(0).fields();
-            }
-            return responseIterator;
-        } catch (IOException e) {
-            System.out.println("Unable to get body properties, body is not formatted in JSON");
-            return null;
-        }
-    }
 }
