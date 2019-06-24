@@ -273,8 +273,8 @@ public class CoverageMeter {
      *                     "{prop1[{prop2"
      * @param covGath CoverageGatherer where to update the criteria. {@code null} for case a)
      * @param filePath Path to the CSV file where to export the data. {@code null} for case b)
-     * @param testResultId ID of the test result that is being exported (must added in the row of the CSV file).
-     *                     {@code null} for case b)
+     * @param testResultId ID of the test result that is being exported (must be added in the row of the CSV
+     *                     file). {@code null} for case b)
      * @param coveredRootPaths List of rootPaths that have already been covered (added to the CSV file). This
      *                         is necessary because, for an array, the same element could be written multiple
      *                         times (e.g. thousands of duplicated lines for an array with thousands of
@@ -320,9 +320,9 @@ public class CoverageMeter {
     private static void updateResponseBodyPropertiesCriteria(Iterator<Entry<String,JsonNode>> objectPropertiesIterator, String rootPath, CoverageGatherer covGath, String filePath, String testResultId, List<String> coveredRootPaths) {
         while (objectPropertiesIterator != null && objectPropertiesIterator.hasNext()) { // iterate over all properties of the object
             Entry<String,JsonNode> responseProperty = objectPropertiesIterator.next();
-            if (filePath == null)
+            if (filePath == null) // if we want to update the CoverageGatherer object
                 updateCriterion(RESPONSE_BODY_PROPERTIES, rootPath, responseProperty.getKey(), covGath); // set the property as 'covered'
-            else {
+            else { // if we want to export the results to CSV
                 String updatedRootPath = rootPath + responseProperty.getKey();
                 if (!coveredRootPaths.contains(updatedRootPath)) {
                     writeRow(filePath, testResultId + ",RESPONSE_BODY_PROPERTIES," + rootPath + responseProperty.getKey());
