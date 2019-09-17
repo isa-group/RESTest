@@ -6,6 +6,9 @@ import java.util.List;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Given a list of objects, the RandomObjectGenerator returns one of those randomly
+ */
 public class RandomObjectGenerator extends RandomGenerator {
 
     private List<Object> values;

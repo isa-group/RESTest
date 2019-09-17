@@ -5,7 +5,12 @@ import java.util.Collection;
 
 import io.swagger.models.HttpMethod;
 
-
+/**
+ * Class to manage the testing of each API operation individually. A filter is composed
+ * of a path and a set of methods. A filter should be created if that path needs to be
+ * tested. For every path, you should include the HTTP methods that you want to test
+ * (GET, POST...)
+ */
 public class TestConfigurationFilter {
 
 	private String path = null;						// Path to test (null for all)

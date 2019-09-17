@@ -101,6 +101,8 @@ public class BikeWiseExample {
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDir, testClassName, packageName, basePath.toLowerCase());
         writer.setLogging(true);
         writer.setAllureReport(true);
+		writer.setEnableStats(true);
+		writer.setAPIName(APIName);
 		return writer;
 	}
 	

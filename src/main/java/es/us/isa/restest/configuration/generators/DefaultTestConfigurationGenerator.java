@@ -28,6 +28,13 @@ import io.swagger.models.parameters.AbstractSerializableParameter;
 import io.swagger.models.parameters.BodyParameter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Class to manage the generation of test configuration files from an OpenAPI specification.
+ * A testConf file is used to generate better test cases, for example by specifying the necessary
+ * authentication data (like an API key) or by providing values to a specific parameter.
+ * Automatically generated testConfs are pretty simple, the developer should make an effort to
+ * augment it.
+ */
 public class DefaultTestConfigurationGenerator {
 
 	private OpenAPISpecification spec;
@@ -39,7 +46,8 @@ public class DefaultTestConfigurationGenerator {
 	/**
 	 * Generate a default test configuration file for a given Open API specification
 	 * @param destination Path of the output test configuration file
-	 * @param filters Set the paths and HTTP methods to be included in the test configuration file
+	 * @param filters Set the paths and HTTP methods to be included in the test configuration file,
+	 *                i.e. those that will be tested
 	 * @return
 	 */
 	public TestConfigurationObject generate (String destination, Collection<TestConfigurationFilter> filters) {
@@ -61,7 +69,7 @@ public class DefaultTestConfigurationGenerator {
 		
 		return conf;
 	}
-	
+
 	// Generate the test configuration data for paths
 	private List<TestPath> generatePaths(Collection<TestConfigurationFilter> filters) {
 		
@@ -71,7 +79,7 @@ public class DefaultTestConfigurationGenerator {
 			Map<String,Path> paths = spec.getSpecification().getPaths();
 			for(Entry<String,Path> path: paths.entrySet())
 				if (filter.getPath()==null || path.getKey().equalsIgnoreCase(filter.getPath()))
-					confPaths.add(generatePath(path,filter.getMethods()));
+					confPaths.add(generatePath(path,filter.getMethods())); // For every filter, add its path to testConf
 		}
 		return confPaths;
 	}
