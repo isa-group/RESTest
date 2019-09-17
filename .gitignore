@@ -4,3 +4,4 @@ TODO.txt
 .vscode
 /.allure
 /allure-results
+.idea/uiDesigner.xml
