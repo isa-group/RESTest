@@ -5,6 +5,7 @@ package es.us.isa.restest.main;
 import java.io.File;
 import java.io.IOException;
 
+import es.us.isa.restest.util.CSVReportManager;
 import org.apache.commons.io.FileUtils;
 
 import es.us.isa.restest.configuration.TestConfigurationIO;
@@ -17,6 +18,9 @@ import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.AllureReportManager;
 import es.us.isa.restest.util.PropertyManager;
+
+import static es.us.isa.restest.util.FileManager.createDir;
+import static es.us.isa.restest.util.FileManager.deleteDir;
 
 /**
  * Basic test scenario example: Random test case generation, execution and test report generation. 
@@ -45,7 +49,9 @@ public class BikeWiseExample {
 		AbstractTestCaseGenerator generator = createGenerator();		// Test case generator
 		IWriter writer = createWriter();								// Test case writer
 		AllureReportManager reportManager = createReportManager();		// Allure test case reporter (It delete previous report, if any)
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, null);
+		CSVReportManager csvReportManager = createCSVReportManager();			// CSV test case reporter
+//		csvReportManager.setEnableStats(true);
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, csvReportManager);
 		
 		// Test case generation + execution + test report generation
 		runner.run();
@@ -110,6 +116,26 @@ public class BikeWiseExample {
 		AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir);
 		
 		return arm;
+	}
+
+	// Create a CSV report manager
+	private static CSVReportManager createCSVReportManager() {
+		String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + APIName;
+		String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + APIName;
+
+		// Delete previous results (if any)
+		deleteDir(testDataDir);
+		deleteDir(coverageDataDir);
+
+		// Recreate directories
+		createDir(testDataDir);
+		createDir(coverageDataDir);
+
+		return new CSVReportManager(testDataDir, coverageDataDir);
+
+//		CSVReportManager csvReportManager = new CSVReportManager();
+//		csvReportManager.setEnableStats(false);
+//		return csvReportManager;
 	}
 
 }

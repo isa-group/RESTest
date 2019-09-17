@@ -78,6 +78,7 @@ public class RESTestRunner {
 
         // Export test cases to CSV if enableStats is true
 		if (csvReportManager.getEnableStats()) {
+			logger.info("Exporting test cases coverage to CSV");
 			String csvTcPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
 			testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
 

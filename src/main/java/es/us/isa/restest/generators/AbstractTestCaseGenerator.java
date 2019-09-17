@@ -82,7 +82,7 @@ public abstract class AbstractTestCaseGenerator {
 		return generate(filters);
 	}
 
-	protected Collection<? extends TestCase> generate(String path, HttpMethod method) {
+	protected Collection<TestCase> generate(String path, HttpMethod method) {
 		
 		// Get specification operation
 		Operation specOperation = spec.getSpecification().getPath(path).getOperationMap().get(method);
