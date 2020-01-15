@@ -5,3 +5,4 @@ TODO.txt
 /.allure
 /allure-results
 .idea/uiDesigner.xml
+/src/test/resources/csvData
