@@ -1,6 +1,0 @@
-testCaseId,criterionType,rootPath,element
-qxkzvy42j8kw,PATH,,/pet/findByStatus
-qxkzvy42j8kw,OPERATION,/pet/findByStatus,GET
-qxkzvy42j8kw,PARAMETER,/pet/findByStatus->GET,status
-qxkzvy42j8kw,PARAMETER_VALUE,/pet/findByStatus->GET->status,available
-qxkzvy42j8kw,INPUT_CONTENT_TYPE,/pet/findByStatus->GET,application/json
