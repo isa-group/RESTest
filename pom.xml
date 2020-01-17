@@ -47,6 +47,17 @@
 				<role>Developer</role>
 			</roles>
 		</developer>
+		<developer>
+			<id>japarejo</id>
+			<name>José Antonio Parejo</name>
+			<email>japarejo@us.es</email>
+			<url>https://www.isa.us.es/3.0/members/jose-a-parejo/</url>
+			<organization>University of Seville</organization>
+			<organizationUrl>http://www.us.es</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
 	</developers>
 
 
@@ -174,6 +185,15 @@
 			<artifactId>log4j-core</artifactId>
 			<version>2.11.2</version>
 		</dependency>
+
+		<!-- JMetal multi-objective optimization framework -->
+		<dependency>
+			<groupId>org.uma.jmetal</groupId>
+			<artifactId>jmetal</artifactId>
+			<version>5.9</version>
+			<type>pom</type>
+		</dependency>
+		
 
 	</dependencies>
 
