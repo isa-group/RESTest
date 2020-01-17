@@ -216,43 +216,4 @@ public class DefaultTestConfigurationGeneratorTest {
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
 	}
-
-	@Test
-	public void testSendGridFullTestConfigurationGeneration() {
-
-		String specPath="src/main/resources/SendGrid/swagger.yaml";
-		String confPath="src/main/resources/SendGrid/testConf.yaml";
-		OpenAPISpecification spec = new OpenAPISpecification(specPath);
-
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-//		TestConfigurationFilter filter = new TestConfigurationFilter();
-//		filter.setPath(null);
-//		filter.addAllMethods();
-//		filters.add(filter);
-
-		// Filter 1
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/alerts");
-		filter.addGetMethod();
-		filter.addPostMethod();
-		filters.add(filter);
-
-		// Filter 2
-		TestConfigurationFilter filter2 = new TestConfigurationFilter();
-		filter2.setPath("/alerts/{alert_id}");
-		filter2.addGetMethod();
-		filter2.addDeleteMethod();
-		filters.add(filter2);
-
-		// Filter 3
-		TestConfigurationFilter filter3 = new TestConfigurationFilter();
-		filter3.setPath("/contactdb/custom_fields");
-		filter3.addGetMethod();
-		filter.addPostMethod();
-		filters.add(filter3);
-
-		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
-		gen.generate(confPath, filters);
-	}
-
 }
