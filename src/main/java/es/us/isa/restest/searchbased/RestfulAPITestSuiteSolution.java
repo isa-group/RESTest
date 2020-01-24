@@ -17,11 +17,11 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     
     @Override
     public String getVariableValueString(int i) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return getVariable(i).toString();
     }
 
     @Override
-    public Solution<TestCase> copy() {
+    public RestfulAPITestSuiteSolution copy() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -30,4 +30,18 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    public RestfulAPITestSuiteGenerationProblem getProblem() {
+        return problem;
+    }
+
+    public TestCase getVariable(int i) {
+        return getVariables().get(i);
+    }
+    
+    public void setVariable(int i, TestCase  tc){
+        getVariables().set(i, tc);
+    }
+    
+
+    
 }
