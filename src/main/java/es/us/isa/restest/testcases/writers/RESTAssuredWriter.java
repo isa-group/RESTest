@@ -90,6 +90,7 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import java.io.IOException;\n"
 				+  "import org.junit.FixMethodOrder;\n"
 				+  "import static org.junit.Assert.fail;\n"
+				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n";
 		
@@ -233,9 +234,10 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\t\t\tResponse response = RestAssured\n"
 				+  "\t\t\t.given()\n";
 			
-		if (logging)
-			content +="\t\t\t\t.log().ifValidationFails()\n";
-			
+//		if (logging)
+//			content +="\t\t\t\t.log().ifValidationFails()\n";
+		content +="\t\t\t\t.log().all()\n";
+
 		return content;
 	}
 	
@@ -296,10 +298,11 @@ public class RESTAssuredWriter implements IWriter {
 		content +=	 "\t\t\t\t." + t.getMethod().name().toLowerCase() + "(\"" + t.getPath() + "\");\n";
 		
 		// Create response log
-		if (logging) {
-			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
-			         + "\n\t\t\tresponse.then().log().ifError();\n";
-		}
+//		if (logging) {
+//			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
+//			         + "\n\t\t\tresponse.then().log().ifError();\n";
+//		}
+		content += "\n\t\t\tresponse.then().log().all();\n";
 		
 //		if (OAIValidation)
 //			content += "\t\t} catch (RuntimeException ex) {\n"
@@ -335,11 +338,13 @@ public class RESTAssuredWriter implements IWriter {
 		}
 
 		// Assert status code only if it was found among possible status codes. Otherwise, only JSON structure will be validated
-		if (expectedStatusCode != null) {
-			content = "\t\t\tresponse.then().statusCode("
-					+ expectedStatusCode
-					+ ");\n\n";
-		}
+		//TODO: Improve oracle of status code
+//		if (expectedStatusCode != null) {
+//			content = "\t\t\tresponse.then().statusCode("
+//					+ expectedStatusCode
+//					+ ");\n\n";
+//		}
+		content = "\t\t\tassertTrue(\"The status code should be lower than 500.\", response.statusCode() < 500);\n";
 
 		return content;
 
