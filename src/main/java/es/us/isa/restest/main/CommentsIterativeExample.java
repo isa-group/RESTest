@@ -34,7 +34,7 @@ public class CommentsIterativeExample {
 //	private static String targetDirTestData = "target/test-data";						// Directory where tests will be exported to CSV.
 //	private static String targetDirCoverageData = "target/coverage-data";				// Directory where coverage will be exported to CSV.
 	private static String packageName = "comments";										// Package name.
-	private static String APIName = "Comments";											// API name
+	private static String APIName = "comments";											// API name
 	private static String testClassName = "CommentsTest";								// Name prefix of the class to be generated
 	private static OpenAPISpecification spec;
 	private static int totalNumTestCases = -1;											// Total number of test cases to be generated
