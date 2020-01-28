@@ -344,7 +344,7 @@ public class RESTAssuredWriter implements IWriter {
 //					+ expectedStatusCode
 //					+ ");\n\n";
 //		}
-		content = "\t\t\tassertTrue(\"The status code should be lower than 500.\", response.statusCode() < 500);\n";
+		content = "\t\t\tassertTrue(\"Received status 500. Server error found.\", response.statusCode() < 500);\n";
 
 		return content;
 
