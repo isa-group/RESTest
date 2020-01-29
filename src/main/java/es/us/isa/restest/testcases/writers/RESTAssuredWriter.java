@@ -254,7 +254,7 @@ public class RESTAssuredWriter implements IWriter {
 		String content = "";
 		
 		for(Entry<String,String> param: t.getQueryParameters().entrySet())
-			content += "\t\t\t\t.param(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
+			content += "\t\t\t\t.queryParam(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
 		
 		return content;
 	}

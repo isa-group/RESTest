@@ -328,6 +328,9 @@ public class TestDataGeneratorFactory {
 				case "maxLength":
 					gen.setMaxLength(Integer.parseInt(param.getValues().get(0)));
 					break;
+				case "regExp":
+					// ignore
+					break;
 				default:
 					throw new IllegalArgumentException("Unexpected parameter for random regExp generator: " + param.getName());
 			}
