@@ -27,7 +27,7 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
  */
 public class TravelIterativeExample {
 
-	private static int numTestCases = 4;												// Number of test cases per operation
+	private static int numTestCases = 2;												// Number of test cases per operation
 	private static String OAISpecPath = "src/test/resources/Travel/swagger.yaml";		// Path to OAS specification file
 	private static String confPath = "src/test/resources/Travel/testConf.yaml";		// Path to test configuration file
 	private static String targetDirJava = "src/generation/java/travel";				// Directory where tests will be generated.
@@ -38,7 +38,7 @@ public class TravelIterativeExample {
 	private static String testClassName = "TravelTest";								// Name prefix of the class to be generated
 	private static OpenAPISpecification spec;
 	private static int totalNumTestCases = -1;											// Total number of test cases to be generated
-	private static int timeDelay = 20;													// Optional time delay between iterations (in seconds)
+	private static int timeDelay = 7200;													// Optional time delay between iterations (in seconds)
 	
 	public static void main(String[] args) {
 		
