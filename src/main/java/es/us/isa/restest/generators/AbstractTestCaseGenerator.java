@@ -13,6 +13,7 @@ import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
+import es.us.isa.restest.util.AuthManager;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 
@@ -20,7 +21,8 @@ public abstract class AbstractTestCaseGenerator {
 
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
-	protected Map<String,ITestDataGenerator> generators;			// Test data generators (random, boundaryValue, fixedlist...)
+	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
+	protected AuthManager authManager;						// For if multiple API keys are used for the API
 
 	/**
 	 * Generate a set of test cases
@@ -112,6 +114,10 @@ public abstract class AbstractTestCaseGenerator {
 				if (conf.getAuth().getQueryParams()!=null)
 					for (QueryParam param: conf.getAuth().getQueryParams())
 						test.addQueryParameter(param.getName(), param.getValue());
+
+				// File containing all API keys
+				if (conf.getAuth().getApiKeysPath()!=null)
+					test.addQueryParameter(authManager.getApikeyName(), authManager.getApikey());
 			}
 			
 			// Set responses

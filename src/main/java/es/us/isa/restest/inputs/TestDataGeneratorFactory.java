@@ -370,7 +370,7 @@ public class TestDataGeneratorFactory {
 					gen.setValues(param.getObjectValues());
 					break;
 				case "files":
-					gen.setValues(JSONManager.readValues(param.getValues()));
+					gen.setValues(JSONManager.readMultipleJSONs(param.getValues()));
 					break;
 				default:
 					throw new IllegalArgumentException("Unexpected parameter for object generator: " + param.getName());

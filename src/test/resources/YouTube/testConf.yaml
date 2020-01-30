@@ -1,0 +1,363 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+  apiKeysPath: YouTube/apikeys.json
+testConfiguration:
+  testPaths:
+  - testPath: /search
+    operations:
+    - operationId: youtube.search.list
+      method: get
+      testParameters:
+      - name: channelId
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - UCCj956IF62FbT7Gouszaj9w
+            - UCvosUrZ7hXpzAyobhfztg4w
+            - UCMtFAi84ehTSYSE9XoHefig
+            - UClzCn8DxRSCuMFv_WfzkcrQ
+            - UCJ0uqCI0Vqr2Rrt1HseGirg
+            - UCDwjiSF4qEb3aeT3ZLkPc_Q
+            - UC-9-kyTW8ZkZNDHQJ6FgpwQ
+            - UCEgdi0XIXXZ-qJOFPf4JSKw
+            - UClgRkhTL3_hImCAmdLfDE4g
+            - UCYfdidRxbB8Qhf0Nx7ioOYw
+            objectValues: null
+      - name: channelType
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - any
+            - show
+            objectValues: null
+      - name: eventType
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - completed
+            - live
+            - upcoming
+            objectValues: null
+      - name: forContentOwner
+        weight: 0
+        generator:
+          type: RandomBoolean
+          genParameters: []
+      - name: forDeveloper
+        weight: 0.1
+        generator:
+          type: RandomBoolean
+          genParameters: []
+      - name: forMine
+        weight: 0
+        generator:
+          type: RandomBoolean
+          genParameters: []
+      - name: location
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - 37.42307,-122.08427
+            - 37.392191,-5.995193
+            - 35.681999,139.769254
+            - -33.924278,18.424572
+            - -37.812746,144.961832
+            - 39.925412, 32.834169
+            - 50.447273, 30.520903
+            - 39.904325, 116.405302
+            - 13.753789, 100.501572
+            - 19.430849, -99.135857
+            objectValues: null
+      - name: locationRadius
+        weight: 0.5
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - (1000|[1-9]\d\d)(m|km|ft|mi)
+            objectValues: null
+      - name: maxResults
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 0
+            objectValues: null
+          - name: max
+            values:
+            - 50
+            objectValues: null
+      - name: onBehalfOfContentOwner
+        weight: 0
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: order
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - date
+            - rating
+            - relevance
+            - title
+            - videoCount
+            - viewCount
+            objectValues: null
+      - name: pageToken
+        weight: 0
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: part
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - snippet
+            objectValues: null
+      - name: publishedAfter
+        weight: 0.5
+        generator:
+          type: RandomDate
+          genParameters:
+          - name: startDate
+            values:
+            - 2010-01-01
+            objectValues: null
+          - name: endDate
+            values:
+            - 2015-12-31
+            objectValues: null
+          - name: format
+            values:
+            - yyyy-MM-dd'T'HH:mm:ss'Z'
+      - name: publishedBefore
+        weight: 0.5
+        generator:
+          type: RandomDate
+          genParameters:
+          - name: startDate
+            values:
+            - 2016-01-01
+            objectValues: null
+          - name: endDate
+            values:
+            - 2020-12-31
+            objectValues: null
+          - name: format
+            values:
+            - yyyy-MM-dd'T'HH:mm:ss'Z'
+      - name: q
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: regionCode
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+      - name: relatedToVideoId
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - zZa8PFYtWr4
+            - TUJWx7vo44c
+            - usO_6-RuCrg
+            - 7m-NPuXPBqM
+            - yDgLFOxnQ8Y
+            objectValues: null
+      - name: relevanceLanguage
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/ISO-639-LangCodes.csv
+      - name: safeSearch
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - moderate
+            - none
+            - strict
+            objectValues: null
+      - name: topicId
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/youtube-topic-ids.csv
+            objectValues: null
+      - name: type
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - video,channel,playlist
+            - channel,playlist
+            - video,playlist
+            - video,channel
+            - video
+            - channel
+            - playlist
+            objectValues: null
+      - name: videoCaption
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - any
+            - closedCaption
+            - none
+            objectValues: null
+      - name: videoCategoryId
+        weight: 0.1
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+              - integer
+            objectValues: null
+          - name: min
+            values:
+              - 0
+            objectValues: null
+          - name: max
+            values:
+              - 50
+            objectValues: null
+      - name: videoDefinition
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - any
+            - high
+            - standard
+            objectValues: null
+      - name: videoDimension
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - 2d
+            - 3d
+            - any
+            objectValues: null
+      - name: videoDuration
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - any
+            - long
+            - medium
+            - short
+            objectValues: null
+      - name: videoEmbeddable
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - any
+            - true
+            objectValues: null
+      - name: videoLicense
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - any
+            - creativeCommon
+            - youtube
+            objectValues: null
+      - name: videoSyndicated
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - any
+            - true
+            objectValues: null
+      - name: videoType
+        weight: 0.1
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - any
+            - episode
+            - movie
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200

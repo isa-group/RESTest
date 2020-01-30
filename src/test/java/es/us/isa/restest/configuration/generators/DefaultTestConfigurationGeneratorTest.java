@@ -267,4 +267,23 @@ public class DefaultTestConfigurationGeneratorTest {
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
 	}
+
+	@Test
+	public void testYouTubeSearchTestConfigurationGeneration() {
+
+		String specPath="src/test/resources/YouTube/swagger.yaml";
+		String confPath="src/test/resources/YouTube/testConf.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(specPath);
+
+		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+
+		// Filter 1
+		TestConfigurationFilter filter2 = new TestConfigurationFilter();
+		filter2.setPath("/search");
+		filter2.addGetMethod();
+		filters.add(filter2);
+
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
+	}
 }

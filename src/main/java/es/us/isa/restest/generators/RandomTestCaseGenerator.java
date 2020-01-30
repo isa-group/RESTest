@@ -7,6 +7,7 @@ import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
+import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.HttpMethod;
@@ -20,7 +21,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	private long seed = -1;								// Seed
 	Random rand;
 	
-	public RandomTestCaseGenerator(OpenAPISpecification spec,TestConfigurationObject conf, int nTests) {
+	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		this.spec = spec;
 		this.conf = conf;
 		this.numberOfTest = nTests;
@@ -29,6 +30,11 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.rand = new Random();
 		this.seed = rand.nextLong();
 		rand.setSeed(this.seed);
+	}
+
+	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, String apiKeysPath, int nTests) {
+		this(spec, conf, nTests);
+		this.authManager = new AuthManager(apiKeysPath);
 	}
 	
 
@@ -84,7 +90,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.seed = seed;
 		rand.setSeed(seed);
 	}
-	
+
 	private String removeNotAlfanumericCharacters(String s) {
 		return s.replaceAll("[^A-Za-z0-9]", "");
 	}
