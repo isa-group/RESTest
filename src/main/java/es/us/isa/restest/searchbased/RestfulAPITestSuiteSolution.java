@@ -4,6 +4,8 @@
 package es.us.isa.restest.searchbased;
 
 import es.us.isa.restest.testcases.TestCase;
+import es.us.isa.restest.testcases.TestResult;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import org.uma.jmetal.solution.Solution;
@@ -40,6 +42,10 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     
     public void setVariable(int i, TestCase  tc){
         getVariables().set(i, tc);
+    }
+
+    public Collection<TestResult> getTestResults() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 
