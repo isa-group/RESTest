@@ -46,8 +46,8 @@ public class SearchBasedTestSuiteGenerator {
     List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms;
     ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experimentBuilder;
 
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, String resourcePath, String method, String experimentName) {
-        problem = buildProblem(apiDescriptionPath, configFilePath,resourcePath,method);
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, String resourcePath, String method, String experimentName, String targetPath) {
+        problem = buildProblem(apiDescriptionPath, configFilePath,resourcePath,method,targetPath);
         problems = new ArrayList<>();
         problems.add(new ExperimentProblem<>(problem));
 
@@ -79,12 +79,12 @@ public class SearchBasedTestSuiteGenerator {
         return result;
     }
 
-    private RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath,String resourcePath,String operation) {
+    private RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath,String resourcePath,String operation, String targetPath) {
         OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfiguration configuration=loadTestConfiguration(apiUnderTest, configFilePath);        
         Operation operationUnderTest = findOperationUnderTest(configuration,resourcePath,operation);
         List<RestfulAPITestingObjectiveFunction> objFuncs = new ArrayList<>();
-        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, operationUnderTest, objFuncs);
+        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, operationUnderTest, objFuncs,targetPath);
 
         return problem;
     }

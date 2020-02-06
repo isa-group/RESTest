@@ -6,6 +6,7 @@ package es.us.isa.restest.searchbased;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.uma.jmetal.solution.Solution;
@@ -13,8 +14,11 @@ import org.uma.jmetal.solution.impl.AbstractGenericSolution;
 
 public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCase,RestfulAPITestSuiteGenerationProblem>{
 
+    private Map<TestCase,TestResult> testResults;
+    
     public RestfulAPITestSuiteSolution(RestfulAPITestSuiteGenerationProblem problem) {
         super(problem);
+        this.testResults=new HashMap<>();
     }    
     
     @Override
@@ -46,6 +50,14 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
 
     public Collection<TestResult> getTestResults() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public TestResult getTestResult(TestCase testCase) {
+        return testResults.get(testCase);
+    }
+
+    void addTestResults(Map<TestCase, TestResult> results) {
+        testResults.putAll(results);
     }
     
 
