@@ -72,7 +72,8 @@ public class CSVManager {
 	 */
 	public static List<List<String>> readCSV(String path, Boolean includeFirstRow) {
 		List<List<String>> rows = readCSV(path);
-		rows.remove(0);
+		if (!includeFirstRow)
+			rows.remove(0);
 		return rows;
 	}
 
