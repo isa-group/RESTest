@@ -9,7 +9,8 @@ import io.qameta.allure.restassured.AllureRestAssured;
 import io.swagger.models.Response;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
-/** REST Assured test writer
+/** This class defines a test writer for the REST Assured framework. It creates a Java class with JUnit test cases
+ * ready to be executed.
  * 
  * @author Sergio Segura & Alberto Martin-Lopez
  *
