@@ -4,5 +4,5 @@ TODO.txt
 .vscode
 /allure-results
 .idea/uiDesigner.xml
-/src/test/resources/csvData
+/src/test/resources/csvData/csvSample.csv
 /src/main/resources/auth
