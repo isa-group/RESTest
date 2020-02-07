@@ -18,7 +18,7 @@ public class CSVManagerTest {
         String file = "csvManagerSample.csv";
         deleteFile(dirPath+file);
         createDir(dirPath);
-        createFileIfNotExists(file);
+        createFileIfNotExists(dirPath+file);
         createFileWithHeader(dirPath+file, "criterionType,rootPath,element,isCovered");
         assertTrue("The file should exist", checkIfExists(dirPath+file));
     }
