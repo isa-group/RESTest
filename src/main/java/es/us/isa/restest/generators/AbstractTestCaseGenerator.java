@@ -23,6 +23,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected TestConfigurationObject conf;
 	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
 	protected AuthManager authManager;						// For if multiple API keys are used for the API
+	protected Boolean enableFaulty;							// True if faulty test cases want to be generated
 
 	/**
 	 * Generate a set of test cases

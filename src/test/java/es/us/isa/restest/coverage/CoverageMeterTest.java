@@ -41,11 +41,11 @@ public class CoverageMeterTest {
         CoverageMeter covMeter = new CoverageMeter(covGath);
 
         List<TestCase> testSuite = new ArrayList<>();
-        TestCase testCase1 = new TestCase(generateId(),"addPet", "/pet", HttpMethod.POST);
-        TestCase testCase2 = new TestCase(generateId(), "findPetsByStatus", "/pet/findByStatus", HttpMethod.GET);
+        TestCase testCase1 = new TestCase(generateId(), false,"addPet", "/pet", HttpMethod.POST);
+        TestCase testCase2 = new TestCase(generateId(), false, "findPetsByStatus", "/pet/findByStatus", HttpMethod.GET);
         testCase2.addQueryParameter("status", "available");
         testCase2.setAuthentication("petstore_auth");
-        TestCase testCase3 = new TestCase(generateId(), "uploadFile", "/pet/{petId}/uploadImage", HttpMethod.POST);
+        TestCase testCase3 = new TestCase(generateId(), false, "uploadFile", "/pet/{petId}/uploadImage", HttpMethod.POST);
         testCase3.addQueryParameter("destinationFormat", "JPG");
         testCase3.addQueryParameter("convertToJPG", "false");
 

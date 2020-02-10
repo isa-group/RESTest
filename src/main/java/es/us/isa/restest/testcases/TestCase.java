@@ -16,6 +16,7 @@ import static es.us.isa.restest.util.FileManager.*;
 public class TestCase {
 	
 	private String id;										// Test unique identifier
+	private Boolean faulty;									// True if the expected response is a 4XX status code
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
@@ -29,8 +30,9 @@ public class TestCase {
 	private Map<String, Response> expectedOutputs;			// Possible outputs
 	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
-	public TestCase(String id, String operationId, String path, HttpMethod method) {
+	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
+		this.faulty = faulty;
 		this.operationId = operationId;
 		this.path = path;
 		this.method = method;
@@ -170,20 +172,30 @@ public class TestCase {
 		this.id = id;
 	}
 
+	public Boolean getFaulty() {
+		return faulty;
+	}
+
+	public void setFaulty(Boolean faulty) {
+		this.faulty = faulty;
+	}
+
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "testCaseId,operationId,path,httpMethod,inputContentType,outputContentType," +
+			createFileWithHeader(filePath, "testCaseId,faulty,operationId,path,httpMethod,inputContentType,outputContentType," +
 					"headerParameters,pathParameters,queryParameters,bodyParameter,authentication,expectedOutputs," +
 					"expectedSuccessfulOutput");
 
 		// Generate row
-		String row = id + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		String row = id + "," + operationId + "," + faulty + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
 		for (Map.Entry<String, String> h: headerParameters.entrySet()) {
 			row += h.getKey() + ":" + h.getValue() + ";";
 		}
+		row += ",";
 		for (Map.Entry<String, String> p: pathParameters.entrySet()) {
 			row += p.getKey() + ":" + p.getValue() + ";";
 		}
+		row += ",";
 		for (Map.Entry<String, String> q: queryParameters.entrySet()) {
 			row += q.getKey() + ":" + q.getValue() + ";";
 		}

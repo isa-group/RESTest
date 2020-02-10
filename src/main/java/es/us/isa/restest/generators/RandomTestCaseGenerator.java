@@ -26,6 +26,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.conf = conf;
 		this.numberOfTest = nTests;
 		this.index =0;
+		this.enableFaulty = true; // By default, faulty test cases are generated
 		
 		this.rand = new Random();
 		this.seed = rand.nextLong();
@@ -36,13 +37,24 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		this(spec, conf, nTests);
 		this.authManager = new AuthManager(apiKeysPath);
 	}
+
+	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, Boolean enableFaulty, int nTests) {
+		this(spec, conf, nTests);
+		this.enableFaulty = enableFaulty;
+	}
+
+	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, Boolean enableFaulty, String apiKeysPath, int nTests) {
+		this(spec, conf, nTests);
+		this.authManager = new AuthManager(apiKeysPath);
+		this.enableFaulty = enableFaulty;
+	}
 	
 
 	// Generate the next test case and update the generation index
 	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method) {
 		
 		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
-		TestCase test = new TestCase(testId,testOperation.getOperationId(), path, method);
+		TestCase test = new TestCase(testId,false,testOperation.getOperationId(), path, method);
 		
 		// Set parameters
 		for(TestParameter confParam: testOperation.getTestParameters()) {
