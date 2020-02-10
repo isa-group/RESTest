@@ -60,6 +60,7 @@ paths:
           enum:
             - movie
             - series
+            - episode
         - name: plot
           in: query
           description: Return short or full plot
@@ -81,6 +82,8 @@ paths:
           description: JSONP callback name
           required: false
           type: string
+      x-dependencies:
+        - Or(i, t, s);
       responses:
         '200':
           description: Successful operation
@@ -116,7 +119,7 @@ definitions:
               type: string
               example: This Is the End
             Year:
-              type: integer
+              type: string
               example: 2013
             imdbID:
               type: string
@@ -127,11 +130,14 @@ definitions:
             Poster:
               type: string
               example: https://m.media-amazon.com/images/M/MV5BMTQxODE3NjM1Ml5BMl5BanBnXkFtZTcwMzkzNjc4OA@@._V1_SX300.jpg
+      totalResults:
+        type: integer
+        example: 2
       Title:
         type: string
         example: This Is the End
       Year:
-        type: integer
+        type: string
         example: 2013
       Rated:
         type: string
@@ -182,10 +188,10 @@ definitions:
               example: 6.6/10
         example:
       Metascore:
-        type: integer
+        type: string
         example: 67
       imdbRating:
-        type: number
+        type: string
         example: 6.6
       imdbVotes:
         type: string
@@ -208,6 +214,18 @@ definitions:
       Website:
         type: string
         example: N/A
+      Episode:
+        type: string
+        example: 4
+      Season:
+        type: string
+        example: 16
+      seriesID:
+        type: string
+        example: tt0341939
+      totalSeasons:
+        type: string
+        example: 2
   Error:
     type: object
     required:
