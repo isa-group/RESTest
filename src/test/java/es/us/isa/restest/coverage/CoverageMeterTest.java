@@ -92,8 +92,8 @@ public class CoverageMeterTest {
         System.out.println(covGath.getCoverageCriteria().get(1).getElements().entrySet().iterator().next().getKey());
 
         // Delete dir and recreate it
-        deleteDir("src/test/resources/csvData");
-        createDir("src/test/resources/csvData");
+//        deleteDir("src/test/resources/csvData");
+//        createDir("src/test/resources/csvData");
 
         // Test export to CSV
         covMeter.exportCoverageToCSV("src/test/resources/csvData/coverage-results.csv", null, true);
