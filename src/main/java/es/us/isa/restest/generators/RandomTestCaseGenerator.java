@@ -26,7 +26,6 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.conf = conf;
 		this.numberOfTest = nTests;
 		this.index =0;
-		this.enableFaulty = true; // By default, faulty test cases are generated
 		
 		this.rand = new Random();
 		this.seed = rand.nextLong();

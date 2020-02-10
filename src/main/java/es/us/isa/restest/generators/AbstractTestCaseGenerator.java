@@ -23,7 +23,8 @@ public abstract class AbstractTestCaseGenerator {
 	protected TestConfigurationObject conf;
 	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
 	protected AuthManager authManager;						// For if multiple API keys are used for the API
-	protected Boolean enableFaulty;							// True if faulty test cases want to be generated
+	protected Boolean enableFaulty = true;					// True if faulty test cases want to be generated. Defaults to true
+	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
 
 	/**
 	 * Generate a set of test cases
@@ -151,4 +152,19 @@ public abstract class AbstractTestCaseGenerator {
 		
 	}
 
+	public Boolean getEnableFaulty() {
+		return enableFaulty;
+	}
+
+	public void setEnableFaulty(Boolean enableFaulty) {
+		this.enableFaulty = enableFaulty;
+	}
+
+	public Float getFaultyRatio() {
+		return faultyRatio;
+	}
+
+	public void setFaultyRatio(Float faultyRatio) {
+		this.faultyRatio = faultyRatio;
+	}
 }
