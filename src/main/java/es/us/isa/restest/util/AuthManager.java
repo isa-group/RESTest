@@ -33,9 +33,11 @@ public class AuthManager {
     private String apikeysPath;
     private ObjectMapper objectMapper = new ObjectMapper();
     private Map.Entry<String, List<String>> apikeys;
+    private int counter;
 
     public AuthManager(String apikeysRelativePath) {
         apikeysPath = apikeysBasePath + apikeysRelativePath;
+        this.counter = 0;
         try {
             apikeys = objectMapper.readValue(readFile(apikeysPath), new TypeReference<Map.Entry<String, List<String>>>(){});
         } catch (IOException e) {
@@ -46,10 +48,13 @@ public class AuthManager {
     }
 
     /**
-     * Get random API key.
+     * Get API key.
      */
     public String getApikey() {
-        return apikeys.getValue().get(ThreadLocalRandom.current().nextInt(0, apikeys.getValue().size()));
+        this.counter = this.apikeys.getValue().size() == this.counter? 0 : this.counter;
+        String apiKey = this.apikeys.getValue().get(counter);
+        counter++;
+        return apiKey;
     }
 
     /**

@@ -63,6 +63,9 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 				case "body":
 					test.setBodyParameter(generator.nextValueAsString());
 					break;
+				case "formData":
+					test.addFormParameter(confParam.getName(), generator.nextValueAsString());
+					break;
 				default:
 					throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
 				}

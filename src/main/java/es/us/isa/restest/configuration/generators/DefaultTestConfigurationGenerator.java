@@ -146,7 +146,7 @@ public class DefaultTestConfigurationGenerator {
 			List<String> genParam3Values = new ArrayList<>();
 
 			// If it's a path or query parameter, get type to set a useful generator
-			if (param.getIn() == "query" || param.getIn() == "path") {
+			if (param.getIn() == "query" || param.getIn() == "path" || param.getIn() == "header" || param.getIn() == "formData") {
 				String paramType = ((AbstractSerializableParameter) param).getType();
 				List<String> paramEnumValues = ((AbstractSerializableParameter) param).getEnum();
 
@@ -194,6 +194,15 @@ public class DefaultTestConfigurationGenerator {
 						gen.setType("RandomInputValue");
 						genParam1.setName("values");
 						genParam1.setValues(paramEnumValues);
+						genParams.add(genParam1);
+						gen.setGenParameters(genParams);
+						break;
+					case "file":
+						gen.setType("RandomInputValue");
+						genParam1.setName("values");
+						genParam1Values.add("path/to/file");
+						genParam1Values.add("path/to/another/file");
+						genParam1.setValues(genParam1Values);
 						genParams.add(genParam1);
 						gen.setGenParameters(genParams);
 						break;
