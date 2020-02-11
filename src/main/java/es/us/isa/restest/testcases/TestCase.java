@@ -135,17 +135,29 @@ public class TestCase {
 	public void addPathParameter(String name, String value) {
 		pathParameters.put(name, value);
 	}
-	
+
 	public void addPathParameters(Map<String,String> params) {
 		pathParameters.putAll(params);
 	}
-	
+
 	public void addHeaderParameter(String name, String value) {
 		headerParameters.put(name, value);
 	}
-	
+
 	public void addHeaderParameters(Map<String,String> params) {
 		headerParameters.putAll(params);
+	}
+
+	public void removeQueryParameter(String name) {
+		queryParameters.remove(name);
+	}
+
+	public void removePathParameter(String name) {
+		pathParameters.remove(name);
+	}
+
+	public void removeHeaderParameter(String name) {
+		headerParameters.remove(name);
 	}
 
 	public Map<String, String> getPathParameters() {
