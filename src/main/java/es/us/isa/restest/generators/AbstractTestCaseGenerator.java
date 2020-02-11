@@ -25,6 +25,8 @@ public abstract class AbstractTestCaseGenerator {
 	protected AuthManager authManager;						// For if multiple API keys are used for the API
 	protected Boolean enableFaulty = true;					// True if faulty test cases want to be generated. Defaults to true
 	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
+	protected int numberOfTest;								// Number of test cases to be generated for each operation
+	protected int index;									// Number of test cases generated so far
 
 	/**
 	 * Generate a set of test cases
@@ -98,11 +100,18 @@ public abstract class AbstractTestCaseGenerator {
 		
 		// Create test data generators for each parameter
 		createGenerators(testOperation.getTestParameters());
+
+		// Whether the next test case to generate must be faulty or not
+		boolean nextIsFaulty = true;
 		
 		while (hasNext()) {
+
+			// Generate faulty test cases until faultyRatio is reached
+			if (nextIsFaulty && (float)index/(float)numberOfTest > faultyRatio)
+				nextIsFaulty = false;
 			
 			// Create test case with specific parameters and values
-			TestCase test = generateNextTestCase(specOperation,testOperation,path,method);
+			TestCase test = generateNextTestCase(specOperation,testOperation,nextIsFaulty,path,method);
 			
 			// Authentication
 			if (conf.getAuth().getRequired()) {
@@ -140,7 +149,7 @@ public abstract class AbstractTestCaseGenerator {
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
 	protected abstract TestCase generateNextTestCase(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method);
+			es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method);
 	
 	// Create all generators needed for the parameters of an operation
 	private void createGenerators(List<TestParameter> testParameters) {

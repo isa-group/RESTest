@@ -16,8 +16,6 @@ import io.swagger.models.parameters.Parameter;
 
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
-	int numberOfTest;									// Number of test cases to be generated for each path
-	int index;											// Number of test cases generates so far
 	private long seed = -1;								// Seed
 	Random rand;
 	
@@ -50,7 +48,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
 
 	// Generate the next test case and update the generation index
-	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method) {
+	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method) {
 		
 		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
 		TestCase test = new TestCase(testId,false,testOperation.getOperationId(), path, method);
