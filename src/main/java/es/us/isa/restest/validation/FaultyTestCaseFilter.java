@@ -20,8 +20,8 @@ public class FaultyTestCaseFilter implements OrderedFilter {
     public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
         Response response = ctx.next(requestSpec, responseSpec);
 
-        // If status code is between 400 and 500, throw exception
-        if (response.getStatusCode() >= 400 && response.getStatusCode() < 500) {
+        // If status code is not between 400 and 500, throw exception
+        if (response.getStatusCode() < 400 || response.getStatusCode() >= 500) {
             throw new RuntimeException("This faulty test case was expecting a 4XX status code, but received other. Conformance error found.");
         }
 

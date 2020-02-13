@@ -80,9 +80,9 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			}
 		}
 
-		// If this test case must be faulty, mutate it after it is constructed
-		if (faulty)
-			makeTestCaseFaulty(test, specOperation);
+		if (faulty) 										// If this test case must be faulty, mutate it after it is constructed
+			if(!makeTestCaseFaulty(test, specOperation)) 	// If the test case wasn't mutated
+				test.setFaulty(false); 						// Set faulty to false, in order to have the right oracle
 		
 		index++;
 		

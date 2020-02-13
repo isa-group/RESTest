@@ -94,7 +94,8 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
-				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n";
+				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n"
+				+  "import es.us.isa.restest.validation.FaultyTestCaseFilter;\n";
 		
 		// OAIValidation (Optional)
 		if (OAIValidation)
@@ -167,7 +168,7 @@ public class RESTAssuredWriter implements IWriter {
 		content += generateBodyParameter(t);
 
 		// Generate filters
-		content += generateFilters();
+		content += generateFilters(t);
 		
 		// Generate HTTP request
 		content += generateHTTPRequest(t);
@@ -283,17 +284,20 @@ public class RESTAssuredWriter implements IWriter {
 		return content;
 	}
 
-	private String generateFilters() {
+	private String generateFilters(TestCase t) {
 		String content = "";
 
-//		if (OAIValidation)
-			content += "\t\t\t\t.filter(validationFilter)\n";
+		if (enableStats) // Coverage filter
+			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
+		if (allureReport) // Allure filter
+			content += "\t\t\t\t.filter(new AllureRestAssured())\n";
 		// 5XX status code oracle:
 		content += "\t\t\t\t.filter(new StatusCode5XXFilter())\n";
-		if (allureReport)
-			content += "\t\t\t\t.filter(new AllureRestAssured())\n";
-		if (enableStats)
-			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
+		if (t.getFaulty())
+			content += "\t\t\t\t.filter(new FaultyTestCaseFilter())\n";
+//		if (OAIValidation)
+		content += "\t\t\t\t.filter(validationFilter)\n";
+
 
 		return content;
 	}

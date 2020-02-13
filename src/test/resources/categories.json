@@ -12,6 +12,13 @@
 			"failed"
 		]
 	},
+    {
+        "name": "Faulty test cases failures",
+        "messageRegex": ".*faulty test case.*",
+        "matchedStatuses": [
+            "failed"
+        ]
+    },
 	{
 		"name": "Validation failures",
 		"traceRegex": ".*Validation failed.*",

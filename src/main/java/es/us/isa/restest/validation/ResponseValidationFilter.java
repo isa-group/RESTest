@@ -7,8 +7,8 @@ import com.atlassian.oai.validator.report.ValidationReportFormatter;
 import com.atlassian.oai.validator.restassured.RestAssuredRequest;
 import com.atlassian.oai.validator.restassured.RestAssuredResponse;
 import com.atlassian.oai.validator.util.StringUtils;
-import io.restassured.filter.Filter;
 import io.restassured.filter.FilterContext;
+import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
@@ -22,7 +22,7 @@ import io.restassured.specification.FilterableResponseSpecification;
  *
  * @author Alberto Martin-Lopez
  */
-public class ResponseValidationFilter implements Filter {
+public class ResponseValidationFilter implements OrderedFilter {
     private final SwaggerRequestResponseValidator validator;
 
     public ResponseValidationFilter(String specUrlOrDefinition) {
@@ -51,5 +51,10 @@ public class ResponseValidationFilter implements Filter {
         public SwaggerValidationException(final ValidationReport report) {
             super(ValidationReportFormatter.format(report));
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return Integer.MAX_VALUE-3; // Fourth lowest priority of all filters, so it runs fourth-to-last before sending the request and fourth after sending it
     }
 }
