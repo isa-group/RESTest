@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import es.us.isa.restest.testcases.TestCase;
 import io.qameta.allure.restassured.AllureRestAssured;
+import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
@@ -92,11 +93,12 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import static org.junit.Assert.fail;\n"
 				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
-		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n";
+		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
+				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n";
 		
 		// OAIValidation (Optional)
 		if (OAIValidation)
-			content += 	"import es.us.isa.restest.specification.ResponseValidationFilter;\n";
+			content += 	"import es.us.isa.restest.validation.ResponseValidationFilter;\n";
 
 		// Coverage filter (optional)
 		if (enableStats)
@@ -271,9 +273,11 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateBodyParameter(TestCase t) {
 		String content = "";
 
+		if (t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
+				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE))
+			content += "\t\t\t\t.contentType(\"application/json\")\n";
 		if (t.getBodyParameter() != null) {
-			content += "\t\t\t\t.contentType(\"application/json\")\n"
-					+  "\t\t\t\t.body(jsonBody)\n";
+			content += "\t\t\t\t.body(jsonBody)\n";
 		}
 
 		return content;
@@ -284,6 +288,8 @@ public class RESTAssuredWriter implements IWriter {
 
 //		if (OAIValidation)
 			content += "\t\t\t\t.filter(validationFilter)\n";
+		// 5XX status code oracle:
+		content += "\t\t\t\t.filter(new StatusCode5XXFilter())\n";
 		if (allureReport)
 			content += "\t\t\t\t.filter(new AllureRestAssured())\n";
 		if (enableStats)
@@ -344,7 +350,7 @@ public class RESTAssuredWriter implements IWriter {
 //					+ expectedStatusCode
 //					+ ");\n\n";
 //		}
-		content = "\t\t\tassertTrue(\"Received status 500. Server error found.\", response.statusCode() < 500);\n";
+//		content = "\t\t\tassertTrue(\"Received status 500. Server error found.\", response.statusCode() < 500);\n";
 
 		return content;
 
