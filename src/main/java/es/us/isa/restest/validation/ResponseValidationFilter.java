@@ -3,10 +3,10 @@ package es.us.isa.restest.validation;
 import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import com.atlassian.oai.validator.report.LevelResolver;
 import com.atlassian.oai.validator.report.ValidationReport;
+import com.atlassian.oai.validator.report.ValidationReportFormatter;
 import com.atlassian.oai.validator.restassured.RestAssuredRequest;
 import com.atlassian.oai.validator.restassured.RestAssuredResponse;
 import com.atlassian.oai.validator.util.StringUtils;
-import es.us.isa.restest.validation.exceptions.SwaggerValidationException;
 import io.restassured.filter.Filter;
 import io.restassured.filter.FilterContext;
 import io.restassured.response.Response;
@@ -44,6 +44,12 @@ public class ResponseValidationFilter implements Filter {
             throw new SwaggerValidationException(validationReport);
         } else {
             return response;
+        }
+    }
+
+    static class SwaggerValidationException extends RuntimeException {
+        public SwaggerValidationException(final ValidationReport report) {
+            super(ValidationReportFormatter.format(report));
         }
     }
 }

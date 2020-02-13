@@ -1,13 +1,16 @@
 package es.us.isa.restest.validation;
 
-import es.us.isa.restest.validation.exceptions.StatusCode5XXValidationException;
 import io.restassured.filter.FilterContext;
 import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
 
-
+/**
+ * REST-Assured filter to assert that the status code is less than 500
+ *
+ * @author Alberto Martin-Lopez
+ */
 public class StatusCode5XXFilter implements OrderedFilter {
 
     public StatusCode5XXFilter() {
@@ -20,7 +23,7 @@ public class StatusCode5XXFilter implements OrderedFilter {
 
         // If 5XX status code is found, throw exception
         if (response.getStatusCode() >= 500) {
-            throw new StatusCode5XXValidationException("Received status 5XX. Server error found.");
+            throw new RuntimeException("Received status 5XX. Server error found.");
         }
 
         return response;
