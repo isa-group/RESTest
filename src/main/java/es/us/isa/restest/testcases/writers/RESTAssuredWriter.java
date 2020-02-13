@@ -96,7 +96,7 @@ public class RESTAssuredWriter implements IWriter {
 		
 		// OAIValidation (Optional)
 		if (OAIValidation)
-			content += 	"import com.atlassian.oai.validator.restassured.SwaggerValidationFilter;\n";
+			content += 	"import es.us.isa.restest.specification.ResponseValidationFilter;\n";
 
 		// Coverage filter (optional)
 		if (enableStats)
@@ -117,7 +117,7 @@ public class RESTAssuredWriter implements IWriter {
 		
 		if (OAIValidation)
 			content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
-					+  "\tprivate final SwaggerValidationFilter validationFilter = new SwaggerValidationFilter(OAI_JSON_URL);\n";
+					+  "\tprivate final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
 
 		if (enableStats) // This is only needed to export output data to the proper folder
 			content += "\tprivate final String APIName = \"" + APIName + "\";\n";
