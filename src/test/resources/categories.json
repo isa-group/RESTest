@@ -6,8 +6,8 @@
 		]
 	},
 	{
-		"name": "Status 500",
-		"messageRegex": ".*status 500.*",
+		"name": "Status 5XX",
+		"messageRegex": ".*status 5XX.*",
 		"matchedStatuses": [
 			"failed"
 		]
