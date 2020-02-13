@@ -23,13 +23,23 @@ public class ParameterFeatures {
     public ParameterFeatures(Parameter p) {
         name = p.getName();
         in = p.getIn();
-        type = ((AbstractSerializableParameter)p).getType();
-        format = ((AbstractSerializableParameter) p).getFormat();
-        enumValues = ((AbstractSerializableParameter)p).getEnum();
-        min = ((AbstractSerializableParameter) p).getMinimum();
-        max = ((AbstractSerializableParameter) p).getMaximum();
-        minLength = ((AbstractSerializableParameter) p).getMinLength();
-        maxLength = ((AbstractSerializableParameter) p).getMaxLength();
+        if (!in.equals("body")) {
+            type = ((AbstractSerializableParameter) p).getType();
+            format = ((AbstractSerializableParameter) p).getFormat();
+            enumValues = ((AbstractSerializableParameter) p).getEnum();
+            min = ((AbstractSerializableParameter) p).getMinimum();
+            max = ((AbstractSerializableParameter) p).getMaximum();
+            minLength = ((AbstractSerializableParameter) p).getMinLength();
+            maxLength = ((AbstractSerializableParameter) p).getMaxLength();
+        } else {
+            type = null;
+            format = null;
+            enumValues = null;
+            min = null;
+            max = null;
+            minLength = null;
+            maxLength = null;
+        }
     }
 
     public String getName() {

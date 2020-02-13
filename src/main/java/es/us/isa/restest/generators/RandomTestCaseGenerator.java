@@ -14,6 +14,8 @@ import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
 
+import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
+
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	private long seed = -1;								// Seed
@@ -51,7 +53,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method) {
 		
 		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
-		TestCase test = new TestCase(testId,false,testOperation.getOperationId(), path, method);
+		TestCase test = new TestCase(testId,faulty,testOperation.getOperationId(), path, method);
 		
 		// Set parameters
 		for(TestParameter confParam: testOperation.getTestParameters()) {
@@ -77,6 +79,10 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 				}
 			}
 		}
+
+		// If this test case must be faulty, mutate it after it is constructed
+		if (faulty)
+			makeTestCaseFaulty(test, specOperation);
 		
 		index++;
 		

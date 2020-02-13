@@ -74,11 +74,13 @@ public class SpecificationVisitor {
 	 *     <li>String with minLength/maxLength. Can violate constraints.</li>
 	 *     <li>Enum. Can be changed to value out of enum range.</li>
 	 * </ol>
+	 * <b>NOTE: Body parameters are not considered.</b>
 	 * @param operation Operation in the specification
 	 * @return
 	 */
 	public static List<Parameter> getParametersSubjectToInvalidValueChange(Operation operation) {
 		return operation.getParameters().stream()
+				.filter(p -> !p.getIn().equals("body")) // Remove body parameters
 				.filter(p -> {
 					ParameterFeatures pFeatures = new ParameterFeatures(p);
 					// If the parameter fulfills one of the following conditions, add it to the list

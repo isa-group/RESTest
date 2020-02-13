@@ -1,7 +1,10 @@
 package es.us.isa.restest.testcases;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
 
@@ -13,7 +16,7 @@ import static es.us.isa.restest.util.FileManager.*;
  * @author Sergio Segura
  *
  */
-public class TestCase {
+public class TestCase implements Serializable {
 	
 	private String id;										// Test unique identifier
 	private Boolean faulty;									// True if the expected response is a 4XX status code
@@ -190,6 +193,32 @@ public class TestCase {
 
 	public void setFaulty(Boolean faulty) {
 		this.faulty = faulty;
+	}
+
+//	@Override public boolean equals(Object obj) {
+//
+//	}
+
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		TestCase testCase = (TestCase) o;
+		return Objects.equals(id, testCase.id) &&
+				Objects.equals(faulty, testCase.faulty) &&
+				Objects.equals(operationId, testCase.operationId) &&
+				method == testCase.method &&
+				Objects.equals(path, testCase.path) &&
+				Objects.equals(inputFormat, testCase.inputFormat) &&
+				Objects.equals(outputFormat, testCase.outputFormat) &&
+				Objects.equals(headerParameters, testCase.headerParameters) &&
+				Objects.equals(pathParameters, testCase.pathParameters) &&
+				Objects.equals(queryParameters, testCase.queryParameters) &&
+				Objects.equals(bodyParameter, testCase.bodyParameter) &&
+				Objects.equals(authentication, testCase.authentication) &&
+				Objects.equals(expectedOutputs, testCase.expectedOutputs) &&
+				Objects.equals(expectedSuccessfulOutput, testCase.expectedSuccessfulOutput);
 	}
 
 	public void exportToCSV(String filePath) {
