@@ -22,7 +22,6 @@
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER" level="application" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-parser:1.0.33" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-core:1.5.17" level="project" />
@@ -92,7 +91,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/RESTmutator.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/JSONmutator.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
