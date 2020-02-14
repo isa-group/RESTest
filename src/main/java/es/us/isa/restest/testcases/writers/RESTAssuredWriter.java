@@ -1,5 +1,6 @@
 package es.us.isa.restest.testcases.writers;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Map.Entry;
@@ -8,9 +9,12 @@ import es.us.isa.restest.testcases.TestCase;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
+
+import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
-/** REST Assured test writer
+/** This class defines a test writer for the REST Assured framework. It creates a Java class with JUnit test cases
+ * ready to be executed.
  * 
  * @author Sergio Segura & Alberto Martin-Lopez
  *
@@ -96,6 +100,7 @@ public class RESTAssuredWriter implements IWriter {
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n"
 				+  "import es.us.isa.restest.validation.FaultyTestCaseFilter;\n";
+				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
 		if (OAIValidation)
@@ -163,6 +168,9 @@ public class RESTAssuredWriter implements IWriter {
 		
 		// Generate path parameters
 		content += generatePathParameters(t);
+
+		//Generate form-data parameters
+		content += generateFormParameters(t);
 
 		// Generate body parameter
 		content += generateBodyParameter(t);
@@ -268,6 +276,22 @@ public class RESTAssuredWriter implements IWriter {
 		for(Entry<String,String> param: t.getPathParameters().entrySet())
 			content += "\t\t\t\t.pathParam(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
 		
+		return content;
+	}
+
+	private String generateFormParameters(TestCase t) {
+		String content = "";
+
+		if(t.getFormParameters().entrySet().stream().anyMatch(x -> checkIfExists(x.getValue())))
+			content += "\t\t\t\t.contentType(\"multipart/form-data\")\n";
+		else if(!t.getFormParameters().isEmpty())
+			content += "\t\t\t\t.contentType(\"application/x-www-form-urlencoded\")\n";
+
+		for(Entry<String,String> param : t.getFormParameters().entrySet()) {
+			content += checkIfExists(param.getValue())? "\t\t\t\t.multiPart(\"" + param.getKey() +  "\", new File(\"" + escapeJava(param.getValue()) + "\"))\n"
+					: "\t\t\t\t.formParam(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
+		}
+
 		return content;
 	}
 

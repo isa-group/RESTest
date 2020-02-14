@@ -3,6 +3,7 @@ auth:
   required: true
   queryParams: []
   headerParams: []
+  apiKeysPath: null
 testConfiguration:
   testPaths:
   - testPath: /pet
@@ -43,11 +44,13 @@ testConfiguration:
       - name: status
         weight: null
         generator:
-          type: RandomEnglishWord
+          type: RandomInputValue
           genParameters:
-          - name: maxWords
+          - name: values
             values:
-            - 1
+            - available
+            - pending
+            - sold
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -114,22 +117,20 @@ testConfiguration:
       - name: name
         weight: 0.5
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
             objectValues: null
       - name: status
         weight: 0.5
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -139,12 +140,11 @@ testConfiguration:
       - name: api_key
         weight: 0.5
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
             objectValues: null
       - name: petId
         weight: null
@@ -190,12 +190,11 @@ testConfiguration:
       - name: additionalMetadata
         weight: 0.5
         generator:
-          type: RandomInputValue
+          type: RandomEnglishWord
           genParameters:
-          - name: values
+          - name: maxWords
             values:
-            - value 1
-            - value 2
+            - 1
             objectValues: null
       - name: file
         weight: 0.5
@@ -204,28 +203,7 @@ testConfiguration:
           genParameters:
           - name: values
             values:
-            - value 1
-            - value 2
-            objectValues: null
-      - name: convertToJPG
-        weight: 0.5
-        generator:
-          type: RandomBoolean
-          genParameters:
-          - name: trueProbability
-            values:
-            - 0.5
-            objectValues: null
-      - name: destinationFormat
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - JPG
-            - PNG
-            - GIF
+            - src/test/resources/Petstore/pet.jpg
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -272,7 +250,7 @@ testConfiguration:
             objectValues: null
           - name: max
             values:
-            - 100
+            - 10
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -326,8 +304,7 @@ testConfiguration:
           genParameters:
           - name: values
             values:
-            - value 1
-            - value 2
+            - '[{"id":425354,"username":"thfjntn","firstName":"dghrtghewtg","lastName":"dgdgestg","email":"dfsgrthryj","password":"sghrthrth","phone":"hn43643hg4w","userStatus":435}]'
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -343,8 +320,7 @@ testConfiguration:
           genParameters:
           - name: values
             values:
-            - value 1
-            - value 2
+            - '[{"id":425354,"username":"thfjntn","firstName":"dghrtghewtg","lastName":"dgdgestg","email":"dfsgrthryj","password":"sghrthrth","phone":"hn43643hg4w","userStatus":435}]'
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -415,8 +391,7 @@ testConfiguration:
           genParameters:
           - name: values
             values:
-            - value 1
-            - value 2
+            - '{"id":425354,"username":"thfjntn","firstName":"dghrtghewtg","lastName":"dgdgestg","email":"dfsgrthryj","password":"sghrthrth","phone":"hn43643hg4w","userStatus":435}'
             objectValues: null
       paramDependencies: null
       expectedResponse: 200

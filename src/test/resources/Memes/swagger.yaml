@@ -1,0 +1,200 @@
+---
+swagger: "2.0"
+info:
+  description: This is a simple Gallery API
+  version: 1.0.0
+  title: Gallery API
+host: localhost:8083
+basePath: /MemesAPI/api
+tags:
+  - name: PepeID
+    description: Pepe's memes
+schemes:
+  - http
+paths:
+  /gallery:
+    get:
+      tags:
+        - PepeID
+      summary: searches memes
+      description: |
+        The API returns all the system memes
+      produces:
+        - application/json
+      parameters:
+        - name: reverse
+          type: boolean
+          in: query
+          required: false
+          description: order results by date or not
+        - name: upperlimit
+          type: integer
+          in: query
+          required: false
+          description: filter memes with this rarity as maximum
+        - name: lowerlimit
+          type: integer
+          in: query
+          required: false
+          description: filter memes with this rarity as minimum
+      responses:
+        "200":
+          description: search results
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PepeID'
+        "400":
+          description: bad input parameter
+        "default":
+          description: unexpected response
+    post:
+      tags:
+        - PepeID
+      summary: adds a pepe meme to the system
+      description: Adds a pepe meme to the system
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: urlString
+          description: pepe meme image url
+          required: true
+          type: string
+      responses:
+        "200":
+          description: PepeID created
+          schema:
+            $ref: '#/definitions/PepeID'
+        "400":
+          description: Invalid input (URL)
+        "default":
+          description: unexpected response
+    put:
+      tags:
+        - PepeID
+      summary: edit a pepe meme to the system
+      description: Edit a pepe meme to the system
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: query
+          required: true
+          type: string
+          description: id of the meme to change
+        - in: query
+          name: rarity
+          description: rarity of the meme
+          required: true
+          type: number
+          format: double
+      responses:
+        "200":
+          description: PepeID edited correctly
+          schema:
+            $ref: '#/definitions/PepeID'
+        "400":
+          description: invalid input, object invalid
+        "404":
+          description: Pepe not found
+        "500":
+          description: Internal Server Error
+        "default":
+          description: unexpected response
+  /gallery/{id}:
+    get:
+      tags:
+        - PepeID
+      summary: search a meme
+      description: |
+        The API returns a meme by an id
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          description: id of the meme
+      responses:
+        "200":
+          description: search results
+          schema:
+            $ref: '#/definitions/PepeID'
+        "400":
+          description: bad input parameter
+        "404":
+          description: Pepe not found
+        "default":
+          description: unexpected response
+    delete:
+      tags:
+        - PepeID
+      summary: search a meme
+      description: |
+        The API returns a meme by an id
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          description: id of the meme
+      responses:
+        "204":
+          description: no content
+        "404":
+          description: Pepe not found
+        "default":
+          description: unexpected response
+  /meme/rarity:
+    post:
+      tags:
+        - PepeID
+      summary: adds a pepe (but does not save it to memory)
+      description: adds a pepe (but does not save it to memory)
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: urlString
+          description: pepe meme image url
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: Invalid input (URL)
+        "default":
+          description: unexpected response
+definitions:
+  PepeID:
+    type: object
+    required:
+      - id
+      - pepe
+    properties:
+      id:
+        type: string
+        example: KkuizZDRVu2bmV8nOGO
+      pepe:
+        $ref: '#/definitions/Pepe'
+  Pepe:
+    required:
+      - date
+      - rarity
+      - url
+    properties:
+      url:
+        type: string
+        format: url
+        example: "http://i.imgur.com/2iiyA0K.jpg"
+      rarity:
+        type: number
+        example: "5.0"
+      date:
+        type: string
+        example: "2017/05/24 13:53:35"

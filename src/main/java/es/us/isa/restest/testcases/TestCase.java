@@ -28,6 +28,7 @@ public class TestCase implements Serializable {
 	private Map<String, String> headerParameters;			// Header parameters
 	private Map<String, String> pathParameters;				// Path parameters
 	private Map<String, String> queryParameters;			// Input parameters and values
+	private Map<String, String> formParameters;
 	private String bodyParameter;							// Body parameter
 	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none
 	private Map<String, Response> expectedOutputs;			// Possible outputs
@@ -44,6 +45,7 @@ public class TestCase implements Serializable {
 		this.headerParameters = new HashMap<String,String>();
 		this.queryParameters = new HashMap<String,String>();
 		this.pathParameters = new HashMap<String,String>();
+		this.formParameters = new HashMap<String,String>();
 		this.authentication = null;
 	}
 
@@ -78,6 +80,10 @@ public class TestCase implements Serializable {
 	public void setQueryParameters(Map<String, String> inputParameters) {
 		this.queryParameters = inputParameters;
 	}
+
+	public Map<String, String> getFormParameters() { return formParameters; }
+
+	public void setFormParameters(Map<String, String> formParameters) { this.formParameters = formParameters; }
 
 	public Map<String, Response> getExpectedOutputs() {
 		return expectedOutputs;
@@ -151,6 +157,10 @@ public class TestCase implements Serializable {
 		headerParameters.putAll(params);
 	}
 
+	public void addFormParameter(String name, String value) { formParameters.put(name, value); }
+
+	public void addFormParameters(Map<String,String> params) { formParameters.putAll(params); }
+
 	public void removeQueryParameter(String name) {
 		queryParameters.remove(name);
 	}
@@ -223,8 +233,8 @@ public class TestCase implements Serializable {
 
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "testCaseId,faulty,operationId,path,httpMethod,inputContentType,outputContentType," +
-					"headerParameters,pathParameters,queryParameters,bodyParameter,authentication,expectedOutputs," +
+			createFileWithHeader(filePath, "testCaseId,operationId,path,httpMethod,inputContentType,outputContentType," +
+					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter,authentication,expectedOutputs," +
 					"expectedSuccessfulOutput");
 
 		// Generate row
@@ -238,6 +248,9 @@ public class TestCase implements Serializable {
 		}
 		row += ",";
 		for (Map.Entry<String, String> q: queryParameters.entrySet()) {
+			row += q.getKey() + ":" + q.getValue() + ";";
+		}
+		for (Map.Entry<String, String> q: formParameters.entrySet()) {
 			row += q.getKey() + ":" + q.getValue() + ";";
 		}
 		row += "," + bodyParameter + ",,,";

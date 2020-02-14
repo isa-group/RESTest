@@ -25,7 +25,7 @@ public class PetstoreFullTestCaseGenerator {
     @Test
     public void petstoreFullTestCaseGenerator() {
         // Load specification
-        String OAISpecPath = "src/test/resources/specifications/petstore.yaml";
+        String OAISpecPath = "src/test/resources/Petstore/swagger.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
@@ -37,32 +37,32 @@ public class PetstoreFullTestCaseGenerator {
         // Create generator and filter
         AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
-        List<TestConfigurationFilter> filters = new ArrayList<>();
-        TestConfigurationFilter filter = new TestConfigurationFilter();
-        filter.setPath("/store/order/{orderId}");
-        filter.addGetMethod();
-        filters.add(filter);
-
-        TestConfigurationFilter filter2 = new TestConfigurationFilter();
-        filter2.setPath("/user/login");
-        filter2.addGetMethod();
-        filters.add(filter2);
-
-        TestConfigurationFilter filter3 = new TestConfigurationFilter();
-        filter3.setPath("/pet");
-        filter3.addPostMethod();
-        filter3.addPutMethod();
-        filters.add(filter3);
-
-        TestConfigurationFilter filter4 = new TestConfigurationFilter();
-        filter4.setPath("/store/order");
-        filter4.addPostMethod();
-        filters.add(filter4);
-
-        TestConfigurationFilter filter5 = new TestConfigurationFilter();
-        filter5.setPath("/user");
-        filter5.addPostMethod();
-        filters.add(filter5);
+//        List<TestConfigurationFilter> filters = new ArrayList<>();
+//        TestConfigurationFilter filter = new TestConfigurationFilter();
+//        filter.setPath("/store/order/{orderId}");
+//        filter.addGetMethod();
+//        filters.add(filter);
+//
+//        TestConfigurationFilter filter2 = new TestConfigurationFilter();
+//        filter2.setPath("/user/login");
+//        filter2.addGetMethod();
+//        filters.add(filter2);
+//
+//        TestConfigurationFilter filter3 = new TestConfigurationFilter();
+//        filter3.setPath("/pet");
+//        filter3.addPostMethod();
+//        filter3.addPutMethod();
+//        filters.add(filter3);
+//
+//        TestConfigurationFilter filter4 = new TestConfigurationFilter();
+//        filter4.setPath("/store/order");
+//        filter4.addPostMethod();
+//        filters.add(filter4);
+//
+//        TestConfigurationFilter filter5 = new TestConfigurationFilter();
+//        filter5.setPath("/user");
+//        filter5.addPostMethod();
+//        filters.add(filter5);
 
         Collection<TestCase> testCases = generator.generate();
 
