@@ -28,7 +28,7 @@ public class TestCase implements Serializable {
 	private Map<String, String> headerParameters;			// Header parameters
 	private Map<String, String> pathParameters;				// Path parameters
 	private Map<String, String> queryParameters;			// Input parameters and values
-	private Map<String, String> formParameters;
+	private Map<String, String> formParameters;				// Form-data parameters
 	private String bodyParameter;							// Body parameter
 	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none
 	private Map<String, Response> expectedOutputs;			// Possible outputs
@@ -173,6 +173,10 @@ public class TestCase implements Serializable {
 		headerParameters.remove(name);
 	}
 
+	public void removeFormParameter(String name) {
+		formParameters.remove(name);
+	}
+
 	public Map<String, String> getPathParameters() {
 		return pathParameters;
 	}
@@ -205,11 +209,6 @@ public class TestCase implements Serializable {
 		this.faulty = faulty;
 	}
 
-//	@Override public boolean equals(Object obj) {
-//
-//	}
-
-
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -225,6 +224,7 @@ public class TestCase implements Serializable {
 				Objects.equals(headerParameters, testCase.headerParameters) &&
 				Objects.equals(pathParameters, testCase.pathParameters) &&
 				Objects.equals(queryParameters, testCase.queryParameters) &&
+				Objects.equals(formParameters, testCase.formParameters) &&
 				Objects.equals(bodyParameter, testCase.bodyParameter) &&
 				Objects.equals(authentication, testCase.authentication) &&
 				Objects.equals(expectedOutputs, testCase.expectedOutputs) &&
@@ -233,12 +233,12 @@ public class TestCase implements Serializable {
 
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "testCaseId,operationId,path,httpMethod,inputContentType,outputContentType," +
+			createFileWithHeader(filePath, "testCaseId,faulty,operationId,path,httpMethod,inputContentType,outputContentType," +
 					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter,authentication,expectedOutputs," +
 					"expectedSuccessfulOutput");
 
 		// Generate row
-		String row = id + "," + operationId + "," + faulty + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		String row = id + "," + faulty + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
 		for (Map.Entry<String, String> h: headerParameters.entrySet()) {
 			row += h.getKey() + ":" + h.getValue() + ";";
 		}
@@ -250,8 +250,9 @@ public class TestCase implements Serializable {
 		for (Map.Entry<String, String> q: queryParameters.entrySet()) {
 			row += q.getKey() + ":" + q.getValue() + ";";
 		}
-		for (Map.Entry<String, String> q: formParameters.entrySet()) {
-			row += q.getKey() + ":" + q.getValue() + ";";
+		row += ",";
+		for (Map.Entry<String, String> f: formParameters.entrySet()) {
+			row += f.getKey() + ":" + f.getValue() + ";";
 		}
 		row += "," + bodyParameter + ",,,";
 
