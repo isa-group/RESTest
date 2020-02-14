@@ -99,7 +99,7 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import org.junit.runners.MethodSorters;\n"
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n"
-				+  "import es.us.isa.restest.validation.FaultyTestCaseFilter;\n";
+				+  "import es.us.isa.restest.validation.FaultyTestCaseFilter;\n"
 				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
