@@ -252,6 +252,23 @@ public class DefaultTestConfigurationGeneratorTest {
 	}
 
 	@Test
+	public void testComments2TestConfigurationGeneration() {
+
+		String specPath="src/test/resources/Comments/swagger_forTestSuite2.yaml";
+		String confPath="src/test/resources/Comments/testConf_forTestSuite2.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(specPath);
+
+		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath(null);		// null = All paths
+		filter.addAllMethods();
+		filters.add(filter);
+
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
+	}
+
+	@Test
 	public void testEventsTestConfigurationGeneration() {
 
 		String specPath="src/test/resources/Events/swagger.yaml";

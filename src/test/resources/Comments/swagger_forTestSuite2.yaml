@@ -1,0 +1,179 @@
+---
+swagger: "2.0"
+info:
+  description: This is a simple Comments API
+  version: 1.0.0
+  title: Comments
+host: localhost:8081
+basePath: /CommentsAPI/api
+tags:
+  - name: Comments
+    description: music comments
+schemes:
+  - http
+paths:
+  /comments:
+    get:
+      operationId: getComments
+      tags:
+        - Comments
+      summary: searches comments
+      description: |
+        Returns all comments made by all users
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: contains
+          description: filter comments by string
+          required: false
+          type: string
+        - in: query
+          name: type
+          description: filter comments by type
+          required: false
+          type: string
+          enum:
+            - Review
+            - Request
+            - Complain
+            - All
+        - in: query
+          name: order
+          description: order comments by date
+          required: false
+          type: string
+          enum:
+            - date
+            - +date
+            - -date
+        - in: query
+          name: offset
+          description: get comments from certain position
+          required: false
+          type: integer
+        - in: query
+          name: limit
+          description: limit comments retrieved
+          required: false
+          type: integer
+      responses:
+        "200":
+          description: searchs all comments
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Comment'
+        "400":
+          description: bad input parameter
+        "default":
+          description: unexpected response
+    post:
+      operationId: postComment
+      tags:
+        - Comments
+      summary: adds a comment
+      description: Adds a comment to the system
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: comment
+          description: comment to add
+          required: true
+          schema:
+            $ref: '#/definitions/Comment'
+      responses:
+        "201":
+          description: comment created
+        "400":
+          description: invalid input, object invalid
+        "409":
+          description: an existing comment already exist
+        "default":
+          description: unexpected response
+    put:
+      operationId: putComment
+      tags:
+        - Comments
+      summary: adds a comment
+      description: Adds an comment to the system
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: comment
+          description: Comment to update
+          required: true
+          schema:
+            $ref: '#/definitions/Comment'
+      responses:
+        "200":
+          description: comment created
+        "400":
+          description: invalid input, object invalid
+        "409":
+          description: an existing comment already exists
+        "default":
+          description: unexpected response
+  /comments/{id}:
+    get:
+      operationId: getComment
+      tags:
+        - Comments
+      summary: search a comments
+      description: "Returns a comment \n"
+      produces:
+        - application/json
+      parameters:
+        - name: id
+          in: path
+          description: id of the comment
+          required: true
+          type: string
+          maxLength: 4
+      responses:
+        "200":
+          description: search results matching criteria
+          schema:
+            $ref: '#/definitions/Comment'
+        "400":
+          description: bad input parameter
+        "default":
+          description: unexpected response
+definitions:
+  Comment:
+    type: object
+    required:
+      - text
+      - userName
+    properties:
+      id:
+        type: string
+        example: c1
+      userName:
+        type: string
+        example: josedelpino
+      text:
+        type: string
+        example: I love Spotify
+      date:
+        type: string
+        example: "2013-04-16T20:44:53.950"
+      type:
+        type: string
+        example: Review
+        enum:
+          - Review
+          - Request
+          - Complain
+    example:
+      id: c1
+      userName: josedelpino
+      text: I love Spotify
+      date: 2013-04-16T20:44:53.950
+      type: Review
