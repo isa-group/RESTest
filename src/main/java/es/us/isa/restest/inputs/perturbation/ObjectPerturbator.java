@@ -53,7 +53,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
     @Override
     public JsonNode nextValue() {
         JsonNode beforeMutating = originalObject.deepCopy();
-        JsonNode afterMutating = jsonMutator.mutateJson(originalObject, true);
+        JsonNode afterMutating = jsonMutator.mutateJson(originalObject, singleOrder);
         originalObject = beforeMutating;
         return afterMutating;
     }
