@@ -399,6 +399,9 @@ public class TestDataGeneratorFactory {
 				case "file":
 					gen.setOriginalObject(JSONManager.readJSON(param.getValues().get(0)));
 					break;
+				case "singleOrder":
+					gen.setSingleOrder(Boolean.parseBoolean(param.getValues().get(0)));
+					break;
 				default:
 					throw new IllegalArgumentException("Unexpected parameter for object perturbator: " + param.getName());
 			}
