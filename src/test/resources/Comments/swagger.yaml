@@ -114,6 +114,8 @@ paths:
       responses:
         "200":
           description: comment created
+          schema:
+            $ref: '#/definitions/Comment'
         "400":
           description: invalid input, object invalid
         "409":

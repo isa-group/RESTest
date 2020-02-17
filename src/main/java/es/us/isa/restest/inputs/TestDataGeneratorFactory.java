@@ -6,6 +6,7 @@ import es.us.isa.restest.configuration.pojos.Generator;
 import es.us.isa.restest.inputs.boundary.BoundaryNumberConfigurator;
 import es.us.isa.restest.inputs.boundary.BoundaryStringConfigurator;
 import es.us.isa.restest.inputs.fixed.InputValueIterator;
+import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
 import es.us.isa.restest.inputs.random.*;
 import es.us.isa.restest.util.CSVManager;
 import es.us.isa.restest.util.DataType;
@@ -47,6 +48,9 @@ public class TestDataGeneratorFactory {
 				break;
 			case "RandomObject":
 				gen = createRandomObjectGenerator(generator);
+				break;
+			case "ObjectPerturbator":
+				gen = createObjectPerturbator(generator);
 				break;
 			case "RandomString":
 				gen = createRandomStringGenerator(generator);
@@ -376,6 +380,30 @@ public class TestDataGeneratorFactory {
 					throw new IllegalArgumentException("Unexpected parameter for object generator: " + param.getName());
 			}
 		}
+		return gen;
+	}
+
+	// Create object perturbator
+	private static ObjectPerturbator createObjectPerturbator(Generator generator) {
+		ObjectPerturbator gen = new ObjectPerturbator();
+
+		// Set parameters
+		for (GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+				case "object":
+					gen.setOriginalObject(param.getObjectValues().get(0));
+					break;
+				case "stringObject":
+					gen.setOriginalObject(param.getValues().get(0));
+					break;
+				case "file":
+					gen.setOriginalObject(JSONManager.readJSON(param.getValues().get(0)));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for object perturbator: " + param.getName());
+			}
+		}
+
 		return gen;
 	}
 
