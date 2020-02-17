@@ -96,7 +96,7 @@
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.11.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.11.2" level="project" />
     <orderEntry type="module-library">
-      <library name="Maven: JSONmutator:JSONmutator:unknown">
+      <library name="Maven: JSONmutator:JSONmutator:0.0.1-SNAPSHOT">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/JSONmutator.jar!/" />
         </CLASSES>
