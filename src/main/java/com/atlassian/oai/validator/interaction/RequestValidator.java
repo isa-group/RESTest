@@ -80,6 +80,23 @@ public class RequestValidator {
                 .merge(validateQueryParameters(request, apiOperation));
     }
 
+    /**
+     * Do not validate the request against the given API operation
+     *
+     * @param request The request to validate
+     * @param apiOperation The operation to validate the request against
+     *
+     * @return A validation report containing validation errors
+     */
+    @Nonnull
+    public ValidationReport notValidateRequest(@Nonnull final Request request,
+                                            @Nonnull final ApiOperation apiOperation) {
+        requireNonNull(request, "A request is required");
+        requireNonNull(apiOperation, "An API operation is required");
+
+        return ValidationReport.empty();
+    }
+
     @Nonnull
     private ValidationReport validateSecurity(@Nonnull final Request request,
                                               @Nonnull final ApiOperation apiOperation) {
