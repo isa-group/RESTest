@@ -1,5 +1,7 @@
 
 
+import es.us.isa.restest.inputs.perturbation.ObjectPerturbatorTest;
+import es.us.isa.restest.mutation.TestCaseMutationTest;
 import es.us.isa.restest.util.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -30,9 +32,11 @@ import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
 	RandomRegExpGeneratorTest.class,
 	RandomObjectGeneratorTest.class,
 	RandomStringGeneratorTest.class,
+	ObjectPerturbatorTest.class,
 	OpenAPISpecificationTest.class,
 	CoverageGathererTest.class,
 	CoverageMeterTest.class,
+	TestCaseMutationTest.class,
 	RESTAssuredWritterTest.class,
 //	AmadeusFullTestCaseGenerator.class,
 	AmadeusRandomTestCaseGenerator.class,
