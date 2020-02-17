@@ -84,12 +84,12 @@ testConfiguration:
       - name: comment
         weight: 0.5
         generator:
-          type: RandomInputValue
+          type: ObjectPerturbator
           genParameters:
-          - name: values
+          - name: stringObject
             values:
-              - '{"id":"c1","userName":"josedelpino","text":"I love Spotify","date":"2013-04-16T20:44:53.950+0000","type":"Review"}'
-              - '{"id":"c12","userName":"jose22","text":"Please update Twitter","date":"2017-08-14T15:44:53.950+0000","type":"Request"}'
+            - '{"id":"c1","userName":"josedelpino","text":"I love Spotify","date":"2013-04-16T20:44:53.950+0000","type":"Review"}'
+#              - '{"id":"c12","userName":"jose22","text":"Please update Twitter","date":"2017-08-14T15:44:53.950+0000","type":"Request"}'
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -99,12 +99,12 @@ testConfiguration:
       - name: comment
         weight: 0.5
         generator:
-          type: RandomInputValue
+          type: ObjectPerturbator
           genParameters:
-          - name: values
+          - name: stringObject
             values:
             - '{"id":"c1","userName":"josedelpino","text":"I love Spotify","date":"2013-04-16T20:44:53.950+0000","type":"Review"}'
-            - '{"id":"c12","userName":"jose22","text":"Please update Twitter","date":"2017-08-14T15:44:53.950+0000","type":"Request"}'
+#            - '{"id":"c12","userName":"jose22","text":"Please update Twitter","date":"2017-08-14T15:44:53.950+0000","type":"Request"}'
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -130,10 +130,6 @@ testConfiguration:
             - c8
             - c9
             - c10
-            - c11
-            - c12
-            - noId
-            - c100
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
