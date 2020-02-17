@@ -209,6 +209,14 @@
 			<version>2.11.2</version>
 		</dependency>
 
+		<!-- JSONmutator local dependency -->
+		<dependency>
+			<groupId>JSONmutator</groupId>
+			<artifactId>JSONmutator</artifactId>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/JSONmutator.jar</systemPath>
+		</dependency>
+
 	</dependencies>
 
 	<build>
