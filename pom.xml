@@ -218,6 +218,24 @@
 			<systemPath>${project.basedir}/lib/JSONmutator.jar</systemPath>
 		</dependency>
 
+		<!-- IDLreasoner local dependency -->
+		<dependency>
+			<groupId>IDLreasoner</groupId>
+			<artifactId>IDLreasoner</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/IDLreasoner.jar</systemPath>
+		</dependency>
+
+		<!-- IDL2MiniZincMapper local dependency -->
+		<dependency>
+			<groupId>IDL2MiniZincMapper</groupId>
+			<artifactId>IDL2MiniZincMapper</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/IDL2MiniZincMapper.jar</systemPath>
+		</dependency>
+
 	</dependencies>
 
 	<build>
