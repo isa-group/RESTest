@@ -13,14 +13,22 @@ import io.restassured.specification.FilterableResponseSpecification;
 import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;
 
 /**
- * REST-Assured filter to assert that the status code is between 400 and 500. This
- * is expected when the test case is faulty.
+ * REST-Assured filter to assert that faulty test cases return a 4XX status code.
+ * This may happen in two situations:
+ * <ol>
+ *     <li>If the test case was made faulty on purpose (e.g., removing a required
+ *     parameter.</li>
+ *     <li>If the request body does not conform to the Swagger schema. This happens
+ *     when the {@link es.us.isa.restest.inputs.perturbation.ObjectPerturbator ObjectPerturbator}
+ *     mutates a valid input request body into an invalid one. This is not known
+ *     a priori.</li>
+ * </ol>
  */
-public class FaultyTestCaseFilter implements OrderedFilter {
+public class PossiblyFaultyTestCaseFilter implements OrderedFilter {
     private final SwaggerRequestResponseValidator validator;
     private Boolean faultyTestCase; // NOTE: If this is false, the test case may still be faulty, but we don't know a priori
 
-    public FaultyTestCaseFilter(String specUrlOrDefinition) {
+    public PossiblyFaultyTestCaseFilter(String specUrlOrDefinition) {
         requireNonEmpty(specUrlOrDefinition, "A Swagger URL is required");
 
         this.validator = SwaggerRequestResponseValidator.createFor(specUrlOrDefinition).build();

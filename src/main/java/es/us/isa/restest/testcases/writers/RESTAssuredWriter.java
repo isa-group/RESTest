@@ -99,12 +99,12 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import org.junit.runners.MethodSorters;\n"
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n"
-				+  "import es.us.isa.restest.validation.FaultyTestCaseFilter;\n"
+				+  "import es.us.isa.restest.validation.PossiblyFaultyTestCaseFilter;\n"
 				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
-		if (OAIValidation)
-			content += 	"import es.us.isa.restest.validation.ResponseValidationFilter;\n";
+//		if (OAIValidation)
+		content += 	"import es.us.isa.restest.validation.ResponseValidationFilter;\n";
 
 		// Coverage filter (optional)
 		if (enableStats)
@@ -123,11 +123,11 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateAttributes(String specPath) {
 		String content = "";
 		
-		if (OAIValidation)
-			content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
-					+  "\tprivate final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n"
-					+  "\tprivate FaultyTestCaseFilter faultyTestCaseFilter = new FaultyTestCaseFilter(OAI_JSON_URL);\n"
-					+  "\tprivate StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n";
+//		if (OAIValidation)
+		content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
+				+  "\tprivate final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n"
+				+  "\tprivate PossiblyFaultyTestCaseFilter possiblyFaultyTestCaseFilter = new PossiblyFaultyTestCaseFilter(OAI_JSON_URL);\n"
+				+  "\tprivate StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n";
 
 		if (allureReport)
 			content += "\tprivate AllureRestAssured allureFilter = new AllureRestAssured();\n";
@@ -222,7 +222,7 @@ public class RESTAssuredWriter implements IWriter {
 	}
 
 	private String generateFiltersInitialization(Boolean isFaulty) {
-		return "\t\tfaultyTestCaseFilter.setFaultyTestCase(" + isFaulty + ");\n\n";
+		return "\t\tpossiblyFaultyTestCaseFilter.setFaultyTestCase(" + isFaulty + ");\n\n";
 	}
 
 	private String generateTryBlockStart() {
@@ -330,7 +330,7 @@ public class RESTAssuredWriter implements IWriter {
 		// 5XX status code oracle:
 		content += "\t\t\t\t.filter(statusCode5XXFilter)\n";
 //		if (t.getFaulty())
-		content += "\t\t\t\t.filter(faultyTestCaseFilter)\n";
+		content += "\t\t\t\t.filter(possiblyFaultyTestCaseFilter)\n";
 //		if (OAIValidation)
 		content += "\t\t\t\t.filter(validationFilter)\n";
 
