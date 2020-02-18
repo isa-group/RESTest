@@ -17,7 +17,7 @@ import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;
  * This may happen in two situations:
  * <ol>
  *     <li>If the test case was made faulty on purpose (e.g., removing a required
- *     parameter.</li>
+ *     parameter).</li>
  *     <li>If the request body does not conform to the Swagger schema. This happens
  *     when the {@link es.us.isa.restest.inputs.perturbation.ObjectPerturbator ObjectPerturbator}
  *     mutates a valid input request body into an invalid one. This is not known
