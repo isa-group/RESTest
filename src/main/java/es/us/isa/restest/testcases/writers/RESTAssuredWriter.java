@@ -125,7 +125,12 @@ public class RESTAssuredWriter implements IWriter {
 		
 		if (OAIValidation)
 			content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
-					+  "\tprivate final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
+					+  "\tprivate final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n"
+					+  "\tprivate FaultyTestCaseFilter faultyTestCaseFilter = new FaultyTestCaseFilter(OAI_JSON_URL);\n"
+					+  "\tprivate StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n";
+
+		if (allureReport)
+			content += "\tprivate AllureRestAssured allureFilter = new AllureRestAssured();\n";
 
 		if (enableStats) // This is only needed to export output data to the proper folder
 			content += "\tprivate final String APIName = \"" + APIName + "\";\n";
@@ -150,6 +155,9 @@ public class RESTAssuredWriter implements IWriter {
 
 		// Generate test case ID (only if stats enabled)
 		content += generateTestCaseId(t.getId());
+
+		// Generate initialization of filters for those that need it
+		content += generateFiltersInitialization(t.getFaulty());
 
 		// Generate the start of the try block
 		content += generateTryBlockStart();
@@ -211,6 +219,10 @@ public class RESTAssuredWriter implements IWriter {
 		}
 
 		return content;
+	}
+
+	private String generateFiltersInitialization(Boolean isFaulty) {
+		return "\t\tfaultyTestCaseFilter.setFaultyTestCase(" + isFaulty + ");\n\n";
 	}
 
 	private String generateTryBlockStart() {
@@ -314,11 +326,11 @@ public class RESTAssuredWriter implements IWriter {
 		if (enableStats) // Coverage filter
 			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
 		if (allureReport) // Allure filter
-			content += "\t\t\t\t.filter(new AllureRestAssured())\n";
+			content += "\t\t\t\t.filter(allureFilter)\n";
 		// 5XX status code oracle:
-		content += "\t\t\t\t.filter(new StatusCode5XXFilter())\n";
-		if (t.getFaulty())
-			content += "\t\t\t\t.filter(new FaultyTestCaseFilter())\n";
+		content += "\t\t\t\t.filter(statusCode5XXFilter)\n";
+//		if (t.getFaulty())
+		content += "\t\t\t\t.filter(faultyTestCaseFilter)\n";
 //		if (OAIValidation)
 		content += "\t\t\t\t.filter(validationFilter)\n";
 
