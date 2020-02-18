@@ -2,3 +2,13 @@ language: java
 
 notifications:
   email: false
+
+addons:
+  sonarcloud:
+    organization: "isa-group"
+    token:
+      secure: "Y4DvDn5eUE11Nd0yelSCnc7oJY4M94kE4N2xtKxO23F4anGmdbbVroDzaL+8z2XHDlywlJoj53OGHzZ8wdthd22cN8K9oOwJJdRVpPDt7cxW5igqV4v373zzMh26yg6jwBubosMLwth0TKFoDuj/53AnScUa9+V8HaWJIZU7IYsp4Pui5XNejGFxnty2WXHOgMA86ZkVE+xwhvyT2LevzXBIyUkN0bpV7OkLF96j8xgByWMgGAsBNcGKlYIjPlrJNBO3yJvCgwVBdnH9XUoqYwr+iLntiVhTPatR8Y+Ks9w9ooSue+CgQjBxgMFbjXgVxHwbv3ZikoVzdsxlRF9LMYpeGnQHQLp11D6rOcwYJ8XJU9r10PSSuT31OLPNqHr+5cBhGMRTm3w+M//JEe/xzHK2wtPhqC0sggIqzOa2BhL+CD+kgjiDv1D0Lk2YhRcBOdr2j1aujNZfrb/H9qE52XPy4D2WsSrms/wqG0jDD9GQpuOT8itOKsTjEGjcYE3EeT+1y9oD1bJC7Eggozh6mDWAT0UPs76Su2rqhYnemSQKoHFiv19L2PikFtZWIYRoraJp8QiOjchVawpejcHen9L0ItmaB+Nhocxyrpkn4mVp8YGgDjgJNRcztlkv7Vnp7yHeziZJXK7N03AZ5IVc2ZBgCuoPebvXpWFP1YkbpTY=" # encrypted value of your token
+
+script:
+  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=isa-group_RESTest
