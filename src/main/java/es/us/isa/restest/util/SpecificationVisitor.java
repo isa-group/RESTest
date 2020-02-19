@@ -91,6 +91,15 @@ public class SpecificationVisitor {
 				})
 				.collect(Collectors.toList());
 	}
+
+	public static Boolean hasDependencies(Operation operation) {
+		try {
+			List<String> dependencies = (List<String>)operation.getVendorExtensions().get("x-dependencies");
+			return dependencies != null && dependencies.size() != 0;
+		} catch (Exception e) { // If the "x-dependencies" extension is not correctly used
+			return false;
+		}
+	}
 }
 
 
