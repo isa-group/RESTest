@@ -27,7 +27,7 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
  */
 public class CommentsIterativeExample {
 
-	private static int numTestCases = 2;												// Number of test cases per operation
+	private static int numTestCases = 100;												// Number of test cases per operation
 	private static String OAISpecPath = "src/test/resources/Comments/swagger.yaml";		// Path to OAS specification file
 	private static String confPath = "src/test/resources/Comments/testConf.yaml";		// Path to test configuration file
 	private static String targetDirJava = "src/generation/java/comments";				// Directory where tests will be generated.

@@ -20,6 +20,7 @@ paths:
         This request returns all system events
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: name
           type: string
@@ -98,6 +99,7 @@ paths:
         - application/json
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: body
           name: event
@@ -123,6 +125,7 @@ paths:
         - application/json
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: id
           in: query
@@ -152,6 +155,7 @@ paths:
         Returns an Event by Id
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: id
           in: path
