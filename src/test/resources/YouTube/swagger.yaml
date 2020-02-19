@@ -3020,6 +3020,25 @@ paths:
           in: query
           name: videoType
           type: string
+      x-dependencies:
+        - ZeroOrOne(forContentOwner, forDeveloper, forMine, relatedToVideoId);
+        - IF forContentOwner==true THEN onBehalfOfContentOwner AND type=='video' AND NOT (videoDefinition OR videoDimension OR videoDuration OR videoLicense OR videoEmbeddable OR videoSyndicated OR videoType);
+        - IF forMine==true THEN type=='video' AND NOT (videoDefinition OR videoDimension OR videoDuration OR videoLicense OR videoEmbeddable OR videoSyndicated OR videoType);
+        - IF relatedToVideoId THEN type=='video' AND NOT (channelId OR channelType OR eventType OR location OR locationRadius OR onBehalfOfContentOwner OR order OR publishedAfter OR publishedBefore OR q OR topicId OR videoCaption OR videoCategoryId OR videoDefinition OR videoDimension OR videoDuration OR videoEmbeddable OR videoLicense OR videoSyndicated OR videoType);
+        - IF eventType THEN type=='video';
+        - AllOrNone(location, locationRadius);
+#        - publishedAfter>=publishedBefore;
+        - IF videoCaption THEN type=='video';
+        - IF videoCategoryId THEN type=='video';
+        - IF videoDefinition THEN type=='video';
+        - IF videoDimension THEN type=='video';
+        - IF videoDuration THEN type=='video';
+        - IF videoEmbeddable THEN type=='video';
+        - IF videoLicense THEN type=='video';
+        - IF videoSyndicated THEN type=='video';
+        - IF videoType THEN type=='video';
+        - IF channelType THEN type=='channel';
+        - IF location THEN type=='video';
       responses:
         '200':
           description: Successful response
