@@ -143,6 +143,28 @@ public class SwaggerRequestResponseValidator {
     }
 
     /**
+     * Validate ONLY the given request against the API.
+     * <p>
+     * See class docs for more information on the validation performed.
+     *
+     * @param request  The request to validate (required)
+     * @param response The response to validate (required)
+     * @return The outcome of the validation
+     */
+    @Nonnull
+    public ValidationReport validateOnlyRequest(@Nonnull final Request request, @Nonnull final Response response) {
+        requireNonNull(request, "A request is required");
+        requireNonNull(response, "A response is required");
+
+        return validateOnApiOperation(
+                request.getPath(),
+                request.getMethod(),
+                apiOperation -> requestValidator.validateRequest(request, apiOperation)
+                        .merge(responseValidator.notValidateResponse(response, apiOperation)),
+                (apiOperation, report) -> withWhitelistApplied(report, apiOperation, request, response));
+    }
+
+    /**
      * Validate ONLY the given response against the API.
      * <p>
      * See class docs for more information on the validation performed.

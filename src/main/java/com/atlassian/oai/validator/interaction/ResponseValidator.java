@@ -67,6 +67,22 @@ public class ResponseValidator {
                 .merge(validateHeaders(response, apiResponse, apiOperation));
     }
 
+    /**
+     * Do not validate the given response against the API operation.
+     *
+     * @param response The response to validate
+     * @param apiOperation The API operation to validate the response against
+     *
+     * @return A validation report containing validation errors
+     */
+    @Nonnull
+    public ValidationReport notValidateResponse(@Nonnull final Response response, @Nonnull final ApiOperation apiOperation) {
+        requireNonNull(response, "A response is required");
+        requireNonNull(apiOperation, "An API operation is required");
+
+        return ValidationReport.empty();
+    }
+
     @Nullable
     private io.swagger.models.Response getApiResponse(@Nonnull final Response response,
                                                       @Nonnull final ApiOperation apiOperation) {

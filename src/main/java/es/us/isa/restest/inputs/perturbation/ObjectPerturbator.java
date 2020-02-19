@@ -22,6 +22,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
     private JsonNode originalObject;
     private JsonMutator jsonMutator;
     private ObjectMapper objectMapper;
+    private Boolean singleOrder = true; // True if single order mutation, false otherwise
 
     public ObjectPerturbator() {
         this.objectMapper = new ObjectMapper();
@@ -52,7 +53,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
     @Override
     public JsonNode nextValue() {
         JsonNode beforeMutating = originalObject.deepCopy();
-        JsonNode afterMutating = jsonMutator.mutateJson(originalObject, true);
+        JsonNode afterMutating = jsonMutator.mutateJson(originalObject, singleOrder);
         originalObject = beforeMutating;
         return afterMutating;
     }
@@ -96,5 +97,13 @@ public class ObjectPerturbator implements ITestDataGenerator {
             e.printStackTrace();
             System.exit(1);
         }
+    }
+
+    public Boolean getSingleOrder() {
+        return singleOrder;
+    }
+
+    public void setSingleOrder(Boolean singleOrder) {
+        this.singleOrder = singleOrder;
     }
 }
