@@ -3,6 +3,7 @@ package es.us.isa.restest.generators;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.*;
@@ -17,8 +18,7 @@ import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
 import org.apache.commons.lang3.RandomStringUtils;
 
-import static es.us.isa.restest.util.SpecificationVisitor.getParametersSubjectToInvalidValueChange;
-import static es.us.isa.restest.util.SpecificationVisitor.getRequiredNotPathParameters;
+import static es.us.isa.restest.util.SpecificationVisitor.*;
 
 public abstract class AbstractTestCaseGenerator {
 
@@ -28,6 +28,8 @@ public abstract class AbstractTestCaseGenerator {
 	protected AuthManager authManager;						// For if multiple API keys are used for the API
 	protected Boolean enableFaulty = true;					// True if faulty test cases want to be generated. Defaults to true
 	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
+	protected Boolean violateDependency;					// Whether to violate an inter-parameter dependency to create a faulty test case
+	protected Analyzer idlReasoner;							// IDLReasoner to check if requests are valid or not
 	protected int numberOfTest;								// Number of test cases to be generated for each operation
 	protected int index;									// Number of test cases generated so far
 
@@ -95,6 +97,11 @@ public abstract class AbstractTestCaseGenerator {
 		
 		// Get specification operation
 		Operation specOperation = spec.getSpecification().getPath(path).getOperationMap().get(method);
+
+		if (hasDependencies(specOperation)) // If the operation contains dependencies, create new IDLReasoner for that operation
+			idlReasoner = new Analyzer("oas", spec.getPath(), path, method.toString());
+		else // Otherwise, set it to null so that it's not used
+			idlReasoner = null;
 	
 		// Get test configuration object for the operation
 		es.us.isa.restest.configuration.pojos.Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
@@ -180,5 +187,13 @@ public abstract class AbstractTestCaseGenerator {
 
 	public void setFaultyRatio(Float faultyRatio) {
 		this.faultyRatio = faultyRatio;
+	}
+
+	public Boolean getViolateDependency() {
+		return violateDependency;
+	}
+
+	public void setViolateDependency(Boolean violateDependency) {
+		this.violateDependency = violateDependency;
 	}
 }
