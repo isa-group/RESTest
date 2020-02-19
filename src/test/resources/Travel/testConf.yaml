@@ -3,6 +3,7 @@ auth:
   required: true
   queryParams: []
   headerParams: []
+  apiKeysPath: null
 testConfiguration:
   testPaths:
   - testPath: /trips
@@ -25,7 +26,7 @@ testConfiguration:
             objectValues: null
           - name: max
             values:
-            - 50
+            - 100
             objectValues: null
       - name: limit
         weight: 0.5
@@ -42,7 +43,7 @@ testConfiguration:
             objectValues: null
           - name: max
             values:
-            - 50
+            - 100
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -178,9 +179,9 @@ testConfiguration:
       - name: user
         weight: null
         generator:
-          type: RandomInputValue
+          type: ObjectPerturbator
           genParameters:
-          - name: values
+          - name: stringObject
             values:
             - '{"idUser":1,"username":"User","password":"Password","newUsername":"User1","newPassword":"Password1","province":"Sevilla","phone":"342233434"}'
             objectValues: null
@@ -192,9 +193,9 @@ testConfiguration:
       - name: user
         weight: null
         generator:
-          type: RandomInputValue
+          type: ObjectPerturbator
           genParameters:
-          - name: values
+          - name: stringObject
             values:
             - '{"idUser":1,"username":"User","password":"Password","province":"Sevilla","phone":"342233434"}'
             objectValues: null
