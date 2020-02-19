@@ -22,6 +22,7 @@ paths:
         Returns all comments made by all users
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: query
           name: contains
@@ -78,6 +79,7 @@ paths:
         - application/json
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: body
           name: comment
@@ -104,6 +106,7 @@ paths:
         - application/json
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: body
           name: comment
@@ -131,6 +134,7 @@ paths:
       description: "Returns a comment \n"
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: id
           in: path

@@ -21,6 +21,7 @@ paths:
         Returns all travels system
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: offset
           in: query
@@ -51,6 +52,7 @@ paths:
         Returns all the user's travels
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: query
           name: username
@@ -102,6 +104,8 @@ paths:
       summary: Deletes the user's travel
       description: |
         Deletes the user's travels with the specified username and password.
+      produces:
+        - text/html;charset=utf-8
       parameters:
         - in: query
           name: username
@@ -139,6 +143,7 @@ paths:
           required: true
       produces:
         - application/json
+        - text/html;charset=utf-8
       responses:
         200:
           description: User found
@@ -161,6 +166,7 @@ paths:
         - application/json
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: body
           name: user
@@ -187,6 +193,8 @@ paths:
       description: Edits a system's user
       consumes:
         - application/json
+      produces:
+        - text/html;charset=utf-8
       parameters:
         - in: body
           name: user

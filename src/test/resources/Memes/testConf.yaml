@@ -50,9 +50,22 @@ testConfiguration:
             values:
             - 100
             objectValues: null
+      - name: category
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - Sport
+            - Food
+            - Social
+            - Undefined
+            - All
+            objectValues: null
       paramDependencies: null
       expectedResponse: 200
-    - operationId: editPepeMeme
+    - operationId: editMeme
       method: put
       testParameters:
       - name: id
@@ -83,7 +96,7 @@ testConfiguration:
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
-    - operationId: addPepeMeme
+    - operationId: addMeme
       method: post
       testParameters:
       - name: urlString
@@ -129,7 +142,7 @@ testConfiguration:
       expectedResponse: 200
   - testPath: /meme/rarity
     operations:
-    - operationId: addPepeButNotSaveToMemory
+    - operationId: addMemeButNotSaveToMemory
       method: post
       testParameters:
       - name: urlString

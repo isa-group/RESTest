@@ -7,26 +7,27 @@ info:
 host: localhost:8083
 basePath: /MemesAPI/api
 tags:
-  - name: PepeID
-    description: Pepe's memes
+  - name: MemeID
+    description: Meme's memes
 schemes:
   - http
 paths:
   /gallery:
     get:
       tags:
-        - PepeID
+        - MemeID
       summary: searches memes
       description: |
         The API returns all the system memes
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: reverse
           type: boolean
           in: query
           required: false
-          description: order results by date or not
+          description: order results by rarity or not
         - name: upperlimit
           type: integer
           in: query
@@ -37,46 +38,59 @@ paths:
           in: query
           required: false
           description: filter memes with this rarity as minimum
+        - name: category
+          type: string
+          in: query
+          required: false
+          description: filter memes with this category
+          enum:
+            - Sport
+            - Food
+            - Social
+            - Undefined
+            - All
       responses:
         "200":
           description: search results
           schema:
             type: array
             items:
-              $ref: '#/definitions/PepeID'
+              $ref: '#/definitions/MemeID'
         "400":
           description: bad input parameter
         "default":
           description: unexpected response
     post:
       tags:
-        - PepeID
-      summary: adds a pepe meme to the system
-      description: Adds a pepe meme to the system
+        - MemeID
+      summary: adds a meme meme to the system
+      description: Adds a meme meme to the system
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: query
           name: urlString
-          description: pepe meme image url
+          description: meme meme image url
           required: true
           type: string
       responses:
         "200":
-          description: PepeID created
+          description: MemeID created
           schema:
-            $ref: '#/definitions/PepeID'
+            $ref: '#/definitions/MemeID'
         "400":
           description: Invalid input (URL)
         "default":
           description: unexpected response
     put:
       tags:
-        - PepeID
-      summary: edit a pepe meme to the system
-      description: Edit a pepe meme to the system
+        - MemeID
+      summary: edit a meme meme to the system
+      description: Edit a meme meme to the system
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: id
           in: query
@@ -91,13 +105,13 @@ paths:
           format: double
       responses:
         "200":
-          description: PepeID edited correctly
+          description: MemeID edited correctly
           schema:
-            $ref: '#/definitions/PepeID'
+            $ref: '#/definitions/MemeID'
         "400":
           description: invalid input, object invalid
         "404":
-          description: Pepe not found
+          description: Meme not found
         "500":
           description: Internal Server Error
         "default":
@@ -105,12 +119,13 @@ paths:
   /gallery/{id}:
     get:
       tags:
-        - PepeID
+        - MemeID
       summary: search a meme
       description: |
         The API returns a meme by an id
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: id
           in: path
@@ -121,21 +136,22 @@ paths:
         "200":
           description: search results
           schema:
-            $ref: '#/definitions/PepeID'
+            $ref: '#/definitions/MemeID'
         "400":
           description: bad input parameter
         "404":
-          description: Pepe not found
+          description: Meme not found
         "default":
           description: unexpected response
     delete:
       tags:
-        - PepeID
+        - MemeID
       summary: search a meme
       description: |
         The API returns a meme by an id
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: id
           in: path
@@ -146,21 +162,22 @@ paths:
         "204":
           description: no content
         "404":
-          description: Pepe not found
+          description: Meme not found
         "default":
           description: unexpected response
   /meme/rarity:
     post:
       tags:
-        - PepeID
-      summary: adds a pepe (but does not save it to memory)
-      description: adds a pepe (but does not save it to memory)
+        - MemeID
+      summary: adds a meme (but does not save it to memory)
+      description: adds a meme (but does not save it to memory)
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: query
           name: urlString
-          description: pepe meme image url
+          description: meme meme image url
           required: true
           type: string
       responses:
@@ -171,22 +188,23 @@ paths:
         "default":
           description: unexpected response
 definitions:
-  PepeID:
+  MemeID:
     type: object
     required:
       - id
-      - pepe
+      - meme
     properties:
       id:
         type: string
         example: KkuizZDRVu2bmV8nOGO
-      pepe:
-        $ref: '#/definitions/Pepe'
-  Pepe:
+      meme:
+        $ref: '#/definitions/Meme'
+  Meme:
     required:
       - date
       - rarity
       - url
+      - category
     properties:
       url:
         type: string
@@ -194,7 +212,20 @@ definitions:
         example: "http://i.imgur.com/2iiyA0K.jpg"
       rarity:
         type: number
-        example: "5.0"
+        example: 5.0
       date:
         type: string
         example: "2017/05/24 13:53:35"
+      category:
+        type: string
+        enum:
+          - Sport
+          - Food
+          - Social
+          - Undefined
+        example: Sport
+    example:
+      - url: "http://i.imgur.com/2iiyA0K.jpg"
+        rarity: 5.0
+        date: "2017/05/24 13:53:35"
+        category: Sport
