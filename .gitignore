@@ -11,3 +11,4 @@ TODO.txt
 /src/test/resources/csvData/test-results.csv
 /src/test/resources/csvData/test-results-coverage.csv
 /src/main/resources/auth
+/idl_aux_files
