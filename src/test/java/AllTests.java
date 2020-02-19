@@ -50,7 +50,9 @@ import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
 	CSVManagerTest.class,
 	FileManagerTest.class,
 	IDGeneratorTest.class,
-	JSONManagerTest.class
+	JSONManagerTest.class,
+	SpecificationVisitorTest.class,
+	IDLAdapterTest.class
 })
 
 public class AllTests {
