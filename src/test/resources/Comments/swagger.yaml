@@ -64,11 +64,9 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Comment'
+              $ref: '#/definitions/CommentReturned'
         "400":
           description: bad input parameter
-        "default":
-          description: unexpected response
     post:
       operationId: postComment
       tags:
@@ -86,16 +84,14 @@ paths:
           description: comment to add
           required: true
           schema:
-            $ref: '#/definitions/Comment'
+            $ref: '#/definitions/CommentPost'
       responses:
         "201":
           description: comment created
+          schema:
+            $ref: '#/definitions/CommentReturned'
         "400":
           description: invalid input, object invalid
-        "409":
-          description: an existing comment already exist
-        "default":
-          description: unexpected response
     put:
       operationId: putComment
       tags:
@@ -113,18 +109,14 @@ paths:
           description: Comment to update
           required: true
           schema:
-            $ref: '#/definitions/Comment'
+            $ref: '#/definitions/CommentPut'
       responses:
         "200":
           description: comment created
           schema:
-            $ref: '#/definitions/Comment'
+            $ref: '#/definitions/CommentReturned'
         "400":
           description: invalid input, object invalid
-        "409":
-          description: an existing comment already exists
-        "default":
-          description: unexpected response
   /comments/{id}:
     get:
       operationId: getComment
@@ -145,26 +137,28 @@ paths:
         "200":
           description: search results matching criteria
           schema:
-            $ref: '#/definitions/Comment'
-        "400":
-          description: bad input parameter
-        "default":
-          description: unexpected response
+            $ref: '#/definitions/CommentReturned'
+        "404":
+          description: not found
 definitions:
-  Comment:
+  CommentReturned:
     type: object
     required:
+      - id
       - text
       - userName
     properties:
       id:
         type: string
+        minLength: 1
         example: c1
       userName:
         type: string
+        minLength: 1
         example: josedelpino
       text:
         type: string
+        minLength: 1
         example: I love Spotify
       date:
         type: string
@@ -180,5 +174,76 @@ definitions:
       id: c1
       userName: josedelpino
       text: I love Spotify
-      date: 2013-04-16T20:44:53.950
+      date: "2013-04-16T20:44:53.950"
+      type: Review
+  CommentPut:
+    type: object
+    required:
+      - id
+      - text
+      - userName
+      - date
+      - type
+    properties:
+      id:
+        type: string
+        minLength: 1
+        example: c1
+      userName:
+        type: string
+        minLength: 1
+        example: josedelpino
+      text:
+        type: string
+        minLength: 1
+        example: I love Spotify
+      date:
+        type: string
+        minLength: 1
+        example: "2013-04-16T20:44:53.950"
+      type:
+        type: string
+        example: Review
+        enum:
+          - Review
+          - Request
+          - Complain
+    example:
+      id: c1
+      userName: josedelpino
+      text: I love Spotify
+      date: "2013-04-16T20:44:53.950"
+      type: Review
+  CommentPost:
+    type: object
+    required:
+      - text
+      - userName
+    properties:
+      id:
+        type: string
+        example: c1
+      userName:
+        type: string
+        minLength: 1
+        example: josedelpino
+      text:
+        type: string
+        minLength: 1
+        example: I love Spotify
+      date:
+        type: string
+        example: "2013-04-16T20:44:53.950"
+      type:
+        type: string
+        example: Review
+        enum:
+          - Review
+          - Request
+          - Complain
+    example:
+      id: c1
+      userName: josedelpino
+      text: I love Spotify
+      date: "2013-04-16T20:44:53.950"
       type: Review
