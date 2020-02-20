@@ -56,7 +56,10 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method) {
 
 		Boolean isDesiredTestCase = false;
-		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
+//		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
+
+		// This way, all test cases of an operation are not executed one after the other, but randomly:
+		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
 		TestCase test = null;
 
 		while(!isDesiredTestCase) {
