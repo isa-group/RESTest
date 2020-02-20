@@ -27,7 +27,7 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
  */
 public class CommentsIterativeExample {
 
-	private static int numTestCases = 100;												// Number of test cases per operation
+	private static int numTestCases = 1000;												// Number of test cases per operation
 	private static String OAISpecPath = "src/test/resources/Comments/swagger.yaml";		// Path to OAS specification file
 	private static String confPath = "src/test/resources/Comments/testConf.yaml";		// Path to test configuration file
 	private static String targetDirJava = "src/generation/java/comments";				// Directory where tests will be generated.
@@ -37,8 +37,8 @@ public class CommentsIterativeExample {
 	private static String APIName = "comments";											// API name
 	private static String testClassName = "CommentsTest";								// Name prefix of the class to be generated
 	private static OpenAPISpecification spec;
-	private static int totalNumTestCases = -1;											// Total number of test cases to be generated
-	private static int timeDelay = 7200;													// Optional time delay between iterations (in seconds)
+	private static int totalNumTestCases = 4000;										// Total number of test cases to be generated
+	private static int timeDelay = -1;													// Optional time delay between iterations (in seconds)
 	
 	public static void main(String[] args) {
 		
@@ -105,8 +105,7 @@ public class CommentsIterativeExample {
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName, basePath);
         writer.setLogging(true);
         writer.setAllureReport(true);
-		writer.setEnableStats(false);
-//		writer.setEnableStats(false);
+		writer.setEnableStats(true);
 		writer.setAPIName(APIName);
 		return writer;
 	}
