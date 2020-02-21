@@ -67,7 +67,6 @@ paths:
       description: Adds a meme meme to the system
       produces:
         - application/json
-        - text/html;charset=utf-8
       parameters:
         - in: query
           name: urlString
@@ -125,7 +124,6 @@ paths:
         The API returns a meme by an id
       produces:
         - application/json
-        - text/html;charset=utf-8
       parameters:
         - name: id
           in: path
@@ -149,9 +147,6 @@ paths:
       summary: search a meme
       description: |
         The API returns a meme by an id
-      produces:
-        - application/json
-        - text/html;charset=utf-8
       parameters:
         - name: id
           in: path
@@ -173,7 +168,6 @@ paths:
       description: adds a meme (but does not save it to memory)
       produces:
         - application/json
-        - text/html;charset=utf-8
       parameters:
         - in: query
           name: urlString

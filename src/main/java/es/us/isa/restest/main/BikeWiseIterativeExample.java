@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import es.us.isa.restest.coverage.CoverageGatherer;
+import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.util.CSVReportManager;
 import org.apache.commons.io.FileUtils;
 import es.us.isa.restest.configuration.TestConfigurationIO;
@@ -51,7 +53,8 @@ public class BikeWiseIterativeExample {
 		IWriter writer = createWriter();										// Test case writer
 		AllureReportManager reportManager = createAllureReportManager();		// Allure test case reporter
 		CSVReportManager csvReportManager = createCSVReportManager();			// CSV test case reporter
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, csvReportManager);
+		CoverageMeter covMeter = createCoverageMeter();							//Coverage meter
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, csvReportManager, covMeter);
 		
 		int iteration = 1;
 		while (runner.getNumTestCases() < totalNumTestCases) {
@@ -144,5 +147,11 @@ public class BikeWiseIterativeExample {
 //		CSVReportManager csvReportManager = new CSVReportManager();
 //		csvReportManager.setEnableStats(false);
 //		return csvReportManager;
+	}
+
+	private static CoverageMeter createCoverageMeter() {
+		CoverageGatherer cg = new CoverageGatherer(spec);
+		CoverageMeter cm = new CoverageMeter(cg);
+		return cm;
 	}
 }

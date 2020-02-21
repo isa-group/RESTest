@@ -2,6 +2,8 @@ package es.us.isa.restest.main;
 
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.coverage.CoverageGatherer;
+import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.runners.RESTestRunner;
@@ -50,7 +52,8 @@ public class AmadeusHotelsIterativeExample {
 		IWriter writer = createWriter();										// Test case writer
 		AllureReportManager reportManager = createAllureReportManager();		// Allure test case reporter
 		CSVReportManager csvReportManager = createCSVReportManager();			// CSV test case reporter
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, csvReportManager);
+		CoverageMeter covMeter = createCoverageMeter();							//Coverage meter
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, csvReportManager, covMeter);
 		
 		int iteration = 1;
 		while (totalNumTestCases == -1 || runner.getNumTestCases() < totalNumTestCases) {
@@ -72,7 +75,7 @@ public class AmadeusHotelsIterativeExample {
 		}
 
 	}
-	
+
 	private static void delay() {
 		
 		try {
@@ -105,8 +108,7 @@ public class AmadeusHotelsIterativeExample {
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName, basePath);
         writer.setLogging(true);
         writer.setAllureReport(true);
-		writer.setEnableStats(false);
-//		writer.setEnableStats(false);
+		writer.setEnableStats(true);	//Enable output coverage
 		writer.setAPIName(APIName);
 		return writer;
 	}
@@ -143,5 +145,11 @@ public class AmadeusHotelsIterativeExample {
 //		CSVReportManager csvReportManager = new CSVReportManager();
 //		csvReportManager.setEnableStats(false);
 //		return csvReportManager;
+	}
+
+	private static CoverageMeter createCoverageMeter() {
+		CoverageGatherer cg = new CoverageGatherer(spec);
+		CoverageMeter cm = new CoverageMeter(cg);
+		return cm;
 	}
 }
