@@ -104,7 +104,7 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import org.junit.runners.MethodSorters;\n"
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n"
-				+  "import es.us.isa.restest.validation.PossiblyFaultyTestCaseFilter;\n"
+				+  "import es.us.isa.restest.validation.NominalOrFaultyTestCaseFilter;\n"
 				+  "import es.us.isa.restest.testcases.TestCaseCounterFilter;\n"
 				+  "import java.io.File;\n";
 		
@@ -352,7 +352,7 @@ public class RESTAssuredWriter implements IWriter {
 		// 5XX status code oracle:
 		content += "\t\t\t\t.filter(statusCode5XXFilter)\n";
 //		if (t.getFaulty())
-		content += "\t\t\t\t.filter(new PossiblyFaultyTestCaseFilter(testCaseCounterFilter, " + t.getFulfillsDependencies() + "))\n";
+		content += "\t\t\t\t.filter(new NominalOrFaultyTestCaseFilter(testCaseCounterFilter, " + t.getFulfillsDependencies() + "))\n";
 //		if (OAIValidation)
 		content += "\t\t\t\t.filter(validationFilter)\n";
 

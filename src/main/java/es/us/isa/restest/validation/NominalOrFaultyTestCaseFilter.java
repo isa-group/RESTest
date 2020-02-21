@@ -8,8 +8,9 @@ import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
 
 /**
- * REST-Assured filter to assert that faulty test cases return a 4XX status code.
- * This may happen in two situations:
+ * REST-Assured filter to assert that faulty test cases return a 4XX status code
+ * and that nominal test cases fulfilling all inter-parameter dependencies do not
+ * return a 400 status code. A test case may be faulty in two situations:
  * <ol>
  *     <li>If the test case was made faulty on purpose (e.g., removing a required
  *     parameter).</li>
@@ -19,11 +20,11 @@ import io.restassured.specification.FilterableResponseSpecification;
  *     a priori.</li>
  * </ol>
  */
-public class PossiblyFaultyTestCaseFilter implements OrderedFilter {
+public class NominalOrFaultyTestCaseFilter implements OrderedFilter {
     private TestCaseCounterFilter counterFilter; // Used to know whether this test case is faulty or not
     private Boolean dependenciesFulfilled; // Whether this test case fulfills all inter-parameter dependencies or not
 
-    public PossiblyFaultyTestCaseFilter(TestCaseCounterFilter counterFilter, Boolean dependenciesFulfilled) {
+    public NominalOrFaultyTestCaseFilter(TestCaseCounterFilter counterFilter, Boolean dependenciesFulfilled) {
         this.counterFilter = counterFilter;
         this.dependenciesFulfilled = dependenciesFulfilled;
     }
