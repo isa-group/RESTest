@@ -117,6 +117,8 @@ paths:
             $ref: '#/definitions/CommentReturned'
         "400":
           description: invalid input, object invalid
+        "404":
+          description: not found
   /comments/{id}:
     get:
       operationId: getComment
