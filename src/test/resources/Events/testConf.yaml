@@ -145,7 +145,7 @@ testConfiguration:
           genParameters:
           - name: stringObject
             values:
-            - '{"id":5,"id_creator":2,"name":"Random event","description":"This is
+            - '{"id_creator":2,"name":"Random event","description":"This is
               a completely random event","name_creator":"Sergio","date_start":"2020-07-15T12:00:00.000-01:00","date_end":"2020-07-15T16:00:00.000-01:00","tags":"food,music","latitude":1.1,"longitude":2.2,"type":"meeting"}'
             objectValues: null
       paramDependencies: null
@@ -160,7 +160,7 @@ testConfiguration:
           genParameters:
           - name: stringObject
             values:
-            - '{"id":5,"id_creator":2,"name":"Random event","description":"This is
+            - '{"id_creator":2,"name":"Random event","description":"This is
               a completely random event","name_creator":"Sergio","date_start":"2020-07-15T12:00:00.000-01:00","date_end":"2020-07-15T16:00:00.000-01:00","tags":"food,music","latitude":1.1,"longitude":2.2,"type":"meeting"}'
             objectValues: null
       paramDependencies: null

@@ -47,7 +47,7 @@ public class InvalidParameterValue extends AbstractMutationOperator {
         ParameterFeatures pFeatures = new ParameterFeatures(param);
         String randomBigInt = Integer.toString(ThreadLocalRandom.current().nextInt(1000, 10001));
         Integer randomSmallInt = ThreadLocalRandom.current().nextInt(1, 10);
-        String randomString = RandomStringUtils.randomAscii(ThreadLocalRandom.current().nextInt(10, 20));
+        String randomString = RandomStringUtils.randomAlphabetic(10, 20);
         String randomBoolean = Boolean.toString(ThreadLocalRandom.current().nextBoolean());
         Double randomSelection = ThreadLocalRandom.current().nextDouble();
         Boolean set = false; // This boolean is used to validate that a invalid value is set.
@@ -107,12 +107,12 @@ public class InvalidParameterValue extends AbstractMutationOperator {
                 }
             } else if(randomSelection < 2./3.) {
                 if (pFeatures.getMinLength() != null && pFeatures.getMinLength() > 1) { // Replace with string with fewer chars than minLength
-                    setParameterToValue(tc, param, RandomStringUtils.randomAscii(pFeatures.getMinLength() - 1));
+                    setParameterToValue(tc, param, RandomStringUtils.randomAlphabetic(pFeatures.getMinLength() - 1));
                     set = true;
                 }
             } else {
                 if (pFeatures.getMaxLength() != null) { // Replace with string with more chars than maxLength
-                    setParameterToValue(tc, param, RandomStringUtils.randomAscii(pFeatures.getMaxLength() + randomSmallInt));
+                    setParameterToValue(tc, param, RandomStringUtils.randomAlphabetic(pFeatures.getMaxLength() + randomSmallInt));
                     set = true;
                 }
             }
@@ -124,9 +124,9 @@ public class InvalidParameterValue extends AbstractMutationOperator {
                 if (pFeatures.getFormat() != null) // String with format (URL, email, etc.). Violate format using random string
                     setParameterToValue(tc, param, randomString);
                 else if (pFeatures.getMinLength() != null && pFeatures.getMinLength() > 1) // Replace with string with fewer chars than minLength
-                    setParameterToValue(tc, param, RandomStringUtils.randomAscii(pFeatures.getMinLength()-1));
+                    setParameterToValue(tc, param, RandomStringUtils.randomAlphabetic(pFeatures.getMinLength()-1));
                 else if (pFeatures.getMaxLength() != null) // Replace with string with more chars than maxLength
-                    setParameterToValue(tc, param, RandomStringUtils.randomAscii(pFeatures.getMaxLength() + randomSmallInt));
+                    setParameterToValue(tc, param, RandomStringUtils.randomAlphabetic(pFeatures.getMaxLength() + randomSmallInt));
             }
 
         }

@@ -85,11 +85,9 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/Event'
+              $ref: '#/definitions/EventReturned'
         "400":
           description: bad input parameter
-        "default":
-          description: unexpected response
     post:
       tags:
         - Events
@@ -106,16 +104,12 @@ paths:
           description: Event to add
           required: true
           schema:
-            $ref: '#/definitions/Event'
+            $ref: '#/definitions/EventPostPut'
       responses:
         "201":
           description: event created
         "400":
           description: invalid input, object invalid
-        "500":
-          description: Internal Server Error
-        "default":
-          description: unexpected response
     put:
       tags:
         - Events
@@ -136,7 +130,7 @@ paths:
           description: Event to edit
           required: true
           schema:
-            $ref: '#/definitions/Event'
+            $ref: '#/definitions/EventPostPut'
       responses:
         "204":
           description: event updated
@@ -144,8 +138,6 @@ paths:
           description: invalid input, object invalid
         "404":
           description: event not found
-        "default":
-          description: unexpected response
   /events/{id}:
     get:
       tags:
@@ -166,15 +158,13 @@ paths:
         "200":
           description: search results matching criteria
           schema:
-            $ref: '#/definitions/Event'
+            $ref: '#/definitions/EventReturned'
         "400":
           description: bad input parameter
         "404":
           description: event not found
-        "default":
-          description: unexpected response
 definitions:
-  Event:
+  EventReturned:
     type: object
     required:
       - id
@@ -237,6 +227,76 @@ definitions:
         example: meeting
     example:
       id: 5
+      id_creator: 2
+      name: "Random event"
+      description: "This is a completely random event"
+      name_creator: "Sergio"
+      date_start: "2020-07-15T12:00:00.000-01:00"
+      date_end: "2020-07-15T16:00:00.000-01:00"
+      tags: "food,music"
+      latitude: 1.1
+      longitude: 2.2
+      type: "meeting"
+  EventPostPut:
+    type: object
+    required:
+      - description
+      - date_start
+      - date_end
+      - id_creator
+      - name
+      - name_creator
+      - tags
+      - latitude
+      - longitude
+      - type
+    properties:
+      id_creator:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: "Event 2017 (Seville)"
+      description:
+        type: string
+        example: "Event of example"
+      name_creator:
+        type: string
+        example: "Pepe"
+      date_end:
+        type: string
+        format: date-time
+        example: "2017-04-09T00:00:00.000-01:00"
+      date_start:
+        type: string
+        format: date-time
+        example: "2017-04-16T23:59:59.999-01:00"
+      tags:
+        type: string
+        items:
+          type: string
+          enum:
+            - beach
+            - food
+            - music
+            - none
+        example: "beach,food"
+      latitude:
+        type: number
+        format: double
+        example: 4.5344
+      longitude:
+        type: number
+        format: double
+        example: -4.4343
+      type:
+        type: string
+        enum:
+          - meeting
+          - holidays
+          - unspecified
+        example: meeting
+    example:
       id_creator: 2
       name: "Random event"
       description: "This is a completely random event"

@@ -405,15 +405,19 @@ definitions:
         example: 1
       username:
         type: string
+        minLength: 1
         example: 'User'
       password:
         type: string
+        minLength: 1
         example: 'Password'
       province:
         type: string
+        minLength: 1
         example: 'Sevilla'
       phone:
         type: string
+        minLength: 1
         example: '342233434'
     example:
       idUser: 1
@@ -430,15 +434,19 @@ definitions:
         example: 1
       username:
         type: string
+        minLength: 1
         example: 'User'
       password:
         type: string
+        minLength: 1
         example: 'Password'
       province:
         type: string
+        minLength: 1
         example: 'Sevilla'
       phone:
         type: string
+        minLength: 1
         example: '342233434'
     example:
       idUser: 1
@@ -456,21 +464,27 @@ definitions:
         example: 1
       username:
         type: string
+        minLength: 1
         example: 'User'
       password:
         type: string
+        minLength: 1
         example: 'Password'
       newUsername:
         type: string
+        minLength: 1
         example: 'User1'
       newPassword:
         type: string
+        minLength: 1
         example: 'Password1'
       province:
         type: string
+        minLength: 1
         example: 'Sevilla'
       phone:
         type: string
+        minLength: 1
         example: '342233434'
     example:
       idUser: 1

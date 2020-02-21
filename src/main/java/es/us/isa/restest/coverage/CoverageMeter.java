@@ -251,7 +251,7 @@ public class CoverageMeter {
                         "->" + testResult.getStatusCode() + "->"; // note the final arrow, since new elements will be added to the rootPath
                 iterateOverJsonNode(jsonResponse, baseRootPath, coverageGatherer, null, null, null);
             } catch (IOException e) {
-                System.out.println("Error setting response body properties coverage criteria: response body is text/html; expected application/json.");
+//                System.out.println("Error setting response body properties coverage criteria: response body is text/html; expected application/json.");
 //                e.printStackTrace();
             }
 

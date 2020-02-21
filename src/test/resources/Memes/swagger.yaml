@@ -58,8 +58,6 @@ paths:
               $ref: '#/definitions/MemeID'
         "400":
           description: bad input parameter
-        "default":
-          description: unexpected response
     post:
       tags:
         - MemeID
@@ -67,6 +65,7 @@ paths:
       description: Adds a meme meme to the system
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: query
           name: urlString
@@ -80,8 +79,6 @@ paths:
             $ref: '#/definitions/MemeID'
         "400":
           description: Invalid input (URL)
-        "default":
-          description: unexpected response
     put:
       tags:
         - MemeID
@@ -111,10 +108,6 @@ paths:
           description: invalid input, object invalid
         "404":
           description: Meme not found
-        "500":
-          description: Internal Server Error
-        "default":
-          description: unexpected response
   /gallery/{id}:
     get:
       tags:
@@ -124,6 +117,7 @@ paths:
         The API returns a meme by an id
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: id
           in: path
@@ -139,14 +133,15 @@ paths:
           description: bad input parameter
         "404":
           description: Meme not found
-        "default":
-          description: unexpected response
     delete:
       tags:
         - MemeID
       summary: search a meme
       description: |
         The API returns a meme by an id
+      produces:
+        - application/json
+        - text/html;charset=utf-8
       parameters:
         - name: id
           in: path
@@ -156,10 +151,10 @@ paths:
       responses:
         "204":
           description: no content
+        "400":
+          description: bad input parameter
         "404":
           description: Meme not found
-        "default":
-          description: unexpected response
   /meme/rarity:
     post:
       tags:
@@ -168,6 +163,7 @@ paths:
       description: adds a meme (but does not save it to memory)
       produces:
         - application/json
+        - text/html;charset=utf-8
       parameters:
         - in: query
           name: urlString
@@ -179,8 +175,6 @@ paths:
           description: Ok
         "400":
           description: Invalid input (URL)
-        "default":
-          description: unexpected response
 definitions:
   MemeID:
     type: object

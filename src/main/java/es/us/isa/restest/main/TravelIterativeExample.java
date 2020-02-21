@@ -40,7 +40,7 @@ public class TravelIterativeExample {
 	private static String testClassName = "TravelTest";								// Name prefix of the class to be generated
 	private static OpenAPISpecification spec;
 	private static int totalNumTestCases = -1;											// Total number of test cases to be generated
-	private static int timeDelay = 7200;													// Optional time delay between iterations (in seconds)
+	private static int timeDelay = 6000;													// Optional time delay between iterations (in seconds)
 	
 	public static void main(String[] args) {
 		
