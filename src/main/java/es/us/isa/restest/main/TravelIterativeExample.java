@@ -2,6 +2,8 @@ package es.us.isa.restest.main;
 
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.coverage.CoverageGatherer;
+import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.runners.RESTestRunner;
@@ -27,7 +29,7 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
  */
 public class TravelIterativeExample {
 
-	private static int numTestCases = 100;												// Number of test cases per operation
+	private static int numTestCases = 1000;												// Number of test cases per operation
 	private static String OAISpecPath = "src/test/resources/Travel/swagger.yaml";		// Path to OAS specification file
 	private static String confPath = "src/test/resources/Travel/testConf.yaml";		// Path to test configuration file
 	private static String targetDirJava = "src/generation/java/travel";				// Directory where tests will be generated.
@@ -50,7 +52,8 @@ public class TravelIterativeExample {
 		IWriter writer = createWriter();										// Test case writer
 		AllureReportManager reportManager = createAllureReportManager();		// Allure test case reporter
 		CSVReportManager csvReportManager = createCSVReportManager();			// CSV test case reporter
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, csvReportManager);
+		CoverageMeter covMeter = createCoverageMeter();							//Coverage meter
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, csvReportManager, covMeter);
 		
 		int iteration = 1;
 		while (totalNumTestCases == -1 || runner.getNumTestCases() < totalNumTestCases) {
@@ -105,7 +108,7 @@ public class TravelIterativeExample {
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName, basePath);
         writer.setLogging(true);
         writer.setAllureReport(true);
-		writer.setEnableStats(false);
+		writer.setEnableStats(true);
 //		writer.setEnableStats(false);
 		writer.setAPIName(APIName);
 		return writer;
@@ -127,21 +130,27 @@ public class TravelIterativeExample {
 
 	// Create a CSV report manager
 	private static CSVReportManager createCSVReportManager() {
-//		String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + APIName;
-//		String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + APIName;
-//
-//		// Delete previous results (if any)
-//		deleteDir(testDataDir);
-//		deleteDir(coverageDataDir);
-//
-//		// Recreate directories
-//		createDir(testDataDir);
-//		createDir(coverageDataDir);
-//
-//		return new CSVReportManager(testDataDir, coverageDataDir);
+		String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + APIName;
+		String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + APIName;
 
-		CSVReportManager csvReportManager = new CSVReportManager();
-		csvReportManager.setEnableStats(false);
-		return csvReportManager;
+		// Delete previous results (if any)
+		deleteDir(testDataDir);
+		deleteDir(coverageDataDir);
+
+		// Recreate directories
+		createDir(testDataDir);
+		createDir(coverageDataDir);
+
+		return new CSVReportManager(testDataDir, coverageDataDir);
+
+//		CSVReportManager csvReportManager = new CSVReportManager();
+//		csvReportManager.setEnableStats(false);
+//		return csvReportManager;
+	}
+
+	private static CoverageMeter createCoverageMeter() {
+		CoverageGatherer cg = new CoverageGatherer(spec);
+		CoverageMeter cm = new CoverageMeter(cg);
+		return cm;
 	}
 }

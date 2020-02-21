@@ -65,7 +65,7 @@ public class TestResult {
             createFileWithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType");
 
         // Generate row
-        String csvResponseBody = "\"" + responseBody.replace("\\", "\\\\").replaceAll("\n", "\\\\n").replaceAll("\"", "\"\"") + "\"";
+        String csvResponseBody = "\"" + responseBody.replaceAll("\n", "\\\\n").replaceAll("\"", "\"\"") + "\"";
         String row = id + "," + statusCode + "," + csvResponseBody + "," + outputFormat;
         writeRow(filePath, row);
     }

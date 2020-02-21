@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static es.us.isa.restest.util.TestResultsManager.getTestResults;
+import static es.us.isa.restest.util.TestManager.getTestResults;
 import static org.junit.Assert.assertEquals;
 
 public class TestResultsManagerTest {
