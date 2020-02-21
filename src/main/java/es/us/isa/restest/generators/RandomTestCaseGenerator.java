@@ -56,7 +56,10 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method) {
 
 		Boolean isDesiredTestCase = false;
-		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
+//		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
+
+		// This way, all test cases of an operation are not executed one after the other, but randomly:
+		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
 		TestCase test = null;
 
 		while(!isDesiredTestCase) {
@@ -90,6 +93,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 				}
 			}
 
+			// Algorithm to decide whether this test case must be faulty or not, and how:
 			if (faulty) { // If this test case must be faulty
 				if (idlReasoner != null) { // If the operation has dependencies
 					if (violateDependency) { // If in this iteration, the test case must violate a dependency
@@ -97,17 +101,22 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 							isDesiredTestCase = true; // If so, return this test case
 						}
 					} else { // If in this iteration, the test case must be mutated to make it faulty
-						if (!makeTestCaseFaulty(test, specOperation)) // Try to make it faulty by mutating it. If it's not mutated...
+						if (!makeTestCaseFaulty(test, specOperation)) { // Try to make it faulty by mutating it. If it's not mutated...
 							test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
+							if (idlReasoner.validRequest(restest2idlTestCase(test))) // And if all dependencies are fulfilled...
+								test.setFulfillsDependencies(true); // Update property to have another oracle (400 status code)
+						}
 						isDesiredTestCase = true; // Return this test case
 					}
 				} else { // If the operation doesn't have dependencies
+					test.setFulfillsDependencies(true); // All dependencies (none) are fulfilled
 					if (!makeTestCaseFaulty(test, specOperation)) // Try to make it faulty by mutating it. If it's not mutated...
 						test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
 					isDesiredTestCase = true; // Return this test case
 				}
 
 			} else { // If this test case must not be faulty
+				test.setFulfillsDependencies(true); // All dependencies must be fulfilled for the test case to be valid
 				if (idlReasoner != null) { // If the operation has dependencies
 					if (idlReasoner.validRequest(restest2idlTestCase(test))) { // Check if the current request is valid
 						isDesiredTestCase = true; // If so, return this test case

@@ -20,6 +20,7 @@ public class TestCase implements Serializable {
 	
 	private String id;										// Test unique identifier
 	private Boolean faulty;									// True if the expected response is a 4XX status code
+	private Boolean fulfillsDependencies;					// True if it does not violate any inter-parameter dependencies
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
@@ -37,6 +38,7 @@ public class TestCase implements Serializable {
 	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
 		this.faulty = faulty;
+		this.fulfillsDependencies = false; // By default, a test case does not satisfy inter-parameter dependencies
 		this.operationId = operationId;
 		this.path = path;
 		this.method = method;
@@ -209,6 +211,14 @@ public class TestCase implements Serializable {
 		this.faulty = faulty;
 	}
 
+	public Boolean getFulfillsDependencies() {
+		return fulfillsDependencies;
+	}
+
+	public void setFulfillsDependencies(Boolean fulfillsDependencies) {
+		this.fulfillsDependencies = fulfillsDependencies;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -216,6 +226,7 @@ public class TestCase implements Serializable {
 		TestCase testCase = (TestCase) o;
 		return Objects.equals(id, testCase.id) &&
 				Objects.equals(faulty, testCase.faulty) &&
+				Objects.equals(fulfillsDependencies, testCase.fulfillsDependencies) &&
 				Objects.equals(operationId, testCase.operationId) &&
 				method == testCase.method &&
 				Objects.equals(path, testCase.path) &&
@@ -233,12 +244,12 @@ public class TestCase implements Serializable {
 
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "testCaseId,faulty,operationId,path,httpMethod,inputContentType,outputContentType," +
+			createFileWithHeader(filePath, "testCaseId,faulty,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
 					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter,authentication,expectedOutputs," +
 					"expectedSuccessfulOutput");
 
 		// Generate row
-		String row = id + "," + faulty + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		String row = id + "," + faulty + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
 		for (Map.Entry<String, String> h: headerParameters.entrySet()) {
 			row += h.getKey() + ":" + h.getValue() + ";";
 		}

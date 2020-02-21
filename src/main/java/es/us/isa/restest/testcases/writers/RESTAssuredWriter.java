@@ -157,7 +157,7 @@ public class RESTAssuredWriter implements IWriter {
 		content += generateTestCaseId(t.getId());
 
 		// Generate initialization of filters for those that need it
-		content += generateFiltersInitialization(t.getFaulty());
+		content += generateFiltersInitialization(t);
 
 		// Generate the start of the try block
 		content += generateTryBlockStart();
@@ -221,8 +221,9 @@ public class RESTAssuredWriter implements IWriter {
 		return content;
 	}
 
-	private String generateFiltersInitialization(Boolean isFaulty) {
-		return "\t\tpossiblyFaultyTestCaseFilter.setFaultyTestCase(" + isFaulty + ");\n\n";
+	private String generateFiltersInitialization(TestCase t) {
+		return "\t\tpossiblyFaultyTestCaseFilter.setFaultyTestCase(" + t.getFaulty() + ");\n"
+			 + "\t\tpossiblyFaultyTestCaseFilter.setDependenciesFulfilled(" + t.getFulfillsDependencies() + ");\n\n";
 	}
 
 	private String generateTryBlockStart() {

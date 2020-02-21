@@ -20,6 +20,20 @@
         ]
     },
 	{
+		"name": "Valid test cases failures",
+		"messageRegex": ".*input was correct.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "Conformance errors",
+		"messageRegex": ".*Conformance error.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
 		"name": "Validation failures",
 		"traceRegex": ".*Validation failed.*",
 		"matchedStatuses": [
