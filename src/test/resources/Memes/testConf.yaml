@@ -71,12 +71,17 @@ testConfiguration:
       - name: id
         weight: null
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-          - name: maxWords
+          - name: minLength
             values:
-            - 1
-            objectValues: null
+            - 5
+          - name: maxLength
+            values:
+            - 20
+          - name: includeNumbers
+            values:
+            - true
       - name: rarity
         weight: null
         generator:
@@ -84,7 +89,7 @@ testConfiguration:
           genParameters:
           - name: type
             values:
-            - integer
+            - float
             objectValues: null
           - name: min
             values:
@@ -106,8 +111,13 @@ testConfiguration:
           genParameters:
           - name: regExp
             values:
-            - https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
-            objectValues: null
+            - (https|http):\/\/(www\.)?[a-zA-Z][a-zA-Z0-9]*\.(com|es|org)(\/[a-zA-Z0-9\-]*)?
+          - name: minLength
+            values:
+            - 25
+          - name: maxLength
+            values:
+            - 50
       paramDependencies: null
       expectedResponse: 200
   - testPath: /gallery/{id}
@@ -118,12 +128,17 @@ testConfiguration:
       - name: id
         weight: null
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-          - name: maxWords
+          - name: minLength
             values:
-            - 1
-            objectValues: null
+            - 5
+          - name: maxLength
+            values:
+            - 20
+          - name: includeNumbers
+            values:
+            - true
       paramDependencies: null
       expectedResponse: 200
     - operationId: deleteMeme
@@ -132,12 +147,17 @@ testConfiguration:
       - name: id
         weight: null
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-          - name: maxWords
+          - name: minLength
             values:
-            - 1
-            objectValues: null
+            - 5
+          - name: maxLength
+            values:
+            - 20
+          - name: includeNumbers
+            values:
+            - true
       paramDependencies: null
       expectedResponse: 200
   - testPath: /meme/rarity
@@ -152,7 +172,7 @@ testConfiguration:
           genParameters:
           - name: regExp
             values:
-            - https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
+            - (https|http):\/\/(www\.)?[a-zA-Z][a-zA-Z0-9]*\.(com|es|org)(\/[a-zA-Z0-9\-]*)?
             objectValues: null
       paramDependencies: null
       expectedResponse: 200

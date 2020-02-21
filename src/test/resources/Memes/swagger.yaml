@@ -58,8 +58,6 @@ paths:
               $ref: '#/definitions/MemeID'
         "400":
           description: bad input parameter
-        "default":
-          description: unexpected response
     post:
       tags:
         - MemeID
@@ -81,8 +79,6 @@ paths:
             $ref: '#/definitions/MemeID'
         "400":
           description: Invalid input (URL)
-        "default":
-          description: unexpected response
     put:
       tags:
         - MemeID
@@ -112,10 +108,6 @@ paths:
           description: invalid input, object invalid
         "404":
           description: Meme not found
-        "500":
-          description: Internal Server Error
-        "default":
-          description: unexpected response
   /gallery/{id}:
     get:
       tags:
@@ -141,8 +133,6 @@ paths:
           description: bad input parameter
         "404":
           description: Meme not found
-        "default":
-          description: unexpected response
     delete:
       tags:
         - MemeID
@@ -161,10 +151,10 @@ paths:
       responses:
         "204":
           description: no content
+        "400":
+          description: bad input parameter
         "404":
           description: Meme not found
-        "default":
-          description: unexpected response
   /meme/rarity:
     post:
       tags:
@@ -185,8 +175,6 @@ paths:
           description: Ok
         "400":
           description: Invalid input (URL)
-        "default":
-          description: unexpected response
 definitions:
   MemeID:
     type: object
