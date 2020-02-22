@@ -32,7 +32,7 @@ public class ObjectPerturbatorTest {
 
     @Test
     public void testNextValue() {
-        String originalObject = "{}";
+        String originalObject = "[]";
         ObjectPerturbator objectPerturbator = new ObjectPerturbator(originalObject);
         assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
         assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
