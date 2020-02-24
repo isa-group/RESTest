@@ -27,6 +27,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
 	protected AuthManager authManager;						// For if multiple API keys are used for the API
 	protected Boolean enableFaulty = true;					// True if faulty test cases want to be generated. Defaults to true
+	protected Boolean ignoreDependencies = false;			// If true, the algorithm won't manage the API's dependencies
 	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
 	protected Boolean violateDependency;					// Whether to violate an inter-parameter dependency to create a faulty test case
 	protected Analyzer idlReasoner;							// IDLReasoner to check if requests are valid or not
@@ -98,7 +99,7 @@ public abstract class AbstractTestCaseGenerator {
 		// Get specification operation
 		Operation specOperation = spec.getSpecification().getPath(path).getOperationMap().get(method);
 
-		if (hasDependencies(specOperation)) // If the operation contains dependencies, create new IDLReasoner for that operation
+		if (!ignoreDependencies && hasDependencies(specOperation)) // If the operation contains dependencies, create new IDLReasoner for that operation
 			idlReasoner = new Analyzer("oas", spec.getPath(), path, method.toString());
 		else // Otherwise, set it to null so that it's not used
 			idlReasoner = null;
@@ -196,4 +197,13 @@ public abstract class AbstractTestCaseGenerator {
 	public void setViolateDependency(Boolean violateDependency) {
 		this.violateDependency = violateDependency;
 	}
+
+	public Boolean getIgnoreDependencies() {
+		return ignoreDependencies;
+	}
+
+	public void setIgnoreDependencies(Boolean ignoreDependencies) {
+		this.ignoreDependencies = ignoreDependencies;
+	}
+
 }
