@@ -98,6 +98,14 @@
             <artifactId>commons-math3</artifactId>
             <version>3.6.1</version>
         </dependency>
+        <!-- Apache Commongs Lang -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
+        </dependency>
+
+		
 
         <!-- Library to generate random strings from regular expressions -->
         <dependency>
@@ -131,12 +139,39 @@
         <!-- <dependency> <groupId>io.rest-assured</groupId> <artifactId>json-schema-validator</artifactId> 
         <version>3.0.6</version> <scope>test</scope> </dependency> -->
 
+
         <!-- Open API validator -->
         <dependency>
             <groupId>com.atlassian.oai</groupId>
             <artifactId>swagger-request-validator-restassured</artifactId>
             <version>1.3.3</version>
         </dependency>
+        <!-- OpenAPI validator dependencies -->
+        <!-- https://mvnrepository.com/artifact/com.github.java-json-tools/json-schema-validator -->
+        <dependency>
+            <groupId>com.github.java-json-tools</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>2.2.8</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305 -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.20</version>
+        </dependency>
+        <!-- End of dependencies of OpenAPI validator -->
 
         <!-- JUnit 4 -->
         <dependency>
@@ -210,6 +245,35 @@
             <version>${jmetal.version}</version>            
         </dependency>        
         
+        <!-- Local Dependences -->
+        <!-- JSONmutator local dependency -->
+        <dependency>
+            <groupId>JSONmutator</groupId>
+            <artifactId>JSONmutator</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/JSONmutator.jar</systemPath>
+        </dependency>
+
+        <!-- IDLreasoner local dependency -->
+        <dependency>
+            <groupId>IDLreasoner</groupId>
+            <artifactId>IDLreasoner</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/IDLreasoner.jar</systemPath>
+        </dependency>
+
+        <!-- IDL2MiniZincMapper local dependency -->
+        <dependency>
+            <groupId>IDL2MiniZincMapper</groupId>
+            <artifactId>IDL2MiniZincMapper</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/IDL2MiniZincMapper.jar</systemPath>
+        </dependency>
+
+        
     </dependencies>
     
     <build>
@@ -253,6 +317,5 @@
                 </configuration>
             </plugin>
         </plugins>
-    </build>
-
+    </build>    
 </project>

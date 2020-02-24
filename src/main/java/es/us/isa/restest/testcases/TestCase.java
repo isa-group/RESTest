@@ -1,7 +1,10 @@
 package es.us.isa.restest.testcases;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
 
@@ -13,9 +16,11 @@ import static es.us.isa.restest.util.FileManager.*;
  * @author Sergio Segura
  *
  */
-public class TestCase {
+public class TestCase implements Serializable {
 	
 	private String id;										// Test unique identifier
+	private Boolean faulty;									// True if the expected response is a 4XX status code
+	private Boolean fulfillsDependencies;					// True if it does not violate any inter-parameter dependencies
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
@@ -24,13 +29,16 @@ public class TestCase {
 	private Map<String, String> headerParameters;			// Header parameters
 	private Map<String, String> pathParameters;				// Path parameters
 	private Map<String, String> queryParameters;			// Input parameters and values
+	private Map<String, String> formParameters;				// Form-data parameters
 	private String bodyParameter;							// Body parameter
 	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none
 	private Map<String, Response> expectedOutputs;			// Possible outputs
 	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
-	public TestCase(String id, String operationId, String path, HttpMethod method) {
+	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
+		this.faulty = faulty;
+		this.fulfillsDependencies = false; // By default, a test case does not satisfy inter-parameter dependencies
 		this.operationId = operationId;
 		this.path = path;
 		this.method = method;
@@ -39,6 +47,7 @@ public class TestCase {
 		this.headerParameters = new HashMap<String,String>();
 		this.queryParameters = new HashMap<String,String>();
 		this.pathParameters = new HashMap<String,String>();
+		this.formParameters = new HashMap<String,String>();
 		this.authentication = null;
 	}
 
@@ -73,6 +82,10 @@ public class TestCase {
 	public void setQueryParameters(Map<String, String> inputParameters) {
 		this.queryParameters = inputParameters;
 	}
+
+	public Map<String, String> getFormParameters() { return formParameters; }
+
+	public void setFormParameters(Map<String, String> formParameters) { this.formParameters = formParameters; }
 
 	public Map<String, Response> getExpectedOutputs() {
 		return expectedOutputs;
@@ -133,17 +146,37 @@ public class TestCase {
 	public void addPathParameter(String name, String value) {
 		pathParameters.put(name, value);
 	}
-	
+
 	public void addPathParameters(Map<String,String> params) {
 		pathParameters.putAll(params);
 	}
-	
+
 	public void addHeaderParameter(String name, String value) {
 		headerParameters.put(name, value);
 	}
-	
+
 	public void addHeaderParameters(Map<String,String> params) {
 		headerParameters.putAll(params);
+	}
+
+	public void addFormParameter(String name, String value) { formParameters.put(name, value); }
+
+	public void addFormParameters(Map<String,String> params) { formParameters.putAll(params); }
+
+	public void removeQueryParameter(String name) {
+		queryParameters.remove(name);
+	}
+
+	public void removePathParameter(String name) {
+		pathParameters.remove(name);
+	}
+
+	public void removeHeaderParameter(String name) {
+		headerParameters.remove(name);
+	}
+
+	public void removeFormParameter(String name) {
+		formParameters.remove(name);
 	}
 
 	public Map<String, String> getPathParameters() {
@@ -170,22 +203,67 @@ public class TestCase {
 		this.id = id;
 	}
 
+	public Boolean getFaulty() {
+		return faulty;
+	}
+
+	public void setFaulty(Boolean faulty) {
+		this.faulty = faulty;
+	}
+
+	public Boolean getFulfillsDependencies() {
+		return fulfillsDependencies;
+	}
+
+	public void setFulfillsDependencies(Boolean fulfillsDependencies) {
+		this.fulfillsDependencies = fulfillsDependencies;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		TestCase testCase = (TestCase) o;
+		return Objects.equals(id, testCase.id) &&
+				Objects.equals(faulty, testCase.faulty) &&
+				Objects.equals(fulfillsDependencies, testCase.fulfillsDependencies) &&
+				Objects.equals(operationId, testCase.operationId) &&
+				method == testCase.method &&
+				Objects.equals(path, testCase.path) &&
+				Objects.equals(inputFormat, testCase.inputFormat) &&
+				Objects.equals(outputFormat, testCase.outputFormat) &&
+				Objects.equals(headerParameters, testCase.headerParameters) &&
+				Objects.equals(pathParameters, testCase.pathParameters) &&
+				Objects.equals(queryParameters, testCase.queryParameters) &&
+				Objects.equals(formParameters, testCase.formParameters) &&
+				Objects.equals(bodyParameter, testCase.bodyParameter) &&
+				Objects.equals(authentication, testCase.authentication) &&
+				Objects.equals(expectedOutputs, testCase.expectedOutputs) &&
+				Objects.equals(expectedSuccessfulOutput, testCase.expectedSuccessfulOutput);
+	}
+
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "testCaseId,operationId,path,httpMethod,inputContentType,outputContentType," +
-					"headerParameters,pathParameters,queryParameters,bodyParameter,authentication,expectedOutputs," +
+			createFileWithHeader(filePath, "testCaseId,faulty,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
+					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter,authentication,expectedOutputs," +
 					"expectedSuccessfulOutput");
 
 		// Generate row
-		String row = id + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		String row = id + "," + faulty + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
 		for (Map.Entry<String, String> h: headerParameters.entrySet()) {
 			row += h.getKey() + ":" + h.getValue() + ";";
 		}
+		row += ",";
 		for (Map.Entry<String, String> p: pathParameters.entrySet()) {
 			row += p.getKey() + ":" + p.getValue() + ";";
 		}
+		row += ",";
 		for (Map.Entry<String, String> q: queryParameters.entrySet()) {
 			row += q.getKey() + ":" + q.getValue() + ";";
+		}
+		row += ",";
+		for (Map.Entry<String, String> f: formParameters.entrySet()) {
+			row += f.getKey() + ":" + f.getValue() + ";";
 		}
 		row += "," + bodyParameter + ",,,";
 

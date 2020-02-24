@@ -1,5 +1,8 @@
 
 
+import es.us.isa.restest.inputs.perturbation.ObjectPerturbatorTest;
+import es.us.isa.restest.mutation.TestCaseMutationTest;
+import es.us.isa.restest.util.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -14,9 +17,6 @@ import es.us.isa.restest.inputs.fixed.InputValueIteratorTest;
 import es.us.isa.restest.inputs.random.*;
 import es.us.isa.restest.specification.*;
 import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
-import es.us.isa.restest.util.AllureReportManagerTest;
-import es.us.isa.restest.util.IDGeneratorTest;
-import es.us.isa.restest.util.JSONManagerTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({
@@ -32,21 +32,30 @@ import es.us.isa.restest.util.JSONManagerTest;
 	RandomRegExpGeneratorTest.class,
 	RandomObjectGeneratorTest.class,
 	RandomStringGeneratorTest.class,
+	ObjectPerturbatorTest.class,
 	OpenAPISpecificationTest.class,
 	CoverageGathererTest.class,
 	CoverageMeterTest.class,
-    JSONManagerTest.class,
+	TestCaseMutationTest.class,
 	RESTAssuredWritterTest.class,
-	AmadeusFullTestCaseGenerator.class,
+//	AmadeusFullTestCaseGenerator.class,
 	AmadeusRandomTestCaseGenerator.class,
 	BikewiseFullTestCaseGenerator.class,
-	DataAtWorkFullTestCaseGeneratorTest.class,
+//	DataAtWorkFullTestCaseGeneratorTest.class,
 	PetstoreFullTestCaseGenerator.class,
 	PlaylistRandomTestCaseGeneratorTest.class,
 	SimpleAPIFullTestCaseGenerator.class,
 	SpotifyRandomTestCaseGeneratorTest.class,
+	CommentsObjectPerturbationTestCaseGeneratorTest.class,
+	CommentsRandomTestCaseGeneratorTest.class,
+	TravelRandomTestCaseGenerator.class,
 	AllureReportManagerTest.class,
-	IDGeneratorTest.class
+	CSVManagerTest.class,
+	FileManagerTest.class,
+	IDGeneratorTest.class,
+	JSONManagerTest.class,
+	SpecificationVisitorTest.class,
+	IDLAdapterTest.class
 })
 
 public class AllTests {

@@ -1,15 +1,20 @@
 package es.us.isa.restest.testcases.writers;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Map.Entry;
 
 import es.us.isa.restest.testcases.TestCase;
 import io.qameta.allure.restassured.AllureRestAssured;
+import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
+
+import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
-/** REST Assured test writer
+/** This class defines a test writer for the REST Assured framework. It creates a Java class with JUnit test cases
+ * ready to be executed.
  * 
  * @author Sergio Segura & Alberto Martin-Lopez
  *
@@ -58,6 +63,9 @@ public class RESTAssuredWriter implements IWriter {
 		
 		// Generate variables to be used.
 		contentFile += generateSetUp(baseURI);
+
+		// Generate printing of number of nom. and fault. test cases generated after run
+		contentFile += generateTearDown(className);
 		
 		// Generate tests
 		int ntest=1;
@@ -83,6 +91,8 @@ public class RESTAssuredWriter implements IWriter {
 			content += "package " + packageName + ";\n\n";
 				
 		content += "import org.junit.*;\n"
+				+  "import org.apache.logging.log4j.LogManager;\n"
+				+  "import org.apache.logging.log4j.Logger;\n"
 				+  "import io.restassured.RestAssured;\n"
 				+  "import io.restassured.response.Response;\n"
 				+  "import com.fasterxml.jackson.databind.JsonNode;\n"
@@ -90,12 +100,17 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import java.io.IOException;\n"
 				+  "import org.junit.FixMethodOrder;\n"
 				+  "import static org.junit.Assert.fail;\n"
+				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
-		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n";
+		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
+				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n"
+				+  "import es.us.isa.restest.validation.NominalOrFaultyTestCaseFilter;\n"
+				+  "import es.us.isa.restest.testcases.TestCaseCounterFilter;\n"
+				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
-		if (OAIValidation)
-			content += 	"import com.atlassian.oai.validator.restassured.SwaggerValidationFilter;\n";
+//		if (OAIValidation)
+		content += 	"import es.us.isa.restest.validation.ResponseValidationFilter;\n";
 
 		// Coverage filter (optional)
 		if (enableStats)
@@ -114,12 +129,20 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateAttributes(String specPath) {
 		String content = "";
 		
-		if (OAIValidation)
-			content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
-					+  "\tprivate final SwaggerValidationFilter validationFilter = new SwaggerValidationFilter(OAI_JSON_URL);\n";
+//		if (OAIValidation)
+		content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
+				+  "\tprivate final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n"
+				+  "\tprivate StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n";
+
+		if (allureReport)
+			content += "\tprivate AllureRestAssured allureFilter = new AllureRestAssured();\n";
 
 		if (enableStats) // This is only needed to export output data to the proper folder
 			content += "\tprivate final String APIName = \"" + APIName + "\";\n";
+
+		// Nominal and faulty test case count:
+		content += "\tprivate static Integer nFaulty = 0;\t\t// Number of faulty test cases generated\n"
+				+  "\tprivate static Integer nNominal = 0;\t// Number of nominal test cases generated";
 		
 		content += "\n";
 		
@@ -132,6 +155,17 @@ public class RESTAssuredWriter implements IWriter {
 			  + "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n"
 			  +	"\t}\n\n";
 	}
+
+	private String generateTearDown(String className) {
+		return  "\t@AfterClass\n"
+			  +	"\tpublic static void finish() {\n"
+			  +	"\t\tLogger logger = LogManager.getLogger(" + className + ".class.getName());\n"
+			  +	"\t\tSystem.out.println(\"\\n\");\n"
+			  +	"\t\tlogger.info(\"Nominal test cases generated: \" + nNominal);\n"
+			  +	"\t\tlogger.info(\"Faulty test cases generated: \" + nFaulty);\n"
+			  +	"\t\tSystem.out.println(\"\\n\");\n"
+			  +	"\t}\n\n";
+	}
 	
 	private String generateTest(TestCase t, int instance) {
 		String content="";
@@ -141,6 +175,9 @@ public class RESTAssuredWriter implements IWriter {
 
 		// Generate test case ID (only if stats enabled)
 		content += generateTestCaseId(t.getId());
+
+		// Generate initialization of filters for those that need it
+		content += generateFiltersInitialization(t);
 
 		// Generate the start of the try block
 		content += generateTryBlockStart();
@@ -160,11 +197,14 @@ public class RESTAssuredWriter implements IWriter {
 		// Generate path parameters
 		content += generatePathParameters(t);
 
+		//Generate form-data parameters
+		content += generateFormParameters(t);
+
 		// Generate body parameter
 		content += generateBodyParameter(t);
 
 		// Generate filters
-		content += generateFilters();
+		content += generateFilters(t);
 		
 		// Generate HTTP request
 		content += generateHTTPRequest(t);
@@ -201,6 +241,10 @@ public class RESTAssuredWriter implements IWriter {
 		return content;
 	}
 
+	private String generateFiltersInitialization(TestCase t) {
+		return "\t\tTestCaseCounterFilter testCaseCounterFilter = new TestCaseCounterFilter(OAI_JSON_URL, nFaulty, nNominal, " + t.getFaulty() + ");\n\n";
+	}
+
 	private String generateTryBlockStart() {
 		return "\t\ttry {\n";
 	}
@@ -233,9 +277,10 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\t\t\tResponse response = RestAssured\n"
 				+  "\t\t\t.given()\n";
 			
-		if (logging)
-			content +="\t\t\t\t.log().ifValidationFails()\n";
-			
+//		if (logging)
+//			content +="\t\t\t\t.log().ifValidationFails()\n";
+		content +="\t\t\t\t.log().all()\n";
+
 		return content;
 	}
 	
@@ -252,7 +297,7 @@ public class RESTAssuredWriter implements IWriter {
 		String content = "";
 		
 		for(Entry<String,String> param: t.getQueryParameters().entrySet())
-			content += "\t\t\t\t.param(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
+			content += "\t\t\t\t.queryParam(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
 		
 		return content;
 	}
@@ -266,26 +311,51 @@ public class RESTAssuredWriter implements IWriter {
 		return content;
 	}
 
-	private String generateBodyParameter(TestCase t) {
+	private String generateFormParameters(TestCase t) {
 		String content = "";
 
-		if (t.getBodyParameter() != null) {
-			content += "\t\t\t\t.contentType(\"application/json\")\n"
-					+  "\t\t\t\t.body(jsonBody)\n";
+		if(t.getFormParameters().entrySet().stream().anyMatch(x -> checkIfExists(x.getValue())))
+			content += "\t\t\t\t.contentType(\"multipart/form-data\")\n";
+		else if(!t.getFormParameters().isEmpty())
+			content += "\t\t\t\t.contentType(\"application/x-www-form-urlencoded\")\n";
+
+		for(Entry<String,String> param : t.getFormParameters().entrySet()) {
+			content += checkIfExists(param.getValue())? "\t\t\t\t.multiPart(\"" + param.getKey() +  "\", new File(\"" + escapeJava(param.getValue()) + "\"))\n"
+					: "\t\t\t\t.formParam(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
 		}
 
 		return content;
 	}
 
-	private String generateFilters() {
+	private String generateBodyParameter(TestCase t) {
 		String content = "";
 
-//		if (OAIValidation)
-			content += "\t\t\t\t.filter(validationFilter)\n";
-		if (allureReport)
-			content += "\t\t\t\t.filter(new AllureRestAssured())\n";
-		if (enableStats)
+		if (t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
+				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE))
+			content += "\t\t\t\t.contentType(\"application/json\")\n";
+		if (t.getBodyParameter() != null) {
+			content += "\t\t\t\t.body(jsonBody)\n";
+		}
+
+		return content;
+	}
+
+	private String generateFilters(TestCase t) {
+		String content = "";
+
+		if (enableStats) // Coverage filter
 			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
+		if (allureReport) // Allure filter
+			content += "\t\t\t\t.filter(allureFilter)\n";
+		// TestCaseCount filter
+		content += "\t\t\t\t.filter(testCaseCounterFilter)\n";
+		// 5XX status code oracle:
+		content += "\t\t\t\t.filter(statusCode5XXFilter)\n";
+//		if (t.getFaulty())
+		content += "\t\t\t\t.filter(new NominalOrFaultyTestCaseFilter(testCaseCounterFilter, " + t.getFulfillsDependencies() + "))\n";
+//		if (OAIValidation)
+		content += "\t\t\t\t.filter(validationFilter)\n";
+
 
 		return content;
 	}
@@ -296,10 +366,11 @@ public class RESTAssuredWriter implements IWriter {
 		content +=	 "\t\t\t\t." + t.getMethod().name().toLowerCase() + "(\"" + t.getPath() + "\");\n";
 		
 		// Create response log
-		if (logging) {
-			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
-			         + "\n\t\t\tresponse.then().log().ifError();\n";
-		}
+//		if (logging) {
+//			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
+//			         + "\n\t\t\tresponse.then().log().ifError();\n";
+//		}
+		content += "\n\t\t\tresponse.then().log().all();\n";
 		
 //		if (OAIValidation)
 //			content += "\t\t} catch (RuntimeException ex) {\n"
@@ -335,11 +406,13 @@ public class RESTAssuredWriter implements IWriter {
 		}
 
 		// Assert status code only if it was found among possible status codes. Otherwise, only JSON structure will be validated
-		if (expectedStatusCode != null) {
-			content = "\t\t\tresponse.then().statusCode("
-					+ expectedStatusCode
-					+ ");\n\n";
-		}
+		//TODO: Improve oracle of status code
+//		if (expectedStatusCode != null) {
+//			content = "\t\t\tresponse.then().statusCode("
+//					+ expectedStatusCode
+//					+ ");\n\n";
+//		}
+//		content = "\t\t\tassertTrue(\"Received status 500. Server error found.\", response.statusCode() < 500);\n";
 
 		return content;
 
@@ -390,7 +463,10 @@ public class RESTAssuredWriter implements IWriter {
 		return "\t\t} catch (RuntimeException ex) {\n"
 				+  "\t\t\tSystem.err.println(ex.getMessage());\n"
 				+  "\t\t\tfail(ex.getMessage());\n"
-				+  "\t\t}\n";
+				+  "\t\t} finally {\n"
+				+  "\t\t\tnFaulty = testCaseCounterFilter.getnFaulty();\n"
+				+  "\t\t\tnNominal = testCaseCounterFilter.getnNominal();\n"
+				+  "\t\t}";
 	}
 		
 	private void saveToFile(String path, String className, String contentFile) {

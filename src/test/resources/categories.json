@@ -6,8 +6,29 @@
 		]
 	},
 	{
-		"name": "Status 500",
-		"messageRegex": ".*status 500.*",
+		"name": "Status 5XX",
+		"messageRegex": ".*status 5XX.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+    {
+        "name": "Faulty test cases failures",
+        "messageRegex": ".*faulty test case.*",
+        "matchedStatuses": [
+            "failed"
+        ]
+    },
+	{
+		"name": "Valid test cases failures",
+		"messageRegex": ".*input was correct.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "Conformance errors",
+		"messageRegex": ".*Conformance error.*",
 		"matchedStatuses": [
 			"failed"
 		]

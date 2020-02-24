@@ -12,63 +12,59 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.uma.jmetal.operator.MutationOperator;
 import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 
 /**
  *
+ * This mutation operation changes the value associated to a parameter
+ * previously present in the test case. If the test case does not have any
+ * parameter set, the operator will add one randomly.
+ *
  * @author japarejo
  */
-public class RandomParameterValueMutation implements MutationOperator<RestfulAPITestSuiteSolution> {
+public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOperator {
 
-    private double mutationProbability;
-    private RandomGenerator<Double> randomGenerator;
+    private ParameterAdditionMutation parameterAdditionOperator;
 
-    /* Getter */
-    public double getMutationProbability() {
-        return mutationProbability;
-    }
-
-    /* Setters */
-    public void setMutationProbability(double mutationProbability) {
-        this.mutationProbability = mutationProbability;
+    public RandomParameterValueMutation(double mutationProbability, RandomGenerator<Double> randomGenerator) {
+        super(mutationProbability, randomGenerator);
+        parameterAdditionOperator = new ParameterAdditionMutation(mutationProbability, randomGenerator);
     }
 
     @Override
-    public RestfulAPITestSuiteSolution execute(RestfulAPITestSuiteSolution solution) {
-        assert (solution != null);
-
-        doMutation(mutationProbability, solution);
-        return solution;
-    }
-
-    public void doMutation(double probability, RestfulAPITestSuiteSolution solution) {
-        List<TestParameter> parameters = solution.getProblem().getParameters();
+    protected void doMutation(double probability, RestfulAPITestSuiteSolution solution) {
         for (TestCase testCase : solution.getVariables()) {
-            for (int i = 0; i < parameters.size(); i++) {
-                TestParameter param = parameters.get(i);
-                if (randomGenerator.getRandomValue() <= probability) {
-                    doMutation(param, i, testCase, solution);
+            Collection<String> parameters = getAllPresentParameters(testCase);
+            if (parameters.isEmpty()) {
+                parameterAdditionOperator.doMutation(probability, solution);
+            } else {
+                for (String paramName : parameters) {
+                    if (getRandomGenerator().getRandomValue() <= probability) {                        
+                        doMutation(paramName, testCase, solution);
+                    }
                 }
             }
         }
-
     }
 
-    private void doMutation(TestParameter confParam, int index, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getGenerators().get(confParam.getName());
+    private void doMutation(String confParam, TestCase testCase, RestfulAPITestSuiteSolution solution) {
+        ITestDataGenerator generator = solution.getProblem().getGenerators().get(confParam);
         Operation specOperation = SpecificationVisitor.findOperation(solution.getProblem().getOperationUnderTest().getOperationId(), solution.getProblem().getApiUnderTest());
-        Parameter specParameter = SpecificationVisitor.findParameter(specOperation, confParam.getName());
+        Parameter specParameter = SpecificationVisitor.findParameter(specOperation, confParam);
         switch (specParameter.getIn()) {
             case "header":
-                testCase.addHeaderParameter(confParam.getName(), generator.nextValueAsString());
+                testCase.addHeaderParameter(confParam, generator.nextValueAsString());
                 break;
             case "query":
-                testCase.addQueryParameter(confParam.getName(), generator.nextValueAsString());
+                testCase.addQueryParameter(confParam, generator.nextValueAsString());
                 break;
             case "path":
-                testCase.addPathParameter(confParam.getName(), generator.nextValueAsString());
+                testCase.addPathParameter(confParam, generator.nextValueAsString());
                 break;
             case "body":
                 testCase.setBodyParameter(generator.nextValueAsString());
@@ -76,6 +72,5 @@ public class RandomParameterValueMutation implements MutationOperator<RestfulAPI
             default:
                 throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
         }
-    }
-
+    }        
 }

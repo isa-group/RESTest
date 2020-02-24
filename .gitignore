@@ -2,7 +2,13 @@
 TODO.txt
 .idea/workspace.xml
 .vscode
-/.allure
 /allure-results
 .idea/uiDesigner.xml
-/src/test/resources/csvData
+/src/test/resources/csvData/csvSample.csv
+/src/test/resources/csvData/coverage-results.csv
+/src/test/resources/csvData/test-cases.csv
+/src/test/resources/csvData/test-cases-coverage.csv
+/src/test/resources/csvData/test-results.csv
+/src/test/resources/csvData/test-results-coverage.csv
+/src/main/resources/auth
+/idl_aux_files

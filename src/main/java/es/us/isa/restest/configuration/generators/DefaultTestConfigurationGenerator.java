@@ -146,7 +146,7 @@ public class DefaultTestConfigurationGenerator {
 			List<String> genParam3Values = new ArrayList<>();
 
 			// If it's a path or query parameter, get type to set a useful generator
-			if (param.getIn() == "query" || param.getIn() == "path") {
+			if (param.getIn() == "query" || param.getIn() == "path" || param.getIn() == "header" || param.getIn() == "formData") {
 				String paramType = ((AbstractSerializableParameter) param).getType();
 				List<String> paramEnumValues = ((AbstractSerializableParameter) param).getEnum();
 
@@ -197,6 +197,15 @@ public class DefaultTestConfigurationGenerator {
 						genParams.add(genParam1);
 						gen.setGenParameters(genParams);
 						break;
+					case "file":
+						gen.setType("RandomInputValue");
+						genParam1.setName("values");
+						genParam1Values.add("path/to/file");
+						genParam1Values.add("path/to/another/file");
+						genParam1.setValues(genParam1Values);
+						genParams.add(genParam1);
+						gen.setGenParameters(genParams);
+						break;
 					default:
 						throw new IllegalArgumentException("The parameter type " + paramType + " is not allowed in query or path");
 				}
@@ -236,8 +245,16 @@ public class DefaultTestConfigurationGenerator {
 				}
 
 				if (bodyParam != null && !bodyParam.equals("null")) {
-					gen.setType("RandomInputValue");
-					genParam1.setName("values");
+//					gen.setType("RandomInputValue");
+//					genParam1.setName("values");
+//					genParam1Values.add(bodyParam);
+//					genParam1.setValues(genParam1Values);
+//					genParams.add(genParam1);
+//					gen.setGenParameters(genParams);
+
+					// Replaced RandomInputValue with ObjectPerturbator:
+					gen.setType("ObjectPerturbator");
+					genParam1.setName("stringObject");
 					genParam1Values.add(bodyParam);
 					genParam1.setValues(genParam1Values);
 					genParams.add(genParam1);

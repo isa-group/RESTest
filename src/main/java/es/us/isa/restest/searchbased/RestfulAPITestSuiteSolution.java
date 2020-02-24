@@ -28,11 +28,13 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
 
     @Override
     public RestfulAPITestSuiteSolution copy() {
+        // TODO: complete
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public Map<Object, Object> getAttributes() {
+        // TODO: complete
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

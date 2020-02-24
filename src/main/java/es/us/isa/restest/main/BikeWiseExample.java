@@ -5,6 +5,8 @@ package es.us.isa.restest.main;
 import java.io.File;
 import java.io.IOException;
 
+import es.us.isa.restest.coverage.CoverageGatherer;
+import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.util.CSVReportManager;
 import org.apache.commons.io.FileUtils;
 
@@ -50,8 +52,9 @@ public class BikeWiseExample {
 		IWriter writer = createWriter();								// Test case writer
 		AllureReportManager reportManager = createReportManager();		// Allure test case reporter (It delete previous report, if any)
 		CSVReportManager csvReportManager = createCSVReportManager();			// CSV test case reporter
+		CoverageMeter covMeter = createCoverageMeter();							//Coverage meter
 //		csvReportManager.setEnableStats(true);
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, csvReportManager);
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDir, packageName, generator, writer, reportManager, csvReportManager, covMeter);
 		
 		// Test case generation + execution + test report generation
 		runner.run();
@@ -61,7 +64,7 @@ public class BikeWiseExample {
 		deleteDir(targetDir);
 
 	}
-	
+
 	// Delete a directory
 	private static void deleteDir(String dirPath) {
 		File dir = new File(dirPath);
@@ -138,6 +141,12 @@ public class BikeWiseExample {
 //		CSVReportManager csvReportManager = new CSVReportManager();
 //		csvReportManager.setEnableStats(false);
 //		return csvReportManager;
+	}
+
+	private static CoverageMeter createCoverageMeter() {
+		CoverageGatherer cg = new CoverageGatherer(spec);
+		CoverageMeter cm = new CoverageMeter(cg);
+		return cm;
 	}
 
 }

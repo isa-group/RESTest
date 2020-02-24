@@ -41,11 +41,11 @@ public class CoverageMeterTest {
         CoverageMeter covMeter = new CoverageMeter(covGath);
 
         List<TestCase> testSuite = new ArrayList<>();
-        TestCase testCase1 = new TestCase(generateId(),"addPet", "/pet", HttpMethod.POST);
-        TestCase testCase2 = new TestCase(generateId(), "findPetsByStatus", "/pet/findByStatus", HttpMethod.GET);
+        TestCase testCase1 = new TestCase(generateId(), false,"addPet", "/pet", HttpMethod.POST);
+        TestCase testCase2 = new TestCase(generateId(), false, "findPetsByStatus", "/pet/findByStatus", HttpMethod.GET);
         testCase2.addQueryParameter("status", "available");
         testCase2.setAuthentication("petstore_auth");
-        TestCase testCase3 = new TestCase(generateId(), "uploadFile", "/pet/{petId}/uploadImage", HttpMethod.POST);
+        TestCase testCase3 = new TestCase(generateId(), false, "uploadFile", "/pet/{petId}/uploadImage", HttpMethod.POST);
         testCase3.addQueryParameter("destinationFormat", "JPG");
         testCase3.addQueryParameter("convertToJPG", "false");
 
@@ -92,8 +92,8 @@ public class CoverageMeterTest {
         System.out.println(covGath.getCoverageCriteria().get(1).getElements().entrySet().iterator().next().getKey());
 
         // Delete dir and recreate it
-        deleteDir("src/test/resources/csvData");
-        createDir("src/test/resources/csvData");
+//        deleteDir("src/test/resources/csvData");
+//        createDir("src/test/resources/csvData");
 
         // Test export to CSV
         covMeter.exportCoverageToCSV("src/test/resources/csvData/coverage-results.csv", null, true);

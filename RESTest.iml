@@ -22,22 +22,28 @@
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER" level="application" />
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/JSONmutator.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="library" name="Maven: io.swagger:swagger-parser:1.0.33" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-core:1.5.17" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.2.1" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.8.9" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.8.9" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-models:1.5.17" level="project" />
     <orderEntry type="library" name="Maven: io.swagger:swagger-annotations:1.5.17" level="project" />
-    <orderEntry type="library" name="Maven: com.google.guava:guava:20.0" level="project" />
     <orderEntry type="library" name="Maven: javax.validation:validation-api:1.1.0.Final" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-ext:1.6.3" level="project" />
     <orderEntry type="library" name="Maven: ch.qos.cal10n:cal10n-api:0.7.4" level="project" />
-    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.6.3" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.8.2" level="project" />
     <orderEntry type="library" name="Maven: commons-io:commons-io:2.6" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.9" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-math3:3.6.1" level="project" />
     <orderEntry type="library" name="Maven: com.github.mifmif:generex:1.0.2" level="project" />
     <orderEntry type="library" name="Maven: dk.brics.automaton:automaton:1.11-8" level="project" />
@@ -60,8 +66,6 @@
     <orderEntry type="library" name="Maven: io.rest-assured:rest-assured-common:3.0.6" level="project" />
     <orderEntry type="library" name="Maven: io.rest-assured:xml-path:3.0.6" level="project" />
     <orderEntry type="library" name="Maven: javax.xml.bind:jaxb-api:2.2.12" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.oai:swagger-request-validator-restassured:1.3.3" level="project" />
-    <orderEntry type="library" name="Maven: com.atlassian.oai:swagger-request-validator-core:1.3.3" level="project" />
     <orderEntry type="library" name="Maven: com.github.java-json-tools:json-schema-validator:2.2.8" level="project" />
     <orderEntry type="library" name="Maven: com.github.java-json-tools:json-schema-core:1.2.8" level="project" />
     <orderEntry type="library" name="Maven: org.mozilla:rhino:1.7R4" level="project" />
@@ -75,6 +79,8 @@
     <orderEntry type="library" name="Maven: com.googlecode.libphonenumber:libphonenumber:8.0.0" level="project" />
     <orderEntry type="library" name="Maven: net.sf.jopt-simple:jopt-simple:5.0.3" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:3.0.2" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:18.0" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.20" level="project" />
     <orderEntry type="library" name="Maven: junit:junit:4.12" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-csv:1.5" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.8" level="project" />
@@ -90,9 +96,27 @@
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.11.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-core:2.11.2" level="project" />
     <orderEntry type="module-library">
-      <library>
+      <library name="Maven: JSONmutator:JSONmutator:0.0.1-SNAPSHOT">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/RESTmutator.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/JSONmutator.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Maven: IDLreasoner:IDLreasoner:0.0.1-SNAPSHOT">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/IDLreasoner.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Maven: IDL2MiniZincMapper:IDL2MiniZincMapper:0.0.1-SNAPSHOT">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/IDL2MiniZincMapper.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

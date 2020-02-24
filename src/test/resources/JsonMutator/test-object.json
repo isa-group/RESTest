@@ -1,0 +1,41 @@
+{
+  "prop1" : "value1",
+  "prop2" : 20,
+  "prop3" : [ "a string", 10, false ],
+  "parameters" : [ {
+    "name" : "petId",
+    "in" : "path",
+    "description" : "ID of pet that needs to be updated",
+    "required" : true,
+    "type" : "integer",
+    "format" : "int64"
+  }, {
+    "name" : "name",
+    "in" : "formData",
+    "description" : "Updated name of the pet",
+    "required" : false,
+    "type" : "string"
+  }, {
+    "name" : "status",
+    "in" : "formData",
+    "description" : "Updated status of the pet",
+    "required" : false,
+    "type" : "string"
+  } ],
+  "responses" : {
+    "400" : {
+      "description" : "Invalid ID supplied"
+    },
+    "404" : {
+      "description" : "Pet not found"
+    },
+    "405" : {
+      "description" : "Validation exception"
+    }
+  },
+  "float1": 123.123,
+  "float2": 3345723.09,
+  "float3": 3742589723452.239472,
+  "null1": null,
+  "null2": null
+}

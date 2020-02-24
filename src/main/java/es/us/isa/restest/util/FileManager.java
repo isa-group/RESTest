@@ -4,32 +4,33 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class FileManager {
 
-    public static boolean createFileIfNotExists(String path) {
-        boolean created = false;
+    public static Boolean createFileIfNotExists(String path) {
         File file = new File(path);
         try {
-            created = file.createNewFile();
+            return file.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return created;
+        return null;
     }
 
-    public static boolean checkIfExists(String path) {
+    public static Boolean checkIfExists(String path) {
         File file = new File(path);
         return file.exists();
     }
 
-    public static boolean deleteFile(String path) {
+    public static Boolean deleteFile(String path) {
         File file = new File(path);
         return file.delete();
     }
 
     // Create target dir if it does not exist
-    public static boolean createDir(String targetDir) {
+    public static Boolean createDir(String targetDir) {
         if (targetDir.charAt(targetDir.length()-1) != '/')
             targetDir += "/";
         File dir = new File(targetDir);
@@ -44,6 +45,15 @@ public class FileManager {
             System.err.println("Error deleting dir");
             e.printStackTrace();
         }
+    }
+
+    public static String readFile(String path) {
+        try {
+            return new String(Files.readAllBytes(Paths.get(path)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

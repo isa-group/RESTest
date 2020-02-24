@@ -1,0 +1,583 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams:
+    - name: Authorization
+      #
+      # It is necessary to obtain a new access token every 30 minutes since it expires. You need to
+      # make a POST request to https://test.api.amadeus.com/v1/security/oauth2/token, setting the header
+      # 'content-type' as 'application/x-www-form-urlencoded' and sending the following form parameters:
+      #
+      #   - grant_type = client_credentials
+      #   - client_id = BQYQ3NCoMM2mi91a9sV2karGq5Z3dKbK
+      #   - client_secret = A29nA3Kgh2N76t1a
+      #
+      # The response will contain an 'access_token' parameter, which is the one required below.
+      # Source: https://developers.amadeus.com/self-service/apis-docs/guides/authorization
+      #
+      value: Bearer <INSERT ACCESS_TOKEN>
+testConfiguration:
+  testPaths:
+  - testPath: /shopping/hotel-offers
+    operations:
+    - operationId: getMultiHotelOffers
+      method: get
+      testParameters:
+      - name: cityCode
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/IATACodes.csv
+            objectValues: null
+      - name: latitude
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - double
+            objectValues: null
+          - name: min
+            values:
+            - -90.0
+            objectValues: null
+          - name: max
+            values:
+            - 90.0
+            objectValues: null
+      - name: longitude
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - double
+            objectValues: null
+          - name: min
+            values:
+            - -180.0
+            objectValues: null
+          - name: max
+            values:
+            - 180.0
+            objectValues: null
+      - name: hotelIds
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/HotelCodes.csv
+            objectValues: null
+      - name: checkInDate
+        weight: 0.5
+        generator:
+          type: RandomDate
+          genParameters:
+          - name: fromToday
+            values:
+            - true
+            objectValues: null
+          - name: format
+            values:
+            - yyyy-MM-dd
+            objectValues: null
+      - name: checkOutDate
+        weight: 0.5
+        generator:
+          type: RandomDate
+          genParameters:
+            - name: fromToday
+              values:
+                - true
+              objectValues: null
+            - name: format
+              values:
+              - yyyy-MM-dd
+              objectValues: null
+      - name: roomQuantity
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 9
+            objectValues: null
+      - name: adults
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 9
+            objectValues: null
+      - name: childAges
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 17
+            objectValues: null
+      - name: radius
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 10
+            objectValues: null
+      - name: radiusUnit
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - KM
+            - MILE
+            objectValues: null
+      - name: hotelName
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 4
+            objectValues: null
+      - name: chains
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/HotelChainCodes.csv
+            objectValues: null
+      - name: rateCodes
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - CON
+            - COR
+            - FAM
+            - GOV
+            - MIL
+            - PKG
+            - PRO
+            - RAC
+            - SRS
+            - STP
+            - TUR
+            - TVL
+            - WKD
+            objectValues: null
+      - name: amenities
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - SWIMMING_POOL
+            - SPA
+            - FITNESS_CENTER
+            - AIR_CONDITIONING
+            - RESTAURANT
+            - PARKING
+            - PETS_ALLOWED
+            - AIRPORT_SHUTTLE
+            - BUSINESS_CENTER
+            - DISABLED_FACILITIES
+            - WIFI
+            - MEETING_ROOMS
+            - NO_KID_ALLOWED
+            - TENNIS
+            - GOLF
+            - KITCHEN
+            - ANIMAL_WATCHING
+            - BABY-SITTING
+            - BEACH
+            - CASINO
+            - JACUZZI
+            - SAUNA
+            - SOLARIUM
+            - MASSAGE
+            - VALET_PARKING
+            - BAR
+            - KIDS_WELCOME
+            - NO_PORN_FILMS
+            - MINIBAR
+            - TELEVISION
+            - WI-FI_IN_ROOM
+            - GUARDED_PARKG
+            - SERV_SPEC_MENU
+            objectValues: null
+      - name: ratings
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 5
+            objectValues: null
+      - name: priceRange
+        weight: 0.5
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - ([1-9]([0-9]){0,1})-([1-9]([0-9]){2})
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/ISO-4217-CurrencyCodes.csv
+            objectValues: null
+      - name: paymentPolicy
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - GUARANTEE
+            - DEPOSIT
+            - NONE
+            objectValues: null
+      - name: boardType
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - ROOM_ONLY
+            - BREAKFAST
+            - HALF_BOARD
+            - FULL_BOARD
+            - ALL_INCLUSIVE
+            objectValues: null
+      - name: includeClosed
+        weight: 0.5
+        generator:
+          type: RandomBoolean
+          genParameters: []
+      - name: bestRateOnly
+        weight: 0.5
+        generator:
+          type: RandomBoolean
+          genParameters: []
+      - name: view
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - FULL
+            - LIGHT
+            - NONE
+            objectValues: null
+      - name: sort
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - NONE
+            - DISTANCE
+            - PRICE
+            objectValues: null
+      - name: page[limit]
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: page[offset]
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/ISO-639-LangCodes.csv
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /shopping/hotel-offers/by-hotel
+    operations:
+    - operationId: getSingleHotelOffers
+      method: get
+      testParameters:
+      - name: hotelId
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/HotelCodes.csv
+            objectValues: null
+      - name: checkInDate
+        weight: 0.5
+        generator:
+          type: RandomDate
+          genParameters:
+          - name: fromToday
+            values:
+            - true
+            objectValues: null
+          - name: format
+            values:
+            - yyyy-MM-dd
+            objectValues: null
+      - name: checkOutDate
+        weight: 0.5
+        generator:
+          type: RandomDate
+          genParameters:
+          - name: fromToday
+            values:
+            - true
+            objectValues: null
+          - name: format
+            values:
+            - yyyy-MM-dd
+            objectValues: null
+      - name: adults
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 9
+            objectValues: null
+      - name: childAges
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 17
+            objectValues: null
+      - name: rateCodes
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - CON
+            - COR
+            - FAM
+            - GOV
+            - MIL
+            - PKG
+            - PRO
+            - RAC
+            - SRS
+            - STP
+            - TUR
+            - TVL
+            - WKD
+            objectValues: null
+      - name: roomQuantity
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 9
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/ISO-4217-CurrencyCodes.csv
+            objectValues: null
+      - name: paymentPolicy
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - GUARANTEE
+            - DEPOSIT
+            - NONE
+            objectValues: null
+      - name: boardType
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - ROOM_ONLY
+            - BREAKFAST
+            - HALF_BOARD
+            - FULL_BOARD
+            - ALL_INCLUSIVE
+            objectValues: null
+      - name: view
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - FULL_ALL_IMAGES
+            - FULL
+            - LIGHT
+            - NONE
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/ISO-639-LangCodes.csv
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /shopping/hotel-offers/{offerId}
+    operations:
+    - operationId: getOfferPricing
+      method: get
+      testParameters:
+      - name: offerId
+        weight: null
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - ([A-Z0-9]){1,50}
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/ISO-639-LangCodes.csv
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
