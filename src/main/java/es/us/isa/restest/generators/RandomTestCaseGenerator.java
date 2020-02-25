@@ -53,7 +53,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
 
 	// Generate the next test case and update the generation index
-	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method) {
+	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, Boolean faulty, Boolean ignoreDependencies) {
 
 		Boolean isDesiredTestCase = false;
 //		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
@@ -95,7 +95,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			// Algorithm to decide whether this test case must be faulty or not, and how:
 			if (faulty) { // If this test case must be faulty
-				if (idlReasoner != null) { // If the operation has dependencies
+				if (idlReasoner != null) { // If the operation has dependencies and they are not ignored
 					if (violateDependency) { // If in this iteration, the test case must violate a dependency
 						if (!idlReasoner.validRequest(restest2idlTestCase(test))) { // Check if the current request is INVALID
 							isDesiredTestCase = true; // If so, return this test case
@@ -108,20 +108,21 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 						}
 						isDesiredTestCase = true; // Return this test case
 					}
-				} else { // If the operation doesn't have dependencies
-					test.setFulfillsDependencies(true); // All dependencies (none) are fulfilled
+				} else { // If the operation doesn't have dependencies or they are ignored
+					if(!ignoreDependencies) //If the dependencies are not ignored
+						test.setFulfillsDependencies(true); // All dependencies (none) are fulfilled
 					if (!makeTestCaseFaulty(test, specOperation)) // Try to make it faulty by mutating it. If it's not mutated...
 						test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
 					isDesiredTestCase = true; // Return this test case
 				}
 
 			} else { // If this test case must not be faulty
-				test.setFulfillsDependencies(true); // All dependencies must be fulfilled for the test case to be valid
-				if (idlReasoner != null) { // If the operation has dependencies
+				if (idlReasoner != null) { // If the operation has dependencies and they are not ignored
 					if (idlReasoner.validRequest(restest2idlTestCase(test))) { // Check if the current request is valid
-						isDesiredTestCase = true; // If so, return this test case
+						test.setFulfillsDependencies(true); // If so, update fulfillsDependencies property and
+						isDesiredTestCase = true; // return this test case
 					}
-				} else { // If the operation doesn't have dependencies
+				} else { // If the operation doesn't have dependencies or they are ignored
 					isDesiredTestCase = true; // The test case will be valid for sure, so return it
 				}
 			}
@@ -129,7 +130,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		
 		index++;
 
-		if (idlReasoner != null && faulty) // When trying to create faulty test cases, if the operation has dependencies...
+		if (idlReasoner != null && faulty) // When trying to create faulty test cases, if the operation has dependencies and they are not ignored...
 			violateDependency = !violateDependency; // ... every two iterations, violate an inter-parameter dependency
 		
 		return test;
