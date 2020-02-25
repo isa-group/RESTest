@@ -18,7 +18,7 @@ testConfiguration:
       method: get
       testParameters:
       - name: name
-        weight: 0.5
+        weight: 0.1
         generator:
           type: RandomEnglishWord
           genParameters:
@@ -27,13 +27,13 @@ testConfiguration:
             - 1
             objectValues: null
       - name: nameStartsWith
-        weight: 0.5
+        weight: 0.1
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-          - name: maxWords
+          - name: maxLength
             values:
-            - 1
+            - 2
             objectValues: null
       - name: modifiedSince
         weight: 0.5
@@ -53,72 +53,40 @@ testConfiguration:
               - yyyy-MM-dd
             objectValues: null
       - name: comics
-        weight: 0.5
+        weight: 0.1
         generator:
-          type: RandomNumber
+          type: RandomRegExp
           genParameters:
-          - name: type
+          - name: regExp
             values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
+            - ([0-9]|([1-9][0-9]))(,([0-9]|([1-9][0-9]))){0,1}
             objectValues: null
       - name: series
-        weight: 0.5
+        weight: 0.1
         generator:
-          type: RandomNumber
+          type: RandomRegExp
           genParameters:
-          - name: type
+          - name: regExp
             values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
+            - ([0-9]|([1-9][0-9]))(,([0-9]|([1-9][0-9]))){0,1}
             objectValues: null
       - name: events
-        weight: 0.5
+        weight: 0.1
         generator:
-          type: RandomNumber
+          type: RandomRegExp
           genParameters:
-          - name: type
+          - name: regExp
             values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
+            - ([0-9]|([1-9][0-9]))(,([0-9]|([1-9][0-9]))){0,1}
             objectValues: null
       - name: stories
-        weight: 0.5
+        weight: 0.1
         generator:
-          type: RandomNumber
+          type: RandomRegExp
           genParameters:
-          - name: type
+          - name: regExp
             values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
+            - ([0-9]|([1-9][0-9]))(,([0-9]|([1-9][0-9]))){0,1}
             objectValues: null
       - name: orderBy
         weight: 0.5
@@ -131,6 +99,14 @@ testConfiguration:
             - modified
             - -name
             - -modified
+            - name,modified
+            - name,-modified
+            - modified,name
+            - modified,-name
+            - -name,modified
+            - -name,-modified
+            - -modified,name
+            - -modified,-name
             objectValues: null
       - name: limit
         weight: 0.5
@@ -164,7 +140,7 @@ testConfiguration:
             objectValues: null
           - name: max
             values:
-            - 100
+            - 1000
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
@@ -176,943 +152,934 @@ testConfiguration:
       - name: characterId
         weight: null
         generator:
-          type: RandomNumber
+          type: RandomInputValue
           genParameters:
-          - name: type
+          - name: csv
             values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
+            - src/main/resources/TestData/MarvelCharacterIDs.csv
       paramDependencies: null
       expectedResponse: 200
-  - testPath: /v1/public/characters/{characterId}/comics
-    operations:
-    - operationId: getComicsCharacterCollection
-      method: get
-      testParameters:
-      - name: characterId
-        weight: null
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: format
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - comic
-            - magazine
-            - trade paperback
-            - hardcover
-            - digest
-            - graphic novel
-            - digital comic
-            - infinite comic
-            objectValues: null
-      - name: formatType
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - comic
-            - collection
-            objectValues: null
-      - name: noVariants
-        weight: 0.5
-        generator:
-          type: RandomBoolean
-          genParameters: []
-      - name: dateDescriptor
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - lastWeek
-            - thisWeek
-            - nextWeek
-            - thisMonth
-            objectValues: null
-      - name: dateRange
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: title
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: titleStartsWith
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: startYear
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1970
-            objectValues: null
-          - name: max
-            values:
-            - 2020
-            objectValues: null
-      - name: issueNumber
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: diamondCode
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: digitalId
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: upc
-        weight: 0.5
-        generator:
-          type: RandomRegExp
-          genParameters:
-          - name: regExp
-            values:
-            - \d{12}
-            objectValues: null
-      - name: isbn
-        weight: 0.5
-        generator:
-          type: RandomRegExp
-          genParameters:
-          - name: regExp
-            values:
-            - '(ISBN[-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
-            objectValues: null
-      - name: ean
-        weight: 0.5
-        generator:
-          type: RandomRegExp
-          genParameters:
-          - name: regExp
-            values:
-            - \d{13}
-            objectValues: null
-      - name: issn
-        weight: 0.5
-        generator:
-          type: RandomRegExp
-          genParameters:
-          - name: regExp
-            values:
-            - \d{4}-\d{4}
-            objectValues: null
-      - name: hasDigitalIssue
-        weight: 0.5
-        generator:
-          type: RandomBoolean
-          genParameters: []
-      - name: modifiedSince
-        weight: 0.5
-        generator:
-          type: RandomDate
-          genParameters:
-          - name: startDate
-            values:
-            - 2015-01-01
-            objectValues: null
-          - name: endDate
-            values:
-             - 2020-01-01
-            objectValues: null
-          - name: format
-            values:
-              - yyyy-MM-dd
-            objectValues: null
-      - name: creators
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: series
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: events
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: stories
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: sharedAppearances
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: collaborators
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: orderBy
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - focDate
-            - onsaleDate
-            - title
-            - issueNumber
-            - modified
-            - -focDate
-            - -onsaleDate
-            - -title
-            - -issueNumber
-            - -modified
-            objectValues: null
-      - name: limit
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: offset
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-  - testPath: /v1/public/characters/{characterId}/events
-    operations:
-    - operationId: getCharacterEventsCollection
-      method: get
-      testParameters:
-      - name: characterId
-        weight: null
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: name
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: nameStartsWith
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: modifiedSince
-        weight: 0.5
-        generator:
-          type: RandomDate
-          genParameters:
-          - name: startDate
-            values:
-            - 2015-01-01
-            objectValues: null
-          - name: endDate
-            values:
-            - 2020-01-01
-            objectValues: null
-          - name: format
-            values:
-              - yyyy-MM-dd
-            objectValues: null
-      - name: creators
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: series
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: comics
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: stories
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: orderBy
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - name
-            - startDate
-            - modified
-            - -name
-            - -startDate
-            - -modified
-            objectValues: null
-      - name: limit
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: offset
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-  - testPath: /v1/public/characters/{characterId}/series
-    operations:
-    - operationId: getCharacterSeriesCollection
-      method: get
-      testParameters:
-      - name: characterId
-        weight: null
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: title
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: titleStartsWith
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: startYear
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1970
-            objectValues: null
-          - name: max
-            values:
-            - 2020
-            objectValues: null
-      - name: modifiedSince
-        weight: 0.5
-        generator:
-          type: RandomDate
-          genParameters:
-          - name: startDate
-            values:
-            - 2015-01-01
-            objectValues: null
-          - name: endDate
-            values:
-            - 2020-01-01
-            objectValues: null
-          - name: format
-            values:
-              - yyyy-MM-dd
-            objectValues: null
-      - name: comics
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: stories
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: events
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: creators
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: seriesType
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - collection
-            - one shot
-            - limited
-            - ongoing
-            objectValues: null
-      - name: contains
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - comic
-            - magazine
-            - trade paperback
-            - hardcover
-            - digest
-            - graphic novel
-            - digital comic
-            - infinite comic
-            objectValues: null
-      - name: orderBy
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - title
-            - modified
-            - startYear
-            - -title
-            - -modified
-            - -startYear
-            objectValues: null
-      - name: limit
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: offset
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-  - testPath: /v1/public/characters/{characterId}/stories
-    operations:
-    - operationId: getCharacterStoryCollection
-      method: get
-      testParameters:
-      - name: characterId
-        weight: null
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: modifiedSince
-        weight: 0.5
-        generator:
-          type: RandomDate
-          genParameters:
-          - name: startDate
-            values:
-            - 2015-01-01
-            objectValues: null
-          - name: endDate
-            values:
-            - 2020-01-01
-            objectValues: null
-          - name: format
-            values:
-              - yyyy-MM-dd
-            objectValues: null
-      - name: comics
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: series
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: events
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: creators
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: orderBy
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - id
-            - modified
-            - -id
-            - -modified
-            objectValues: null
-      - name: limit
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: offset
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
+#  - testPath: /v1/public/characters/{characterId}/comics
+#    operations:
+#    - operationId: getComicsCharacterCollection
+#      method: get
+#      testParameters:
+#      - name: characterId
+#        weight: null
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: format
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - comic
+#            - magazine
+#            - trade paperback
+#            - hardcover
+#            - digest
+#            - graphic novel
+#            - digital comic
+#            - infinite comic
+#            objectValues: null
+#      - name: formatType
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - comic
+#            - collection
+#            objectValues: null
+#      - name: noVariants
+#        weight: 0.5
+#        generator:
+#          type: RandomBoolean
+#          genParameters: []
+#      - name: dateDescriptor
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - lastWeek
+#            - thisWeek
+#            - nextWeek
+#            - thisMonth
+#            objectValues: null
+#      - name: dateRange
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: title
+#        weight: 0.5
+#        generator:
+#          type: RandomEnglishWord
+#          genParameters:
+#          - name: maxWords
+#            values:
+#            - 1
+#            objectValues: null
+#      - name: titleStartsWith
+#        weight: 0.5
+#        generator:
+#          type: RandomEnglishWord
+#          genParameters:
+#          - name: maxWords
+#            values:
+#            - 1
+#            objectValues: null
+#      - name: startYear
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1970
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 2020
+#            objectValues: null
+#      - name: issueNumber
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: diamondCode
+#        weight: 0.5
+#        generator:
+#          type: RandomEnglishWord
+#          genParameters:
+#          - name: maxWords
+#            values:
+#            - 1
+#            objectValues: null
+#      - name: digitalId
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: upc
+#        weight: 0.5
+#        generator:
+#          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - \d{12}
+#            objectValues: null
+#      - name: isbn
+#        weight: 0.5
+#        generator:
+#          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - '(ISBN[-]*(1[03])*[ ]*(: ){0,1})*(([0-9Xx][- ]*){13}|([0-9Xx][- ]*){10})'
+#            objectValues: null
+#      - name: ean
+#        weight: 0.5
+#        generator:
+#          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - \d{13}
+#            objectValues: null
+#      - name: issn
+#        weight: 0.5
+#        generator:
+#          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - \d{4}-\d{4}
+#            objectValues: null
+#      - name: hasDigitalIssue
+#        weight: 0.5
+#        generator:
+#          type: RandomBoolean
+#          genParameters: []
+#      - name: modifiedSince
+#        weight: 0.5
+#        generator:
+#          type: RandomDate
+#          genParameters:
+#          - name: startDate
+#            values:
+#            - 2015-01-01
+#            objectValues: null
+#          - name: endDate
+#            values:
+#             - 2020-01-01
+#            objectValues: null
+#          - name: format
+#            values:
+#              - yyyy-MM-dd
+#            objectValues: null
+#      - name: creators
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: series
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: events
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: stories
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: sharedAppearances
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: collaborators
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: orderBy
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - focDate
+#            - onsaleDate
+#            - title
+#            - issueNumber
+#            - modified
+#            - -focDate
+#            - -onsaleDate
+#            - -title
+#            - -issueNumber
+#            - -modified
+#            objectValues: null
+#      - name: limit
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: offset
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      paramDependencies: null
+#      expectedResponse: 200
+#  - testPath: /v1/public/characters/{characterId}/events
+#    operations:
+#    - operationId: getCharacterEventsCollection
+#      method: get
+#      testParameters:
+#      - name: characterId
+#        weight: null
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: name
+#        weight: 0.5
+#        generator:
+#          type: RandomEnglishWord
+#          genParameters:
+#          - name: maxWords
+#            values:
+#            - 1
+#            objectValues: null
+#      - name: nameStartsWith
+#        weight: 0.5
+#        generator:
+#          type: RandomEnglishWord
+#          genParameters:
+#          - name: maxWords
+#            values:
+#            - 1
+#            objectValues: null
+#      - name: modifiedSince
+#        weight: 0.5
+#        generator:
+#          type: RandomDate
+#          genParameters:
+#          - name: startDate
+#            values:
+#            - 2015-01-01
+#            objectValues: null
+#          - name: endDate
+#            values:
+#            - 2020-01-01
+#            objectValues: null
+#          - name: format
+#            values:
+#              - yyyy-MM-dd
+#            objectValues: null
+#      - name: creators
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: series
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: comics
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: stories
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: orderBy
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - name
+#            - startDate
+#            - modified
+#            - -name
+#            - -startDate
+#            - -modified
+#            objectValues: null
+#      - name: limit
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: offset
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      paramDependencies: null
+#      expectedResponse: 200
+#  - testPath: /v1/public/characters/{characterId}/series
+#    operations:
+#    - operationId: getCharacterSeriesCollection
+#      method: get
+#      testParameters:
+#      - name: characterId
+#        weight: null
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: title
+#        weight: 0.5
+#        generator:
+#          type: RandomEnglishWord
+#          genParameters:
+#          - name: maxWords
+#            values:
+#            - 1
+#            objectValues: null
+#      - name: titleStartsWith
+#        weight: 0.5
+#        generator:
+#          type: RandomEnglishWord
+#          genParameters:
+#          - name: maxWords
+#            values:
+#            - 1
+#            objectValues: null
+#      - name: startYear
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1970
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 2020
+#            objectValues: null
+#      - name: modifiedSince
+#        weight: 0.5
+#        generator:
+#          type: RandomDate
+#          genParameters:
+#          - name: startDate
+#            values:
+#            - 2015-01-01
+#            objectValues: null
+#          - name: endDate
+#            values:
+#            - 2020-01-01
+#            objectValues: null
+#          - name: format
+#            values:
+#              - yyyy-MM-dd
+#            objectValues: null
+#      - name: comics
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: stories
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: events
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: creators
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: seriesType
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - collection
+#            - one shot
+#            - limited
+#            - ongoing
+#            objectValues: null
+#      - name: contains
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - comic
+#            - magazine
+#            - trade paperback
+#            - hardcover
+#            - digest
+#            - graphic novel
+#            - digital comic
+#            - infinite comic
+#            objectValues: null
+#      - name: orderBy
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - title
+#            - modified
+#            - startYear
+#            - -title
+#            - -modified
+#            - -startYear
+#            objectValues: null
+#      - name: limit
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: offset
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      paramDependencies: null
+#      expectedResponse: 200
+#  - testPath: /v1/public/characters/{characterId}/stories
+#    operations:
+#    - operationId: getCharacterStoryCollection
+#      method: get
+#      testParameters:
+#      - name: characterId
+#        weight: null
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: modifiedSince
+#        weight: 0.5
+#        generator:
+#          type: RandomDate
+#          genParameters:
+#          - name: startDate
+#            values:
+#            - 2015-01-01
+#            objectValues: null
+#          - name: endDate
+#            values:
+#            - 2020-01-01
+#            objectValues: null
+#          - name: format
+#            values:
+#              - yyyy-MM-dd
+#            objectValues: null
+#      - name: comics
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: series
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: events
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: creators
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: orderBy
+#        weight: 0.5
+#        generator:
+#          type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - id
+#            - modified
+#            - -id
+#            - -modified
+#            objectValues: null
+#      - name: limit
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      - name: offset
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#          - name: type
+#            values:
+#            - integer
+#            objectValues: null
+#          - name: min
+#            values:
+#            - 1
+#            objectValues: null
+#          - name: max
+#            values:
+#            - 100
+#            objectValues: null
+#      paramDependencies: null
+#      expectedResponse: 200
