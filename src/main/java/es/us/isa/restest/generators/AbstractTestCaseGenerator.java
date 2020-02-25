@@ -124,7 +124,7 @@ public abstract class AbstractTestCaseGenerator {
 				nextIsFaulty = false;
 			
 			// Create test case with specific parameters and values
-			TestCase test = generateNextTestCase(specOperation,testOperation,nextIsFaulty,path,method);
+			TestCase test = generateNextTestCase(specOperation,testOperation,path,method,nextIsFaulty,ignoreDependencies);
 			
 			// Authentication
 			if (conf.getAuth().getRequired()) {
@@ -162,7 +162,7 @@ public abstract class AbstractTestCaseGenerator {
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
 	protected abstract TestCase generateNextTestCase(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method);
+			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, Boolean faulty, Boolean ignoreDependencies);
 	
 	// Create all generators needed for the parameters of an operation
 	private void createGenerators(List<TestParameter> testParameters) {
