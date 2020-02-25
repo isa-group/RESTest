@@ -466,7 +466,7 @@ public class RESTAssuredWriter implements IWriter {
 				+  "\t\t} finally {\n"
 				+  "\t\t\tnFaulty = testCaseCounterFilter.getnFaulty();\n"
 				+  "\t\t\tnNominal = testCaseCounterFilter.getnNominal();\n"
-				+  "\t\t}";
+				+  "\t\t}\n";
 	}
 		
 	private void saveToFile(String path, String className, String contentFile) {
