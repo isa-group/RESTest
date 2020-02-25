@@ -53,7 +53,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
 
 	// Generate the next test case and update the generation index
-	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method) {
+	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, Boolean faulty, Boolean ignoreDependencies) {
 
 		Boolean isDesiredTestCase = false;
 //		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();
@@ -117,12 +117,12 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 				}
 
 			} else { // If this test case must not be faulty
-				test.setFulfillsDependencies(true); // All dependencies must be fulfilled for the test case to be valid
 				if (idlReasoner != null) { // If the operation has dependencies and they are not ignored
 					if (idlReasoner.validRequest(restest2idlTestCase(test))) { // Check if the current request is valid
-						isDesiredTestCase = true; // If so, return this test case
+						test.setFulfillsDependencies(true); // If so, update fulfillsDependencies property and
+						isDesiredTestCase = true; // return this test case
 					}
-				} else { // If the operation doesn't have dependencies
+				} else { // If the operation doesn't have dependencies or they are ignored
 					isDesiredTestCase = true; // The test case will be valid for sure, so return it
 				}
 			}
