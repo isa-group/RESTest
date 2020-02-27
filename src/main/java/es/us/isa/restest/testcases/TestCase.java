@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
+import com.atlassian.oai.validator.model.Request;
+import com.atlassian.oai.validator.model.SimpleRequest;
+import com.atlassian.oai.validator.report.ValidationReport;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
 
@@ -268,5 +272,16 @@ public class TestCase implements Serializable {
 		row += "," + bodyParameter + ",,,";
 
 		writeRow(filePath, row);
+	}
+
+	/**
+	 * Returns true if the test case is faulty, false otherwise
+	 * @param tc
+	 * @param validator
+	 * @return
+	 */
+	public static Boolean checkFaulty(TestCase tc, SwaggerRequestResponseValidator validator) {
+		SimpleRequest request = new SimpleRequest(tc.getMethod().toString(), tc.getPath(), tc.getHeaderParameters(), tc.getQueryParameters(), tc.getBodyParameter());
+		return validator.validateOnlyRequest(request).hasErrors();
 	}
 }
