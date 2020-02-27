@@ -60,6 +60,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelComicIDs-incomplete.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: series
         weight: 0.1
         generator:
@@ -68,6 +80,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelSeriesIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: events
         weight: 0.1
         generator:
@@ -76,6 +100,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelEventIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: stories
         weight: 0.1
         generator:
@@ -84,6 +120,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelStoryIDs-incomplete.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: orderBy
         weight: 0.5
         generator:
@@ -362,6 +410,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelCreatorIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: series
         weight: 0.1
         generator:
@@ -370,6 +430,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelSeriesIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: events
         weight: 0.1
         generator:
@@ -378,6 +450,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelEventIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: stories
         weight: 0.1
         generator:
@@ -386,14 +470,39 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelStoryIDs-incomplete.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: sharedAppearances
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
-          - name: csv
-            values:
-            - src/main/resources/TestData/MarvelCharacterIDs.csv
+            - name: csv
+              values:
+                - src/main/resources/TestData/MarvelCharacterIDs.csv
+              objectValues: null
+            - name: minValues
+              values:
+                - 1
+              objectValues: null
+            - name: maxValues
+              values:
+                - 5
+              objectValues: null
+            - name: separator
+              values:
+                - ','
+              objectValues: null
       - name: collaborators
         weight: 0.1
         generator:
@@ -402,6 +511,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelCreatorIDs.csv
+          - name: minValues
+            values:
+              - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: orderBy
         weight: 0.5
         generator:
@@ -512,6 +633,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelCreatorIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: comics
         weight: 0.1
         generator:
@@ -520,6 +653,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelComicIDs-incomplete.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: series
         weight: 0.1
         generator:
@@ -528,6 +673,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelSeriesIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: stories
         weight: 0.1
         generator:
@@ -536,6 +693,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelStoryIDs-incomplete.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: orderBy
         weight: 0.5
         generator:
@@ -667,6 +836,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelCreatorIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: events
         weight: 0.1
         generator:
@@ -675,6 +856,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelEventIDs.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: stories
         weight: 0.1
         generator:
@@ -683,6 +876,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelStoryIDs-incomplete.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: comics
         weight: 0.1
         generator:
@@ -691,6 +896,18 @@ testConfiguration:
           - name: csv
             values:
             - src/main/resources/TestData/MarvelComicIDs-incomplete.csv
+          - name: minValues
+            values:
+            - 1
+            objectValues: null
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+          - name: separator
+            values:
+            - ','
+            objectValues: null
       - name: seriesType
         weight: 0.5
         generator:
@@ -815,6 +1032,18 @@ testConfiguration:
             - name: csv
               values:
                 - src/main/resources/TestData/MarvelCreatorIDs.csv
+            - name: minValues
+              values:
+              - 1
+              objectValues: null
+            - name: maxValues
+              values:
+              - 5
+              objectValues: null
+            - name: separator
+              values:
+              - ','
+              objectValues: null
       - name: events
         weight: 0.1
         generator:
@@ -823,6 +1052,18 @@ testConfiguration:
             - name: csv
               values:
                 - src/main/resources/TestData/MarvelEventIDs.csv
+            - name: minValues
+              values:
+              - 1
+              objectValues: null
+            - name: maxValues
+              values:
+              - 5
+              objectValues: null
+            - name: separator
+              values:
+              - ','
+              objectValues: null
       - name: series
         weight: 0.1
         generator:
@@ -831,6 +1072,18 @@ testConfiguration:
             - name: csv
               values:
                 - src/main/resources/TestData/MarvelSeriesIDs.csv
+            - name: minValues
+              values:
+              - 1
+              objectValues: null
+            - name: maxValues
+              values:
+              - 5
+              objectValues: null
+            - name: separator
+              values:
+              - ','
+              objectValues: null
       - name: comics
         weight: 0.1
         generator:
@@ -839,6 +1092,18 @@ testConfiguration:
             - name: csv
               values:
                 - src/main/resources/TestData/MarvelComicIDs-incomplete.csv
+            - name: minValues
+              values:
+              - 1
+              objectValues: null
+            - name: maxValues
+              values:
+              - 5
+              objectValues: null
+            - name: separator
+              values:
+              - ','
+              objectValues: null
       - name: orderBy
         weight: 0.5
         generator:
