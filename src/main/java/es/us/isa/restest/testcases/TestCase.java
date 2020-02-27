@@ -281,7 +281,11 @@ public class TestCase implements Serializable {
 	 * @return
 	 */
 	public static Boolean checkFaulty(TestCase tc, SwaggerRequestResponseValidator validator) {
-		SimpleRequest request = new SimpleRequest(tc.getMethod().toString(), tc.getPath(), tc.getHeaderParameters(), tc.getQueryParameters(), tc.getBodyParameter());
+		final String[] path = {tc.getPath()};
+		tc.getPathParameters().forEach((k, v) -> {
+			path[0] = path[0].replace("{" + k + "}", v);
+		});
+		SimpleRequest request = new SimpleRequest(tc.getMethod().toString(), path[0], tc.getHeaderParameters(), tc.getQueryParameters(), tc.getBodyParameter());
 		return validator.validateOnlyRequest(request).hasErrors();
 	}
 }
