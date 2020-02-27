@@ -552,6 +552,11 @@ paths:
         name: seriesType
         required: false
         type: string
+        enum:
+        - collection
+        - one shot
+        - limited
+        - ongoing
       - in: query
         description: Return only series containing one or more comics with the specified
           format.
@@ -560,21 +565,45 @@ paths:
         type: array
         items:
           type: string
+          enum:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
       - in: query
         description: Order the result set by a field or fields. Add a "-" to the value
           sort in descending order. Multiple values are given priority in the order
           in which they are passed.
         name: orderBy
         required: false
-        type: array
-        items:
-          type: string
+        type: string
+        enum:
+        - title
+        - startYear
+        - modified
+        - -title
+        - -modified
+        - -startYear
+        - title,modified,startYear
+        - title,-modified,-startYear
+        - modified,title,startYear
+        - modified,-title,-startYear
+        - -title,startYear,modified
+        - -title,-startYear,-modified
+        - startYear,-modified,title
+        - -startYear,-modified,-title
       - in: query
         description: Limit the result set to the specified number of resources.
         name: limit
         required: false
         type: integer
         format: int32
+        min: 1
+        max: 100
       - in: query
         description: Skip the specified number of resources in the result set.
         name: offset
@@ -4356,7 +4385,7 @@ definitions:
           of the above four fields).
       modified:
         type: string
-        format: date-time
+        format: date
         description: The date the resource was most recently modified.
       resourceURI:
         type: string
@@ -4407,7 +4436,7 @@ definitions:
         description: A set of public web site URLs for the event.
       modified:
         type: string
-        format: date-time
+        format: date
         description: The date the resource was most recently modified.
       start:
         type: string
@@ -4550,7 +4579,7 @@ definitions:
         description: A short bio or description of the character.
       modified:
         type: string
-        format: date-time
+        format: date
         description: The date the resource was most recently modified.
       resourceURI:
         type: string
@@ -4665,7 +4694,7 @@ definitions:
         description: The age-appropriateness rating for the series.
       modified:
         type: string
-        format: date-time
+        format: date
         description: The date the resource was most recently modified.
       thumbnail:
         "$ref": "#/definitions/Image"
@@ -4799,7 +4828,7 @@ definitions:
         description: The preferred description of the comic.
       modified:
         type: string
-        format: date-time
+        format: date
         description: The date the resource was most recently modified.
       isbn:
         type: string
@@ -4936,7 +4965,7 @@ definitions:
         description: The story type e.g. interior story, cover, text story.
       modified:
         type: string
-        format: date-time
+        format: date
         description: The date the resource was most recently modified.
       thumbnail:
         "$ref": "#/definitions/Image"
