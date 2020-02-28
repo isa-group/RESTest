@@ -68,10 +68,6 @@ testConfiguration:
             values:
             - 5
             objectValues: null
-          - name: separator
-            values:
-            - ','
-            objectValues: null
       - name: series
         weight: 0.1
         generator:
@@ -87,10 +83,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: events
         weight: 0.1
@@ -108,10 +100,6 @@ testConfiguration:
             values:
             - 5
             objectValues: null
-          - name: separator
-            values:
-            - ','
-            objectValues: null
       - name: stories
         weight: 0.1
         generator:
@@ -127,10 +115,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: orderBy
         weight: 0.5
@@ -418,10 +402,6 @@ testConfiguration:
             values:
             - 5
             objectValues: null
-          - name: separator
-            values:
-            - ','
-            objectValues: null
       - name: series
         weight: 0.1
         generator:
@@ -437,10 +417,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: events
         weight: 0.1
@@ -458,10 +434,6 @@ testConfiguration:
             values:
             - 5
             objectValues: null
-          - name: separator
-            values:
-            - ','
-            objectValues: null
       - name: stories
         weight: 0.1
         generator:
@@ -477,10 +449,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: sharedAppearances
         weight: 0.5
@@ -499,10 +467,6 @@ testConfiguration:
               values:
                 - 5
               objectValues: null
-            - name: separator
-              values:
-                - ','
-              objectValues: null
       - name: collaborators
         weight: 0.1
         generator:
@@ -518,10 +482,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: orderBy
         weight: 0.5
@@ -641,10 +601,6 @@ testConfiguration:
             values:
             - 5
             objectValues: null
-          - name: separator
-            values:
-            - ','
-            objectValues: null
       - name: comics
         weight: 0.1
         generator:
@@ -660,10 +616,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: series
         weight: 0.1
@@ -681,10 +633,6 @@ testConfiguration:
             values:
             - 5
             objectValues: null
-          - name: separator
-            values:
-            - ','
-            objectValues: null
       - name: stories
         weight: 0.1
         generator:
@@ -700,10 +648,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: orderBy
         weight: 0.5
@@ -844,10 +788,6 @@ testConfiguration:
             values:
             - 5
             objectValues: null
-          - name: separator
-            values:
-            - ','
-            objectValues: null
       - name: events
         weight: 0.1
         generator:
@@ -863,10 +803,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: stories
         weight: 0.1
@@ -884,10 +820,6 @@ testConfiguration:
             values:
             - 5
             objectValues: null
-          - name: separator
-            values:
-            - ','
-            objectValues: null
       - name: comics
         weight: 0.1
         generator:
@@ -903,10 +835,6 @@ testConfiguration:
           - name: maxValues
             values:
             - 5
-            objectValues: null
-          - name: separator
-            values:
-            - ','
             objectValues: null
       - name: seriesType
         weight: 0.5
@@ -1040,10 +968,6 @@ testConfiguration:
               values:
               - 5
               objectValues: null
-            - name: separator
-              values:
-              - ','
-              objectValues: null
       - name: events
         weight: 0.1
         generator:
@@ -1059,10 +983,6 @@ testConfiguration:
             - name: maxValues
               values:
               - 5
-              objectValues: null
-            - name: separator
-              values:
-              - ','
               objectValues: null
       - name: series
         weight: 0.1
@@ -1080,10 +1000,6 @@ testConfiguration:
               values:
               - 5
               objectValues: null
-            - name: separator
-              values:
-              - ','
-              objectValues: null
       - name: comics
         weight: 0.1
         generator:
@@ -1099,10 +1015,6 @@ testConfiguration:
             - name: maxValues
               values:
               - 5
-              objectValues: null
-            - name: separator
-              values:
-              - ','
               objectValues: null
       - name: orderBy
         weight: 0.5

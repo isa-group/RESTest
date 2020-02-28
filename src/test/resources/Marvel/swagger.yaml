@@ -2,7 +2,7 @@
 host: gateway.marvel.com
 basePath: "/"
 schemes:
-- http
+- https
 swagger: '2.0'
 info:
   title: gateway.marvel.com
