@@ -12,17 +12,19 @@ import java.util.stream.Collectors;
 public class RandomInputValueIterator<T> extends RandomGenerator{ 
 
     private List<T> values;
-    private Integer minValues; // Default to 1
-    private Integer maxValues; // Default to 1
-    private String separator;
+    private Integer minValues; // Defaults to 1
+    private Integer maxValues; // Defaults to 1
+    private String separator; // Defaults to ","
      
     public RandomInputValueIterator() {
     	super();
+		minValues = 1;
+		maxValues = 1;
+		separator = ",";
     }
     
     public RandomInputValueIterator(List<T> values) {
-    	super();
-    	
+		this();
     	this.values = values;
     }
 
@@ -30,9 +32,9 @@ public class RandomInputValueIterator<T> extends RandomGenerator{
 		Object value=null;
 		
 		if (!values.isEmpty()) {
-			if(separator != null && (minValues != null || maxValues != null)) {
-				minValues = minValues == null? 1 : minValues;
-				maxValues = maxValues == null? minValues : maxValues;
+			if (minValues == 1 && maxValues == 1) {
+				value = values.get(rand.nextInt(0, values.size()-1));
+			} else {
 				value = new ArrayList<>();
 				List<T> localValues = new ArrayList<>(values);
 				Random random = new Random();
@@ -46,8 +48,7 @@ public class RandomInputValueIterator<T> extends RandomGenerator{
 					numValues++;
 					d = random.nextDouble();
 				}
-			} else
-				value= values.get(rand.nextInt(0, values.size()-1));
+			}
 		}
 		
 		return value;
@@ -61,7 +62,8 @@ public class RandomInputValueIterator<T> extends RandomGenerator{
     		nextValueAsString = (String) ((List)nextValue).stream()
 													.map(x -> x.toString())
 													.collect(Collectors.joining(separator));
-		} else nextValueAsString = nextValue().toString();
+		} else
+			nextValueAsString = nextValue().toString();
 		return nextValueAsString;
 	}
 	
