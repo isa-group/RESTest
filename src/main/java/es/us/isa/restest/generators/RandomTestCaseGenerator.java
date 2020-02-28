@@ -30,7 +30,9 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.conf = conf;
 		this.validator = SwaggerRequestResponseValidator.createFor(spec.getPath()).build();
 		this.numberOfTest = nTests;
-		this.index =0;
+		this.index = 0;
+		this.nFaulty = 0;
+		this.nNominal = 0;
 		this.violateDependency = false;
 		
 		this.rand = new Random();
@@ -126,12 +128,12 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 						isDesiredTestCase = true; // return this test case
 					}
 				} else { // If the operation doesn't have dependencies or they are ignored
+					if(!ignoreDependencies) // If the dependencies are not ignored
+						test.setFulfillsDependencies(true); // All dependencies (none) are fulfilled
 					isDesiredTestCase = true; // The test case will be valid for sure, so return it
 				}
 			}
 		}
-		
-		index++;
 
 		if (idlReasoner != null && faulty) // When trying to create faulty test cases, if the operation has dependencies and they are not ignored...
 			violateDependency = !violateDependency; // ... every two iterations, violate an inter-parameter dependency
@@ -139,6 +141,13 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		if (!test.getFaulty()) // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
 			if (checkFaulty(test, validator))
 				test.setFaulty(true);
+
+		// Update indexes
+		index++;
+		if (test.getFaulty())
+			nFaulty++;
+		else
+			nNominal++;
 		
 		return test;
 	}

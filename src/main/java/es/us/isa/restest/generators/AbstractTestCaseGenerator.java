@@ -35,6 +35,8 @@ public abstract class AbstractTestCaseGenerator {
 	protected SwaggerRequestResponseValidator validator;	// Validator used to know if a test case is valid or not
 	protected int numberOfTest;								// Number of test cases to be generated for each operation
 	protected int index;									// Number of test cases generated so far
+	protected int nFaulty;									// Number of faulty test cases generated so far
+	protected int nNominal;									// Number of nominal test cases generated so far
 
 	/**
 	 * Generate a set of test cases
@@ -208,4 +210,19 @@ public abstract class AbstractTestCaseGenerator {
 		this.ignoreDependencies = ignoreDependencies;
 	}
 
+	public int getnFaulty() {
+		return nFaulty;
+	}
+
+	public void setnFaulty(int nFaulty) {
+		this.nFaulty = nFaulty;
+	}
+
+	public int getnNominal() {
+		return nNominal;
+	}
+
+	public void setnNominal(int nNominal) {
+		this.nNominal = nNominal;
+	}
 }
