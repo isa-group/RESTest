@@ -74,6 +74,10 @@ public class RESTestRunner {
 		System.setProperty("allure.results.directory", allureReportManager.getResultsDirPath());
 		testExecution(testClass);
 
+		// Print number of faulty and nominal test cases
+		logger.info("Nominal test cases generated: " + generator.getnNominal());
+		logger.info("Faulty test cases generated: " + generator.getnFaulty());
+
 		if(covMeter != null)
 			readTestResults();
 		

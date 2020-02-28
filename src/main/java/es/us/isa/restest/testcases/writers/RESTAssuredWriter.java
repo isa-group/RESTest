@@ -64,9 +64,6 @@ public class RESTAssuredWriter implements IWriter {
 		// Generate variables to be used.
 		contentFile += generateSetUp(baseURI);
 
-		// Generate printing of number of nom. and fault. test cases generated after run
-		contentFile += generateTearDown(className);
-		
 		// Generate tests
 		int ntest=1;
 		for(TestCase t: testCases)
@@ -105,7 +102,6 @@ public class RESTAssuredWriter implements IWriter {
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n"
 				+  "import es.us.isa.restest.validation.NominalOrFaultyTestCaseFilter;\n"
-				+  "import es.us.isa.restest.testcases.TestCaseCounterFilter;\n"
 				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
@@ -140,10 +136,6 @@ public class RESTAssuredWriter implements IWriter {
 		if (enableStats) // This is only needed to export output data to the proper folder
 			content += "\tprivate final String APIName = \"" + APIName + "\";\n";
 
-		// Nominal and faulty test case count:
-		content += "\tprivate static Integer nFaulty = 0;\t\t// Number of faulty test cases generated\n"
-				+  "\tprivate static Integer nNominal = 0;\t// Number of nominal test cases generated";
-		
 		content += "\n";
 		
 		return content;
@@ -156,17 +148,6 @@ public class RESTAssuredWriter implements IWriter {
 			  +	"\t}\n\n";
 	}
 
-	private String generateTearDown(String className) {
-		return  "\t@AfterClass\n"
-			  +	"\tpublic static void finish() {\n"
-			  +	"\t\tLogger logger = LogManager.getLogger(" + className + ".class.getName());\n"
-			  +	"\t\tSystem.out.println(\"\\n\");\n"
-			  +	"\t\tlogger.info(\"Nominal test cases generated: \" + nNominal);\n"
-			  +	"\t\tlogger.info(\"Faulty test cases generated: \" + nFaulty);\n"
-			  +	"\t\tSystem.out.println(\"\\n\");\n"
-			  +	"\t}\n\n";
-	}
-	
 	private String generateTest(TestCase t, int instance) {
 		String content="";
 		
@@ -242,7 +223,8 @@ public class RESTAssuredWriter implements IWriter {
 	}
 
 	private String generateFiltersInitialization(TestCase t) {
-		return "\t\tTestCaseCounterFilter testCaseCounterFilter = new TestCaseCounterFilter(OAI_JSON_URL, nFaulty, nNominal, " + t.getFaulty() + ");\n\n";
+		return "\t\tNominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = " +
+			   "new NominalOrFaultyTestCaseFilter(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ");\n\n";
 	}
 
 	private String generateTryBlockStart() {
@@ -347,12 +329,10 @@ public class RESTAssuredWriter implements IWriter {
 			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
 		if (allureReport) // Allure filter
 			content += "\t\t\t\t.filter(allureFilter)\n";
-		// TestCaseCount filter
-		content += "\t\t\t\t.filter(testCaseCounterFilter)\n";
 		// 5XX status code oracle:
 		content += "\t\t\t\t.filter(statusCode5XXFilter)\n";
-//		if (t.getFaulty())
-		content += "\t\t\t\t.filter(new NominalOrFaultyTestCaseFilter(testCaseCounterFilter, " + t.getFulfillsDependencies() + "))\n";
+		// Validation of nominal and faulty test cases
+		content += "\t\t\t\t.filter(nominalOrFaultyTestCaseFilter)\n";
 //		if (OAIValidation)
 		content += "\t\t\t\t.filter(validationFilter)\n";
 
@@ -463,10 +443,7 @@ public class RESTAssuredWriter implements IWriter {
 		return "\t\t} catch (RuntimeException ex) {\n"
 				+  "\t\t\tSystem.err.println(ex.getMessage());\n"
 				+  "\t\t\tfail(ex.getMessage());\n"
-				+  "\t\t} finally {\n"
-				+  "\t\t\tnFaulty = testCaseCounterFilter.getnFaulty();\n"
-				+  "\t\t\tnNominal = testCaseCounterFilter.getnNominal();\n"
-				+  "\t\t}\n";
+				+  "\t\t}";
 	}
 		
 	private void saveToFile(String path, String className, String contentFile) {

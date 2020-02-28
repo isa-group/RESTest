@@ -2,6 +2,7 @@ package es.us.isa.restest.generators;
 
 import java.util.Random;
 
+import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
@@ -15,6 +16,7 @@ import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
 
 import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
+import static es.us.isa.restest.testcases.TestCase.checkFaulty;
 import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static es.us.isa.restest.util.SpecificationVisitor.*;
 
@@ -26,8 +28,11 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		this.spec = spec;
 		this.conf = conf;
+		this.validator = SwaggerRequestResponseValidator.createFor(spec.getPath()).build();
 		this.numberOfTest = nTests;
-		this.index =0;
+		this.index = 0;
+		this.nFaulty = 0;
+		this.nNominal = 0;
 		this.violateDependency = false;
 		
 		this.rand = new Random();
@@ -123,15 +128,26 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 						isDesiredTestCase = true; // return this test case
 					}
 				} else { // If the operation doesn't have dependencies or they are ignored
+					if(!ignoreDependencies) // If the dependencies are not ignored
+						test.setFulfillsDependencies(true); // All dependencies (none) are fulfilled
 					isDesiredTestCase = true; // The test case will be valid for sure, so return it
 				}
 			}
 		}
-		
-		index++;
 
 		if (idlReasoner != null && faulty) // When trying to create faulty test cases, if the operation has dependencies and they are not ignored...
 			violateDependency = !violateDependency; // ... every two iterations, violate an inter-parameter dependency
+
+		if (!test.getFaulty()) // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
+			if (checkFaulty(test, validator))
+				test.setFaulty(true);
+
+		// Update indexes
+		index++;
+		if (test.getFaulty())
+			nFaulty++;
+		else
+			nNominal++;
 		
 		return test;
 	}

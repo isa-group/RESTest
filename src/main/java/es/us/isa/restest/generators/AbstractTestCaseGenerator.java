@@ -3,6 +3,7 @@ package es.us.isa.restest.generators;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationVisitor;
@@ -31,8 +32,11 @@ public abstract class AbstractTestCaseGenerator {
 	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
 	protected Boolean violateDependency;					// Whether to violate an inter-parameter dependency to create a faulty test case
 	protected Analyzer idlReasoner;							// IDLReasoner to check if requests are valid or not
+	protected SwaggerRequestResponseValidator validator;	// Validator used to know if a test case is valid or not
 	protected int numberOfTest;								// Number of test cases to be generated for each operation
 	protected int index;									// Number of test cases generated so far
+	protected int nFaulty;									// Number of faulty test cases generated so far
+	protected int nNominal;									// Number of nominal test cases generated so far
 
 	/**
 	 * Generate a set of test cases
@@ -206,4 +210,19 @@ public abstract class AbstractTestCaseGenerator {
 		this.ignoreDependencies = ignoreDependencies;
 	}
 
+	public int getnFaulty() {
+		return nFaulty;
+	}
+
+	public void setnFaulty(int nFaulty) {
+		this.nFaulty = nFaulty;
+	}
+
+	public int getnNominal() {
+		return nNominal;
+	}
+
+	public void setnNominal(int nNominal) {
+		this.nNominal = nNominal;
+	}
 }
