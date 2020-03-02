@@ -13,33 +13,36 @@ import static es.us.isa.restest.util.FileManager.createDir;
 
 public class IterativeExample {
 
-    private static int numTestCases = 2;												    // Number of test cases per operation
-    private static String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";		// Path to OAS specification file
-    private static String confPath = "src/test/resources/AmadeusHotel/defaultConf.yaml";	// Path to test configuration file
-    private static String targetDirJava = "src/generation/java/amadeusHotels";				// Directory where tests will be generated.
+    private static int numTestCases = 2;			        // Number of test cases per operation
+    private static String OAISpecPath;		                // Path to OAS specification file
+    private static String confPath;	                        // Path to test configuration file
+    private static String apikeysPath;                      // Path to the file where apikeys are stored
+    private static String targetDirJava;	                // Directory where tests will be generated.
     //	private static String targetDirTestData = "target/test-data";						// Directory where tests will be exported to CSV.
 //	private static String targetDirCoverageData = "target/coverage-data";				    // Directory where coverage will be exported to CSV.
-    private static String packageName = "amadeusHotels";									// Package name.
-    private static String APIName = "amadeusHotelSearch";									// API name
-    private static String testClassName = "AmadeusHotelsTest";								// Name prefix of the class to be generated
-    private static Boolean enableInputCoverage = true;                                      // Set to 'true' if you want the input coverage report.
-    private static Boolean enableOutputCoverage = true;                                     // Set to 'true' if you want the input coverage report.
-    private static Boolean enableCSVStats = true;                                           // Set to 'true' if you want statistics in a CSV file.
-    private static Boolean ignoreDependencies = false;                                      // Set to 'true' if you don't want to use IDLReasoner.
-    private static int totalNumTestCases = 50;											    // Total number of test cases to be generated
+    private static String packageName;						// Package name.
+    private static String APIName;							// API name
+    private static String testClassName;					// Name prefix of the class to be generated
+    private static Boolean enableInputCoverage = true;      // Set to 'true' if you want the input coverage report.
+    private static Boolean enableOutputCoverage = true;     // Set to 'true' if you want the input coverage report.
+    private static Boolean enableCSVStats = true;           // Set to 'true' if you want statistics in a CSV file.
+    private static Boolean ignoreDependencies = false;      // Set to 'true' if you don't want to use IDLReasoner.
+    private static int totalNumTestCases = 50;				// Total number of test cases to be generated
     private static int timeDelay = -1;
 
     public static void main(String[] args) {
 
         if(args.length > 0)
             setParameters(args[0]);
+        else
+            setParameters("src/main/resources/APIProperties/comments.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
 
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
-        AbstractTestCaseGenerator generator = MainUtils.createGenerator(spec, confPath, numTestCases, ignoreDependencies);	                                        // Test case generator
+        AbstractTestCaseGenerator generator = MainUtils.createGenerator(spec, confPath, apikeysPath, numTestCases, ignoreDependencies);	                                        // Test case generator
         IWriter writer = MainUtils.createWriter(spec, OAISpecPath, targetDirJava, testClassName, packageName, enableOutputCoverage, APIName);   // Test case writer
         AllureReportManager reportManager = MainUtils.createAllureReportManager(APIName);		                                                // Allure test case reporter
         CSVReportManager csvReportManager = MainUtils.createCSVReportManager(APIName, enableCSVStats);			                                // CSV test case reporter
@@ -73,6 +76,7 @@ public class IterativeExample {
         numTestCases = Integer.parseInt(PropertyManager.readProperty(APIPropertyFilePath, "api.numtestcases"));
         OAISpecPath = PropertyManager.readProperty(APIPropertyFilePath, "api.oaispecpath");
         confPath = PropertyManager.readProperty(APIPropertyFilePath, "api.confpath");
+        apikeysPath = PropertyManager.readProperty(APIPropertyFilePath, "apiapikeyspath");
         targetDirJava = PropertyManager.readProperty(APIPropertyFilePath, "api.targetdirjava");
         packageName = PropertyManager.readProperty(APIPropertyFilePath, "api.packagename");
         APIName = PropertyManager.readProperty(APIPropertyFilePath, "api.apiname");

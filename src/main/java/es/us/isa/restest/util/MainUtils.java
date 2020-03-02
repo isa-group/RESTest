@@ -18,13 +18,17 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
 public class MainUtils {
 
     // Create a random test case generator
-    public static AbstractTestCaseGenerator createGenerator(OpenAPISpecification spec, String confPath, int numTestCases, Boolean ignoreDependencies) {
+    public static AbstractTestCaseGenerator createGenerator(OpenAPISpecification spec, String confPath, String apikeysPath, int numTestCases, Boolean ignoreDependencies) {
 
         // Load configuration
         TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(confPath);
 
         // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+        AbstractTestCaseGenerator generator;
+        if(apikeysPath != null)
+            generator = new RandomTestCaseGenerator(spec, conf, apikeysPath, numTestCases);
+        else
+            generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
         generator.setIgnoreDependencies(ignoreDependencies);
         return generator;
     }
