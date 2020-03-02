@@ -85,5 +85,8 @@ public class IterativeExample {
         enableOutputCoverage = Boolean.parseBoolean(PropertyManager.readProperty(APIPropertyFilePath, "api.enableoutputcoverage"));
         enableCSVStats = Boolean.parseBoolean(PropertyManager.readProperty(APIPropertyFilePath, "api.enablecsvstats"));
         ignoreDependencies = Boolean.parseBoolean(PropertyManager.readProperty(APIPropertyFilePath, "api.ignoredependencies"));
+        totalNumTestCases = Integer.parseInt(PropertyManager.readProperty(APIPropertyFilePath, "api.numtotaltestcases"));
+        timeDelay = Integer.parseInt(PropertyManager.readProperty(APIPropertyFilePath, "api.delay"));
+
     }
 }
