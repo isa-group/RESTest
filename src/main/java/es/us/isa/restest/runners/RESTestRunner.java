@@ -98,6 +98,8 @@ public class RESTestRunner {
 			String csvTcPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
 			testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
 
+			//TODO: Support to choose whether or not you want input coverage.
+
 			String csvTcCoveragePath = csvReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.testcases.file");
 			testCases.forEach(tc -> CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc));
 		}

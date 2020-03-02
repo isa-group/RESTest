@@ -7,7 +7,6 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
-import sun.applet.Main;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 
@@ -35,7 +34,7 @@ public class IterativeExample {
         if(args.length > 0)
             setParameters(args[0]);
         else
-            setParameters("src/main/resources/APIProperties/comments.properties");
+            setParameters("src/main/resources/APIProperties/memes.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
