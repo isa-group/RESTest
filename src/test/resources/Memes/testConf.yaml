@@ -128,17 +128,18 @@ testConfiguration:
       - name: id
         weight: null
         generator:
-          type: RandomString
+          type: RandomInputValue
           genParameters:
-          - name: minLength
+          - name: values
             values:
-            - 5
-          - name: maxLength
-            values:
-            - 20
-          - name: includeNumbers
-            values:
-            - true
+            - 'srthdrythdryth'
+            - '-KkyVlBNZYQwslad5vnw'
+            - 'rtsjhdrthsrdth'
+            - 'stedhsrthrsdhyt'
+            - '-KkuizZDRVu2bmV8nOGO'
+            - 'ghdfsdtrfhwerthje'
+            - 'rfsdthdrthdrthy'
+            - 'srtjhdsryjrdshuj'
       paramDependencies: null
       expectedResponse: 200
     - operationId: deleteMeme
@@ -151,13 +152,14 @@ testConfiguration:
           genParameters:
           - name: minLength
             values:
-            - 5
-          - name: maxLength
-            values:
-            - 20
-          - name: includeNumbers
-            values:
-            - true
+            - 'srthdrythdryth'
+            - '-KkyVlBNZYQwslad5vnw'
+            - 'rtsjhdrthsrdth'
+            - 'stedhsrthrsdhyt'
+            - '-KkuizZDRVu2bmV8nOGO'
+            - 'ghdfsdtrfhwerthje'
+            - 'rfsdthdrthdrthy'
+            - 'srtjhdsryjrdshuj'
       paramDependencies: null
       expectedResponse: 200
   - testPath: /meme/rarity
