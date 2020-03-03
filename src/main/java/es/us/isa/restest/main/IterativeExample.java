@@ -70,6 +70,11 @@ public class IterativeExample {
             System.out.println("Iteration "  + iteration + ". " +  runner.getNumTestCases() + " test cases generated.");
             iteration++;
         }
+
+        if(enableCSVStats) {
+            String csvNFPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.nominalfaulty.file");
+            generator.exportNominalFaultyToCSV(csvNFPath, "total");
+        }
     }
 
     private static void setParameters(String APIPropertyFilePath) {
