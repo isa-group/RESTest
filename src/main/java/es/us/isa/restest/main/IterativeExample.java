@@ -12,10 +12,9 @@ import static es.us.isa.restest.util.FileManager.createDir;
 
 public class IterativeExample {
 
-    private static int numTestCases = 2;			        // Number of test cases per operation
+    private static int numTestCases;			        // Number of test cases per operation
     private static String OAISpecPath;		                // Path to OAS specification file
     private static String confPath;	                        // Path to test configuration file
-    private static String apikeysPath;                      // Path to the file where apikeys are stored
     private static String targetDirJava;	                // Directory where tests will be generated.
     //	private static String targetDirTestData = "target/test-data";						// Directory where tests will be exported to CSV.
 //	private static String targetDirCoverageData = "target/coverage-data";				    // Directory where coverage will be exported to CSV.
@@ -26,6 +25,7 @@ public class IterativeExample {
     private static Boolean enableOutputCoverage = true;     // Set to 'true' if you want the input coverage report.
     private static Boolean enableCSVStats = true;           // Set to 'true' if you want statistics in a CSV file.
     private static Boolean ignoreDependencies = false;      // Set to 'true' if you don't want to use IDLReasoner.
+    private static Float faultyRatio = 0.1f;                // Percentage of faulty test cases to generate. Defaults to 0.1
     private static int totalNumTestCases = 50;				// Total number of test cases to be generated
     private static int timeDelay = -1;
 
@@ -34,14 +34,15 @@ public class IterativeExample {
         if(args.length > 0)
             setParameters(args[0]);
         else
-            setParameters("src/main/resources/APIProperties/memes.properties");
+            setParameters("src/main/resources/APIProperties/youtube_search.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
 
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
-        AbstractTestCaseGenerator generator = MainUtils.createGenerator(spec, confPath, apikeysPath, numTestCases, ignoreDependencies);	                                        // Test case generator
+        AbstractTestCaseGenerator generator = MainUtils.createGenerator(spec, confPath, numTestCases, ignoreDependencies);	                                        // Test case generator
+        generator.setFaultyRatio(faultyRatio);
         IWriter writer = MainUtils.createWriter(spec, OAISpecPath, targetDirJava, testClassName, packageName, enableOutputCoverage, APIName);   // Test case writer
         AllureReportManager reportManager = MainUtils.createAllureReportManager(APIName);		                                                // Allure test case reporter
         CSVReportManager csvReportManager = MainUtils.createCSVReportManager(APIName, enableCSVStats, enableInputCoverage);			                                // CSV test case reporter
@@ -75,7 +76,6 @@ public class IterativeExample {
         numTestCases = Integer.parseInt(PropertyManager.readProperty(APIPropertyFilePath, "api.numtestcases"));
         OAISpecPath = PropertyManager.readProperty(APIPropertyFilePath, "api.oaispecpath");
         confPath = PropertyManager.readProperty(APIPropertyFilePath, "api.confpath");
-        apikeysPath = PropertyManager.readProperty(APIPropertyFilePath, "apiapikeyspath");
         targetDirJava = PropertyManager.readProperty(APIPropertyFilePath, "api.targetdirjava");
         packageName = PropertyManager.readProperty(APIPropertyFilePath, "api.packagename");
         APIName = PropertyManager.readProperty(APIPropertyFilePath, "api.apiname");
@@ -87,5 +87,8 @@ public class IterativeExample {
         totalNumTestCases = Integer.parseInt(PropertyManager.readProperty(APIPropertyFilePath, "api.numtotaltestcases"));
         timeDelay = Integer.parseInt(PropertyManager.readProperty(APIPropertyFilePath, "api.delay"));
 
+        String faultyRatioString = PropertyManager.readProperty(APIPropertyFilePath, "api.faultyratio");
+        if (faultyRatioString != null)
+            faultyRatio = Float.parseFloat(faultyRatioString);
     }
 }
