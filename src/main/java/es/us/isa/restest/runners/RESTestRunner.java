@@ -78,6 +78,13 @@ public class RESTestRunner {
 		logger.info("Nominal test cases generated: " + generator.getnNominal());
 		logger.info("Faulty test cases generated: " + generator.getnFaulty());
 
+
+		if (csvReportManager.getEnableStats()) {
+			logger.info("Exporting number of faulty and nominal test cases to CSV");
+			String csvNFPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.nominalfaulty.file");
+			generator.exportNominalFaultyToCSV(csvNFPath, testClassName);
+		}
+
 		if(covMeter != null)
 			readTestResults();
 		
@@ -93,10 +100,12 @@ public class RESTestRunner {
 	    
 		// Generate test cases
 		logger.info("Generating tests");
+		generator.setnCurrentFaulty(0);
+		generator.setnCurrentNominal(0);
 		Collection<TestCase> testCases = generator.generate();
         this.numTestCases += testCases.size();
 
-        // Export test cases to CSV if enableStats is true
+        // Export test cases and nFaulty and nNominal to CSV if enableStats is true
 		if (csvReportManager.getEnableStats()) {
 			logger.info("Exporting test cases coverage to CSV");
 			String csvTcPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
@@ -111,7 +120,8 @@ public class RESTestRunner {
 
       // Update CoverageMeter with recently created test suite (if coverage is enabled).
 		if (covMeter != null) {
-			covMeter.setTestSuite(testCases);
+
+			covMeter.addTestSuite(testCases);
 		}
         
         // Write test cases

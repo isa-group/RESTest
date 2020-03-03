@@ -33,6 +33,8 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.index = 0;
 		this.nFaulty = 0;
 		this.nNominal = 0;
+		this.nCurrentFaulty = 0;
+		this.nCurrentNominal = 0;
 		this.violateDependency = false;
 		
 		this.rand = new Random();
@@ -144,11 +146,13 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 		// Update indexes
 		index++;
-		if (test.getFaulty())
+		if (test.getFaulty()) {
+			nCurrentFaulty++;
 			nFaulty++;
-		else
+		} else {
+			nCurrentNominal++;
 			nNominal++;
-		
+		}
 		return test;
 	}
 	

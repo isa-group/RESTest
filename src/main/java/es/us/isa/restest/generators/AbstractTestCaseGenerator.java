@@ -14,11 +14,14 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
+import es.us.isa.restest.util.CSVManager;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
 import org.apache.commons.lang3.RandomStringUtils;
 
+import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
+import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static es.us.isa.restest.util.SpecificationVisitor.*;
 
 public abstract class AbstractTestCaseGenerator {
@@ -35,6 +38,8 @@ public abstract class AbstractTestCaseGenerator {
 	protected SwaggerRequestResponseValidator validator;	// Validator used to know if a test case is valid or not
 	protected int numberOfTest;								// Number of test cases to be generated for each operation
 	protected int index;									// Number of test cases generated so far
+	protected int nCurrentFaulty;							//Number of faulty test cases generated in the current iteration
+	protected int nCurrentNominal;							//Number of nominal test cases generated in the current iteration
 	protected int nFaulty;									// Number of faulty test cases generated so far
 	protected int nNominal;									// Number of nominal test cases generated so far
 
@@ -175,7 +180,16 @@ public abstract class AbstractTestCaseGenerator {
 		
 		for(TestParameter param: testParameters)
 			generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
-		
+
+	}
+
+	public void exportNominalFaultyToCSV(String filePath, String testClassName) {
+		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
+			createFileWithHeader(filePath, "test_id,nNominal,nFaulty");
+		if (testClassName.equals("total"))
+			CSVManager.writeRow(filePath, testClassName + "," + nNominal + "," + nFaulty);
+		else
+			CSVManager.writeRow(filePath, testClassName + "," + nCurrentNominal + "," + nCurrentFaulty);
 	}
 
 	public Boolean getEnableFaulty() {
@@ -224,5 +238,21 @@ public abstract class AbstractTestCaseGenerator {
 
 	public void setnNominal(int nNominal) {
 		this.nNominal = nNominal;
+	}
+
+	public int getnCurrentFaulty() {
+		return nCurrentFaulty;
+	}
+
+	public void setnCurrentFaulty(int nCurrentFaulty) {
+		this.nCurrentFaulty = nCurrentFaulty;
+	}
+
+	public int getnCurrentNominal() {
+		return nCurrentNominal;
+	}
+
+	public void setnCurrentNominal(int nCurrentNominal) {
+		this.nCurrentNominal = nCurrentNominal;
 	}
 }

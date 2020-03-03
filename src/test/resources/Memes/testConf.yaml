@@ -148,9 +148,9 @@ testConfiguration:
       - name: id
         weight: null
         generator:
-          type: RandomString
+          type: RandomInputValue
           genParameters:
-          - name: minLength
+          - name: values
             values:
             - 'srthdrythdryth'
             - '-KkyVlBNZYQwslad5vnw'
