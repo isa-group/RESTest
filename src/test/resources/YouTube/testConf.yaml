@@ -196,9 +196,17 @@ testConfiguration:
         generator:
           type: RandomInputValue
           genParameters:
-          - name: csv
+          - name: values
             values:
-            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+            - ES
+            - US
+            - DE
+            - FR
+            - IT
+            - PT
+#          - name: csv
+#            values:
+#            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
       - name: relatedToVideoId
         weight: 0.1
         generator:
@@ -222,9 +230,17 @@ testConfiguration:
         generator:
           type: RandomInputValue
           genParameters:
-          - name: csv
+          - name: values
             values:
-            - src/main/resources/TestData/ISO-639-LangCodes.csv
+            - ES
+            - EN
+            - DE
+            - FR
+            - IT
+            - PT
+#          - name: csv
+#            values:
+#            - src/main/resources/TestData/ISO-639-LangCodes.csv
       - name: safeSearch
         weight: 0.5
         generator:
