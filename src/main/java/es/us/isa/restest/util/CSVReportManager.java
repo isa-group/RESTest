@@ -11,6 +11,8 @@ public class CSVReportManager {
     private String coverageDataDir;
     private boolean enableStats = true;
 
+    private boolean enableInputCoverage = true;
+
     public CSVReportManager() {
         this(PropertyManager.readProperty("data.tests.dir"), PropertyManager.readProperty("data.coverage.tests.dir"));
     }
@@ -42,5 +44,13 @@ public class CSVReportManager {
 
     public void setEnableStats(boolean enableStats) {
         this.enableStats = enableStats;
+    }
+
+    public boolean getEnableInputCoverage() {
+        return enableInputCoverage;
+    }
+
+    public void setEnableInputCoverage(boolean enableInputCoverage) {
+        this.enableInputCoverage = enableInputCoverage;
     }
 }

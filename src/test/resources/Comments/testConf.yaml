@@ -120,6 +120,7 @@ testConfiguration:
           genParameters:
           - name: values
             values:
+            - c0
             - c1
             - c2
             - c3
@@ -129,7 +130,6 @@ testConfiguration:
             - c7
             - c8
             - c9
-            - c10
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
