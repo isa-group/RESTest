@@ -44,7 +44,7 @@ public class IterativeExample {
         AbstractTestCaseGenerator generator = MainUtils.createGenerator(spec, confPath, apikeysPath, numTestCases, ignoreDependencies);	                                        // Test case generator
         IWriter writer = MainUtils.createWriter(spec, OAISpecPath, targetDirJava, testClassName, packageName, enableOutputCoverage, APIName);   // Test case writer
         AllureReportManager reportManager = MainUtils.createAllureReportManager(APIName);		                                                // Allure test case reporter
-        CSVReportManager csvReportManager = MainUtils.createCSVReportManager(APIName, enableCSVStats);			                                // CSV test case reporter
+        CSVReportManager csvReportManager = MainUtils.createCSVReportManager(APIName, enableCSVStats, enableInputCoverage);			                                // CSV test case reporter
         RESTestRunner runner;
         if(enableInputCoverage && enableOutputCoverage) {
             CoverageMeter covMeter = MainUtils.createCoverageMeter(spec);							                                            //Coverage meter

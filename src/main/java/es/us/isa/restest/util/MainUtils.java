@@ -59,7 +59,7 @@ public class MainUtils {
     }
 
     // Create a CSV report manager
-    public static CSVReportManager createCSVReportManager(String APIName, Boolean enableCSVStats) {
+    public static CSVReportManager createCSVReportManager(String APIName, Boolean enableCSVStats, Boolean enableInputCoverage) {
         String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + APIName;
         String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + APIName;
 
@@ -73,6 +73,7 @@ public class MainUtils {
 
         CSVReportManager csvReportManager = new CSVReportManager(testDataDir, coverageDataDir);
         csvReportManager.setEnableStats(enableCSVStats);
+        csvReportManager.setEnableInputCoverage(enableInputCoverage);
 
         return csvReportManager;
     }

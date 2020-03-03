@@ -98,10 +98,11 @@ public class RESTestRunner {
 			String csvTcPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
 			testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
 
-			//TODO: Support to choose whether or not you want input coverage.
-
-			String csvTcCoveragePath = csvReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.testcases.file");
-			testCases.forEach(tc -> CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc));
+			// Generate input coverage data if enableStats and enableInputCoverage is true.
+			if(csvReportManager.getEnableInputCoverage()) {
+				String csvTcCoveragePath = csvReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.testcases.file");
+				testCases.forEach(tc -> CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc));
+			}
 		}
 
       // Update CoverageMeter with recently created test suite (if coverage is enabled).
