@@ -32,8 +32,8 @@ public class CoverageMeter {
 
     public CoverageMeter(CoverageGatherer coverageGatherer) {
         this.coverageGatherer = coverageGatherer;
-        this.testSuite = null;
-        this.testResults = null;
+        this.testSuite = new ArrayList<>();
+        this.testResults = new ArrayList<>();
     }
 
     public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite) {
@@ -62,6 +62,11 @@ public class CoverageMeter {
         return this.testSuite;
     }
 
+    public void addTestSuite(Collection<TestCase> testSuite) {
+        this.testSuite.addAll(testSuite);
+        setCoveredInputElements();
+    }
+
     public void setTestSuite(Collection<TestCase> testSuite) {
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
@@ -69,6 +74,11 @@ public class CoverageMeter {
 
     public Collection<TestResult> getTestResults() {
         return this.testResults;
+    }
+
+    public void addTestResults(Collection<TestResult> testResults) {
+        this.testResults.addAll(testResults);
+        setCoveredOutputElements();
     }
 
     public void setTestResults(Collection<TestResult> testResults) {
