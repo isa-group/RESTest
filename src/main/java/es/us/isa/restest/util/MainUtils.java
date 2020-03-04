@@ -26,7 +26,7 @@ public class MainUtils {
         // Create generator and filter
         AbstractTestCaseGenerator generator;
         if(conf.getAuth().getApiKeysPath() != null)
-            generator = new RandomTestCaseGenerator(spec, conf, conf.getAuth().getApiKeysPath(), numTestCases);
+            generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
         else
             generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
         generator.setIgnoreDependencies(ignoreDependencies);

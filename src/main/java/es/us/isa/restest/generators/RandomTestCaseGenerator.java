@@ -28,6 +28,14 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		this.spec = spec;
 		this.conf = conf;
+
+		// AuthManager configuration:
+		String authPath = conf.getAuth().getApiKeysPath();
+		if (authPath == null)
+			authPath = conf.getAuth().getHeadersPath();
+		if (authPath != null)
+			this.authManager = new AuthManager(authPath);
+
 		this.validator = SwaggerRequestResponseValidator.createFor(spec.getPath()).build();
 		this.numberOfTest = nTests;
 		this.index = 0;
@@ -42,19 +50,8 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		rand.setSeed(this.seed);
 	}
 
-	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, String apiKeysPath, int nTests) {
-		this(spec, conf, nTests);
-		this.authManager = new AuthManager(apiKeysPath);
-	}
-
 	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, Boolean enableFaulty, int nTests) {
 		this(spec, conf, nTests);
-		this.enableFaulty = enableFaulty;
-	}
-
-	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, Boolean enableFaulty, String apiKeysPath, int nTests) {
-		this(spec, conf, nTests);
-		this.authManager = new AuthManager(apiKeysPath);
 		this.enableFaulty = enableFaulty;
 	}
 	

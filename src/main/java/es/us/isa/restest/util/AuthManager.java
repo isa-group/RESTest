@@ -6,14 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static es.us.isa.restest.util.FileManager.readFile;
 import static java.lang.System.exit;
 
 /**
- * This class manages multiple API keys for a single API. Given a JSON file
- * containing all API keys, the AuthManager automatically
+ * This class manages multiple API keys or auth headers for a single API. Given
+ * a JSON file containing all API keys or auth headers, the AuthManager automatically
  * selects one of them randomly.<br/><br/>
  *
  * The format of the JSON file should be as follows:<br/>
@@ -29,19 +28,19 @@ import static java.lang.System.exit;
  */
 public class AuthManager {
 
-    private final String apikeysBasePath = "src/main/resources/auth/";
-    private String apikeysPath;
+    private final String authBasePath = "src/main/resources/auth/";
+    private String authPath;
     private ObjectMapper objectMapper = new ObjectMapper();
-    private Map.Entry<String, List<String>> apikeys;
+    private Map.Entry<String, List<String>> authProperties;
     private int counter;
 
-    public AuthManager(String apikeysRelativePath) {
-        apikeysPath = apikeysBasePath + apikeysRelativePath;
+    public AuthManager(String authRelativePath) {
+        authPath = authBasePath + authRelativePath;
         this.counter = 0;
         try {
-            apikeys = objectMapper.readValue(readFile(apikeysPath), new TypeReference<Map.Entry<String, List<String>>>(){});
+            authProperties = objectMapper.readValue(readFile(authPath), new TypeReference<Map.Entry<String, List<String>>>(){});
         } catch (IOException e) {
-            System.err.println("Error parsing APIkeys file: " + apikeysPath + ". Message: " + e.getMessage());
+            System.err.println("Error parsing authProperties file: " + authPath + ". Message: " + e.getMessage());
             e.printStackTrace();
             exit(1);
         }
@@ -50,17 +49,17 @@ public class AuthManager {
     /**
      * Get API key.
      */
-    public String getApikey() {
-        this.counter = this.apikeys.getValue().size() == this.counter? 0 : this.counter;
-        String apiKey = this.apikeys.getValue().get(counter);
+    public String getAuthProperty() {
+        this.counter = this.authProperties.getValue().size() == this.counter? 0 : this.counter;
+        String authProperty = this.authProperties.getValue().get(counter);
         counter++;
-        return apiKey;
+        return authProperty;
     }
 
     /**
      * Get name of the parameter that represents an API key (e.g., "key", "apikey", etc.).
      */
-    public String getApikeyName() {
-        return  apikeys.getKey();
+    public String getAuthPropertyName() {
+        return  authProperties.getKey();
     }
 }

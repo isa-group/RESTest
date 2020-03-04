@@ -9,6 +9,7 @@ public class Auth {
     private List<QueryParam> queryParams = null;
     private List<HeaderParam> headerParams = null;
     private String apiKeysPath; // JSON file containing array of API keys (path relative to src/main/resources/auth/)
+    private String headersPath; // JSON file containing array of auth headers (path relative to src/main/resources/auth/)
 
     public Boolean getRequired() {
         return required;
@@ -42,5 +43,11 @@ public class Auth {
         this.apiKeysPath = apiKeysPath;
     }
 
+    public String getHeadersPath() {
+        return headersPath;
+    }
 
+    public void setHeadersPath(String headersPath) {
+        this.headersPath = headersPath;
+    }
 }

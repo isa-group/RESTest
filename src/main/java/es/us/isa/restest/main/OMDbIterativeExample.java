@@ -98,7 +98,7 @@ public class OMDbIterativeExample {
         TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(confPath);
 
         // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, apikeysPath, numTestCases);
+        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
         return generator;
     }
