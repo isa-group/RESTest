@@ -5062,6 +5062,10 @@ definitions:
     properties:
       authorChannelId:
         description: 'The id of the author''s YouTube channel, if any.'
+        type: object
+        properties:
+          value:
+            type: string
       authorChannelUrl:
         description: 'Link to the author''s YouTube channel, if any.'
         type: string
