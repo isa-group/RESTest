@@ -1,0 +1,213 @@
+---
+auth:
+  required: true
+  queryParams:
+    # Add Auth config
+    - name:
+      value:
+    - name:
+      value:
+  headerParams: []
+  apiKeysPath: null
+testConfiguration:
+  testPaths:
+  - testPath: /venues/search
+    operations:
+    - operationId: searchVenues
+      method: get
+      testParameters:
+      - name: v
+        weight: null
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - (19\d\d|20[01]\d)(0[1-9]|1[0-2])(0[1-9]|[1-2]\d)
+            objectValues: null
+      - name: ll
+        weight: 0.5
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+            objectValues: null
+      - name: near
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: intent
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - checkin
+            - global
+            - browse
+            - match
+            objectValues: null
+      - name: radius
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100000
+            objectValues: null
+      - name: sw
+        weight: 0.5
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+            objectValues: null
+      - name: ne
+        weight: 0.5
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+            objectValues: null
+      - name: query
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: limit
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 50
+            objectValues: null
+      - name: categoryId
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - "src/main/resources/TestData/FoursquareCategoryIds-incomplete.csv"
+          - name: minValues
+            values:
+            - 1
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+      - name: llAcc
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 10000
+            objectValues: null
+      - name: alt
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 8848
+            objectValues: null
+      - name: altAcc
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 10000
+            objectValues: null
+      - name: url
+        weight: 0.5
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
+            objectValues: null
+      - name: providerId
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: linkedId
+        weight: 0.5
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - ([1-9])\d\d\d\d\d\d\d\d\d\d\d\d
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
