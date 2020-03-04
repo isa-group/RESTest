@@ -15,12 +15,18 @@ testConfiguration:
       - name: term
         weight: 0.5
         generator:
-          type: RandomEnglishWord
+          type: RandomInputValue
           genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
+            - name: values
+              values:
+                - food
+                - cinema
+                - open
+                - cheap
+                - public
+                - exciting
+                - cafe
+                - ok
       - name: location
         weight: 0.5
         generator:

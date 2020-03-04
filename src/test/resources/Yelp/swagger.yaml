@@ -100,6 +100,9 @@ paths:
               - gender_neutral_restrooms
               - open_to_all
               - wheelchair_accessible
+      x-dependencies:
+        - OnlyOne(location, latitude AND longitude);
+        - ZeroOrOne(open_now, open_at);
       responses:
         200:
           description: Returns all travels
@@ -129,12 +132,14 @@ definitions:
           type: object
           properties:
             categories:
-              type: object
-              properties:
-                alias:
-                  type: string
-                title:
-                  type: string
+              type: array
+              items:
+                type: object
+                properties:
+                  alias:
+                    type: string
+                  title:
+                    type: string
             coordinates:
               type: object
               properties:
@@ -151,7 +156,7 @@ definitions:
             alias:
               type: string
             is_closed:
-              type: string
+              type: boolean
             name:
               type: string
             phone:
