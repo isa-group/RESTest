@@ -2,21 +2,22 @@
 auth:
   required: true
   queryParams: []
-  headerParams:
-    - name: Authorization
-      #
-      # It is necessary to obtain a new access token every 30 minutes since it expires. You need to
-      # make a POST request to https://test.api.amadeus.com/v1/security/oauth2/token, setting the header
-      # 'content-type' as 'application/x-www-form-urlencoded' and sending the following form parameters:
-      #
-      #   - grant_type = client_credentials
-      #   - client_id = BQYQ3NCoMM2mi91a9sV2karGq5Z3dKbK
-      #   - client_secret = A29nA3Kgh2N76t1a
-      #
-      # The response will contain an 'access_token' parameter, which is the one required below.
-      # Source: https://developers.amadeus.com/self-service/apis-docs/guides/authorization
-      #
-      value: Bearer <INSERT ACCESS_TOKEN>
+  headerParams: []
+  headersPath: Amadeus/headers.json
+#    - name: Authorization
+#      #
+#      # It is necessary to obtain a new access token every 30 minutes since it expires. You need to
+#      # make a POST request to https://test.api.amadeus.com/v1/security/oauth2/token, setting the header
+#      # 'content-type' as 'application/x-www-form-urlencoded' and sending the following form parameters:
+#      #
+#      #   - grant_type = client_credentials
+#      #   - client_id = BQYQ3NCoMM2mi91a9sV2karGq5Z3dKbK
+#      #   - client_secret = A29nA3Kgh2N76t1a
+#      #
+#      # The response will contain an 'access_token' parameter, which is the one required below.
+#      # Source: https://developers.amadeus.com/self-service/apis-docs/guides/authorization
+#      #
+#      value: Bearer <INSERT ACCESS_TOKEN>
 testConfiguration:
   testPaths:
   - testPath: /shopping/hotel-offers
@@ -38,35 +39,29 @@ testConfiguration:
         generator:
           type: RandomNumber
           genParameters:
-          - name: type
-            values:
-            - double
-            objectValues: null
-          - name: min
-            values:
-            - -90.0
-            objectValues: null
-          - name: max
-            values:
-            - 90.0
-            objectValues: null
+            - name: type
+              values:
+                - float
+            - name: max
+              values:
+                - 47.392337
+            - name: min
+              values:
+                - 33.125898
       - name: longitude
         weight: 0.5
         generator:
           type: RandomNumber
           genParameters:
-          - name: type
-            values:
-            - double
-            objectValues: null
-          - name: min
-            values:
-            - -180.0
-            objectValues: null
-          - name: max
-            values:
-            - 180.0
-            objectValues: null
+            - name: type
+              values:
+                - float
+            - name: min
+              values:
+                - -119.205793
+            - name: max
+              values:
+                - -79.958475
       - name: hotelIds
         weight: 0.5
         generator:
@@ -320,7 +315,7 @@ testConfiguration:
               - 1
           - name: maxValues
             values:
-              - 5
+              - 3
       - name: ratings
         weight: 0.5
         generator:

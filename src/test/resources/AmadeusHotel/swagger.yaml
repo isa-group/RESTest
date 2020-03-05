@@ -312,6 +312,10 @@ paths:
         - "$ref": "#/parameters/pageLimit"
         - "$ref": "#/parameters/pageOffset"
         - "$ref": "#/parameters/lang"
+      x-dependencies:
+        - OnlyOne(cityCode, latitude AND longitude, hotelIds);
+        - IF priceRange THEN currency;
+        - IF includeClosed THEN NOT sort=='PRICE';
       responses:
         '200':
           "$ref": "#/responses/MultiHotelsOffers"
