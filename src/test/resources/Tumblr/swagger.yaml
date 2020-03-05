@@ -1,0 +1,164 @@
+swagger: "2.0"
+info:
+  description: "Welcome to the Tumblr API! There isn't anything we enjoy more than seeing talented designers and engineers using Tumblr to invent whole new forms of creative expression. We've put a tremendous amount of care into making this API functional and flexible enough for any projects you throw at it. Join us in our discussion group to talk about how to use it, what could be better, and all the amazing things you're going to build with it. Follow our Engineering Blog for important news and announcements. Please use the API responsibly, and send us your feedback. Enjoy!"
+  version: "v2"
+  title: "Tumblr API"
+host: "api.tumblr.com"
+basePath: "/v2"
+tags:
+  - name: Blogs
+    description: Tumblr Blogs
+schemes:
+  - "https"
+paths:
+  /blog/{blog-identifier}/likes:
+    get:
+      tags:
+        - Blogs
+      summary: Retrieve Blog's Likes
+      description: This method can be used to retrieve the publicly exposed likes from a blog.
+      operationId: getBlogLikes
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          type: string
+          required: true
+          name: blog-identifier
+          description: Any blog identifier
+        - in: query
+          type: integer
+          required: false
+          name: limit
+          description: "The number of results to return: 1–20, inclusive"
+          default: 20
+        - in: query
+          type: integer
+          required: false
+          name: offset
+          description: Liked post number to start at
+          default: 0
+        - in: query
+          type: integer
+          required: false
+          name: before
+          description: Retrieve posts liked before the specified timestamp
+        - in: query
+          type: integer
+          required: false
+          name: after
+          description: Retrieve posts liked after the specified timestamp
+      x-dependencies:
+        - Or(before AND after, offset);
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Response"
+      security:
+        - api_key: []
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: api_key
+    in: query
+definitions:
+  Response:
+    type: object
+    properties:
+      meta:
+        $ref: "#/definitions/Meta"
+      response:
+        $ref: "#/definitions/LikesResponse"
+    xml:
+      name: "Response"
+  LikesResponse:
+    type: object
+    properties:
+      liked_posts:
+        type: array
+        items:
+          $ref: "#/definitions/Post"
+      liked_count:
+        type: integer
+        format: int32
+    xml:
+      name: "LikesResponse"
+  Post:
+    type: object
+    properties:
+      blog:
+        $ref: "#/definitions/Blog"
+      blog_name:
+        type: string
+      id:
+        type: integer
+        format: int64
+      post_url:
+        type: string
+        format: uri
+      type:
+        type: string
+      timestamp:
+        type: integer
+        format: int32
+      date:
+        type: string
+        format: date-time
+      format:
+        type: string
+      reblog_key:
+        type: string
+      tags:
+        type: array
+        items:
+          type: string
+      bookmarklet:
+        type: boolean
+      mobile:
+        type: boolean
+      source_url:
+        type: string
+        format: uri
+      source_title:
+        type: string
+      state:
+        type: string
+      total_posts:
+        type: integer
+        format: int32
+    xml:
+      name: "Post"
+  Blog:
+    type: object
+    properties:
+      name:
+        type: string
+      title:
+        type: string
+      description:
+        type: string
+      url:
+        type: string
+        format: uri
+      uuid:
+        type: string
+        format: uuid
+      updated:
+        type: integer
+        format: int32
+    xml:
+      name: "Blog"
+  Meta:
+    type: "object"
+    properties:
+      status:
+        type: integer
+        format: int32
+      msg:
+        type: string
+    xml:
+      name: "Meta"
+
+
+
