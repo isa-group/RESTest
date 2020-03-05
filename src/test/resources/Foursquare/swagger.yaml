@@ -124,7 +124,7 @@ paths:
         - AllOrNone(providerId, linkedId);
       responses:
         200:
-          description: "Invalid input"
+          description: "OK"
           schema:
             $ref: "#/definitions/VenueSearchResponse"
       security:
