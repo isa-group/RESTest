@@ -104,6 +104,7 @@ paths:
       x-dependencies:
         - Or(location, latitude AND longitude);
         - ZeroOrOne(open_now, open_at);
+        - limit + offset <= 1000;
       responses:
         200:
           description: Returns all travels
