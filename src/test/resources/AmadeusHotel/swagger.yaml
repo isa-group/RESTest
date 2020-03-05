@@ -320,203 +320,203 @@ paths:
         '500':
           "$ref": "#/responses/Error500Response"
       security: []
-  "/shopping/hotel-offers/by-hotel":
-    get:
-      summary: VIEW HOTEL ROOMS.
-      tags:
-        - shopping
-      description: |+
-        This service will return all available offers for a given hotel at a given date range.
-        The user can filter the offers returned by asking for a specific meal, rateCode, or other parameters as described here.
-
-        Note: At this step, exact prices are returned.
-
-        ### Query example
-        Get all offers for Bulgari Hotels Resorts Milano available today.
-        <pre><code>
-        GET https://test.api.amadeus.com/v2/shopping/hotel-offers/by-hotel?hotelId=BGMILBGB&adults=2&roomQuantity=1&paymentPolicy=NONE&view=FULL_ALL_IMAGES
-        </code></pre>
-
-        ### Response example
-        <pre><code>
-        {
-          "data": {
-            "type": "hotel-offers",
-            "hotel": {
-              "type": "hotel",
-              "hotelId": "BGMILBGB",
-              "chainCode": "BG",
-              "dupeId": "700025106",
-              "name": "BULGARI HOTELS RESORTS MILANO",
-              "rating": "5",
-              "cityCode": "MIL",
-              "latitude": 45.47253,
-              "longitude": 9.18805,
-              "address": {
-                "lines": [
-                  "VIA PRIVATA FRATELLI GABBA 7B"
-                ],
-                "postalCode": "20121",
-                "cityName": "MILAN",
-                "countryCode": "IT"
-              },
-              "contact": {
-                "phone": "39-02-8058051",
-                "fax": "39-02-805805222"
-              },
-              "amenities": [
-                "CONVENTION_CTR",
-                "MEETING_ROOMS",
-                "ICE_MACHINES",
-                "RESTAURANT",
-                "HANDICAP_FAC",
-                "ACC_TOILETS",
-                "DIS_PARKG",
-                "BABY-SITTING",
-                "BEAUTY_PARLOUR",
-                "CAR_RENTAL",
-                "ELEVATOR",
-                "EXCHANGE_FAC",
-                "WIFI",
-                "LAUNDRY_SVC",
-                "SPA",
-                "VALET_PARKING",
-                "HAIRDRESSER",
-                "SWIMMING_POOL",
-                "AIR_CONDITIONING",
-                "HAIR_DRYER",
-                "MINIBAR",
-                "MOVIE_CHANNELS",
-                "ROOM_SERVICE",
-                "TELEVISION",
-                "SAFE_DEP_BOX",
-                "FITNESS_CENTER"
-              ],
-              "media": [
-                {
-                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/B6AA0C7920214C49AAFBCFFF32A15300",
-                  "category": "EXTERIOR"
-                },
-                {
-                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/0B9245555964410B97E958128EB3DE52",
-                  "category": "LOBBY"
-                },
-                {
-                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/DDFD5AD22B134110BCDBE64186FE860A",
-                  "category": "SUITE"
-                }
-              ]
-            },
-            "available": true,
-            "offers": [
-              {
-                "id": "8BB1F89D377409FEFACB3E73654A5D765CD812920802E5976BFBB060BAF23AD7",
-                "rateCode": "RAC",
-                "rateFamilyEstimated": {
-                  "code": "RAC",
-                  "type": "P"
-                },
-                "room": {
-                  "type": "REG",
-                  "typeEstimated": {
-                    "category": "SUPERIOR_ROOM",
-                    "beds": 1,
-                    "bedType": "KING"
-                  },
-                  "description": {
-                    "lang": "EN",
-                    "text": "Regular Rate\nSuperior Room garden or patio view, large bathr\noom, 1 King, 35sqm/377sqft, Wireless internet,"
-                  }
-                },
-                "guests": {
-                  "adults": 2
-                },
-                "price": {
-                  "currency": "EUR",
-                  "total": "857.00"
-                },
-                "self": "https://test.api.amadeus.com/v2/shopping/hotel-offers/8BB1F89D377409FEFACB3E73654A5D765CD812920802E5976BFBB060BAF23AD7"
-              },
-              {
-                "id": "2E5650829E01B8BD88085B597266F15EF03E6E23BC8DB1A470A6D03F8E2BA1A8",
-                "rateCode": "RAC",
-                "rateFamilyEstimated": {
-                  "code": "RAC",
-                  "type": "P"
-                },
-                "room": {
-                  "type": "REG",
-                  "typeEstimated": {
-                    "category": "DELUXE_ROOM"
-                  },
-                  "description": {
-                    "lang": "EN",
-                    "text": "Regular Rate\nDeluxe Room garden or patio view, walk-in close\nt, large bathroom, 1 King or 2 Queen, 40sqm/430"
-                  }
-                },
-                "guests": {
-                  "adults": 2
-                },
-                "price": {
-                  "currency": "EUR",
-                  "total": "912.00"
-                },
-                "self": "https://test.api.amadeus.com/v2/shopping/hotel-offers/2E5650829E01B8BD88085B597266F15EF03E6E23BC8DB1A470A6D03F8E2BA1A8"
-              }
-            ]
-          }
-        }
-        </code></pre>
-
-      operationId: getSingleHotelOffers
-      parameters:
-        - "$ref": "#/parameters/hotelId"
-        - "$ref": "#/parameters/checkInDate"
-        - "$ref": "#/parameters/checkOutDate"
-        - "$ref": "#/parameters/adults"
-        - "$ref": "#/parameters/childAges"
-        - "$ref": "#/parameters/rateCodes"
-        - "$ref": "#/parameters/roomQuantity"
-        - "$ref": "#/parameters/currency"
-        - "$ref": "#/parameters/paymentPolicy"
-        - "$ref": "#/parameters/boardType"
-        - "$ref": "#/parameters/view_single"
-        - "$ref": "#/parameters/lang"
-      responses:
-        '200':
-          "$ref": "#/responses/SingleHotelOffers"
-        '400':
-          "$ref": "#/responses/Error400Response"
-        '404':
-          "$ref": "#/responses/Error404Response"
-        '500':
-          "$ref": "#/responses/Error500Response"
-  "/shopping/hotel-offers/{offerId}":
-    get:
-      summary: VIEW ROOM DETAILS.
-      tags:
-        - shopping
-      description: |
-        Return all available details of a specific hotel offer.
-           Returned details mainly includes:
-          - prices with tax
-          - accepted methods of payments
-          - cancellation policies
-          - guaranteed pricing
-          - descriptions about the meal, room, and special rate.
-      operationId: getOfferPricing
-      parameters:
-        - "$ref": "#/parameters/offerId"
-        - "$ref": "#/parameters/lang"
-      responses:
-        '200':
-          "$ref": "#/responses/SingleHotelOffers"
-        '400':
-          "$ref": "#/responses/Error400Response"
-        '404':
-          "$ref": "#/responses/Error404Response"
-        '500':
-          "$ref": "#/responses/Error500Response"
+#  "/shopping/hotel-offers/by-hotel":
+#    get:
+#      summary: VIEW HOTEL ROOMS.
+#      tags:
+#        - shopping
+#      description: |+
+#        This service will return all available offers for a given hotel at a given date range.
+#        The user can filter the offers returned by asking for a specific meal, rateCode, or other parameters as described here.
+#
+#        Note: At this step, exact prices are returned.
+#
+#        ### Query example
+#        Get all offers for Bulgari Hotels Resorts Milano available today.
+#        <pre><code>
+#        GET https://test.api.amadeus.com/v2/shopping/hotel-offers/by-hotel?hotelId=BGMILBGB&adults=2&roomQuantity=1&paymentPolicy=NONE&view=FULL_ALL_IMAGES
+#        </code></pre>
+#
+#        ### Response example
+#        <pre><code>
+#        {
+#          "data": {
+#            "type": "hotel-offers",
+#            "hotel": {
+#              "type": "hotel",
+#              "hotelId": "BGMILBGB",
+#              "chainCode": "BG",
+#              "dupeId": "700025106",
+#              "name": "BULGARI HOTELS RESORTS MILANO",
+#              "rating": "5",
+#              "cityCode": "MIL",
+#              "latitude": 45.47253,
+#              "longitude": 9.18805,
+#              "address": {
+#                "lines": [
+#                  "VIA PRIVATA FRATELLI GABBA 7B"
+#                ],
+#                "postalCode": "20121",
+#                "cityName": "MILAN",
+#                "countryCode": "IT"
+#              },
+#              "contact": {
+#                "phone": "39-02-8058051",
+#                "fax": "39-02-805805222"
+#              },
+#              "amenities": [
+#                "CONVENTION_CTR",
+#                "MEETING_ROOMS",
+#                "ICE_MACHINES",
+#                "RESTAURANT",
+#                "HANDICAP_FAC",
+#                "ACC_TOILETS",
+#                "DIS_PARKG",
+#                "BABY-SITTING",
+#                "BEAUTY_PARLOUR",
+#                "CAR_RENTAL",
+#                "ELEVATOR",
+#                "EXCHANGE_FAC",
+#                "WIFI",
+#                "LAUNDRY_SVC",
+#                "SPA",
+#                "VALET_PARKING",
+#                "HAIRDRESSER",
+#                "SWIMMING_POOL",
+#                "AIR_CONDITIONING",
+#                "HAIR_DRYER",
+#                "MINIBAR",
+#                "MOVIE_CHANNELS",
+#                "ROOM_SERVICE",
+#                "TELEVISION",
+#                "SAFE_DEP_BOX",
+#                "FITNESS_CENTER"
+#              ],
+#              "media": [
+#                {
+#                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/B6AA0C7920214C49AAFBCFFF32A15300",
+#                  "category": "EXTERIOR"
+#                },
+#                {
+#                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/0B9245555964410B97E958128EB3DE52",
+#                  "category": "LOBBY"
+#                },
+#                {
+#                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/DDFD5AD22B134110BCDBE64186FE860A",
+#                  "category": "SUITE"
+#                }
+#              ]
+#            },
+#            "available": true,
+#            "offers": [
+#              {
+#                "id": "8BB1F89D377409FEFACB3E73654A5D765CD812920802E5976BFBB060BAF23AD7",
+#                "rateCode": "RAC",
+#                "rateFamilyEstimated": {
+#                  "code": "RAC",
+#                  "type": "P"
+#                },
+#                "room": {
+#                  "type": "REG",
+#                  "typeEstimated": {
+#                    "category": "SUPERIOR_ROOM",
+#                    "beds": 1,
+#                    "bedType": "KING"
+#                  },
+#                  "description": {
+#                    "lang": "EN",
+#                    "text": "Regular Rate\nSuperior Room garden or patio view, large bathr\noom, 1 King, 35sqm/377sqft, Wireless internet,"
+#                  }
+#                },
+#                "guests": {
+#                  "adults": 2
+#                },
+#                "price": {
+#                  "currency": "EUR",
+#                  "total": "857.00"
+#                },
+#                "self": "https://test.api.amadeus.com/v2/shopping/hotel-offers/8BB1F89D377409FEFACB3E73654A5D765CD812920802E5976BFBB060BAF23AD7"
+#              },
+#              {
+#                "id": "2E5650829E01B8BD88085B597266F15EF03E6E23BC8DB1A470A6D03F8E2BA1A8",
+#                "rateCode": "RAC",
+#                "rateFamilyEstimated": {
+#                  "code": "RAC",
+#                  "type": "P"
+#                },
+#                "room": {
+#                  "type": "REG",
+#                  "typeEstimated": {
+#                    "category": "DELUXE_ROOM"
+#                  },
+#                  "description": {
+#                    "lang": "EN",
+#                    "text": "Regular Rate\nDeluxe Room garden or patio view, walk-in close\nt, large bathroom, 1 King or 2 Queen, 40sqm/430"
+#                  }
+#                },
+#                "guests": {
+#                  "adults": 2
+#                },
+#                "price": {
+#                  "currency": "EUR",
+#                  "total": "912.00"
+#                },
+#                "self": "https://test.api.amadeus.com/v2/shopping/hotel-offers/2E5650829E01B8BD88085B597266F15EF03E6E23BC8DB1A470A6D03F8E2BA1A8"
+#              }
+#            ]
+#          }
+#        }
+#        </code></pre>
+#
+#      operationId: getSingleHotelOffers
+#      parameters:
+#        - "$ref": "#/parameters/hotelId"
+#        - "$ref": "#/parameters/checkInDate"
+#        - "$ref": "#/parameters/checkOutDate"
+#        - "$ref": "#/parameters/adults"
+#        - "$ref": "#/parameters/childAges"
+#        - "$ref": "#/parameters/rateCodes"
+#        - "$ref": "#/parameters/roomQuantity"
+#        - "$ref": "#/parameters/currency"
+#        - "$ref": "#/parameters/paymentPolicy"
+#        - "$ref": "#/parameters/boardType"
+#        - "$ref": "#/parameters/view_single"
+#        - "$ref": "#/parameters/lang"
+#      responses:
+#        '200':
+#          "$ref": "#/responses/SingleHotelOffers"
+#        '400':
+#          "$ref": "#/responses/Error400Response"
+#        '404':
+#          "$ref": "#/responses/Error404Response"
+#        '500':
+#          "$ref": "#/responses/Error500Response"
+#  "/shopping/hotel-offers/{offerId}":
+#    get:
+#      summary: VIEW ROOM DETAILS.
+#      tags:
+#        - shopping
+#      description: |
+#        Return all available details of a specific hotel offer.
+#           Returned details mainly includes:
+#          - prices with tax
+#          - accepted methods of payments
+#          - cancellation policies
+#          - guaranteed pricing
+#          - descriptions about the meal, room, and special rate.
+#      operationId: getOfferPricing
+#      parameters:
+#        - "$ref": "#/parameters/offerId"
+#        - "$ref": "#/parameters/lang"
+#      responses:
+#        '200':
+#          "$ref": "#/responses/SingleHotelOffers"
+#        '400':
+#          "$ref": "#/responses/Error400Response"
+#        '404':
+#          "$ref": "#/responses/Error404Response"
+#        '500':
+#          "$ref": "#/responses/Error500Response"
 tags:
   - name: shopping
     description: Search Available Hotels and Check their Price
@@ -538,10 +538,11 @@ parameters:
     name: latitude
     in: query
     required: false
-    type: number
-    format: double
-    minimum: -90
-    maximum: 90
+    type: string
+#    type: number
+#    format: double
+#    minimum: -90
+#    maximum: 90
     description: "search around a geographical point. The latitude is specified in
       decimal degrees    \n\nExample: 52.5238    \n\nShould be used together with
       `longitude`+`radius`+`radiusUnit`  (required)\n\n__Mandatory parameter for a
@@ -550,10 +551,11 @@ parameters:
     name: longitude
     in: query
     required: false
-    type: number
-    format: double
-    minimum: -180
-    maximum: 180
+    type: string
+#    type: number
+#    format: double
+#    minimum: -180
+#    maximum: 180
     description: "search around a geographical point. The longitude is specified in
       decimal degrees    \n\nExample: 13.3835\n\nShould be used together with `latitude`+`radius`+`radiusUnit`
       \ (required)\n\n__Mandatory parameter for a search by geocodes__"
