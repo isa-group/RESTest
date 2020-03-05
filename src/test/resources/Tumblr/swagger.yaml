@@ -55,8 +55,6 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/Response"
-      security:
-        - api_key: []
 securityDefinitions:
   api_key:
     type: apiKey
@@ -143,7 +141,6 @@ definitions:
         format: uri
       uuid:
         type: string
-        format: uuid
       updated:
         type: integer
         format: int32
