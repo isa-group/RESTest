@@ -102,21 +102,27 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 				if (idlReasoner != null) { // If the operation has dependencies and they are not ignored
 					if (violateDependency) { // If in this iteration, the test case must violate a dependency
 						if (!idlReasoner.validRequest(restest2idlTestCase(test))) { // Check if the current request is INVALID
+							test.setFaultyReason("inter_parameter_dependency");
 							isDesiredTestCase = true; // If so, return this test case
 						}
 					} else { // If in this iteration, the test case must be mutated to make it faulty
 						if (!makeTestCaseFaulty(test, specOperation)) { // Try to make it faulty by mutating it. If it's not mutated...
 							test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
-							if (idlReasoner.validRequest(restest2idlTestCase(test))) // And if all dependencies are fulfilled...
-								test.setFulfillsDependencies(true); // Update property to have another oracle (400 status code)
-						}
+							test.setFaultyReason("none");
+						} else
+							test.setFaultyReason("individual_parameter_constraint");
+						if (idlReasoner.validRequest(restest2idlTestCase(test))) // And if all dependencies are fulfilled...
+							test.setFulfillsDependencies(true); // Update property to have another oracle (400 status code)
 						isDesiredTestCase = true; // Return this test case
 					}
 				} else { // If the operation doesn't have dependencies or they are ignored
 					if(!ignoreDependencies) //If the dependencies are not ignored
 						test.setFulfillsDependencies(true); // All dependencies (none) are fulfilled
-					if (!makeTestCaseFaulty(test, specOperation)) // Try to make it faulty by mutating it. If it's not mutated...
+					if (!makeTestCaseFaulty(test, specOperation)) { // Try to make it faulty by mutating it. If it's not mutated...
 						test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
+						test.setFaultyReason("none");
+					} else
+						test.setFaultyReason("individual_parameter_constraint");
 					isDesiredTestCase = true; // Return this test case
 				}
 
@@ -124,11 +130,13 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 				if (idlReasoner != null) { // If the operation has dependencies and they are not ignored
 					if (idlReasoner.validRequest(restest2idlTestCase(test))) { // Check if the current request is valid
 						test.setFulfillsDependencies(true); // If so, update fulfillsDependencies property and
+						test.setFaultyReason("none");
 						isDesiredTestCase = true; // return this test case
 					}
 				} else { // If the operation doesn't have dependencies or they are ignored
 					if(!ignoreDependencies) // If the dependencies are not ignored
 						test.setFulfillsDependencies(true); // All dependencies (none) are fulfilled
+					test.setFaultyReason("none");
 					isDesiredTestCase = true; // The test case will be valid for sure, so return it
 				}
 			}
@@ -138,8 +146,10 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			violateDependency = !violateDependency; // ... every two iterations, violate an inter-parameter dependency
 
 		if (!test.getFaulty()) // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
-			if (checkFaulty(test, validator))
+			if (checkFaulty(test, validator)) {
 				test.setFaulty(true);
+				test.setFaultyReason("invalid_request_body");
+			}
 
 		// Update indexes
 		index++;

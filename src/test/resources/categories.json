@@ -20,6 +20,27 @@
         ]
     },
 	{
+		"name": "Faulty test case failed (individual_parameter_constraint)",
+		"messageRegex": ".*individual_parameter_constraint.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "Faulty test case failed (invalid_request_body)",
+		"messageRegex": ".*invalid_request_body.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "Faulty test case failed (inter_parameter_dependency)",
+		"messageRegex": ".*inter_parameter_dependency.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
 		"name": "Valid test cases failures",
 		"messageRegex": ".*input was correct.*",
 		"matchedStatuses": [

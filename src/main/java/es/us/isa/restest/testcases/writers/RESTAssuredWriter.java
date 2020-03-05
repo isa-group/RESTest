@@ -224,7 +224,7 @@ public class RESTAssuredWriter implements IWriter {
 
 	private String generateFiltersInitialization(TestCase t) {
 		return "\t\tNominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = " +
-			   "new NominalOrFaultyTestCaseFilter(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ");\n\n";
+			   "new NominalOrFaultyTestCaseFilter(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n\n";
 	}
 
 	private String generateTryBlockStart() {
