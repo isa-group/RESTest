@@ -30,38 +30,65 @@ testConfiguration:
         generator:
           type: RandomInputValue
           genParameters:
-          - name: csv
-            values:
-            - src/main/resources/TestData/IATACodes.csv
-            objectValues: null
+            - name: values
+              values:
+                - PAR
+                - OPO
+                - MAD
+                - BER
+                - NYC
+                - MEL
+                - TYO
+#          - name: csv
+#            values:
+#            - src/main/resources/TestData/IATACodes.csv
+#            objectValues: null
+#      - name: latitude
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#            - name: type
+#              values:
+#                - float
+#            - name: max
+#              values:
+#                - 47.392337
+#            - name: min
+#              values:
+#                - 33.125898
+#      - name: longitude
+#        weight: 0.5
+#        generator:
+#          type: RandomNumber
+#          genParameters:
+#            - name: type
+#              values:
+#                - float
+#            - name: min
+#              values:
+#                - -119.205793
+#            - name: max
+#              values:
+#                - -79.958475
       - name: latitude
         weight: 0.5
         generator:
-          type: RandomNumber
+          type: RandomInputValue
           genParameters:
-            - name: type
+            - name: values
               values:
-                - float
-            - name: max
-              values:
-                - 47.392337
-            - name: min
-              values:
-                - 33.125898
+                - 49.299005
+                - 51.514081
       - name: longitude
         weight: 0.5
         generator:
-          type: RandomNumber
+          type: RandomInputValue
           genParameters:
-            - name: type
+            - name: values
               values:
-                - float
-            - name: min
-              values:
-                - -119.205793
-            - name: max
-              values:
-                - -79.958475
+                - -0.073438
+                - 7.463675
       - name: hotelIds
         weight: 0.5
         generator:
