@@ -3,12 +3,12 @@ auth:
   required: true
   queryParams:
     # Add Auth config
-    - name:
-      value:
-    - name:
-      value:
+    - name: client_id
+      value: EDW4K5KY40TNZ45LVF05LTXMBTL1LGVMWLYIUMVP5SR3GSSN
+#    - name:
+#      value:
   headerParams: []
-  apiKeysPath: null
+  apiKeysPath: Foursquare/apikeys.json
 testConfiguration:
   testPaths:
   - testPath: /venues/search
@@ -19,30 +19,63 @@ testConfiguration:
       - name: v
         weight: null
         generator:
-          type: RandomRegExp
+          type: RandomInputValue
           genParameters:
-          - name: regExp
-            values:
-            - (19\d\d|20[01]\d)(0[1-9]|1[0-2])(0[1-9]|[1-2]\d)
-            objectValues: null
+            - name: values
+              values:
+              - 20200306
       - name: ll
         weight: 0.5
         generator:
-          type: RandomRegExp
+          type: RandomInputValue
           genParameters:
-          - name: regExp
-            values:
-            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
-            objectValues: null
+            - name: values
+              values:
+                - 37.42307,-122.08427
+                - 37.392191,-5.995193
+                - 35.681999,139.769254
+                - -33.924278,18.424572
+                - -37.812746,144.961832
+                - 39.925412, 32.834169
+                - 50.447273, 30.520903
+                - 39.904325, 116.405302
+                - 13.753789, 100.501572
+                - 19.430849, -99.135857
+              objectValues: null
+        #          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+#            objectValues: null
       - name: near
         weight: 0.5
         generator:
-          type: RandomEnglishWord
+          type: RandomInputValue
           genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
+            - name: values
+              values:
+                - NYC
+                - Seville, Spain
+                - Milan, Italy
+                - Melbourne
+                - Tokyo
+                - Egypt
+                - Juarez, Mexico
+                - Paris
+                - San Francisco
+                - Krakow
+      - name: name
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - McDonald's
+                - Burger King
+                - KFC
+                - Vips
       - name: intent
         weight: 0.5
         generator:
@@ -75,30 +108,58 @@ testConfiguration:
       - name: sw
         weight: 0.5
         generator:
-          type: RandomRegExp
+          type: RandomInputValue
           genParameters:
-          - name: regExp
-            values:
-            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
-            objectValues: null
+            - name: values
+              values:
+                - 40.455945, -4.008032
+                - 40.583730, -3.792866
+                - 40.542865, -3.530633
+                - 40.348418, -3.550805
+                - 40.275135, -3.720394
+                - 40.376578, -3.868428
+              objectValues: null
+#          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+#            objectValues: null
       - name: ne
         weight: 0.5
         generator:
-          type: RandomRegExp
+          type: RandomInputValue
           genParameters:
-          - name: regExp
-            values:
-            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
-            objectValues: null
+            - name: values
+              values:
+                - 40.455945, -4.008032
+                - 40.583730, -3.792866
+                - 40.542865, -3.530633
+                - 40.348418, -3.550805
+                - 40.275135, -3.720394
+                - 40.376578, -3.868428
+              objectValues: null
+#          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+#            objectValues: null
       - name: query
         weight: 0.5
         generator:
-          type: RandomEnglishWord
+          type: RandomInputValue
           genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
+            - name: values
+              values:
+                - food
+                - cinema
+                - open
+                - cheap
+                - public
+                - exciting
+                - cafe
+                - ok
       - name: limit
         weight: 0.5
         generator:
@@ -163,7 +224,7 @@ testConfiguration:
             objectValues: null
           - name: max
             values:
-            - 8848
+            - 2000
             objectValues: null
       - name: altAcc
         weight: 0.5
@@ -185,11 +246,13 @@ testConfiguration:
       - name: url
         weight: 0.5
         generator:
-          type: RandomRegExp
+          type: RandomInputValue
           genParameters:
-          - name: regExp
+          - name: values
             values:
-            - https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
+            - https://www.example1.com
+            - https://www.example2.com
+            - https://www.example3.com
             objectValues: null
       - name: providerId
         weight: 0.5

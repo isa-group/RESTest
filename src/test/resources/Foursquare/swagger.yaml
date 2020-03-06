@@ -10,7 +10,7 @@ tags:
     description: "Foursquare Venues"
 schemes:
   - "https"
-  - "http"
+#  - "http"
 paths:
   /venues/search:
     get:
@@ -39,6 +39,11 @@ paths:
           description: "required unless ll is provided. A string naming a place in the world. If the near string is not geocodable, returns a failed_geocode error. Otherwise, searches within the bounds of the geocode and adds a geocode object to the response."
         - in: query
           type: string
+          name: "name"
+          required: false
+          description: "Name of the venue"
+        - in: query
+          type: string
           required: false
           default: checkin
           enum:
@@ -52,6 +57,7 @@ paths:
           type: integer
           required: false
           name: radius
+          maximum: 100000
           description: "Limit results to venues within this many meters of the specified location. Defaults to a city-wide area. Only valid for requests with intent=browse, or requests with intent=checkin and categoryId or query. Does not apply to intent=match requests. The maximum supported radius is currently 100,000 meters."
         - in: query
           type: string
@@ -72,6 +78,7 @@ paths:
           type: integer
           required: false
           name: limit
+          maximum: 50
           description: Number of results to return, up to 50.
         - in: query
           type: array
@@ -106,7 +113,7 @@ paths:
           name: providerId
           description: "Identifier for a known third party that is part of our map of venues to URLs, used in conjunction with linkedId."
         - in: query
-          type: integer
+          type: string
           required: false
           name: linkedId
           description: "Identifier used by third party specified in providerId, which we will attempt to match against our map of venues to URLs."
@@ -114,31 +121,28 @@ paths:
         - OnlyOne(ll, near);
         - IF intent=='browse' THEN OnlyOne(ll AND radius, sw AND ne);
         - IF intent=='match' THEN name AND ll;
-        - IF radius THEN intent=='browse' OR (intent=='match' AND (categoryId OR query));
-        - IF intent=='match' THEN NOT categoryId;
+        - IF radius THEN intent=='browse' OR (intent=='checkin' AND (categoryId OR query));
         - AllOrNone(sw, ne);
-        - IF sw THEN intent=='browse';
-        - IF sw THEN NOT (ll OR radius);
-        - IF ne THEN intent=='browse';
-        - IF ne THEN NOT (ll OR radius);
+        - IF sw OR ne THEN intent=='browse';
+        - IF sw OR ne THEN NOT (ll OR radius);
         - AllOrNone(providerId, linkedId);
       responses:
         200:
           description: "OK"
           schema:
             $ref: "#/definitions/VenueSearchResponse"
-      security:
-        - api_key: []
-          api_secret: []
-securityDefinitions:
-  api_key:
-    type: "apiKey"
-    name: "client_id"
-    in: query
-  api_secret:
-    type: "apiKey"
-    name: "client_secret"
-    in: query
+#      security:
+#        - api_key: []
+#          api_secret: []
+#securityDefinitions:
+#  api_key:
+#    type: "apiKey"
+#    name: "client_id"
+#    in: query
+#  api_secret:
+#    type: "apiKey"
+#    name: "client_secret"
+#    in: query
 definitions:
   Venue:
     type: "object"
@@ -155,8 +159,6 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Category"
-    xml:
-      name: "Venue"
   Location:
     type: "object"
     properties:
@@ -181,8 +183,6 @@ definitions:
       distance:
         type: integer
         format: int32
-    xml:
-      name: "Location"
   Category:
     type: "object"
     properties:
@@ -203,8 +203,6 @@ definitions:
       primary:
         type: boolean
         description: If this is the primary category for parent venue object.
-    xml:
-      name: "Category"
   Icon:
     type: "object"
     properties:
@@ -213,8 +211,6 @@ definitions:
         format: uri
       suffix:
         type: string
-    xml:
-      name: "Icon"
   VenueSearchResponse:
     type: "object"
     properties:
@@ -222,8 +218,6 @@ definitions:
         $ref: "#/definitions/Meta"
       response:
         $ref: "#/definitions/Response"
-    xml:
-      name: "VenueSearchResponse"
   Meta:
     type: "object"
     properties:
@@ -232,8 +226,6 @@ definitions:
         format: int32
       requestId:
         type: string
-    xml:
-      name: "Meta"
   Response:
     type: object
     properties:
@@ -241,5 +233,3 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Venue"
-    xml:
-      name: "Response"
