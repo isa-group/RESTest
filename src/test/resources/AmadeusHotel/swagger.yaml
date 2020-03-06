@@ -1731,11 +1731,61 @@ definitions:
           Messages table, that will enable the API Consumers code to handle this type
           of error"
         example: 1
+        enum:
+          - 23
+          - 61
+          - 137
+          - 145
+          - 195
+          - 249
+          - 377
+          - 381
+          - 382
+          - 383
+          - 392
+          - 397
+          - 400
+          - 402
+          - 404
+          - 424
+          - 431
+          - 450
+          - 451
+          - 562
+          - 784
+          - 790
+          - 795
+          - 842
       title:
         type: string
         description: "[String] An error title from the Canned Messages table with
           a 1:1 correspondence to the error code. This may be localized"
         example: Resource not found
+        enum:
+          - PASSENGER TYPE NOT SUPPORTED
+          - INVALID CURRENCY CODE
+          - INVALID ADULTS OCCUPANCY REQUESTED
+          - DURATION PERIOD OR DATES INCORRECT
+          - SERVICE RESTRICTION
+          - INVALID RATE CODE
+          - MAX STAY DURATION IS EXCEEDED
+          - INVALID CHECK-IN DATE
+          - INVALID CHECK-OUT DATE
+          - INVALID CITY CODE
+          - INVALID HOTEL CODE
+          - INVALID NUMBER OF ADULTS
+          - INVALID PROPERTY CODE
+          - INVALID ROOM TYPE
+          - CHECK_OUT DATE MUST BE FURTHER IN THE FUTURE THAN CHECK-IN DATE
+          - NO HOTELS FOUND WHICH MATCH THIS INPUT
+          - CHECK-OUT DATE IS TOO FAR IN THE FUTURE
+          - INVALID PROVIDER RESPONSE
+          - INVALID CREDENTIALS
+          - RESTRICTED ACCESS FOR THE REQUESTED RATES AND CHAINS
+          - PROVIDER TIME OUT
+          - NO PROPERTIES FOUND WITHIN THIS RADIUS
+          - NO SIMILAR NAME FOUND, PLEASE ENLARGE YOUR SEARCH CRITERIA
+          - RATE SECURITY NOT LOADED
       detail:
         type: string
         description: "[String] An easy-to-read explanation specific to this occurrence
