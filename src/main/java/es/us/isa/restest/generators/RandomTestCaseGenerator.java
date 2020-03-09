@@ -109,10 +109,10 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 						if (!makeTestCaseFaulty(test, specOperation)) { // Try to make it faulty by mutating it. If it's not mutated...
 							test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
 							test.setFaultyReason("none");
+							if (idlReasoner.validRequest(restest2idlTestCase(test))) // And if all dependencies are fulfilled...
+								test.setFulfillsDependencies(true); // Update property to have another oracle (400 status code)
 						} else
 							test.setFaultyReason("individual_parameter_constraint");
-						if (idlReasoner.validRequest(restest2idlTestCase(test))) // And if all dependencies are fulfilled...
-							test.setFulfillsDependencies(true); // Update property to have another oracle (400 status code)
 						isDesiredTestCase = true; // Return this test case
 					}
 				} else { // If the operation doesn't have dependencies or they are ignored
