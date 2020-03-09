@@ -1,7 +1,5 @@
 package es.us.isa.restest.generators;
 
-import java.util.*;
-
 import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.TestConfigurationFilter;
@@ -16,9 +14,11 @@ import es.us.isa.restest.util.CSVManager;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 
+import java.util.*;
+
 import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
-import static es.us.isa.restest.util.SpecificationVisitor.*;
+import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 
 public abstract class AbstractTestCaseGenerator {
 
@@ -146,11 +146,13 @@ public abstract class AbstractTestCaseGenerator {
 
 				// File containing all API keys
 				if (conf.getAuth().getApiKeysPath()!=null)
-					test.addQueryParameter(authManager.getAuthPropertyName(), authManager.getAuthProperty());
+					for(String authProperty : authManager.getAuthPropertyNames())
+						test.addQueryParameter(authProperty, authManager.getAuthProperty(authProperty));
 
 				// File containing all auth headers
 				if (conf.getAuth().getHeadersPath()!=null)
-					test.addHeaderParameter(authManager.getAuthPropertyName(), authManager.getAuthProperty());
+					for(String authProperty : authManager.getAuthPropertyNames())
+						test.addQueryParameter(authProperty, authManager.getAuthProperty(authProperty));
 			}
 			
 			// Set responses

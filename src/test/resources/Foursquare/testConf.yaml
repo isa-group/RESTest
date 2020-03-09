@@ -2,11 +2,6 @@
 auth:
   required: true
   queryParams:
-    # Add Auth config
-    - name: client_id
-      value: EDW4K5KY40TNZ45LVF05LTXMBTL1LGVMWLYIUMVP5SR3GSSN
-#    - name:
-#      value:
   headerParams: []
   apiKeysPath: Foursquare/apikeys.json
 testConfiguration:
