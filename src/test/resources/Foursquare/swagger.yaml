@@ -137,6 +137,8 @@ paths:
           description: "OK"
           schema:
             $ref: "#/definitions/VenueSearchResponse"
+        400:
+          description: "Bad request"
 #      security:
 #        - api_key: []
 #          api_secret: []
