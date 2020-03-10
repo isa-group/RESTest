@@ -440,5 +440,22 @@ public class DefaultTestConfigurationGeneratorTest {
 		gen.generate(confPath, filters);
 	}
 
+	@Test
+	public void testStripeTestConfigurationGeneration() {
+
+		String specPath="src/test/resources/Stripe/swagger.yaml";
+		String confPath="src/test/resources/Stripe/testConf.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(specPath);
+
+		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath(null);		// null = All paths
+		filter.addAllMethods();
+		filters.add(filter);
+
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
+	}
+
 
 }
