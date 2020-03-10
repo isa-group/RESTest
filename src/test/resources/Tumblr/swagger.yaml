@@ -84,15 +84,11 @@ definitions:
       liked_count:
         type: integer
         format: int32
-      _links:
-        type: object
     xml:
       name: "LikesResponse"
   Post:
     type: object
     properties:
-      blog:
-        $ref: "#/definitions/Blog"
       blog_name:
         type: string
       id:
@@ -241,25 +237,6 @@ definitions:
         format: uri
     xml:
       name: "Post"
-  Blog:
-    type: object
-    properties:
-      name:
-        type: string
-      title:
-        type: string
-      description:
-        type: string
-      url:
-        type: string
-        format: uri
-      uuid:
-        type: string
-      updated:
-        type: integer
-        format: int32
-    xml:
-      name: "Blog"
   LegacyPhoto:
     type: object
     properties:

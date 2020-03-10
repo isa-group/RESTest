@@ -67,7 +67,9 @@ public class AuthManager {
     private ObjectMapper objectMapper = new ObjectMapper();
     private Map<String, List<String>> authProperties;
     private int counter;
-    private int itCounter;
+    private int itCounter;  /* It resets to zero when the algorithm obtains an auth key for every parameter.
+    When this happens, the algorithm knows that it has provided all the auth params requested for an operation,
+    so it augments 'counter'. */
 
     public AuthManager(String authRelativePath) {
         authPath = authBasePath + authRelativePath;
