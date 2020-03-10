@@ -312,8 +312,9 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateBodyParameter(TestCase t) {
 		String content = "";
 
-		if (t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
-				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE))
+		if ((t.getFormParameters() == null || t.getFormParameters().size() == 0) &&
+				(t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
+				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE)))
 			content += "\t\t\t\t.contentType(\"application/json\")\n";
 		if (t.getBodyParameter() != null) {
 			content += "\t\t\t\t.body(jsonBody)\n";
