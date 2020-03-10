@@ -152,7 +152,7 @@ public abstract class AbstractTestCaseGenerator {
 				// File containing all auth headers
 				if (conf.getAuth().getHeadersPath()!=null)
 					for(String authProperty : authManager.getAuthPropertyNames())
-						test.addQueryParameter(authProperty, authManager.getAuthProperty(authProperty));
+						test.addHeaderParameter(authProperty, authManager.getAuthProperty(authProperty));
 			}
 			
 			// Set responses
