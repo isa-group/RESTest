@@ -131,6 +131,15 @@ testConfiguration:
         generator:
           type: RandomBoolean
           genParameters: []
+      - name: statement_descriptor
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
       - name: type
         weight: 0.5
         generator:

@@ -119,6 +119,14 @@ paths:
           description: Whether this product is shipped (i.e., physical goods).
             Defaults to `true`. May only be set if type=`good`.
           type: boolean
+        - name: statement_descriptor
+          in: formData
+          required: false
+          description: An arbitrary string to be displayed on your customer's credit card or bank statement. While most banks display this information consistently, some may display it incorrectly or not at all.
+
+            This may be up to 22 characters. The statement description may not include `<`, `>`, `\`, `"`, `'` characters, and will appear on your customer's statement in capital letters. Non-ASCII characters are automatically stripped.
+            It must contain at least one letter.
+          type: string
         - name: type
           in: formData
           required: false
@@ -146,9 +154,9 @@ paths:
           type: string
       x-dependencies:
         - IF caption THEN type=='good';
-        - IF deactivate_on THEN type=='good';
-        - IF package_dimensions[height] OR package_dimensions[length] OR package_dimensions[weight] OR package_dimensions[width] THEN type=='good';
-        - AllOrNone(package_dimensions[height], package_dimensions[length], package_dimensions[weight], package_dimensions[width]);
+        - IF [deactivate_on[]] THEN type=='good';
+        - IF [package_dimensions[height]] OR [package_dimensions[length]] OR [package_dimensions[weight]] OR [package_dimensions[width]] THEN type=='good';
+        - AllOrNone([package_dimensions[height]], [package_dimensions[length]], [package_dimensions[weight]], [package_dimensions[width]]);
         - IF shippable THEN type=='good';
         - IF url THEN type=='good';
 #        - ZeroOrOne(statement_descriptor, type=='good'); # Unspecified dependency
