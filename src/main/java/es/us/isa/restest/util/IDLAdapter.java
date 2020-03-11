@@ -23,6 +23,7 @@ public class IDLAdapter {
         tc.getPathParameters().forEach(request::put);
         tc.getHeaderParameters().forEach(request::put);
         tc.getQueryParameters().forEach(request::put);
+        tc.getFormParameters().forEach(request::put);
 
         return request;
     }
