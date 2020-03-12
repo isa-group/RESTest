@@ -153,12 +153,17 @@ testConfiguration:
       - name: unit_label
         weight: 0.5
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-          - name: maxWords
+          - name: minLength
             values:
-            - 1
-            objectValues: null
+              - 1
+          - name: maxLength
+            values:
+              - 12
+          - name: includeNumbers
+            values:
+              - true
       - name: url
         weight: 0.5
         generator:
