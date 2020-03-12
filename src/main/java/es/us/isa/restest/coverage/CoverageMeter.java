@@ -236,6 +236,10 @@ public class CoverageMeter {
                 updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey(), coverageGatherer);
                 updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue(), coverageGatherer);
             }
+            for(Entry<String, String> parameter : testCase.getFormParameters().entrySet()) {
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey(), coverageGatherer);
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue(), coverageGatherer);
+            }
             updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), "body", coverageGatherer);
 //            updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getAuthentication());
             updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getInputFormat(), coverageGatherer);
