@@ -127,7 +127,7 @@ testConfiguration:
               - snippet
             objectValues: null
       - name: searchTerms
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomEnglishWord
           genParameters:

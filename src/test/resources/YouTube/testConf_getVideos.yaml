@@ -34,7 +34,7 @@ testConfiguration:
             - de
             - pt
       - name: id
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -174,7 +174,7 @@ testConfiguration:
 #            values:
 #            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
       - name: videoCategoryId
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
