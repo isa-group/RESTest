@@ -1,11 +1,9 @@
 ---
 auth:
   required: true
-  queryParams:
-    - name: api_key
-      value: ipSsgRg1Bt2sMEE6CZSpnkIFDRyM5tr49HZM3UzVFTEy8psXag
+  queryParams: []
   headerParams: []
-  apiKeysPath: null
+  apiKeysPath: Tumblr/apikeys.json
   headersPath: null
 testConfiguration:
   testPaths:

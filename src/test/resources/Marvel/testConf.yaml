@@ -1,15 +1,9 @@
 ---
 auth:
   required: true
-  queryParams:
-    - name: ts
-      value: 1
-    - name: apikey
-      value: 3db09d7c37a096de583ba52c9a8003dd
-    - name: hash
-      value: ca32a59db825bbf421faf0be17e3b090
+  queryParams: []
   headerParams: []
-  apiKeysPath: null
+  apiKeysPath: Marvel/apikeys.json
 testConfiguration:
   testPaths:
   - testPath: /v1/public/characters
