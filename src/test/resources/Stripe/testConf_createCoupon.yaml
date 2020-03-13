@@ -69,12 +69,17 @@ testConfiguration:
       - name: id
         weight: 0.5
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-          - name: maxWords
+          - name: minLength
             values:
-            - 1
-            objectValues: null
+              - 15
+          - name: maxLength
+            values:
+              - 20
+          - name: includeNumbers
+            values:
+              - true
       - name: max_redemptions
         weight: 0.5
         generator:
