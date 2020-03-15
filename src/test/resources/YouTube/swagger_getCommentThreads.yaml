@@ -967,6 +967,16 @@ paths:
           description: Successful response
           schema:
             $ref: '#/definitions/CommentThreadListResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '429':
+          description: Too many requests
       security:
         - Oauth2:
             - 'https://www.googleapis.com/auth/youtube.force-ssl'
