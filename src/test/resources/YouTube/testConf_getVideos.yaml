@@ -178,9 +178,16 @@ testConfiguration:
         generator:
           type: RandomInputValue
           genParameters:
-          - name: csv
+          - name: values
             values:
-            - src/main/resources/TestData/youtube-video-category-ids.csv
+            - 0
+            - 1
+            - 2
+            - 10
+            - 15
+            - 17
+            - 19
+            - 20
             objectValues: null
       paramDependencies: null
       expectedResponse: 200
