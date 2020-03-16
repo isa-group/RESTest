@@ -90,7 +90,7 @@ testConfiguration:
           genParameters:
           - name: regExp
             values:
-            - (1000|[1-9]\d\d)(m|km|ft|mi)
+            - ((1000|[1-9]\d\d)(m|km|ft))|((600|[1-5]\d\d)(mi))
             objectValues: null
       - name: maxResults
         weight: 0.5
