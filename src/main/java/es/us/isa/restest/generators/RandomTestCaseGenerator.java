@@ -142,7 +142,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			}
 		}
 
-		if (idlReasoner != null && faulty) // When trying to create faulty test cases, if the operation has dependencies and they are not ignored...
+		if (idlReasoner != null && faulty && faultyDependencyRatio == 0.5) // When trying to create faulty test cases, if the operation has dependencies and they are not ignored...
 			violateDependency = !violateDependency; // ... every two iterations, violate an inter-parameter dependency
 
 		if (!test.getFaulty()) // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)

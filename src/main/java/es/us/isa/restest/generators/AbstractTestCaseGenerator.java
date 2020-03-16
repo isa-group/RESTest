@@ -29,6 +29,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected Boolean enableFaulty = true;					// True if faulty test cases want to be generated. Defaults to true
 	protected Boolean ignoreDependencies = false;			// If true, the algorithm won't manage the API's dependencies
 	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
+	protected Float faultyDependencyRatio = 0.5f;			// Ratio (0,0.5,1) of faulty test cases due to inter-parameter deps. Defaults to 0.5
 	protected Boolean violateDependency;					// Whether to violate an inter-parameter dependency to create a faulty test case
 	protected Analyzer idlReasoner;							// IDLReasoner to check if requests are valid or not
 	protected SwaggerRequestResponseValidator validator;	// Validator used to know if a test case is valid or not
@@ -208,6 +209,18 @@ public abstract class AbstractTestCaseGenerator {
 
 	public void setFaultyRatio(Float faultyRatio) {
 		this.faultyRatio = faultyRatio;
+	}
+
+	public Float getFaultyDependencyRatio() {
+		return faultyDependencyRatio;
+	}
+
+	public void setFaultyDependencyRatio(Float faultyDependencyRatio) {
+		this.faultyDependencyRatio = faultyDependencyRatio;
+		if (faultyDependencyRatio != 0 && faultyDependencyRatio != 0.5 & faultyDependencyRatio != 1)
+			this.faultyDependencyRatio = 0.5f;
+		if (faultyDependencyRatio == 1)
+			this.violateDependency = true;
 	}
 
 	public Boolean getViolateDependency() {

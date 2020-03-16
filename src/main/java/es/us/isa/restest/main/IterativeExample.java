@@ -26,6 +26,7 @@ public class IterativeExample {
     private static Boolean enableCSVStats = true;           // Set to 'true' if you want statistics in a CSV file.
     private static Boolean ignoreDependencies = false;      // Set to 'true' if you don't want to use IDLReasoner.
     private static Float faultyRatio = 0.1f;                // Percentage of faulty test cases to generate. Defaults to 0.1
+    private static Float faultyDependencyRatio = 0.5f;
     private static int totalNumTestCases = 50;				// Total number of test cases to be generated
     private static int timeDelay = -1;
 
@@ -34,7 +35,7 @@ public class IterativeExample {
         if(args.length > 0)
             setParameters(args[0]);
         else
-            setParameters("src/main/resources/APIProperties/youtube_search.properties");
+            setParameters("src/main/resources/APIProperties/youtube_getVideos.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
@@ -43,6 +44,7 @@ public class IterativeExample {
 
         AbstractTestCaseGenerator generator = MainUtils.createGenerator(spec, confPath, numTestCases, ignoreDependencies);	                                        // Test case generator
         generator.setFaultyRatio(faultyRatio);
+        generator.setFaultyDependencyRatio(faultyDependencyRatio);
         IWriter writer = MainUtils.createWriter(spec, OAISpecPath, targetDirJava, testClassName, packageName, enableOutputCoverage, APIName);   // Test case writer
         AllureReportManager reportManager = MainUtils.createAllureReportManager(APIName);		                                                // Allure test case reporter
         CSVReportManager csvReportManager = MainUtils.createCSVReportManager(APIName, enableCSVStats, enableInputCoverage);			                                // CSV test case reporter
@@ -95,5 +97,9 @@ public class IterativeExample {
         String faultyRatioString = PropertyManager.readProperty(APIPropertyFilePath, "api.faultyratio");
         if (faultyRatioString != null)
             faultyRatio = Float.parseFloat(faultyRatioString);
+
+        String faultyDependencyRatioString = PropertyManager.readProperty(APIPropertyFilePath, "api.faultydependencyratio");
+        if (faultyDependencyRatioString != null)
+            faultyDependencyRatio = Float.parseFloat(faultyDependencyRatioString);
     }
 }
