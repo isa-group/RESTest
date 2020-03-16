@@ -111,6 +111,7 @@ paths:
           type: integer
       x-dependencies:
         - Or(amount_off, percent_off);
+#        - OnlyOne(amount_off, percent_off); # Unspecified dependency, substitutes previous one
         - IF amount_off THEN currency;
         - AllOrNone(duration=='repeating', duration_in_months);
       responses:
