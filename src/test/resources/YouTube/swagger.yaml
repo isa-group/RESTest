@@ -3037,8 +3037,8 @@ paths:
         - IF videoLicense THEN type=='video';
         - IF videoSyndicated THEN type=='video';
         - IF videoType THEN type=='video';
-#        - IF channelType THEN type=='channel'; # Unspecified dependency
-#        - IF location THEN type=='video'; # Unspecified dependency
+        - IF channelType THEN type=='channel'; # Unspecified dependency
+        - IF location THEN type=='video'; # Unspecified dependency
       responses:
         '200':
           description: Successful response
@@ -5062,6 +5062,10 @@ definitions:
     properties:
       authorChannelId:
         description: 'The id of the author''s YouTube channel, if any.'
+        type: object
+        properties:
+          value:
+            type: string
       authorChannelUrl:
         description: 'Link to the author''s YouTube channel, if any.'
         type: string
@@ -8767,6 +8771,12 @@ definitions:
           - rejected
           - uploaded
         type: string
+      madeForKids:
+        description: TODO
+        type: boolean
+      selfDeclaredMadeForKids:
+        description: TODO
+        type: boolean
     type: object
   VideoSuggestions:
     description: 'Specifies suggestions on how to improve video content, including encoding hints, tag suggestions, and editor suggestions.'

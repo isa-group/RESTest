@@ -185,7 +185,7 @@ testConfiguration:
             objectValues: null
           - name: max
             values:
-            - 100
+            - 15
             objectValues: null
       paramDependencies: null
       expectedResponse: 200

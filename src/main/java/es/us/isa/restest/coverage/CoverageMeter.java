@@ -32,8 +32,8 @@ public class CoverageMeter {
 
     public CoverageMeter(CoverageGatherer coverageGatherer) {
         this.coverageGatherer = coverageGatherer;
-        this.testSuite = null;
-        this.testResults = null;
+        this.testSuite = new ArrayList<>();
+        this.testResults = new ArrayList<>();
     }
 
     public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite) {
@@ -62,6 +62,11 @@ public class CoverageMeter {
         return this.testSuite;
     }
 
+    public void addTestSuite(Collection<TestCase> testSuite) {
+        this.testSuite.addAll(testSuite);
+        setCoveredInputElements();
+    }
+
     public void setTestSuite(Collection<TestCase> testSuite) {
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
@@ -69,6 +74,11 @@ public class CoverageMeter {
 
     public Collection<TestResult> getTestResults() {
         return this.testResults;
+    }
+
+    public void addTestResults(Collection<TestResult> testResults) {
+        this.testResults.addAll(testResults);
+        setCoveredOutputElements();
     }
 
     public void setTestResults(Collection<TestResult> testResults) {
@@ -226,6 +236,10 @@ public class CoverageMeter {
                 updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey(), coverageGatherer);
                 updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue(), coverageGatherer);
             }
+            for(Entry<String, String> parameter : testCase.getFormParameters().entrySet()) {
+                updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), parameter.getKey(), coverageGatherer);
+                updateCriterion(PARAMETER_VALUE, testCase.getPath() + "->" + testCase.getMethod().toString() + "->" + parameter.getKey(), parameter.getValue(), coverageGatherer);
+            }
             updateCriterion(PARAMETER, testCase.getPath() + "->" + testCase.getMethod().toString(), "body", coverageGatherer);
 //            updateCriterion(AUTHENTICATION, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getAuthentication());
             updateCriterion(INPUT_CONTENT_TYPE, testCase.getPath() + "->" + testCase.getMethod().toString(), testCase.getInputFormat(), coverageGatherer);
@@ -240,7 +254,7 @@ public class CoverageMeter {
             if (statusCodeClass != null)
                 updateCriterion(STATUS_CODE_CLASS, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), statusCodeClass, coverageGatherer);
             updateCriterion(STATUS_CODE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getStatusCode(), coverageGatherer);
-            updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getOutputFormat(), coverageGatherer);
+            updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), outputContentTypeTranslator(testResult.getOutputFormat()), coverageGatherer);
 
             // Response body properties criteria
             ObjectMapper objectMapper = new ObjectMapper();
@@ -256,6 +270,20 @@ public class CoverageMeter {
             }
 
         }
+    }
+
+    /**
+     * This method checks if the outputFormat is application/json or application/xml; in any of those cases,
+     * returns the output format that CoverageMeter is able to manage.
+     */
+    private String outputContentTypeTranslator(String outputFormat) {
+        String translation;
+        if(outputFormat.contains("application/json")) {
+            translation = "application/json";
+        } else if(outputFormat.contains("application/xml")) {
+            translation = "application/xml";
+        } else translation = outputFormat;
+        return translation;
     }
 
     /**

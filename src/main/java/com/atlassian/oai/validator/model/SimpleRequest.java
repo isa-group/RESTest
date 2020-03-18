@@ -5,12 +5,7 @@ import com.google.common.collect.MultimapBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -40,6 +35,62 @@ public class SimpleRequest implements Request {
         this.path = requireNonNull(path, "A request path is required");
         this.queryParams = requireNonNull(queryParams);
         this.headers = requireNonNull(headers);
+        this.requestBody = Optional.ofNullable(body);
+    }
+
+    public SimpleRequest(@Nonnull final String method,
+                          @Nonnull final String path,
+                          @Nonnull final Map<String, String> headers,
+                          @Nonnull final Map<String, String> queryParams,
+                          @Nullable final String body) {
+        Method method1;
+        switch (method) {
+            case "GET":
+                method1 = Request.Method.GET;
+                break;
+            case "POST":
+                method1 = Request.Method.POST;
+                break;
+            case "PUT":
+                method1 = Request.Method.PUT;
+                break;
+            case "PATCH":
+                method1 = Request.Method.PATCH;
+                break;
+            case "DELETE":
+                method1 = Request.Method.DELETE;
+                break;
+            case "HEAD":
+                method1 = Request.Method.HEAD;
+                break;
+            case "OPTIONS":
+                method1 = Request.Method.OPTIONS;
+                break;
+            case "TRACE":
+                method1 = Request.Method.TRACE;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid request method");
+        }
+
+        Map<String, Collection<String>> queryParams2 = new HashMap<>();
+        queryParams.forEach((k, v) -> {
+            Collection<String> values = new ArrayList<>();
+            values.add(v);
+            queryParams2.put(k, values);
+        });
+
+        Map<String, Collection<String>> headers2 = new HashMap<>();
+        headers.forEach((k, v) -> {
+            Collection<String> values = new ArrayList<>();
+            values.add(v);
+            headers2.put(k, values);
+        });
+
+        this.method = requireNonNull(method1, "A method is required");
+        this.path = requireNonNull(path, "A request path is required");
+        this.queryParams = requireNonNull(queryParams2);
+        this.headers = requireNonNull(headers2);
         this.requestBody = Optional.ofNullable(body);
     }
 

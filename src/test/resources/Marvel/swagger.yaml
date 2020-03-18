@@ -2,7 +2,7 @@
 host: gateway.marvel.com
 basePath: "/"
 schemes:
-- http
+- https
 swagger: '2.0'
 info:
   title: gateway.marvel.com
@@ -80,15 +80,28 @@ paths:
           in which they are passed.
         name: orderBy
         required: false
-        type: array
-        items:
-          type: string
+        type: string
+        enum:
+        - name
+        - modified
+        - -name
+        - -modified
+        - name,modified
+        - name,-modified
+        - modified,name
+        - modified,-name
+        - -name,modified
+        - -name,-modified
+        - -modified,name
+        - -modified,-name
       - in: query
         description: Limit the result set to the specified number of resources.
         name: limit
         required: false
         type: integer
         format: int32
+        min: 1
+        max: 100
       - in: query
         description: Skip the specified number of resources in the result set.
         name: offset
@@ -145,11 +158,23 @@ paths:
         name: format
         required: false
         type: string
+        enum:
+        - comic
+        - magazine
+        - trade paperback
+        - hardcover
+        - digest
+        - graphic novel
+        - digital comic
+        - infinite comic
       - in: query
         description: Filter by the issue format type (comic or collection).
         name: formatType
         required: false
         type: string
+        enum:
+        - comic
+        - collection
       - in: query
         description: Exclude variant comics from the result set.
         name: noVariants
@@ -160,6 +185,11 @@ paths:
         name: dateDescriptor
         required: false
         type: string
+        enum:
+        - lastWeek
+        - thisWeek
+        - nextWeek
+        - thisMonth
       - in: query
         description: Return comics within a predefined date range.  Dates must be
           specified as date1,date2 (e.g. 2013-01-01,2013-01-02).  Dates are preferably
@@ -298,12 +328,25 @@ paths:
         type: array
         items:
           type: string
+          enum:
+          - focDate
+          - onsaleDate
+          - title
+          - issueNumber
+          - modified
+          - -focDate
+          - -onsaleDate
+          - -title
+          - -issueNumber
+          - -modified
       - in: query
         description: Limit the result set to the specified number of resources.
         name: limit
         required: false
         type: integer
         format: int32
+        min: 1
+        max: 100
       - in: query
         description: Skip the specified number of resources in the result set.
         name: offset
@@ -392,15 +435,30 @@ paths:
           in which they are passed.
         name: orderBy
         required: false
-        type: array
-        items:
-          type: string
+        type: string
+        enum:
+        - name
+        - startDate
+        - modified
+        - -name
+        - -modified
+        - -startDate
+        - name,modified,startDate
+        - name,-modified,-startDate
+        - modified,name,startDate
+        - modified,-name,-startDate
+        - -name,startDate,modified
+        - -name,-startDate,-modified
+        - startDate,-modified,name
+        - -startDate,-modified,-name
       - in: query
         description: Limit the result set to the specified number of resources.
         name: limit
         required: false
         type: integer
         format: int32
+        min: 1
+        max: 100
       - in: query
         description: Skip the specified number of resources in the result set.
         name: offset
@@ -494,6 +552,11 @@ paths:
         name: seriesType
         required: false
         type: string
+        enum:
+        - collection
+        - one shot
+        - limited
+        - ongoing
       - in: query
         description: Return only series containing one or more comics with the specified
           format.
@@ -502,21 +565,45 @@ paths:
         type: array
         items:
           type: string
+          enum:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
       - in: query
         description: Order the result set by a field or fields. Add a "-" to the value
           sort in descending order. Multiple values are given priority in the order
           in which they are passed.
         name: orderBy
         required: false
-        type: array
-        items:
-          type: string
+        type: string
+        enum:
+        - title
+        - startYear
+        - modified
+        - -title
+        - -modified
+        - -startYear
+        - title,modified,startYear
+        - title,-modified,-startYear
+        - modified,title,startYear
+        - modified,-title,-startYear
+        - -title,startYear,modified
+        - -title,-startYear,-modified
+        - startYear,-modified,title
+        - -startYear,-modified,-title
       - in: query
         description: Limit the result set to the specified number of resources.
         name: limit
         required: false
         type: integer
         format: int32
+        min: 1
+        max: 100
       - in: query
         description: Skip the specified number of resources in the result set.
         name: offset

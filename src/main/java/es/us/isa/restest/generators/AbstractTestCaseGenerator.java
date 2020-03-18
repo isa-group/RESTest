@@ -1,8 +1,6 @@
 package es.us.isa.restest.generators;
 
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-
+import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationVisitor;
@@ -10,15 +8,17 @@ import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
+import es.us.isa.restest.util.CSVManager;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
-import org.apache.commons.lang3.RandomStringUtils;
 
-import static es.us.isa.restest.util.SpecificationVisitor.*;
+import java.util.*;
+
+import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
+import static es.us.isa.restest.util.FileManager.checkIfExists;
+import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 
 public abstract class AbstractTestCaseGenerator {
 
@@ -27,11 +27,18 @@ public abstract class AbstractTestCaseGenerator {
 	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
 	protected AuthManager authManager;						// For if multiple API keys are used for the API
 	protected Boolean enableFaulty = true;					// True if faulty test cases want to be generated. Defaults to true
+	protected Boolean ignoreDependencies = false;			// If true, the algorithm won't manage the API's dependencies
 	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
+	protected Float faultyDependencyRatio = 0.5f;			// Ratio (0,0.5,1) of faulty test cases due to inter-parameter deps. Defaults to 0.5
 	protected Boolean violateDependency;					// Whether to violate an inter-parameter dependency to create a faulty test case
 	protected Analyzer idlReasoner;							// IDLReasoner to check if requests are valid or not
+	protected SwaggerRequestResponseValidator validator;	// Validator used to know if a test case is valid or not
 	protected int numberOfTest;								// Number of test cases to be generated for each operation
 	protected int index;									// Number of test cases generated so far
+	protected int nCurrentFaulty;							//Number of faulty test cases generated in the current iteration
+	protected int nCurrentNominal;							//Number of nominal test cases generated in the current iteration
+	protected int nFaulty;									// Number of faulty test cases generated so far
+	protected int nNominal;									// Number of nominal test cases generated so far
 
 	/**
 	 * Generate a set of test cases
@@ -98,7 +105,7 @@ public abstract class AbstractTestCaseGenerator {
 		// Get specification operation
 		Operation specOperation = spec.getSpecification().getPath(path).getOperationMap().get(method);
 
-		if (hasDependencies(specOperation)) // If the operation contains dependencies, create new IDLReasoner for that operation
+		if (!ignoreDependencies && hasDependencies(specOperation)) // If the operation contains dependencies, create new IDLReasoner for that operation
 			idlReasoner = new Analyzer("oas", spec.getPath(), path, method.toString());
 		else // Otherwise, set it to null so that it's not used
 			idlReasoner = null;
@@ -123,7 +130,7 @@ public abstract class AbstractTestCaseGenerator {
 				nextIsFaulty = false;
 			
 			// Create test case with specific parameters and values
-			TestCase test = generateNextTestCase(specOperation,testOperation,nextIsFaulty,path,method);
+			TestCase test = generateNextTestCase(specOperation,testOperation,path,method,nextIsFaulty,ignoreDependencies);
 			
 			// Authentication
 			if (conf.getAuth().getRequired()) {
@@ -140,7 +147,13 @@ public abstract class AbstractTestCaseGenerator {
 
 				// File containing all API keys
 				if (conf.getAuth().getApiKeysPath()!=null)
-					test.addQueryParameter(authManager.getApikeyName(), authManager.getApikey());
+					for(String authProperty : authManager.getAuthPropertyNames())
+						test.addQueryParameter(authProperty, authManager.getAuthProperty(authProperty));
+
+				// File containing all auth headers
+				if (conf.getAuth().getHeadersPath()!=null)
+					for(String authProperty : authManager.getAuthPropertyNames())
+						test.addHeaderParameter(authProperty, authManager.getAuthProperty(authProperty));
 			}
 			
 			// Set responses
@@ -161,7 +174,7 @@ public abstract class AbstractTestCaseGenerator {
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
 	protected abstract TestCase generateNextTestCase(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method);
+			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, Boolean faulty, Boolean ignoreDependencies);
 	
 	// Create all generators needed for the parameters of an operation
 	private void createGenerators(List<TestParameter> testParameters) {
@@ -170,7 +183,16 @@ public abstract class AbstractTestCaseGenerator {
 		
 		for(TestParameter param: testParameters)
 			generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
-		
+
+	}
+
+	public void exportNominalFaultyToCSV(String filePath, String testClassName) {
+		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
+			createFileWithHeader(filePath, "test_id,nNominal,nFaulty");
+		if (testClassName.equals("total"))
+			CSVManager.writeRow(filePath, testClassName + "," + nNominal + "," + nFaulty);
+		else
+			CSVManager.writeRow(filePath, testClassName + "," + nCurrentNominal + "," + nCurrentFaulty);
 	}
 
 	public Boolean getEnableFaulty() {
@@ -189,11 +211,63 @@ public abstract class AbstractTestCaseGenerator {
 		this.faultyRatio = faultyRatio;
 	}
 
+	public Float getFaultyDependencyRatio() {
+		return faultyDependencyRatio;
+	}
+
+	public void setFaultyDependencyRatio(Float faultyDependencyRatio) {
+		this.faultyDependencyRatio = faultyDependencyRatio;
+		if (faultyDependencyRatio != 0 && faultyDependencyRatio != 0.5 & faultyDependencyRatio != 1)
+			this.faultyDependencyRatio = 0.5f;
+		if (faultyDependencyRatio == 1)
+			this.violateDependency = true;
+	}
+
 	public Boolean getViolateDependency() {
 		return violateDependency;
 	}
 
 	public void setViolateDependency(Boolean violateDependency) {
 		this.violateDependency = violateDependency;
+	}
+
+	public Boolean getIgnoreDependencies() {
+		return ignoreDependencies;
+	}
+
+	public void setIgnoreDependencies(Boolean ignoreDependencies) {
+		this.ignoreDependencies = ignoreDependencies;
+	}
+
+	public int getnFaulty() {
+		return nFaulty;
+	}
+
+	public void setnFaulty(int nFaulty) {
+		this.nFaulty = nFaulty;
+	}
+
+	public int getnNominal() {
+		return nNominal;
+	}
+
+	public void setnNominal(int nNominal) {
+		this.nNominal = nNominal;
+	}
+
+	public int getnCurrentFaulty() {
+		return nCurrentFaulty;
+	}
+
+	public void setnCurrentFaulty(int nCurrentFaulty) {
+		this.nCurrentFaulty = nCurrentFaulty;
+	}
+
+	public int getnCurrentNominal() {
+		return nCurrentNominal;
+	}
+
+	public void setnCurrentNominal(int nCurrentNominal) {
+		this.nCurrentNominal = nCurrentNominal;
 	}
 }

@@ -32,4 +32,22 @@ public class PropertyManager {
 		return properties.getProperty(name);
 		
 	}
+
+	public static String readProperty(String propertyFilePath, String name) {
+
+		Properties properties = new Properties();
+		try {
+			properties.load(new FileInputStream(propertyFilePath));
+		} catch (FileNotFoundException e) {
+			System.err.println("Error reading property file: " + e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			System.err.println("Error reading property file: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return properties.getProperty(name);
+	}
+
+
 }

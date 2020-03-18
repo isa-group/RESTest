@@ -45,10 +45,14 @@ public abstract class AbstractMutationOperator {
             case "path":
                 tc.addPathParameter(p.getName(), value);
                 break;
+            case "formData":
+                tc.addFormParameter(p.getName(), value);
+                break;
             case "body":
                 tc.setBodyParameter(value);
                 break;
-            // TODO: Support form-data parameters
+            default:
+                throw new IllegalArgumentException("Parameter type '" + p.getIn() + "' not supported.");
         }
     }
 
@@ -68,10 +72,14 @@ public abstract class AbstractMutationOperator {
             case "path":
                 tc.removePathParameter(p.getName());
                 break;
+            case "formData":
+                tc.removeFormParameter(p.getName());
+                break;
             case "body":
                 tc.setBodyParameter(null);
                 break;
-            // TODO: Support form-data parameters
+            default:
+                throw new IllegalArgumentException("Parameter type '" + p.getIn() + "' not supported.");
         }
     }
 }

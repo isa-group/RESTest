@@ -40,7 +40,7 @@ testConfiguration:
             - show
             objectValues: null
       - name: eventType
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -56,7 +56,7 @@ testConfiguration:
           type: RandomBoolean
           genParameters: []
       - name: forDeveloper
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomBoolean
           genParameters: []
@@ -66,7 +66,7 @@ testConfiguration:
           type: RandomBoolean
           genParameters: []
       - name: location
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -84,13 +84,13 @@ testConfiguration:
             - 19.430849, -99.135857
             objectValues: null
       - name: locationRadius
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomRegExp
           genParameters:
           - name: regExp
             values:
-            - (1000|[1-9]\d\d)(m|km|ft|mi)
+            - ((1000|[1-9]\d\d)(m|km|ft))|((600|[1-5]\d\d)(mi))
             objectValues: null
       - name: maxResults
         weight: 0.5
@@ -196,11 +196,19 @@ testConfiguration:
         generator:
           type: RandomInputValue
           genParameters:
-          - name: csv
+          - name: values
             values:
-            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+            - ES
+            - US
+            - DE
+            - FR
+            - IT
+            - PT
+#          - name: csv
+#            values:
+#            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
       - name: relatedToVideoId
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -211,7 +219,7 @@ testConfiguration:
             - usO_6-RuCrg
             - 7m-NPuXPBqM
             - yDgLFOxnQ8Y
-            - LGR-Qfeb88c
+            - 9bZkp7q19f0
             - YHD77LIL7s0
             - n8I-YVuaSR0
             - t22flliJLTQ
@@ -222,9 +230,17 @@ testConfiguration:
         generator:
           type: RandomInputValue
           genParameters:
-          - name: csv
+          - name: values
             values:
-            - src/main/resources/TestData/ISO-639-LangCodes.csv
+            - ES
+            - EN
+            - DE
+            - FR
+            - IT
+            - PT
+#          - name: csv
+#            values:
+#            - src/main/resources/TestData/ISO-639-LangCodes.csv
       - name: safeSearch
         weight: 0.5
         generator:
@@ -261,7 +277,7 @@ testConfiguration:
             - playlist
             objectValues: null
       - name: videoCaption
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -272,24 +288,15 @@ testConfiguration:
             - none
             objectValues: null
       - name: videoCategoryId
-        weight: 0.1
+        weight: 0.5
         generator:
-          type: RandomNumber
+          type: RandomInputValue
           genParameters:
-          - name: type
+          - name: csv
             values:
-              - integer
-            objectValues: null
-          - name: min
-            values:
-              - 0
-            objectValues: null
-          - name: max
-            values:
-              - 50
-            objectValues: null
+            - src/main/resources/TestData/youtube-video-category-ids.csv
       - name: videoDefinition
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -300,7 +307,7 @@ testConfiguration:
             - standard
             objectValues: null
       - name: videoDimension
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -311,7 +318,7 @@ testConfiguration:
             - any
             objectValues: null
       - name: videoDuration
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -323,7 +330,7 @@ testConfiguration:
             - short
             objectValues: null
       - name: videoEmbeddable
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -333,7 +340,7 @@ testConfiguration:
             - true
             objectValues: null
       - name: videoLicense
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -344,7 +351,7 @@ testConfiguration:
             - youtube
             objectValues: null
       - name: videoSyndicated
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:
@@ -354,7 +361,7 @@ testConfiguration:
             - true
             objectValues: null
       - name: videoType
-        weight: 0.1
+        weight: 0.5
         generator:
           type: RandomInputValue
           genParameters:

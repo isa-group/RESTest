@@ -1,0 +1,78 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+  apiKeysPath: null
+  headersPath: GitHub/headers.json
+testConfiguration:
+  testPaths:
+  - testPath: /user/repos
+    operations:
+    - operationId: getUserRepos
+      method: get
+      testParameters:
+      - name: type
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - all
+            - public
+            - private
+            - owner
+            - member
+            objectValues: null
+      - name: visibility
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - all
+            - public
+            - private
+            objectValues: null
+      - name: affiliation
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - owner
+            - collaborator
+            - organization_member
+          - name: minValues
+            values:
+            - 1
+          - name: maxValues
+            values:
+            - 3
+      - name: sort
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - created
+            - updated
+            - pushed
+            - full_name
+            objectValues: null
+      - name: direction
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - asc
+            - desc
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
