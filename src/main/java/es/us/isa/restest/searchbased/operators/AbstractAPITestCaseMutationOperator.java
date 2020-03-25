@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.uma.jmetal.operator.MutationOperator;
+import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 
 /**
@@ -20,9 +21,9 @@ import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 public abstract class AbstractAPITestCaseMutationOperator implements MutationOperator<RestfulAPITestSuiteSolution> {
 
     private double mutationProbability;
-    private RandomGenerator<Double> randomGenerator;
+    private PseudoRandomGenerator randomGenerator;
 
-    public AbstractAPITestCaseMutationOperator(double mutationProbability, RandomGenerator<Double> randomGenerator) {
+    public AbstractAPITestCaseMutationOperator(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         this.mutationProbability = mutationProbability;
         this.randomGenerator = randomGenerator;
     }
@@ -37,7 +38,7 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
         this.mutationProbability = mutationProbability;
     }
 
-    public RandomGenerator<Double> getRandomGenerator() {
+    public PseudoRandomGenerator getRandomGenerator() {
         return randomGenerator;
     }
 

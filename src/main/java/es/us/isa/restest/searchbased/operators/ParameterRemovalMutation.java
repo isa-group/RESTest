@@ -5,11 +5,10 @@
  */
 package es.us.isa.restest.searchbased.operators;
 
+import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
+
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
-import java.util.Collection;
-import org.uma.jmetal.operator.MutationOperator;
-import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 
 /**
  *
@@ -17,7 +16,7 @@ import org.uma.jmetal.util.pseudorandom.RandomGenerator;
  */
 public class ParameterRemovalMutation extends AbstractAPITestCaseMutationOperator {
     
-    public ParameterRemovalMutation(double mutationProbability, RandomGenerator<Double> randomGenerator) {
+    public ParameterRemovalMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         super(mutationProbability, randomGenerator);
     }
     
@@ -25,7 +24,7 @@ public class ParameterRemovalMutation extends AbstractAPITestCaseMutationOperato
     protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
         for (TestCase testCase : solution.getVariables()) {            
             for (String paramName : getAllPresentParameters(testCase)) {
-                if (getRandomGenerator().getRandomValue() <= mutationProbability) {                    
+                if (getRandomGenerator().nextDouble() <= mutationProbability) {                    
                     doMutation(paramName, testCase, solution);
                 }
             }

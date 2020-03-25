@@ -5,16 +5,18 @@
  */
 package es.us.isa.restest.searchbased.operators;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
+
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 
 /**
  *
@@ -22,7 +24,7 @@ import org.uma.jmetal.util.pseudorandom.RandomGenerator;
  */
 public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperator {
 
-    public ParameterAdditionMutation(double mutationProbability, RandomGenerator<Double> randomGenerator) {
+    public ParameterAdditionMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         super(mutationProbability, randomGenerator);
     }
         
@@ -30,7 +32,7 @@ public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperat
     protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
         for (TestCase testCase : solution.getVariables()) {            
             for (String paramName : getNonPresentParameters(testCase,solution)) {
-                if (getRandomGenerator().getRandomValue() <= mutationProbability) {                    
+                if (getRandomGenerator().nextDouble() <= mutationProbability) {                    
                     doMutation(paramName, testCase, solution);
                 }
             }

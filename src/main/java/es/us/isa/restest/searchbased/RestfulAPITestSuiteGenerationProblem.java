@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
@@ -58,8 +60,10 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, Operation operationUnderTest, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
         this.apiUnderTest = apiUnderTest;
-        this.operationUnderTest = operationUnderTest;
-        this.parameters = this.operationUnderTest.getTestParameters();
+        if(operationUnderTest!=null) {
+        	this.operationUnderTest = operationUnderTest;
+        	this.parameters = this.operationUnderTest.getTestParameters();
+        }
         this.generators = createGenerators(this.parameters);
         this.targetPath = targetPath;
 

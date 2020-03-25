@@ -26,10 +26,10 @@ class DummyTestCaseGenerator extends AbstractTestCaseGenerator{
     @Override
     protected boolean hasNext() {
         return iterator.hasNext();
-    }    
+    }        
 
     @Override
-    protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, Boolean faulty, String path, HttpMethod method) {
+    protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, Boolean faulty, Boolean ignoreDependencies) {
         return iterator.next();
     }
     
