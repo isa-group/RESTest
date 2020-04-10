@@ -2,6 +2,7 @@ package es.us.isa.restest.main;
 
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
+import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.runners.RESTestRunner;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
@@ -35,7 +36,7 @@ public class IterativeExample {
         if(args.length > 0)
             setParameters(args[0]);
         else
-            setParameters("src/main/resources/APIProperties/youtube_getVideos.properties");
+            setParameters("src/main/resources/APIProperties/youtube_search.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
@@ -44,7 +45,8 @@ public class IterativeExample {
 
         AbstractTestCaseGenerator generator = MainUtils.createGenerator(spec, confPath, numTestCases, ignoreDependencies);	                                        // Test case generator
         generator.setFaultyRatio(faultyRatio);
-        generator.setFaultyDependencyRatio(faultyDependencyRatio);
+        if (!ignoreDependencies)
+            ((ConstraintBasedTestCaseGenerator) generator).setFaultyDependencyRatio(faultyDependencyRatio);
         IWriter writer = MainUtils.createWriter(spec, OAISpecPath, targetDirJava, testClassName, packageName, enableOutputCoverage, APIName);   // Test case writer
         AllureReportManager reportManager = MainUtils.createAllureReportManager(APIName);		                                                // Allure test case reporter
         CSVReportManager csvReportManager = MainUtils.createCSVReportManager(APIName, enableCSVStats, enableInputCoverage);			                                // CSV test case reporter

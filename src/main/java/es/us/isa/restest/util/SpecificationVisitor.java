@@ -100,6 +100,15 @@ public class SpecificationVisitor {
 			return false;
 		}
 	}
+
+	public static List<Parameter> getNonEnumParameters(Operation operation) {
+		return operation.getParameters().stream()
+				.filter(p -> {
+					ParameterFeatures pFeatures = new ParameterFeatures(p);
+					return (pFeatures.getEnumValues() == null && !pFeatures.getType().equals("boolean"));
+				})
+				.collect(Collectors.toList());
+	}
 }
 
 

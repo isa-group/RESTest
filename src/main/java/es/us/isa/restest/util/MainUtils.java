@@ -5,6 +5,7 @@ import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
+import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
@@ -25,11 +26,11 @@ public class MainUtils {
 
         // Create generator and filter
         AbstractTestCaseGenerator generator;
-        if(conf.getAuth().getApiKeysPath() != null)
+        if(ignoreDependencies)
             generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
         else
-            generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-        generator.setIgnoreDependencies(ignoreDependencies);
+            generator = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
+//        generator.setIgnoreDependencies(ignoreDependencies);
         return generator;
     }
 
