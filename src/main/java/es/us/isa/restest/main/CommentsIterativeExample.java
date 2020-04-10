@@ -98,7 +98,7 @@ public class CommentsIterativeExample {
 
         // Create generator and filter
         AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-		generator.setIgnoreDependencies(false);
+//		generator.setIgnoreDependencies(false);
 		return generator;
 	}
 	
