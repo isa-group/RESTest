@@ -88,7 +88,7 @@ paths:
           name: categoryId
           description: "A comma separated list of categories to limit results to. If you specify categoryId. Specifying a radius may improve results. If specifying a top-level category, all sub-categories will also match the query. Does not apply to intent=match requests."
         - in: query
-          type: integer
+          type: number
           required: false
           name: llAcc
           description: Accuracy of latitude and longitude, in meters.
@@ -98,7 +98,7 @@ paths:
           name: alt
           description: Altitude of the user’s location, in meters.
         - in: query
-          type: integer
+          type: number
           required: false
           name: altAcc
           description: Accuracy of the user’s altitude, in meters.
