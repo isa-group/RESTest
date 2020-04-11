@@ -109,6 +109,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 					idl2restestTestCase(test, idlReasoner.getRandomValidRequest(), specOperation); // Generate valid test case with IDLReasoner
 				else
 					setTestCaseParameters(test, specOperation, testOperation); // Generate valid test case normally (no need to manage deps.)
+				test.setFulfillsDependencies(true);
 				break;
 			case "inter_parameter_dependency":
 				if (idlReasoner != null)
@@ -117,6 +118,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 					setTestCaseParameters(test, specOperation, testOperation); // Impossible (no deps.), generate valid request
 					test.setFaulty(false);
 					test.setFaultyReason("none");
+					test.setFulfillsDependencies(true);
 				}
 				break;
 			case "individual_parameter_constraint":
