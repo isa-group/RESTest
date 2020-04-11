@@ -108,7 +108,7 @@ paths:
         - IF offset AND NOT limit THEN offset <= 980;
       responses:
         200:
-          description: Returns all travels
+          description: Returns all businesses
           schema:
             $ref: '#/definitions/BusinessesResult'
         400:
