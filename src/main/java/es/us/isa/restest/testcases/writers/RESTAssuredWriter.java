@@ -192,7 +192,7 @@ public class RESTAssuredWriter implements IWriter {
 		
 		// Generate basic response validation
 		//if(!OAIValidation)
-			content += generateResponseValidation(t);
+//			content += generateResponseValidation(t);
 
 		// Generate all stuff needed after the RESTAssured response validation
 		content += generatePostResponseValidation(t);
@@ -365,68 +365,68 @@ public class RESTAssuredWriter implements IWriter {
 	}
 	
 	
-	private String generateResponseValidation(TestCase t) {
-		String content = "";
-		String expectedStatusCode = null;
-		boolean thereIsDefault = false;
-
-		// Get status code of the expected response
-		for (Entry<String, Response> response: t.getExpectedOutputs().entrySet()) {
-			if (response.getValue().equals(t.getExpectedSuccessfulOutput())) {
-				expectedStatusCode = response.getKey();
-			}
-			// If there is a default response, use it if the expected status code is not found
-			if (response.getKey().equals("default")) {
-				thereIsDefault = true;
-			}
-		}
-
-		if (expectedStatusCode == null && !thereIsDefault) {
-			// Default expected status code to 200
-			expectedStatusCode = "200";
-		}
-
-		// Assert status code only if it was found among possible status codes. Otherwise, only JSON structure will be validated
-		//TODO: Improve oracle of status code
-//		if (expectedStatusCode != null) {
-//			content = "\t\t\tresponse.then().statusCode("
-//					+ expectedStatusCode
-//					+ ");\n\n";
+//	private String generateResponseValidation(TestCase t) {
+//		String content = "";
+//		String expectedStatusCode = null;
+//		boolean thereIsDefault = false;
+//
+//		// Get status code of the expected response
+//		for (Entry<String, Response> response: t.getExpectedOutputs().entrySet()) {
+//			if (response.getValue().equals(t.getExpectedSuccessfulOutput())) {
+//				expectedStatusCode = response.getKey();
+//			}
+//			// If there is a default response, use it if the expected status code is not found
+//			if (response.getKey().equals("default")) {
+//				thereIsDefault = true;
+//			}
 //		}
-//		content = "\t\t\tassertTrue(\"Received status 500. Server error found.\", response.statusCode() < 500);\n";
-
-		return content;
-
-		/*String content = "\t\tswitch(response.getStatusCode()) {\n";
-		boolean hasDefaultCase = false;
-		
-		for(Entry<String, Response> response: t.getExpectedOutputs().entrySet()) {
-			
-			// Default response
-			if (response.getKey().equals("default")) {
-				content += "\t\t\tdefault:\n";
-				hasDefaultCase = true;
-			} else		// Specific HTTP code
-				content += "\t\tcase " + response.getKey() + ":\n";
-			
-			
-				content += "\t\t\tresponse.then().contentType(\"" + t.getOutputFormat() + "\");\n";
-		
-				//TODO: JSON validation
-				content += "\t\t\tbreak;\n";		
-		}
-		
-		if (!hasDefaultCase)
-			content += "\t\tdefault: \n"
-					+ "\t\t\tSystem.err.println(\"Unexpected HTTP code: \" + response.getStatusCode());\n"
-					+ "\t\t\tfail();\n"
-					+ "\t\t\tbreak;\n";
-		
-		// Close switch sentence
-		content += "\t\t}\n";
-		
-		return content;*/
-	}
+//
+//		if (expectedStatusCode == null && !thereIsDefault) {
+//			// Default expected status code to 200
+//			expectedStatusCode = "200";
+//		}
+//
+//		// Assert status code only if it was found among possible status codes. Otherwise, only JSON structure will be validated
+//		//TODO: Improve oracle of status code
+////		if (expectedStatusCode != null) {
+////			content = "\t\t\tresponse.then().statusCode("
+////					+ expectedStatusCode
+////					+ ");\n\n";
+////		}
+////		content = "\t\t\tassertTrue(\"Received status 500. Server error found.\", response.statusCode() < 500);\n";
+//
+//		return content;
+//
+//		/*String content = "\t\tswitch(response.getStatusCode()) {\n";
+//		boolean hasDefaultCase = false;
+//
+//		for(Entry<String, Response> response: t.getExpectedOutputs().entrySet()) {
+//
+//			// Default response
+//			if (response.getKey().equals("default")) {
+//				content += "\t\t\tdefault:\n";
+//				hasDefaultCase = true;
+//			} else		// Specific HTTP code
+//				content += "\t\tcase " + response.getKey() + ":\n";
+//
+//
+//				content += "\t\t\tresponse.then().contentType(\"" + t.getOutputFormat() + "\");\n";
+//
+//				//TODO: JSON validation
+//				content += "\t\t\tbreak;\n";
+//		}
+//
+//		if (!hasDefaultCase)
+//			content += "\t\tdefault: \n"
+//					+ "\t\t\tSystem.err.println(\"Unexpected HTTP code: \" + response.getStatusCode());\n"
+//					+ "\t\t\tfail();\n"
+//					+ "\t\t\tbreak;\n";
+//
+//		// Close switch sentence
+//		content += "\t\t}\n";
+//
+//		return content;*/
+//	}
 
 	private String generatePostResponseValidation(TestCase t) {
 		
