@@ -12,7 +12,8 @@ import java.util.Properties;
 public class PropertyManager {
 
 	static String propertyFilePath = "src/main/resources/config.properties";
-	static 	Properties properties = null;
+	static Properties properties = null;
+	static Properties experimentProperties = null;
 	
 	static public String readProperty(String name) {
 	
@@ -33,20 +34,22 @@ public class PropertyManager {
 		
 	}
 
-	public static String readProperty(String propertyFilePath, String name) {
+	public static String readExperimentProperty(String evalPropertiesFilePath, String name) {
 
-		Properties properties = new Properties();
-		try {
-			properties.load(new FileInputStream(propertyFilePath));
-		} catch (FileNotFoundException e) {
-			System.err.println("Error reading property file: " + e.getMessage());
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println("Error reading property file: " + e.getMessage());
-			e.printStackTrace();
+		if (experimentProperties ==null) {
+			experimentProperties = new Properties();
+			try {
+				experimentProperties.load(new FileInputStream(evalPropertiesFilePath));
+			} catch (FileNotFoundException e) {
+				System.err.println("Error reading property file: " + e.getMessage());
+				e.printStackTrace();
+			} catch (IOException e) {
+				System.err.println("Error reading property file: " + e.getMessage());
+				e.printStackTrace();
+			}
 		}
 
-		return properties.getProperty(name);
+		return experimentProperties.getProperty(name);
 	}
 
 

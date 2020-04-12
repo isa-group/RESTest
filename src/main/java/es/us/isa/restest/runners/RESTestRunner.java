@@ -24,6 +24,8 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 
 import static es.us.isa.restest.util.FileManager.*;
+import static es.us.isa.restest.util.Timer.TestStep.TEST_EXECUTION;
+import static es.us.isa.restest.util.Timer.TestStep.TEST_GENERATION;
 
 /**
  * This class a basic test workflow: test generation -> test writing -> class compilation and loading -> test execution -> test report generation -> test coverage report generation
@@ -32,19 +34,19 @@ import static es.us.isa.restest.util.FileManager.*;
  */
 public class RESTestRunner {
 
-	String targetDir;							// Directory where tests will be generated	
-	String testClassName;						// Name of the class to be generated
-	String packageName;							// Package name
-	AbstractTestCaseGenerator generator;   		// Test case generator
-	IWriter writer;								// RESTAssured writer
-	AllureReportManager allureReportManager;	// Allure report manager
-	CSVReportManager csvReportManager;			// CSV report manager
-	static CoverageMeter covMeter;				//Coverage meter
-	int numTestCases = 0;						// Number of test cases generated so far
-	Timer timer;
+	private String targetDir;							// Directory where tests will be generated
+	private String testClassName;						// Name of the class to be generated
+	private String packageName;							// Package name
+	private AbstractTestCaseGenerator generator;   		// Test case generator
+	private IWriter writer;								// RESTAssured writer
+	private AllureReportManager allureReportManager;	// Allure report manager
+	private CSVReportManager csvReportManager;			// CSV report manager
+	private CoverageMeter covMeter;						// Coverage meter
+	private int numTestCases = 0;						// Number of test cases generated so far
+//	private Timer timer;
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
-	
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, CSVReportManager csvReportManager) {
+
+	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, CSVReportManager csvReportManager, CoverageMeter covMeter) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
@@ -52,11 +54,7 @@ public class RESTestRunner {
 		this.writer = writer;
 		this.allureReportManager = reportManager;
 		this.csvReportManager = csvReportManager;
-		this.timer = new Timer();
-	}
-
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, CSVReportManager csvReportManager, CoverageMeter covMeter) {
-		this(testClassName, targetDir, packageName, generator, writer, reportManager, csvReportManager);
+//		this.timer = new Timer();
 		this.covMeter = covMeter;
 	}
 	
@@ -86,19 +84,19 @@ public class RESTestRunner {
 			String csvNFPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.nominalfaulty.file");
 			generator.exportNominalFaultyToCSV(csvNFPath, testClassName);
 		}
-
-		if(covMeter != null)
-			readTestResults();
 		
 		// Generate test report
 		logger.info("Generating test report");
 		allureReportManager.generateReport();
 
 		//Generate coverage report
-		generateCoverageReport();
+		if(covMeter != null) {
+			readTestResults();
+			generateCoverageReport();
+		}
 
-		//Generate coverage report
-		generateTimeReport();
+//		//Generate time report
+//		generateTimeReport();
 	}
 
 	private void testGeneration() {
@@ -107,9 +105,9 @@ public class RESTestRunner {
 		logger.info("Generating tests");
 		generator.setnCurrentFaulty(0);
 		generator.setnCurrentNominal(0);
-		timer.startCounting("Test case generation");
+		Timer.startCounting(TEST_GENERATION);
 		Collection<TestCase> testCases = generator.generate();
-		timer.stopCounting("Test case generation");
+		Timer.stopCounting(TEST_GENERATION);
         this.numTestCases += testCases.size();
 
         // Export test cases and nFaulty and nNominal to CSV if enableStats is true
@@ -127,7 +125,6 @@ public class RESTestRunner {
 
       // Update CoverageMeter with recently created test suite (if coverage is enabled).
 		if (covMeter != null) {
-
 			covMeter.addTestSuite(testCases);
 		}
         
@@ -143,9 +140,9 @@ public class RESTestRunner {
 		JUnitCore junit = new JUnitCore();
 		//junit.addListener(new TextListener(System.out));
 		junit.addListener(new io.qameta.allure.junit4.AllureJunit4());
-		timer.startCounting("Test case execution");
+		Timer.startCounting(TEST_EXECUTION);
 		Result result = junit.run(testClass);
-		timer.stopCounting("Test case execution");
+		Timer.stopCounting(TEST_EXECUTION);
 		int successfulTests = result.getRunCount() - result.getFailureCount() - result.getIgnoreCount();
 		logger.info(result.getRunCount() + " tests run in " + result.getRunTime()/1000 + " seconds. Successful: " + successfulTests +" , Failures: " + result.getFailureCount() + ", Ignored: " + result.getIgnoreCount());
 
@@ -176,11 +173,11 @@ public class RESTestRunner {
 		logger.info("Coverage report generated.");
 	}
 
-	private void generateTimeReport() {
+	public void generateTimeReport() {
 		ObjectMapper mapper = new ObjectMapper();
 		String timePath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.time");
 		try {
-			mapper.writeValue(new File(timePath), timer.getCounters());
+			mapper.writeValue(new File(timePath), Timer.getCounters());
 		} catch (IOException e) {
 			logger.error("The time report cannot be generated. Stack trace:");
 			e.printStackTrace();
