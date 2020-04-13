@@ -24,8 +24,7 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 
 import static es.us.isa.restest.util.FileManager.*;
-import static es.us.isa.restest.util.Timer.TestStep.TEST_EXECUTION;
-import static es.us.isa.restest.util.Timer.TestStep.TEST_GENERATION;
+import static es.us.isa.restest.util.Timer.TestStep.*;
 
 /**
  * This class a basic test workflow: test generation -> test writing -> class compilation and loading -> test execution -> test report generation -> test coverage report generation
@@ -105,9 +104,9 @@ public class RESTestRunner {
 		logger.info("Generating tests");
 		generator.setnCurrentFaulty(0);
 		generator.setnCurrentNominal(0);
-		Timer.startCounting(TEST_GENERATION);
+		Timer.startCounting(TEST_SUITE_GENERATION);
 		Collection<TestCase> testCases = generator.generate();
-		Timer.stopCounting(TEST_GENERATION);
+		Timer.stopCounting(TEST_SUITE_GENERATION);
         this.numTestCases += testCases.size();
 
         // Export test cases and nFaulty and nNominal to CSV if enableStats is true
@@ -140,9 +139,9 @@ public class RESTestRunner {
 		JUnitCore junit = new JUnitCore();
 		//junit.addListener(new TextListener(System.out));
 		junit.addListener(new io.qameta.allure.junit4.AllureJunit4());
-		Timer.startCounting(TEST_EXECUTION);
+		Timer.startCounting(TEST_SUITE_EXECUTION);
 		Result result = junit.run(testClass);
-		Timer.stopCounting(TEST_EXECUTION);
+		Timer.stopCounting(TEST_SUITE_EXECUTION);
 		int successfulTests = result.getRunCount() - result.getFailureCount() - result.getIgnoreCount();
 		logger.info(result.getRunCount() + " tests run in " + result.getRunTime()/1000 + " seconds. Successful: " + successfulTests +" , Failures: " + result.getFailureCount() + ", Ignored: " + result.getIgnoreCount());
 
@@ -172,19 +171,6 @@ public class RESTestRunner {
 		}
 		logger.info("Coverage report generated.");
 	}
-
-	public void generateTimeReport() {
-		ObjectMapper mapper = new ObjectMapper();
-		String timePath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.time");
-		try {
-			mapper.writeValue(new File(timePath), Timer.getCounters());
-		} catch (IOException e) {
-			logger.error("The time report cannot be generated. Stack trace:");
-			e.printStackTrace();
-		}
-		logger.info("Time report generated.");
-	}
-	
 	
 	public String getTargetDir() {
 		return targetDir;

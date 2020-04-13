@@ -12,6 +12,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.IDGenerator;
+import es.us.isa.restest.util.Timer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
@@ -23,6 +24,8 @@ import static es.us.isa.restest.testcases.TestCase.checkFaulty;
 import static es.us.isa.restest.util.IDLAdapter.idl2restestTestCase;
 import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static es.us.isa.restest.util.SpecificationVisitor.*;
+import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
+import static es.us.isa.restest.util.Timer.TestStep.TEST_SUITE_GENERATION;
 
 public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator {
 
@@ -63,8 +66,9 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 				if ((float)index/(float)numberOfTest >= faultyRatio)
 					faultyReason = "none";
 			}
-
+			Timer.startCounting(TEST_CASE_GENERATION);
 			TestCase test = generateNextTestCase(specOperation,testOperation,path,method,faultyReason);
+			Timer.stopCounting(TEST_CASE_GENERATION);
 			authenticateTestCase(test);
 			testCases.add(test);
 		}

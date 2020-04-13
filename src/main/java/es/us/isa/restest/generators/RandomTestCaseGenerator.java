@@ -15,6 +15,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.IDGenerator;
+import es.us.isa.restest.util.Timer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
 import io.swagger.models.parameters.Parameter;
@@ -23,6 +24,7 @@ import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
 import static es.us.isa.restest.testcases.TestCase.checkFaulty;
 import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static es.us.isa.restest.util.SpecificationVisitor.*;
+import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
 
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
@@ -47,8 +49,9 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 				faultyReason = "none";
 
 			// Create test case with specific parameters and values
+			Timer.startCounting(TEST_CASE_GENERATION);
 			TestCase test = generateNextTestCase(specOperation,testOperation,path,method,faultyReason);
-
+			Timer.stopCounting(TEST_CASE_GENERATION);
 			// Authentication
 			authenticateTestCase(test);
 
