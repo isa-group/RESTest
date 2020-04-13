@@ -1,5 +1,6 @@
 package es.us.isa.restest.main;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
@@ -11,7 +12,11 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
@@ -40,13 +45,15 @@ public class IterativeExample {
     private static int totalNumTestCases = 50;				// Total number of test cases to be generated
     private static int timeDelay = -1;
 
+    private static final Logger logger = LogManager.getLogger(IterativeExample.class.getName());
+
     public static void main(String[] args) {
         Timer.startCounting(ALL);
 
         if(args.length > 0)
             setEvaluationParameters(args[0]);
         else
-            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/foursquare.properties");
+            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/travel.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
@@ -74,7 +81,7 @@ public class IterativeExample {
             // Test case generation + execution + test report generation
             runner.run();
 
-            System.out.println("Iteration "  + iteration + ". " +  runner.getNumTestCases() + " test cases generated.");
+            logger.info("Iteration "  + iteration + ". " +  runner.getNumTestCases() + " test cases generated.");
             iteration++;
         }
 
@@ -84,7 +91,8 @@ public class IterativeExample {
         }
 
         Timer.stopCounting(ALL);
-        runner.generateTimeReport();
+
+        generateTimeReport();
     }
 
     private static void setEvaluationParameters(String evalPropertiesFilePath) {
@@ -177,6 +185,18 @@ public class IterativeExample {
         }
 
         return null;
+    }
+
+    private static void generateTimeReport() {
+        ObjectMapper mapper = new ObjectMapper();
+        String timePath = readProperty("data.tests.dir") + "/" + experimentName + "/" + readProperty("data.tests.time");
+        try {
+            mapper.writeValue(new File(timePath), Timer.getCounters());
+        } catch (IOException e) {
+            logger.error("The time report cannot be generated. Stack trace:");
+            e.printStackTrace();
+        }
+        logger.info("Time report generated.");
     }
 
     private static void delay() {
