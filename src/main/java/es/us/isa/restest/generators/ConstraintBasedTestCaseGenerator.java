@@ -89,7 +89,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 			if (parameter.getWeight() == null || parameter.getWeight() > 0) {
 				paramValues = new ArrayList<>();
 				generator = generators.get(parameter.getName());
-				if (generator instanceof RandomInputValueIterator) {
+				if (generator instanceof RandomInputValueIterator && ((RandomInputValueIterator) generator).getMaxValues() == 1) {
 					paramValues = ((RandomInputValueIterator) generator).getValues();
 				} else if (generator instanceof RandomBooleanGenerator) {
 					paramValues = Arrays.asList("0", "1");
