@@ -29,8 +29,10 @@ import static es.us.isa.restest.util.Timer.TestStep.TEST_SUITE_GENERATION;
 
 public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator {
 
-	protected Float faultyDependencyRatio = 0.5f;			// Ratio of faulty test cases due to inter-parameter deps. Defaults to 0.5
-	protected Analyzer idlReasoner;							// IDLReasoner to check if requests are valid or not
+	private Float faultyDependencyRatio = 0.5f;			// Ratio of faulty test cases due to inter-parameter deps. Defaults to 0.5
+	private Integer reloadInputDataEvery = 100;      // Number of requests using the same randomly generated input data
+	private Integer inputDataMaxValues = 1000;       // Number of values used for each parameter when reloading input data
+	private Analyzer idlReasoner;							// IDLReasoner to check if requests are valid or not
 
 	public ConstraintBasedTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
@@ -42,11 +44,9 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 		List<TestCase> testCases = new ArrayList<TestCase>();
 
-		if (hasDependencies(specOperation)) { // If the operation contains dependencies, create new IDLReasoner for that operation
+		if (hasDependencies(specOperation)) // If the operation contains dependencies, create new IDLReasoner for that operation
 			idlReasoner = new Analyzer("oas", spec.getPath(), path, method.toString());
-			Map <String, List<String>> inputData = generateInputData(testOperation.getTestParameters()); // Update input data
-			idlReasoner.updateData(inputData);
-		} else // Otherwise, set it to null so that it's not used
+		else // Otherwise, set it to null so that it's not used
 			idlReasoner = null;
 
 		// Whether the next test case to generate must be faulty or not
@@ -59,6 +59,11 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		}
 
 		while (hasNext()) {
+			if (index%reloadInputDataEvery == 0) {
+				Map <String, List<String>> inputData = generateInputData(testOperation.getTestParameters()); // Update input data
+				idlReasoner.updateData(inputData);
+			}
+
 			// Generate faulty test cases until faultyRatio is reached
 			if (!faultyReason.equals("none")) {
 				if ((float)index/(float)numberOfTest >= faultyRatio*faultyDependencyRatio)
@@ -84,12 +89,12 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 			if (parameter.getWeight() == null || parameter.getWeight() > 0) {
 				paramValues = new ArrayList<>();
 				generator = generators.get(parameter.getName());
-				if (generator instanceof RandomInputValueIterator && ((RandomInputValueIterator) generator).getValues().size() < 100) {
+				if (generator instanceof RandomInputValueIterator) {
 					paramValues = ((RandomInputValueIterator) generator).getValues();
 				} else if (generator instanceof RandomBooleanGenerator) {
 					paramValues = Arrays.asList("0", "1");
 				} else {
-					while (paramValues.size() < 100) {
+					while (paramValues.size() < inputDataMaxValues) {
 						paramValues.add(generator.nextValueAsString());
 					}
 				}
@@ -161,5 +166,21 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	public void setFaultyDependencyRatio(Float faultyDependencyRatio) {
 		this.faultyDependencyRatio = faultyDependencyRatio;
+	}
+
+	public Integer getReloadInputDataEvery() {
+		return reloadInputDataEvery;
+	}
+
+	public void setReloadInputDataEvery(Integer reloadInputDataEvery) {
+		this.reloadInputDataEvery = reloadInputDataEvery;
+	}
+
+	public Integer getInputDataMaxValues() {
+		return inputDataMaxValues;
+	}
+
+	public void setInputDataMaxValues(Integer inputDataMaxValues) {
+		this.inputDataMaxValues = inputDataMaxValues;
 	}
 }

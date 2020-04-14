@@ -28,7 +28,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 
 public class IterativeExample {
 
-    private static int numTestCases;			            // Number of test cases per operation
+    private static Integer numTestCases;                    // Number of test cases per operation
     private static String OAISpecPath;		                // Path to OAS specification file
     private static OpenAPISpecification spec;               // OAS
     private static String confPath;	                        // Path to test configuration file
@@ -40,10 +40,14 @@ public class IterativeExample {
     private static Boolean enableOutputCoverage = true;     // Set to 'true' if you want the input coverage report.
     private static Boolean enableCSVStats = true;           // Set to 'true' if you want statistics in a CSV file.
     private static Boolean ignoreDependencies = false;      // Set to 'true' if you don't want to use IDLReasoner.
-    private static float faultyRatio = 0.1f;                // Percentage of faulty test cases to generate. Defaults to 0.1
-    private static float faultyDependencyRatio = 0.5f;      // Percentage of faulty test cases due to dependencies to generate. Defaults to 0.05 (0.1*0.5)
-    private static int totalNumTestCases = 50;				// Total number of test cases to be generated
-    private static int timeDelay = -1;
+    private static Float faultyRatio = 0.1f;                // Percentage of faulty test cases to generate. Defaults to 0.1
+    private static Integer totalNumTestCases = 50;			// Total number of test cases to be generated
+    private static Integer timeDelay = -1;                  // Delay between requests
+
+    // For CBT only:
+    private static Float faultyDependencyRatio = 0.5f;      // Percentage of faulty test cases due to dependencies to generate. Defaults to 0.05 (0.1*0.5)
+    private static Integer reloadInputDataEvery = 100;      // Number of requests using the same randomly generated input data
+    private static Integer inputDataMaxValues = 1000;       // Number of values used for each parameter when reloading input data
 
     private static final Logger logger = LogManager.getLogger(IterativeExample.class.getName());
 
@@ -53,7 +57,7 @@ public class IterativeExample {
         if(args.length > 0)
             setEvaluationParameters(args[0]);
         else
-            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/travel.properties");
+            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/yelp_businessesSearch.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
@@ -111,6 +115,8 @@ public class IterativeExample {
         timeDelay = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "delay"));
         faultyRatio = Float.parseFloat(readExperimentProperty(evalPropertiesFilePath, "faultyratio"));
         faultyDependencyRatio = Float.parseFloat(readExperimentProperty(evalPropertiesFilePath, "faultydependencyratio"));
+        reloadInputDataEvery = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "reloadinputdataevery"));
+        inputDataMaxValues = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "inputdatamaxvalues"));
     }
 
     // Create a test case generator
@@ -128,6 +134,8 @@ public class IterativeExample {
         else {
             generator = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
             ((ConstraintBasedTestCaseGenerator) generator).setFaultyDependencyRatio(faultyDependencyRatio);
+            ((ConstraintBasedTestCaseGenerator) generator).setInputDataMaxValues(inputDataMaxValues);
+            ((ConstraintBasedTestCaseGenerator) generator).setReloadInputDataEvery(reloadInputDataEvery);
         }
         generator.setFaultyRatio(faultyRatio);
 
