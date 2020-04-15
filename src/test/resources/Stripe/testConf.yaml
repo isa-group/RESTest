@@ -134,12 +134,17 @@ testConfiguration:
       - name: statement_descriptor
         weight: 0.5
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-            - name: maxWords
+            - name: minLength
               values:
-                - 1
-              objectValues: null
+                - 15
+            - name: maxLength
+              values:
+                - 20
+            - name: includeNumbers
+              values:
+                - false
       - name: type
         weight: 0.5
         generator:
