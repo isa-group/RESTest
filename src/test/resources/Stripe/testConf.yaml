@@ -20,12 +20,17 @@ testConfiguration:
       - name: attributes[]
         weight: 0.5
         generator:
-          type: RandomEnglishWord
+          type: RandomString
           genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
+            - name: minLength
+              values:
+                - 5
+            - name: maxLength
+              values:
+                - 20
+            - name: includeNumbers
+              values:
+                - false
       - name: caption
         weight: 0.5
         generator:
@@ -63,7 +68,7 @@ testConfiguration:
             - package_dimensions
             objectValues: null
       - name: id
-        weight: 0.5
+        weight: 0
         generator:
           type: RandomString
           genParameters:
@@ -138,7 +143,7 @@ testConfiguration:
           genParameters:
             - name: minLength
               values:
-                - 15
+                - 5
             - name: maxLength
               values:
                 - 20
