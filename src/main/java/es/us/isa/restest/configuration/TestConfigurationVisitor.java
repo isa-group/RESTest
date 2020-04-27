@@ -21,9 +21,8 @@ public class TestConfigurationVisitor {
 	 */
 	public static Operation getOperation(TestConfigurationObject conf, String path, String method) {
 		TestPath testPath = getTestPath(conf, path);
-		Operation testOperation = getTestOperation(testPath, method);
 		
-		return testOperation;
+		return getTestOperation(testPath, method);
 	}
 	
 	/**
@@ -67,6 +66,11 @@ public class TestConfigurationVisitor {
 				found = true;
 			}
 		}
+
+		if(!found) {
+			throw new IllegalArgumentException("Path <" + path + "> does not exist in test configuration file");
+		}
+
 		return tp;
 	}
 	

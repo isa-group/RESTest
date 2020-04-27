@@ -146,12 +146,12 @@ public class DefaultTestConfigurationGenerator {
 			List<String> genParam3Values = new ArrayList<>();
 
 			// If it's a path or query parameter, get type to set a useful generator
-			if (param.getIn() == "query" || param.getIn() == "path" || param.getIn() == "header" || param.getIn() == "formData") {
+			if (param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header") || param.getIn().equals("formData")) {
 				String paramType = ((AbstractSerializableParameter) param).getType();
 				List<String> paramEnumValues = ((AbstractSerializableParameter) param).getEnum();
 
 				// If the param type is array, get its item type
-				if (paramType == "array") {
+				if (paramType.equals("array")) {
 					paramType = ((AbstractSerializableParameter) param).getItems().getType();
 				}
 
@@ -211,7 +211,7 @@ public class DefaultTestConfigurationGenerator {
 				}
 			}
 			// TODO: set smarter generators for body parameters (and maybe others like headers or form-data)
-			else if (param.getIn() == "body") {
+			else if (param.getIn().equals("body")) {
 				String bodyParam = null;
 				ObjectMapper objectMapper = new ObjectMapper();
 

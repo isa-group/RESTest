@@ -1,6 +1,5 @@
 package es.us.isa.restest.coverage;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,10 +27,10 @@ public enum CriterionType {
             types = Arrays.asList(PATH, OPERATION, PARAMETER, PARAMETER_VALUE, PARAMETER_CONDITION, OPERATIONS_FLOW,
                     INPUT_CONTENT_TYPE, AUTHENTICATION, STATUS_CODE, STATUS_CODE_CLASS, RESPONSE_BODY_PROPERTIES,
                     OUTPUT_CONTENT_TYPE);
-        } else if (type == "input") {
+        } else if (type.equals("input")) {
             types = Arrays.asList(PATH, OPERATION, PARAMETER, PARAMETER_VALUE, PARAMETER_CONDITION, OPERATIONS_FLOW,
                     INPUT_CONTENT_TYPE, AUTHENTICATION);
-        } else if (type == "output") {
+        } else if (type.equals("output")) {
             types = Arrays.asList(STATUS_CODE, STATUS_CODE_CLASS, RESPONSE_BODY_PROPERTIES, OUTPUT_CONTENT_TYPE);
         } else {
             throw new IllegalArgumentException("Illegal criterion type: " + type + ". Can only be 'input', 'output' or null.");

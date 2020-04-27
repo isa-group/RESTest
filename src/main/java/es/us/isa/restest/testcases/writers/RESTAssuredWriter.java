@@ -448,12 +448,9 @@ public class RESTAssuredWriter implements IWriter {
 	}
 		
 	private void saveToFile(String path, String className, String contentFile) {
-		FileWriter testClass = null;
-		try {
-			testClass = new FileWriter(path + "/" + className + ".java");
+		try(FileWriter testClass = new FileWriter(path + "/" + className + ".java")) {
 			testClass.write(contentFile);
 			testClass.flush();
-			testClass.close();
 		} catch(Exception ex) {
 			System.err.println("Error writing test file: " + ex.getMessage());
 			ex.printStackTrace();
