@@ -1,9 +1,6 @@
 package es.us.isa.restest.configuration.generators;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -41,6 +38,18 @@ public class DefaultTestConfigurationGenerator {
 
 	public DefaultTestConfigurationGenerator(OpenAPISpecification spec) {
 		this.spec = spec;
+	}
+
+	/**
+	 * Generate a default test configuration file for a given Open API specification
+	 * @param destination Path of the output test configuration file
+	 * @return
+	 */
+	public TestConfigurationObject generate (String destination) {
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath(null);
+		filter.addAllMethods();
+		return this.generate(destination, Collections.singletonList(filter));
 	}
 
 	/**
