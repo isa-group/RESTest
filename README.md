@@ -13,7 +13,7 @@ You can clone the project by executing the following command from the command li
 git clone -b develop https://github.com/isa-group/RESTest.git
 ````
 Then, open RESTest with your favourite IDE.
-###Testing my first API
+### Testing my first API
 First, you have to create a test configuration file. RESTest provides you a functionality that produces it from the API specification:
 ```java
 String specPath = "path/to/oas/api/spec/file.yaml";
