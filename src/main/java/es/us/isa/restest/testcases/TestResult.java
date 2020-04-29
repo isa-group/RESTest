@@ -27,6 +27,13 @@ public class TestResult {
         this.outputFormat = outputFormat;
 //        this.testCase = testCase;
     }
+    
+    public TestResult(TestResult testResult) {
+    	this.id = testResult.id;
+        this.statusCode = testResult.statusCode;
+        this.responseBody = testResult.responseBody;
+        this.outputFormat = testResult.outputFormat;
+    }
 
     public String getId() {
         return id;

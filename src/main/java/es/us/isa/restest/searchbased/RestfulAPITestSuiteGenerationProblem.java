@@ -54,17 +54,13 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     // Optimization problem configuration
     List<RestfulAPITestingObjectiveFunction> objectiveFunctions;
 
-    public RestfulAPITestSuiteGenerationProblem(String OAISpecPath, String operationPath, String method, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
-
-    }
-
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, Operation operationUnderTest, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
         this.apiUnderTest = apiUnderTest;
         if(operationUnderTest!=null) {
         	this.operationUnderTest = operationUnderTest;
         	this.parameters = this.operationUnderTest.getTestParameters();
+        	this.generators = createGenerators(this.parameters);
         }
-        this.generators = createGenerators(this.parameters);
         this.targetPath = targetPath;
 
         this.iWriter = createWriter(targetPath);

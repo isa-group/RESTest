@@ -55,6 +55,10 @@ public class TestCase implements Serializable {
 		this.formParameters = new HashMap<String,String>();
 		this.authentication = null;
 	}
+	
+	public TestCase(TestCase testCase) {
+		
+	}
 
 	public Response getExpectedSuccessfulOutput() {
 		return expectedSuccessfulOutput;

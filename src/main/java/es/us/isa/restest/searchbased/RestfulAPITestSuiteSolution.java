@@ -12,6 +12,8 @@ import java.util.Map;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.solution.impl.AbstractGenericSolution;
 
+import com.google.common.collect.Maps;
+
 public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCase,RestfulAPITestSuiteGenerationProblem>{
 
     private Map<TestCase,TestResult> testResults;
@@ -28,14 +30,26 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
 
     @Override
     public RestfulAPITestSuiteSolution copy() {
-        // TODO: complete
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    	RestfulAPITestSuiteSolution result=new RestfulAPITestSuiteSolution(this.problem);
+    	for(int i=0;i<this.getNumberOfVariables();i++) {
+    		result.setVariable(i, copyTestCase(this.getVariable(i)));
+    		result.testResults.put(result.getVariable(i), copyTestResult(testResults.get(getVariable(i))));
+    	}
+		return result;
+    	
     }
+        
+    private TestResult copyTestResult(TestResult testResult) {
+		return new TestResult(testResult);
+	}
 
-    @Override
+	private TestCase copyTestCase(TestCase variable) {		
+		return new TestCase(variable);
+	}
+
+	@Override
     public Map<Object, Object> getAttributes() {
-        // TODO: complete
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return attributes;
     }
 
     public RestfulAPITestSuiteGenerationProblem getProblem() {
@@ -50,16 +64,16 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
         getVariables().set(i, tc);
     }
 
-    public Collection<TestResult> getTestResults() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
     public TestResult getTestResult(TestCase testCase) {
         return testResults.get(testCase);
     }
 
-    void addTestResults(Map<TestCase, TestResult> results) {
+    public void addTestResults(Map<TestCase, TestResult> results) {
         testResults.putAll(results);
+    }
+    
+    public Collection<TestResult> getTestResults() {
+    	return testResults.values();
     }
     
 
