@@ -3,17 +3,16 @@
  */
 package es.us.isa.restest.runners;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.coverage.CoverageResults;
 import es.us.isa.restest.testcases.TestResult;
 import es.us.isa.restest.util.*;
 import es.us.isa.restest.util.ClassLoader;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
@@ -161,13 +160,11 @@ public class RESTestRunner {
 				covMeter.getOutputCoverage());
 		results.setCoverageOfCoverageCriteriaFromCoverageMeter(covMeter);
 		results.setCoverageOfCriterionTypeFromCoverageMeter(covMeter);
-		ObjectMapper mapper = new ObjectMapper();
-		String jsonCovPath = csvReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.computation.file");
 		try {
-			mapper.writeValue(new File(jsonCovPath), results);
+			results.exportCoverageReportToJSON(csvReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.computation.file"));
 		} catch (IOException e) {
 			logger.error("The coverage report cannot be generated. Stack trace:");
-			e.printStackTrace();
+			logger.log(Level.valueOf("context"), e);
 		}
 		logger.info("Coverage report generated.");
 	}

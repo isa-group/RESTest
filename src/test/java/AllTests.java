@@ -3,6 +3,8 @@
 import es.us.isa.restest.inputs.perturbation.ObjectPerturbatorTest;
 import es.us.isa.restest.mutation.TestCaseMutationTest;
 import es.us.isa.restest.util.*;
+import es.us.isa.restest.validation.NominalOrFaultyTestCaseFilterTest;
+import es.us.isa.restest.validation.ResponseValidationFilterTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -55,7 +57,10 @@ import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
 	IDGeneratorTest.class,
 	JSONManagerTest.class,
 	SpecificationVisitorTest.class,
-	IDLAdapterTest.class
+	IDLAdapterTest.class,
+	NominalOrFaultyTestCaseFilterTest.class,
+	ResponseValidationFilterTest.class
+
 })
 
 public class AllTests {

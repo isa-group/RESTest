@@ -1,5 +1,10 @@
 package es.us.isa.restest.coverage;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import es.us.isa.restest.util.PropertyManager;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -222,20 +227,38 @@ public class CoverageResults {
      *      - Level 7: in a distant future.
      */
     private void setTestCoverageLevel() {
-        int level;
+        int level = 0;
+
         if(pathCoverage == 100.) {
-            if(operationCoverage == 100.) {
-                if(inputContentTypeCoverage == 100. && outputContentTypeCoverage == 100.) {
-                    if(parameterCoverage == 100. && statusCodeClassCoverage == 100.) {
-                        if(parameterValueCoverage == 100. && statusCodeCoverage == 100.) {
-                            if(responseBodyPropertiesCoverage == 100.) level = 6;
-                            else level = 5;
-                        } else level = 4;
-                    } else level = 3;
-                } else level = 2;
-            } else level = 1;
-        } else level = 0;
+            level = 1;
+        }
+
+        if(level == 1 && operationCoverage == 100.) {
+            level = 2;
+        }
+
+        if(level == 2 && inputContentTypeCoverage == 100. && outputContentTypeCoverage == 100.) {
+            level = 3;
+        }
+
+        if(level == 3 && parameterCoverage == 100. && statusCodeClassCoverage == 100.) {
+            level = 4;
+        }
+
+        if(level == 4 && parameterValueCoverage == 100. && statusCodeCoverage == 100.) {
+            level = 5;
+        }
+
+        if(level == 5 && responseBodyPropertiesCoverage == 100.) {
+            level = 6;
+        }
+
         this.coverageLevel = level;
+    }
+
+    public void exportCoverageReportToJSON(String path) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(new File(path), this);
     }
 
 

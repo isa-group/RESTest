@@ -33,29 +33,26 @@ public class DefaultTestConfigurationGeneratorTest {
 	public void testSpotifyTestConfigurationGeneration() {
 		
 		String specPath="src/test/resources/Spotify/spec.yaml";
-		String confPath="src/test/resources/Spotify/defaultConf.yaml";
+		String confPath="src/test/resources/Spotify/forReadmeConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
-		
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		
-		// Filter 1
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/albums");
-		filter.addGetMethod();
-		filters.add(filter);
-		
-		// Filter 2
-		TestConfigurationFilter filter2 = new TestConfigurationFilter();
-		filter2.setPath("/search");
-		filter2.addGetMethod();
-		filters.add(filter2);
 
-		// Filter 3
-		TestConfigurationFilter filter3 = new TestConfigurationFilter();
-		filter3.setPath("/artists");
-		filter3.addGetMethod();
-		filters.add(filter3);
-		
+		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+
+		//We create the filter for the first operation: get an album
+		TestConfigurationFilter albumFilter = new TestConfigurationFilter();
+		albumFilter.setPath("/albums/{id}");     //This is the endpoint of the operation
+		albumFilter.addGetMethod();              //It is a GET operation, so we only add the GET method to the operation
+
+		//We create the filter for the second operation: get an artist
+		TestConfigurationFilter artistFilter = new TestConfigurationFilter();
+		artistFilter.setPath("/artists/{id}");      //This is the endpoint of the operation
+		artistFilter.addGetMethod();                                  //It is a GET operation, so we only add the GET method to the operation
+
+		//Adding the filters to the list
+		filters.add(albumFilter);
+		filters.add(artistFilter);
+
+		//Generating the test configuration file:
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
 		
@@ -445,6 +442,22 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		String specPath="src/test/resources/Stripe/swagger.yaml";
 		String confPath="src/test/resources/Stripe/testConf.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(specPath);
+
+		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath(null);		// null = All paths
+		filter.addAllMethods();
+		filters.add(filter);
+
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
+	}
+
+	@Test
+	public void testAnApiOfIceAndFireTestConfigurationGeneration() {
+		String specPath="src/test/resources/AnApiOfIceAndFire/swagger.yaml";
+		String confPath="src/test/resources/AnApiOfIceAndFire/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
 		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
