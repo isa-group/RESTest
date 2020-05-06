@@ -17,7 +17,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.util.FileManager.createDir;
@@ -100,29 +102,98 @@ public class IterativeExample {
     }
 
     private static void setEvaluationParameters(String evalPropertiesFilePath) {
+
         numTestCases = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "numtestcases"));
         OAISpecPath = readExperimentProperty(evalPropertiesFilePath, "oaispecpath");
         confPath = readExperimentProperty(evalPropertiesFilePath, "confpath");
-        targetDirJava = readExperimentProperty(evalPropertiesFilePath, "targetdirjava");
-        packageName = readExperimentProperty(evalPropertiesFilePath, "packagename");
-        experimentName = readExperimentProperty(evalPropertiesFilePath, "experimentname");
-        testClassName = readExperimentProperty(evalPropertiesFilePath, "testclassname");
-        enableInputCoverage = Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enableinputcoverage"));
-        enableOutputCoverage = Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enableoutputcoverage"));
-        enableCSVStats = Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enablecsvstats"));
-        ignoreDependencies = Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "ignoredependencies"));
-        totalNumTestCases = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "numtotaltestcases"));
-        timeDelay = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "delay"));
-        faultyRatio = Float.parseFloat(readExperimentProperty(evalPropertiesFilePath, "faultyratio"));
-        faultyDependencyRatio = Float.parseFloat(readExperimentProperty(evalPropertiesFilePath, "faultydependencyratio"));
-        reloadInputDataEvery = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "reloadinputdataevery"));
-        inputDataMaxValues = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "inputdatamaxvalues"));
+
+        targetDirJava = readExperimentProperty(evalPropertiesFilePath, "targetdirjava") != null?
+                readExperimentProperty(evalPropertiesFilePath, "targetdirjava") :
+                generateDefaultTargetDir();
+
+        packageName = readExperimentProperty(evalPropertiesFilePath, "packagename") != null?
+                readExperimentProperty(evalPropertiesFilePath, "packagename") :
+                getOASTitle(false);
+
+        experimentName = readExperimentProperty(evalPropertiesFilePath, "experimentname") != null?
+                readExperimentProperty(evalPropertiesFilePath, "experimentname") :
+                getOASTitle(false);
+
+        testClassName = readExperimentProperty(evalPropertiesFilePath, "testclassname") != null?
+                readExperimentProperty(evalPropertiesFilePath, "testclassname") :
+                getOASTitle(true);
+
+        enableInputCoverage = readExperimentProperty(evalPropertiesFilePath, "enableinputcoverage") != null?
+                Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enableinputcoverage")) :
+                enableInputCoverage;
+
+        enableOutputCoverage = readExperimentProperty(evalPropertiesFilePath, "enableoutputcoverage") != null?
+                Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enableoutputcoverage")) :
+                enableOutputCoverage;
+
+        enableCSVStats = readExperimentProperty(evalPropertiesFilePath, "enablecsvstats") != null?
+                Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enablecsvstats")) :
+                enableCSVStats;
+
+        ignoreDependencies = readExperimentProperty(evalPropertiesFilePath, "ignoredependencies") != null?
+                Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "ignoredependencies")) :
+                ignoreDependencies;
+
+        totalNumTestCases = readExperimentProperty(evalPropertiesFilePath, "numtotaltestcases") != null?
+                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "numtotaltestcases")) :
+                totalNumTestCases;
+
+        timeDelay = readExperimentProperty(evalPropertiesFilePath, "delay") != null?
+                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "delay")) :
+                timeDelay;
+
+        faultyRatio = readExperimentProperty(evalPropertiesFilePath, "faultyratio") != null?
+                Float.parseFloat(readExperimentProperty(evalPropertiesFilePath, "faultyratio")) :
+                faultyRatio;
+
+        faultyDependencyRatio = readExperimentProperty(evalPropertiesFilePath, "faultydependencyratio") != null?
+                Float.parseFloat(readExperimentProperty(evalPropertiesFilePath, "faultydependencyratio")) :
+                faultyDependencyRatio;
+
+        reloadInputDataEvery = readExperimentProperty(evalPropertiesFilePath, "reloadinputdataevery") != null?
+                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "reloadinputdataevery")) :
+                reloadInputDataEvery;
+
+        inputDataMaxValues = readExperimentProperty(evalPropertiesFilePath, "inputdatamaxvalues") != null?
+                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "inputdatamaxvalues")) :
+                inputDataMaxValues;
     }
 
+    private static String generateDefaultTargetDir() {
+        return "src/generation/java/" + getOASTitle(false);
+    }
+
+    private static String getOASTitle(boolean capitalize) {
+        if(spec == null) {
+            spec = new OpenAPISpecification(OAISpecPath);
+        }
+        String title = spec.getSpecification().getInfo().getTitle().replaceAll("[^\\p{L}\\p{Nd}\\s]+", "").trim();
+        title = (capitalize? title.substring(0,1).toUpperCase() : title.substring(0,1).toLowerCase()) +
+                (title.length() > 1? Arrays.stream(title.substring(1).split("\\s"))
+                        .map(IterativeExample::capitalizeString)
+                        .collect(Collectors.joining())
+                        : "");
+        return title;
+    }
+
+    private static String capitalizeString(String s) {
+        String result = s.substring(0, 1);
+        if(s.length() > 1) {
+            result = s.concat(s.substring(1));
+        }
+        return result;
+    }
     // Create a test case generator
     private static AbstractTestCaseGenerator createGenerator() {
         // Load spec
-        spec = new OpenAPISpecification(OAISpecPath);
+        if(spec == null) {
+            spec = new OpenAPISpecification(OAISpecPath);
+        }
 
         // Load configuration
         TestConfigurationObject conf = loadConfiguration(confPath);

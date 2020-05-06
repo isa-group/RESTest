@@ -34,20 +34,31 @@ public class ClassLoader {
 		fileManager.close();
 		
 		 // load the compiled class
-		 URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { parentDirectory.toURI().toURL() });
-		 loadedClass = classLoader.loadClass(className);
-		 
+		 loadedClass = loadClass(parentDirectory, className);
+
 		} catch (IOException e) {
 			System.err.println("Error loading class: " + e.getMessage());
 			e.printStackTrace();
 		} catch (NullPointerException e) {
 			System.err.println("Error loading class. Make sure JDK is used: " + e.getMessage());
 			e.printStackTrace();
+		}
+		
+		return loadedClass;
+	}
+
+	private static Class<?> loadClass(File parentDirectory, String className) {
+		Class<?> loadedClass= null;
+		try(URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { parentDirectory.toURI().toURL() })) {
+			loadedClass = classLoader.loadClass(className);
+		} catch (IOException e) {
+			System.err.println("Error loading class: " + e.getMessage());
+			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			System.err.println("Class not found: " + e.getMessage());
 			e.printStackTrace();
 		}
-		
+
 		return loadedClass;
 	}
 }

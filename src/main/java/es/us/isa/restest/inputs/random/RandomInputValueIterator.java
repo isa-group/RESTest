@@ -15,6 +15,7 @@ public class RandomInputValueIterator<T> extends RandomGenerator{
     private Integer minValues; // Defaults to 1
     private Integer maxValues; // Defaults to 1
     private String separator; // Defaults to ","
+	private Random random = new Random();
      
     public RandomInputValueIterator() {
     	super();
@@ -37,7 +38,6 @@ public class RandomInputValueIterator<T> extends RandomGenerator{
 			} else {
 				value = new ArrayList<>();
 				List<T> localValues = new ArrayList<>(values);
-				Random random = new Random();
 				double d = random.nextDouble();
 				int numValues = 0;
 				//while(minValues == null && d<1/2  (minValues == null || minValues > numValues) || ((maxValues == null || maxValues > numValues) && d<1/2)) {

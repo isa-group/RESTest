@@ -391,7 +391,7 @@ public class CoverageMeter {
         return testSuite.stream()
                 .filter(tc -> Objects.equals(tc.getId(), id))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("There is no test case with id <" + id + ">"));
     }
 
     /**

@@ -51,10 +51,8 @@ public class TestConfigurationIO {
 	}
 	
 	public static void toFile (TestConfigurationObject conf, String path) {
-		FileWriter confFile = null;
 		ObjectMapper mapper = new ObjectMapper();
-		try {
-			confFile = new FileWriter(path);
+		try(FileWriter confFile = new FileWriter(path)) {
 			String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf);
 			JsonNode jsonNode = mapper.readTree(json);
 
@@ -64,7 +62,6 @@ public class TestConfigurationIO {
 			String yaml = yamlMapper.writeValueAsString(jsonNode);
 			confFile.write(yaml);
 			confFile.flush();
-			confFile.close();
 		} catch (IOException e) {
 			System.err.println("Error converting configuration object to a file: " + e.getMessage());
 			e.printStackTrace();

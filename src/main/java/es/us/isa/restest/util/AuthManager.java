@@ -92,10 +92,7 @@ public class AuthManager {
         itCounter = itCounter == authProperties.size()? 0 : itCounter;
         if(itCounter == 0) {
             int size = 0;
-            for(Map.Entry<String, List<String>> property : this.authProperties.entrySet()) {
-                size = property.getValue().size();
-                break;
-            }
+            size = this.authProperties.entrySet().iterator().next().getValue().size();
             this.counter = size == this.counter? 0 : this.counter;
         }
 

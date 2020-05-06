@@ -1,8 +1,6 @@
 package es.us.isa.restest.generators;
 
-import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import es.us.isa.idlreasoner.analyzer.Analyzer;
-import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
@@ -10,12 +8,10 @@ import es.us.isa.restest.inputs.random.RandomBooleanGenerator;
 import es.us.isa.restest.inputs.random.RandomInputValueIterator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
 
 import java.util.*;
 
@@ -25,7 +21,6 @@ import static es.us.isa.restest.util.IDLAdapter.idl2restestTestCase;
 import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static es.us.isa.restest.util.SpecificationVisitor.*;
 import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
-import static es.us.isa.restest.util.Timer.TestStep.TEST_SUITE_GENERATION;
 
 public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator {
 
