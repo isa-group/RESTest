@@ -386,9 +386,9 @@ testConfiguration:
             values:
             - ROOM_ONLY
             - BREAKFAST
-            - HALF_BOARD
-            - FULL_BOARD
-            - ALL_INCLUSIVE
+#            - HALF_BOARD
+#            - FULL_BOARD
+#            - ALL_INCLUSIVE
             objectValues: null
       - name: includeClosed
         weight: 0.5
