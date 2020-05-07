@@ -4,9 +4,11 @@ import static es.us.isa.restest.coverage.CriterionType.*;
 import static es.us.isa.restest.util.IDGenerator.generateId;
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.us.isa.restest.util.PropertyManager;
 import org.junit.Test;
 
 import es.us.isa.restest.coverage.CoverageGatherer;
@@ -94,6 +96,15 @@ public class CoverageMeterTest {
         // Delete dir and recreate it
 //        deleteDir("src/test/resources/csvData");
 //        createDir("src/test/resources/csvData");
+
+        CoverageResults coverageResults = new CoverageResults(covMeter.getTotalCoverage(), covMeter.getInputCoverage(), covMeter.getOutputCoverage());
+        coverageResults.setCoverageOfCoverageCriteriaFromCoverageMeter(covMeter);
+        coverageResults.setCoverageOfCriterionTypeFromCoverageMeter(covMeter);
+        try {
+            coverageResults.exportCoverageReportToJSON("src/test/resources/csvData/" + PropertyManager.readProperty("data.coverage.computation.file"));
+        } catch (IOException e) {
+            fail();
+        }
 
         // Test export to CSV
         covMeter.exportCoverageToCSV("src/test/resources/csvData/coverage-results.csv", null, true);
