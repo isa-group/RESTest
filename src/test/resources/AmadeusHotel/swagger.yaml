@@ -317,6 +317,8 @@ paths:
         - AllOrNone(latitude, longitude);
         - IF priceRange THEN currency;
         - IF includeClosed THEN NOT sort=='PRICE';
+#        - IF childAges THEN adults; # Unspecified dependency
+#        - IF hotelIds THEN NOT childAges; # Unspecified dependency
       responses:
         '200':
           "$ref": "#/responses/MultiHotelsOffers"
