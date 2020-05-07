@@ -156,9 +156,9 @@ You can also use a JSON file to store and use your tokens. We recommend it becau
      "Authorization": [
          "Bearer <YOUR ACCESS TOKEN 1>",
          "Bearer <YOUR ACCESS TOKEN 2>",
-          .
-          .
-          .
+        
+        "...",
+        
          "Bearer <YOUR ACCESS TOKEN N>"
      ]
 }
