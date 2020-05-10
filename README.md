@@ -4,7 +4,19 @@
 
 RESTest is a model-based testing framework that provides randomly generated test cases of an API from its specification. It mainly supports RESTful APIs described with the OAS design language.
 
-### How does it work?
+## Documentation
+* [How does it work?](#how-does-it-work)
+* [Quickstart guide](#quickstart-guide)
+* [Description of the workflow](https://github.com/isa-group/RESTest/wiki/Description-of-the-workflow)
+* [Parameter dependencies: how to describe them](https://github.com/isa-group/RESTest/wiki/Parameter-dependencies)
+* [Test configuration files](https://github.com/isa-group/RESTest/wiki/Test-configuration-files)
+* [Properties files](https://github.com/isa-group/RESTest/wiki/Properties-files)
+* [The abstract test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators)
+* [Instantiating abstract test cases: the writers](https://github.com/isa-group/RESTest/wiki/Writers)
+* [Examples of parameter dependency specifications, test configuration files and properties files](https://github.com/isa-group/RESTest/wiki/Examples)
+* [Developer's guide](https://github.com/isa-group/RESTest/wiki/Developer's-guide)
+
+## How does it work?
 RESTest creates a default test configuration file from the API specification. With this file, RESTest generates random test cases using data generators. Then, those test cases are transformed into JUnit test cases that make API requests - RESTest uses [REST Assured](https://github.com/rest-assured/rest-assured) to test and validate the API requests generated -. Lastly, the JUnit suite is executed and the API responses are used to compute statistics, such as the percentage of the successful tests, the failed tests classified by their types or the coverage of the tests.
 
 ## Quickstart guide
@@ -176,7 +188,3 @@ auth:
 As you can see, the test configuration file can be modified in many ways. Take a look at our developers guide for more information.\
 \
 Now we have to create the properties file, defining the paths of the OAS specification file and the test configuration file. Then we are ready to test the Spotify API.
-## Documentation
-* [Description of the workflow](https://github.com/isa-group/RESTest/wiki/Description-of-the-workflow)
-* [Test configuration files](https://github.com/isa-group/RESTest/wiki/Test-configuration-files)
-* [Properties files](https://github.com/isa-group/RESTest/wiki/Properties-files)
