@@ -55,7 +55,7 @@ We strongly recommend to modify the test configuration file generated as it is p
 \
 Next step is to create a properties file, which is the setup of the test. You must set the paths to the API documentation file and the test configuration file. We also suggest to specify the number of test cases you want to generate. Here's an example:
 ````properties
-numtestcases=50                             # Number of test cases - this is not mandatory, but recommended; defaults to 100
+numtestcases=50                             # Number of test cases - this is not mandatory, but recommended; defaults to 10
 oaispecpath=path/to/oas/api/spec/file.yaml  # Path to OAS specification file
 confpath=path/to/test/conf/file.yaml        # Path to test configuration file
 ````
