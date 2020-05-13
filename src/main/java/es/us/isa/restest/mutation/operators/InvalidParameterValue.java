@@ -59,12 +59,12 @@ public class InvalidParameterValue extends AbstractMutationOperator {
 
         if (pFeatures.getEnumValues() != null) { // Value of enum range
             alt = 3;
-            if(randomSelection < 1f/alt)
-                setParameterToValue(tc, param, randomBigInt); // Number enum
+            if(randomSelection < 1f/alt && !pFeatures.getEnumValues().contains(randomBoolean))
+                setParameterToValue(tc, param, randomBoolean); // Boolean enum
             else if(randomSelection < 2f/alt)
-                setParameterToValue(tc, param, randomString); //String enum
+                setParameterToValue(tc, param, randomString); // String enum
             else
-                setParameterToValue(tc, param, randomBoolean); //Boolean enum
+                setParameterToValue(tc, param, randomBigInt); // Number enum
         } else if (pFeatures.getType().equals("boolean")) { // Boolean parameter with different type (e.g. string)
             alt = 2;
             if(randomSelection < 1f/alt)

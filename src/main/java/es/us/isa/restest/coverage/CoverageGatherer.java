@@ -145,9 +145,9 @@ public class CoverageGatherer {
                                 if (currentParameter.getIn().equals("query") || currentParameter.getIn().equals("header") || currentParameter.getIn().equals("path") || currentParameter.getIn().equals("formData")) {
                                     String paramType = ((AbstractSerializableParameter) currentParameter).getType();
                                     List<String> paramEnumValues = ((AbstractSerializableParameter) currentParameter).getEnum();
-                                    if (paramType == "boolean" || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
+                                    if (paramType.equals("boolean") || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
                                         List<String> parameterValuesList = new ArrayList<>(); // list of parameter values per criterion
-                                        if (paramType == "boolean") {
+                                        if (paramType.equals("boolean")) {
                                             parameterValuesList.addAll(Arrays.asList("true", "false")); // add both boolean values to test
                                         } else {
                                             parameterValuesList.addAll(paramEnumValues); // add all enum values to test
@@ -248,15 +248,15 @@ public class CoverageGatherer {
         String currentResponseRef = null;
         Map<String, Property> swaggerProperties = null;
 
-        if (responseSchema.getType() == "array") { // the response is an array
-            if (((ArrayProperty)responseSchema).getItems().getType() == "ref") { // each item of the array has the schema of the Swagger 'ref' tag
+        if (responseSchema.getType().equals("array")) { // the response is an array
+            if (((ArrayProperty)responseSchema).getItems().getType().equals("ref")) { // each item of the array has the schema of the Swagger 'ref' tag
                 currentResponseRef = ((RefProperty)((ArrayProperty)responseSchema).getItems()).getSimpleRef();
                 rootPathSuffix += "[{"; // update rootPathSuffix to reflect depth level inside the response body
             }
-        } else if (responseSchema.getType() == "ref") { // the response is an object and its schema is defined in the Swagger 'ref' tag
+        } else if (responseSchema.getType().equals("ref")) { // the response is an object and its schema is defined in the Swagger 'ref' tag
             currentResponseRef = ((RefProperty)responseSchema).getSimpleRef();
             rootPathSuffix += "{"; // update rootPathSuffix
-        } else if (responseSchema.getType() == "object" && responseSchema instanceof ObjectProperty) { // the response is an object and its schema is defined right after
+        } else if (responseSchema.getType().equals("object") && responseSchema instanceof ObjectProperty) { // the response is an object and its schema is defined right after
             swaggerProperties = ((ObjectProperty)responseSchema).getProperties();
             rootPathSuffix += "{"; // update rootPathSuffix
         }

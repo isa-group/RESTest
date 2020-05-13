@@ -1,12 +1,8 @@
 package es.us.isa.restest.coverage;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import es.us.isa.restest.coverage.CriterionType;
 
 /**
  * Class that represents a specific coverage criterion, e.g. paths,

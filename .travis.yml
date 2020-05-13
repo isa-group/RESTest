@@ -11,4 +11,4 @@ addons:
 
 script:
   # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=isa-group_RESTest
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=isa-group_RESTest -Dsonar.projectName=RESTest -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java -Dsonar.exclusions=**/com/atlassian/oai/validator/**

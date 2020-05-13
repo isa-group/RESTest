@@ -87,10 +87,18 @@ public class CSVManager {
 		csvFile.delete(); // delete file if it exists
 		try {
 			csvFile.createNewFile();
-			FileOutputStream oCsvFile = new FileOutputStream(csvFile, true);
-			if (header != null)
+			createFileWithHeader(csvFile, header);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void createFileWithHeader(File csvFile, String header) {
+		try(FileOutputStream oCsvFile = new FileOutputStream(csvFile, true)) {
+			if (header != null) {
 				header += "\n";
-			oCsvFile.write(header.getBytes());
+				oCsvFile.write(header.getBytes());
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -98,8 +106,7 @@ public class CSVManager {
 
 	public static void writeRow(String path, String row) {
 		File csvFile = new File(path);
-		try {
-			FileOutputStream oCsvFile = new FileOutputStream(csvFile, true);
+		try(FileOutputStream oCsvFile = new FileOutputStream(csvFile, true)) {
 			row += "\n";
 			oCsvFile.write(row.getBytes());
 		} catch (IOException e) {

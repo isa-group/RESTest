@@ -1,0 +1,872 @@
+swagger: '2.0'
+schemes:
+  - http
+host: anapioficeandfire.com
+basePath: '/'
+info:
+  version: 1.0.0
+  title: An API of Ice and Fire
+
+  x-logo:
+    url: 'images/Fire_and_ice_rev.jpg'
+  description: |
+    # Overview
+    Using the API of Ice and Fire, you can build applications that enable users to search a fan-compiled database of information describing the fictional world of Westeros.
+    This guide explains how to get started with the API, describes each of the available resources, and provides example code.
+
+    The API of Ice and Fire is a RESTish Web API with a base url of:
+    ###
+    [$ curl "http://www.anapioficeandfire.com/api"](http://www.anapioficeandfire.com/api)
+    ###
+    This base URL, referred to here as API root, exposes a list of the URLs required to access each of three resource types including:
+    * books
+    * characters
+    * houses
+    ###
+    Each resource type is accessible via the HTTP GET method.
+    ###
+    Within each resource type, endpoints fall into two categories:
+    ###
+    **{base url}/{resource type}:**
+    Retrieves the complete data set for each resource of a specified type.  This data can be filtered with the addition of query parameters.
+    ###
+    **{base url}/{resource type}/{resource-id}:**
+    Retrieves the data set for a single specific resource.
+
+
+    If you're interested in using a native implementation, please take a look at the [Libraries](#tag/libraries) section.
+
+    # Authentication
+    The API of Ice And Fire is an open API. This means that no authentication is required to query the API for data. For this reason, the API only supports the `GET` request method.
+
+    # Caching
+    Caching improves performance by reducing network traffic between client and server.  Our API supports two approaches to caching. Each API response header contains both the [ETag-field](https://en.wikipedia.org/wiki/HTTP_ETag) and the Last-Modified field. You can use these header fields in your application to ask our server if the data you are requesting has changed since the last request. If the data has not changed, the server will return an empty response body with a [304 Not Modified](https://tools.ietf.org/html/rfc7232#section-4.1) error code. If the data has changed, the server wil return the updated data along with a `200 OK` status code.
+
+    ##### To use the ETag, include the following statement in your request header:
+
+    ```json
+    If-None-Match: "your_etag_here"
+    ```
+     ##### To use Last-Modified, include the following statement in your request header:
+    ```json
+    If-Modified-Since: "date_here"
+    ```
+    We advise you to use caching as described, as this will increase the speed of your client as well as save us bandwidth.
+
+    # Pagination
+    An API of Ice and Fire contains a vast amount of data about the world of Westeros. To prevent our servers from getting cranky, the API automatically paginates large result sets. Therefore, it is essential that you understand how to use the API's pagination parameters.
+
+    ### Things worth noting about pagination
+
+    1. Page numbering is 1-based
+    2. Pagination requests are made using the query parameters `page` and `pageSize`.
+    3. To make page retrieval easier, the API returns links to relevant pages in the [response header](http://tools.ietf.org/html/rfc5988).
+    4. When no pagination parameters are present in a request, the API returns the first page of ten results by default.
+
+    ###
+    ### Using query parameters to construct a request with pagination
+
+    | Action                                             | Query String       |
+    | :------------------------------------------------- |:-------------------|
+    | Request a specific page                            | ?page=3            |
+    | Specify the number of items to return per page     | ?pageSize=20       |
+    | Combined query                                     | ?page=4&pageSize=30|
+
+    ###
+    ### Accessing page links in the response header
+
+    The `Link` field comes into play for requests that have the potential to return multiple objects.  Specifically, any request for books, characters, or houses that does not specify a resource-id.  The link field contains a set of URLs which point to the other pages in the result set relative to the current page present in the response.  By parsing the response header, you can use these URLs to navigate to other pages within the result set.  An example request and response is shown below.  The `-I` flag is in use, enabling us to examine the header of the response, rather than the body.
+
+    ##### Example request:
+    ```json
+    $ curl -I  "http://www.anapioficeandfire.com/api/characters?page=1&pageSize=10"
+    ```
+    ##### Example of the Link field as it appears within the response header:
+    ```json
+    Link: <http://www.anapioficeandfire.com/api/characters?page=2&pageSize=10>; rel="next",
+    <http://www.anapioficeandfire.com/api/characters?page=1&pageSize=10>; rel="first",
+    <http://www.anapioficeandfire.com/api/characters?page=214&pageSize=10>; rel="last"
+    ```
+
+    ##### Possible values for `rel` in the Link field are:
+    | Value    | Description                              |
+    | :------- |:-----------------------------------------|
+    | next     | The link to the next page of results.    |
+    | prev     | The link to the previous page of results.|
+    | first    | The link to the first page of results.   |
+    | last     | The link to the last page of results.    |
+
+    At a minimum, the Link field contains URLs for the first and last pages of the result set.  URLs for the previous and next pages are included as applicable.
+
+    # Rate Limiting
+    To prevent malicious usage of our API, we limit the number of requests that can be made in a 24 hour period to 20,000.  You can avoid reaching this limit by implementing proper caching strategies in your client application. Should the limit be reached, the API will generate a [403 Forbidden](https://en.wikipedia.org/wiki/HTTP_403) error in response to any additional requests it receives within the 24 hour time period.
+
+    # Versioning
+    Through the use of custom media types, this API enables you to choose which version of the data you want to query. To specify a version, modify the `Accept` field within your request header as shown below.  Note that media types are specific to resources, which enable them to change independently from one another.
+    ###
+    To specify a version, add this 'type' statement to the Accept field:
+    ```json
+    application/vnd.anapioficeandfire+json; version=1
+    ```
+    ###
+    > **Important:** If a version number is not specified in the Accept request-header field, the default version will be used. The default version may change in the future and potentially break the consumer's application. To avoid this issue, we recommend that you always specify a version number in the header of each request.
+    ###
+#In Redoc, tags appear as menu headings.  Paths, if they exist, are listed as subheadings under the tags they reference.
+tags:
+  - name: API Root
+    description: |
+      ```json
+      $ curl "http://www.anapioficeandfire.com/api"
+      ```
+  - name: books
+    description: The API currently contains data on all five published novels in the *A Song of Ice and Fire*  © series.  It also references additional material in the form of novellas.
+  - name: characters
+    description: The API contains information on over 2000 fictional characters that inhabit the Ice and Fire universe.
+  - name: houses
+    description: The API contains information on the over 400 houses that govern the population of Westeros.
+  - name: errors
+    description: |
+      Error codes returned by the API include:
+      ####
+      | Error Code    | Description                              |
+      | :------------:|:-----------------------------------------|
+      | 304           | The data you requested has not changed since you last requested it.  See [Caching](#section/Caching).    |
+      | 403           | Daily limit of 20,000 requests has been reached. Server will deny subsequent requests for 24 hours.  See [Rate Limiting](#section/Rate-Limiting). |
+      | 4XX           | Request is invalid and cannot be processed by the server.    |
+
+  - name: libraries
+    description: |
+      There are a number of helper libraries you can use to consume the API of Ice and Fire.
+      ###
+      #### Elixir
+      * [maester](https://github.com/sotojuan/maester) by [Juan Soto](https://github.com/sotojuan)
+      #### GraphQL
+      * [iceandfire-graphql](https://github.com/afram/iceandfire-graphql) by [Marwan Butrous](https://github.com/afram)
+      #### Node
+      * [asoiaf-api](https://github.com/arbazsiddiqui/A-song-of-ice-and-fire-API) by [Arbaz Siddqiui](https://github.com/arbazsiddiqui)
+      * [node-api-iceandfire](https://github.com/alexwebb2/node-api-iceandfire) by Alex Webb
+      #### Python
+      * [anapioficeandfire-python](https://github.com/joakimskoog/anapioficeandfire-python) by the author of An API of Ice And Fire, [Joakim Skoog](https://github.com/joakimskoog)
+      #### Swift
+      * [IceAndFireKit](https://github.com/murphb52/IceAndFireKit) by [Brian Murphy](https://github.com/murphb52)
+      * [IceAndFireLoader](https://github.com/ujell/IceAndFireLoader) by [Yucel Uzun](https://github.com/ujell)
+      * [WesterosKit](https://github.com/fitomad/WesterosKit) by [Adolfo](https://github.com/fitomad)
+  - name: licensing & copyright
+    description: |
+      *An API of Ice and Fire* © is the creation of [Joakim Skoog](https://github.com/joakimskoog/AnApiOfIceAndFire).
+      The *A Song of Ice and Fire* © series and its data is the property of George R.R. Martin. The *Game of Thrones* television series is the property of HBO ®. API data was collected from free sources such as [*A Wiki of Ice and Fire*](http://awoiaf.westeros.org/index.php/Main_Page) and is used without claim of ownership.
+      ###
+      This project uses a BSD license.
+
+#In Redoc, paths appear in the menu under the heading name referenced in `tags`.
+paths:
+  /api:
+    get:
+      tags:
+        - API Root
+      summary: Get links to API Resources
+      description: Returns the URL for each resource type (books, characters, houses) for use in a subsequent request.
+      operationId: getRoot
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/RootResponse'
+
+  /api/books:
+    get:
+      tags:
+        - books
+      summary: Get a list of books
+      description: |
+        Returns data for each book in the result set.  Result set includes all books by default.
+        Result set can be filtered by adding query parameters to the request.
+        ###
+        > By default, only the first ten books in the result set are returned.  To retrieve additional results, include `page` and `pageSize` query parameters in your request, for example: `?page=2&pageSize=10`.  Refer to [Pagination](#section/Pagination) for more information.
+        ###
+        ##### Sample Requests:
+
+        | Endpoint                                      | Description                                           |
+        | :---------------------------------------------|:------------------------------------------------------|
+        | /api/books?name=A%20Game%20of%20Thrones       | Returns the book 'A Game of Thrones'                  |
+        | /api/books?fromReleaseDate=2001-01-01T00:00:00| Returns books released after 2000                     |
+        | /api/books?toReleaseDate=2006-01-01T00:00:00  | Returns books released before 2006                    |
+        | /api/books?page=2&pageSize=10                 | Returns second page of books starting with book-id=11 |
+
+      operationId: getBooks
+      produces:
+        - application/json
+      parameters:
+        - name: name
+          in: query
+          description: |
+            Returns a single book with the specified name.
+            Parameter is case-insensitive and must match the saved entry word for word.
+          required: false
+          type: string
+        - name: fromReleaseDate
+          in: query
+          description: |
+            Returns books that were released on or after the specified date.
+            *Release date* is in ISO 8601 format (1996-08-01T00:00:00).
+          required: false
+          type: string
+        - name: toReleaseDate
+          in: query
+          description: |
+            Returns books that were released on or before the specified date.
+            *Release date* is in ISO 8601 format (2014-06-17T00:00:00).
+          required: false
+          type: string
+        - name: page
+          in: query
+          description: |
+            Returns results from the specified page.
+            Often used in conjunction with *pageSize*.
+          required: false
+          type: integer
+          minimum: 1
+          default: 1
+        - name: pageSize
+          in: query
+          description: |
+            The number of results to return per page.
+          required: false
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/BooksResponseArray'
+
+  /api/books/{book-id}:
+    parameters:
+      - name: book-id
+        in: path
+        description: The id of the book being requested.
+        type: integer
+        minimum: 1
+        required: true
+    get:
+      tags:
+        - books
+      summary: Get a specific book
+      description: Returns data for the book with the specified book-id.
+      operationId: findBookById
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/BookResponse'
+
+  /api/characters:
+    get:
+      tags:
+        - characters
+      summary: Get a list of characters
+      description: |
+        Returns data for each character in the result set.  Result set includes all characters by default.
+        Result set can be filtered by adding query parameters to the request.
+        ###
+        > By default, only the first ten characters in the result set are returned.  To retrieve additional results, include `page` and `pageSize` query parameters in your request, for example: `?page=2&pageSize=10`.  Refer to [Pagination](#section/Pagination) for more information.
+        ###
+        ##### Sample Requests:
+
+        | Endpoint                                          | Description                                             |
+        | :-------------------------------------------------|:--------------------------------------------------------|
+        | /api/characters?name=Catelyn%20Stark              | Returns the character named 'Catelyn Stark'             |
+        | /api/characters?gender=Female                     | Returns the first ten female characters                 |
+        | /api/characters?gender=Female&page=2&pageSize=10  | Returns the 2nd group of ten female characters          |
+        | /api/characters?born=In%20283%20AC                | Returns characters born 'In 283 AC'                     |
+        | /api/characters?isAlive=true                      | Returns the first ten characters with no recorded death |
+      operationId: getCharacters
+      produces:
+        - application/json
+      parameters:
+        - name: name
+          in: query
+          description: |
+            Returns a single character with the specified name.
+            Parameter is case-insensitive and must match the saved entry word for word.
+          required: false
+          type: string
+        - name: gender
+          in: query
+          description: Returns characters with the specified gender.
+          required: false
+          type: string
+          enum:
+            - Male
+            - Female
+            - Unknown
+        - name: culture
+          in: query
+          description: Returns characters with the specified culture.
+          required: false
+          type: string
+        - name: born
+          in: query
+          description: |
+            Returns characters that were born at the specified time and place.
+            Parameter is case-insensitive and must match the saved entry word for word.
+          required: false
+          type: string
+        - name: died
+          in: query
+          description: |
+            Returns characters that died at the specified time and place.
+            Parameter is case-insensitive and must match the saved entry word for word.
+          required: false
+          type: string
+        - name: isAlive
+          in: query
+          description: |
+            When set to *true*, returns characters with died="".
+            Note: *false* does not return characters that have died.
+          required: false
+          type: boolean
+        - name: page
+          in: query
+          description: |
+            Returns results from the specified page.
+            Often used in conjunction with *pageSize*.
+          required: false
+          type: integer
+          minimum: 1
+          default: 1
+        - name: pageSize
+          in: query
+          description: |
+            The number of results to return per page.
+          required: false
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CharactersResponseArray'
+      #Example of how to add response headers.  Did not implement.
+      #          headers:
+      #            Link:
+      #              description: A set of up to four URLs, referencing the previous, next, first, and last page in the result set.
+      #              type: string of comma separated URLs
+
+  /api/characters/{character-id}:
+    parameters:
+      - name: character-id
+        in: path
+        description: The id of the character being requested.
+        type: integer
+        minimum: 1
+        required: true
+    get:
+      tags:
+        - characters
+      summary: Get a specific character
+      description: Returns data for the character with the specified character-id.
+      operationId: findCharacterById
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CharacterResponse'
+
+  /api/houses:
+    get:
+      tags:
+        - houses
+      summary: Get a list of houses
+      description: |
+        Returns data for each house in the result set.  Result set includes all houses by default.
+        Result set can be filtered by adding query parameters to the request.
+        ###
+        > By default, only the first ten houses in the result set are returned.  To retrieve additional results, include `page` and `pageSize` query parameters in your request, for example: `?page=2&pageSize=10`.  Refer to [Pagination](#section/Pagination) for more information.
+        ###
+        ##### Sample Requests:
+
+        | Endpoint                                      | Description                                          |
+        | :---------------------------------------------|:-----------------------------------------------------|
+        | /api/houses?name=House%20Amber                | Returns the house named 'House Amber'                |
+        | /api/houses?region=The%20North                | Returns houses located in 'The North'                |
+        | /api/houses?words=As%20High%20as%20Honor      | Returns the house with the words 'As High as Honor'  |
+        | /api/houses?hasTitles=true&pageSize=30        | Returns the first 30 houses with titles              |
+        | /api/houses?hasTitles=true&page=2&pageSize=30 | Returns the 2nd group of 30 houses with titles       |
+
+      operationId: getHouses
+      produces:
+        - application/json
+      parameters:
+        - name: name
+          in: query
+          description: |
+            Returns a single house with the specified name.
+            Parameter is case-insensitive and must match the saved entry word for word.
+          required: false
+          type: string
+        - name: region
+          in: query
+          description: |
+            Returns houses located within the specified region.
+            Parameter is case-insensitive and must match the saved entry word for word.
+          required: false
+          type: string
+        - name: words
+          in: query
+          description: |
+            Returns houses with the specified words.
+            Parameter is case-insensitive and must match the saved entry word for word.
+          required: false
+          type: string
+        - name: hasWords
+          in: query
+          description: |
+            When set to *true*, returns houses that have a set of words.
+            Note: *false* does not return houses that lack a set of words.
+          required: false
+          type: boolean
+        - name: hasTitles
+          in: query
+          description: |
+            When set to *true*, returns houses that have one or more titles associated with them.
+            Note: *false* does not return houses that lack titles.
+          required: false
+          type: boolean
+        - name: hasSeats
+          in: query
+          description: |
+            When set to *true*, returns houses that have one or more seats associated with them.
+            Note: *false* does not return houses that lack seats.
+          required: false
+          type: boolean
+        - name: hasDiedOut
+          in: query
+          description: |
+            When set to *true*, returns houses that have died out.
+            Note: *false* does not return houses that persist.
+          required: false
+          type: boolean
+        - name: hasAncestralWeapons
+          in: query
+          description: |
+            When set to *true*, returns houses that have ancestral weapons.
+            Note: *false* does not return houses that lack ancestral weapons.
+          required: false
+          type: boolean
+        - name: page
+          in: query
+          description: |
+            Returns results from the specified page.
+            Often used in conjunction with *pageSize*.
+          required: false
+          type: integer
+          minimum: 1
+          default: 1
+        - name: pageSize
+          in: query
+          description: |
+            The number of results to return per page.
+          required: false
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 10
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/HousesResponseArray'
+
+  /api/houses/{house-id}:
+    parameters:
+      - name: house-id
+        in: path
+        description: The id of the house being requested.
+        type: integer
+        minimum: 1
+        required: true
+    get:
+      tags:
+        - houses
+      summary: Get a specific house
+      description: Returns data for the house with the specified house-id.
+      operationId: findHouseById
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/HouseResponse'
+
+definitions:
+  RootResponse:
+    type: object
+    properties:
+      books:
+        type: string
+        format: url
+        description: The URL of the books resource.
+        example: http://www.anapioficeandfire.com/api/books
+      characters:
+        type: string
+        format: url
+        description: The URL of the characters resource.
+        example: http://www.anapioficeandfire.com/api/characters
+      houses:
+        type: string
+        format: url
+        description: The URL of the houses resource.
+        example: http://www.anapioficeandfire.com/api/houses
+  #Books
+  #BooksResponseArray references BooksResponse - response consists of an array of book objects
+  #BookResponse applies to response with single book object
+  #Attempts to combine BooksResponse with BookResponse failed (bug?)
+  BooksResponseArray:
+    type: array
+    items:
+      $ref: '#/definitions/BooksResponse'
+  BooksResponse:
+    type: object
+    properties:
+      url:
+        type: string
+        format: url
+        description: The URL of this resource.
+        example: http://www.anapioficeandfire.com/api/books/1
+      name:
+        type: string
+        description: The name of this book.
+        example: A Game of Thrones
+      isbn:
+        type: string
+        format: 'ISBN-13'
+        description: The International Standard Book Number (isbn) that uniquely identifies this book.
+        example: 978-055310354
+      authors:
+        type: array
+        items:
+          type: string
+        description: The names of this book's authors.
+        example: "George R. R. Martin"
+      numberOfPages:
+        type: integer
+        description: The number of pages in this book.
+        example: 694
+      publisher:
+        type: string
+        description: The company that published this book.
+        example: Bantam Books
+      country:
+        type: string
+        description: The country in which this book was first published.
+        example: United States
+      mediaType:
+        type: string
+        description: The media type of this book at the time of it's initial release.
+        enum:
+          - Hardback
+          - GraphicNovel
+          - Paperback
+        example: Hardcover
+      released:
+        type: string
+        format: date-time
+        description: The date, in ISO 8601 format, when this book was released.
+        example: '1996-08-01T00:00:00'
+      characters:
+        type: array
+        items:
+          type: string
+          format: url
+        description: The resource URLs of characters that appear in this book.
+        example: [http://www.anapioficeandfire.com/api/characters/2, ...]
+      povCharacters:
+        type: array
+        items:
+          type: string
+          format: url
+        description: The resource URLs of characters that appear in one or more chapters written from their own point of view (pov).
+        example: [http://www.anapioficeandfire.com/api/characters/148, ...]
+  BookResponse:
+    type: object
+    properties:
+      url:
+        type: string
+        format: url
+        description: The URL of this resource.
+        example: http://www.anapioficeandfire.com/api/books/1
+      name:
+        type: string
+        description: The name of this book.
+        example: A Game of Thrones
+      isbn:
+        type: string
+        format: 'ISBN-13'
+        description: The International Standard Book Number (isbn) that uniquely identifies this book.
+        example: 978-055310354
+      authors:
+        type: array
+        items:
+          type: string
+        description: The names of this book's authors.
+        example: "George R. R. Martin"
+      numberOfPages:
+        type: integer
+        description: The number of pages in this book.
+        example: 694
+      publisher:
+        type: string
+        description: The company that published this book.
+        example: Bantam Books
+      country:
+        type: string
+        description: The country in which this book was first published.
+        example: United States
+      mediaType:
+        type: string
+        description: The media type of this book at the time of it's initial release.
+        enum:
+          - Hardback
+          - GraphicNovel
+          - Paperback
+        example: Hardcover
+      released:
+        type: string
+        format: date-time
+        description: The date, in ISO 8601 format, when this book was released.
+        example: '1996-08-01T00:00:00'
+      characters:
+        type: array
+        items:
+          type: string
+          format: url
+        description: The resource URLs of characters that appear in this book.
+        example: [http://www.anapioficeandfire.com/api/characters/2, ...]
+      povCharacters:
+        type: array
+        items:
+          type: string
+          format: url
+        description: The resource URLs of characters that appear in one or more chapters written from their own point of view (pov).
+        example: [http://www.anapioficeandfire.com/api/characters/148, ...]
+  #Characters
+  #CharactersResponseArray references CharactersResponse
+  #CharacterResponse applies to response with single character object
+  #Attempts to combine CharactersResponse with CharacterResponse failed (bug?)
+  CharactersResponseArray:
+    type: array
+    items:
+      $ref: '#/definitions/CharactersResponse'
+  CharactersResponse:
+    type: object
+    properties:
+      url:
+        type: string
+        format: url
+        description: The URL of this resource.
+        example: http://www.anapioficeandfire.com/api/characters/823
+      name:
+        type: string
+        description: The name of this character.
+        example: Petyr Baelish
+  CharacterResponse:
+    type: object
+    properties:
+      url:
+        type: string
+        format: url
+        description: The URL of this resource.
+        example: http://www.anapioficeandfire.com/api/characters/823
+      name:
+        type: string
+        description: The name of this character.
+        example: Petyr Baelish
+  #Houses
+  #HousesResponseArray references HousesResponse
+  #HouseResponse applies to response with single house object
+  #Attempts to combine HousesResponse with HouseResponse failed (bug?)
+  HousesResponseArray:
+    type: array
+    items:
+      $ref: '#/definitions/HousesResponse'
+  HousesResponse:
+    type: object
+    properties:
+      url:
+        type: string
+        format: url
+        description: The URL of this resource.
+        example: http://www.anapioficeandfire.com/api/houses/10
+      name:
+        type: string
+        description: The name of this house.
+        example: House Baelish of Harrenhal
+      region:
+        type: string
+        description: The region in which this house is located.
+        example: The Riverland
+      coatOfArms:
+        type: string
+        description: Text describing the coat of arms of this house.
+        example: A field of silver mockingbirds, on a green field(Vert, semé of mockingbirds argent)
+      words:
+        type: string
+        description: The words of this house. Words are simply a motto that members of the house aspire to live by.
+        example: ""
+      titles:
+        type: array
+        items:
+          type: string
+        description: Titles held by this house.
+        example: [Lord Paramount of the Trident, Lord of Harrenhal]
+      seats:
+        type: array
+        items:
+          type: string
+        description: Seats held by this house.
+        example: [Harrenhal]
+      currentLord:
+        type: string
+        format: url
+        description: The resource URL of the character that serves as this house's current lord.
+        example: http://www.anapioficeandfire.com/api/characters/823
+      heir:
+        type: string
+        format: url
+        description: The resource URL of the character that stands to inherit this house.
+        example: ""
+      overlord:
+        type: string
+        format: url
+        description: The resource URL of the house that this house answers to.
+        example: http://www.anapioficeandfire.com/api/houses/16
+      founded:
+        type: string
+        description: The year that this house was founded.
+        example: 299 AC
+      founder:
+        type: string
+        format: url
+        description: The resource URL of the character that founded this house.
+        example:  http://www.anapioficeandfire.com/api/characters/823
+      diedOut:
+        type: string
+        description: The year that this house died out.
+        example: ""
+      ancestralWeapons:
+        type: array
+        items:
+          type: string
+        description: The names of noteworthy weapons owned by this house.
+        example: []
+      cadetBranches:
+        type: array
+        items:
+          type: string
+          format: url
+        description: The resource URLs of houses that were founded from this house.
+        example: []
+      swornMembers:
+        type: array
+        items:
+          type: string
+          format: url
+        description: The resource URLs of characters that are sworn to this house.
+        example: [http://www.anapioficeandfire.com/api/characters/651,   http://www.anapioficeandfire.com/api/characters/804, http://www.anapioficeandfire.com/api/characters/823, http://www.anapioficeandfire.com/api/characters/957, http://www.anapioficeandfire.com/api/characters/970]
+  HouseResponse:
+    type: object
+    properties:
+      url:
+        type: string
+        format: url
+        description: The URL of this resource.
+        example: http://www.anapioficeandfire.com/api/houses/10
+      name:
+        type: string
+        description: The name of this house.
+        example: House Baelish of Harrenhal
+      region:
+        type: string
+        description: The region in which this house is located.
+        example: The Riverland
+      coatOfArms:
+        type: string
+        description: Text describing the coat of arms of this house.
+        example: A field of silver mockingbirds, on a green field(Vert, semé of mockingbirds argent)
+      words:
+        type: string
+        description: The words of this house. Words are simply a motto that members of the house aspire to live by.
+        example: ""
+      titles:
+        type: array
+        items:
+          type: string
+        description: Titles held by this house.
+        example: [Lord Paramount of the Trident, Lord of Harrenhal]
+      seats:
+        type: array
+        items:
+          type: string
+        description: Seats held by this house.
+        example: [Harrenhal]
+      currentLord:
+        type: string
+        format: url
+        description: The resource URL of the character that serves as this house's current lord.
+        example: http://www.anapioficeandfire.com/api/characters/823
+      heir:
+        type: string
+        format: url
+        description: The resource URL of the character that stands to inherit this house.
+        example: ""
+      overlord:
+        type: string
+        format: url
+        description: The resource URL of the house that this house answers to.
+        example: http://www.anapioficeandfire.com/api/houses/16
+      founded:
+        type: string
+        description: The year that this house was founded.
+        example: 299 AC
+      founder:
+        type: string
+        format: url
+        description: The resource URL of the character that founded this house.
+        example:  http://www.anapioficeandfire.com/api/characters/823
+      diedOut:
+        type: string
+        description: The year that this house died out.
+        example: ""
+      ancestralWeapons:
+        type: array
+        items:
+          type: string
+        description: The names of noteworthy weapons owned by this house.
+        example: []
+      cadetBranches:
+        type: array
+        items:
+          type: string
+          format: url
+        description: The resource URLs of houses that were founded from this house.
+        example: []
+      swornMembers:
+        type: array
+        items:
+          type: string
+          format: url
+        description: The resource URLs of characters that are sworn to this house.
+        example: [http://www.anapioficeandfire.com/api/characters/651,   http://www.anapioficeandfire.com/api/characters/804, http://www.anapioficeandfire.com/api/characters/823, http://www.anapioficeandfire.com/api/characters/957, http://www.anapioficeandfire.com/api/characters/970]
+#

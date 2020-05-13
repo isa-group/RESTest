@@ -88,7 +88,7 @@ paths:
           name: categoryId
           description: "A comma separated list of categories to limit results to. If you specify categoryId. Specifying a radius may improve results. If specifying a top-level category, all sub-categories will also match the query. Does not apply to intent=match requests."
         - in: query
-          type: integer
+          type: number
           required: false
           name: llAcc
           description: Accuracy of latitude and longitude, in meters.
@@ -98,7 +98,7 @@ paths:
           name: alt
           description: Altitude of the user’s location, in meters.
         - in: query
-          type: integer
+          type: number
           required: false
           name: altAcc
           description: Accuracy of the user’s altitude, in meters.
@@ -167,12 +167,19 @@ definitions:
         type: array
         items:
           $ref: "#/definitions/Category"
+      venuePage:
+        type: object
+        properties:
+          id:
+            type: string
   Location:
     type: "object"
     properties:
       address:
         type: string
       crossStreet:
+        type: string
+      cc:
         type: string
       city:
         type: string
@@ -188,9 +195,28 @@ definitions:
       lng:
         type: number
         format: double
+      labeledLatLngs:
+        type: array
+        items:
+          $ref: "#/definitions/LabeledLatLng"
       distance:
         type: integer
         format: int32
+      formattedAddress:
+        type: array
+        items:
+          type: string
+  LabeledLatLng:
+    type: object
+    properties:
+      label:
+        type: string
+      lat:
+        type: number
+        format: double
+      lng:
+        type: number
+        format: double
   Category:
     type: "object"
     properties:
