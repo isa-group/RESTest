@@ -34,9 +34,14 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     @Override
     public RestfulAPITestSuiteSolution copy() {
     	RestfulAPITestSuiteSolution result=new RestfulAPITestSuiteSolution(this.problem);
+    	TestCase testCase=null;
     	for(int i=0;i<this.getNumberOfVariables();i++) {
-    		result.setVariable(i, copyTestCase(this.getVariable(i)));
-    		result.testResults.put(result.getVariable(i), copyTestResult(testResults.get(getVariable(i))));
+    		testCase=this.getVariable(i);
+    		result.setVariable(i, copyTestCase(testCase));
+    		if(testResults!=null && testResults.get(testCase)!=null)
+    			result.testResults.put(testCase, copyTestResult(testResults.get(testCase)));
+    		else
+    			testResults=null;
     	}
 		return result;
     	

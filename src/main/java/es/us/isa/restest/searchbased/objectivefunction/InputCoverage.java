@@ -22,7 +22,7 @@ public class InputCoverage implements RestfulAPITestingObjectiveFunction{
         if(coverageMeter==null)
             initCoverageMeter(solution);
         coverageMeter.setTestSuite(solution.getVariables());
-        coverageMeter.setTestResults(solution.getTestResults());
+        //coverageMeter.setTestResults(solution.getTestResults());
         double coveredInputElements=(double)coverageMeter.getCoveredInputElements();
         double totalInputElements=(double)coverageMeter.getAllInputElements();
         return coveredInputElements/totalInputElements;

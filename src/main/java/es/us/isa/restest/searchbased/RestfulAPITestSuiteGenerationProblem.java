@@ -24,6 +24,7 @@ import es.us.isa.restest.util.IDGenerator;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 import es.us.isa.restest.util.PropertyManager;
+import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Path;
 
@@ -94,9 +95,9 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         this.iWriter = createWriter(targetPath);
         this.csvReportManager = createCSVReportManager();
         this.allureReportManager = createReportManager();
-        this.testCaseGenerator = new DummyTestCaseGenerator();        
+        this.testCaseGenerator = new DummyTestCaseGenerator(apiUnderTest,configuration,Integer.MAX_VALUE);        
         this.randomTestCaseGenerator = new RandomTestCaseGenerator(apiUnderTest, configuration, Integer.MAX_VALUE);
-        this.runner = new RESTestRunner(testClassNamePrefix, targetPath, testsPackage, testCaseGenerator, iWriter, allureReportManager, csvReportManager);
+        this.runner = new RESTestRunner(testClassNamePrefix, targetPath, testsPackage, testCaseGenerator, iWriter, allureReportManager, csvReportManager,null);
 
         assert (objFuncs != null);
         assert (objectiveFunctions.size() > 0);
@@ -278,20 +279,18 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 	public TestCase createRandomTestCase() {
 		TestPath path = chooseRandomPath(); 
 		es.us.isa.restest.configuration.pojos.Operation operation=chooseRandomOperation(path);
-		io.swagger.models.Operation specOperation=getAPIOperation(path.getTestPath(),operation);		
-		Boolean faulty=false; 
+		io.swagger.models.Operation specOperation=SpecificationVisitor.findOperation(operation.getOperationId(), apiUnderTest);			
+		String faulty="none"; 
 		Boolean ignoreDependences=true;
 		HttpMethod method=HttpMethod.valueOf(operation.getMethod().toString().toUpperCase());
 		randomTestCaseGenerator.createGenerators(operation.getTestParameters());
-		TestCase testCase = randomTestCaseGenerator.generateNextTestCase(specOperation,operation,path.getTestPath(),method,faulty,ignoreDependences);
+		TestCase testCase = randomTestCaseGenerator.generateNextTestCase(specOperation,operation,path.getTestPath(),method,faulty);
 		testCase.setExpectedOutputs(specOperation.getResponses());
 		testCase.setExpectedSuccessfulOutput(specOperation.getResponses().get(operation.getExpectedResponse()));
 		return testCase;
 	}	
 
-	private io.swagger.models.Operation getAPIOperation(String path,es.us.isa.restest.configuration.pojos.Operation operation) {
-		return apiUnderTest.getSpecification().getPath(path).getOperationMap().get(HttpMethod.valueOf(operation.getMethod().toUpperCase()));
-	}
+	
 
 	private es.us.isa.restest.configuration.pojos.Operation chooseRandomOperation() {
 		return chooseRandomOperation(chooseRandomPath());
@@ -318,5 +317,9 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 	
 	public void setTestsPackage(String testsPackage) {
 		this.testsPackage = testsPackage;
+	}
+	
+	public TestConfiguration getConfig() {
+		return config;
 	}
 }

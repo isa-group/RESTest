@@ -4,8 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.specification.ParameterFeatures;
 import io.swagger.models.Operation;
+import io.swagger.models.Path;
 import io.swagger.models.parameters.Parameter;
 
 /**
@@ -106,6 +108,20 @@ public class SpecificationVisitor {
 				})
 				.collect(Collectors.toList());
 	}
+	
+	public static io.swagger.models.Operation findOperation(String operationId, OpenAPISpecification apiSpec) {
+        Operation result = null;
+        for (String opPath : apiSpec.getSpecification().getPaths().keySet()) {
+            Path pathSpec = apiSpec.getSpecification().getPath(opPath);
+            for (Operation operation : pathSpec.getOperations()) {
+                if (operation.getOperationId().equals(operationId)) {
+                    result = operation;
+                }
+            }
+
+        }
+        return result;
+    }
 }
 
 

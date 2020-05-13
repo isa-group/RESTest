@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 
 import es.us.isa.restest.searchbased.SearchBasedTestSuiteGenerator;
 import es.us.isa.restest.searchbased.objectivefunction.Coverage;
+import es.us.isa.restest.searchbased.objectivefunction.InputCoverage;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
 import es.us.isa.restest.searchbased.objectivefunction.Size;
 import es.us.isa.restest.specification.OpenAPISpecification;
@@ -39,7 +40,7 @@ public class BikeWiseExperiment {
     public static void main(String[] args) {
         
     	List<RestfulAPITestingObjectiveFunction> objectiveFunctions=Lists.newArrayList(
-    			new Coverage(),
+    			new InputCoverage(),
     			new Size()
     	);
     	
