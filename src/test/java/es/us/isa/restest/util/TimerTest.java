@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static es.us.isa.restest.util.Timer.TestStep.*;
+import static es.us.isa.restest.util.Timer.resetCounters;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
@@ -14,6 +15,7 @@ public class TimerTest {
 
     @Test
     public void timerTest() throws InterruptedException {
+        resetCounters();
         assertEquals("The timer should be empty", 0, Timer.getCounters().size());
         Timer.startCounting(ALL);
         Thread.sleep(500);
