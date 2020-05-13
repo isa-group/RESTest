@@ -177,7 +177,7 @@ public abstract class AbstractTestCaseGenerator {
 			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, Boolean faulty, Boolean ignoreDependencies);
 	
 	// Create all generators needed for the parameters of an operation
-	private void createGenerators(List<TestParameter> testParameters) {
+	public void createGenerators(List<TestParameter> testParameters) {
 		
 		this.generators = new HashMap<String,ITestDataGenerator>();
 		

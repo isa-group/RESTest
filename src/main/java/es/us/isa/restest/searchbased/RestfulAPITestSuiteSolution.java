@@ -19,8 +19,11 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     private Map<TestCase,TestResult> testResults;
     
     public RestfulAPITestSuiteSolution(RestfulAPITestSuiteGenerationProblem problem) {
-        super(problem);
+        super(problem);        
         this.testResults=new HashMap<>();
+        for(int i=0;i<this.getVariables().size();i++) {        	
+        	this.setVariable(i, problem.createRandomTestCase());
+        }
     }    
     
     @Override

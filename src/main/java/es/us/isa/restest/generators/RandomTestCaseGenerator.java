@@ -57,7 +57,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
 
 	// Generate the next test case and update the generation index
-	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, Boolean faulty, Boolean ignoreDependencies) {
+	public TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, Boolean faulty, Boolean ignoreDependencies) {
 
 		Boolean isDesiredTestCase = false;
 //		String testId = removeNotAlfanumericCharacters(testOperation.getOperationId()) + "Test_" + IDGenerator.generateId();

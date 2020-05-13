@@ -45,13 +45,13 @@ public class BikeWiseExperiment {
     	
         SearchBasedTestSuiteGenerator generator=new SearchBasedTestSuiteGenerator(
                             OAISpecPath, 
-                            Optional.of(confPath),
-                            Optional.of("api/v2/locations"),
-                            Optional.of("get"),
+                            Optional.of(confPath),                            
                             APIName,
                             objectiveFunctions,
                             targetDir,
                             seed);
+        
+        generator.setPopulationSize(5);
         try {
             generator.run();
         } catch (IOException ex) {
