@@ -1,9 +1,12 @@
-/target/
-TODO.txt
-.idea/workspace.xml
+.idea
+.settings
 .vscode
+.classpath
+.project
+RESTest.iml
+TODO.txt
+/target
 /allure-results
-.idea/uiDesigner.xml
 /src/test/resources/csvData/csvSample.csv
 /src/test/resources/csvData/coverage-results.csv
 /src/test/resources/csvData/test-cases.csv
