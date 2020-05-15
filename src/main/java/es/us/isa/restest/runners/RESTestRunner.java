@@ -38,22 +38,18 @@ public class RESTestRunner {
 	private AbstractTestCaseGenerator generator;   		// Test case generator
 	private IWriter writer;								// RESTAssured writer
 	private AllureReportManager allureReportManager;	// Allure report manager
-	private CSVReportManager csvReportManager;			// CSV report manager
-	private CoverageMeter covMeter;						// Coverage meter
+	private StatsReportManager statsReportManager;		// Stats report manager
 	private int numTestCases = 0;						// Number of test cases generated so far
-//	private Timer timer;
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, CSVReportManager csvReportManager, CoverageMeter covMeter) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
 		this.generator = generator;
 		this.writer = writer;
 		this.allureReportManager = reportManager;
-		this.csvReportManager = csvReportManager;
-//		this.timer = new Timer();
-		this.covMeter = covMeter;
+		this.statsReportManager = statsReportManager;
 	}
 	
 	public void run() {
@@ -77,9 +73,9 @@ public class RESTestRunner {
 		logger.info("Faulty test cases generated: " + generator.getnFaulty());
 
 
-		if (csvReportManager.getEnableStats()) {
+		if (statsReportManager.getEnableCSVStats()) {
 			logger.info("Exporting number of faulty and nominal test cases to CSV");
-			String csvNFPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.nominalfaulty.file");
+			String csvNFPath = statsReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.nominalfaulty.file");
 			generator.exportNominalFaultyToCSV(csvNFPath, testClassName);
 		}
 		
@@ -87,14 +83,9 @@ public class RESTestRunner {
 		logger.info("Generating test report");
 		allureReportManager.generateReport();
 
-		//Generate coverage report
-		if(covMeter != null) {
-			readTestResults();
-			generateCoverageReport();
-		}
-
-//		//Generate time report
-//		generateTimeReport();
+		// Generate coverage report
+		logger.info("Generating coverage report");
+		statsReportManager.generateReport();
 	}
 
 	private void testGeneration() {
@@ -109,21 +100,21 @@ public class RESTestRunner {
         this.numTestCases += testCases.size();
 
         // Export test cases and nFaulty and nNominal to CSV if enableStats is true
-		if (csvReportManager.getEnableStats()) {
+		if (statsReportManager.getEnableCSVStats()) {
 			logger.info("Exporting test cases coverage to CSV");
-			String csvTcPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
+			String csvTcPath = statsReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
 			testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
 
-			// Generate input coverage data if enableStats and enableInputCoverage is true.
-			if(csvReportManager.getEnableInputCoverage()) {
-				String csvTcCoveragePath = csvReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.testcases.file");
-				testCases.forEach(tc -> CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc));
-			}
+//			// Generate input coverage data if enableStats and enableInputCoverage is true.
+//			if(statsReportManager.getEnableInputCoverage()) {
+//				String csvTcCoveragePath = statsReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.testcases.file");
+//				testCases.forEach(tc -> CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc));
+//			}
 		}
 
       // Update CoverageMeter with recently created test suite (if coverage is enabled).
-		if (covMeter != null) {
-			covMeter.addTestSuite(testCases);
+		if (statsReportManager.getEnableInputCoverage() || statsReportManager.getEnableOutputCoverage()) {
+			statsReportManager.getCoverageMeter().addTestSuite(testCases);
 		}
         
         // Write test cases
@@ -144,29 +135,6 @@ public class RESTestRunner {
 		int successfulTests = result.getRunCount() - result.getFailureCount() - result.getIgnoreCount();
 		logger.info(result.getRunCount() + " tests run in " + result.getRunTime()/1000 + " seconds. Successful: " + successfulTests +" , Failures: " + result.getFailureCount() + ", Ignored: " + result.getIgnoreCount());
 
-	}
-
-	/**
-	 * Update CoverageMeter with the test results (if coverage is enabled).
-	 */
-	private void readTestResults() {
-		String csvTrPath = csvReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testresults.file");
-		List<TestResult> trs = TestManager.getTestResults(csvTrPath);
-		covMeter.setTestResults(trs);
-	}
-
-	private void generateCoverageReport() {
-		CoverageResults results = new CoverageResults(covMeter.getTotalCoverage(), covMeter.getInputCoverage(),
-				covMeter.getOutputCoverage());
-		results.setCoverageOfCoverageCriteriaFromCoverageMeter(covMeter);
-		results.setCoverageOfCriterionTypeFromCoverageMeter(covMeter);
-		try {
-			results.exportCoverageReportToJSON(csvReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.computation.file"));
-		} catch (IOException e) {
-			logger.error("The coverage report cannot be generated. Stack trace:");
-			logger.log(Level.valueOf("context"), e);
-		}
-		logger.info("Coverage report generated.");
 	}
 	
 	public String getTargetDir() {

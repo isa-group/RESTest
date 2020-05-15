@@ -1,5 +1,6 @@
-package es.us.isa.restest.validation;
+package es.us.isa.restest.testcases.restassured.filters;
 
+import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFilter;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.BeforeClass;
