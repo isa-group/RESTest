@@ -32,6 +32,13 @@ public class CoverageResults {
     //    private float operationsFlowCoverage;
     private List<CoverageCriterionResult> coverageOfCoverageCriteria;
 
+    public CoverageResults(CoverageMeter coverageMeter) {
+        this.totalCoverage = coverageMeter.getTotalCoverage();
+        this.inputCoverage = coverageMeter.getInputCoverage();
+        this.outputCoverage = coverageMeter.getOutputCoverage();
+        this.coverageOfCoverageCriteria = new ArrayList<>();
+    }
+
     public CoverageResults(float totalCoverage, float inputCoverage, float outputCoverage) {
         this.totalCoverage = totalCoverage;
         this.inputCoverage = inputCoverage;

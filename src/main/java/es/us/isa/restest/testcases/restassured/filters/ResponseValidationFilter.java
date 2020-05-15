@@ -1,4 +1,4 @@
-package es.us.isa.restest.validation;
+package es.us.isa.restest.testcases.restassured.filters;
 
 import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import com.atlassian.oai.validator.report.LevelResolver;

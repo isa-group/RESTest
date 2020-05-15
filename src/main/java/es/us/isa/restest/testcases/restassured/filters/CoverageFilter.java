@@ -1,4 +1,4 @@
-package es.us.isa.restest.coverage;
+package es.us.isa.restest.testcases.restassured.filters;
 
 //import io.restassured.filter.Filter;
 import es.us.isa.restest.testcases.TestResult;
@@ -31,10 +31,8 @@ public class CoverageFilter implements OrderedFilter {
         Response response = ctx.next(requestSpec, responseSpec);
 
         // Export output coverage data after receiving API response
-        String testDataFile = PropertyManager.readProperty("data.tests.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.tests.testresults.file");
         String coverageDataFile = PropertyManager.readProperty("data.coverage.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.coverage.testresults.file");
         TestResult tr = new TestResult(testResultId, Integer.toString(response.statusCode()), response.asString(), response.contentType());
-        tr.exportToCSV(testDataFile);
         exportCoverageOfTestResultToCSV(coverageDataFile, tr);
 
         return response;
