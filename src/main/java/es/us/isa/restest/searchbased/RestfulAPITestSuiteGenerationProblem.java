@@ -16,27 +16,21 @@ import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiv
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
-import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.AllureReportManager;
-import es.us.isa.restest.util.CSVReportManager;
-import es.us.isa.restest.util.IDGenerator;
+import es.us.isa.restest.util.StatsReportManager;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.HttpMethod;
-import io.swagger.models.Path;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.runner.JUnitCore;
@@ -44,8 +38,6 @@ import org.junit.runner.Result;
 import org.uma.jmetal.problem.impl.AbstractGenericProblem;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
-
-import com.atlassian.oai.validator.model.ApiOperation;
 
 public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem<RestfulAPITestSuiteSolution> {
 
@@ -66,7 +58,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     PseudoRandomGenerator randomGenerator;
     
     // Transient test case creation objects;
-    CSVReportManager csvReportManager;
+    StatsReportManager statsReportManager;
     RESTAssuredWriter iWriter;
     AllureReportManager allureReportManager;
     RESTestRunner runner;
@@ -93,11 +85,11 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         this.targetPath = targetPath;
         this.randomGenerator = randomGenerator;
         this.iWriter = createWriter(targetPath);
-        this.csvReportManager = createCSVReportManager();
-        this.allureReportManager = createReportManager();
+        this.statsReportManager = createStatsReportManager();
+        this.allureReportManager = createAllureReportManager();
         this.testCaseGenerator = new DummyTestCaseGenerator(apiUnderTest,configuration,Integer.MAX_VALUE);        
         this.randomTestCaseGenerator = new RandomTestCaseGenerator(apiUnderTest, configuration, Integer.MAX_VALUE);
-        this.runner = new RESTestRunner(testClassNamePrefix, targetPath, testsPackage, testCaseGenerator, iWriter, allureReportManager, csvReportManager,null);
+        this.runner = new RESTestRunner(testClassNamePrefix, targetPath, testsPackage, testCaseGenerator, iWriter, allureReportManager, statsReportManager);
 
         assert (objFuncs != null);
         assert (objectiveFunctions.size() > 0);
@@ -226,7 +218,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         return writer;
     }
 
-    private CSVReportManager createCSVReportManager() {
+    private StatsReportManager createStatsReportManager() {
         String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
         String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
 
@@ -238,7 +230,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         createDir(testDataDir);
         createDir(coverageDataDir);
 
-        return new CSVReportManager(testDataDir, coverageDataDir);
+        return new StatsReportManager(testDataDir, coverageDataDir);
 
 //		CSVReportManager csvReportManager = new CSVReportManager();
 //		csvReportManager.setEnableStats(false);
@@ -262,7 +254,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         dir.mkdirs();
     }
 
-    private AllureReportManager createReportManager() {
+    private AllureReportManager createAllureReportManager() {
         /*String allureResultsDir = PropertyManager.readProperty("allure.results.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
         String allureReportDir = PropertyManager.readProperty("allure.report.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
 
