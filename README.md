@@ -8,7 +8,7 @@ RESTest is a model-based testing framework that provides randomly generated test
 * [How does it work?](#how-does-it-work)
 * [Quickstart guide](#quickstart-guide)
 * [Description of the workflow](https://github.com/isa-group/RESTest/wiki/Description-of-the-workflow)
-* [Parameter dependencies: how to describe them](https://github.com/isa-group/RESTest/wiki/Parameter-dependencies)
+* [Parameter dependencies: how to describe them](https://github.com/isa-group/RESTest/wiki/Inter-parameter-dependencies)
 * [Test configuration files](https://github.com/isa-group/RESTest/wiki/Test-configuration-files)
 * [Properties files](https://github.com/isa-group/RESTest/wiki/Properties-files)
 * [The abstract test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators)
@@ -59,7 +59,7 @@ numtestcases=50                             # Number of test cases - this is not
 oaispecpath=path/to/oas/api/spec/file.yaml  # Path to OAS specification file
 confpath=path/to/test/conf/file.yaml        # Path to test configuration file
 ````
-You need to edit the [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/develop/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to put the path to the properties file:
+You need to edit the [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to put the path to the properties file:
 ````java
 setEvaluationParameters("path/to/the/properties/file.properties");
 ````
