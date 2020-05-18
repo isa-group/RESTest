@@ -10,6 +10,8 @@ public class Timer {
         return counters;
     }
 
+    public static void resetCounters() { counters = new HashMap<>(); }
+
     public static void startCounting(TestStep step) {
         counters.putIfAbsent(step.name, new ArrayList<>());
         List<Long> stepMeasures = counters.get(step.name);

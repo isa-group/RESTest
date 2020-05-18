@@ -59,8 +59,10 @@ import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
 	SpecificationVisitorTest.class,
 	IDLAdapterTest.class,
 	NominalOrFaultyTestCaseFilterTest.class,
-	ResponseValidationFilterTest.class
-
+	ResponseValidationFilterTest.class,
+	TimerTest.class,
+	JsonMutatorTest.class,
+	TestResultsManagerTest.class
 })
 
 public class AllTests {
