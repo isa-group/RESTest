@@ -277,13 +277,17 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
 
 	public TestCase createRandomTestCase() {
-		TestPath path = chooseRandomPath(); 
-		es.us.isa.restest.configuration.pojos.Operation operation=chooseRandomOperation(path);
-		io.swagger.models.Operation specOperation=SpecificationVisitor.findOperation(operation.getOperationId(), apiUnderTest);			
-		String faulty="none"; 
+		TestPath path=null;
+		es.us.isa.restest.configuration.pojos.Operation operation=operationUnderTest;
+		String faulty="none";
 		Boolean ignoreDependences=true;
-		HttpMethod method=HttpMethod.valueOf(operation.getMethod().toString().toUpperCase());
-		randomTestCaseGenerator.createGenerators(operation.getTestParameters());
+		if(operationUnderTest==null){
+			path = chooseRandomPath(); 
+			operation=chooseRandomOperation(path);
+			randomTestCaseGenerator.createGenerators(operation.getTestParameters());
+		}
+		io.swagger.models.Operation specOperation=SpecificationVisitor.findOperation(operation.getOperationId(), apiUnderTest);
+		HttpMethod method=HttpMethod.valueOf(operation.getMethod().toString().toUpperCase());		
 		TestCase testCase = randomTestCaseGenerator.generateNextTestCase(specOperation,operation,path.getTestPath(),method,faulty);
 		testCase.setExpectedOutputs(specOperation.getResponses());
 		testCase.setExpectedSuccessfulOutput(specOperation.getResponses().get(operation.getExpectedResponse()));

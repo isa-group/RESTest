@@ -16,7 +16,7 @@ import es.us.isa.restest.searchbased.operators.ParameterAdditionMutation;
 import es.us.isa.restest.searchbased.operators.ParameterRemovalMutation;
 import es.us.isa.restest.searchbased.operators.RandomParameterValueMutation;
 import es.us.isa.restest.searchbased.operators.ResourceChangeMutation;
-import es.us.isa.restest.searchbased.operators.SinglePointCrossover;
+import es.us.isa.restest.searchbased.operators.SinglePointSuiteCrossover;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import java.io.File;
 import java.io.IOException;
@@ -106,7 +106,7 @@ public class SearchBasedTestSuiteGenerator {
         for (ExperimentProblem ep : problems) {
             algorithm = new NSGAIIBuilder<>(
                     ep.getProblem(),
-                    new SinglePointCrossover(1.0),
+                    new SinglePointSuiteCrossover(1.0),
                     mutation,
                     nsga2PopulationSize
             ).build();
