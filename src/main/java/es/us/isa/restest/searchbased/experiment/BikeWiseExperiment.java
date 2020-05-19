@@ -26,15 +26,15 @@ import java.util.logging.Logger;
  */
 public class BikeWiseExperiment {
 
-    private static int numTestCases = 5;												// Number of test cases per operation
-    private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		// Path to OAS specification file
-    private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		// Path to test configuration file
-    private static String targetDir = "src/generation/java/searchbased/bikewise";					// Directory where tests will be generated.
-    private static String APIName = "Bikewise";											// API name
-    private static String packageName = "searchbased.bikewise";										// Package name of the test class.
-    private static String testClassName = "BikewiseTest";								// Name of the class to be generated
-    private static OpenAPISpecification spec;											// OAS
-    private static boolean enableStats = true;											// Collect coverage statistics
+    private static int numTestCases = 5;												    // Number of test cases per operation
+    private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		    // Path to OAS specification file
+    private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		    // Path to test configuration file
+    private static String experimentName = "bikewise";                                      // Experiment name
+    private static String targetDir = "src/generation/java/searchbased/" + experimentName;	// Directory where tests will be generated.
+    private static String packageName = "searchbased." + experimentName;				    // Package name of the test class.
+    private static String testClassName = "BikewiseTest";								    // Name of the class to be generated
+    private static OpenAPISpecification spec;											    // OAS
+    private static boolean enableStats = true;											    // Collect coverage statistics
     private static long seed = 1979;
     
     public static void main(String[] args) {
@@ -46,8 +46,8 @@ public class BikeWiseExperiment {
     	
         SearchBasedTestSuiteGenerator generator=new SearchBasedTestSuiteGenerator(
                             OAISpecPath, 
-                            Optional.of(confPath),                            
-                            APIName,
+                            Optional.of(confPath),
+                            experimentName,
                             objectiveFunctions,
                             targetDir,
                             seed);

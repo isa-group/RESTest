@@ -73,7 +73,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
     
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator) {
-    	this.testsPackage="restest";
+    	this.testsPackage="searchbased." + targetPath.substring(targetPath.lastIndexOf("/")+1);
     	this.apiUnderTest = apiUnderTest;
         this.setName(apiUnderTest.getSpecification().getInfo().getTitle());
         this.config=configuration.getTestConfiguration();
@@ -170,7 +170,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         List<TestCase> cases=new ArrayList<>(1);
         for (TestCase testCase : missingTestCases) {
         	cases.add(testCase);
-        	iWriter.setClassName(generateTestClassName(testCase));
+        	iWriter.setClassName(testCase.getId());
         	iWriter.write(cases);
         	testResult=execute(testCase);
             result.put(testCase, testResult);
@@ -181,7 +181,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
 
     private TestResult execute(TestCase testCase) {
-        String testClassName = generateTestClassName(testCase);
+        String testClassName = testCase.getId();
         String filePath = targetPath + "/" + testClassName + ".java";
         String className = "";
         if(testsPackage!=null && !"".equals(testsPackage))
@@ -200,21 +200,22 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         return testResult;
     }
 
-    private String generateTestClassName(TestCase testCase) {
-        return "test_" + testCase.getId() + "_" + removeNotAlfanumericCharacters(testCase.getOperationId());
-    }
+//    private String generateTestClassName(TestCase testCase) {
+//        return "test_" + testCase.getId() + "_" + removeNotAlfanumericCharacters(testCase.getOperationId());
+//    }
     
-    private String removeNotAlfanumericCharacters(String s) {
-		return s.replaceAll("[^A-Za-z0-9]", "");
-	}
+//    private String removeNotAlfanumericCharacters(String s) {
+//		return s.replaceAll("[^A-Za-z0-9]", "");
+//	}
 
     private RESTAssuredWriter createWriter(String targetDir) {
         String basePath = apiUnderTest.getSpecification().getSchemes().get(0).name() + "://" + apiUnderTest.getSpecification().getHost() + apiUnderTest.getSpecification().getBasePath();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDir, testClassNamePrefix, testsPackage, basePath.toLowerCase());
         writer.setLogging(true);
-        writer.setAllureReport(true);
+        writer.setAllureReport(false);
         writer.setEnableStats(true);
-        writer.setAPIName(apiUnderTest.getSpecification().getInfo().getTitle());
+        writer.setSpecPath(apiUnderTest.getPath());
+        writer.setAPIName(targetPath.substring(targetPath.lastIndexOf("/")+1));
         return writer;
     }
 
