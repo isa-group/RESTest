@@ -35,6 +35,39 @@ public class TestManager {
     /**
      *
      * @param csvPath Path to the CSV file. It must contain the header
+     *                "testResultId,statusCode,responseBody,outputContentType"
+     * @param startRow First row to retrieve
+     * @param stopRow Last row to retrieve
+     * @return Collection of TestResult objects
+     */
+    public static List<TestResult> getTestResults(String csvPath, Integer startRow, Integer stopRow) {
+        List<List<String>> csvRows = readCSV(csvPath, false);
+        int start = startRow != null ? startRow : 0;
+        int stop = stopRow != null ? stopRow : csvRows.size();
+
+        List<TestResult> testResults = new ArrayList<>();
+        for (int i=start; i<stop; i++) {
+            TestResult tr = new TestResult(csvRows.get(i).get(0), csvRows.get(i).get(1), csvRows.get(i).get(2), csvRows.get(i).get(3));
+            testResults.add(tr);
+        }
+
+        return testResults;
+    }
+
+    /**
+     *
+     * @param csvPath Path to the CSV file. It must contain the header
+     *                "testResultId,statusCode,responseBody,outputContentType"
+     * @return Last TestResult object added to the CSV file
+     */
+    public static TestResult getLastTestResult(String csvPath) {
+        List<List<String>> csvRows = readCSV(csvPath, false);
+        return new TestResult(csvRows.get(csvRows.size()-1).get(0), csvRows.get(csvRows.size()-1).get(1), csvRows.get(csvRows.size()-1).get(2), csvRows.get(csvRows.size()-1).get(3));
+    }
+
+    /**
+     *
+     * @param csvPath Path to the CSV file. It must contain the header
      *                "testCaseId,faulty,operationId,path,httpMethod,inputContentType,outputContentType,
      *                headerParameters,pathParameters,queryParameters,formParameters,bodyParameter,
      *                authentication,expectedOutputs,expectedSuccessfulOutput"
