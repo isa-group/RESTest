@@ -21,6 +21,8 @@ import es.us.isa.restest.util.AllureReportManager;
 import es.us.isa.restest.util.StatsReportManager;
 
 import static es.us.isa.restest.util.FileManager.createDir;
+import static es.us.isa.restest.util.TestManager.getLastTestResult;
+
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.HttpMethod;
@@ -196,8 +198,8 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
         int successfulTests = result.getRunCount() - result.getFailureCount() - result.getIgnoreCount();
         //logger.info(result.getRunCount() + " tests run in " + result.getRunTime()/1000 + " seconds. Successful: " + successfulTests +" , Failures: " + result.getFailureCount() + ", Ignored: " + result.getIgnoreCount());
-        TestResult testResult=null;
-        return testResult;
+
+        return getLastTestResult(statsReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testresults.file"));
     }
 
 //    private String generateTestClassName(TestCase testCase) {
@@ -220,8 +222,8 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
 
     private StatsReportManager createStatsReportManager() {
-        String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
-        String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
+        String testDataDir = PropertyManager.readProperty("data.tests.dir") + targetPath.substring(targetPath.lastIndexOf("/"));
+        String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + targetPath.substring(targetPath.lastIndexOf("/"));
 
         // Delete previous results (if any)
         deleteDir(testDataDir);
