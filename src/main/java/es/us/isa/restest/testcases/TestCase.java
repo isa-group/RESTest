@@ -57,7 +57,13 @@ public class TestCase implements Serializable {
 	}
 	
 	public TestCase(TestCase testCase) {
-		
+		this(testCase.getId(), testCase.getFaulty(), testCase.getOperationId(), testCase.getPath(), testCase.getMethod());
+		this.fulfillsDependencies = testCase.getFulfillsDependencies();
+		this.bodyParameter = testCase.getBodyParameter();
+		this.pathParameters = testCase.getPathParameters();
+		this.queryParameters = testCase.getQueryParameters();
+		this.headerParameters = testCase.getHeaderParameters();
+		this.formParameters = testCase.getFormParameters();
 	}
 
 	public Response getExpectedSuccessfulOutput() {
