@@ -15,20 +15,20 @@ import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 
-public class SinglePointCaseCrossover implements CrossoverOperator<RestfulAPITestSuiteSolution> {
+public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITestSuiteSolution> {
 
 	  	private double crossoverProbability;
 	    private RandomGenerator<Double> crossoverRandomGenerator;
 	    private BoundedRandomGenerator<Integer> pointRandomGenerator;
 
-	    public SinglePointCaseCrossover(double crossoverProbability) {
+	    public UniformTestCaseCrossover(double crossoverProbability) {
 	        this(
 	                crossoverProbability,
 	                () -> JMetalRandom.getInstance().nextDouble(),
 	                (a, b) -> JMetalRandom.getInstance().nextInt(a, b));
 	    }
 
-	    public SinglePointCaseCrossover(
+	    public UniformTestCaseCrossover(
 	            double crossoverProbability, RandomGenerator<Double> randomGenerator) {
 	        this(
 	                crossoverProbability,
@@ -36,7 +36,7 @@ public class SinglePointCaseCrossover implements CrossoverOperator<RestfulAPITes
 	                BoundedRandomGenerator.fromDoubleToInteger(randomGenerator));
 	    }
 
-	    public SinglePointCaseCrossover(
+	    public UniformTestCaseCrossover(
 	            double crossoverProbability,
 	            RandomGenerator<Double> crossoverRandomGenerator,
 	            BoundedRandomGenerator<Integer> pointRandomGenerator) {
@@ -64,8 +64,7 @@ public class SinglePointCaseCrossover implements CrossoverOperator<RestfulAPITes
         RestfulAPITestSuiteSolution offspring2=(RestfulAPITestSuiteSolution) parent2.copy();
         offspring.add(offspring1);
         offspring.add(offspring2);
-
-    if (crossoverRandomGenerator.getRandomValue() < probability) {
+    
       // 1. We choose randomly the cases for the parameter crossover:
     	int parent1TestCaseIndex=pointRandomGenerator.getRandomValue(0, parent1.getNumberOfVariables()-1);
     	int parent2TestCaseIndex=pointRandomGenerator.getRandomValue(0, parent2.getNumberOfVariables()-1);
@@ -74,9 +73,8 @@ public class SinglePointCaseCrossover implements CrossoverOperator<RestfulAPITes
     	// Crossover is applied only between testcases of the same operation: 
     	if(testCase1.getOperationId().equals(testCase2.getOperationId())) 
       // 2. 3. Apply the crossover:
-    		doCrossover(probability,testCase1,testCase2);                  
-    }
-    return offspring;
+    		doCrossover(probability,testCase1,testCase2);                      
+    	return offspring;
 
 	}
 
@@ -86,15 +84,19 @@ public class SinglePointCaseCrossover implements CrossoverOperator<RestfulAPITes
 		doQueryCrossover(probability,testCase1,testCase2);
 		doFormCrossover(probability,testCase1,testCase2);
 		doBodyCrossover(probability,testCase1,testCase2);
+		//doAuthCrossover(probability,testCase1,testCase2);
 	}
 
-	private void doFormCrossover(double probability, TestCase testCase1, TestCase testCase2) {
-		// TODO Auto-generated method stub
+	private void doFormCrossover(double probability, TestCase testCase1, TestCase testCase2) {		
 		doCrossover(probability,testCase1.getFormParameters(),testCase2.getFormParameters());
 	}
 
 	private void doBodyCrossover(double probability, TestCase testCase1, TestCase testCase2) {
-		// TODO: Waiting for a response of Alberto in teams
+		if (crossoverRandomGenerator.getRandomValue() < probability) {
+			String body1=testCase1.getBodyParameter();
+			testCase1.setBodyParameter(testCase2.getBodyParameter());
+			testCase2.setBodyParameter(body1);
+		}
 		
 	}
 

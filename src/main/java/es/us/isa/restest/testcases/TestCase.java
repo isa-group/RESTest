@@ -57,7 +57,20 @@ public class TestCase implements Serializable {
 	}
 	
 	public TestCase(TestCase testCase) {
-		
+		this(testCase.id,testCase.faulty,testCase.operationId,testCase.path,testCase.method);
+		headerParameters.putAll(testCase.headerParameters);
+		queryParameters.putAll(testCase.queryParameters);
+		pathParameters.putAll(testCase.pathParameters);
+		formParameters.putAll(testCase.formParameters);
+		this.bodyParameter = testCase.bodyParameter;
+		this.authentication = testCase.authentication;
+		this.inputFormat = testCase.inputFormat;
+		this.outputFormat = testCase.outputFormat;
+		this.expectedSuccessfulOutput = testCase.expectedSuccessfulOutput;
+		if(testCase.expectedOutputs!=null) {
+			this.expectedOutputs = new HashMap<>();
+			this.expectedOutputs.putAll(testCase.expectedOutputs);
+		}
 	}
 
 	public Response getExpectedSuccessfulOutput() {

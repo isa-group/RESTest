@@ -13,10 +13,12 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
  *
  * @author japarejo
  */
-public class InputCoverage implements RestfulAPITestingObjectiveFunction{
+public class InputCoverage extends RestfulAPITestingObjectiveFunction{
 
     CoverageMeter coverageMeter=null;
-    
+    public InputCoverage() {
+		super(ObjectiveFunctionType.MAXIMIZATION,false);
+	}
     @Override
     public Double evaluate(RestfulAPITestSuiteSolution solution) {
         if(coverageMeter==null)

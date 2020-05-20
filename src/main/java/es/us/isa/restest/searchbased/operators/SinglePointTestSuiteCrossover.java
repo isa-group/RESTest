@@ -22,20 +22,20 @@ import org.uma.jmetal.util.pseudorandom.RandomGenerator;
  *
  * @author japarejo
  */
-public class SinglePointSuiteCrossover implements CrossoverOperator<RestfulAPITestSuiteSolution> {
+public class SinglePointTestSuiteCrossover implements CrossoverOperator<RestfulAPITestSuiteSolution> {
 
     private double crossoverProbability;
     private RandomGenerator<Double> crossoverRandomGenerator;
     private BoundedRandomGenerator<Integer> pointRandomGenerator;
 
-    public SinglePointSuiteCrossover(double crossoverProbability) {
+    public SinglePointTestSuiteCrossover(double crossoverProbability) {
         this(
                 crossoverProbability,
                 () -> JMetalRandom.getInstance().nextDouble(),
                 (a, b) -> JMetalRandom.getInstance().nextInt(a, b));
     }
 
-    public SinglePointSuiteCrossover(
+    public SinglePointTestSuiteCrossover(
             double crossoverProbability, RandomGenerator<Double> randomGenerator) {
         this(
                 crossoverProbability,
@@ -43,7 +43,7 @@ public class SinglePointSuiteCrossover implements CrossoverOperator<RestfulAPITe
                 BoundedRandomGenerator.fromDoubleToInteger(randomGenerator));
     }
 
-    public SinglePointSuiteCrossover(
+    public SinglePointTestSuiteCrossover(
             double crossoverProbability,
             RandomGenerator<Double> crossoverRandomGenerator,
             BoundedRandomGenerator<Integer> pointRandomGenerator) {
