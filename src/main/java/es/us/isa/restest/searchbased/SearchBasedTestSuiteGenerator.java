@@ -64,7 +64,7 @@ public class SearchBasedTestSuiteGenerator {
     ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experimentBuilder;
 
     public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath,  String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed) {
-    	this(apiDescriptionPath, configFilePath, Optional.empty(),Optional.empty(),experimentName,objectiveFunctions,targetPath,seed);
+    	this(apiDescriptionPath, configFilePath, Optional.of("/v2/incidents"),Optional.of("GET"),experimentName,objectiveFunctions,targetPath,seed);
     }
     
     public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed) {
@@ -184,13 +184,15 @@ public class SearchBasedTestSuiteGenerator {
     private Operation findOperationUnderTest(TestConfigurationObject configuration, String resourcePath, String method) {
         Operation result = null;
         for (TestPath tp : configuration.getTestConfiguration().getTestPaths()) {
-            if (tp.getTestPath().equals(resourcePath)) {
+            if (tp.getTestPath().equalsIgnoreCase(resourcePath)) {
                 for (Operation op : tp.getOperations()) {
-                    if (op.getMethod().equals(method)) {
+                    if (op.getMethod().equalsIgnoreCase(method)) {
                         result = op;
                         break;
                     }
                 }
+                if (result != null)
+                    break;
             }
         }
         return result;
