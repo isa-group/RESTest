@@ -11,19 +11,19 @@ import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
-public class FoursquareFullTestCaseGenerator {
+public class AAOIAFFullTestCaseGenerator {
 
     @Test
-    public void foursquareFullTestCaseGenerator() {
+    public void amadeusFullTestCaseGenerator() {
         // Load specification
-        String OAISpecPath = "src/test/resources/Foursquare/swagger.yaml";
+        String OAISpecPath = "src/test/resources/AnApiOfIceAndFire/swagger.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Foursquare/testConf.yaml");
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AnApiOfIceAndFire/testConf.yaml");
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 10;
+        int numTestCases = 1;
 
         // Create generator and filter
         AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
@@ -31,11 +31,11 @@ public class FoursquareFullTestCaseGenerator {
 
         Collection<TestCase> testCases = generator.generate();
 
-        assertEquals("Incorrect number of test cases", 10, testCases.size());
+//        assertEquals("Incorrect number of test cases", 92, testCases.size());
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "FoursquareTest", "restassured", basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "IAFTest", "restassured", basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);

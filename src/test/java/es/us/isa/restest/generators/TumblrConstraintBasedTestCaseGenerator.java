@@ -11,22 +11,22 @@ import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
-public class AmadeusHotelFullTestCaseGenerator {
+public class TumblrConstraintBasedTestCaseGenerator {
 
     @Test
-    public void amadeusHotelFullTestCaseGenerator() {
+    public void tumblrConstraintBasedTestCaseGenerator() {
         // Load specification
-        String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Tumblr/swagger.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf.yaml");
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf.yaml");
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 4;
 
         // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+        AbstractTestCaseGenerator generator = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
 
 
         Collection<TestCase> testCases = generator.generate();
@@ -35,7 +35,7 @@ public class AmadeusHotelFullTestCaseGenerator {
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "TumblrTest", "restassured", basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
