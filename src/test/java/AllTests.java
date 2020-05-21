@@ -62,7 +62,7 @@ import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
 	ResponseValidationFilterTest.class,
 	TimerTest.class,
 	JsonMutatorTest.class,
-	TestResultsManagerTest.class
+	TestManagerTest.class
 })
 
 public class AllTests {

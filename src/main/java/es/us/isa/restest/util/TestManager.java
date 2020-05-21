@@ -3,10 +3,16 @@ package es.us.isa.restest.util;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
 import io.swagger.models.HttpMethod;
+import org.apache.logging.log4j.LogManager;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
+import static java.net.URLDecoder.decode;
 
 import static es.us.isa.restest.util.CSVManager.readCSV;
 
@@ -77,10 +83,37 @@ public class TestManager {
         List<List<String>> csvRows = readCSV(csvPath, false);
         List<TestCase> testCases = new ArrayList<>();
         for(List<String> csvRow: csvRows) {
-            TestCase tc = new TestCase(csvRow.get(0), Boolean.parseBoolean(csvRow.get(1)), csvRow.get(2),
-                    csvRow.get(3), HttpMethod.valueOf(csvRow.get(4)));
+            TestCase tc = new TestCase(csvRow.get(0), Boolean.parseBoolean(csvRow.get(1)), csvRow.get(4),
+                    csvRow.get(5), HttpMethod.valueOf(csvRow.get(6)));
+            tc.setFaultyReason(csvRow.get(2));
+            tc.setFulfillsDependencies(Boolean.parseBoolean(csvRow.get(3)));
+            tc.setBodyParameter(csvRow.get(13).equals("") ? null : csvRow.get(13));
+            tc.setPathParameters(stringParamsToMap(csvRow.get(10)));
+            tc.setQueryParameters(stringParamsToMap(csvRow.get(11)));
+            tc.setHeaderParameters(stringParamsToMap(csvRow.get(9)));
+            tc.setFormParameters(stringParamsToMap(csvRow.get(12)));
             testCases.add(tc);
         }
         return testCases;
+    }
+
+    private static Map<String, String> stringParamsToMap(String stringParameters) {
+        Map<String, String> parameters = new HashMap<>();
+        if (stringParameters.equals(""))
+            return parameters;
+
+        try {
+            String[] pairs = stringParameters.split(";");
+            for (String pair : pairs) {
+                String[] keyValue = pair.split("=");
+                parameters.put(decode(keyValue[0], StandardCharsets.UTF_8.toString()), decode(keyValue[1], StandardCharsets.UTF_8.toString()));
+            }
+        } catch (UnsupportedEncodingException e) {
+            parameters.clear();
+            LogManager.getLogger(TestManager.class.getName()).warn("Parameters of test case could not be decoded. Stack trace:");
+            e.printStackTrace();
+        }
+
+        return parameters;
     }
 }

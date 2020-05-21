@@ -1,6 +1,9 @@
 package es.us.isa.restest.testcases;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -11,9 +14,12 @@ import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.report.ValidationReport;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
+import static java.net.URLEncoder.encode;
 
 /** Domain-independent test case
  * 
@@ -54,6 +60,17 @@ public class TestCase implements Serializable {
 		this.pathParameters = new HashMap<String,String>();
 		this.formParameters = new HashMap<String,String>();
 		this.authentication = null;
+	}
+	
+	public TestCase(TestCase testCase) {
+		this(testCase.id, testCase.faulty, testCase.operationId, testCase.path, testCase.method);
+		this.faultyReason = testCase.faultyReason;
+		this.fulfillsDependencies = testCase.fulfillsDependencies;
+		this.bodyParameter = testCase.bodyParameter;
+		this.pathParameters = testCase.pathParameters;
+		this.queryParameters = testCase.queryParameters;
+		this.headerParameters = testCase.headerParameters;
+		this.formParameters = testCase.formParameters;
 	}
 
 	public Response getExpectedSuccessfulOutput() {
@@ -263,25 +280,32 @@ public class TestCase implements Serializable {
 					"expectedSuccessfulOutput");
 
 		// Generate row
-		String row = id + "," + faulty + "," + faultyReason + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
-		for (Map.Entry<String, String> h: headerParameters.entrySet()) {
-			row += h.getKey() + ":" + h.getValue() + ";";
+		String rowBeginning = id + "," + faulty + "," + faultyReason + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		StringBuilder rowEnding = new StringBuilder();
+		try {
+			for (Map.Entry<String, String> h: headerParameters.entrySet()) {
+				rowEnding.append(encode(h.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(h.getValue(), StandardCharsets.UTF_8.toString())).append(";");
+			}
+			rowEnding.append(",");
+			for (Map.Entry<String, String> p: pathParameters.entrySet()) {
+				rowEnding.append(encode(p.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(p.getValue(), StandardCharsets.UTF_8.toString())).append(";");
+			}
+			rowEnding.append(",");
+			for (Map.Entry<String, String> q: queryParameters.entrySet()) {
+				rowEnding.append(encode(q.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(q.getValue(), StandardCharsets.UTF_8.toString())).append(";");
+			}
+			rowEnding.append(",");
+			for (Map.Entry<String, String> f: formParameters.entrySet()) {
+				rowEnding.append(encode(f.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(f.getValue(), StandardCharsets.UTF_8.toString())).append(";");
+			}
+		} catch (UnsupportedEncodingException e) {
+			rowEnding = new StringBuilder(",,,");
+			LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
+			e.printStackTrace();
 		}
-		row += ",";
-		for (Map.Entry<String, String> p: pathParameters.entrySet()) {
-			row += p.getKey() + ":" + p.getValue() + ";";
-		}
-		row += ",";
-		for (Map.Entry<String, String> q: queryParameters.entrySet()) {
-			row += q.getKey() + ":" + q.getValue() + ";";
-		}
-		row += ",";
-		for (Map.Entry<String, String> f: formParameters.entrySet()) {
-			row += f.getKey() + ":" + f.getValue() + ";";
-		}
-		row += "," + bodyParameter + ",,,";
+		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter).append(",,,");
 
-		writeRow(filePath, row);
+		writeRow(filePath, rowBeginning + rowEnding);
 	}
 
 	/**
