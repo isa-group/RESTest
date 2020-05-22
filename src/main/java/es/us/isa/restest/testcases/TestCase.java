@@ -12,7 +12,6 @@ import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
 import com.atlassian.oai.validator.model.Request;
 import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.report.ValidationReport;
-import es.us.isa.restest.runners.RESTestRunner;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
 import org.apache.logging.log4j.LogManager;
@@ -64,14 +63,22 @@ public class TestCase implements Serializable {
 	}
 	
 	public TestCase(TestCase testCase) {
-		this(testCase.id, testCase.faulty, testCase.operationId, testCase.path, testCase.method);
+		this(testCase.id,testCase.faulty,testCase.operationId,testCase.path,testCase.method);
 		this.faultyReason = testCase.faultyReason;
 		this.fulfillsDependencies = testCase.fulfillsDependencies;
+		headerParameters.putAll(testCase.headerParameters);
+		queryParameters.putAll(testCase.queryParameters);
+		pathParameters.putAll(testCase.pathParameters);
+		formParameters.putAll(testCase.formParameters);
 		this.bodyParameter = testCase.bodyParameter;
-		this.pathParameters = testCase.pathParameters;
-		this.queryParameters = testCase.queryParameters;
-		this.headerParameters = testCase.headerParameters;
-		this.formParameters = testCase.formParameters;
+//		this.authentication = testCase.authentication;
+//		this.inputFormat = testCase.inputFormat;
+//		this.outputFormat = testCase.outputFormat;
+//		this.expectedSuccessfulOutput = testCase.expectedSuccessfulOutput;
+//		if(testCase.expectedOutputs!=null) {
+//			this.expectedOutputs = new HashMap<>();
+//			this.expectedOutputs.putAll(testCase.expectedOutputs);
+//		}
 	}
 
 	public Response getExpectedSuccessfulOutput() {

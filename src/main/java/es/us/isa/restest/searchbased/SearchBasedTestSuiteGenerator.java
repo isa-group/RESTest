@@ -16,8 +16,10 @@ import es.us.isa.restest.searchbased.operators.ParameterAdditionMutation;
 import es.us.isa.restest.searchbased.operators.ParameterRemovalMutation;
 import es.us.isa.restest.searchbased.operators.RandomParameterValueMutation;
 import es.us.isa.restest.searchbased.operators.ResourceChangeMutation;
-import es.us.isa.restest.searchbased.operators.SinglePointCrossover;
+import es.us.isa.restest.searchbased.operators.SinglePointTestSuiteCrossover;
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.testcases.TestCase;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +38,8 @@ import org.uma.jmetal.qualityindicator.impl.InvertedGenerationalDistance;
 import org.uma.jmetal.qualityindicator.impl.InvertedGenerationalDistancePlus;
 import org.uma.jmetal.qualityindicator.impl.Spread;
 import org.uma.jmetal.qualityindicator.impl.hypervolume.PISAHypervolume;
+import org.uma.jmetal.util.AlgorithmRunner;
+import org.uma.jmetal.util.JMetalLogger;
 import org.uma.jmetal.util.experiment.Experiment;
 import org.uma.jmetal.util.experiment.ExperimentBuilder;
 import org.uma.jmetal.util.experiment.component.ComputeQualityIndicators;
@@ -55,6 +59,7 @@ public class SearchBasedTestSuiteGenerator {
 
     // Configuration   
     int nsga2PopulationSize = 10;
+    int maxEvaluations = 10;
     long seed = 1979;
     
     // Members:
@@ -64,7 +69,7 @@ public class SearchBasedTestSuiteGenerator {
     ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experimentBuilder;
 
     public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath,  String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed) {
-    	this(apiDescriptionPath, configFilePath, Optional.of("/v2/incidents"),Optional.of("GET"),experimentName,objectiveFunctions,targetPath,seed);
+    	this(apiDescriptionPath, configFilePath, Optional.empty(),Optional.empty(),experimentName,objectiveFunctions,experimentName,seed);
     }
     
     public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed) {
@@ -105,11 +110,12 @@ public class SearchBasedTestSuiteGenerator {
         int runId=1;
         for (ExperimentProblem ep : problems) {
             algorithm = new NSGAIIBuilder<>(
-                    ep.getProblem(),
-                    new SinglePointCrossover(1.0),
-                    mutation,
-                    nsga2PopulationSize
-            ).build();
+                    		ep.getProblem(),
+                    		new SinglePointTestSuiteCrossover(1.0),
+                    		mutation,
+                    		nsga2PopulationSize)
+            			.setMaxEvaluations(maxEvaluations)
+            			.build();
             expAlg=new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(algorithm, ep, runId);
            
             result.add(expAlg);
@@ -121,14 +127,56 @@ public class SearchBasedTestSuiteGenerator {
     private RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
         OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
+        TestPath pathUnderTest = null;
         Operation operationUnderTest = null;
-        if(resourcePath.isPresent() && operation.isPresent())
-        	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());        
-        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator());        
+        if(resourcePath.isPresent() && operation.isPresent()) {
+        	pathUnderTest = findPathUnderTest(configuration,resourcePath.get());
+        	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());
+        }
+        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, pathUnderTest,operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator());
         return problem;
     }
 
+    private TestPath findPathUnderTest(TestConfigurationObject configuration, String resourcePath) {
+    	TestPath result = null;
+        for (TestPath tp : configuration.getTestConfiguration().getTestPaths()) {
+            if (tp.getTestPath().equalsIgnoreCase(resourcePath)) {
+                        result = tp;
+                        break;
+                    }
+        }
+        return result;
+	}
+
     public void run() throws IOException {
+    	JMetalLogger.logger.info("Generating testSuites for: " + problem + " using as objectives :"+ problem.getObjectiveFunctions() );
+    	JMetalLogger.logger.info("Starting the execution of: " + algorithms.get(0).getAlgorithm().getClass().getSimpleName());
+    	 AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor((Algorithm<?>) algorithms.get(0).getAlgorithm())
+    		        .execute() ;
+    	 long computingTime = algorithmRunner.getComputingTime() ;
+
+    	 List<RestfulAPITestSuiteSolution> suites=algorithms.get(0).getAlgorithm().getResult();
+
+    	 JMetalLogger.logger.info("Total execution time: " + computingTime + "ms");
+    	 JMetalLogger.logger.info("The algorithm generated "+suites.size()+" test suites.");
+    	 JMetalLogger.logger.info("Objectives values have been written to file FUN.tsv");
+    	 JMetalLogger.logger.info("Variables values have been written to file VAR.tsv");
+    	 int index=1;
+    	 for(RestfulAPITestSuiteSolution suite:suites) {
+    		 JMetalLogger.logger.info("TestSuite "+index);
+    		 for(int i=0;i<suite.getNumberOfObjectives();i++) {
+    			 JMetalLogger.logger.info("    Objective "+suite.getProblem().getObjectiveFunctions().get(i).getClass().getSimpleName()+": " + suite.getObjective(i)) ;
+    		 }
+    		 int i=1;
+    		 for(TestCase testCase:suite.getVariables()) {
+    			 JMetalLogger.logger.info("    Solution "+i+": " + testCase) ;
+    			 i++;
+    		 }
+    		 index++;
+    	 }
+    }
+
+	public void runExperiment() throws IOException {
 
         Experiment<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experiment = experimentBuilder.build();
 
@@ -151,7 +199,10 @@ public class SearchBasedTestSuiteGenerator {
         rBoxplotGenerator.setRows(3);
         rBoxplotGenerator.setColumns(3);
         rBoxplotGenerator.run();
+
     }
+
+
 
     private List<GenericIndicator<RestfulAPITestSuiteSolution>> indicators() {
         List<GenericIndicator<RestfulAPITestSuiteSolution>> result = new ArrayList<>();
@@ -183,16 +234,13 @@ public class SearchBasedTestSuiteGenerator {
 
     private Operation findOperationUnderTest(TestConfigurationObject configuration, String resourcePath, String method) {
         Operation result = null;
-        for (TestPath tp : configuration.getTestConfiguration().getTestPaths()) {
-            if (tp.getTestPath().equalsIgnoreCase(resourcePath)) {
-                for (Operation op : tp.getOperations()) {
-                    if (op.getMethod().equalsIgnoreCase(method)) {
+        TestPath tp = findPathUnderTest(configuration,resourcePath);
+        if (tp!=null) {
+        	for (Operation op : tp.getOperations()) {
+        		if (op.getMethod().equalsIgnoreCase(method)) {
                         result = op;
                         break;
-                    }
                 }
-                if (result != null)
-                    break;
             }
         }
         return result;

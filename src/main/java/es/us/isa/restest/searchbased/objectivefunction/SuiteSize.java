@@ -11,9 +11,13 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
  *
  * @author japarejo
  */
-public class Size implements RestfulAPITestingObjectiveFunction{
+public class SuiteSize extends RestfulAPITestingObjectiveFunction{
 
-    @Override
+    public SuiteSize() {
+		super(ObjectiveFunctionType.MINIMIZATION,false);
+	}
+
+	@Override
     public Double evaluate(RestfulAPITestSuiteSolution solution) {
         return (double)solution.getNumberOfVariables();
     }

@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
+import es.us.isa.restest.configuration.pojos.TestPath;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
@@ -39,8 +40,20 @@ public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperat
         }
     }
 
-    protected Collection<String> getNonPresentParameters(TestCase testCase, RestfulAPITestSuiteSolution solution) {        
-        Operation specOperation = SpecificationVisitor.findOperation(solution.getProblem().getOperationUnderTest().getOperationId(), solution.getProblem().getApiUnderTest());
+    protected Collection<String> getNonPresentParameters(TestCase testCase, RestfulAPITestSuiteSolution solution) {
+    	es.us.isa.restest.configuration.pojos.Operation operation = solution.getProblem().getOperationUnderTest();
+    	if(operation==null) {
+    		for(TestPath path:solution.getProblem().getConfig().getTestPaths()) {
+    			for(es.us.isa.restest.configuration.pojos.Operation op:path.getOperations())
+    				if(testCase.getOperationId().equals(op.getOperationId()))
+    				{
+    					operation=op;
+    					break;
+    				}
+    		}
+    		
+    	}
+        Operation specOperation = SpecificationVisitor.findOperation(testCase.getOperationId(), solution.getProblem().getApiUnderTest());
         Collection<String> presentParams=getAllPresentParameters(testCase);
         Set<String> result=new HashSet<>();
         for(Parameter param:specOperation.getParameters()){
@@ -51,9 +64,10 @@ public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperat
     }
 
     private void doMutation(String paramName, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getGenerators().get(paramName);
+        
         Operation specOperation = SpecificationVisitor.findOperation(solution.getProblem().getOperationUnderTest().getOperationId(), solution.getProblem().getApiUnderTest());
         Parameter specParameter = SpecificationVisitor.findParameter(specOperation, paramName);
+        ITestDataGenerator generator = solution.getProblem().getGenerators().get(paramName);
         switch (specParameter.getIn()) {
             case "header":
                 testCase.addHeaderParameter(paramName, generator.nextValueAsString());

@@ -11,6 +11,29 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
  *
  * @author japarejo
  */
-public interface RestfulAPITestingObjectiveFunction {
-    public Double evaluate(RestfulAPITestSuiteSolution solution);            
+public abstract class RestfulAPITestingObjectiveFunction {
+    ObjectiveFunctionType type;
+    boolean requiredTestExecution;
+    
+    
+    public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type) {
+    	this(type,true);
+    }
+    
+    public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type, boolean requiresTestExecution) {
+    	this.type=type;
+    	this.requiredTestExecution=requiresTestExecution;
+	}
+    
+    
+	public abstract Double evaluate(RestfulAPITestSuiteSolution solution);
+    public String toString() {
+    	return type + " of" + this.getClass().getSimpleName();
+    }
+    
+    public enum ObjectiveFunctionType{MAXIMIZATION,MINIMIZATION};
+    
+    public boolean isRequiredTestExecution() {
+		return requiredTestExecution;
+	}
 }

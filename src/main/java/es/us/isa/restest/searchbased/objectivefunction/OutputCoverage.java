@@ -13,8 +13,12 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
  *
  * @author japarejo
  */
-public class OutputCoverage implements RestfulAPITestingObjectiveFunction{
+public class OutputCoverage extends RestfulAPITestingObjectiveFunction{
     CoverageMeter coverageMeter=null;
+    
+    public OutputCoverage() {
+		super(ObjectiveFunctionType.MAXIMIZATION);
+	}
     
     @Override
     public Double evaluate(RestfulAPITestSuiteSolution solution) {
@@ -30,4 +34,5 @@ public class OutputCoverage implements RestfulAPITestingObjectiveFunction{
     void initCoverageMeter(RestfulAPITestSuiteSolution solution){
         coverageMeter=new CoverageMeter(new CoverageGatherer(solution.getProblem().getApiUnderTest()));        
     }
+        
 }

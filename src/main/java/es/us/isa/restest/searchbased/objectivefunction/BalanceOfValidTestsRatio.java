@@ -10,10 +10,23 @@ import es.us.isa.restest.testcases.TestCase;
 
 /**
  *
- * @author japar
+ * @author japarejo
  */
-public class ValidTestsRatioObjectiveFunction implements RestfulAPITestingObjectiveFunction {
+public class BalanceOfValidTestsRatio extends RestfulAPITestingObjectiveFunction {	
 
+	public static final double DEFAULT_TARGET_RATIO = 0.8;
+	
+	private double targetRatio;
+	
+	public BalanceOfValidTestsRatio() {
+		this(DEFAULT_TARGET_RATIO);		
+	}		
+	
+	public BalanceOfValidTestsRatio (double targetRatio) {
+		super(ObjectiveFunctionType.MAXIMIZATION);
+		this.targetRatio=targetRatio;
+	}
+	
     @Override
     public Double evaluate(RestfulAPITestSuiteSolution solution) {
         double validTestCases=0.0;
@@ -27,7 +40,12 @@ public class ValidTestsRatioObjectiveFunction implements RestfulAPITestingObject
         if(invalidTestCases==0)
             return 1.0;
         else
-            return validTestCases/invalidTestCases;
+            return Math.abs(targetRatio-(double)(validTestCases/invalidTestCases));
     }
+
+	public double getTargetRatio() {
+		return targetRatio;
+	}
+	
     
 }

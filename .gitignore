@@ -5,6 +5,7 @@
 .project
 RESTest.iml
 TODO.txt
+jMetal.log
 /target
 /allure-results
 /src/test/resources/csvData/csvSample.csv

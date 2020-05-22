@@ -12,7 +12,7 @@ import es.us.isa.restest.searchbased.SearchBasedTestSuiteGenerator;
 import es.us.isa.restest.searchbased.objectivefunction.Coverage;
 import es.us.isa.restest.searchbased.objectivefunction.InputCoverage;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
-import es.us.isa.restest.searchbased.objectivefunction.Size;
+import es.us.isa.restest.searchbased.objectivefunction.SuiteSize;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import java.io.IOException;
 import java.util.List;
@@ -20,39 +20,45 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static es.us.isa.restest.util.FileManager.createDir;
+
 /**
  *
  * @author japar
  */
 public class BikeWiseExperiment {
 
-    private static int numTestCases = 5;												    // Number of test cases per operation
+    private static int numTestCases = 2;												// Number of test cases per operation
+    private static int populationSize = 5;												// Popultion size for the evolutionary algorithm
     private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		    // Path to OAS specification file
     private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		    // Path to test configuration file
     private static String experimentName = "bikewise";                                      // Experiment name
-    private static String targetDir = "src/generation/java/searchbased/" + experimentName;	// Directory where tests will be generated.
-    private static String packageName = "searchbased." + experimentName;				    // Package name of the test class.
-    private static String testClassName = "BikewiseTest";								    // Name of the class to be generated
-    private static OpenAPISpecification spec;											    // OAS
-    private static boolean enableStats = true;											    // Collect coverage statistics
+    private static String targetDir = "src/generation/java/searchbased";	// Directory where tests will be generated.
+    private static String resourcePath ="/v2/incidents";
+    private static String method ="GET";
     private static long seed = 1979;
     
     public static void main(String[] args) {
+
+        createDir(targetDir);
         
     	List<RestfulAPITestingObjectiveFunction> objectiveFunctions=Lists.newArrayList(
     			new InputCoverage(),
-    			new Size()
+    			new SuiteSize()
     	);
     	
         SearchBasedTestSuiteGenerator generator=new SearchBasedTestSuiteGenerator(
                             OAISpecPath, 
                             Optional.of(confPath),
+                            Optional.of(resourcePath),
+                            Optional.of(method),
                             experimentName,
                             objectiveFunctions,
                             targetDir,
                             seed);
         
-        generator.setPopulationSize(5);
+        generator.setPopulationSize(populationSize);
+
         try {
             generator.run();
         } catch (IOException ex) {

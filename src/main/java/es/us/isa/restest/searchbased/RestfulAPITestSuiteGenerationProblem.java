@@ -26,6 +26,8 @@ import static es.us.isa.restest.util.TestManager.getLastTestResult;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.HttpMethod;
+import io.swagger.models.Path;
+import io.swagger.models.parameters.Parameter;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,9 +45,19 @@ import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem<RestfulAPITestSuiteSolution> {
 
+	// TestSuiteSizeParameters :
+	// We support 3 suite size configuration mechanisms:
+	// 1.- A random value between maxTestSuiteSize and minTestSuiteSize if those values are set.
+	// 2.- A fixed value specified by the fixedTestSuiteSize attribute if set.
+	// 3.- A default fixed value computed using the information in the operation/api undertest (method computeDefaultTestSuiteSize)
+	Integer maxTestSuiteSize;
+	Integer minTestSuiteSize;
+	Integer fixedTestSuiteSize;
+
     // Elements under Tests:
     String OAISpecPath;
     OpenAPISpecification apiUnderTest;
+    TestPath pathUnderTest;
     Operation operationUnderTest;
 
     // Test case creation configuration
@@ -70,16 +82,17 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     // Optimization problem configuration
     List<RestfulAPITestingObjectiveFunction> objectiveFunctions;
 
-    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
-    	this(apiUnderTest,operationUnderTest,configuration,objFuncs,targetPath,JMetalRandom.getInstance().getRandomGenerator());
+    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestPath pathUnderTest,Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
+    	this(apiUnderTest,pathUnderTest,operationUnderTest,configuration,objFuncs,targetPath,JMetalRandom.getInstance().getRandomGenerator());
     }
     
-    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator) {
-    	this.testsPackage="searchbased." + targetPath.substring(targetPath.lastIndexOf("/")+1);
+    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestPath pathUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator) {
+    	this.testsPackage="searchbased";
     	this.apiUnderTest = apiUnderTest;
         this.setName(apiUnderTest.getSpecification().getInfo().getTitle());
         this.config=configuration.getTestConfiguration();
         if(operationUnderTest!=null) {
+        	this.pathUnderTest=pathUnderTest;
         	this.operationUnderTest = operationUnderTest;
         	this.parameters = this.operationUnderTest.getTestParameters();
         	this.generators = createGenerators(this.parameters);
@@ -145,6 +158,10 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         return apiUnderTest;
     }
 
+    public TestPath getPathUnderTest() {
+		return pathUnderTest;
+	}
+
     private Map<String, ITestDataGenerator> createGenerators(List<TestParameter> testParameters) {
         HashMap<String, ITestDataGenerator> result = new HashMap<>();
 
@@ -205,7 +222,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 //    private String generateTestClassName(TestCase testCase) {
 //        return "test_" + testCase.getId() + "_" + removeNotAlfanumericCharacters(testCase.getOperationId());
 //    }
-    
+
 //    private String removeNotAlfanumericCharacters(String s) {
 //		return s.replaceAll("[^A-Za-z0-9]", "");
 //	}
@@ -272,13 +289,17 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
 
 	public TestCase createRandomTestCase() {
-		TestPath path = chooseRandomPath(); 
-		es.us.isa.restest.configuration.pojos.Operation operation=chooseRandomOperation(path);
-		io.swagger.models.Operation specOperation=SpecificationVisitor.findOperation(operation.getOperationId(), apiUnderTest);			
-		String faulty="none"; 
+		TestPath path=pathUnderTest;
+		es.us.isa.restest.configuration.pojos.Operation operation=operationUnderTest;
+		String faulty="none";
 		Boolean ignoreDependences=true;
-		HttpMethod method=HttpMethod.valueOf(operation.getMethod().toString().toUpperCase());
+		if(operationUnderTest==null){
+			path = chooseRandomPath();
+			operation=chooseRandomOperation(path);
+		}
 		randomTestCaseGenerator.createGenerators(operation.getTestParameters());
+		io.swagger.models.Operation specOperation=SpecificationVisitor.findOperation(operation.getOperationId(), apiUnderTest);
+		HttpMethod method=HttpMethod.valueOf(operation.getMethod().toString().toUpperCase());
 		TestCase testCase = randomTestCaseGenerator.generateNextTestCase(specOperation,operation,path.getTestPath(),method,faulty);
 		testCase.setExpectedOutputs(specOperation.getResponses());
 		testCase.setExpectedSuccessfulOutput(specOperation.getResponses().get(operation.getExpectedResponse()));
@@ -316,5 +337,30 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 	
 	public TestConfiguration getConfig() {
 		return config;
+	}
+
+	/*public ITestDataGenerator getGeneratorsFor(Operation op,Parameter specParameter) {
+		ITestDataGenerator result=generators.get(specParameter.getName());
+		if(result==null) {
+			result = TestDataGeneratorFactory.createTestDataGenerator(specParameter.getGenerator();
+			generators.put(specParameter.getName(), result);
+		}
+		return null;
+	}*/
+
+	public void setMaxTestSuiteSize(Integer maxTestSuiteSize) {
+		this.maxTestSuiteSize = maxTestSuiteSize;
+	}
+
+	public void setMinTestSuiteSize(Integer minTestSuiteSize) {
+		this.minTestSuiteSize = minTestSuiteSize;
+	}
+
+	public void setFixedTestSuiteSize(Integer fixedTestSuiteSize) {
+		this.fixedTestSuiteSize = fixedTestSuiteSize;
+	}
+
+	public List<RestfulAPITestingObjectiveFunction> getObjectiveFunctions() {
+		return objectiveFunctions;
 	}
 }
