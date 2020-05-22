@@ -165,7 +165,7 @@ public class CoverageResults {
      */
 
     public void setCoverageOfCoverageCriteriaFromCoverageMeter(CoverageMeter covMeter) {
-        List<CoverageCriterion> criteria = covMeter.coverageGatherer.getCoverageCriteria();
+        List<CoverageCriterion> criteria = covMeter.getCoverageGatherer().getCoverageCriteria();
         for(CoverageCriterion c : criteria) {
             String typeAndRootPath = c.getType().name()+ "/" + c.getRootPath();
             CoverageCriterionResult res = new CoverageCriterionResult(typeAndRootPath, covMeter.getCriterionCoverage(c.getType(), c.getRootPath()));
