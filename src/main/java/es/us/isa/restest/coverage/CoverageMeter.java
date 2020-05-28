@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CoverageMeter {
 
-    CoverageGatherer coverageGatherer;  // coverage gatherer already containing all criteria to be covered
-    Collection<TestCase> testSuite;     // full set of abstract test cases addressing the API
-    Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
+    private CoverageGatherer coverageGatherer;  // coverage gatherer already containing all criteria to be covered
+    private Collection<TestCase> testSuite;     // full set of abstract test cases addressing the API
+    private Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
 
     public CoverageMeter(CoverageGatherer coverageGatherer) {
         this.coverageGatherer = coverageGatherer;
@@ -68,8 +68,13 @@ public class CoverageMeter {
     }
 
     public void setTestSuite(Collection<TestCase> testSuite) {
+        resetCoverage();
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+    }
+
+    private void resetCoverage() {
+        this.coverageGatherer = new CoverageGatherer(this.coverageGatherer.getSpec());
     }
 
     public Collection<TestResult> getTestResults() {
@@ -82,6 +87,7 @@ public class CoverageMeter {
     }
 
     public void setTestResults(Collection<TestResult> testResults) {
+        resetCoverage();
         this.testResults = testResults;
         setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
     }

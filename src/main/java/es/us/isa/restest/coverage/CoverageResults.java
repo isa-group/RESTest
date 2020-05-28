@@ -32,6 +32,13 @@ public class CoverageResults {
     //    private float operationsFlowCoverage;
     private List<CoverageCriterionResult> coverageOfCoverageCriteria;
 
+    public CoverageResults(CoverageMeter coverageMeter) {
+        this.totalCoverage = coverageMeter.getTotalCoverage();
+        this.inputCoverage = coverageMeter.getInputCoverage();
+        this.outputCoverage = coverageMeter.getOutputCoverage();
+        this.coverageOfCoverageCriteria = new ArrayList<>();
+    }
+
     public CoverageResults(float totalCoverage, float inputCoverage, float outputCoverage) {
         this.totalCoverage = totalCoverage;
         this.inputCoverage = inputCoverage;
@@ -158,7 +165,7 @@ public class CoverageResults {
      */
 
     public void setCoverageOfCoverageCriteriaFromCoverageMeter(CoverageMeter covMeter) {
-        List<CoverageCriterion> criteria = covMeter.coverageGatherer.getCoverageCriteria();
+        List<CoverageCriterion> criteria = covMeter.getCoverageGatherer().getCoverageCriteria();
         for(CoverageCriterion c : criteria) {
             String typeAndRootPath = c.getType().name()+ "/" + c.getRootPath();
             CoverageCriterionResult res = new CoverageCriterionResult(typeAndRootPath, covMeter.getCriterionCoverage(c.getType(), c.getRootPath()));

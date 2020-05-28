@@ -5,6 +5,7 @@
 .project
 RESTest.iml
 TODO.txt
+jMetal.log
 /target
 /allure-results
 /src/test/resources/csvData/csvSample.csv
@@ -13,5 +14,6 @@ TODO.txt
 /src/test/resources/csvData/test-cases-coverage.csv
 /src/test/resources/csvData/test-results.csv
 /src/test/resources/csvData/test-results-coverage.csv
+/src/test/resources/csvData/test-coverage.json
 /src/main/resources/auth
 /idl_aux_files

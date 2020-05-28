@@ -133,30 +133,30 @@ public class SearchBasedTestSuiteGenerator {
         	pathUnderTest = findPathUnderTest(configuration,resourcePath.get());
         	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());
         }
-        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, pathUnderTest,operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator());        
+        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, pathUnderTest,operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator());
         return problem;
     }
 
     private TestPath findPathUnderTest(TestConfigurationObject configuration, String resourcePath) {
     	TestPath result = null;
         for (TestPath tp : configuration.getTestConfiguration().getTestPaths()) {
-            if (tp.getTestPath().equals(resourcePath)) {                
+            if (tp.getTestPath().equalsIgnoreCase(resourcePath)) {
                         result = tp;
                         break;
-                    }                           
+                    }
         }
         return result;
 	}
 
-    public void run() throws IOException {    	
+    public void run() throws IOException {
     	JMetalLogger.logger.info("Generating testSuites for: " + problem + " using as objectives :"+ problem.getObjectiveFunctions() );
     	JMetalLogger.logger.info("Starting the execution of: " + algorithms.get(0).getAlgorithm().getClass().getSimpleName());
     	 AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor((Algorithm<?>) algorithms.get(0).getAlgorithm())
     		        .execute() ;
     	 long computingTime = algorithmRunner.getComputingTime() ;
-    	 
+
     	 List<RestfulAPITestSuiteSolution> suites=algorithms.get(0).getAlgorithm().getResult();
-    	 
+
     	 JMetalLogger.logger.info("Total execution time: " + computingTime + "ms");
     	 JMetalLogger.logger.info("The algorithm generated "+suites.size()+" test suites.");
     	 JMetalLogger.logger.info("Objectives values have been written to file FUN.tsv");
@@ -164,7 +164,7 @@ public class SearchBasedTestSuiteGenerator {
     	 int index=1;
     	 for(RestfulAPITestSuiteSolution suite:suites) {
     		 JMetalLogger.logger.info("TestSuite "+index);
-    		 for(int i=0;i<suite.getNumberOfObjectives();i++) {    			 
+    		 for(int i=0;i<suite.getNumberOfObjectives();i++) {
     			 JMetalLogger.logger.info("    Objective "+suite.getProblem().getObjectiveFunctions().get(i).getClass().getSimpleName()+": " + suite.getObjective(i)) ;
     		 }
     		 int i=1;
@@ -175,14 +175,14 @@ public class SearchBasedTestSuiteGenerator {
     		 index++;
     	 }
     }
-    
+
 	public void runExperiment() throws IOException {
 
         Experiment<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experiment = experimentBuilder.build();
 
         ExecuteAlgorithms executeAlgorithms = new ExecuteAlgorithms<>(experiment);
         executeAlgorithms.run();
-        
+
         ComputeQualityIndicators computeIndicators = new ComputeQualityIndicators<>(experiment);
         computeIndicators.run();
 
@@ -199,10 +199,10 @@ public class SearchBasedTestSuiteGenerator {
         rBoxplotGenerator.setRows(3);
         rBoxplotGenerator.setColumns(3);
         rBoxplotGenerator.run();
-		
+
     }
-	
-	
+
+
 
     private List<GenericIndicator<RestfulAPITestSuiteSolution>> indicators() {
         List<GenericIndicator<RestfulAPITestSuiteSolution>> result = new ArrayList<>();

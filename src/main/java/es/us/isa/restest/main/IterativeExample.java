@@ -68,9 +68,8 @@ public class IterativeExample {
         AbstractTestCaseGenerator generator = createGenerator();            // Test case generator
         IWriter writer = createWriter();                                    // Test case writer
         AllureReportManager reportManager = createAllureReportManager();    // Allure test case reporter
-        CSVReportManager csvReportManager = createCSVReportManager();       // CSV test case reporter
-        CoverageMeter coverageMeter = createCoverageMeter();                // Coverage meter
-        RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, csvReportManager, coverageMeter);
+        StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
+        RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, statsReportManager);
 
         int iteration = 1;
         while (totalNumTestCases == -1 || runner.getNumTestCases() < totalNumTestCases) {
@@ -92,7 +91,7 @@ public class IterativeExample {
         }
 
         if(enableCSVStats) {
-            String csvNFPath = csvReportManager.getTestDataDir() + "/" + readProperty("data.tests.testcases.nominalfaulty.file");
+            String csvNFPath = statsReportManager.getTestDataDir() + "/" + readProperty("data.tests.testcases.nominalfaulty.file");
             generator.exportNominalFaultyToCSV(csvNFPath, "total");
         }
 
@@ -188,6 +187,7 @@ public class IterativeExample {
         }
         return result;
     }
+
     // Create a test case generator
     private static AbstractTestCaseGenerator createGenerator() {
         // Load spec
@@ -219,7 +219,8 @@ public class IterativeExample {
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName, basePath);
         writer.setLogging(true);
         writer.setAllureReport(true);
-        writer.setEnableStats(enableOutputCoverage);
+        writer.setEnableStats(enableCSVStats);
+        writer.setEnableOutputCoverage(enableOutputCoverage);
         writer.setAPIName(experimentName);
         return writer;
     }
@@ -238,8 +239,7 @@ public class IterativeExample {
         return arm;
     }
 
-    // Create a CSV report manager
-    private static CSVReportManager createCSVReportManager() {
+    private static StatsReportManager createStatsReportManager() {
         String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + experimentName;
         String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + experimentName;
 
@@ -251,19 +251,7 @@ public class IterativeExample {
         createDir(testDataDir);
         createDir(coverageDataDir);
 
-        CSVReportManager csvReportManager = new CSVReportManager(testDataDir, coverageDataDir);
-        csvReportManager.setEnableStats(enableCSVStats);
-        csvReportManager.setEnableInputCoverage(enableInputCoverage);
-
-        return csvReportManager;
-    }
-
-    private static CoverageMeter createCoverageMeter() {
-        if(enableInputCoverage && enableOutputCoverage) {
-            return new CoverageMeter(new CoverageGatherer(spec));
-        }
-
-        return null;
+        return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage, enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
     }
 
     private static void generateTimeReport() {

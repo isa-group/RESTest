@@ -16,13 +16,13 @@ import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiv
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
-import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.AllureReportManager;
-import es.us.isa.restest.util.CSVReportManager;
-import es.us.isa.restest.util.IDGenerator;
+import es.us.isa.restest.util.StatsReportManager;
 
 import static es.us.isa.restest.util.FileManager.createDir;
+import static es.us.isa.restest.util.TestManager.getLastTestResult;
+
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.models.HttpMethod;
@@ -32,12 +32,9 @@ import io.swagger.models.parameters.Parameter;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.runner.JUnitCore;
@@ -46,19 +43,17 @@ import org.uma.jmetal.problem.impl.AbstractGenericProblem;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
-import com.atlassian.oai.validator.model.ApiOperation;
-
 public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem<RestfulAPITestSuiteSolution> {
 
 	// TestSuiteSizeParameters :
 	// We support 3 suite size configuration mechanisms:
 	// 1.- A random value between maxTestSuiteSize and minTestSuiteSize if those values are set.
 	// 2.- A fixed value specified by the fixedTestSuiteSize attribute if set.
-	// 3.- A default fixed value computed using the information in the operation/api undertest (method computeDefaultTestSuiteSize) 
+	// 3.- A default fixed value computed using the information in the operation/api undertest (method computeDefaultTestSuiteSize)
 	Integer maxTestSuiteSize;
 	Integer minTestSuiteSize;
 	Integer fixedTestSuiteSize;
-	
+
     // Elements under Tests:
     String OAISpecPath;
     OpenAPISpecification apiUnderTest;
@@ -77,7 +72,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     PseudoRandomGenerator randomGenerator;
     
     // Transient test case creation objects;
-    CSVReportManager csvReportManager;
+    StatsReportManager statsReportManager;
     RESTAssuredWriter iWriter;
     AllureReportManager allureReportManager;
     RESTestRunner runner;
@@ -92,8 +87,8 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
     
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestPath pathUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator) {
-    	this.testsPackage="restest";
-    	this.apiUnderTest = apiUnderTest;    	
+    	this.testsPackage="searchbased";
+    	this.apiUnderTest = apiUnderTest;
         this.setName(apiUnderTest.getSpecification().getInfo().getTitle());
         this.config=configuration.getTestConfiguration();
         if(operationUnderTest!=null) {
@@ -105,11 +100,11 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         this.targetPath = targetPath;
         this.randomGenerator = randomGenerator;
         this.iWriter = createWriter(targetPath);
-        this.csvReportManager = createCSVReportManager();
-        this.allureReportManager = createReportManager();
+        this.statsReportManager = createStatsReportManager();
+        this.allureReportManager = createAllureReportManager();
         this.testCaseGenerator = new DummyTestCaseGenerator(apiUnderTest,configuration,Integer.MAX_VALUE);        
         this.randomTestCaseGenerator = new RandomTestCaseGenerator(apiUnderTest, configuration, Integer.MAX_VALUE);
-        this.runner = new RESTestRunner(testClassNamePrefix, targetPath, testsPackage, testCaseGenerator, iWriter, allureReportManager, csvReportManager,null);
+        this.runner = new RESTestRunner(testClassNamePrefix, targetPath, testsPackage, testCaseGenerator, iWriter, allureReportManager, statsReportManager);
 
         assert (objFuncs != null);
         assert (objectiveFunctions.size() > 0);
@@ -162,7 +157,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     public OpenAPISpecification getApiUnderTest() {
         return apiUnderTest;
     }
-    
+
     public TestPath getPathUnderTest() {
 		return pathUnderTest;
 	}
@@ -194,7 +189,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         List<TestCase> cases=new ArrayList<>(1);
         for (TestCase testCase : missingTestCases) {
         	cases.add(testCase);
-        	iWriter.setClassName(generateTestClassName(testCase));
+        	iWriter.setClassName(testCase.getId());
         	iWriter.write(cases);
         	testResult=execute(testCase);
             result.put(testCase, testResult);
@@ -205,7 +200,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
 
     private TestResult execute(TestCase testCase) {
-        String testClassName = generateTestClassName(testCase);
+        String testClassName = testCase.getId();
         String filePath = targetPath + "/" + testClassName + ".java";
         String className = "";
         if(testsPackage!=null && !"".equals(testsPackage))
@@ -220,31 +215,32 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
         int successfulTests = result.getRunCount() - result.getFailureCount() - result.getIgnoreCount();
         //logger.info(result.getRunCount() + " tests run in " + result.getRunTime()/1000 + " seconds. Successful: " + successfulTests +" , Failures: " + result.getFailureCount() + ", Ignored: " + result.getIgnoreCount());
-        TestResult testResult=null;
-        return testResult;
+
+        return getLastTestResult(statsReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testresults.file"));
     }
 
-    private String generateTestClassName(TestCase testCase) {
-        return "test_" + testCase.getId() + "_" + removeNotAlfanumericCharacters(testCase.getOperationId());
-    }
-    
-    private String removeNotAlfanumericCharacters(String s) {
-		return s.replaceAll("[^A-Za-z0-9]", "");
-	}
+//    private String generateTestClassName(TestCase testCase) {
+//        return "test_" + testCase.getId() + "_" + removeNotAlfanumericCharacters(testCase.getOperationId());
+//    }
+
+//    private String removeNotAlfanumericCharacters(String s) {
+//		return s.replaceAll("[^A-Za-z0-9]", "");
+//	}
 
     private RESTAssuredWriter createWriter(String targetDir) {
         String basePath = apiUnderTest.getSpecification().getSchemes().get(0).name() + "://" + apiUnderTest.getSpecification().getHost() + apiUnderTest.getSpecification().getBasePath();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDir, testClassNamePrefix, testsPackage, basePath.toLowerCase());
         writer.setLogging(true);
-        writer.setAllureReport(true);
+        writer.setAllureReport(false);
         writer.setEnableStats(true);
-        writer.setAPIName(apiUnderTest.getSpecification().getInfo().getTitle());
+        writer.setSpecPath(apiUnderTest.getPath());
+        writer.setAPIName(targetPath.substring(targetPath.lastIndexOf("/")+1));
         return writer;
     }
 
-    private CSVReportManager createCSVReportManager() {
-        String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
-        String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
+    private StatsReportManager createStatsReportManager() {
+        String testDataDir = PropertyManager.readProperty("data.tests.dir") + targetPath.substring(targetPath.lastIndexOf("/"));
+        String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + targetPath.substring(targetPath.lastIndexOf("/"));
 
         // Delete previous results (if any)
         deleteDir(testDataDir);
@@ -254,7 +250,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         createDir(testDataDir);
         createDir(coverageDataDir);
 
-        return new CSVReportManager(testDataDir, coverageDataDir);
+        return new StatsReportManager(testDataDir, coverageDataDir);
 
 //		CSVReportManager csvReportManager = new CSVReportManager();
 //		csvReportManager.setEnableStats(false);
@@ -278,7 +274,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         dir.mkdirs();
     }
 
-    private AllureReportManager createReportManager() {
+    private AllureReportManager createAllureReportManager() {
         /*String allureResultsDir = PropertyManager.readProperty("allure.results.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
         String allureReportDir = PropertyManager.readProperty("allure.report.dir") + "/" + apiUnderTest.getSpecification().getInfo().getTitle();
 
@@ -298,12 +294,12 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 		String faulty="none";
 		Boolean ignoreDependences=true;
 		if(operationUnderTest==null){
-			path = chooseRandomPath(); 
-			operation=chooseRandomOperation(path);			
+			path = chooseRandomPath();
+			operation=chooseRandomOperation(path);
 		}
 		randomTestCaseGenerator.createGenerators(operation.getTestParameters());
 		io.swagger.models.Operation specOperation=SpecificationVisitor.findOperation(operation.getOperationId(), apiUnderTest);
-		HttpMethod method=HttpMethod.valueOf(operation.getMethod().toString().toUpperCase());		
+		HttpMethod method=HttpMethod.valueOf(operation.getMethod().toString().toUpperCase());
 		TestCase testCase = randomTestCaseGenerator.generateNextTestCase(specOperation,operation,path.getTestPath(),method,faulty);
 		testCase.setExpectedOutputs(specOperation.getResponses());
 		testCase.setExpectedSuccessfulOutput(specOperation.getResponses().get(operation.getExpectedResponse()));
@@ -351,19 +347,19 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 		}
 		return null;
 	}*/
-	
+
 	public void setMaxTestSuiteSize(Integer maxTestSuiteSize) {
 		this.maxTestSuiteSize = maxTestSuiteSize;
 	}
-	
+
 	public void setMinTestSuiteSize(Integer minTestSuiteSize) {
 		this.minTestSuiteSize = minTestSuiteSize;
 	}
-	
+
 	public void setFixedTestSuiteSize(Integer fixedTestSuiteSize) {
 		this.fixedTestSuiteSize = fixedTestSuiteSize;
 	}
-	
+
 	public List<RestfulAPITestingObjectiveFunction> getObjectiveFunctions() {
 		return objectiveFunctions;
 	}

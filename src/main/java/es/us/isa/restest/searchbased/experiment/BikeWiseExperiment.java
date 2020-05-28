@@ -20,6 +20,8 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static es.us.isa.restest.util.FileManager.createDir;
+
 /**
  *
  * @author japar
@@ -28,19 +30,17 @@ public class BikeWiseExperiment {
 
     private static int numTestCases = 2;												// Number of test cases per operation
     private static int populationSize = 5;												// Popultion size for the evolutionary algorithm
-    private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		// Path to OAS specification file
-    private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		// Path to test configuration file
-    private static String targetDir = "src/generation/java/serachbased/bikewise";					// Directory where tests will be generated.
+    private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		    // Path to OAS specification file
+    private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		    // Path to test configuration file
+    private static String experimentName = "bikewise";                                      // Experiment name
+    private static String targetDir = "src/generation/java/searchbased";	// Directory where tests will be generated.
     private static String resourcePath ="/v2/incidents";
     private static String method ="GET";
-    private static String APIName = "Bikewise";											// API name
-    private static String packageName = "bikewise";										// Package name of the test class.
-    private static String testClassName = "BikewiseTest";								// Name of the class to be generated
-    private static OpenAPISpecification spec;											// OAS
-    private static boolean enableStats = true;											// Collect coverage statistics
     private static long seed = 1979;
     
     public static void main(String[] args) {
+
+        createDir(targetDir);
         
     	List<RestfulAPITestingObjectiveFunction> objectiveFunctions=Lists.newArrayList(
     			new InputCoverage(),
@@ -52,13 +52,13 @@ public class BikeWiseExperiment {
                             Optional.of(confPath),
                             Optional.of(resourcePath),
                             Optional.of(method),
-                            APIName,
+                            experimentName,
                             objectiveFunctions,
                             targetDir,
                             seed);
         
         generator.setPopulationSize(populationSize);
-        
+
         try {
             generator.run();
         } catch (IOException ex) {
