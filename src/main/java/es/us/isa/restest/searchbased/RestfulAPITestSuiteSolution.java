@@ -19,13 +19,23 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     private Map<TestCase,TestResult> testResults;
     
     public RestfulAPITestSuiteSolution(RestfulAPITestSuiteGenerationProblem problem) {
-        super(problem);        
+        this(problem, false);
+    }
+
+    /**
+     * Auxiliary constructor to create a solution without test cases. Useful for the
+     * {@link RestfulAPITestSuiteSolution#copy()} method (it is more computationally
+     * efficient).
+     * @param problem Problem to solve
+     * @param withoutTestCases true if no test cases need to be added to the solution
+     */
+    public RestfulAPITestSuiteSolution(RestfulAPITestSuiteGenerationProblem problem, boolean withoutTestCases) {
+        super(problem);
         this.testResults=new HashMap<>();
-        for(int i=0;i<this.getVariables().size();i++) {        	
-        	this.setVariable(i, problem.createRandomTestCase());
-        }
-    }    
-    
+        if (!withoutTestCases)
+            createVariables();
+    }
+
     @Override
     public String getVariableValueString(int i) {
         return getVariable(i).toString();
@@ -33,7 +43,7 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
 
     @Override
     public RestfulAPITestSuiteSolution copy() {
-    	RestfulAPITestSuiteSolution result=new RestfulAPITestSuiteSolution(this.problem);
+    	RestfulAPITestSuiteSolution result=new RestfulAPITestSuiteSolution(this.problem, true);
     	TestCase testCase=null;
     	for(int i=0;i<this.getNumberOfVariables();i++) {
     		testCase=this.getVariable(i);
@@ -70,6 +80,12 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     
     public void setVariable(int i, TestCase  tc){
         getVariables().set(i, tc);
+    }
+
+    public void createVariables() {
+        for(int i=0;i<this.getVariables().size();i++) {
+            this.setVariable(i, problem.createRandomTestCase());
+        }
     }
 
     public TestResult getTestResult(TestCase testCase) {
