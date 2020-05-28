@@ -35,6 +35,7 @@ public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperat
             for (String paramName : getNonPresentParameters(testCase,solution)) {
                 if (getRandomGenerator().nextDouble() <= mutationProbability) {                    
                     doMutation(paramName, testCase, solution);
+                    resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                 }
             }
         }

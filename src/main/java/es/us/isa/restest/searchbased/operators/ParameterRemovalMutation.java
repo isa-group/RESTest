@@ -26,6 +26,7 @@ public class ParameterRemovalMutation extends AbstractAPITestCaseMutationOperato
             for (String paramName : getAllPresentParameters(testCase)) {
                 if (getRandomGenerator().nextDouble() <= mutationProbability) {                    
                     doMutation(paramName, testCase, solution);
+                    resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                 }
             }
         }

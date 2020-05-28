@@ -83,14 +83,19 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     }
 
     /**
-     * CAREFUL! This method replaces a test result with another, it doesn't add a new one.
-     * @param id The ID of the test result to replace
+     * CAREFUL! This method replaces (i.e., eliminates and inserts) a test result
+     * with another, it doesn't add a new one.
+     * @param id The ID of the test result to eliminate
      * @param tr The new test result to set
      */
     public void replaceTestResult(String id, TestResult  tr){
         testResults.remove(id);
         if (tr != null)
             testResults.put(tr.getId(), tr);
+    }
+
+    public void setTestResult(String id, TestResult tr) {
+        testResults.put(id, tr);
     }
 
     public TestResult getTestResult(String testCaseId) {

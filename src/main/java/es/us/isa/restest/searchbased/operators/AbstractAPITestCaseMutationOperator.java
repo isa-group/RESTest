@@ -76,4 +76,8 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
     }
 
     protected abstract void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution);
+
+    protected void resetTestResult(String testCaseId, RestfulAPITestSuiteSolution solution) {
+        solution.setTestResult(testCaseId, null);
+    }
 }

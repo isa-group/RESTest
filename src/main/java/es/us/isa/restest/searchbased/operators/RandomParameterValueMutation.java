@@ -43,6 +43,7 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
                 for (String paramName : parameters) {
                     if (getRandomGenerator().nextDouble() <= probability) {                        
                         doMutation(paramName, testCase, solution);
+                        resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                     }
                 }
             }

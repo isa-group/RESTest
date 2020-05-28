@@ -18,6 +18,7 @@ protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolutio
 	for (TestCase testCase : solution.getVariables()) {
 		if (getRandomGenerator().nextDouble() <= mutationProbability) {
 			doMutation(testCase,solution);
+			resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
 		}
 	}
 	
