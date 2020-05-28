@@ -16,7 +16,7 @@ import com.google.common.collect.Maps;
 
 public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCase,RestfulAPITestSuiteGenerationProblem>{
 
-    private Map<TestCase,TestResult> testResults;
+    private Map<String,TestResult> testResults; // key = testCaseId
     
     public RestfulAPITestSuiteSolution(RestfulAPITestSuiteGenerationProblem problem) {
         this(problem, false);
@@ -48,8 +48,8 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     	for(int i=0;i<this.getNumberOfVariables();i++) {
     		testCase=this.getVariable(i);
     		result.setVariable(i, copyTestCase(testCase));
-    		if(testResults!=null && testResults.get(testCase)!=null)
-    			result.testResults.put(testCase, copyTestResult(testResults.get(testCase)));
+    		if(testResults!=null && testResults.get(testCase.getId())!=null)
+    			result.testResults.put(testCase.getId(), copyTestResult(testResults.get(testCase.getId())));
     		else
     			testResults=null;
     	}
@@ -82,22 +82,32 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
         getVariables().set(i, tc);
     }
 
+    /**
+     * CAREFUL! This method replaces a test result with another, it doesn't add a new one.
+     * @param id The ID of the test result to replace
+     * @param tr The new test result to set
+     */
+    public void replaceTestResult(String id, TestResult  tr){
+        testResults.remove(id);
+        testResults.put(tr.getId(), tr);
+    }
+
+    public TestResult getTestResult(String testCaseId) {
+        return testResults.get(testCaseId);
+    }
+
+    public void addTestResults(Map<String, TestResult> results) {
+        testResults.putAll(results);
+    }
+
+    public Collection<TestResult> getTestResults() {
+        return testResults.values();
+    }
+
     public void createVariables() {
         for(int i=0;i<this.getVariables().size();i++) {
             this.setVariable(i, problem.createRandomTestCase());
         }
-    }
-
-    public TestResult getTestResult(TestCase testCase) {
-        return testResults.get(testCase);
-    }
-
-    public void addTestResults(Map<TestCase, TestResult> results) {
-        testResults.putAll(results);
-    }
-    
-    public Collection<TestResult> getTestResults() {
-    	return testResults.values();
     }
     
 

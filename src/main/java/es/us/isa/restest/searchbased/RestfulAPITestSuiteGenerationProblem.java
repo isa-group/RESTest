@@ -157,16 +157,16 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     private void invokeMissingTests(RestfulAPITestSuiteSolution s) {
         List<TestCase> missingTestCases = new ArrayList<TestCase>();
         for (TestCase testCase : s.getVariables()) {
-            if (s.getTestResult(testCase) == null) {
+            if (s.getTestResult(testCase.getId()) == null) {
                 missingTestCases.add(testCase);
             }
         }        
-        Map<TestCase, TestResult> results = execute(missingTestCases);
+        Map<String, TestResult> results = execute(missingTestCases);
         s.addTestResults(results);
     }
 
-    private Map<TestCase, TestResult> execute(List<TestCase> missingTestCases) {
-        Map<TestCase, TestResult> result = new HashMap<>();
+    private Map<String, TestResult> execute(List<TestCase> missingTestCases) {
+        Map<String, TestResult> result = new HashMap<>();
         TestResult testResult;
         List<TestCase> cases=new ArrayList<>(1);
         for (TestCase testCase : missingTestCases) {
@@ -174,7 +174,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         	iWriter.setClassName(testCase.getId());
         	iWriter.write(cases);
         	testResult=execute(testCase);
-            result.put(testCase, testResult);
+            result.put(testCase.getId(), testResult);
             cases.clear();
         }
 
