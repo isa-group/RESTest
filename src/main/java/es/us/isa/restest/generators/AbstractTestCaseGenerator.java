@@ -275,6 +275,14 @@ public abstract class AbstractTestCaseGenerator {
 		this.nCurrentNominal = nCurrentNominal;
 	}
 
+	public Map<String, ITestDataGenerator> getGenerators() {
+		return generators;
+	}
+
+	public void setGenerators(Map<String, ITestDataGenerator> generators) {
+		this.generators = generators;
+	}
+
 	protected String removeNotAlfanumericCharacters(String s) {
 		return s.replaceAll("[^A-Za-z0-9]", "");
 	}

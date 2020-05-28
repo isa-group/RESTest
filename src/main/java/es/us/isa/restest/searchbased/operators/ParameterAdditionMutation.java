@@ -67,7 +67,7 @@ public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperat
         
         Operation specOperation = SpecificationVisitor.findOperation(solution.getProblem().getOperationUnderTest().getOperationId(), solution.getProblem().getApiUnderTest());
         Parameter specParameter = SpecificationVisitor.findParameter(specOperation, paramName);
-        ITestDataGenerator generator = solution.getProblem().getGenerators().get(paramName);
+        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(paramName);
         switch (specParameter.getIn()) {
             case "header":
                 testCase.addHeaderParameter(paramName, generator.nextValueAsString());
