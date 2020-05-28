@@ -89,7 +89,8 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
      */
     public void replaceTestResult(String id, TestResult  tr){
         testResults.remove(id);
-        testResults.put(tr.getId(), tr);
+        if (tr != null)
+            testResults.put(tr.getId(), tr);
     }
 
     public TestResult getTestResult(String testCaseId) {

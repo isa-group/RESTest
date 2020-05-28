@@ -120,7 +120,12 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 	@Override
     public void evaluate(RestfulAPITestSuiteSolution s) {
         int i = 0;
-        invokeMissingTests(s);
+        for (RestfulAPITestingObjectiveFunction objFunc: objectiveFunctions) {
+            if (objFunc.isRequiresTestExecution()) {
+                invokeMissingTests(s); // Run tests only if some objective function requires it
+                break;
+            }
+        }
         for (RestfulAPITestingObjectiveFunction objFunc : objectiveFunctions) {
             s.setObjective(i, objFunc.evaluate(s));
             i++;
