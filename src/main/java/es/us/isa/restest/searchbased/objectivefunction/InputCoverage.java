@@ -23,6 +23,7 @@ public class InputCoverage extends RestfulAPITestingObjectiveFunction{
     public Double evaluate(RestfulAPITestSuiteSolution solution) {
         if(coverageMeter==null)
             initCoverageMeter(solution);
+        coverageMeter.resetCoverage();
         coverageMeter.setTestSuite(solution.getVariables());
         //coverageMeter.setTestResults(solution.getTestResults());
         double coveredInputElements=(double)coverageMeter.getCoveredInputElements();

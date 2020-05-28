@@ -156,6 +156,7 @@ public class CoverageMeterTest {
         TestCase tc4 = new TestCase(generateId(), false, "getOrderById", "/store/order/{orderId}", HttpMethod.GET);
         newTestSuite.add(tc4);
 
+        covMeter.resetCoverage();
         covMeter.setTestSuite(newTestSuite);
 
         assertTrue("The new coverage should be lower than the old one", covMeter.getTotalCoverage() < oldCoverage);
