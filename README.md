@@ -65,3 +65,47 @@ setEvaluationParameters("src/main/resources/ExperimentsSetup/bikewise.properties
 Lastly, run the [IterativeExample.java](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java) class, located under the `es.us.isa.restest.main` package.
 
 ### Generated test cases and test reports
+
+RESTest generates REST Assured test cases like the following one:
+
+```java
+@Test
+public void test_1jylmdhlbau76_GETversionincidentsformat() {
+	String testResultId = "test_1jylmdhlbau76_GETversionincidentsformat";
+
+	NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter(false, false, "none");
+
+	try {
+  	Response response = RestAssured
+		.given()
+			.log().all()
+			.queryParam("incident_type", "unconfirmed")
+			.queryParam("proximity", "whine")
+			.queryParam("occurred_after", "36")
+			.queryParam("query", "camper")
+			.queryParam("page", "18")
+			.filter(new CSVFilter(testResultId, APIName))
+			.filter(allureFilter)
+			.filter(statusCode5XXFilter)
+			.filter(nominalOrFaultyTestCaseFilter)
+			.filter(validationFilter)
+		.when()
+			.get("/v2/incidents");
+
+		response.then().log().all();
+		System.out.println("Test passed.");
+	} catch (RuntimeException ex) {
+		System.err.println(ex.getMessage());
+		fail(ex.getMessage());
+	}	
+}
+```
+
+This test case makes a GET request to the endpoint `/v2/incidents` with several query parameters. Then it asserts that:
+  - The status code is not 500 or higher (server error).
+  - The status code is in the range 2XX if the request is valid or 4XX if the request is faulty.
+  - The response conforms to the OAS specification of the API.
+
+Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/):
+
+![Allure](docs/Allure.png)
