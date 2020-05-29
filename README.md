@@ -2,19 +2,10 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.com/isa-group/RESTest.svg?branch=develop)](https://travis-ci.com/isa-group/RESTest)
 
-RESTest is a model-based testing framework that provides randomly generated test cases of an API from its specification. It mainly supports RESTful APIs described with the OAS design language.
+RESTest is a framework for automated black-box testing of RESTful web APIs. It follows a model-based approach, where test cases are automatically derived from the OpenAPI Specification of the API under test. No access to the source code is required, which makes it possible to test APIs written in any programming language, running in local or remote servers.
 
-## Documentation
-* [How does it work?](#how-does-it-work)
-* [Quickstart guide](#quickstart-guide)
-* [Description of the workflow](https://github.com/isa-group/RESTest/wiki/Description-of-the-workflow)
-* [Parameter dependencies: how to describe them](https://github.com/isa-group/RESTest/wiki/Inter-parameter-dependencies)
-* [Test configuration files](https://github.com/isa-group/RESTest/wiki/Test-configuration-files)
-* [Properties files](https://github.com/isa-group/RESTest/wiki/Properties-files)
-* [The abstract test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators)
-* [Instantiating abstract test cases: the writers](https://github.com/isa-group/RESTest/wiki/Writers)
-* [Examples of parameter dependency specifications, test configuration files and properties files](https://github.com/isa-group/RESTest/wiki/Examples)
-* [Developer's guide](https://github.com/isa-group/RESTest/wiki/Developer's-guide)
+## RESTest Wiki
+In this page you can find a brief description of how RESTest works and an illustrating example. If you want to read the full documentation, please visit the [Wiki](https://github.com/isa-group/RESTest/wiki). 
 
 ## How does it work?
 RESTest creates a default test configuration file from the API specification. With this file, RESTest generates random test cases using data generators. Then, those test cases are transformed into JUnit test cases that make API requests - RESTest uses [REST Assured](https://github.com/rest-assured/rest-assured) to test and validate the API requests generated -. Lastly, the JUnit suite is executed and the API responses are used to compute statistics, such as the percentage of the successful tests, the failed tests classified by their types or the coverage of the tests.
