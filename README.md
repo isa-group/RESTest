@@ -30,11 +30,13 @@ git clone https://github.com/isa-group/RESTest.git
 
 ### Setting up RESTest
 
-We need the OAS specification of the API under test. For Bikewise, it is available at the following path: `src/test/resources/Bikewise/swagger.yaml`. From this file, we can automatically generate the [test configuration file](https://github.com/isa-group/RESTest/wiki/Test-configuration-files). To do so, run the [CreateTestConf.java]() class, located under the `es.us.isa.restest.main` package. The test configuration file will be generated in the location `src/test/Bikewise/testConf.yaml`.
+1. **Get the OAS specification of the API under test**. For Bikewise, it is available at the following path: `src/test/resources/Bikewise/swagger.yaml`.
 
-You can modify the generated test configuration file to tailor your needs, e.g., you can remove some operations you are not interested to test. For more info, visit the [Wiki](https://github.com/isa-group/RESTest/wiki/Test-configuration-files).
+1. **Generate the test configuration file**. From the OAS spec, we can automatically generate the [test configuration file](https://github.com/isa-group/RESTest/wiki/Test-configuration-files). To do so, run the [CreateTestConf.java]() class, located under the `es.us.isa.restest.main` package. The test configuration file will be generated in the location `src/test/Bikewise/testConf.yaml`.
 
-To configure RESTest execution (number of test cases, testing technique, etc.), a configuration file is required. You can find the RESTest configuration file for the Bikewise API at `src/main/resources/ExperimentsSetup/bikewise.properties`:
+1. **(Optional) Modify the test configuration file to tailor your needs**. For example, you can remove some operations you are not interested to test. For more info, visit the [Wiki](https://github.com/isa-group/RESTest/wiki/Test-configuration-files).
+
+1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/Properties-files). You can find the RESTest configuration file for the Bikewise API at `src/main/resources/ExperimentsSetup/bikewise.properties`. With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`:
 
 ```
 numtestcases=10
@@ -58,15 +60,11 @@ reloadinputdataevery=10
 inputdatamaxvalues=10
 ```
 
-With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`.
-
-You are now ready to execute RESTest, but before you need to edit [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to set the path to the properties file:
+5. **Run RESTest**. Edit [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to set the path to the properties file. Then, run the [IterativeExample.java](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java) class, located under the `es.us.isa.restest.main` package.
 
 ````java
 setEvaluationParameters("src/main/resources/ExperimentsSetup/bikewise.properties");
 ````
-
-Lastly, run the [IterativeExample.java](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java) class, located under the `es.us.isa.restest.main` package.
 
 ### Generated test cases and test reports
 
