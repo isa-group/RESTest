@@ -38,7 +38,7 @@ git clone https://github.com/isa-group/RESTest.git
 
 1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/Properties-files). You can find the RESTest configuration file for the Bikewise API at `src/main/resources/ExperimentsSetup/bikewise.properties`. With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`:
 
-```
+```properties
 numtestcases=10
 oaispecpath=src/test/resources/Bikewise/swagger.yaml
 confpath=src/test/resources/Bikewise/testConf.yaml
