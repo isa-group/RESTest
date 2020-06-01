@@ -32,7 +32,7 @@ git clone https://github.com/isa-group/RESTest.git
 
 1. **Get the OAS specification of the API under test**. For Bikewise, it is available at the following path: `src/test/resources/Bikewise/swagger.yaml`.
 
-1. **Generate the test configuration file**. From the OAS spec, we can automatically generate the [test configuration file](https://github.com/isa-group/RESTest/wiki/Test-configuration-files). To do so, run the [CreateTestConf.java]() class, located under the `es.us.isa.restest.main` package. The test configuration file will be generated in the location `src/test/Bikewise/testConf.yaml`.
+1. **Generate the test configuration file**. From the OAS spec, we can automatically generate the [test configuration file](https://github.com/isa-group/RESTest/wiki/Test-configuration-files). To do so, run the [CreateTestConf]() class, located under the `es.us.isa.restest.main` package. The test configuration file will be generated in the location `src/test/Bikewise/testConf.yaml`.
 
 1. **(Optional) Modify the test configuration file to tailor your needs**. For example, you can remove some operations you are not interested to test. For more info, visit the [Wiki](https://github.com/isa-group/RESTest/wiki/Test-configuration-files).
 
@@ -60,7 +60,7 @@ reloadinputdataevery=10
 inputdatamaxvalues=10
 ```
 
-5. **Run RESTest**. Edit [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to set the path to the properties file. Then, run the [IterativeExample.java](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java) class, located under the `es.us.isa.restest.main` package.
+5. **Run RESTest**. Edit [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to set the path to the properties file. Then, run the [IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java) class, located under the `es.us.isa.restest.main` package.
 
 ````java
 setEvaluationParameters("src/main/resources/ExperimentsSetup/bikewise.properties");
