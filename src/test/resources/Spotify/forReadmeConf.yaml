@@ -1,0 +1,50 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  testPaths:
+  - testPath: /albums/{id}
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: market
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /artists/{id}
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200

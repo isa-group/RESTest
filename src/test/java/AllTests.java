@@ -3,8 +3,8 @@
 import es.us.isa.restest.inputs.perturbation.ObjectPerturbatorTest;
 import es.us.isa.restest.mutation.TestCaseMutationTest;
 import es.us.isa.restest.util.*;
-import es.us.isa.restest.validation.NominalOrFaultyTestCaseFilterTest;
-import es.us.isa.restest.validation.ResponseValidationFilterTest;
+import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFilterTest;
+import es.us.isa.restest.testcases.restassured.filters.ResponseValidationFilterTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -62,7 +62,7 @@ import es.us.isa.restest.testcases.writters.RESTAssuredWritterTest;
 	ResponseValidationFilterTest.class,
 	TimerTest.class,
 	JsonMutatorTest.class,
-	TestResultsManagerTest.class
+	TestManagerTest.class
 })
 
 public class AllTests {

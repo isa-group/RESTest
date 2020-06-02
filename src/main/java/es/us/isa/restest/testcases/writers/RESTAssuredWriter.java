@@ -25,7 +25,8 @@ public class RESTAssuredWriter implements IWriter {
 	private boolean OAIValidation = true;
 	private boolean logging = false;				// Log everything (ONLY IF THE TEST FAILS)
 	private boolean allureReport = false;			// Generate request and response attachment for allure reports
-	private boolean enableStats = false;			// If true, export test results and output coverage data to CSV
+	private boolean enableStats = false;			// If true, export test results data to CSV
+	private boolean enableOutputCoverage = false;	// If true, export output coverage data to CSV
 
 	private String specPath;						// Path to OAS specification file
 	private String testFilePath;					// Path to test configuration file
@@ -100,17 +101,21 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
-				+  "import es.us.isa.restest.validation.StatusCode5XXFilter;\n"
-				+  "import es.us.isa.restest.validation.NominalOrFaultyTestCaseFilter;\n"
+				+  "import es.us.isa.restest.testcases.restassured.filters.StatusCode5XXFilter;\n"
+				+  "import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFilter;\n"
 				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
 //		if (OAIValidation)
-		content += 	"import es.us.isa.restest.validation.ResponseValidationFilter;\n";
+		content += 	"import es.us.isa.restest.testcases.restassured.filters.ResponseValidationFilter;\n";
+
+//		// Coverage filter (optional)
+//		if (enableOutputCoverage)
+//			content += 	"import es.us.isa.restest.testcases.restassured.filters.CoverageFilter;\n";
 
 		// Coverage filter (optional)
-		if (enableStats)
-			content += 	"import es.us.isa.restest.coverage.CoverageFilter;\n";
+		if (enableStats || enableOutputCoverage)
+			content += 	"import es.us.isa.restest.testcases.restassured.filters.CSVFilter;\n";
 		
 		content +="\n";
 		
@@ -133,7 +138,7 @@ public class RESTAssuredWriter implements IWriter {
 		if (allureReport)
 			content += "\tprivate AllureRestAssured allureFilter = new AllureRestAssured();\n";
 
-		if (enableStats) // This is only needed to export output data to the proper folder
+		if (enableStats || enableOutputCoverage) // This is only needed to export output data to the proper folder
 			content += "\tprivate final String APIName = \"" + APIName + "\";\n";
 
 		content += "\n";
@@ -215,7 +220,7 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateTestCaseId(String testCaseId) {
 		String content = "";
 
-		if (enableStats) {
+		if (enableStats || enableOutputCoverage) {
 			content += "\t\tString testResultId = \"" + testCaseId + "\";\n\n";
 		}
 
@@ -326,8 +331,10 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateFilters(TestCase t) {
 		String content = "";
 
-		if (enableStats) // Coverage filter
-			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
+		if (enableStats || enableOutputCoverage) // CSV filter
+			content += "\t\t\t\t.filter(new CSVFilter(testResultId, APIName))\n";
+//		if (enableOutputCoverage) // Coverage filter
+//			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
 		if (allureReport) // Allure filter
 			content += "\t\t\t\t.filter(allureFilter)\n";
 		// 5XX status code oracle:
@@ -487,6 +494,14 @@ public class RESTAssuredWriter implements IWriter {
 
 	public void setEnableStats(boolean enableStats) {
 		this.enableStats = enableStats;
+	}
+
+	public boolean isEnableOutputCoverage() {
+		return enableOutputCoverage;
+	}
+
+	public void setEnableOutputCoverage(boolean enableOutputCoverage) {
+		this.enableOutputCoverage = enableOutputCoverage;
 	}
 
 	public String getSpecPath() {
