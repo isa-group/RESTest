@@ -56,24 +56,102 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<aspectj.version>1.8.10</aspectj.version>
 		<argLine></argLine>
+		<swagger.version>2.1.2</swagger.version>
+		<openapivalidator.version>2.10.0</openapivalidator.version>
+		<restassured.version>3.0.6</restassured.version>
+		<jackson.version>2.11.0</jackson.version>
+		<allure.version>2.12.1</allure.version>
 	</properties>
 
 	<dependencies>
 
-		<!-- Open API parser -->
+		<!-- SWAGGER DEPENDENCIES -->
+		<!-- https://mvnrepository.com/artifact/io.swagger.core.v3/swagger-core -->
+		<dependency>
+			<groupId>io.swagger.core.v3</groupId>
+			<artifactId>swagger-core</artifactId>
+			<version>${swagger.version}</version>
+		</dependency>
+
+		<!-- Swagger parser -->
 		<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-parser</artifactId>
-			<version>1.0.33</version>
+			<version>1.0.51</version>
 		</dependency>
 
-		<!-- Jackson 2 core -->
+
+		<!-- OPENAPI VALIDATOR DEPENDENCIES -->
+		<!-- https://mvnrepository.com/artifact/com.atlassian.oai/swagger-request-validator -->
+		<dependency>
+			<groupId>com.atlassian.oai</groupId>
+			<artifactId>swagger-request-validator-core</artifactId>
+			<version>${openapivalidator.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.atlassian.oai</groupId>
+			<artifactId>swagger-request-validator-restassured</artifactId>
+			<version>${openapivalidator.version}</version>
+		</dependency>
+
+
+		<!-- REST ASSURED DEPENDENCIES -->
+		<!-- REST Assured -->
+		<dependency>
+			<groupId>io.rest-assured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>${restassured.version}</version>
+		</dependency>
+
+
+		<!-- JACKSON DEPENDENCIES -->
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>2.8.2</version>
+			<version>${jackson.version}</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+
+
+		<!-- TEST DEPENDENCIES -->
+		<!-- JUnit 4 -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+		</dependency>
+
+		<!-- Allure Junit 4 -->
+		<dependency>
+			<groupId>io.qameta.allure</groupId>
+			<artifactId>allure-junit4</artifactId>
+			<version>${allure.version}</version>
+		</dependency>
+
+		<!-- Allure RESTAsured -->
+		<dependency>
+			<groupId>io.qameta.allure</groupId>
+			<artifactId>allure-rest-assured</artifactId>
+			<version>${allure.version}</version>
+		</dependency>
+
+
+		<!-- MISC DEPENDENCIES -->
 		<!-- Apache Common IO -->
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -116,91 +194,11 @@
 			<version>1.2</version>
 		</dependency>
 
-		<!-- REST Assured -->
-		<dependency>
-			<groupId>io.rest-assured</groupId>
-			<artifactId>rest-assured</artifactId>
-			<version>3.0.6</version>
-		</dependency>
-
-		<!-- JSON Schema Validation -->
-		<!-- <dependency> <groupId>io.rest-assured</groupId> <artifactId>json-schema-validator</artifactId> 
-			<version>3.0.6</version> <scope>test</scope> </dependency> -->
-
-<!--		&lt;!&ndash; Open API validator &ndash;&gt;-->
-<!--		<dependency>-->
-<!--			<groupId>com.atlassian.oai</groupId>-->
-<!--			<artifactId>swagger-request-validator-restassured</artifactId>-->
-<!--			<version>1.3.3</version>-->
-<!--		</dependency>-->
-
-<!--		<dependency>-->
-<!--			<groupId>com.atlassian.oai</groupId>-->
-<!--			<artifactId>swagger-request-validator-core</artifactId>-->
-<!--			<version>1.3.3</version>-->
-<!--		</dependency>-->
-
-		<!-- OpenAPI validator dependencies -->
-		<!-- https://mvnrepository.com/artifact/com.github.java-json-tools/json-schema-validator -->
-		<dependency>
-			<groupId>com.github.java-json-tools</groupId>
-			<artifactId>json-schema-validator</artifactId>
-			<version>2.2.8</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305 -->
-		<dependency>
-			<groupId>com.google.code.findbugs</groupId>
-			<artifactId>jsr305</artifactId>
-			<version>3.0.2</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>1.7.20</version>
-		</dependency>
-		<!-- End of dependencies of OpenAPI validator -->
-
-
-		<!-- JUnit 4 -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-		</dependency>
-
 		<!-- CSV library -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 			<version>1.5</version>
-		</dependency>
-
-		<!-- YAML parsing library -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>2.9.8</version>
-		</dependency>
-
-		<!-- Allure Junit 4 -->
-		<dependency>
-			<groupId>io.qameta.allure</groupId>
-			<artifactId>allure-junit4</artifactId>
-			<version>2.12.1</version>
-		</dependency>
-
-		<!-- Allure RESTAsured -->
-		<dependency>
-			<groupId>io.qameta.allure</groupId>
-			<artifactId>allure-rest-assured</artifactId>
-			<version>2.12.1</version>
 		</dependency>
 
 		<!-- Apache log4j2 API -->
@@ -217,6 +215,8 @@
 			<version>2.11.2</version>
 		</dependency>
 
+
+		<!-- LOCAL DEPENDENCIES -->
 		<!-- JSONmutator local dependency -->
 		<dependency>
 			<groupId>JSONmutator</groupId>

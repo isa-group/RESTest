@@ -3,27 +3,17 @@ package es.us.isa.restest.generators;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
-import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
-import es.us.isa.idlreasoner.analyzer.Analyzer;
-import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.configuration.pojos.TestParameter;
-import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
 
 import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
 import static es.us.isa.restest.testcases.TestCase.checkFaulty;
-import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
-import static es.us.isa.restest.util.SpecificationVisitor.*;
 import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
 
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {

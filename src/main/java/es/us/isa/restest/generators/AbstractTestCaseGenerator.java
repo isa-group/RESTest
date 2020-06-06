@@ -1,7 +1,6 @@
 package es.us.isa.restest.generators;
 
-import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
-import es.us.isa.idlreasoner.analyzer.Analyzer;
+import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.*;
@@ -31,7 +30,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
 	protected AuthManager authManager;						// For if multiple API keys are used for the API
 	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
-	protected SwaggerRequestResponseValidator validator;	// Validator used to know if a test case is valid or not
+	protected OpenApiInteractionValidator validator;	// Validator used to know if a test case is valid or not
 	protected int numberOfTest;								// Number of test cases to be generated for each operation
 	protected int index;									// Number of test cases generated so far
 	protected int nCurrentFaulty;							// Number of faulty test cases generated in the current iteration
@@ -50,7 +49,7 @@ public abstract class AbstractTestCaseGenerator {
 		if (authPath != null)
 			this.authManager = new AuthManager(authPath);
 
-		this.validator = SwaggerRequestResponseValidator.createFor(spec.getPath()).build();
+		this.validator = OpenApiInteractionValidator.createFor(spec.getPath()).build();
 		this.numberOfTest = nTests;
 		this.index = 0;
 		this.nFaulty = 0;
