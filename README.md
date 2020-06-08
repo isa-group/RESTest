@@ -108,6 +108,6 @@ This test case makes a GET request to the endpoint `/v2/incidents` with several 
   - The status code is in the range 2XX if the request is valid or 4XX if the request is faulty.
   - The response conforms to the OAS specification of the API.
 
-Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/):
+Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `target/allure-reports/bikewise_example/index.html` in your browser:
 
 ![Allure](docs/Allure.png)

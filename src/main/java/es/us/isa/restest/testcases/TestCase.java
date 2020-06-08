@@ -2,20 +2,16 @@ package es.us.isa.restest.testcases;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
-import com.atlassian.oai.validator.model.Request;
+import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
-import com.atlassian.oai.validator.report.ValidationReport;
 import io.swagger.models.HttpMethod;
 import io.swagger.models.Response;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
@@ -66,6 +62,7 @@ public class TestCase implements Serializable {
 		this(testCase.id, testCase.faulty, testCase.operationId, testCase.path, testCase.method);
 		this.faultyReason = testCase.faultyReason;
 		this.fulfillsDependencies = testCase.fulfillsDependencies;
+		this.inputFormat = testCase.inputFormat;
 		this.bodyParameter = testCase.bodyParameter;
 		this.pathParameters = testCase.pathParameters;
 		this.queryParameters = testCase.queryParameters;
@@ -107,7 +104,10 @@ public class TestCase implements Serializable {
 
 	public Map<String, String> getFormParameters() { return formParameters; }
 
-	public void setFormParameters(Map<String, String> formParameters) { this.formParameters = formParameters; }
+	public void setFormParameters(Map<String, String> formParameters) {
+		setFormDataContentType();
+		this.formParameters = formParameters;
+	}
 
 	public Map<String, Response> getExpectedOutputs() {
 		return expectedOutputs;
@@ -181,9 +181,15 @@ public class TestCase implements Serializable {
 		headerParameters.putAll(params);
 	}
 
-	public void addFormParameter(String name, String value) { formParameters.put(name, value); }
+	public void addFormParameter(String name, String value) {
+		setFormDataContentType();
+		formParameters.put(name, value);
+	}
 
-	public void addFormParameters(Map<String,String> params) { formParameters.putAll(params); }
+	public void addFormParameters(Map<String,String> params) {
+		setFormDataContentType();
+		formParameters.putAll(params);
+	}
 
 	public void removeQueryParameter(String name) {
 		queryParameters.remove(name);
@@ -247,6 +253,11 @@ public class TestCase implements Serializable {
 
 	public void setFaultyReason(String faultyReason) {
 		this.faultyReason = faultyReason;
+	}
+
+	private void setFormDataContentType() {
+		if (!inputFormat.equals("application/x-www-form-urlencoded") && formParameters.size() > 0)
+			inputFormat = "application/x-www-form-urlencoded";
 	}
 
 	@Override
@@ -314,12 +325,26 @@ public class TestCase implements Serializable {
 	 * @param validator
 	 * @return
 	 */
-	public static Boolean checkFaulty(TestCase tc, SwaggerRequestResponseValidator validator) {
-		final String[] path = {tc.getPath()};
-		tc.getPathParameters().forEach((k, v) -> {
-			path[0] = path[0].replace("{" + k + "}", v);
-		});
-		SimpleRequest request = new SimpleRequest(tc.getMethod().toString(), path[0], tc.getHeaderParameters(), tc.getQueryParameters(), tc.getBodyParameter());
-		return validator.validateOnlyRequest(request).hasErrors();
+	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
+		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(tc.getMethod().toString(), tc.getPath())
+				.withBody(tc.getBodyParameter())
+				.withContentType(tc.getInputFormat());
+		tc.getQueryParameters().forEach(requestBuilder::withQueryParam);
+		tc.getHeaderParameters().forEach(requestBuilder::withHeader);
+
+		if (tc.getFormParameters().size() > 0) {
+			StringBuilder formDataBody = new StringBuilder();
+			try {
+				for (Map.Entry<String, String> formParam : tc.getFormParameters().entrySet()) {
+					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(formParam.getValue(), StandardCharsets.UTF_8.toString())).append("&");
+				}
+			} catch (UnsupportedEncodingException e) {
+				LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
+				e.printStackTrace();
+			}
+			requestBuilder.withBody(formDataBody.toString());
+		}
+
+		return validator.validateRequest(requestBuilder.build()).hasErrors();
 	}
 }

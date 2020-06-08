@@ -54,7 +54,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		}
 
 		while (hasNext()) {
-			if (index%reloadInputDataEvery == 0 && !faultyReason.equals("individual_parameter_constraint")) {
+			if (idlReasoner != null && index%reloadInputDataEvery == 0 && !faultyReason.equals("individual_parameter_constraint")) {
 				Map <String, List<String>> inputData = generateInputData(testOperation.getTestParameters()); // Update input data
 				idlReasoner.updateData(inputData);
 			}
