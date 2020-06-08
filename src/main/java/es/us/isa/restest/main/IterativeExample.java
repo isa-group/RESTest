@@ -215,7 +215,7 @@ public class IterativeExample {
 
     // Create a writer for RESTAssured
     private static IWriter createWriter() {
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        String basePath = spec.getSpecification().getServers().get(0).getUrl();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName, basePath);
         writer.setLogging(true);
         writer.setAllureReport(true);

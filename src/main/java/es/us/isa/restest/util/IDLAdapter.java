@@ -1,10 +1,8 @@
 package es.us.isa.restest.util;
 
-import es.us.isa.restest.configuration.pojos.TestParameter;
-import es.us.isa.restest.inputs.ITestDataGenerator;
+import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.Operation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +19,7 @@ public class IDLAdapter {
 
     public static void idl2restestTestCase(TestCase tc, Map<String, String> request, Operation specOperation) {
         for (Map.Entry<String, String> parameter: request.entrySet()) {
-            Parameter specParameter = findParameter(specOperation, parameter.getKey());
+            ParameterFeatures specParameter = findParameter(specOperation, parameter.getKey());
             switch (specParameter.getIn()) {
                 case "header":
                     tc.addHeaderParameter(parameter.getKey(), parameter.getValue());

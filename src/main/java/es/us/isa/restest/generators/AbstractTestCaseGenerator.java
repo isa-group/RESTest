@@ -7,19 +7,19 @@ import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
 import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 
 import java.util.*;
 
 import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static es.us.isa.restest.util.SpecificationVisitor.findParameter;
-import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 
 public abstract class AbstractTestCaseGenerator {
 
@@ -69,7 +69,7 @@ public abstract class AbstractTestCaseGenerator {
 	 */
 	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
 
-		List<TestCase> testCases = new ArrayList<TestCase>();
+		List<TestCase> testCases = new ArrayList<>();
 		
 		// Generate test cases for each path and method
 		for(TestConfigurationFilter filter:filters) {
@@ -78,7 +78,7 @@ public abstract class AbstractTestCaseGenerator {
 				throw new IllegalArgumentException("Specify the path(s) to be tested");
 			}
 
-			for(HttpMethod method: filter.getMethods()) {
+			for(PathItem.HttpMethod method: filter.getMethods()) {
 				// Generate test cases for the operation
 				testCases.addAll(generate(filter.getPath(), method));
 			}
@@ -123,12 +123,12 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	protected abstract Collection<TestCase> generateOperationTestCases(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method);
+			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method);
 
-	protected Collection<TestCase> generate(String path, HttpMethod method) {
+	protected Collection<TestCase> generate(String path, PathItem.HttpMethod method) {
 
 		// Get specification operation
-		Operation specOperation = spec.getSpecification().getPath(path).getOperationMap().get(method);
+		Operation specOperation = spec.getSpecification().getPaths().get(path).readOperationsMap().get(method);
 
 		// Get test configuration object for the operation
 		es.us.isa.restest.configuration.pojos.Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
@@ -143,7 +143,7 @@ public abstract class AbstractTestCaseGenerator {
 			es.us.isa.restest.configuration.pojos.Operation testOperation) {
 		// Set parameters
 		for (TestParameter confParam : testOperation.getTestParameters()) {
-			Parameter specParameter = findParameter(specOperation, confParam.getName());
+			ParameterFeatures specParameter = findParameter(specOperation, confParam.getName());
 
 			if (specParameter.getRequired() || rand.nextFloat() <= confParam.getWeight()) {
 				ITestDataGenerator generator = generators.get(confParam.getName());
@@ -218,7 +218,7 @@ public abstract class AbstractTestCaseGenerator {
 	// Create all generators needed for the parameters of an operation
 	protected void createGenerators(List<TestParameter> testParameters) {
 		
-		this.generators = new HashMap<String,ITestDataGenerator>();
+		this.generators = new HashMap<>();
 		
 		for(TestParameter param: testParameters)
 			generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));

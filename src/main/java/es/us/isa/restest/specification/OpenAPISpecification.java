@@ -1,14 +1,15 @@
 package es.us.isa.restest.specification;
 
-import io.swagger.parser.SwaggerParser;
-import io.swagger.models.Swagger;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.models.ParseOptions;
 
 /**
  * Class to deserialize and manage a specification of a RESTful API described with the OAS language.
  */
-public class OpenAPISpecification 
-{
-	Swagger specification;
+public class OpenAPISpecification {
+
+	OpenAPI specification;
 	private String path;
 
 	/**
@@ -16,13 +17,15 @@ public class OpenAPISpecification
 	 * @param location The location of the file
 	 */
 	public OpenAPISpecification(String location) {
-		this.specification = new SwaggerParser().read(location);
+		ParseOptions options = new ParseOptions();
+		options.setResolveFully(true);
+		this.specification = new OpenAPIV3Parser().read(location);
 		this.path = location;
 	}
-	
-	public Swagger getSpecification() {
-	   return specification;
-   }
+
+	public OpenAPI getSpecification() {
+		return specification;
+	}
 
 	public String getPath() {
 		return path;

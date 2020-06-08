@@ -12,8 +12,8 @@ public class SpecificationVisitorTest {
     @Test
     public void hasDependenciesTest() {
         OpenAPISpecification oas = new OpenAPISpecification("src/test/resources/Travel/swagger.yaml");
-        assertTrue("The operation GET /trips/user should have dependencies", hasDependencies(oas.getSpecification().getPath("/trips/user").getGet()));
-        assertFalse("The operation GET /trips shouldn't have dependencies", hasDependencies(oas.getSpecification().getPath("/trips").getGet()));
-        assertFalse("The operation DELETE /trips/user shouldn't have dependencies", hasDependencies(oas.getSpecification().getPath("/trips/user").getDelete()));
+        assertTrue("The operation GET /trips/user should have dependencies", hasDependencies(oas.getSpecification().getPaths().get("/trips/user").getGet()));
+        assertFalse("The operation GET /trips shouldn't have dependencies", hasDependencies(oas.getSpecification().getPaths().get("/trips").getGet()));
+        assertFalse("The operation DELETE /trips/user shouldn't have dependencies", hasDependencies(oas.getSpecification().getPaths().get("/trips/user").getDelete()));
     }
 }

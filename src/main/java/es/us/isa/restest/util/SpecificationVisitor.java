@@ -1,15 +1,16 @@
 package es.us.isa.restest.util;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import es.us.isa.restest.specification.ParameterFeatures;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.AbstractSerializableParameter;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.MediaType;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 
 /**
  * 
@@ -17,22 +18,50 @@ import io.swagger.models.parameters.Parameter;
  */
 public class SpecificationVisitor {
 
+	private SpecificationVisitor() {
+		//Utility class
+	}
+
+	public static final String MEDIA_TYPE_APPLICATION_JSON = "application/json";
+	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
+	public static final String BOOLEAN_TYPE = "boolean";
+
 	/**
 	 * Returns the operation's parameter with name "paramName"
 	 * @param operation Operation
 	 * @param paramName Parameter's name
 	 * @return
 	 */
-	public static Parameter findParameter(Operation operation, String paramName) {
-		Parameter param = null;
+	public static ParameterFeatures findParameter(Operation operation, String paramName) {
+		ParameterFeatures param = null;
 		boolean found = false;
-		
+
 		Iterator<Parameter> it = operation.getParameters().iterator();
 		while (it.hasNext() && !found) {
 			Parameter p = it.next();
 			if (p.getName().equalsIgnoreCase(paramName)) {
-				param = p;
+				param = new ParameterFeatures(p);
 				found=true;
+			}
+		}
+
+		if(!found && paramName.equals("body") && operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON)) {
+			param = new ParameterFeatures("body", "body", operation.getRequestBody().getRequired());
+
+		} else if(!found) {
+
+			MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
+					operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
+					operation.getRequestBody().getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
+			Iterator<Map.Entry> formDataIterator = mediaType.getSchema().getProperties().entrySet().iterator();
+
+			while (formDataIterator.hasNext()) {
+				Schema s = ((Map.Entry<String, Schema>) it.next()).getValue();
+				if (s.getName().equalsIgnoreCase(paramName)) {
+					param = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
+					break;
+				}
 			}
 		}
 	
@@ -44,10 +73,34 @@ public class SpecificationVisitor {
 	 * @param operation Operation in the specification
 	 * @return
 	 */
-	public static List<Parameter> getRequiredParameters(Operation operation) {
-		return operation.getParameters().stream()
+	public static List<ParameterFeatures> getRequiredParameters(Operation operation) {
+		List<ParameterFeatures> requiredParameters = operation.getParameters().stream()
 				.filter(Parameter::getRequired)
-				.collect(Collectors.toList());
+				.map(ParameterFeatures::new)
+				.collect(Collectors.toCollection(ArrayList::new));
+
+		if(operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON) && operation.getRequestBody().getRequired()) {
+			new ParameterFeatures("body", "body", Boolean.TRUE);
+
+		} else if(operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ||
+				operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA)) {
+
+			MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
+					operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
+					operation.getRequestBody().getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
+
+			if(mediaType.getSchema().getRequired() != null && !mediaType.getSchema().getRequired().isEmpty()) {
+
+				for(Object o : mediaType.getSchema().getProperties().keySet()) {
+					Schema s = ((Map.Entry<String, Schema>) o).getValue();
+					if(mediaType.getSchema().getRequired().contains(s.getName())) {
+						requiredParameters.add(new ParameterFeatures(s, true));
+					}
+				}
+			}
+		}
+
+		return requiredParameters;
 	}
 
 	/**
@@ -55,7 +108,7 @@ public class SpecificationVisitor {
 	 * @param operation Operation in the specification
 	 * @return
 	 */
-	public static List<Parameter> getRequiredNotPathParameters(Operation operation) {
+	public static List<ParameterFeatures> getRequiredNotPathParameters(Operation operation) {
 		return getRequiredParameters(operation).stream()
 				.filter(p -> !p.getIn().equals("path"))
 				.collect(Collectors.toList());
@@ -78,24 +131,43 @@ public class SpecificationVisitor {
 	 * @param operation Operation in the specification
 	 * @return
 	 */
-	public static List<Parameter> getParametersSubjectToInvalidValueChange(Operation operation) {
-		return operation.getParameters().stream()
-				.filter(p -> !p.getIn().equals("body")) // Remove body parameters
-				.filter(p -> {
-					ParameterFeatures pFeatures = new ParameterFeatures(p);
-					// If the parameter fulfills one of the following conditions, add it to the list
-					return (pFeatures.getType().equals("integer") || pFeatures.getType().equals("number")
-							|| pFeatures.getType().equals("boolean") || (pFeatures.getType().equals("string")
-							&& (pFeatures.getMinLength() != null || pFeatures.getMaxLength() != null
-							|| pFeatures.getFormat() != null)) || pFeatures.getEnumValues() != null);
-				})
-				.collect(Collectors.toList());
+	public static List<ParameterFeatures> getParametersSubjectToInvalidValueChange(Operation operation) {
+		List<ParameterFeatures> result = operation.getParameters().stream()
+				.map(ParameterFeatures::new)
+				.filter(p -> (p.getType().equals("integer") || p.getType().equals("number")
+							|| p.getType().equals(BOOLEAN_TYPE) || (p.getType().equals("string")
+							&& (p.getMinLength() != null || p.getMaxLength() != null
+							|| p.getFormat() != null)) || p.getEnumValues() != null))
+				.collect(Collectors.toCollection(ArrayList::new));
+
+		if(operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ||
+				operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA)) {
+
+			MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
+					operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
+					operation.getRequestBody().getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
+
+			for(Object o : mediaType.getSchema().getProperties().keySet()) {
+
+				Schema s = ((Map.Entry<String, Schema>) o).getValue();
+				ParameterFeatures p = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
+
+				if ((p.getType().equals("integer") || p.getType().equals("number")
+						|| p.getType().equals(BOOLEAN_TYPE) || (p.getType().equals("string")
+						&& (p.getMinLength() != null || p.getMaxLength() != null
+						|| p.getFormat() != null)) || p.getEnumValues() != null)) {
+					result.add(p);
+				}
+			}
+		}
+
+		return result;
 	}
 
 	public static Boolean hasDependencies(Operation operation) {
 		try {
-			List<String> dependencies = (List<String>)operation.getVendorExtensions().get("x-dependencies");
-			return dependencies != null && dependencies.size() != 0;
+			List<String> dependencies = (List<String>)operation.getExtensions().get("x-dependencies");
+			return dependencies != null && !dependencies.isEmpty();
 		} catch (Exception e) { // If the "x-dependencies" extension is not correctly used
 			return false;
 		}
@@ -105,7 +177,7 @@ public class SpecificationVisitor {
 		return operation.getParameters().stream()
 				.filter(p -> {
 					ParameterFeatures pFeatures = new ParameterFeatures(p);
-					return (pFeatures.getEnumValues() == null && !pFeatures.getType().equals("boolean"));
+					return (pFeatures.getEnumValues() == null && !pFeatures.getType().equals(BOOLEAN_TYPE));
 				})
 				.collect(Collectors.toList());
 	}
