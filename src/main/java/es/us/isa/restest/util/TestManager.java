@@ -87,6 +87,7 @@ public class TestManager {
                     csvRow.get(5), HttpMethod.valueOf(csvRow.get(6)));
             tc.setFaultyReason(csvRow.get(2));
             tc.setFulfillsDependencies(Boolean.parseBoolean(csvRow.get(3)));
+            tc.setInputFormat(csvRow.get(7));
             tc.setBodyParameter(csvRow.get(13).equals("") ? null : csvRow.get(13));
             tc.setPathParameters(stringParamsToMap(csvRow.get(10)));
             tc.setQueryParameters(stringParamsToMap(csvRow.get(11)));

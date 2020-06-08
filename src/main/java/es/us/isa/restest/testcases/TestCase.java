@@ -256,7 +256,7 @@ public class TestCase implements Serializable {
 	}
 
 	private void setFormDataContentType() {
-		if (!inputFormat.equals("application/x-www-form-urlencoded"))
+		if (!inputFormat.equals("application/x-www-form-urlencoded") && formParameters.size() > 0)
 			inputFormat = "application/x-www-form-urlencoded";
 	}
 
