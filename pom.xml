@@ -54,13 +54,13 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<aspectj.version>1.8.10</aspectj.version>
+		<aspectj.version>1.9.5</aspectj.version>
 		<argLine></argLine>
 		<swagger.version>2.1.2</swagger.version>
 		<openapivalidator.version>2.10.0</openapivalidator.version>
 		<restassured.version>4.2.0</restassured.version>
 		<jackson.version>2.11.0</jackson.version>
-		<allure.version>2.12.1</allure.version>
+		<allure.version>2.13.3</allure.version>
 	</properties>
 
 	<dependencies>
@@ -281,7 +281,7 @@
 				<artifactId>allure-maven</artifactId>
 				<version>2.10.0</version>
 				<configuration>
-					<reportVersion>2.3.1</reportVersion>
+					<reportVersion>2.13.3</reportVersion>
 				</configuration>
 			</plugin>
 			<plugin>
