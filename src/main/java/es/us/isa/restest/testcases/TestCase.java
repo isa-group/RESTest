@@ -9,8 +9,8 @@ import java.util.Objects;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Response;
+import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.apache.logging.log4j.LogManager;
 
 import static es.us.isa.restest.util.CSVManager.*;
@@ -29,7 +29,7 @@ public class TestCase implements Serializable {
 	private Boolean fulfillsDependencies;					// True if it does not violate any inter-parameter dependencies
 	private String faultyReason;							// "none", "individual_parameter_constraint", "invalid_request_body" or "inter_parameter_dependency"
 	private String operationId;								// Id of the operation (ex. getAlbums)
-	private HttpMethod method;								// HTTP method
+	private PathItem.HttpMethod method;								// HTTP method
 	private String path;									// Request path
 	private String inputFormat;								// Input format
 	private String outputFormat;							// Output format
@@ -39,10 +39,10 @@ public class TestCase implements Serializable {
 	private Map<String, String> formParameters;				// Form-data parameters
 	private String bodyParameter;							// Body parameter
 	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none
-	private Map<String, Response> expectedOutputs;			// Possible outputs
-	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
+	private Map<String, ApiResponse> expectedOutputs;			// Possible outputs
+	private ApiResponse expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
-	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
+	public TestCase(String id, Boolean faulty, String operationId, String path, PathItem.HttpMethod method) {
 		this.id = id;
 		this.faulty = faulty;
 		this.fulfillsDependencies = false; // By default, a test case does not satisfy inter-parameter dependencies
@@ -51,10 +51,10 @@ public class TestCase implements Serializable {
 		this.method = method;
 		this.inputFormat = "application/json";
 		this.outputFormat = "application/json";
-		this.headerParameters = new HashMap<String,String>();
-		this.queryParameters = new HashMap<String,String>();
-		this.pathParameters = new HashMap<String,String>();
-		this.formParameters = new HashMap<String,String>();
+		this.headerParameters = new HashMap<>();
+		this.queryParameters = new HashMap<>();
+		this.pathParameters = new HashMap<>();
+		this.formParameters = new HashMap<>();
 		this.authentication = null;
 	}
 	
@@ -70,19 +70,19 @@ public class TestCase implements Serializable {
 		this.formParameters = testCase.formParameters;
 	}
 
-	public Response getExpectedSuccessfulOutput() {
+	public ApiResponse getExpectedSuccessfulOutput() {
 		return expectedSuccessfulOutput;
 	}
 
-	public void setExpectedSuccessfulOutput(Response expectedSuccessfulOutput) {
+	public void setExpectedSuccessfulOutput(ApiResponse expectedSuccessfulOutput) {
 		this.expectedSuccessfulOutput = expectedSuccessfulOutput;
 	}
 
-	public HttpMethod getMethod() {
+	public PathItem.HttpMethod getMethod() {
 		return method;
 	}
 
-	public void setMethod(HttpMethod method) {
+	public void setMethod(PathItem.HttpMethod method) {
 		this.method = method;
 	}
 
@@ -109,11 +109,11 @@ public class TestCase implements Serializable {
 		this.formParameters = formParameters;
 	}
 
-	public Map<String, Response> getExpectedOutputs() {
+	public Map<String, ApiResponse> getExpectedOutputs() {
 		return expectedOutputs;
 	}
 
-	public void setExpectedOutputs(Map<String, Response> expectedOutputs) {
+	public void setExpectedOutputs(Map<String, ApiResponse> expectedOutputs) {
 		this.expectedOutputs = expectedOutputs;
 	}
 

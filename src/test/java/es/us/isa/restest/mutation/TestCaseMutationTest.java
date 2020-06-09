@@ -4,7 +4,7 @@ import es.us.isa.restest.mutation.operators.InvalidParameterValue;
 import es.us.isa.restest.mutation.operators.RemoveRequiredParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import io.swagger.models.HttpMethod;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
@@ -21,7 +21,7 @@ public class TestCaseMutationTest {
         tc.addQueryParameter("limit", "2");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertTrue("The test case should be mutated", makeTestCaseFaulty(tc, spec.getSpecification().getPath("/comments").getGet()));
+        assertTrue("The test case should be mutated", makeTestCaseFaulty(tc, spec.getSpecification().getPaths().get("/comments").getGet()));
         assertNotEquals("The two test cases should be different", tc, oldTc);
     }
 
@@ -32,7 +32,7 @@ public class TestCaseMutationTest {
         tc.addPathParameter("id", "c1");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertFalse("The test case should NOT be mutated", makeTestCaseFaulty(tc, spec.getSpecification().getPath("/comments/{id}").getGet()));
+        assertFalse("The test case should NOT be mutated", makeTestCaseFaulty(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet()));
         assertEquals("Both test cases should be equal", tc, oldTc);
     }
 
@@ -43,7 +43,7 @@ public class TestCaseMutationTest {
         tc.setBodyParameter("{\"randomBody\": \"randomValue\"}");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertTrue("The test case should be mutated", RemoveRequiredParameter.mutate(tc, spec.getSpecification().getPath("/comments").getPost()));
+        assertTrue("The test case should be mutated", RemoveRequiredParameter.mutate(tc, spec.getSpecification().getPaths().get("/comments").getPost()));
         assertNotEquals("The two test cases should be different", tc, oldTc);
     }
 
@@ -55,7 +55,7 @@ public class TestCaseMutationTest {
         tc.addQueryParameter("limit", "2");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertFalse("The test case should NOT be mutated", RemoveRequiredParameter.mutate(tc, spec.getSpecification().getPath("/comments").getGet()));
+        assertFalse("The test case should NOT be mutated", RemoveRequiredParameter.mutate(tc, spec.getSpecification().getPaths().get("/comments").getGet()));
         assertEquals("Both test cases should be equal", tc, oldTc);
     }
 
@@ -66,7 +66,7 @@ public class TestCaseMutationTest {
         tc.addPathParameter("id", "c1");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertTrue("The test case should be mutated", InvalidParameterValue.mutate(tc, spec.getSpecification().getPath("/comments/{id}").getGet()));
+        assertTrue("The test case should be mutated", InvalidParameterValue.mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet()));
         assertTrue("The length of the mutated 'id' parameter should be greater than 4", tc.getPathParameters().get("id").length() > 4);
         assertNotEquals("The two test cases should be different", tc, oldTc);
     }
@@ -77,7 +77,7 @@ public class TestCaseMutationTest {
         TestCase tc = new TestCase("dfgsdfg", true, "putComment", "/comments", HttpMethod.PUT);
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertFalse("The test case should NOT be mutated", InvalidParameterValue.mutate(tc, spec.getSpecification().getPath("/comments").getPut()));
+        assertFalse("The test case should NOT be mutated", InvalidParameterValue.mutate(tc, spec.getSpecification().getPaths().get("/comments").getPut()));
         assertEquals("Both test cases should be equal", tc, oldTc);
     }
 }

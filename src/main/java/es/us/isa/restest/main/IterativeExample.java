@@ -86,7 +86,7 @@ public class IterativeExample {
             // Test case generation + execution + test report generation
             runner.run();
 
-            logger.info("Iteration "  + iteration + ". " +  runner.getNumTestCases() + " test cases generated.");
+            logger.info("Iteration {}. {} test cases generated.", iteration, runner.getNumTestCases());
             iteration++;
         }
 
@@ -270,8 +270,8 @@ public class IterativeExample {
         try {
             TimeUnit.SECONDS.sleep(timeDelay);
         } catch (InterruptedException e) {
-            System.err.println("Error introducing delay: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error introducing delay", e);
+            logger.error(e.getMessage());
         }
     }
 }

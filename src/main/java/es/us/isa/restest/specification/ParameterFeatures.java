@@ -31,7 +31,7 @@ public class ParameterFeatures {
         max = p.getSchema().getMaximum();
         minLength = p.getSchema().getMinLength();
         maxLength = p.getSchema().getMaxLength();
-        required = p.getRequired();
+        required = p.getRequired() == null? Boolean.FALSE : p.getRequired();
     }
 
     public ParameterFeatures(String name, String in, Boolean required) {

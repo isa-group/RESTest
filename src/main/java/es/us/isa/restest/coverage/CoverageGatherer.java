@@ -2,13 +2,10 @@ package es.us.isa.restest.coverage;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import io.swagger.models.properties.Property;
-import io.swagger.models.properties.RefProperty;
-import io.swagger.models.properties.ArrayProperty;
-import io.swagger.models.properties.ObjectProperty;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
@@ -24,19 +21,20 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 /**
- * Given a Swagger specification, obtain coverage level needed to reach 100% for
+ * Given an OpenAPI specification, obtain coverage level needed to reach 100% for
  * each criterion (both input and output criteria)
  * 
  * @author Alberto Martin-Lopez
  */
 public class CoverageGatherer {
 
+    public static final String BOOLEAN_TYPE = "boolean";
     private OpenAPISpecification spec;                  // OpenAPI specification to deduce coverage levels from
     private List<CriterionType> coverageCriterionTypes; // Types of criteria to be covered
     private List<CoverageCriterion> coverageCriteria;   // Coverage criteria to keep track of
 //    private int bodyPropertyDepthLevel = 0;
 
-    public static final String MEDIA_TYPE_APPLICATION_JSON = "application/json";
+    public static final String MEDIA_TYPE_APPLICATION_JSON_REGEX = "^application/.*(\\\\+)?json.*$";
     public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
     public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 
@@ -181,11 +179,13 @@ public class CoverageGatherer {
     private void getParameterCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry, RequestBody requestBody) {
         List<String> parametersList = new ArrayList<>(); // list of parameters per criterion
 
-        for (Parameter parameter : currentOperationEntry.getValue().getParameters()) { // collect query, path and header parameters for this operation
-            parametersList.add(parameter.getName()); // add parameter name
+        if(currentOperationEntry.getValue().getParameters() != null) {
+            for (Parameter parameter : currentOperationEntry.getValue().getParameters()) { // collect query, path and header parameters for this operation
+                parametersList.add(parameter.getName()); // add parameter name
+            }
         }
 
-        if(requestBody != null && requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON)) { //if request body is not null and accepts application/json
+        if(requestBody != null && requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) { //if request body is not null and accepts application/json
             parametersList.add("body"); //add body parameter
         } else if(requestBody != null && (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) || (requestBody.getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA)))) {
 
@@ -202,27 +202,29 @@ public class CoverageGatherer {
 
     private void getParameterValueCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry) {
         // iterate over the parameters of that operation
-        Iterator<Parameter> parametersIterator = currentOperationEntry.getValue().getParameters().iterator();
-        RequestBody requestBody = currentOperationEntry.getValue().getRequestBody();
+        if(currentOperationEntry.getValue().getParameters() != null) {
+            Iterator<Parameter> parametersIterator = currentOperationEntry.getValue().getParameters().iterator();
 
-        while (parametersIterator.hasNext()) {
-            Parameter currentParameter = parametersIterator.next();
+            while (parametersIterator.hasNext()) {
+                Parameter currentParameter = parametersIterator.next();
 
-            // this criterion only applies for header, query and path parameters
-            if (currentParameter.getIn().equals("query") || currentParameter.getIn().equals("header") || currentParameter.getIn().equals("path")) {
-                String paramType = currentParameter.getSchema().getType();
-                List<String> paramEnumValues = currentParameter.getSchema().getEnum();
-                if (paramType.equals("boolean") || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
-                    List<String> parameterValuesList = getParameterValues(paramType, paramEnumValues);
-                    criteria.add(createCriterion(parameterValuesList, PARAMETER_VALUE,
-                            currentPathEntry.getKey() + "->" +
-                                    currentOperationEntry.getKey().toString() + "->" +
-                                    currentParameter.getName()
-                    ));
+                // this criterion only applies for header, query and path parameters
+                if (currentParameter.getIn().equals("query") || currentParameter.getIn().equals("header") || currentParameter.getIn().equals("path")) {
+                    String paramType = currentParameter.getSchema().getType();
+                    List<String> paramEnumValues = currentParameter.getSchema().getEnum();
+                    if (paramType.equals(BOOLEAN_TYPE) || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
+                        List<String> parameterValuesList = getParameterValues(paramType, paramEnumValues);
+                        criteria.add(createCriterion(parameterValuesList, PARAMETER_VALUE,
+                                currentPathEntry.getKey() + "->" +
+                                        currentOperationEntry.getKey().toString() + "->" +
+                                        currentParameter.getName()
+                        ));
+                    }
                 }
             }
         }
 
+        RequestBody requestBody = currentOperationEntry.getValue().getRequestBody();
         if (requestBody != null && (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) || (requestBody.getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA)))) {
             getFormDataParameterValues(criteria, currentPathEntry, currentOperationEntry, requestBody);
         }
@@ -237,7 +239,7 @@ public class CoverageGatherer {
             Schema parameterSchema = ((Entry<String, Schema>) entry).getValue();
             String paramType = parameterSchema.getType();
             List<String> paramEnumValues = parameterSchema.getEnum();
-            if (paramType.equals("boolean") || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
+            if (paramType.equals(BOOLEAN_TYPE) || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
                 List<String> parameterValuesList = getParameterValues(paramType, paramEnumValues);
                 criteria.add(createCriterion(parameterValuesList, PARAMETER_VALUE,
                         currentPathEntry.getKey() + "->" +
@@ -250,7 +252,7 @@ public class CoverageGatherer {
 
     private List<String> getParameterValues(String paramType, List<String> paramEnumValues) {
         List<String> parameterValuesList = new ArrayList<>(); // list of parameter values per criterion
-        if (paramType.equals("boolean")) {
+        if (paramType.equals(BOOLEAN_TYPE)) {
             parameterValuesList.addAll(Arrays.asList("true", "false")); // add both boolean values to test
         } else {
             parameterValuesList.addAll(paramEnumValues); // add all enum values to test
@@ -276,7 +278,7 @@ public class CoverageGatherer {
         }
 
         List<String> contentTypes = response != null && response.getContent() != null ? new ArrayList<>(response.getContent().keySet()) : null;
-        if (contentTypes != null) { // there could be no 'apiResponse' or 'content' property, so check it before
+        if (contentTypes != null && !contentTypes.isEmpty()) { // there could be no 'apiResponse' or 'content' property, so check it before
             criteria.add(createCriterion(new ArrayList<>(contentTypes), OUTPUT_CONTENT_TYPE, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
         }
     }
@@ -303,21 +305,19 @@ public class CoverageGatherer {
 
     private void getResponseBodyPropertiesCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry) {
         // iterate over the responses of that operation
-        Iterator<Entry<String, ApiResponse>> responsesIterator = currentOperationEntry.getValue().getResponses().entrySet().iterator();
-        while (responsesIterator.hasNext()) {
-            Entry<String, ApiResponse> currentResponseEntry = responsesIterator.next();
+        for (Entry<String, ApiResponse> currentResponseEntry : currentOperationEntry.getValue().getResponses().entrySet()) {
 
             // iterate over the media type responses of that ApiResponse
-            Iterator<Entry<String, MediaType>> mediaTypeIterator = currentResponseEntry.getValue().getContent().entrySet().iterator();
-            while (mediaTypeIterator.hasNext()) {
-                Entry<String, MediaType> currentMediaTypeEntry = mediaTypeIterator.next();
+            for (Entry<String, MediaType> currentMediaTypeEntry : currentResponseEntry.getValue().getContent().entrySet()) {
                 Schema mediaTypeSchema = currentMediaTypeEntry.getValue().getSchema();
-                if (mediaTypeSchema != null) { // if the response actually returns a body
+
+                if (mediaTypeSchema != null && currentMediaTypeEntry.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)) { // if the response actually returns a body
                     addResponseBodyPropertiesCriterion(mediaTypeSchema, criteria,
                             currentPathEntry.getKey() + "->" +
                                     currentOperationEntry.getKey().toString() + "->" +
                                     currentResponseEntry.getKey() + "->" // note the final arrow, since new elements will be added to the rootPath
                     );
+                    break;
                 }
             }
 
@@ -325,7 +325,7 @@ public class CoverageGatherer {
     }
 
     /**
-     * Given a Swagger property (either a root response property or a sub-property), if it contains some
+     * Given an OpenAPI property (either a root response property or a sub-property), if it contains some
      * sub-properties (i.e. it is an object or an array of objects), add a new RESPONSE_BODY_PROPERTIES
      * criterion to the list of criteria passed in as an argument, updating the baseRootPath according
      * to the depth level of the sub-property. This function is to be called recursively, so as to cover
@@ -339,29 +339,29 @@ public class CoverageGatherer {
     private void addResponseBodyPropertiesCriterion(Schema mediaTypeSchema, List<CoverageCriterion> criteria, String baseRootPath) {
         String rootPathSuffix = "";
         String currentResponseRef = null;
-        Map<String, Property> swaggerProperties = null;
+        Map<String, Schema> openApiProperties = null;
 
-        if (mediaTypeSchema.getType().equals("array")) { // the response is an array
-            if (((ArrayProperty)mediaTypeSchema).getItems().getType().equals("ref")) { // each item of the array has the schema of the Swagger 'ref' tag
-                currentResponseRef = ((RefProperty)((ArrayProperty)mediaTypeSchema).getItems()).getSimpleRef();
+        if (mediaTypeSchema.get$ref() != null) { // the response is an object and its schema is defined in the OpenAPI 'ref' tag
+            currentResponseRef = mediaTypeSchema.get$ref();
+            rootPathSuffix += "{"; // update rootPathSuffix
+        } else if (mediaTypeSchema.getType().equals("array")) { // the response is an array
+            if (((ArraySchema)mediaTypeSchema).getItems().get$ref() != null) { // each item of the array has the schema of the OpenAPI 'ref' tag
+                currentResponseRef = ((ArraySchema)mediaTypeSchema).getItems().get$ref();
                 rootPathSuffix += "[{"; // update rootPathSuffix to reflect depth level inside the response body
             }
-        } else if (mediaTypeSchema.getType().equals("ref")) { // the response is an object and its schema is defined in the Swagger 'ref' tag
-            currentResponseRef = ((RefProperty)mediaTypeSchema).getSimpleRef();
-            rootPathSuffix += "{"; // update rootPathSuffix
-        } else if (mediaTypeSchema.getType().equals("object") && mediaTypeSchema instanceof ObjectProperty) { // the response is an object and its schema is defined right after
-            swaggerProperties = ((ObjectProperty)mediaTypeSchema).getProperties();
+        } else if (mediaTypeSchema.getType().equals("object") && mediaTypeSchema.getProperties() != null) { // the response is an object and its schema is defined right after
+            openApiProperties = mediaTypeSchema.getProperties();
             rootPathSuffix += "{"; // update rootPathSuffix
         }
-        if (currentResponseRef != null) { // if the response body refers to a Swagger definition, get properties from that object
-            swaggerProperties = spec.getSpecification().getDefinitions().get(currentResponseRef).getProperties();
+        if (currentResponseRef != null) { // if the response body refers to a OpenAPI definition, get properties from that object
+            openApiProperties = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef.replace("#/components/schemas/", "")).getProperties();
         }
 
-        if (swaggerProperties != null) { // if there are properties to cover in this iteration, add new criterion
+        if (openApiProperties != null) { // if there are properties to cover in this iteration, add new criterion
             baseRootPath += rootPathSuffix; // update rootPath with the suffix, since a new criterion will be added
-            criteria.add(createCriterion(new ArrayList<>(swaggerProperties.keySet()), RESPONSE_BODY_PROPERTIES, baseRootPath));
-            for (Entry<String, Property> swaggerProperty: swaggerProperties.entrySet()) { // Recursively add criteria for each property
-                addResponseBodyPropertiesCriterion(swaggerProperty.getValue(), criteria, baseRootPath+swaggerProperty.getKey()); // update rootPath with the name of the property
+            criteria.add(createCriterion(new ArrayList<>(openApiProperties.keySet()), RESPONSE_BODY_PROPERTIES, baseRootPath));
+            for (Entry<String, Schema> openApiProperty: openApiProperties.entrySet()) { // Recursively add criteria for each property
+                addResponseBodyPropertiesCriterion(openApiProperty.getValue(), criteria, baseRootPath+openApiProperty.getKey()); // update rootPath with the name of the property
             }
         }
     }

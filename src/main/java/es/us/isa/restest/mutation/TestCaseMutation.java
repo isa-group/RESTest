@@ -1,10 +1,9 @@
 package es.us.isa.restest.mutation;
 
-import es.us.isa.restest.mutation.operators.AbstractMutationOperator;
 import es.us.isa.restest.mutation.operators.InvalidParameterValue;
 import es.us.isa.restest.mutation.operators.RemoveRequiredParameter;
 import es.us.isa.restest.testcases.TestCase;
-import io.swagger.models.Operation;
+import io.swagger.v3.oas.models.Operation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,7 +18,11 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class TestCaseMutation {
 
-    private final static int N_FAULTY_MUTATIONS = 2;
+    private TestCaseMutation() {
+        //Utility class
+    }
+
+    private static final int N_FAULTY_MUTATIONS = 2;
 
     /**
      * Given a valid (nominal) test case, if possible, mutate it and convert it into an invalid (faulty) test case.

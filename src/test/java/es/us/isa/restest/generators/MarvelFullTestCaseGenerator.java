@@ -34,7 +34,7 @@ public class MarvelFullTestCaseGenerator {
         assertEquals("Incorrect number of test cases", 24, testCases.size());
 
         // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        String basePath = spec.getSpecification().getServers().get(0).getUrl();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "MarvelTest", "restassured", basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);

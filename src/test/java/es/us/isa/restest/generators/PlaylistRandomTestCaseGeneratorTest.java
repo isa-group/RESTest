@@ -37,7 +37,7 @@ public class PlaylistRandomTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", 30, testCases.size());
 		
 		// Write test cases
-		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PlaylistTest", "restassured", basePath.toLowerCase());
 		writer.setOAIValidation(true);
 		writer.write(testCases);	

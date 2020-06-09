@@ -22,7 +22,7 @@ public class SpecificationVisitor {
 		//Utility class
 	}
 
-	public static final String MEDIA_TYPE_APPLICATION_JSON = "application/json";
+	public static final String MEDIA_TYPE_APPLICATION_JSON_REGEX = "^application/.*(\\\\+)?json.*$";
 	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 	public static final String BOOLEAN_TYPE = "boolean";
@@ -37,16 +37,18 @@ public class SpecificationVisitor {
 		ParameterFeatures param = null;
 		boolean found = false;
 
-		Iterator<Parameter> it = operation.getParameters().iterator();
-		while (it.hasNext() && !found) {
-			Parameter p = it.next();
-			if (p.getName().equalsIgnoreCase(paramName)) {
-				param = new ParameterFeatures(p);
-				found=true;
+		if(operation.getParameters() != null) {
+			Iterator<Parameter> it = operation.getParameters().iterator();
+			while (it.hasNext() && !found) {
+				Parameter p = it.next();
+				if (p.getName().equalsIgnoreCase(paramName)) {
+					param = new ParameterFeatures(p);
+					found=true;
+				}
 			}
 		}
 
-		if(!found && paramName.equals("body") && operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON)) {
+		if(!found && paramName.equals("body") && operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
 			param = new ParameterFeatures("body", "body", operation.getRequestBody().getRequired());
 
 		} else if(!found) {
@@ -57,7 +59,7 @@ public class SpecificationVisitor {
 			Iterator<Map.Entry> formDataIterator = mediaType.getSchema().getProperties().entrySet().iterator();
 
 			while (formDataIterator.hasNext()) {
-				Schema s = ((Map.Entry<String, Schema>) it.next()).getValue();
+				Schema s = ((Map.Entry<String, Schema>) formDataIterator.next()).getValue();
 				if (s.getName().equalsIgnoreCase(paramName)) {
 					param = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
 					break;
@@ -74,16 +76,20 @@ public class SpecificationVisitor {
 	 * @return
 	 */
 	public static List<ParameterFeatures> getRequiredParameters(Operation operation) {
-		List<ParameterFeatures> requiredParameters = operation.getParameters().stream()
-				.filter(Parameter::getRequired)
+		List<ParameterFeatures> requiredParameters = new ArrayList<>();
+		if(operation.getParameters() != null) {
+			operation.getParameters().stream()
+				.filter(x -> x.getRequired() != null && x.getRequired())
 				.map(ParameterFeatures::new)
-				.collect(Collectors.toCollection(ArrayList::new));
+				.forEach(requiredParameters::add);
+		}
 
-		if(operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON) && operation.getRequestBody().getRequired()) {
-			new ParameterFeatures("body", "body", Boolean.TRUE);
+		if(operation.getRequestBody() != null && operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)) &&
+				operation.getRequestBody().getRequired() != null && operation.getRequestBody().getRequired()) {
+			requiredParameters.add(new ParameterFeatures("body", "body", Boolean.TRUE));
 
-		} else if(operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ||
-				operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA)) {
+		} else if(operation.getRequestBody() != null && operation.getRequestBody().getContent() != null && (operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ||
+				operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA))) {
 
 			MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
 					operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
@@ -132,22 +138,26 @@ public class SpecificationVisitor {
 	 * @return
 	 */
 	public static List<ParameterFeatures> getParametersSubjectToInvalidValueChange(Operation operation) {
-		List<ParameterFeatures> result = operation.getParameters().stream()
-				.map(ParameterFeatures::new)
-				.filter(p -> (p.getType().equals("integer") || p.getType().equals("number")
+		List<ParameterFeatures> result = new ArrayList<>();
+
+		if(operation.getParameters() != null) {
+			operation.getParameters().stream()
+					.map(ParameterFeatures::new)
+					.filter(p -> (p.getType().equals("integer") || p.getType().equals("number")
 							|| p.getType().equals(BOOLEAN_TYPE) || (p.getType().equals("string")
 							&& (p.getMinLength() != null || p.getMaxLength() != null
 							|| p.getFormat() != null)) || p.getEnumValues() != null))
-				.collect(Collectors.toCollection(ArrayList::new));
+					.forEach(result::add);
+		}
 
-		if(operation.getRequestBody().getContent() != null && operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ||
-				operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA)) {
+		if(operation.getRequestBody() != null && operation.getRequestBody().getContent() != null && (operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ||
+				operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA))) {
 
 			MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
 					operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
 					operation.getRequestBody().getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
 
-			for(Object o : mediaType.getSchema().getProperties().keySet()) {
+			for(Object o : mediaType.getSchema().getProperties().entrySet()) {
 
 				Schema s = ((Map.Entry<String, Schema>) o).getValue();
 				ParameterFeatures p = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));

@@ -48,7 +48,7 @@ public class AmadeusRandomTestCaseGenerator {
 		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
 		
 		// Write RESTAssured test cases
-		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelSearchTest", "restassured", basePath.toLowerCase());
 		writer.setOAIValidation(true);
 		writer.setLogging(true);

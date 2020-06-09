@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import es.us.isa.restest.testcases.TestCase;
-import static es.us.isa.restest.coverage.CriterionType.*;
 import es.us.isa.restest.testcases.TestResult;
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
@@ -17,6 +15,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CoverageMeter {
 
+    private static final Logger log = LogManager.getLogger(CoverageMeter.class);
     private CoverageGatherer coverageGatherer;  // coverage gatherer already containing all criteria to be covered
     private Collection<TestCase> testSuite;     // full set of abstract test cases addressing the API
     private Collection<TestResult> testResults; // test outputs generated after running the test suite against the API
@@ -125,7 +126,7 @@ public class CoverageMeter {
     private long getAllElements(String criterionType) {
         return coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> CriterionType.getTypes(criterionType).contains(c.getType()))
-                .mapToLong(c -> c.getElementsCount())
+                .mapToLong(CoverageCriterion::getElementsCount)
                 .sum();
     }
 
@@ -138,7 +139,7 @@ public class CoverageMeter {
     private long getCoveredElements(String criterionType) {
         return coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> CriterionType.getTypes(criterionType).contains(c.getType()))
-                .mapToLong(c -> c.getCoveredElementsCount())
+                .mapToLong(CoverageCriterion::getCoveredElementsCount)
                 .sum();
     }
 
@@ -187,7 +188,7 @@ public class CoverageMeter {
     public float getCriterionTypeCoverage(CriterionType type) {
         long allElements = coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> c.getType() == type)
-                .mapToLong(c -> c.getElementsCount())
+                .mapToLong(CoverageCriterion::getElementsCount)
                 .sum();
 
         if (allElements == 0) {
@@ -196,7 +197,7 @@ public class CoverageMeter {
 
         long coveredElements = coverageGatherer.getCoverageCriteria().stream()
                 .filter(c -> c.getType() == type)
-                .mapToLong(c -> c.getCoveredElementsCount())
+                .mapToLong(CoverageCriterion::getCoveredElementsCount)
                 .sum();
         
         return 100 * (float) coveredElements / (float) allElements;
@@ -256,7 +257,14 @@ public class CoverageMeter {
     private void setCoveredOutputElements() {
         // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestResult testResult: testResults) {
-            String statusCodeClass = testResult.getStatusCode().charAt(0) == '4' ? "4XX" : testResult.getStatusCode().charAt(0) == '2' ? "2XX" : null;
+
+            String statusCodeClass = null;
+            if(testResult.getStatusCode().charAt(0) == '4') {
+                statusCodeClass = "4XX";
+            } else if(testResult.getStatusCode().charAt(0) == '2') {
+                statusCodeClass = "2XX";
+            }
+
             if (statusCodeClass != null)
                 updateCriterion(STATUS_CODE_CLASS, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), statusCodeClass, coverageGatherer);
             updateCriterion(STATUS_CODE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getStatusCode(), coverageGatherer);
@@ -322,14 +330,13 @@ public class CoverageMeter {
             baseRootPath += "{"; // update rootPath accordingly
             objectPropertiesIterator = jsonNode.fields(); // get all properties from the JSON object
             updateResponseBodyPropertiesCriteria(objectPropertiesIterator, baseRootPath, covGath, filePath, testResultId, coveredRootPaths);
-        } else if (jsonNode instanceof ArrayNode) { // if the jsonNode is an array...
-            if (jsonNode.get(0) instanceof ObjectNode) { // ... of JSON objects
-                baseRootPath += "[{"; // update rootPath
-                for (int i = 0; i<jsonNode.size(); i++) { // for every element of the array
-                    JsonNode arrayItem = jsonNode.get(i);
-                    objectPropertiesIterator = arrayItem.fields(); // get all properties from the JSON object
-                    updateResponseBodyPropertiesCriteria(objectPropertiesIterator, baseRootPath, covGath, filePath, testResultId, coveredRootPaths);
-                }
+        } else if (jsonNode instanceof ArrayNode && jsonNode.get(0) instanceof ObjectNode) { // if the jsonNode is an array of JSON objects
+            baseRootPath += "[{"; // update rootPath
+            for (int i = 0; i<jsonNode.size(); i++) { // for every element of the array
+                JsonNode arrayItem = jsonNode.get(i);
+                objectPropertiesIterator = arrayItem.fields(); // get all properties from the JSON object
+                updateResponseBodyPropertiesCriteria(objectPropertiesIterator, baseRootPath, covGath, filePath, testResultId, coveredRootPaths);
+
             }
         }
     }
@@ -414,9 +421,9 @@ public class CoverageMeter {
         coverageGatherer.getCoverageCriteria().stream()
             .filter(criterion -> CriterionType.getTypes(criterionType).contains(criterion.getType()))
             .forEach(criterion -> criterion.getElements()
-                .forEach((element, isCovered) -> {
-                    writeRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered);
-                })
+                .forEach((element, isCovered) ->
+                    writeRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered)
+                )
             );
     }
 
@@ -471,7 +478,13 @@ public class CoverageMeter {
         String row;
 
         // Status code class criterion
-        String statusCodeClass = tr.getStatusCode().charAt(0) == '4' ? "4XX" : tr.getStatusCode().charAt(0) == '2' ? "2XX" : null;
+        String statusCodeClass = null;
+        if(tr.getStatusCode().charAt(0) == '4') {
+            statusCodeClass = "4XX";
+        } else if(tr.getStatusCode().charAt(0) == '2') {
+            statusCodeClass = "2XX";
+        }
+
         row = tr.getId() + ",STATUS_CODE_CLASS," + statusCodeClass;
         writeRow(path, row);
 
@@ -489,8 +502,8 @@ public class CoverageMeter {
             JsonNode jsonResponse = objectMapper.readTree(tr.getResponseBody());
             iterateOverJsonNode(jsonResponse, "", null, path, tr.getId(), new ArrayList<>());
         } catch (IOException e) {
-//            e.printStackTrace();
-            System.out.println("Unable to get body properties, body is not formatted in JSON");
+            log.error("Unable to get body properties, body is not formatted in JSON", e);
+            log.error(e.getMessage());
         }
     }
 

@@ -9,8 +9,8 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 
 import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
 import static es.us.isa.restest.testcases.TestCase.checkFaulty;
@@ -22,10 +22,11 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		super(spec, conf, nTests);
 	}
 
+	@Override
 	protected Collection<TestCase> generateOperationTestCases(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method) {
+			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method) {
 
-		List<TestCase> testCases = new ArrayList<TestCase>();
+		List<TestCase> testCases = new ArrayList<>();
 
 		// Whether the next test case to generate must be faulty or not
 		String faultyReason = "none";
@@ -59,7 +60,8 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	}
 
 	// Generate the next test case and update the generation index
-	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, String faultyReason) {
+	@Override
+	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason) {
 
 		// This way, all test cases of an operation are not executed one after the other, but randomly:
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
@@ -74,11 +76,10 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			test.setFaultyReason("none");
 		}
 
-		if (!test.getFaulty()) // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
-			if (checkFaulty(test, validator)) {
-				test.setFaulty(true);
-				test.setFaultyReason("invalid_request_body");
-			}
+		if (!test.getFaulty() && checkFaulty(test, validator)) { // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
+			test.setFaulty(true);
+			test.setFaultyReason("invalid_request_body");
+		}
 
 		updateIndexes(test.getFaulty());
 		return test;

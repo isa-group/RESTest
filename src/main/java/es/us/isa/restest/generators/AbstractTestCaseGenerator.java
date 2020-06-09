@@ -11,7 +11,6 @@ import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
-import io.swagger.models.HttpMethod;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 
@@ -142,29 +141,31 @@ public abstract class AbstractTestCaseGenerator {
 	protected void setTestCaseParameters(TestCase test, Operation specOperation,
 			es.us.isa.restest.configuration.pojos.Operation testOperation) {
 		// Set parameters
-		for (TestParameter confParam : testOperation.getTestParameters()) {
-			ParameterFeatures specParameter = findParameter(specOperation, confParam.getName());
+		if(testOperation.getTestParameters() != null) {
+			for (TestParameter confParam : testOperation.getTestParameters()) {
+				ParameterFeatures specParameter = findParameter(specOperation, confParam.getName());
 
-			if (specParameter.getRequired() || rand.nextFloat() <= confParam.getWeight()) {
-				ITestDataGenerator generator = generators.get(confParam.getName());
-				switch (specParameter.getIn()) {
-					case "header":
-						test.addHeaderParameter(confParam.getName(), generator.nextValueAsString());
-						break;
-					case "query":
-						test.addQueryParameter(confParam.getName(), generator.nextValueAsString());
-						break;
-					case "path":
-						test.addPathParameter(confParam.getName(), generator.nextValueAsString());
-						break;
-					case "body":
-						test.setBodyParameter(generator.nextValueAsString());
-						break;
-					case "formData":
-						test.addFormParameter(confParam.getName(), generator.nextValueAsString());
-						break;
-					default:
-						throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
+				if (specParameter.getRequired() || rand.nextFloat() <= confParam.getWeight()) {
+					ITestDataGenerator generator = generators.get(confParam.getName());
+					switch (specParameter.getIn()) {
+						case "header":
+							test.addHeaderParameter(confParam.getName(), generator.nextValueAsString());
+							break;
+						case "query":
+							test.addQueryParameter(confParam.getName(), generator.nextValueAsString());
+							break;
+						case "path":
+							test.addPathParameter(confParam.getName(), generator.nextValueAsString());
+							break;
+						case "body":
+							test.setBodyParameter(generator.nextValueAsString());
+							break;
+						case "formData":
+							test.addFormParameter(confParam.getName(), generator.nextValueAsString());
+							break;
+						default:
+							throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
+					}
 				}
 			}
 		}
@@ -201,7 +202,7 @@ public abstract class AbstractTestCaseGenerator {
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
 	protected abstract TestCase generateNextTestCase(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, String faultyReason);
+		 es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason);
 
 	protected void updateIndexes(boolean currentTestFaulty) {
 		// Update indexes
@@ -219,10 +220,11 @@ public abstract class AbstractTestCaseGenerator {
 	protected void createGenerators(List<TestParameter> testParameters) {
 		
 		this.generators = new HashMap<>();
-		
-		for(TestParameter param: testParameters)
-			generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
 
+		if(testParameters != null) {
+			for(TestParameter param: testParameters)
+				generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
+		}
 	}
 
 	public void exportNominalFaultyToCSV(String filePath, String testClassName) {

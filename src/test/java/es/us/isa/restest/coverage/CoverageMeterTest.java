@@ -8,18 +8,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import es.us.isa.restest.util.PropertyManager;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.us.isa.restest.coverage.CoverageGatherer;
-import es.us.isa.restest.coverage.CoverageMeter;
-import es.us.isa.restest.coverage.CriterionType;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
 import static es.us.isa.restest.util.FileManager.*;
-import io.swagger.models.HttpMethod;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 public class CoverageMeterTest {
 

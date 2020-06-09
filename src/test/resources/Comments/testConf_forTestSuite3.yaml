@@ -11,7 +11,7 @@ testConfiguration:
     - operationId: putComment
       method: put
       testParameters:
-      - name: comment
+      - name: body
         weight: null
         generator:
           type: ObjectPerturbator
@@ -25,7 +25,7 @@ testConfiguration:
     - operationId: postComment
       method: post
       testParameters:
-      - name: comment
+      - name: body
         weight: null
         generator:
           type: ObjectPerturbator
@@ -43,7 +43,7 @@ testConfiguration:
     - operationId: postComment
       method: post
       testParameters:
-      - name: comment
+      - name: body
         weight: null
         generator:
           type: ObjectPerturbator
