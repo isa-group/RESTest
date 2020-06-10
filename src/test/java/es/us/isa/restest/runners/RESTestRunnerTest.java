@@ -53,8 +53,6 @@ public class RESTestRunnerTest {
         createDir(coverageDataDir);
 
         StatsReportManager statsReportManager = new StatsReportManager(testDataDir, coverageDataDir);
-        statsReportManager.setEnableCSVStats(true);
-        statsReportManager.setEnableInputCoverage(true);
         statsReportManager.setCoverageMeter(new CoverageMeter(new CoverageGatherer(spec)));
 
         RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", generator, writer, arm, statsReportManager);
