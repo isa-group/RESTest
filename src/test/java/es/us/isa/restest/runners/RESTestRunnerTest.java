@@ -57,7 +57,7 @@ public class RESTestRunnerTest {
         statsReportManager.setEnableInputCoverage(true);
         statsReportManager.setCoverageMeter(new CoverageMeter(new CoverageGatherer(spec)));
 
-        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/RunnerTest", "runnerTest", generator, writer, arm, statsReportManager);
+        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", generator, writer, arm, statsReportManager);
 
         runner.run();
 
