@@ -13,7 +13,7 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
  */
 public abstract class RestfulAPITestingObjectiveFunction {
     ObjectiveFunctionType type;
-    boolean requiredTestExecution;
+    boolean requiresTestExecution;
     
     
     public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type) {
@@ -22,7 +22,7 @@ public abstract class RestfulAPITestingObjectiveFunction {
     
     public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type, boolean requiresTestExecution) {
     	this.type=type;
-    	this.requiredTestExecution=requiresTestExecution;
+    	this.requiresTestExecution =requiresTestExecution;
 	}
     
     
@@ -33,7 +33,7 @@ public abstract class RestfulAPITestingObjectiveFunction {
     
     public enum ObjectiveFunctionType{MAXIMIZATION,MINIMIZATION};
     
-    public boolean isRequiredTestExecution() {
-		return requiredTestExecution;
+    public boolean isRequiresTestExecution() {
+		return requiresTestExecution;
 	}
 }

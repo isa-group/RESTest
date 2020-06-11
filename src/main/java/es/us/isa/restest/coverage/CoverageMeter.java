@@ -68,12 +68,11 @@ public class CoverageMeter {
     }
 
     public void setTestSuite(Collection<TestCase> testSuite) {
-        resetCoverage();
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
     }
 
-    private void resetCoverage() {
+    public void resetCoverage() {
         this.coverageGatherer = new CoverageGatherer(this.coverageGatherer.getSpec());
     }
 
@@ -87,7 +86,6 @@ public class CoverageMeter {
     }
 
     public void setTestResults(Collection<TestResult> testResults) {
-        resetCoverage();
         this.testResults = testResults;
         setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
     }

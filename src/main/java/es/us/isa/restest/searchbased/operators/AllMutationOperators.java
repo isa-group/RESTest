@@ -18,7 +18,7 @@ public class AllMutationOperators extends AbstractAPITestCaseMutationOperator {
 	@Override
 	protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
 		for(AbstractAPITestCaseMutationOperator operator:operators) {
-			operator.doMutation(mutationProbability, solution);
+			operator.doMutation(operator.getMutationProbability(), solution);
 		}		
 	}
 

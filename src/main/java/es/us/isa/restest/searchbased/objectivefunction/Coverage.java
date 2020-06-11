@@ -25,6 +25,7 @@ public class Coverage extends RestfulAPITestingObjectiveFunction{
     public Double evaluate(RestfulAPITestSuiteSolution solution) {
         if(coverageMeter==null)
             initCoverageMeter(solution);
+        coverageMeter.resetCoverage();
         coverageMeter.setTestSuite(solution.getVariables());
         coverageMeter.setTestResults(solution.getTestResults());
         double coveredElements=(double)coverageMeter.getCoveredTotalElements();

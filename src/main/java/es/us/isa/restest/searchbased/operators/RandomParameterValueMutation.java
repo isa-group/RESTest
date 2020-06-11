@@ -43,6 +43,7 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
                 for (String paramName : parameters) {
                     if (getRandomGenerator().nextDouble() <= probability) {                        
                         doMutation(paramName, testCase, solution);
+                        resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                     }
                 }
             }
@@ -50,7 +51,7 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
     }
 
     private void doMutation(String confParam, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getGenerators().get(confParam);
+        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(confParam);
         Operation specOperation = SpecificationVisitor.findOperation(solution.getProblem().getOperationUnderTest().getOperationId(), solution.getProblem().getApiUnderTest());
         Parameter specParameter = SpecificationVisitor.findParameter(specOperation, confParam);
         switch (specParameter.getIn()) {

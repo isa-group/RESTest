@@ -9,8 +9,9 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 import java.util.ArrayList;
 import java.util.List;
+
+import es.us.isa.restest.testcases.TestResult;
 import org.uma.jmetal.operator.CrossoverOperator;
-import org.uma.jmetal.solution.BinarySolution;
 import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.pseudorandom.BoundedRandomGenerator;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
@@ -102,16 +103,20 @@ public class SinglePointTestSuiteCrossover implements CrossoverOperator<RestfulA
 
       // 2. Calculate the point to make the crossover
       int crossoverPoint = pointRandomGenerator.getRandomValue(0, totalNumberOfVars - 1);
-      
+
 
       // 3. Apply the crossover to the variable;
-      TestCase testCase=null;
+      TestCase testCase;
+      TestResult testResult;
       for(int i=0;i<=crossoverPoint;i++){
           testCase=offspring1.getVariable(i);
-          offspring1.setVariable(i,offspring2.getVariableValue(i));
+          testResult=offspring1.getTestResult(testCase.getId());
+          offspring1.replaceTestResult(testCase.getId(), offspring2.getTestResult(offspring2.getVariable(i).getId()));
+          offspring1.setVariable(i,offspring2.getVariable(i));
+          offspring2.replaceTestResult(offspring2.getVariable(i).getId(), testResult);
           offspring2.setVariable(i,testCase);
       }
-            
+
     }
     return offspring;
     }

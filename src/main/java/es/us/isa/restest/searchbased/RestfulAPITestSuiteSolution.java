@@ -16,16 +16,26 @@ import com.google.common.collect.Maps;
 
 public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCase,RestfulAPITestSuiteGenerationProblem>{
 
-    private Map<TestCase,TestResult> testResults;
+    private Map<String,TestResult> testResults; // key = testCaseId
     
     public RestfulAPITestSuiteSolution(RestfulAPITestSuiteGenerationProblem problem) {
-        super(problem);        
+        this(problem, false);
+    }
+
+    /**
+     * Auxiliary constructor to create a solution without test cases. Useful for the
+     * {@link RestfulAPITestSuiteSolution#copy()} method (it is more computationally
+     * efficient).
+     * @param problem Problem to solve
+     * @param withoutTestCases true if no test cases need to be added to the solution
+     */
+    public RestfulAPITestSuiteSolution(RestfulAPITestSuiteGenerationProblem problem, boolean withoutTestCases) {
+        super(problem);
         this.testResults=new HashMap<>();
-        for(int i=0;i<this.getVariables().size();i++) {        	
-        	this.setVariable(i, problem.createRandomTestCase());
-        }
-    }    
-    
+        if (!withoutTestCases)
+            createVariables();
+    }
+
     @Override
     public String getVariableValueString(int i) {
         return getVariable(i).toString();
@@ -33,13 +43,13 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
 
     @Override
     public RestfulAPITestSuiteSolution copy() {
-    	RestfulAPITestSuiteSolution result=new RestfulAPITestSuiteSolution(this.problem);
+    	RestfulAPITestSuiteSolution result=new RestfulAPITestSuiteSolution(this.problem, true);
     	TestCase testCase=null;
     	for(int i=0;i<this.getNumberOfVariables();i++) {
     		testCase=this.getVariable(i);
     		result.setVariable(i, copyTestCase(testCase));
-    		if(testResults!=null && testResults.get(testCase)!=null)
-    			result.testResults.put(testCase, copyTestResult(testResults.get(testCase)));
+    		if(testResults!=null && testResults.get(testCase.getId())!=null)
+    			result.testResults.put(testCase.getId(), copyTestResult(testResults.get(testCase.getId())));
     		else
     			testResults=null;
     	}
@@ -72,16 +82,38 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
         getVariables().set(i, tc);
     }
 
-    public TestResult getTestResult(TestCase testCase) {
-        return testResults.get(testCase);
+    /**
+     * CAREFUL! This method replaces (i.e., eliminates and inserts) a test result
+     * with another, it doesn't add a new one.
+     * @param id The ID of the test result to eliminate
+     * @param tr The new test result to set
+     */
+    public void replaceTestResult(String id, TestResult  tr){
+        testResults.remove(id);
+        if (tr != null)
+            testResults.put(tr.getId(), tr);
     }
 
-    public void addTestResults(Map<TestCase, TestResult> results) {
+    public void setTestResult(String id, TestResult tr) {
+        testResults.put(id, tr);
+    }
+
+    public TestResult getTestResult(String testCaseId) {
+        return testResults.get(testCaseId);
+    }
+
+    public void addTestResults(Map<String, TestResult> results) {
         testResults.putAll(results);
     }
-    
+
     public Collection<TestResult> getTestResults() {
-    	return testResults.values();
+        return testResults.values();
+    }
+
+    public void createVariables() {
+        for(int i=0;i<this.getVariables().size();i++) {
+            this.setVariable(i, problem.createRandomTestCase());
+        }
     }
     
 
