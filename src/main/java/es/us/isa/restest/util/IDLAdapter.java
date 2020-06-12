@@ -1,13 +1,13 @@
 package es.us.isa.restest.util;
 
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.configuration.pojos.Operation;
+import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.testcases.TestCase;
-import io.swagger.v3.oas.models.Operation;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static es.us.isa.restest.util.SpecificationVisitor.findParameter;
+import static es.us.isa.restest.configuration.TestConfigurationVisitor.searchTestParameter;
 
 /**
  * This class implements a set of methods for adapting RESTest objects to IDL or
@@ -17,10 +17,10 @@ import static es.us.isa.restest.util.SpecificationVisitor.findParameter;
  */
 public class IDLAdapter {
 
-    public static void idl2restestTestCase(TestCase tc, Map<String, String> request, Operation specOperation) {
+    public static void idl2restestTestCase(TestCase tc, Map<String, String> request, Operation testOperation) {
         for (Map.Entry<String, String> parameter: request.entrySet()) {
-            ParameterFeatures specParameter = findParameter(specOperation, parameter.getKey());
-            switch (specParameter.getIn()) {
+            TestParameter testParameter = searchTestParameter(parameter.getKey(), testOperation.getTestParameters());
+            switch (testParameter.getIn()) {
                 case "header":
                     tc.addHeaderParameter(parameter.getKey(), parameter.getValue());
                     break;
@@ -34,7 +34,7 @@ public class IDLAdapter {
                     tc.addFormParameter(parameter.getKey(), parameter.getValue());
                     break;
                 default:
-                    throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
+                    throw new IllegalArgumentException("Parameter type not supported: " + testParameter.getIn());
             }
         }
     }

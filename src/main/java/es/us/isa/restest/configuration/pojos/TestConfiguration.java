@@ -5,14 +5,14 @@ import java.util.List;
 
 public class TestConfiguration {
 
-    private List<TestPath> testPaths = null;
+    private List<Operation> operations = null;
 
-    public List<TestPath> getTestPaths() {
-        return testPaths;
+    public List<Operation> getOperations() {
+        return operations;
     }
 
-    public void setTestPaths(List<TestPath> testPaths) {
-        this.testPaths = testPaths;
+    public void setOperations(List<Operation> operations) {
+        this.operations = operations;
     }
 
 }

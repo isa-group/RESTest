@@ -15,7 +15,6 @@ import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfiguration;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
-import es.us.isa.restest.configuration.pojos.TestPath;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -93,9 +92,9 @@ public class DefaultTestConfigurationGenerator {
 		conf.setAuth(generateDefaultAuthentication());
 		// TODO: Read authentication settings from specification (https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securitySchemeObject)
 		
-		// Paths
+		// Operations
 		TestConfiguration testConf = new TestConfiguration();
-		testConf.setTestPaths(generatePaths(filters));
+		testConf.setOperations(generateOperations(filters));
 			
 		conf.setTestConfiguration(testConf);
 		
@@ -105,40 +104,36 @@ public class DefaultTestConfigurationGenerator {
 		return conf;
 	}
 
-	// Generate the test configuration data for paths
-	private List<TestPath> generatePaths(Collection<TestConfigurationFilter> filters) {
+	// Generate the test configuration data for operations
+	private List<Operation> generateOperations(Collection<TestConfigurationFilter> filters) {
 		
-		List<TestPath> confPaths = new ArrayList<>();
+		List<Operation> operations = new ArrayList<>();
 
 		for (TestConfigurationFilter filter: filters) {
 			Paths paths = spec.getSpecification().getPaths();
 			for(Entry<String, PathItem> path: paths.entrySet())
 				if (filter.getPath()==null || path.getKey().equalsIgnoreCase(filter.getPath()))
-					confPaths.add(generatePath(path,filter.getMethods())); // For every filter, add its path to testConf
+					operations.addAll(generateOperationsOfPath(path,filter.getMethods())); // For every filter, add its path to testConf
 		}
-		return confPaths;
+		return operations;
 	}
 
-	// Generate the test configuration data for a specific input path
-	private TestPath generatePath(Entry<String, PathItem> path, Collection<PathItem.HttpMethod> methods) {
-		
-		TestPath confPath = new TestPath();
-		confPath.setTestPath(path.getKey());
-		
-		List<Operation> testOperations = new ArrayList<>();
+	// Generate the test configuration data for the operations of a specific input path
+	private List<Operation> generateOperationsOfPath(Entry<String, PathItem> path, Collection<PathItem.HttpMethod> methods) {
+
+		List<Operation> pathOperations = new ArrayList<>();
 		
 		for (Entry<PathItem.HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry : path.getValue().readOperationsMap().entrySet())
 			if (methods.contains(operationEntry.getKey())) // Generate only filtered methods
-				testOperations.add(generateOperation(operationEntry));
+				pathOperations.add(generateOperation(operationEntry, path.getKey()));
 		
-		confPath.setOperations(testOperations);
-		
-		return confPath;
+		return pathOperations;
 	}
 
 	// Generate test configuration data for a GET operation
-	private Operation generateOperation(Entry<PathItem.HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry) {
+	private Operation generateOperation(Entry<PathItem.HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry, String path) {
 		Operation testOperation = new Operation();
+		testOperation.setTestPath(path);
 		
 		// Set operation id (if defined)
 		if (operationEntry.getValue().getOperationId()!=null)
@@ -175,6 +170,7 @@ public class DefaultTestConfigurationGenerator {
 			Schema schema = param.getSchema();
 			TestParameter testParam = new TestParameter();
 			testParam.setName(param.getName());
+			testParam.setIn(param.getIn());
 			
 			// Set default weight for optional parameters
 			if (param.getRequired() == null || !param.getRequired())
@@ -350,6 +346,7 @@ public class DefaultTestConfigurationGenerator {
 
 			TestParameter testParam = new TestParameter();
 			testParam.setName("body");
+			testParam.setIn("body");
 
 			if (!requestBody.getRequired()) {
 				testParam.setWeight(0.5f);
@@ -372,6 +369,7 @@ public class DefaultTestConfigurationGenerator {
 				Schema parameterSchema = ((Entry<String, Schema>) entry).getValue();
 				TestParameter testParam = new TestParameter();
 				testParam.setName(parameterSchema.getName());
+				testParam.setIn("formData");
 
 				if (mediaType.getSchema().getRequired() == null || !mediaType.getSchema().getRequired().contains(parameterSchema.getName())) {
 					testParam.setWeight(0.5f);
@@ -453,8 +451,8 @@ public class DefaultTestConfigurationGenerator {
 	private Auth generateDefaultAuthentication() {
 		Auth auth = new Auth();
 		auth.setRequired(true);
-		auth.setHeaderParams(new ArrayList<>());
-		auth.setQueryParams(new ArrayList<>());
+		auth.setHeaderParams(new HashMap<>());
+		auth.setQueryParams(new HashMap<>());
 		return auth;
 	}
 	

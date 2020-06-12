@@ -1,6 +1,7 @@
 package es.us.isa.restest.generators;
 
 import es.us.isa.idlreasoner.analyzer.Analyzer;
+import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
@@ -11,7 +12,6 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 
 import java.util.*;
@@ -36,12 +36,11 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	}
 
 	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation specOperation,
-		  es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method) {
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, PathItem.HttpMethod method) {
 
 		List<TestCase> testCases = new ArrayList<>();
 
-		if (hasDependencies(specOperation)) // If the operation contains dependencies, create new IDLReasoner for that operation
+		if (hasDependencies(testOperation.getOpenApiOperation())) // If the operation contains dependencies, create new IDLReasoner for that operation
 			idlReasoner = new Analyzer("oas", spec.getPath(), path, method.toString());
 		else // Otherwise, set it to null so that it's not used
 			idlReasoner = null;
@@ -69,7 +68,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 					faultyReason = "none";
 			}
 			Timer.startCounting(TEST_CASE_GENERATION);
-			TestCase test = generateNextTestCase(specOperation,testOperation,path,method,faultyReason);
+			TestCase test = generateNextTestCase(testOperation,path,method,faultyReason);
 			Timer.stopCounting(TEST_CASE_GENERATION);
 			authenticateTestCase(test);
 			testCases.add(test);
@@ -104,7 +103,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	// Generate the next test case and update the generation index
 	@Override
-	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason) {
+	protected TestCase generateNextTestCase(Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason) {
 		// This way, all test cases of an operation are not executed one after the other, but randomly:
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
 		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), path, method);
@@ -113,24 +112,24 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		switch (faultyReason) {
 			case "none":
 				if (idlReasoner != null)
-					idl2restestTestCase(test, idlReasoner.getRandomValidRequest(), specOperation); // Generate valid test case with IDLReasoner
+					idl2restestTestCase(test, idlReasoner.getRandomValidRequest(), testOperation); // Generate valid test case with IDLReasoner
 				else
-					setTestCaseParameters(test, specOperation, testOperation); // Generate valid test case normally (no need to manage deps.)
+					setTestCaseParameters(test, testOperation); // Generate valid test case normally (no need to manage deps.)
 				test.setFulfillsDependencies(true);
 				break;
 			case INTER_PARAMETER_DEPENDENCY:
 				if (idlReasoner != null)
-					idl2restestTestCase(test, idlReasoner.getRandomInvalidRequest(), specOperation); // Generate invalid test case with IDLReasoner
+					idl2restestTestCase(test, idlReasoner.getRandomInvalidRequest(), testOperation); // Generate invalid test case with IDLReasoner
 				else {
-					setTestCaseParameters(test, specOperation, testOperation); // Impossible (no deps.), generate valid request
+					setTestCaseParameters(test, testOperation); // Impossible (no deps.), generate valid request
 					test.setFaulty(false);
 					test.setFaultyReason("none");
 					test.setFulfillsDependencies(true);
 				}
 				break;
 			case INDIVIDUAL_PARAMETER_CONSTRAINT:
-				setTestCaseParameters(test, specOperation, testOperation);
-				if (!makeTestCaseFaulty(test, specOperation)) {
+				setTestCaseParameters(test, testOperation);
+				if (!makeTestCaseFaulty(test, testOperation.getOpenApiOperation())) {
 					test.setFaulty(false);
 					test.setFaultyReason("none");
 				}

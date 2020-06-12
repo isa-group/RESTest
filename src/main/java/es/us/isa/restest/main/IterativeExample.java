@@ -196,7 +196,7 @@ public class IterativeExample {
         }
 
         // Load configuration
-        TestConfigurationObject conf = loadConfiguration(confPath);
+        TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
         // Create generator
         AbstractTestCaseGenerator generator;

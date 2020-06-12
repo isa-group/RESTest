@@ -29,7 +29,8 @@ public class SpecificationVisitorTest {
     public void shouldFindParameter() {
         Operation op = travelApiOas.getSpecification().getPaths().get("/trips").getGet();
         String paramName = "offset";
-        ParameterFeatures param = findParameter(op, paramName);
+        String paramType = "query";
+        ParameterFeatures param = findParameter(op, paramName, paramType);
 
         assertEquals("The parameter's name should be 'offset', but its name is" + param.getName(), "offset", param.getName());
         assertEquals("'offset' should be a query parameter, but it is a " + param.getIn() + " parameter", "query", param.getIn());

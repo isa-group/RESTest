@@ -2,16 +2,17 @@ package es.us.isa.restest.configuration;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
-import es.us.isa.restest.configuration.pojos.TestPath;
 
 public class TestConfigurationVisitor {
 
-	
+	private TestConfigurationVisitor() {}
+
 	/**
 	 * Returns the test configuration object for a given operation
 	 * @param conf General test configuration object
@@ -20,22 +21,22 @@ public class TestConfigurationVisitor {
 	 * @return Operation
 	 */
 	public static Operation getOperation(TestConfigurationObject conf, String path, String method) {
-		TestPath testPath = getTestPath(conf, path);
+		List<Operation> operationsOfPath = getOperationsOfTestPath(conf, path);
 		
-		return getTestOperation(testPath, method);
+		return getTestOperation(operationsOfPath, method);
 	}
 	
 	/**
 	 * Returns the test configuration object for a given operation
-	 * @param path path
+	 * @param operationsOfPath operations of a path
 	 * @param method HTTP method
 	 * @return Operation test configuration object
 	 */
-	public static Operation getTestOperation(TestPath path, String method) {
+	public static Operation getTestOperation(List<Operation> operationsOfPath, String method) {
 		boolean found = false;
 		Operation top = null;
 		
-		Iterator<Operation> it = path.getOperations().iterator();
+		Iterator<Operation> it = operationsOfPath.iterator();
 		while (it.hasNext() && !found) {
 			Operation operation = it.next();
 			if (operation.getMethod().equalsIgnoreCase(method)) {
@@ -54,24 +55,16 @@ public class TestConfigurationVisitor {
 	 * @param path path
 	 * @return Path test configuration object
 	 */
-	public static TestPath getTestPath(TestConfigurationObject conf, String path) {
-		boolean found = false;
-		TestPath tp = null;
-		
-		Iterator<TestPath> it = conf.getTestConfiguration().getTestPaths().iterator();
-		while (it.hasNext() && !found) {
-			TestPath testPath = it.next();
-			if (testPath.getTestPath().equalsIgnoreCase(path)) {
-				tp = testPath;
-				found = true;
-			}
-		}
+	public static List<Operation> getOperationsOfTestPath(TestConfigurationObject conf, String path) {
+		List<Operation> ops = conf.getTestConfiguration().getOperations().stream()
+				.filter(x -> x.getTestPath().equalsIgnoreCase(path))
+				.collect(Collectors.toList());
 
-		if(!found) {
+		if(ops.isEmpty()) {
 			throw new IllegalArgumentException("Path <" + path + "> does not exist in test configuration file");
 		}
 
-		return tp;
+		return ops;
 	}
 	
 	
@@ -101,18 +94,15 @@ public class TestConfigurationVisitor {
 		Operation operation=null;
 		boolean found =false;
 		
-		Iterator<TestPath> itPath = conf.getTestConfiguration().getTestPaths().iterator();
-		while (itPath.hasNext() && !found) {
-			TestPath path = itPath.next();
-			Iterator<Operation> itOp = path.getOperations().iterator();
-			while (itOp.hasNext() && !found) {
-				Operation op = itOp.next();
-				if (op.getOperationId().equalsIgnoreCase(operationId)) {
-					operation=op;
-					found=true;
-				}
+		Iterator<Operation> itOp = conf.getTestConfiguration().getOperations().iterator();
+		while (itOp.hasNext() && !found) {
+			Operation op = itOp.next();
+			if (op.getOperationId().equalsIgnoreCase(operationId)) {
+				operation=op;
+				found=true;
 			}
 		}
+
 		return operation;
 	}
 	

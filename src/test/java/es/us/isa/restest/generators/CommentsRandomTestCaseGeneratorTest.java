@@ -21,7 +21,7 @@ public class CommentsRandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf.yaml");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf.yaml", spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 20;

@@ -5,6 +5,7 @@ package es.us.isa.restest.configuration.pojos;
 public class TestParameter {
 
     private String name;
+    private String in;
     private Float weight;
     private Generator generator;
 
@@ -14,6 +15,14 @@ public class TestParameter {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getIn() {
+        return in;
+    }
+
+    public void setIn(String in) {
+        this.in = in;
     }
 
     public Float getWeight() {

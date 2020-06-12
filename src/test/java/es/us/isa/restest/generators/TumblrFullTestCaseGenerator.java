@@ -20,7 +20,7 @@ public class TumblrFullTestCaseGenerator {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf.yaml");
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 4;

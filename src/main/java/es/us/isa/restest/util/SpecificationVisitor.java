@@ -33,40 +33,61 @@ public class SpecificationVisitor {
 	 * @param paramName Parameter's name
 	 * @return
 	 */
-	public static ParameterFeatures findParameter(Operation operation, String paramName) {
+	public static ParameterFeatures findParameter(Operation operation, String paramName, String in) {
 		ParameterFeatures param = null;
-		boolean found = false;
 
-		if(operation.getParameters() != null) {
-			Iterator<Parameter> it = operation.getParameters().iterator();
-			while (it.hasNext() && !found) {
-				Parameter p = it.next();
-				if (p.getName().equalsIgnoreCase(paramName)) {
-					param = new ParameterFeatures(p);
-					found=true;
-				}
-			}
-		}
-
-		if(!found && paramName.equals("body") && operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
-			param = new ParameterFeatures("body", "body", operation.getRequestBody().getRequired());
-
-		} else if(!found) {
-
-			MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
-					operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
-					operation.getRequestBody().getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
-			Iterator<Map.Entry> formDataIterator = mediaType.getSchema().getProperties().entrySet().iterator();
-
-			while (formDataIterator.hasNext()) {
-				Schema s = ((Map.Entry<String, Schema>) formDataIterator.next()).getValue();
-				if (s.getName().equalsIgnoreCase(paramName)) {
-					param = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
-					break;
-				}
-			}
+		switch(in) {
+			case "header":
+			case "path":
+			case "query":
+				param = findQueryHeaderPathParameter(operation, paramName, param);
+				break;
+			case "body":
+				param = findBodyParameter(operation, param);
+				break;
+			case "formData":
+				param = findFormDataParameter(operation, paramName, param);
+				break;
+			default:
+				throw new IllegalArgumentException("Parameter type not supported: " + in);
 		}
 	
+		return param;
+	}
+
+	private static ParameterFeatures findQueryHeaderPathParameter(Operation operation, String paramName, ParameterFeatures param) {
+		boolean found = false;
+		Iterator<Parameter> it = operation.getParameters().iterator();
+		while (it.hasNext() && !found) {
+			Parameter p = it.next();
+			if (p.getName().equalsIgnoreCase(paramName)) {
+				param = new ParameterFeatures(p);
+				found=true;
+			}
+		}
+		return param;
+	}
+
+	private static ParameterFeatures findBodyParameter(Operation operation, ParameterFeatures param) {
+		if(operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
+			param = new ParameterFeatures("body", "body", operation.getRequestBody().getRequired());
+		}
+		return param;
+	}
+
+	private static ParameterFeatures findFormDataParameter(Operation operation, String paramName, ParameterFeatures param) {
+		MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
+				operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
+				operation.getRequestBody().getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
+		Iterator<Map.Entry> formDataIterator = mediaType.getSchema().getProperties().entrySet().iterator();
+
+		while (formDataIterator.hasNext()) {
+			Schema s = ((Map.Entry<String, Schema>) formDataIterator.next()).getValue();
+			if (s.getName().equalsIgnoreCase(paramName)) {
+				param = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
+				break;
+			}
+		}
 		return param;
 	}
 

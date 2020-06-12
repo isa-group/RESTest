@@ -11,7 +11,6 @@ import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 
 import java.util.*;
@@ -93,57 +92,64 @@ public abstract class AbstractTestCaseGenerator {
 	public Collection<TestCase> generate() {
 		List<TestConfigurationFilter> filters = new ArrayList<>();
 
-		for (TestPath testPath: conf.getTestConfiguration().getTestPaths()) {
-			TestConfigurationFilter filter = new TestConfigurationFilter();
-			filter.setPath(testPath.getTestPath());
-			for (es.us.isa.restest.configuration.pojos.Operation operation: testPath.getOperations()) {
-				switch(operation.getMethod().toLowerCase()) {
-					case "get":
-						filter.addGetMethod();
-						break;
-					case "post":
-						filter.addPostMethod();
-						break;
-					case "put":
-						filter.addPutMethod();
-						break;
-					case "delete":
-						filter.addDeleteMethod();
-						break;
-					default:
-						throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
-								"allowed in the test configuration file");
-				}
+		for (Operation testOperation: conf.getTestConfiguration().getOperations()) {
+			TestConfigurationFilter filter = filters.stream().filter(x -> x.getPath().equalsIgnoreCase(testOperation.getTestPath())).findFirst().orElse(null);
+			int filterIndex = -1;
+
+			if(filter == null) {
+				filter = new TestConfigurationFilter();
+				filter.setPath(testOperation.getTestPath());
+			} else {
+				filterIndex = filters.indexOf(filter);
 			}
-			filters.add(filter);
+
+			switch(testOperation.getMethod().toLowerCase()) {
+				case "get":
+					filter.addGetMethod();
+					break;
+				case "post":
+					filter.addPostMethod();
+					break;
+				case "put":
+					filter.addPutMethod();
+					break;
+				case "delete":
+					filter.addDeleteMethod();
+					break;
+				default:
+					throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
+							"allowed in the test configuration file");
+			}
+
+			if(filterIndex > -1) {
+				filters.set(filterIndex, filter);
+			} else {
+				filters.add(filter);
+			}
+
 		}
 
 		return generate(filters);
 	}
 
-	protected abstract Collection<TestCase> generateOperationTestCases(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method);
+	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, PathItem.HttpMethod method);
 
 	protected Collection<TestCase> generate(String path, PathItem.HttpMethod method) {
 
-		// Get specification operation
-		Operation specOperation = spec.getSpecification().getPaths().get(path).readOperationsMap().get(method);
-
 		// Get test configuration object for the operation
-		es.us.isa.restest.configuration.pojos.Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
+		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
 
 		// Create test data generators for each parameter
 		createGenerators(testOperation.getTestParameters());
 
-		return generateOperationTestCases(specOperation, testOperation, path, method);
+		return generateOperationTestCases(testOperation, path, method);
 	}
 
-	protected void setTestCaseParameters(TestCase test, Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation) {
+	protected void setTestCaseParameters(TestCase test, Operation testOperation) {
 		// Set parameters
 		if(testOperation.getTestParameters() != null) {
 			for (TestParameter confParam : testOperation.getTestParameters()) {
-				ParameterFeatures specParameter = findParameter(specOperation, confParam.getName());
+				ParameterFeatures specParameter = findParameter(testOperation.getOpenApiOperation(), confParam.getName(), confParam.getIn());
 
 				if (specParameter.getRequired() || rand.nextFloat() <= confParam.getWeight()) {
 					ITestDataGenerator generator = generators.get(confParam.getName());
@@ -177,13 +183,13 @@ public abstract class AbstractTestCaseGenerator {
 
 			// Header parameters
 			if (conf.getAuth().getHeaderParams()!=null)
-				for (HeaderParam param: conf.getAuth().getHeaderParams())
-					test.addHeaderParameter(param.getName(), param.getValue());
+				for (Map.Entry<String, String> param: conf.getAuth().getHeaderParams().entrySet())
+					test.addHeaderParameter(param.getKey(), param.getValue());
 
 			// Query parameters
 			if (conf.getAuth().getQueryParams()!=null)
-				for (QueryParam param: conf.getAuth().getQueryParams())
-					test.addQueryParameter(param.getName(), param.getValue());
+				for (Map.Entry<String, String> param: conf.getAuth().getQueryParams().entrySet())
+					test.addQueryParameter(param.getKey(), param.getValue());
 
 			// File containing all API keys
 			if (conf.getAuth().getApiKeysPath()!=null)
@@ -201,8 +207,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected abstract boolean hasNext();
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	protected abstract TestCase generateNextTestCase(Operation specOperation,
-		 es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason);
+	protected abstract TestCase generateNextTestCase(Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason);
 
 	protected void updateIndexes(boolean currentTestFaulty) {
 		// Update indexes

@@ -24,7 +24,7 @@ public class PlaylistRandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Playlist/defaultConf.yaml");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Playlist/defaultConf.yaml", spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 3;

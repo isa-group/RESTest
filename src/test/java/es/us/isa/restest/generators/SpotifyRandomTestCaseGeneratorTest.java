@@ -26,7 +26,7 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/confTest.yaml");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/confTest.yaml", spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 10;
@@ -61,7 +61,7 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/defaultConf.json");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/defaultConf.json", spec);
 
 		// Set number of test cases to be generated on each path
 		int numTestCases = 10;
@@ -97,7 +97,7 @@ public class SpotifyRandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/confTest.yaml");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/confTest.yaml", spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 20;

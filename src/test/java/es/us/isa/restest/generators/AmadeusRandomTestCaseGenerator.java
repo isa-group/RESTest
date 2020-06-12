@@ -29,7 +29,7 @@ public class AmadeusRandomTestCaseGenerator {
 		
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Amadeus/confTest.yaml");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Amadeus/confTest.yaml", spec);
 		
 		// Set number of test cases to be generated on each path, on each operation
 		int numTestCases = 10;

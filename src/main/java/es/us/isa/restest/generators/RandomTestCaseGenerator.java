@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 
 import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
@@ -23,8 +23,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	}
 
 	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method) {
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, PathItem.HttpMethod method) {
 
 		List<TestCase> testCases = new ArrayList<>();
 
@@ -41,7 +40,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			// Create test case with specific parameters and values
 			Timer.startCounting(TEST_CASE_GENERATION);
-			TestCase test = generateNextTestCase(specOperation,testOperation,path,method,faultyReason);
+			TestCase test = generateNextTestCase(testOperation,path,method,faultyReason);
 			Timer.stopCounting(TEST_CASE_GENERATION);
 			// Authentication
 			authenticateTestCase(test);
@@ -61,7 +60,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	// Generate the next test case and update the generation index
 	@Override
-	protected TestCase generateNextTestCase(Operation specOperation, es.us.isa.restest.configuration.pojos.Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason) {
+	protected TestCase generateNextTestCase(Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason) {
 
 		// This way, all test cases of an operation are not executed one after the other, but randomly:
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
@@ -69,9 +68,9 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		test.setFaultyReason(faultyReason);
 
 		// Set parameters
-		setTestCaseParameters(test, specOperation, testOperation);
+		setTestCaseParameters(test, testOperation);
 
-		if (!faultyReason.equals("none") && !makeTestCaseFaulty(test, specOperation)) { // If this test case must be faulty
+		if (!faultyReason.equals("none") && !makeTestCaseFaulty(test, testOperation.getOpenApiOperation())) { // If this test case must be faulty
 			test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
 			test.setFaultyReason("none");
 		}
