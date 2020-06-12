@@ -21,7 +21,7 @@ public class CommentsConstraintBasedTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf.yaml");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf.yaml", spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 10;
@@ -36,7 +36,7 @@ public class CommentsConstraintBasedTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", 40, testCases.size());
 		
 		// Write test cases
-		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	

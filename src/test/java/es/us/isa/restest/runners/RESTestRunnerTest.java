@@ -21,7 +21,7 @@ public class RESTestRunnerTest {
     @Test
     public void testRunner() {
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Bikewise/swagger.yaml");
-        TestConfigurationObject conf = loadConfiguration("src/test/resources/Bikewise/fullConf.yaml");
+        TestConfigurationObject conf = loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
 
         createDir("src/generation/java/runnerTest");
 

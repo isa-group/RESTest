@@ -9,8 +9,6 @@ import org.junit.Test;
 
 import java.util.Collection;
 
-import static org.junit.Assert.assertEquals;
-
 public class AAOIAFFullTestCaseGenerator {
 
     @Test
@@ -20,7 +18,7 @@ public class AAOIAFFullTestCaseGenerator {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AnApiOfIceAndFire/testConf.yaml");
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AnApiOfIceAndFire/testConf.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 1;
@@ -34,7 +32,7 @@ public class AAOIAFFullTestCaseGenerator {
 //        assertEquals("Incorrect number of test cases", 92, testCases.size());
 
         // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        String basePath = spec.getSpecification().getServers().get(0).getUrl();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "IAFTest", "restassured", basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);
