@@ -396,5 +396,6 @@ testConfiguration:
             type: RandomBoolean
             genParameters:
               - name: trueProbability
-                value: 0
+                values:
+                  - 0
       expectedResponse: 200
