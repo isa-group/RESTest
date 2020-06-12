@@ -284,6 +284,11 @@ public class TestCase implements Serializable {
 				Objects.equals(expectedSuccessfulOutput, testCase.expectedSuccessfulOutput);
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, faulty, fulfillsDependencies, faultyReason, operationId, method, path, inputFormat, outputFormat, headerParameters, pathParameters, queryParameters, formParameters, bodyParameter, authentication, expectedOutputs, expectedSuccessfulOutput);
+	}
+
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
 			createFileWithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +

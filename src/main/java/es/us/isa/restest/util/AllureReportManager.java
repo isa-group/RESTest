@@ -56,6 +56,7 @@ public class AllureReportManager {
 		} catch (InterruptedException e) {
 			System.err.println("Error while generating test report: " + e.getMessage());
 			e.printStackTrace();
+			Thread.currentThread().interrupt();
 		}
 	}
 	

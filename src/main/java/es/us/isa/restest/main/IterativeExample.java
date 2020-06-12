@@ -277,6 +277,7 @@ public class IterativeExample {
         } catch (InterruptedException e) {
             logger.error("Error introducing delay", e);
             logger.error(e.getMessage());
+            Thread.currentThread().interrupt();
         }
     }
 }
