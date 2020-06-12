@@ -12,6 +12,7 @@ import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
+import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction.ObjectiveFunctionType;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
@@ -77,10 +78,20 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     List<RestfulAPITestingObjectiveFunction> objectiveFunctions;
 
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestPath pathUnderTest,Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
-    	this(apiUnderTest,pathUnderTest,operationUnderTest,configuration,objFuncs,targetPath,JMetalRandom.getInstance().getRandomGenerator());
+    	this(apiUnderTest,pathUnderTest,operationUnderTest,configuration,objFuncs,targetPath,JMetalRandom.getInstance().getRandomGenerator(),null);
     }
     
-    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestPath pathUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator) {
+    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestPath pathUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator, Integer minTestSuiteSize, Integer maxTestSuiteSize) {    	
+    	this(apiUnderTest, pathUnderTest, operationUnderTest, configuration, objFuncs, targetPath, randomGenerator,null);
+    	if(maxTestSuiteSize!=null) {
+    		this.setNumberOfVariables(maxTestSuiteSize);
+    		this.fixedTestSuiteSize=null;    		
+    	}    	    	
+    	this.maxTestSuiteSize=maxTestSuiteSize;
+    	this.minTestSuiteSize=minTestSuiteSize;
+    }
+    
+    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestPath pathUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator, Integer fixedTestSuiteSize) {
     	this.testsPackage="searchbased";
     	this.apiUnderTest = apiUnderTest;
         this.setName(apiUnderTest.getSpecification().getInfo().getTitle());
@@ -106,13 +117,21 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
     private int computeDefaultTestSuiteSize() {
     	int result=1;
-		if(operationUnderTest==null) {
-	    	// If we are testing the whole API we use the number of paths:
-			result=apiUnderTest.getSpecification().getPaths().size();
+    	if(fixedTestSuiteSize!=null)
+    		return fixedTestSuiteSize;
+    	else if(maxTestSuiteSize!=null) {    		
+    		return maxTestSuiteSize;
+    	}else if(operationUnderTest==null) {
+	    	// If we are testing the whole API we use the number of paths:			
+    		result=apiUnderTest.getSpecification().getPaths().size();
+    		// we use this value for the default fixed test suite size
+    		fixedTestSuiteSize=result;
 		}else {
 			// If we are testing a specific operation we use the number of parameters plus one 
 			// (just in case no parameters are present):
 			result=operationUnderTest.getTestParameters().size()+1;
+			// we use this value for the default fixed test suite size
+			fixedTestSuiteSize=result;
 		}
 		return result;
 	}
@@ -127,7 +146,12 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
             }
         }
         for (RestfulAPITestingObjectiveFunction objFunc : objectiveFunctions) {
-            s.setObjective(i, objFunc.evaluate(s));
+            s.setObjective(i, objFunc.getType().equals(
+            		ObjectiveFunctionType.MINIMIZATION)
+            					?
+            				objFunc.evaluate(s) 	// If minimizing return as is
+            					:
+            				-objFunc.evaluate(s)); 	// Otherwise change sign
             i++;
         }
     }
@@ -331,4 +355,19 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     public void setRandomTestCaseGenerator(RandomTestCaseGenerator randomTestCaseGenerator) {
         this.randomTestCaseGenerator = randomTestCaseGenerator;
     }
+
+	public Integer getMaxTestSuiteSize() {
+		return maxTestSuiteSize;
+	}
+
+	public Integer getMinTestSuiteSize() {
+		return minTestSuiteSize;
+	}
+
+	public Integer getFixedTestSuiteSize() {
+		return fixedTestSuiteSize;
+	}
+	
+	
+    
 }

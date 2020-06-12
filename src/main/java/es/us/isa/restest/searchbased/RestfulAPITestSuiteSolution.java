@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.solution.impl.AbstractGenericSolution;
+import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 
 import com.google.common.collect.Maps;
 
@@ -111,11 +112,22 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     }
 
     public void createVariables() {
-        for(int i=0;i<this.getVariables().size();i++) {
+    	int nVariables=computeTestSuiteSize();
+        for(int i=0;i<nVariables;i++) {
             this.setVariable(i, problem.createRandomTestCase());
+        }
+        for(int i=nVariables;i<problem.getNumberOfVariables();i++) {
+        	this.getVariables().remove(this.getVariables().size()-1);
         }
     }
     
-
+    private int computeTestSuiteSize() {
+    	int result=problem.getNumberOfVariables();
+    	if(problem.getFixedTestSuiteSize()!=null)
+    		return problem.getFixedTestSuiteSize();
+    	else
+    		return JMetalRandom.getInstance().nextInt(problem.getMinTestSuiteSize(), problem.getMaxTestSuiteSize());
+    }
+        
     
 }

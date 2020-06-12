@@ -18,16 +18,19 @@ public class CURLCommandGenerator {
 
 	private static final String command="curl";
 	
-	public static String generate(TestCase testCase) {
-		return command +generateMethod(testCase)+ generateURL(testCase) + generateHeaders(testCase);
+	public static String generate(String basePath,TestCase testCase) {
+		return command +generateMethod(testCase)+ generateURL(basePath,testCase) + generateHeaders(testCase);
 	}
 	
-	private static String generateMethod(TestCase testCase) {		
-		return " -X "+testCase.getMethod().toString();
+	private static String generateMethod(TestCase testCase) {
+		String result="";
+		if(testCase.getMethod()!=null)
+			result= " -X "+testCase.getMethod().toString();
+		return result;
 	}
 
-	public static String generateURL(TestCase testCase) {
-		return " "+generatePath(testCase) + generateQueryParameters(testCase);
+	public static String generateURL(String basePath,TestCase testCase) {
+		return " "+basePath+generatePath(testCase) + generateQueryParameters(testCase);
 	}
 	
 	private static String generateQueryParameters(TestCase testCase) {

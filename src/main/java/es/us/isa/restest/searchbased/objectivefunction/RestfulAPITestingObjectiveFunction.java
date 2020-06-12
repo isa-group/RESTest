@@ -23,11 +23,11 @@ public abstract class RestfulAPITestingObjectiveFunction {
     public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type, boolean requiresTestExecution) {
     	this.type=type;
     	this.requiresTestExecution =requiresTestExecution;
-	}
+	}    
     
+    public abstract Double evaluate(RestfulAPITestSuiteSolution solution);
     
-	public abstract Double evaluate(RestfulAPITestSuiteSolution solution);
-    public String toString() {
+	public String toString() {
     	return type + " of" + this.getClass().getSimpleName();
     }
     
@@ -35,5 +35,9 @@ public abstract class RestfulAPITestingObjectiveFunction {
     
     public boolean isRequiresTestExecution() {
 		return requiresTestExecution;
+	}
+    
+    public ObjectiveFunctionType getType() {
+		return type;
 	}
 }

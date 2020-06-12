@@ -19,6 +19,7 @@ import es.us.isa.restest.searchbased.operators.ResourceChangeMutation;
 import es.us.isa.restest.searchbased.operators.SinglePointTestSuiteCrossover;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
+import es.us.isa.restest.util.CURLCommandGenerator;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,13 +74,29 @@ public class SearchBasedTestSuiteGenerator {
     }
     
     public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed) {
+    	this(apiDescriptionPath, configFilePath, resourcePath, method, experimentName, objectiveFunctions,targetPath, seed,null);
+    }
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize) {
+    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath,fixedTestSuiteSize));
+    }
+    
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize) {
+    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize));
+    }
+    
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, RestfulAPITestSuiteGenerationProblem problem) {
+    	this(experimentName,targetPath,seed,Lists.newArrayList(problem));
+    }
+    
+    public SearchBasedTestSuiteGenerator( String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems) {
         this.seed=seed;
         JMetalRandom.getInstance().setSeed(seed);
-    	problem = buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath);    	
-        problems = new ArrayList<>();        
-        problems.add(new ExperimentProblem<>(problem));
-
-        algorithms = configureAlgorithms();
+        this.problem=myproblems.get(0);
+        this.problems = new ArrayList<>();
+        for(RestfulAPITestSuiteGenerationProblem p:myproblems)
+        	this.problems.add(new ExperimentProblem<>(p));        
+        this.algorithms = configureDefaultAlgorithms();
+         
         experimentBuilder = new ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(experimentName)
                 .setExperimentBaseDirectory(targetPath)
         		.setAlgorithmList(algorithms)
@@ -93,38 +110,57 @@ public class SearchBasedTestSuiteGenerator {
 
     }
 
-    private List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> configureAlgorithms() {
-
-    	MersenneTwisterGenerator generator=new MersenneTwisterGenerator(seed); 
-    	List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> result = new ArrayList<>();
-        Algorithm<List<RestfulAPITestSuiteSolution>> algorithm = null;
-
-        AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
+    
+    private Algorithm<List<RestfulAPITestSuiteSolution>> createDefaultAlgorithm(long seed, int populationSize, int maxEvaluations, RestfulAPITestSuiteGenerationProblem problem){
+    	MersenneTwisterGenerator generator=new MersenneTwisterGenerator(seed);
+    	Algorithm<List<RestfulAPITestSuiteSolution>> result=null;
+    	AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
         		new ParameterAdditionMutation(0.2,generator),
         		new ParameterRemovalMutation(0.2,generator),
         		new RandomParameterValueMutation(0.2,generator),
         		new ResourceChangeMutation(0.2,generator)
         ));
+    	result = new NSGAIIBuilder<>(
+        		problem,
+        		new SinglePointTestSuiteCrossover(1.0),
+        		mutation,
+        		populationSize)
+			.setMaxEvaluations(maxEvaluations)
+			.build();
+    	return result;
+    }
+    
+    private List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> configureDefaultAlgorithms() {
+    
+    	 
+    	List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> result = new ArrayList<>();
+        Algorithm<List<RestfulAPITestSuiteSolution>> algorithm = null; 
         
         ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> expAlg=null;
         int runId=1;
-        for (ExperimentProblem ep : problems) {
-            algorithm = new NSGAIIBuilder<>(
-                    		ep.getProblem(),
-                    		new SinglePointTestSuiteCrossover(1.0),
-                    		mutation,
-                    		nsga2PopulationSize)
-            			.setMaxEvaluations(maxEvaluations)
-            			.build();
-            expAlg=new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(algorithm, ep, runId);
-           
+        for (ExperimentProblem ep : problems) {            
+        	algorithm=createDefaultAlgorithm(seed, nsga2PopulationSize, maxEvaluations, problem);
+            expAlg=new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(algorithm, ep, runId);           
             result.add(expAlg);
             runId++;
         }
         return result;
     }    
     
-    private RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
+    private static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
+    	OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
+        TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
+        TestPath pathUnderTest = null;
+        Operation operationUnderTest = null;
+        if(resourcePath.isPresent() && operation.isPresent()) {
+        	pathUnderTest = findPathUnderTest(configuration,resourcePath.get());
+        	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());
+        }
+        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, pathUnderTest,operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
+        return problem;
+    }
+    
+    private static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
         OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
         TestPath pathUnderTest = null;
@@ -133,11 +169,11 @@ public class SearchBasedTestSuiteGenerator {
         	pathUnderTest = findPathUnderTest(configuration,resourcePath.get());
         	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());
         }
-        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, pathUnderTest,operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator());
+        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, pathUnderTest,operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
         return problem;
     }
 
-    private TestPath findPathUnderTest(TestConfigurationObject configuration, String resourcePath) {
+    private static TestPath findPathUnderTest(TestConfigurationObject configuration, String resourcePath) {
     	TestPath result = null;
         for (TestPath tp : configuration.getTestConfiguration().getTestPaths()) {
             if (tp.getTestPath().equalsIgnoreCase(resourcePath)) {
@@ -149,7 +185,7 @@ public class SearchBasedTestSuiteGenerator {
 	}
 
     public void run() throws IOException {
-    	JMetalLogger.logger.info("Generating testSuites for: " + problem + " using as objectives :"+ problem.getObjectiveFunctions() );
+    	JMetalLogger.logger.info("Generating testSuites for: " + problem.getName() + " using as objectives :"+ problem.getObjectiveFunctions() );
     	JMetalLogger.logger.info("Starting the execution of: " + algorithms.get(0).getAlgorithm().getClass().getSimpleName());
     	 AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor((Algorithm<?>) algorithms.get(0).getAlgorithm())
     		        .execute() ;
@@ -169,7 +205,7 @@ public class SearchBasedTestSuiteGenerator {
     		 }
     		 int i=1;
     		 for(TestCase testCase:suite.getVariables()) {
-    			 JMetalLogger.logger.info("    Solution "+i+": " + testCase) ;
+    			 JMetalLogger.logger.info("    Solution "+i+": " + CURLCommandGenerator.generate("",testCase)) ;
     			 i++;
     		 }
     		 index++;
@@ -215,7 +251,7 @@ public class SearchBasedTestSuiteGenerator {
         return result;
     }
 
-    private TestConfigurationObject loadTestConfiguration(OpenAPISpecification apiUnderTest, Optional<String> configFilePath) {
+    private static TestConfigurationObject loadTestConfiguration(OpenAPISpecification apiUnderTest, Optional<String> configFilePath) {
         
         TestConfigurationObject tco = null;
         if (configFilePath.isPresent()) {
@@ -232,7 +268,7 @@ public class SearchBasedTestSuiteGenerator {
         return tco;
     }
 
-    private Operation findOperationUnderTest(TestConfigurationObject configuration, String resourcePath, String method) {
+    private static Operation findOperationUnderTest(TestConfigurationObject configuration, String resourcePath, String method) {
         Operation result = null;
         TestPath tp = findPathUnderTest(configuration,resourcePath);
         if (tp!=null) {
@@ -276,6 +312,8 @@ public class SearchBasedTestSuiteGenerator {
     public void setPopulationSize(int popSize) {
     	if(popSize>0)
     		this.nsga2PopulationSize=popSize;
+    	else
+    		throw new IllegalArgumentException("Population size should be positive! (argument value was:"+maxEvaluations+")");
     }
     
     public long getSeed() {
@@ -285,4 +323,23 @@ public class SearchBasedTestSuiteGenerator {
     public void setSeed(long seed) {
     	this.seed = seed;
     }
+    
+    public int getMaxEvaluations() {
+		return maxEvaluations;
+	}
+    
+    public void setMaxEvaluations(int maxEvaluations) {
+    	if(maxEvaluations>0)
+    		this.maxEvaluations = maxEvaluations;
+    	else
+    		throw new IllegalArgumentException("Maximun evaluations should be positive! (argument value was:"+maxEvaluations+")");	
+	}
+    
+    public void setAlgorithms(
+			List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms) {
+		this.algorithms = algorithms;
+		this.experimentBuilder.setAlgorithmList(algorithms);
+	}
+    
+    
 }

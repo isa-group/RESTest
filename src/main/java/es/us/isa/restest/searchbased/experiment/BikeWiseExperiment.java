@@ -28,8 +28,11 @@ import static es.us.isa.restest.util.FileManager.createDir;
  */
 public class BikeWiseExperiment {
 
-    private static int numTestCases = 2;												// Number of test cases per operation
-    private static int populationSize = 5;												// Popultion size for the evolutionary algorithm
+    private static int fixedTestSuiteSize = 2;												// Number of test cases per suite
+    private static int minTestSuiteSize = 1;
+    private static int maxTestSuiteSize = 4;
+    private static int populationSize = 5;												// Population size for the evolutionary algorithm
+    private static int maxEvaluations=20;
     private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		    // Path to OAS specification file
     private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		    // Path to test configuration file
     private static String experimentName = "bikewise";                                      // Experiment name
@@ -55,10 +58,12 @@ public class BikeWiseExperiment {
                             experimentName,
                             objectiveFunctions,
                             targetDir,
-                            seed);
+                            seed,
+                            minTestSuiteSize,
+                            maxTestSuiteSize);
         
         generator.setPopulationSize(populationSize);
-
+        generator.setMaxEvaluations(maxEvaluations);        
         try {
             generator.run();
         } catch (IOException ex) {
