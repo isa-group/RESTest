@@ -256,31 +256,7 @@ public class TestCase implements Serializable {
 	public void setFaultyReason(String faultyReason) {
 		this.faultyReason = faultyReason;
 	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		TestCase testCase = (TestCase) o;
-		return Objects.equals(id, testCase.id) &&
-				Objects.equals(faulty, testCase.faulty) &&
-				Objects.equals(fulfillsDependencies, testCase.fulfillsDependencies) &&
-				Objects.equals(faultyReason, testCase.faultyReason) &&
-				Objects.equals(operationId, testCase.operationId) &&
-				method == testCase.method &&
-				Objects.equals(path, testCase.path) &&
-				Objects.equals(inputFormat, testCase.inputFormat) &&
-				Objects.equals(outputFormat, testCase.outputFormat) &&
-				Objects.equals(headerParameters, testCase.headerParameters) &&
-				Objects.equals(pathParameters, testCase.pathParameters) &&
-				Objects.equals(queryParameters, testCase.queryParameters) &&
-				Objects.equals(formParameters, testCase.formParameters) &&
-				Objects.equals(bodyParameter, testCase.bodyParameter) &&
-				Objects.equals(authentication, testCase.authentication) &&
-				Objects.equals(expectedOutputs, testCase.expectedOutputs) &&
-				Objects.equals(expectedSuccessfulOutput, testCase.expectedSuccessfulOutput);
-	}
-
+	
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
 			createFileWithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
@@ -330,4 +306,174 @@ public class TestCase implements Serializable {
 		SimpleRequest request = new SimpleRequest(tc.getMethod().toString(), path[0], tc.getHeaderParameters(), tc.getQueryParameters(), tc.getBodyParameter());
 		return validator.validateOnlyRequest(request).hasErrors();
 	}
+	
+	public String toString() {
+		return id;
+	}
+
+	/** 
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((authentication == null) ? 0 : authentication.hashCode());
+		result = prime * result + ((bodyParameter == null) ? 0 : bodyParameter.hashCode());
+		result = prime * result + ((expectedOutputs == null) ? 0 : expectedOutputs.hashCode());
+		result = prime * result + ((expectedSuccessfulOutput == null) ? 0 : expectedSuccessfulOutput.hashCode());
+		result = prime * result + ((faulty == null) ? 0 : faulty.hashCode());
+		result = prime * result + ((faultyReason == null) ? 0 : faultyReason.hashCode());
+		result = prime * result + ((formParameters == null) ? 0 : formParameters.hashCode());
+		result = prime * result + ((fulfillsDependencies == null) ? 0 : fulfillsDependencies.hashCode());
+		result = prime * result + ((headerParameters == null) ? 0 : headerParameters.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((inputFormat == null) ? 0 : inputFormat.hashCode());
+		result = prime * result + ((method == null) ? 0 : method.hashCode());
+		result = prime * result + ((operationId == null) ? 0 : operationId.hashCode());
+		result = prime * result + ((outputFormat == null) ? 0 : outputFormat.hashCode());
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		result = prime * result + ((pathParameters == null) ? 0 : pathParameters.hashCode());
+		result = prime * result + ((queryParameters == null) ? 0 : queryParameters.hashCode());
+		return result;
+	}
+
+	/** 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof TestCase)) {
+			return false;
+		}
+		TestCase other = (TestCase) obj;
+		if (authentication == null) {
+			if (other.authentication != null) {
+				return false;
+			}
+		} else if (!authentication.equals(other.authentication)) {
+			return false;
+		}
+		if (bodyParameter == null) {
+			if (other.bodyParameter != null) {
+				return false;
+			}
+		} else if (!bodyParameter.equals(other.bodyParameter)) {
+			return false;
+		}
+		if (expectedOutputs == null) {
+			if (other.expectedOutputs != null) {
+				return false;
+			}
+		} else if (!expectedOutputs.equals(other.expectedOutputs)) {
+			return false;
+		}
+		if (expectedSuccessfulOutput == null) {
+			if (other.expectedSuccessfulOutput != null) {
+				return false;
+			}
+		} else if (!expectedSuccessfulOutput.equals(other.expectedSuccessfulOutput)) {
+			return false;
+		}
+		if (faulty == null) {
+			if (other.faulty != null) {
+				return false;
+			}
+		} else if (!faulty.equals(other.faulty)) {
+			return false;
+		}
+		if (faultyReason == null) {
+			if (other.faultyReason != null) {
+				return false;
+			}
+		} else if (!faultyReason.equals(other.faultyReason)) {
+			return false;
+		}
+		if (formParameters == null) {
+			if (other.formParameters != null) {
+				return false;
+			}
+		} else if (!formParameters.equals(other.formParameters)) {
+			return false;
+		}
+		if (fulfillsDependencies == null) {
+			if (other.fulfillsDependencies != null) {
+				return false;
+			}
+		} else if (!fulfillsDependencies.equals(other.fulfillsDependencies)) {
+			return false;
+		}
+		if (headerParameters == null) {
+			if (other.headerParameters != null) {
+				return false;
+			}
+		} else if (!headerParameters.equals(other.headerParameters)) {
+			return false;
+		}
+		if (id == null) {
+			if (other.id != null) {
+				return false;
+			}
+		} else if (!id.equals(other.id)) {
+			return false;
+		}
+		if (inputFormat == null) {
+			if (other.inputFormat != null) {
+				return false;
+			}
+		} else if (!inputFormat.equals(other.inputFormat)) {
+			return false;
+		}
+		if (method != other.method) {
+			return false;
+		}
+		if (operationId == null) {
+			if (other.operationId != null) {
+				return false;
+			}
+		} else if (!operationId.equals(other.operationId)) {
+			return false;
+		}
+		if (outputFormat == null) {
+			if (other.outputFormat != null) {
+				return false;
+			}
+		} else if (!outputFormat.equals(other.outputFormat)) {
+			return false;
+		}
+		if (path == null) {
+			if (other.path != null) {
+				return false;
+			}
+		} else if (!path.equals(other.path)) {
+			return false;
+		}
+		if (pathParameters == null) {
+			if (other.pathParameters != null) {
+				return false;
+			}
+		} else if (!pathParameters.equals(other.pathParameters)) {
+			return false;
+		}
+		if (queryParameters == null) {
+			if (other.queryParameters != null) {
+				return false;
+			}
+		} else if (!queryParameters.equals(other.queryParameters)) {
+			return false;
+		}
+		return true;
+	}
+	
+	
+	
+	
+	
+	
 }
