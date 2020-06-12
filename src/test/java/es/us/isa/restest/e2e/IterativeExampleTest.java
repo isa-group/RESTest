@@ -10,14 +10,18 @@ public class IterativeExampleTest {
 
     @Test
     public void testIterativeExampleWithBasicPropertiesFile() {
-        String[] args = {"src/main/resources/ExperimentsSetup/bikewise_basic.properties"};
+        String[] args = {"src/main/resources/ExperimentsSetup/bikewise_test.properties"};
         IterativeExample.main(args);
 
-        assertTrue(checkIfExists("src/generation/java/bikeWiseAPIV2"));
+        assertTrue(checkIfExists("src/generation/java/bikewise_example"));
 
-        assertTrue(checkIfExists("target/allure-results/bikeWiseAPIV2"));
-        assertTrue(checkIfExists("target/allure-reports/bikeWiseAPIV2"));
-        assertTrue(checkIfExists("target/test-data/bikeWiseAPIV2/time.json"));
+        assertTrue(checkIfExists("target/allure-results/bikewise_example"));
+        assertTrue(checkIfExists("target/allure-reports/bikewise_example"));
+        assertTrue(checkIfExists("target/test-data/bikewise_example/time.json"));
+        assertTrue(checkIfExists("target/coverage-data/bikewise_example/test-coverage.json"));
+        assertTrue(checkIfExists("target/test-data/bikewise_example/test-cases.csv"));
+        assertTrue(checkIfExists("target/test-data/bikewise_example/nominal-faulty.csv"));
+        assertTrue(checkIfExists("target/test-data/bikewise_example/test-results.csv"));
 
     }
 }

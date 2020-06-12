@@ -326,7 +326,11 @@ public class TestCase implements Serializable {
 	 * @return
 	 */
 	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
-		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(tc.getMethod().toString(), tc.getPath())
+		String fullPath = tc.getPath();
+		for (Map.Entry<String, String> pathParam : tc.getPathParameters().entrySet())
+			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
+
+		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(tc.getMethod().toString(), fullPath)
 				.withBody(tc.getBodyParameter())
 				.withContentType(tc.getInputFormat());
 		tc.getQueryParameters().forEach(requestBuilder::withQueryParam);
