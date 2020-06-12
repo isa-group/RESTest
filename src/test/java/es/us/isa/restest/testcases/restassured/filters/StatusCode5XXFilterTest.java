@@ -1,4 +1,4 @@
-package es.us.isa.restest.validation;
+package es.us.isa.restest.testcases.restassured.filters;
 
 import es.us.isa.restest.testcases.restassured.filters.StatusCode5XXFilter;
 import io.restassured.RestAssured;
