@@ -16,3 +16,4 @@ TODO.txt
 /src/test/resources/csvData/test-coverage.json
 /src/main/resources/auth
 /idl_aux_files
+src/test/resources/file-manager/*
