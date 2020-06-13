@@ -96,14 +96,14 @@ public class BoundaryStringConfigurator {
         strGens.add(new RandomStringGenerator(minLength+delta, minLength+delta, true, false, false));
         strGens.add(new RandomStringGenerator(maxLength, maxLength, true, false, false));
         strGens.add(new RandomStringGenerator(maxLength+delta, maxLength+delta, true, false, false));
-        strGens.add(new RandomStringGenerator((int) Math.ceil(minLength+maxLength)/2, (int) Math.ceil(minLength+maxLength)/2, true, false, false));
+        strGens.add(new RandomStringGenerator((int)Math.ceil(((double)minLength+maxLength)/2), (int)Math.ceil(((double)minLength+maxLength)/2), true, false, false));
 
         // ASCII strings
         strGens.add(new RandomStringGenerator(minLength, minLength, true, true, true));
         strGens.add(new RandomStringGenerator(minLength+delta, minLength+delta, true, true, true));
         strGens.add(new RandomStringGenerator(maxLength, maxLength, true, true, true));
         strGens.add(new RandomStringGenerator(maxLength+delta, maxLength+delta, true, true, true));
-        strGens.add(new RandomStringGenerator((int) Math.ceil(minLength+maxLength)/2, (int) Math.ceil(minLength+maxLength)/2, true, true, true));
+        strGens.add(new RandomStringGenerator((int)Math.ceil(((double)minLength+maxLength)/2), (int)Math.ceil(((double)minLength+maxLength)/2), true, true, true));
 
         // Special cases: (minLength-delta) and (maxLength-delta), only if the result is positive
         if (minLength - delta > 0) {

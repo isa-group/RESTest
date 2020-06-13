@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 
 import es.us.isa.restest.testcases.TestCase;
 import io.qameta.allure.restassured.AllureRestAssured;
-import io.swagger.models.HttpMethod;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import io.swagger.models.Response;
 
 import static es.us.isa.restest.util.FileManager.checkIfExists;

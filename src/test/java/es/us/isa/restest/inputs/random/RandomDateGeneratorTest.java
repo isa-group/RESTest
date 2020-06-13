@@ -5,20 +5,29 @@ import static org.junit.Assert.assertTrue;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
+import es.us.isa.restest.configuration.pojos.GenParameter;
+import es.us.isa.restest.configuration.pojos.Generator;
+import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.Test;
-
-import es.us.isa.restest.inputs.random.RandomDateGenerator;
 
 public class RandomDateGeneratorTest {
 
+	Generator generator;
+
+	@Before
+	public void setupGenerator() {
+		generator = new Generator();
+		generator.setType("RandomDate");
+		generator.setGenParameters(new ArrayList<>());
+	}
+
 	@Test
 	public void testRandomDateGeneration() {
-		RandomDateGenerator gen = new RandomDateGenerator();
+		RandomDateGenerator gen = (RandomDateGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 		for(int i=0; i<100;i++) {
 			Date value = gen.nextValue();
 			assertTrue("Not a date", value instanceof Date);
@@ -30,8 +39,14 @@ public class RandomDateGeneratorTest {
 	
 	@Test
 	public void testRandomDateGenerationFromToday() {
-		RandomDateGenerator gen = new RandomDateGenerator();
-		gen.setFromToday(true);
+		GenParameter fromToday = new GenParameter();
+		fromToday.setName("fromToday");
+		fromToday.setValues(Collections.singletonList("true"));
+
+		generator.getGenParameters().add(fromToday);
+
+		RandomDateGenerator gen = (RandomDateGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0; i<100;i++) {
 			Date value = gen.nextValue();
 			assertTrue("Not a date", value instanceof Date);
@@ -44,9 +59,18 @@ public class RandomDateGeneratorTest {
 	
 	@Test
 	public void testRandomBoundedDateGeneration() throws ParseException {
-		RandomDateGenerator gen = new RandomDateGenerator();
-		gen.setStartDate("2015-06-12");
-		gen.setEndDate("2017-08-15");
+		GenParameter startDate = new GenParameter();
+		startDate.setName("startDate");
+		startDate.setValues(Collections.singletonList("2015-06-12"));
+
+		GenParameter endDate = new GenParameter();
+		endDate.setName("endDate");
+		endDate.setValues(Collections.singletonList("2017-08-15"));
+
+		generator.getGenParameters().addAll(Arrays.asList(startDate, endDate));
+
+		RandomDateGenerator gen = (RandomDateGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0; i<100;i++) {
 			Date value = gen.nextValue();
 			assertTrue("Not a date", value instanceof Date);
@@ -62,9 +86,17 @@ public class RandomDateGeneratorTest {
 	public void testRandomDaysBasedBoundedDateGeneration() throws ParseException {
 		int startDays = 30;
 		int endDays = 90;
-		RandomDateGenerator gen = new RandomDateGenerator();
-		gen.setStartDays(startDays);
-		gen.setEndDays(endDays);
+		GenParameter startDaysGen = new GenParameter();
+		startDaysGen.setName("startDays");
+		startDaysGen.setValues(Collections.singletonList("30"));
+
+		GenParameter endDaysGen = new GenParameter();
+		endDaysGen.setName("endDays");
+		endDaysGen.setValues(Collections.singletonList("90"));
+
+		generator.getGenParameters().addAll(Arrays.asList(startDaysGen, endDaysGen));
+
+		RandomDateGenerator gen = (RandomDateGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 		for(int i=0; i<100;i++) {
 			Date value = gen.nextValue();
 			assertTrue("Not a date", value instanceof Date);
@@ -79,7 +111,7 @@ public class RandomDateGeneratorTest {
 	@Test
 	public void testRandomDateAsStringGeneration() throws ParseException {
 		for(int i=0; i<100;i++) {
-			RandomDateGenerator gen = new RandomDateGenerator();
+			RandomDateGenerator gen = (RandomDateGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 			
 			// Generate object
 			gen.setSeed(i+1000);
@@ -99,9 +131,14 @@ public class RandomDateGeneratorTest {
 	
 	@Test
 	public void testCustomDateFormat() throws ParseException {
+		GenParameter format = new GenParameter();
+		format.setName("format");
+		format.setValues(Collections.singletonList("yyyy-MM-dd"));
+
+		generator.getGenParameters().addAll(Collections.singletonList(format));
+
 		for(int i=0; i<100;i++) {
-			RandomDateGenerator gen = new RandomDateGenerator();
-			gen.setFormat("yyyy-MM-dd");
+			RandomDateGenerator gen = (RandomDateGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 			
 			// Generate object
 			gen.setSeed(i+1000);

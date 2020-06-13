@@ -2,20 +2,28 @@ package es.us.isa.restest.inputs.random;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import es.us.isa.restest.configuration.pojos.GenParameter;
+import es.us.isa.restest.configuration.pojos.Generator;
+import es.us.isa.restest.inputs.TestDataGeneratorFactory;
+import org.junit.Before;
 import org.junit.Test;
-
-import es.us.isa.restest.inputs.random.RandomObjectGenerator;
 
 public class RandomObjectGeneratorTest {
 
+    Generator generator;
+
+    @Before
+    public void setup() {
+        generator = new Generator();
+        generator.setType("RandomObject");
+        generator.setGenParameters(new ArrayList<>());
+    }
+
     @Test
     public void testConstructorWithoutArguments() {
-        RandomObjectGenerator objGen = new RandomObjectGenerator();
+        RandomObjectGenerator objGen = (RandomObjectGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
         objGen.setSeed(99999);
 
         assertEquals("The RandomObjectGenerator has not been initialized properly", 99999, objGen.getSeed());
@@ -25,21 +33,41 @@ public class RandomObjectGeneratorTest {
     public void testConstructorWithArguments() {
         List<Object> objList = new ArrayList<>();
         fillList(objList, 2);
-        RandomObjectGenerator objGen = new RandomObjectGenerator(objList);
+
+        GenParameter values = new GenParameter();
+        values.setName("values");
+        values.setObjectValues(objList);
+
+        generator.getGenParameters().add(values);
+
+        RandomObjectGenerator objGen = (RandomObjectGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 
         assertEquals("There should be 2 objects in the list", 2, objGen.getValues().size());
     }
 
     @Test
-    public void testNullNextValue() {
-        RandomObjectGenerator objGen = new RandomObjectGenerator();
+    public void testConstructorWithFileArguments() {
+        GenParameter files = new GenParameter();
+        files.setName("files");
+        files.setValues(Collections.singletonList("src/main/resources/TestConfigurationMetamodel/configuration-model.json"));
 
-        assertEquals("The next value should be null", null, objGen.nextValue());
+        generator.getGenParameters().add(files);
+
+        RandomObjectGenerator objGen = (RandomObjectGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
+        assertEquals("There should be 1 object in the list", 1, objGen.getValues().size());
+    }
+
+    @Test
+    public void testNullNextValue() {
+        RandomObjectGenerator objGen = (RandomObjectGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
+        assertNull("The next value should be null", objGen.nextValue());
     }
 
     @Test
     public void testNullNextValueAsString() {
-        RandomObjectGenerator objGen = new RandomObjectGenerator();
+        RandomObjectGenerator objGen = (RandomObjectGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 
         assertEquals("The next value should be null", "null", objGen.nextValueAsString());
     }
@@ -48,8 +76,15 @@ public class RandomObjectGeneratorTest {
     public void testNextValue() {
         List<Object> objList = new ArrayList<>();
         fillList(objList, 1);
-        RandomObjectGenerator objGen = new RandomObjectGenerator();
-        objGen.setValues(objList);
+
+        GenParameter values = new GenParameter();
+        values.setName("values");
+        values.setObjectValues(objList);
+
+        generator.getGenParameters().add(values);
+
+        RandomObjectGenerator objGen = (RandomObjectGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
         System.out.println(objGen.nextValue().getClass());
 
         assertTrue("The next value should be of type HashMap", objGen.nextValue() instanceof java.util.HashMap);
@@ -59,13 +94,19 @@ public class RandomObjectGeneratorTest {
     public void testNextValueAsString() {
         List<Object> objList = new ArrayList<>();
         fillList(objList, 1);
-        RandomObjectGenerator objGen = new RandomObjectGenerator();
-        objGen.setValues(objList);
+
+        GenParameter values = new GenParameter();
+        values.setName("values");
+        values.setObjectValues(objList);
+
+        generator.getGenParameters().add(values);
+
+        RandomObjectGenerator objGen = (RandomObjectGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 
         assertEquals("The next value is not the expected one", "{\"key1\":\"value1\",\"key2\":\"value2\"}", objGen.nextValueAsString());
     }
 
-    private List<Object> fillList(List<Object> objList, int size) {
+    private void fillList(List<Object> objList, int size) {
         Map<String, String> obj1 = new HashMap<>();
         obj1.put("key1", "value1");
         obj1.put("key2", "value2");
@@ -77,6 +118,5 @@ public class RandomObjectGeneratorTest {
             obj2.put("key4", "value4");
             objList.add(obj2);
         }
-        return objList;
     }
 }

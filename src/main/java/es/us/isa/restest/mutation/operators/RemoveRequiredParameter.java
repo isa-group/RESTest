@@ -1,8 +1,8 @@
 package es.us.isa.restest.mutation.operators;
 
+import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.Operation;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,9 +26,9 @@ public class RemoveRequiredParameter extends AbstractMutationOperator {
      * @return True if the mutation was applied, false otherwise.
      */
     public static Boolean mutate(TestCase tc, Operation specOperation) {
-        List<Parameter> candidateParameters = getRequiredNotPathParameters(specOperation); // Path parameters cannot be removed
-        if (candidateParameters.size() != 0) {
-            Parameter selectedParam = candidateParameters.get(ThreadLocalRandom.current().nextInt(0, candidateParameters.size()));
+        List<ParameterFeatures> candidateParameters = getRequiredNotPathParameters(specOperation); // Path parameters cannot be removed
+        if (!candidateParameters.isEmpty()) {
+            ParameterFeatures selectedParam = candidateParameters.get(ThreadLocalRandom.current().nextInt(0, candidateParameters.size()));
             removeParameter(tc, selectedParam);
             return true; // Mutation applied
         } else {

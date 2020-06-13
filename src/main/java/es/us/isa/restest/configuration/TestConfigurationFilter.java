@@ -3,7 +3,7 @@ package es.us.isa.restest.configuration;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import io.swagger.models.HttpMethod;
+import io.swagger.v3.oas.models.PathItem;
 
 /**
  * Class to manage the testing of each API operation individually. A filter is composed
@@ -14,11 +14,11 @@ import io.swagger.models.HttpMethod;
 public class TestConfigurationFilter {
 
 	private String path = null;						// Path to test (null for all)
-	private Collection<HttpMethod> methods;			// Methods to test
+	private Collection<PathItem.HttpMethod> methods;			// Methods to test
 	
 	public TestConfigurationFilter() {}
 	
-	public TestConfigurationFilter(String path, Collection<HttpMethod> methods) {
+	public TestConfigurationFilter(String path, Collection<PathItem.HttpMethod> methods) {
 		this.path = path;
 		this.methods = methods;
 	}
@@ -31,43 +31,43 @@ public class TestConfigurationFilter {
 		this.path = path;
 	}
 
-	public Collection<HttpMethod> getMethods() {
+	public Collection<PathItem.HttpMethod> getMethods() {
 		return methods;
 	}
 
-	public void setMethods(Collection<HttpMethod> methods) {
+	public void setMethods(Collection<PathItem.HttpMethod> methods) {
 		this.methods = methods;
 	}
 	
 	public void addGetMethod() {
 		if (methods==null)
-			methods = new ArrayList<HttpMethod>();
+			methods = new ArrayList<>();
 		
-		methods.add(HttpMethod.GET);
+		methods.add(PathItem.HttpMethod.GET);
 		
 	}
 	
 	public void addPostMethod() {
 		if (methods==null)
-			methods = new ArrayList<HttpMethod>();
+			methods = new ArrayList<>();
 		
-		methods.add(HttpMethod.POST);
+		methods.add(PathItem.HttpMethod.POST);
 		
 	}
 	
 	public void addPutMethod() {
 		if (methods==null)
-			methods = new ArrayList<HttpMethod>();
+			methods = new ArrayList<>();
 		
-		methods.add(HttpMethod.PUT);
+		methods.add(PathItem.HttpMethod.PUT);
 		
 	}
 	
 	public void addDeleteMethod() {
 		if (methods==null)
-			methods = new ArrayList<HttpMethod>();
+			methods = new ArrayList<>();
 		
-		methods.add(HttpMethod.DELETE);
+		methods.add(PathItem.HttpMethod.DELETE);
 		
 	}
 	

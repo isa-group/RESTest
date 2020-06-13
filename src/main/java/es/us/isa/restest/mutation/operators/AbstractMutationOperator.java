@@ -1,13 +1,15 @@
 package es.us.isa.restest.mutation.operators;
 
+import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.Operation;
 
 /**
  * @author Alberto Martin-Lopez
  */
 public abstract class AbstractMutationOperator {
+
+
 
     /**
      * To be overridden by concrete mutation operator
@@ -34,7 +36,7 @@ public abstract class AbstractMutationOperator {
      * @param p
      * @param value
      */
-    protected static void setParameterToValue(TestCase tc, Parameter p, String value) {
+    protected static void setParameterToValue(TestCase tc, ParameterFeatures p, String value) {
         switch (p.getIn()) {
             case "query":
                 tc.addQueryParameter(p.getName(), value);
@@ -61,7 +63,7 @@ public abstract class AbstractMutationOperator {
      * @param tc
      * @param p
      */
-    protected static void removeParameter(TestCase tc, Parameter p) {
+    protected static void removeParameter(TestCase tc, ParameterFeatures p) {
         switch (p.getIn()) {
             case "query":
                 tc.removeQueryParameter(p.getName());

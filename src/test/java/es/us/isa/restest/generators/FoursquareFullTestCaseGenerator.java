@@ -20,7 +20,7 @@ public class FoursquareFullTestCaseGenerator {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Foursquare/testConf.yaml");
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Foursquare/testConf.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 10;
@@ -34,7 +34,7 @@ public class FoursquareFullTestCaseGenerator {
         assertEquals("Incorrect number of test cases", 10, testCases.size());
 
         // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        String basePath = spec.getSpecification().getServers().get(0).getUrl();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "FoursquareTest", "restassured", basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);

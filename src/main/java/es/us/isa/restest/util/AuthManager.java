@@ -2,6 +2,8 @@ package es.us.isa.restest.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -62,24 +64,26 @@ import static java.lang.System.exit;
  */
 public class AuthManager {
 
-    private final String authBasePath = "src/main/resources/auth/";
-    private String authPath;
-    private ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final String AUTH_BASE_PATH = "src/main/resources/auth/";
     private Map<String, List<String>> authProperties;
     private int counter;
     private int itCounter;  /* It resets to zero when the algorithm obtains an auth key for every parameter.
     When this happens, the algorithm knows that it has provided all the auth params requested for an operation,
     so it augments 'counter'. */
 
+    private static final Logger logger = LogManager.getLogger(AuthManager.class);
+
     public AuthManager(String authRelativePath) {
-        authPath = authBasePath + authRelativePath;
+        String authPath = AUTH_BASE_PATH + authRelativePath;
         this.counter = 0;
         this.itCounter = 0;
         try {
+            ObjectMapper objectMapper = new ObjectMapper();
             authProperties = objectMapper.readValue(readFile(authPath), new TypeReference<Map<String, List<String>>>(){});
         } catch (IOException e) {
-            System.err.println("Error parsing authProperties file: " + authPath + ". Message: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error parsing authProperties file: {}", authPath);
+            logger.error(e.getMessage(), e);
             exit(1);
         }
     }
@@ -91,8 +95,7 @@ public class AuthManager {
     public String getAuthProperty(String propertyName) {
         itCounter = itCounter == authProperties.size()? 0 : itCounter;
         if(itCounter == 0) {
-            int size = 0;
-            size = this.authProperties.entrySet().iterator().next().getValue().size();
+            int size = this.authProperties.entrySet().iterator().next().getValue().size();
             this.counter = size == this.counter? 0 : this.counter;
         }
 

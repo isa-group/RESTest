@@ -1,16 +1,16 @@
 ---
 auth:
   required: true
-  queryParams: []
-  headerParams: []
+  queryParams: {}
+  headerParams: {}
 testConfiguration:
-  testPaths:
-  - testPath: /v2/incidents
     operations:
     - operationId: GET--version-incidents---format-
+      testPath: /v2/incidents
       method: get
       testParameters:
       - name: page
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -28,6 +28,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: per_page
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -45,6 +46,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: occurred_before
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -62,6 +64,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: occurred_after
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -79,6 +82,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: incident_type
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -93,6 +97,7 @@ testConfiguration:
             - chop_shop
             objectValues: null
       - name: proximity
+        in: query
         weight: 0.5
         generator:
           type: RandomEnglishWord
@@ -102,6 +107,7 @@ testConfiguration:
             - 1
             objectValues: null
       - name: proximity_square
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -119,6 +125,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: query
+        in: query
         weight: 0.5
         generator:
           type: RandomEnglishWord
@@ -127,14 +134,13 @@ testConfiguration:
             values:
             - 1
             objectValues: null
-      paramDependencies: null
       expectedResponse: 200
-  - testPath: /v2/incidents/{id}
-    operations:
     - operationId: GET--version-incidents--id---format-
+      testPath: /v2/incidents/{id}
       method: get
       testParameters:
       - name: id
+        in: path
         weight: null
         generator:
           type: RandomNumber
@@ -151,14 +157,13 @@ testConfiguration:
             values:
             - 100
             objectValues: null
-      paramDependencies: null
       expectedResponse: 200
-  - testPath: /v2/locations
-    operations:
     - operationId: GET--version-locations---format-
+      testPath: /v2/locations
       method: get
       testParameters:
       - name: occurred_before
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -176,6 +181,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: occurred_after
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -193,6 +199,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: incident_type
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -207,6 +214,7 @@ testConfiguration:
             - chop_shop
             objectValues: null
       - name: proximity
+        in: query
         weight: 0.5
         generator:
           type: RandomEnglishWord
@@ -216,6 +224,7 @@ testConfiguration:
             - 1
             objectValues: null
       - name: proximity_square
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -233,6 +242,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: query
+        in: query
         weight: 0.5
         generator:
           type: RandomEnglishWord
@@ -242,6 +252,7 @@ testConfiguration:
             - 1
             objectValues: null
       - name: limit
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -259,18 +270,18 @@ testConfiguration:
             - 100
             objectValues: null
       - name: all
+        in: query
         weight: 0.5
         generator:
           type: RandomBoolean
           genParameters: []
-      paramDependencies: null
       expectedResponse: 200
-  - testPath: /v2/locations/markers
-    operations:
     - operationId: GET--version-locations-markers---format-
+      testPath: /v2/locations/markers
       method: get
       testParameters:
       - name: occurred_before
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -288,6 +299,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: occurred_after
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -305,6 +317,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: incident_type
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -319,6 +332,7 @@ testConfiguration:
             - chop_shop
             objectValues: null
       - name: proximity
+        in: query
         weight: 0.5
         generator:
           type: RandomEnglishWord
@@ -328,6 +342,7 @@ testConfiguration:
             - 1
             objectValues: null
       - name: proximity_square
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -345,6 +360,7 @@ testConfiguration:
             - 100
             objectValues: null
       - name: query
+        in: query
         weight: 0.5
         generator:
           type: RandomEnglishWord
@@ -354,6 +370,7 @@ testConfiguration:
             - 1
             objectValues: null
       - name: limit
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -371,9 +388,9 @@ testConfiguration:
             - 100
             objectValues: null
       - name: all
+        in: query
         weight: 0.5
         generator:
           type: RandomBoolean
           genParameters: []
-      paramDependencies: null
       expectedResponse: 200

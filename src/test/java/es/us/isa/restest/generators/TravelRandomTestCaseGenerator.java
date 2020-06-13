@@ -23,7 +23,7 @@ public class TravelRandomTestCaseGenerator {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Travel/testConf.yaml");
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Travel/testConf.yaml", spec);
 
         // Set number of test cases to be generated on each path
         int numTestCases = 20;
@@ -37,7 +37,7 @@ public class TravelRandomTestCaseGenerator {
         assertEquals("Incorrect number of test cases", 120, testCases.size());
 
         // Write test cases
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        String basePath = spec.getSpecification().getServers().get(0).getUrl();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "TravelTest", "restassured", basePath);
         writer.setOAIValidation(true);
         writer.write(testCases);

@@ -2,13 +2,12 @@ package es.us.isa.restest.util;
 
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
-import io.swagger.models.HttpMethod;
+import io.swagger.v3.oas.models.PathItem;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -21,6 +20,10 @@ import static es.us.isa.restest.util.CSVManager.readCSV;
  * the path of a CSV containing the test results
  */
 public class TestManager {
+
+    private TestManager() {
+        //Utility class
+    }
 
     /**
      *
@@ -84,9 +87,10 @@ public class TestManager {
         List<TestCase> testCases = new ArrayList<>();
         for(List<String> csvRow: csvRows) {
             TestCase tc = new TestCase(csvRow.get(0), Boolean.parseBoolean(csvRow.get(1)), csvRow.get(4),
-                    csvRow.get(5), HttpMethod.valueOf(csvRow.get(6)));
+                    csvRow.get(5), PathItem.HttpMethod.valueOf(csvRow.get(6)));
             tc.setFaultyReason(csvRow.get(2));
             tc.setFulfillsDependencies(Boolean.parseBoolean(csvRow.get(3)));
+            tc.setInputFormat(csvRow.get(7));
             tc.setBodyParameter(csvRow.get(13).equals("") ? null : csvRow.get(13));
             tc.setPathParameters(stringParamsToMap(csvRow.get(10)));
             tc.setQueryParameters(stringParamsToMap(csvRow.get(11)));
@@ -110,8 +114,8 @@ public class TestManager {
             }
         } catch (UnsupportedEncodingException e) {
             parameters.clear();
-            LogManager.getLogger(TestManager.class.getName()).warn("Parameters of test case could not be decoded. Stack trace:");
-            e.printStackTrace();
+            LogManager.getLogger(TestManager.class.getName()).warn("Parameters of test case could not be decoded.", e);
+            LogManager.getLogger(TestManager.class.getName()).warn(e.getMessage());
         }
 
         return parameters;

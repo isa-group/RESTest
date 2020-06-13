@@ -1,21 +1,38 @@
 package es.us.isa.restest.inputs.random;
 
 import static org.junit.Assert.*;
+
+import es.us.isa.restest.configuration.pojos.GenParameter;
+import es.us.isa.restest.configuration.pojos.Generator;
+import es.us.isa.restest.inputs.TestDataGeneratorFactory;
+import org.junit.Before;
 import org.junit.Test;
 
-import es.us.isa.restest.inputs.random.RandomStringGenerator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 
 public class RandomStringGeneratorTest {
 
+    Generator generator;
+
+    @Before
+    public void setup() {
+        generator = new Generator();
+        generator.setType("RandomString");
+        generator.setGenParameters(new ArrayList<>());
+    }
+
     @Test
     public void testDefaultConstructor() {
-        RandomStringGenerator strGen = new RandomStringGenerator();
+        RandomStringGenerator strGen = (RandomStringGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
         assertEquals("maxLength parameter should be 10 by default", 10, strGen.getMaxLength());
         assertEquals("minLength parameter should be 0 by default", 0, strGen.getMinLength());
-        assertEquals("includeAlphabetic parameter should be true by default", true, strGen.getIncludeAlphabetic());
-        assertEquals("includeNumbers parameter should be false by default", false, strGen.getIncludeNumbers());
-        assertEquals("includeSpecialCharacters parameter should be false by default", false, strGen.getIncludeSpecialCharacters());
+        assertTrue("includeAlphabetic parameter should be true by default", strGen.getIncludeAlphabetic());
+        assertFalse("includeNumbers parameter should be false by default", strGen.getIncludeNumbers());
+        assertFalse("includeSpecialCharacters parameter should be false by default", strGen.getIncludeSpecialCharacters());
     }
 
     @Test
@@ -28,14 +45,37 @@ public class RandomStringGeneratorTest {
         strGen.setMinLength(3);
         assertEquals("maxLength parameter should be 15", 15, strGen.getMaxLength());
         assertEquals("minLength parameter should be 3", 3, strGen.getMinLength());
-        assertEquals("includeAlphabetic parameter should be false", false, strGen.getIncludeAlphabetic());
-        assertEquals("includeNumbers parameter should be true", true, strGen.getIncludeNumbers());
-        assertEquals("includeSpecialCharacters parameter should be true", true, strGen.getIncludeSpecialCharacters());
+        assertFalse("includeAlphabetic parameter should be false", strGen.getIncludeAlphabetic());
+        assertTrue("includeNumbers parameter should be true", strGen.getIncludeNumbers());
+        assertTrue("includeSpecialCharacters parameter should be true", strGen.getIncludeSpecialCharacters());
     }
 
     @Test
     public void testEmptyString() {
-        RandomStringGenerator strGen = new RandomStringGenerator(25, 30, false, false, false);
+        GenParameter minLength = new GenParameter();
+        minLength.setName("minLength");
+        minLength.setValues(Collections.singletonList("25"));
+
+        GenParameter maxLength = new GenParameter();
+        maxLength.setName("maxLength");
+        maxLength.setValues(Collections.singletonList("30"));
+
+        GenParameter includeSpecialCharacters = new GenParameter();
+        includeSpecialCharacters.setName("includeSpecialCharacters");
+        includeSpecialCharacters.setValues(Collections.singletonList("false"));
+
+        GenParameter includeNumbers = new GenParameter();
+        includeNumbers.setName("includeNumbers");
+        includeNumbers.setValues(Collections.singletonList("false"));
+
+        GenParameter includeAlphabetic = new GenParameter();
+        includeAlphabetic.setName("includeAlphabetic");
+        includeAlphabetic.setValues(Collections.singletonList("false"));
+
+        generator.getGenParameters().addAll(Arrays.asList(minLength, maxLength, includeSpecialCharacters, includeNumbers, includeAlphabetic));
+
+        RandomStringGenerator strGen = (RandomStringGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
         String testString = strGen.nextValue();
         System.out.println(testString);
         assertTrue("The generated string should not contain any character", testString.matches("^$"));
@@ -43,25 +83,94 @@ public class RandomStringGeneratorTest {
 
     @Test
     public void testStringWithoutNumbers() {
-        RandomStringGenerator strGen = new RandomStringGenerator(25, 30, true, false, true);
+        GenParameter minLength = new GenParameter();
+        minLength.setName("minLength");
+        minLength.setValues(Collections.singletonList("25"));
+
+        GenParameter maxLength = new GenParameter();
+        maxLength.setName("maxLength");
+        maxLength.setValues(Collections.singletonList("30"));
+
+        GenParameter includeSpecialCharacters = new GenParameter();
+        includeSpecialCharacters.setName("includeSpecialCharacters");
+        includeSpecialCharacters.setValues(Collections.singletonList("true"));
+
+        GenParameter includeNumbers = new GenParameter();
+        includeNumbers.setName("includeNumbers");
+        includeNumbers.setValues(Collections.singletonList("false"));
+
+        GenParameter includeAlphabetic = new GenParameter();
+        includeAlphabetic.setName("includeAlphabetic");
+        includeAlphabetic.setValues(Collections.singletonList("true"));
+
+        generator.getGenParameters().addAll(Arrays.asList(minLength, maxLength, includeSpecialCharacters, includeNumbers, includeAlphabetic));
+
+        RandomStringGenerator strGen = (RandomStringGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
         String testString = strGen.nextValue();
         System.out.println(testString);
-        assertTrue("The generated string should not contain any number", !testString.matches(".*[0-9].*"));
+        assertFalse("The generated string should not contain any number", testString.matches(".*[0-9].*"));
     }
 
     @Test
     public void testStringWithoutAlphabet() {
-        RandomStringGenerator strGen = new RandomStringGenerator(25, 30, false, true, true);
+        GenParameter minLength = new GenParameter();
+        minLength.setName("minLength");
+        minLength.setValues(Collections.singletonList("25"));
+
+        GenParameter maxLength = new GenParameter();
+        maxLength.setName("maxLength");
+        maxLength.setValues(Collections.singletonList("30"));
+
+        GenParameter includeSpecialCharacters = new GenParameter();
+        includeSpecialCharacters.setName("includeSpecialCharacters");
+        includeSpecialCharacters.setValues(Collections.singletonList("true"));
+
+        GenParameter includeNumbers = new GenParameter();
+        includeNumbers.setName("includeNumbers");
+        includeNumbers.setValues(Collections.singletonList("true"));
+
+        GenParameter includeAlphabetic = new GenParameter();
+        includeAlphabetic.setName("includeAlphabetic");
+        includeAlphabetic.setValues(Collections.singletonList("false"));
+
+        generator.getGenParameters().addAll(Arrays.asList(minLength, maxLength, includeSpecialCharacters, includeNumbers, includeAlphabetic));
+
+        RandomStringGenerator strGen = (RandomStringGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
         String testString = strGen.nextValue();
         System.out.println(testString);
-        assertTrue("The generated string should not contain any alphabetic character", !testString.matches(".*[A-Za-z].*"));
+        assertFalse("The generated string should not contain any alphabetic character", testString.matches(".*[A-Za-z].*"));
     }
 
     @Test
     public void testStringWithoutNumbersOrAlphabet() {
-        RandomStringGenerator strGen = new RandomStringGenerator(25, 30, false, false, true);
+        GenParameter minLength = new GenParameter();
+        minLength.setName("minLength");
+        minLength.setValues(Collections.singletonList("25"));
+
+        GenParameter maxLength = new GenParameter();
+        maxLength.setName("maxLength");
+        maxLength.setValues(Collections.singletonList("30"));
+
+        GenParameter includeSpecialCharacters = new GenParameter();
+        includeSpecialCharacters.setName("includeSpecialCharacters");
+        includeSpecialCharacters.setValues(Collections.singletonList("true"));
+
+        GenParameter includeNumbers = new GenParameter();
+        includeNumbers.setName("includeNumbers");
+        includeNumbers.setValues(Collections.singletonList("false"));
+
+        GenParameter includeAlphabetic = new GenParameter();
+        includeAlphabetic.setName("includeAlphabetic");
+        includeAlphabetic.setValues(Collections.singletonList("false"));
+
+        generator.getGenParameters().addAll(Arrays.asList(minLength, maxLength, includeSpecialCharacters, includeNumbers, includeAlphabetic));
+
+        RandomStringGenerator strGen = (RandomStringGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
         String testString = strGen.nextValue();
         System.out.println(testString);
-        assertTrue("The generated string should not contain any alphanumeric character", !testString.matches(".*[0-9A-Za-z].*"));
+        assertFalse("The generated string should not contain any alphanumeric character", testString.matches(".*[0-9A-Za-z].*"));
     }
 }
