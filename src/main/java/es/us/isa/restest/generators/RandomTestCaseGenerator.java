@@ -23,7 +23,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	}
 
 	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, HttpMethod method) {
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
 
 		List<TestCase> testCases = new ArrayList<>();
 
@@ -40,16 +40,10 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			// Create test case with specific parameters and values
 			Timer.startCounting(TEST_CASE_GENERATION);
-			TestCase test = generateNextTestCase(testOperation,path,method,faultyReason);
+			TestCase test = generateNextTestCase(testOperation, faultyReason);
 			Timer.stopCounting(TEST_CASE_GENERATION);
 			// Authentication
 			authenticateTestCase(test);
-
-//			// Set responses
-//			test.setExpectedOutputs(specOperation.getResponses());
-//
-//			// Set expected output in case the request is successful
-//			test.setExpectedSuccessfulOutput(specOperation.getResponses().get(testOperation.getExpectedResponse()));
 
 			// Add test case to the collection
 			testCases.add(test);
@@ -60,11 +54,11 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	// Generate the next test case and update the generation index
 	@Override
-	protected TestCase generateNextTestCase(Operation testOperation, String path, HttpMethod method, String faultyReason) {
+	protected TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
 
 		// This way, all test cases of an operation are not executed one after the other, but randomly:
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
-		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), path, method);
+		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
 		test.setFaultyReason(faultyReason);
 
 		// Set parameters

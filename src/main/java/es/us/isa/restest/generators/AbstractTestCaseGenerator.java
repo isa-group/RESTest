@@ -7,7 +7,6 @@ import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
@@ -17,7 +16,6 @@ import java.util.*;
 
 import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
-import static es.us.isa.restest.util.SpecificationVisitor.findParameter;
 
 public abstract class AbstractTestCaseGenerator {
 
@@ -132,7 +130,7 @@ public abstract class AbstractTestCaseGenerator {
 		return generate(filters);
 	}
 
-	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, HttpMethod method);
+	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation);
 
 	protected Collection<TestCase> generate(String path, HttpMethod method) {
 
@@ -142,7 +140,7 @@ public abstract class AbstractTestCaseGenerator {
 		// Create test data generators for each parameter
 		createGenerators(testOperation.getTestParameters());
 
-		return generateOperationTestCases(testOperation, path, method);
+		return generateOperationTestCases(testOperation);
 	}
 
 	protected void setTestCaseParameters(TestCase test, Operation testOperation) {
@@ -187,7 +185,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected abstract boolean hasNext();
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	protected abstract TestCase generateNextTestCase(Operation testOperation, String path, HttpMethod method, String faultyReason);
+	protected abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);
 
 	protected void updateIndexes(boolean currentTestFaulty) {
 		// Update indexes
