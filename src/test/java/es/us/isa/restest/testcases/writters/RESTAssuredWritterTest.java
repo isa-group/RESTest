@@ -26,9 +26,7 @@ public class RESTAssuredWritterTest {
 		
 		tc.addHeaderParameter("Authorization", "Bearer sklfhskdlafjsklf092359wejtu0349");
 		tc.addQueryParameter("status", "pending");
-		
-		tc.setExpectedOutputs(spec.getSpecification().getPaths().get("/pet/findByStatus").getGet().getResponses());
-		
+
 		testCases.add(tc);
 		
 		// Write test case

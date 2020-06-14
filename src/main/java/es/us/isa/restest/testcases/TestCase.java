@@ -9,8 +9,9 @@ import java.util.Objects;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
-import io.swagger.v3.oas.models.PathItem;
-import io.swagger.v3.oas.models.responses.ApiResponse;
+import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.specification.ParameterFeatures;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 
 import static es.us.isa.restest.util.CSVManager.*;
@@ -29,7 +30,7 @@ public class TestCase implements Serializable {
 	private Boolean fulfillsDependencies;					// True if it does not violate any inter-parameter dependencies
 	private String faultyReason;							// "none", "individual_parameter_constraint", "invalid_request_body" or "inter_parameter_dependency"
 	private String operationId;								// Id of the operation (ex. getAlbums)
-	private PathItem.HttpMethod method;								// HTTP method
+	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
 	private String inputFormat;								// Input format
 	private String outputFormat;							// Output format
@@ -38,11 +39,8 @@ public class TestCase implements Serializable {
 	private Map<String, String> queryParameters;			// Input parameters and values
 	private Map<String, String> formParameters;				// Form-data parameters
 	private String bodyParameter;							// Body parameter
-	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none
-	private Map<String, ApiResponse> expectedOutputs;			// Possible outputs
-	private ApiResponse expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
-	
-	public TestCase(String id, Boolean faulty, String operationId, String path, PathItem.HttpMethod method) {
+
+	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
 		this.faulty = faulty;
 		this.fulfillsDependencies = false; // By default, a test case does not satisfy inter-parameter dependencies
@@ -55,7 +53,6 @@ public class TestCase implements Serializable {
 		this.queryParameters = new HashMap<>();
 		this.pathParameters = new HashMap<>();
 		this.formParameters = new HashMap<>();
-		this.authentication = null;
 	}
 	
 	public TestCase(TestCase testCase) {
@@ -70,19 +67,11 @@ public class TestCase implements Serializable {
 		this.bodyParameter = testCase.bodyParameter;
 	}
 
-	public ApiResponse getExpectedSuccessfulOutput() {
-		return expectedSuccessfulOutput;
-	}
-
-	public void setExpectedSuccessfulOutput(ApiResponse expectedSuccessfulOutput) {
-		this.expectedSuccessfulOutput = expectedSuccessfulOutput;
-	}
-
-	public PathItem.HttpMethod getMethod() {
+	public HttpMethod getMethod() {
 		return method;
 	}
 
-	public void setMethod(PathItem.HttpMethod method) {
+	public void setMethod(HttpMethod method) {
 		this.method = method;
 	}
 
@@ -92,6 +81,66 @@ public class TestCase implements Serializable {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public void addParameter(ParameterFeatures parameter, String value) {
+		addParameter(parameter.getIn(), parameter.getName(), value);
+	}
+
+	public void addParameter(TestParameter parameter, String value) {
+		addParameter(parameter.getIn(), parameter.getName(), value);
+	}
+
+	private void addParameter(String in, String paramName, String paramValue) {
+		switch (in) {
+			case "header":
+				addHeaderParameter(paramName, paramValue);
+				break;
+			case "query":
+				addQueryParameter(paramName, paramValue);
+				break;
+			case "path":
+				addPathParameter(paramName, paramValue);
+				break;
+			case "body":
+				setBodyParameter(paramValue);
+				break;
+			case "formData":
+				addFormParameter(paramName, paramValue);
+				break;
+			default:
+				throw new IllegalArgumentException("Parameter type not supported: " + in);
+		}
+	}
+
+	public void removeParameter(ParameterFeatures parameter) {
+		removeParameter(parameter.getIn(), parameter.getName());
+	}
+
+	public void removeParameter(TestParameter parameter) {
+		removeParameter(parameter.getIn(), parameter.getName());
+	}
+
+	private void removeParameter(String in, String paramName) {
+		switch (in) {
+			case "query":
+				removeQueryParameter(paramName);
+				break;
+			case "header":
+				removeHeaderParameter(paramName);
+				break;
+			case "path":
+				removePathParameter(paramName);
+				break;
+			case "formData":
+				removeFormParameter(paramName);
+				break;
+			case "body":
+				setBodyParameter(null);
+				break;
+			default:
+				throw new IllegalArgumentException("Parameter type '" + in + "' not supported.");
+		}
 	}
 
 	public Map<String, String> getQueryParameters() {
@@ -107,14 +156,6 @@ public class TestCase implements Serializable {
 	public void setFormParameters(Map<String, String> formParameters) {
 		setFormDataContentType();
 		this.formParameters = formParameters;
-	}
-
-	public Map<String, ApiResponse> getExpectedOutputs() {
-		return expectedOutputs;
-	}
-
-	public void setExpectedOutputs(Map<String, ApiResponse> expectedOutputs) {
-		this.expectedOutputs = expectedOutputs;
 	}
 
 	public String getOperationId() {
@@ -139,14 +180,6 @@ public class TestCase implements Serializable {
 
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
-	}
-
-	public String getAuthentication() {
-		return authentication;
-	}
-
-	public void setAuthentication(String authentication) {
-		this.authentication = authentication;
 	}
 
 	public Map<String, String> getHeaderParameters() {
@@ -263,8 +296,7 @@ public class TestCase implements Serializable {
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
 			createFileWithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
-					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter,authentication,expectedOutputs," +
-					"expectedSuccessfulOutput");
+					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter");
 
 		// Generate row
 		String rowBeginning = id + "," + faulty + "," + faultyReason + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
@@ -290,7 +322,7 @@ public class TestCase implements Serializable {
 			LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
 			e.printStackTrace();
 		}
-		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter).append(",,,");
+		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter);
 
 		writeRow(filePath, rowBeginning + rowEnding);
 	}
@@ -339,10 +371,7 @@ public class TestCase implements Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((authentication == null) ? 0 : authentication.hashCode());
 		result = prime * result + ((bodyParameter == null) ? 0 : bodyParameter.hashCode());
-		result = prime * result + ((expectedOutputs == null) ? 0 : expectedOutputs.hashCode());
-		result = prime * result + ((expectedSuccessfulOutput == null) ? 0 : expectedSuccessfulOutput.hashCode());
 		result = prime * result + ((faulty == null) ? 0 : faulty.hashCode());
 		result = prime * result + ((faultyReason == null) ? 0 : faultyReason.hashCode());
 		result = prime * result + ((formParameters == null) ? 0 : formParameters.hashCode());
@@ -374,32 +403,11 @@ public class TestCase implements Serializable {
 			return false;
 		}
 		TestCase other = (TestCase) obj;
-		if (authentication == null) {
-			if (other.authentication != null) {
-				return false;
-			}
-		} else if (!authentication.equals(other.authentication)) {
-			return false;
-		}
 		if (bodyParameter == null) {
 			if (other.bodyParameter != null) {
 				return false;
 			}
 		} else if (!bodyParameter.equals(other.bodyParameter)) {
-			return false;
-		}
-		if (expectedOutputs == null) {
-			if (other.expectedOutputs != null) {
-				return false;
-			}
-		} else if (!expectedOutputs.equals(other.expectedOutputs)) {
-			return false;
-		}
-		if (expectedSuccessfulOutput == null) {
-			if (other.expectedSuccessfulOutput != null) {
-				return false;
-			}
-		} else if (!expectedSuccessfulOutput.equals(other.expectedSuccessfulOutput)) {
 			return false;
 		}
 		if (faulty == null) {

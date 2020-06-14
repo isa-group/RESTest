@@ -20,6 +20,7 @@ import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import io.swagger.v3.oas.models.Paths;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.apache.logging.log4j.LogManager;
@@ -119,11 +120,11 @@ public class DefaultTestConfigurationGenerator {
 	}
 
 	// Generate the test configuration data for the operations of a specific input path
-	private List<Operation> generateOperationsOfPath(Entry<String, PathItem> path, Collection<PathItem.HttpMethod> methods) {
+	private List<Operation> generateOperationsOfPath(Entry<String, PathItem> path, Collection<HttpMethod> methods) {
 
 		List<Operation> pathOperations = new ArrayList<>();
 		
-		for (Entry<PathItem.HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry : path.getValue().readOperationsMap().entrySet())
+		for (Entry<HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry : path.getValue().readOperationsMap().entrySet())
 			if (methods.contains(operationEntry.getKey())) // Generate only filtered methods
 				pathOperations.add(generateOperation(operationEntry, path.getKey()));
 		
@@ -131,7 +132,7 @@ public class DefaultTestConfigurationGenerator {
 	}
 
 	// Generate test configuration data for a GET operation
-	private Operation generateOperation(Entry<PathItem.HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry, String path) {
+	private Operation generateOperation(Entry<HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry, String path) {
 		Operation testOperation = new Operation();
 		testOperation.setTestPath(path);
 		

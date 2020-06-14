@@ -2,7 +2,7 @@ package es.us.isa.restest.util;
 
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
-import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 
 import java.io.UnsupportedEncodingException;
@@ -87,7 +87,7 @@ public class TestManager {
         List<TestCase> testCases = new ArrayList<>();
         for(List<String> csvRow: csvRows) {
             TestCase tc = new TestCase(csvRow.get(0), Boolean.parseBoolean(csvRow.get(1)), csvRow.get(4),
-                    csvRow.get(5), PathItem.HttpMethod.valueOf(csvRow.get(6)));
+                    csvRow.get(5), HttpMethod.valueOf(csvRow.get(6)));
             tc.setFaultyReason(csvRow.get(2));
             tc.setFulfillsDependencies(Boolean.parseBoolean(csvRow.get(3)));
             tc.setInputFormat(csvRow.get(7));

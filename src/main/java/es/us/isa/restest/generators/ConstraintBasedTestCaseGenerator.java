@@ -12,7 +12,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
-import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 import java.util.*;
 
@@ -36,12 +36,12 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	}
 
 	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, PathItem.HttpMethod method) {
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
 
 		List<TestCase> testCases = new ArrayList<>();
 
 		if (hasDependencies(testOperation.getOpenApiOperation())) // If the operation contains dependencies, create new IDLReasoner for that operation
-			idlReasoner = new Analyzer("oas", spec.getPath(), path, method.toString());
+			idlReasoner = new Analyzer("oas", spec.getPath(), testOperation.getTestPath(), testOperation.getMethod());
 		else // Otherwise, set it to null so that it's not used
 			idlReasoner = null;
 
@@ -68,7 +68,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 					faultyReason = "none";
 			}
 			Timer.startCounting(TEST_CASE_GENERATION);
-			TestCase test = generateNextTestCase(testOperation,path,method,faultyReason);
+			TestCase test = generateNextTestCase(testOperation, faultyReason);
 			Timer.stopCounting(TEST_CASE_GENERATION);
 			authenticateTestCase(test);
 			testCases.add(test);
@@ -103,10 +103,10 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	// Generate the next test case and update the generation index
 	@Override
-	protected TestCase generateNextTestCase(Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason) {
+	protected TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
 		// This way, all test cases of an operation are not executed one after the other, but randomly:
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
-		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), path, method);
+		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
 		test.setFaultyReason(faultyReason);
 
 		switch (faultyReason) {

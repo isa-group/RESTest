@@ -58,7 +58,18 @@
                 <role>Developer</role>
             </roles>
         </developer>
-    </developers>
+		<developer>
+			<id>jfdelarosa</id>
+			<name>José Ramón Fernández de la Rosa</name>
+			<email>jfdelarosa@us.es</email>
+<!--			<url>http://personal.us.es/sergiosegura/</url>-->
+			<organization>University of Seville</organization>
+			<organizationUrl>http://www.us.es</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+	</developers>
 
 
 	<properties>
@@ -83,13 +94,6 @@
 			<groupId>io.swagger.core.v3</groupId>
 			<artifactId>swagger-core</artifactId>
 			<version>${swagger.version}</version>
-		</dependency>
-
-		<!-- Swagger parser -->
-		<dependency>
-			<groupId>io.swagger</groupId>
-			<artifactId>swagger-parser</artifactId>
-			<version>1.0.51</version>
 		</dependency>
 
 
