@@ -10,7 +10,6 @@ import java.util.Objects;
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
-import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.apache.logging.log4j.LogManager;
 
 import static es.us.isa.restest.util.CSVManager.*;
@@ -38,10 +37,7 @@ public class TestCase implements Serializable {
 	private Map<String, String> queryParameters;			// Input parameters and values
 	private Map<String, String> formParameters;				// Form-data parameters
 	private String bodyParameter;							// Body parameter
-	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none
-	private Map<String, ApiResponse> expectedOutputs;			// Possible outputs
-	private ApiResponse expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
-	
+
 	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
 		this.faulty = faulty;
@@ -55,7 +51,6 @@ public class TestCase implements Serializable {
 		this.queryParameters = new HashMap<>();
 		this.pathParameters = new HashMap<>();
 		this.formParameters = new HashMap<>();
-		this.authentication = null;
 	}
 	
 	public TestCase(TestCase testCase) {
@@ -68,14 +63,6 @@ public class TestCase implements Serializable {
 		this.queryParameters = testCase.queryParameters;
 		this.headerParameters = testCase.headerParameters;
 		this.formParameters = testCase.formParameters;
-	}
-
-	public ApiResponse getExpectedSuccessfulOutput() {
-		return expectedSuccessfulOutput;
-	}
-
-	public void setExpectedSuccessfulOutput(ApiResponse expectedSuccessfulOutput) {
-		this.expectedSuccessfulOutput = expectedSuccessfulOutput;
 	}
 
 	public HttpMethod getMethod() {
@@ -109,14 +96,6 @@ public class TestCase implements Serializable {
 		this.formParameters = formParameters;
 	}
 
-	public Map<String, ApiResponse> getExpectedOutputs() {
-		return expectedOutputs;
-	}
-
-	public void setExpectedOutputs(Map<String, ApiResponse> expectedOutputs) {
-		this.expectedOutputs = expectedOutputs;
-	}
-
 	public String getOperationId() {
 		return operationId;
 	}
@@ -139,14 +118,6 @@ public class TestCase implements Serializable {
 
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
-	}
-
-	public String getAuthentication() {
-		return authentication;
-	}
-
-	public void setAuthentication(String authentication) {
-		this.authentication = authentication;
 	}
 
 	public Map<String, String> getHeaderParameters() {
@@ -278,22 +249,18 @@ public class TestCase implements Serializable {
 				Objects.equals(pathParameters, testCase.pathParameters) &&
 				Objects.equals(queryParameters, testCase.queryParameters) &&
 				Objects.equals(formParameters, testCase.formParameters) &&
-				Objects.equals(bodyParameter, testCase.bodyParameter) &&
-				Objects.equals(authentication, testCase.authentication) &&
-				Objects.equals(expectedOutputs, testCase.expectedOutputs) &&
-				Objects.equals(expectedSuccessfulOutput, testCase.expectedSuccessfulOutput);
+				Objects.equals(bodyParameter, testCase.bodyParameter);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, faulty, fulfillsDependencies, faultyReason, operationId, method, path, inputFormat, outputFormat, headerParameters, pathParameters, queryParameters, formParameters, bodyParameter, authentication, expectedOutputs, expectedSuccessfulOutput);
+		return Objects.hash(id, faulty, fulfillsDependencies, faultyReason, operationId, method, path, inputFormat, outputFormat, headerParameters, pathParameters, queryParameters, formParameters, bodyParameter);
 	}
 
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
 			createFileWithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
-					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter,authentication,expectedOutputs," +
-					"expectedSuccessfulOutput");
+					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter");
 
 		// Generate row
 		String rowBeginning = id + "," + faulty + "," + faultyReason + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
@@ -319,7 +286,7 @@ public class TestCase implements Serializable {
 			LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
 			e.printStackTrace();
 		}
-		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter).append(",,,");
+		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter);
 
 		writeRow(filePath, rowBeginning + rowEnding);
 	}
