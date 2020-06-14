@@ -3,7 +3,7 @@ package es.us.isa.restest.configuration;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 /**
  * Class to manage the testing of each API operation individually. A filter is composed
@@ -14,11 +14,11 @@ import io.swagger.v3.oas.models.PathItem;
 public class TestConfigurationFilter {
 
 	private String path = null;						// Path to test (null for all)
-	private Collection<PathItem.HttpMethod> methods;			// Methods to test
-	
+	private Collection<HttpMethod> methods;			// Methods to test
+
 	public TestConfigurationFilter() {}
 	
-	public TestConfigurationFilter(String path, Collection<PathItem.HttpMethod> methods) {
+	public TestConfigurationFilter(String path, Collection<HttpMethod> methods) {
 		this.path = path;
 		this.methods = methods;
 	}
@@ -31,11 +31,11 @@ public class TestConfigurationFilter {
 		this.path = path;
 	}
 
-	public Collection<PathItem.HttpMethod> getMethods() {
+	public Collection<HttpMethod> getMethods() {
 		return methods;
 	}
 
-	public void setMethods(Collection<PathItem.HttpMethod> methods) {
+	public void setMethods(Collection<HttpMethod> methods) {
 		this.methods = methods;
 	}
 	
@@ -43,7 +43,7 @@ public class TestConfigurationFilter {
 		if (methods==null)
 			methods = new ArrayList<>();
 		
-		methods.add(PathItem.HttpMethod.GET);
+		methods.add(HttpMethod.GET);
 		
 	}
 	
@@ -51,7 +51,7 @@ public class TestConfigurationFilter {
 		if (methods==null)
 			methods = new ArrayList<>();
 		
-		methods.add(PathItem.HttpMethod.POST);
+		methods.add(HttpMethod.POST);
 		
 	}
 	
@@ -59,7 +59,7 @@ public class TestConfigurationFilter {
 		if (methods==null)
 			methods = new ArrayList<>();
 		
-		methods.add(PathItem.HttpMethod.PUT);
+		methods.add(HttpMethod.PUT);
 		
 	}
 	
@@ -67,7 +67,7 @@ public class TestConfigurationFilter {
 		if (methods==null)
 			methods = new ArrayList<>();
 		
-		methods.add(PathItem.HttpMethod.DELETE);
+		methods.add(HttpMethod.DELETE);
 		
 	}
 	

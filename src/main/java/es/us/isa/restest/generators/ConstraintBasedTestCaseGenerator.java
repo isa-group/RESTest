@@ -12,7 +12,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
-import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 import java.util.*;
 
@@ -36,7 +36,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	}
 
 	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, PathItem.HttpMethod method) {
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, HttpMethod method) {
 
 		List<TestCase> testCases = new ArrayList<>();
 
@@ -103,7 +103,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	// Generate the next test case and update the generation index
 	@Override
-	protected TestCase generateNextTestCase(Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason) {
+	protected TestCase generateNextTestCase(Operation testOperation, String path, HttpMethod method, String faultyReason) {
 		// This way, all test cases of an operation are not executed one after the other, but randomly:
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
 		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), path, method);

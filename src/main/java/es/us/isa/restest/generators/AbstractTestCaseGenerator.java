@@ -11,7 +11,7 @@ import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
-import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 import java.util.*;
 
@@ -76,7 +76,7 @@ public abstract class AbstractTestCaseGenerator {
 				throw new IllegalArgumentException("Specify the path(s) to be tested");
 			}
 
-			for(PathItem.HttpMethod method: filter.getMethods()) {
+			for(HttpMethod method: filter.getMethods()) {
 				// Generate test cases for the operation
 				testCases.addAll(generate(filter.getPath(), method));
 			}
@@ -132,9 +132,9 @@ public abstract class AbstractTestCaseGenerator {
 		return generate(filters);
 	}
 
-	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, PathItem.HttpMethod method);
+	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, HttpMethod method);
 
-	protected Collection<TestCase> generate(String path, PathItem.HttpMethod method) {
+	protected Collection<TestCase> generate(String path, HttpMethod method) {
 
 		// Get test configuration object for the operation
 		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
@@ -207,7 +207,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected abstract boolean hasNext();
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	protected abstract TestCase generateNextTestCase(Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason);
+	protected abstract TestCase generateNextTestCase(Operation testOperation, String path, HttpMethod method, String faultyReason);
 
 	protected void updateIndexes(boolean currentTestFaulty) {
 		// Update indexes

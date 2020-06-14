@@ -9,7 +9,7 @@ import java.util.Objects;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
-import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.apache.logging.log4j.LogManager;
 
@@ -29,7 +29,7 @@ public class TestCase implements Serializable {
 	private Boolean fulfillsDependencies;					// True if it does not violate any inter-parameter dependencies
 	private String faultyReason;							// "none", "individual_parameter_constraint", "invalid_request_body" or "inter_parameter_dependency"
 	private String operationId;								// Id of the operation (ex. getAlbums)
-	private PathItem.HttpMethod method;								// HTTP method
+	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
 	private String inputFormat;								// Input format
 	private String outputFormat;							// Output format
@@ -42,7 +42,7 @@ public class TestCase implements Serializable {
 	private Map<String, ApiResponse> expectedOutputs;			// Possible outputs
 	private ApiResponse expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
 	
-	public TestCase(String id, Boolean faulty, String operationId, String path, PathItem.HttpMethod method) {
+	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
 		this.faulty = faulty;
 		this.fulfillsDependencies = false; // By default, a test case does not satisfy inter-parameter dependencies
@@ -78,11 +78,11 @@ public class TestCase implements Serializable {
 		this.expectedSuccessfulOutput = expectedSuccessfulOutput;
 	}
 
-	public PathItem.HttpMethod getMethod() {
+	public HttpMethod getMethod() {
 		return method;
 	}
 
-	public void setMethod(PathItem.HttpMethod method) {
+	public void setMethod(HttpMethod method) {
 		this.method = method;
 	}
 
