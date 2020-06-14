@@ -9,6 +9,8 @@ import java.util.Objects;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
+import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.specification.ParameterFeatures;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 
@@ -79,6 +81,66 @@ public class TestCase implements Serializable {
 
 	public void setPath(String path) {
 		this.path = path;
+	}
+
+	public void addParameter(ParameterFeatures parameter, String value) {
+		addParameter(parameter.getIn(), parameter.getName(), value);
+	}
+
+	public void addParameter(TestParameter parameter, String value) {
+		addParameter(parameter.getIn(), parameter.getName(), value);
+	}
+
+	private void addParameter(String in, String paramName, String paramValue) {
+		switch (in) {
+			case "header":
+				addHeaderParameter(paramName, paramValue);
+				break;
+			case "query":
+				addQueryParameter(paramName, paramValue);
+				break;
+			case "path":
+				addPathParameter(paramName, paramValue);
+				break;
+			case "body":
+				setBodyParameter(paramValue);
+				break;
+			case "formData":
+				addFormParameter(paramName, paramValue);
+				break;
+			default:
+				throw new IllegalArgumentException("Parameter type not supported: " + in);
+		}
+	}
+
+	public void removeParameter(ParameterFeatures parameter) {
+		removeParameter(parameter.getIn(), parameter.getName());
+	}
+
+	public void removeParameter(TestParameter parameter) {
+		removeParameter(parameter.getIn(), parameter.getName());
+	}
+
+	private void removeParameter(String in, String paramName) {
+		switch (in) {
+			case "query":
+				removeQueryParameter(paramName);
+				break;
+			case "header":
+				removeHeaderParameter(paramName);
+				break;
+			case "path":
+				removePathParameter(paramName);
+				break;
+			case "formData":
+				removeFormParameter(paramName);
+				break;
+			case "body":
+				setBodyParameter(null);
+				break;
+			default:
+				throw new IllegalArgumentException("Parameter type '" + in + "' not supported.");
+		}
 	}
 
 	public Map<String, String> getQueryParameters() {

@@ -149,29 +149,9 @@ public abstract class AbstractTestCaseGenerator {
 		// Set parameters
 		if(testOperation.getTestParameters() != null) {
 			for (TestParameter confParam : testOperation.getTestParameters()) {
-				ParameterFeatures specParameter = findParameter(testOperation.getOpenApiOperation(), confParam.getName(), confParam.getIn());
-
-				if (specParameter.getRequired() || rand.nextFloat() <= confParam.getWeight()) {
+				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
 					ITestDataGenerator generator = generators.get(confParam.getName());
-					switch (specParameter.getIn()) {
-						case "header":
-							test.addHeaderParameter(confParam.getName(), generator.nextValueAsString());
-							break;
-						case "query":
-							test.addQueryParameter(confParam.getName(), generator.nextValueAsString());
-							break;
-						case "path":
-							test.addPathParameter(confParam.getName(), generator.nextValueAsString());
-							break;
-						case "body":
-							test.setBodyParameter(generator.nextValueAsString());
-							break;
-						case "formData":
-							test.addFormParameter(confParam.getName(), generator.nextValueAsString());
-							break;
-						default:
-							throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
-					}
+					test.addParameter(confParam, generator.nextValueAsString());
 				}
 			}
 		}
