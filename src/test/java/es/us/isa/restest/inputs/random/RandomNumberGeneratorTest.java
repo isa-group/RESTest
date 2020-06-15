@@ -3,18 +3,56 @@ package es.us.isa.restest.inputs.random;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import es.us.isa.restest.configuration.pojos.GenParameter;
+import es.us.isa.restest.configuration.pojos.Generator;
+import es.us.isa.restest.inputs.TestDataGeneratorFactory;
+import org.junit.Before;
 import org.junit.Test;
 
-import es.us.isa.restest.inputs.random.RandomNumberGenerator;
 import es.us.isa.restest.util.DataType;
 
 public class RandomNumberGeneratorTest {
 
+	Generator generator;
+
+	@Before
+	public void setupGenerator() {
+		generator = new Generator();
+		generator.setType("RandomNumber");
+		generator.setGenParameters(new ArrayList<>());
+	}
+
 	@Test
 	public void testRandomIntGeneration() {
-		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.INT64);
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("int32"));
+
+		generator.getGenParameters().add(type);
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
+		for(int i=0;i<100;i++) {
+			Object number = gen.nextValue();
+			assertTrue("Not an Integer", number instanceof Integer);
+			//System.out.println("Unbounded Integer: " + (Integer) number);
+		}
+	}
+
+	@Test
+	public void testRandomInt64Generation() {
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("int64"));
+
+		generator.getGenParameters().add(type);
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not an Integer", number instanceof Integer);
@@ -24,11 +62,25 @@ public class RandomNumberGeneratorTest {
 	
 	@Test
 	public void testRandomBoundedIntGeneration() {
-		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.INTEGER);
-		int min = 10;
-		int max = 40;
-		gen.setMin(min);
-		gen.setMax(max);
+		Integer min = 10;
+		Integer max = 40;
+
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("integer"));
+
+		GenParameter minGen = new GenParameter();
+		minGen.setName("min");
+		minGen.setValues(Collections.singletonList(min.toString()));
+
+		GenParameter maxGen = new GenParameter();
+		maxGen.setName("max");
+		maxGen.setValues(Collections.singletonList(max.toString()));
+
+		generator.getGenParameters().addAll(Arrays.asList(type, minGen, maxGen));
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not an Integer", number instanceof Integer);
@@ -39,7 +91,14 @@ public class RandomNumberGeneratorTest {
 	
 	@Test
 	public void testRandomLongGeneration() {
-		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.LONG);
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("long"));
+
+		generator.getGenParameters().add(type);
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Long", number instanceof Long);
@@ -49,11 +108,25 @@ public class RandomNumberGeneratorTest {
 	
 	@Test
 	public void testRandomBoundedLongGeneration() {
-		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.LONG);
-		long min = 1000;
-		long max = 1000000;
-		gen.setMin(min);
-		gen.setMax(max);
+		Long min = 1000L;
+		Long max = 1000000L;
+
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("long"));
+
+		GenParameter minGen = new GenParameter();
+		minGen.setName("min");
+		minGen.setValues(Collections.singletonList(min.toString()));
+
+		GenParameter maxGen = new GenParameter();
+		maxGen.setName("max");
+		maxGen.setValues(Collections.singletonList(max.toString()));
+
+		generator.getGenParameters().addAll(Arrays.asList(type, minGen, maxGen));
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Long", number instanceof Long);
@@ -64,7 +137,14 @@ public class RandomNumberGeneratorTest {
 	
 	@Test
 	public void testRandomFloatGeneration() {
-		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.FLOAT);
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("float"));
+
+		generator.getGenParameters().add(type);
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Float", number instanceof Float);
@@ -74,48 +154,80 @@ public class RandomNumberGeneratorTest {
 	
 	@Test
 	public void testRandomBoundedFloatGeneration() {
-		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.FLOAT);
-		float min = (float) 0.2;
-		float max = (float) 0.6;
-		gen.setMin(min);
-		gen.setMax(max);
+		Float min = 0.2f;
+		Float max = 0.6f;
+
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("float"));
+
+		GenParameter minGen = new GenParameter();
+		minGen.setName("min");
+		minGen.setValues(Collections.singletonList(min.toString()));
+
+		GenParameter maxGen = new GenParameter();
+		maxGen.setName("max");
+		maxGen.setValues(Collections.singletonList(max.toString()));
+
+		generator.getGenParameters().addAll(Arrays.asList(type, minGen, maxGen));
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Float", number instanceof Float);
 			assertTrue("Out of range", (Float) number >= min && (Float) number <= max);
-			//System.out.println("Bounded Float: " + (Float) number);
 		}
 	}
 	
 	@Test
 	public void testRandomDoubleGeneration() {
-		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.DOUBLE);
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("double"));
+
+		generator.getGenParameters().add(type);
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Double", number instanceof Double);
-			//System.out.println("Unbounded Float: " + (Double) number);
 		}
 	}
 	
 	@Test
 	public void testRandomBoundedDoubleGeneration() {
-		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.NUMBER);
-		double min = 0.2;
-		double max = 0.8;
-		gen.setMin(min);
-		gen.setMax(max);
+		Double min = 0.2d;
+		Double max = 0.8d;
+
+		GenParameter type = new GenParameter();
+		type.setName("type");
+		type.setValues(Collections.singletonList("number"));
+
+		GenParameter minGen = new GenParameter();
+		minGen.setName("min");
+		minGen.setValues(Collections.singletonList(min.toString()));
+
+		GenParameter maxGen = new GenParameter();
+		maxGen.setName("max");
+		maxGen.setValues(Collections.singletonList(max.toString()));
+
+		generator.getGenParameters().addAll(Arrays.asList(type, minGen, maxGen));
+
+		RandomNumberGenerator gen = (RandomNumberGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+
 		for(int i=0;i<100;i++) {
 			Object number = gen.nextValue();
 			assertTrue("Not a Double", number instanceof Double);
 			assertTrue("Out of range", (Double) number >= min && (Double) number <= max);
-			//System.out.println("Bounded Double: " + (Double) number);
 		}
 	}
 	
 	@Test
 	public void testSeed() {
-		List<Integer> values1 = new ArrayList<Integer>();
-		List<Integer> values2 = new ArrayList<Integer>();
+		List<Integer> values1 = new ArrayList<>();
+		List<Integer> values2 = new ArrayList<>();
 		
 		RandomNumberGenerator gen = new RandomNumberGenerator(DataType.INT64);
 		for (int i = 0; i < 100; i++) 

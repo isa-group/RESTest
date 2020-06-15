@@ -1,15 +1,28 @@
 
 package es.us.isa.restest.configuration.pojos;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.List;
 
 public class Operation {
 
+    private String testPath;
     private String operationId;
     private String method;
     private List<TestParameter> testParameters = null;
-    private List<ParamDependency> paramDependencies = null;
     private String expectedResponse;
+
+    @JsonIgnore
+    private io.swagger.v3.oas.models.Operation openApiOperation;
+
+    public String getTestPath() {
+        return testPath;
+    }
+
+    public void setTestPath(String testPath) {
+        this.testPath = testPath;
+    }
 
     public String getOperationId() {
         return operationId;
@@ -35,20 +48,20 @@ public class Operation {
         this.testParameters = testParameters;
     }
 
-    public List<ParamDependency> getParamDependencies() {
-        return paramDependencies;
-    }
-
-    public void setParamDependencies(List<ParamDependency> paramDependencies) {
-        this.paramDependencies = paramDependencies;
-    }
-
     public String getExpectedResponse() {
         return expectedResponse;
     }
 
     public void setExpectedResponse(String expectedResponse) {
         this.expectedResponse = expectedResponse;
+    }
+
+    public io.swagger.v3.oas.models.Operation getOpenApiOperation() {
+        return openApiOperation;
+    }
+
+    public void setOpenApiOperation(io.swagger.v3.oas.models.Operation openApiOperation) {
+        this.openApiOperation = openApiOperation;
     }
 
 }

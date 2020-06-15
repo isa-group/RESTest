@@ -1,13 +1,13 @@
 
 package es.us.isa.restest.configuration.pojos;
 
-import java.util.List;
+import java.util.Map;
 
 public class Auth {
 
     private Boolean required;
-    private List<QueryParam> queryParams = null;
-    private List<HeaderParam> headerParams = null;
+    private Map<String, String> queryParams = null;
+    private Map<String, String> headerParams = null;
     private String apiKeysPath; // JSON file containing array of API keys (path relative to src/main/resources/auth/)
     private String headersPath; // JSON file containing array of auth headers (path relative to src/main/resources/auth/)
 
@@ -19,19 +19,19 @@ public class Auth {
         this.required = required;
     }
 
-    public List<QueryParam> getQueryParams() {
+    public Map<String, String> getQueryParams() {
         return queryParams;
     }
 
-    public void setQueryParams(List<QueryParam> queryParams) {
+    public void setQueryParams(Map<String, String> queryParams) {
         this.queryParams = queryParams;
     }
 
-    public List<HeaderParam> getHeaderParams() {
+    public Map<String, String> getHeaderParams() {
         return headerParams;
     }
 
-    public void setHeaderParams(List<HeaderParam> headerParams) {
+    public void setHeaderParams(Map<String, String> headerParams) {
         this.headerParams = headerParams;
     }
 

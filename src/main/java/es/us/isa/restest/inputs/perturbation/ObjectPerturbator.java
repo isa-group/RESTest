@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.jsonmutator.JsonMutator;
 import es.us.isa.restest.inputs.ITestDataGenerator;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
@@ -23,6 +24,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
     private JsonMutator jsonMutator;
     private ObjectMapper objectMapper;
     private Boolean singleOrder = true; // True if single order mutation, false otherwise
+    private static Logger logger = Logger.getLogger(ObjectPerturbator.class);
 
     public ObjectPerturbator() {
         this.objectMapper = new ObjectMapper();
@@ -44,8 +46,8 @@ public class ObjectPerturbator implements ITestDataGenerator {
         try {
             this.originalObject = objectMapper.readTree(originalObject);
         } catch (IOException e) {
-            System.err.println("An error occurred when deserializing JSON:");
-            e.printStackTrace();
+            logger.error("An error occurred when deserializing JSON:");
+            logger.error(e.getMessage(), e);
             System.exit(1);
         }
     }
@@ -63,7 +65,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
         try {
             return objectMapper.writeValueAsString(nextValue());
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
@@ -76,7 +78,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
         try {
             return objectMapper.writeValueAsString(originalObject);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         return null;
     }
@@ -93,8 +95,8 @@ public class ObjectPerturbator implements ITestDataGenerator {
         try {
             this.originalObject = objectMapper.readTree(originalObject);
         } catch (IOException e) {
-            System.err.println("An error occurred when deserializing JSON:");
-            e.printStackTrace();
+            logger.error("An error occurred when deserializing JSON:");
+            logger.error(e.getMessage(), e);
             System.exit(1);
         }
     }

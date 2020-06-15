@@ -1,190 +1,117 @@
 # RESTest
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.com/isa-group/RESTest.svg?branch=develop)](https://travis-ci.com/isa-group/RESTest)
+[![Test coverage](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=coverage)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Coverage)
+[![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=sqale_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Maintainability)
+[![Reliability](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=reliability_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Reliability)
+[![Security](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=security_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Security)
 
-RESTest is a model-based testing framework that provides randomly generated test cases of an API from its specification. It mainly supports RESTful APIs described with the OAS design language.
+RESTest is a framework for automated black-box testing of RESTful web APIs. It follows a model-based approach, where test cases are automatically derived from the [OpenAPI Specification (OAS)](https://www.openapis.org/) of the API under test. No access to the source code is required, which makes it possible to test APIs written in any programming language, running in local or remote servers.
 
-## Documentation
-* [How does it work?](#how-does-it-work)
-* [Quickstart guide](#quickstart-guide)
-* [Description of the workflow](https://github.com/isa-group/RESTest/wiki/Description-of-the-workflow)
-* [Parameter dependencies: how to describe them](https://github.com/isa-group/RESTest/wiki/Inter-parameter-dependencies)
-* [Test configuration files](https://github.com/isa-group/RESTest/wiki/Test-configuration-files)
-* [Properties files](https://github.com/isa-group/RESTest/wiki/Properties-files)
-* [The abstract test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators)
-* [Instantiating abstract test cases: the writers](https://github.com/isa-group/RESTest/wiki/Writers)
-* [Examples of parameter dependency specifications, test configuration files and properties files](https://github.com/isa-group/RESTest/wiki/Examples)
-* [Developer's guide](https://github.com/isa-group/RESTest/wiki/Developer's-guide)
+## RESTest Wiki
+In this page you can find a brief description of how RESTest works and an illustrating example. If you want to read the full documentation, please visit the [Wiki](https://github.com/isa-group/RESTest/wiki). 
 
 ## How does it work?
-RESTest creates a default test configuration file from the API specification. With this file, RESTest generates random test cases using data generators. Then, those test cases are transformed into JUnit test cases that make API requests - RESTest uses [REST Assured](https://github.com/rest-assured/rest-assured) to test and validate the API requests generated -. Lastly, the JUnit suite is executed and the API responses are used to compute statistics, such as the percentage of the successful tests, the failed tests classified by their types or the coverage of the tests.
+The figure below shows how RESTest works:
+
+1. **Test model generation**: RESTest takes as input the OAS specification of the API under test, considered the *system model*. A [*test model*](https://github.com/isa-group/RESTest/wiki/Test-configuration-files) is automatically generated from the system model including test-specific configuration data. The default test model can be manually enriched with fine-grained configuration details such as test data generation settings.
+
+1. **Analysis of dependencies**: The OAS specification of the API can optionally describe [inter-parameter dependencies](https://github.com/isa-group/RESTest/wiki/Inter-parameter-dependencies) using the IDL4OAS extension (see examples [here](https://github.com/isa-group/IDLReasoner/blob/master/src/test/resources/OAS_example.yaml#L45) and [here](https://github.com/isa-group/IDLReasoner/tree/master/src/test/resources)). If so, inter-parameter dependencies will be automatically analyzed and leveraged for the generation of test cases.
+
+1. **Abstract test case generation**: The system and the test models drive the generation of abstract test cases following user-defined test case generation strategies such as random testing. In parallel, inter-parameter dependencies, if any, are fed into the tool [IDLReasoner](https://github.com/isa-group/IDLReasoner), providing support for their automated analysis during test case generation, for instance, to check whether an API call satisfies all the inter-parameter dependencies defined in the specification.
+
+1. **Test case generation**: The abstract test cases are instantiated into a specific programming language or testing framework using a [test writer](https://github.com/isa-group/RESTest/wiki/Writers). RESTest currently supports the generation of [REST Assured](http://rest-assured.io/) test cases.
+
+1. **Test case execution**: The test cases are executed and a set of reports and statistics are generated. These data are machine-readable, therefore test generation algorithms can react to them and generate more sophisticated test cases (e.g., with search-based approaches).
+
+![RESTest](docs/Approach8.png)
 
 ## Quickstart guide
-You can clone the project by executing the following command from the command line:
+To get started with RESTest, you can try it yourself with some API, for example, [Bikewise](https://bikewise.org/). First, download the code:
 ````
-git clone -b develop https://github.com/isa-group/RESTest.git
+git clone https://github.com/isa-group/RESTest.git
 ````
-Then, open RESTest with your favourite IDE.
-### Testing my first API
-First, you have to create a test configuration file. RESTest provides you a functionality that produces it from the API specification:
-```java
-String specPath = "path/to/oas/api/spec/file.yaml";
-String confPath = "path/to/generate/testConf.yaml";
-OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
-gen.generate(confPath);
+### Setting up RESTest
+
+1. **Get the OAS specification of the API under test**. For Bikewise, it is available at the following path: `src/test/resources/Bikewise/swagger.yaml`.
+
+1. **Generate the test configuration file**. From the OAS spec, we can automatically generate the [test configuration file](https://github.com/isa-group/RESTest/wiki/Test-configuration-files). To do so, run the [CreateTestConf](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/CreateTestConf.java) class, located under the `es.us.isa.restest.main` package. The test configuration file will be generated in the location `src/test/Bikewise/testConf.yaml`.
+
+1. **(Optional) Modify the test configuration file to tailor your needs**. For example, you can remove some operations you are not interested to test. For more info, visit the [Wiki](https://github.com/isa-group/RESTest/wiki/Test-configuration-files).
+
+1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/Properties-files). You can find the RESTest configuration file for the Bikewise API at `src/main/resources/ExperimentsSetup/bikewise.properties`. With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`:
+
+```properties
+numtestcases=10
+oaispecpath=src/test/resources/Bikewise/swagger.yaml
+confpath=src/test/resources/Bikewise/testConf.yaml
+targetdirjava=src/generation/java/bikewise_example
+packagename=bikewise_example
+experimentname=bikewise_example
+testclassname=BikewiseTest
+enableinputcoverage=true
+enableoutputcoverage=true
+enablecsvstats=true
+ignoredependencies=true
+numtotaltestcases=40
+delay=-1
+faultyratio=0
+
+# CBT only:
+faultydependencyratio=0
+reloadinputdataevery=10
+inputdatamaxvalues=10
 ```
-You can filter the generation of the test configuration file by path and method:
+
+5. **Run RESTest**. Edit [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to set the path to the properties file. Then, run the [IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java) class, located under the `es.us.isa.restest.main` package.
+
 ````java
-List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-TestConfigurationFilter filter = new TestConfigurationFilter();
-filter.setPath("path/you/want/to/test");    // null = All paths
-filter.addAllMethods();
-
-//Another method filters:
-//filter.addGetMethod();
-//filter.addPostMethod();
-//filter.addPutMethod();
-//filter.addDeleteMethod();
-
-filters.add(filter);
-gen.generate(confPath, filters);
+setEvaluationParameters("src/main/resources/ExperimentsSetup/bikewise.properties");
 ````
-We strongly recommend to modify the test configuration file generated as it is pretty simple. For example, you will need to add the authentication parameters to the file if the API requires an API key or an OAuth token. Our developers guide includes more information.\
-\
-Next step is to create a properties file, which is the setup of the test. You must set the paths to the API documentation file and the test configuration file. We also suggest to specify the number of test cases you want to generate. Here's an example:
-````properties
-numtestcases=50                             # Number of test cases - this is not mandatory, but recommended; defaults to 10
-oaispecpath=path/to/oas/api/spec/file.yaml  # Path to OAS specification file
-confpath=path/to/test/conf/file.yaml        # Path to test configuration file
-````
-You need to edit the [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to put the path to the properties file:
-````java
-setEvaluationParameters("path/to/the/properties/file.properties");
-````
-Finally, run the main method of IterativeExample. RESTest will do the rest.
-### An example: Spotify
-Spotify offers a RESTful API whose endpoints return JSON data. We will use the Spotify OpenAPI specification stored in the [APIs-guru repository](https://github.com/APIs-guru/openapi-directory/blob/master/APIs/spotify.com/v1/swagger.yaml). For this example we will save the yaml file into ``src/test/resources/Spotify`` - we suggest to save the OAS specification and the test configuration files of each API into ``src/test/resources/api_name`` -.\
-\
-We only want to test two operations: [get an album](https://developer.spotify.com/documentation/web-api/reference/albums/get-album/) and [get an artist](https://developer.spotify.com/console/get-artist/), so we will have to use a filter for each one. For each filter, we need to specify the path and the HTTP methods we want to test. We don't have to include the base path of the endpoint, as it is defined in the OAS specification file:
-````java
-//Path where OAS specification file is stored
-String specPath = "src/test/resources/Spotify/swagger.yaml";
 
-//Path where we want the test configuration file to be stored
-String confPath = "src/test/resources/Spotify/testConf.yaml";
+### Generated test cases and test reports
 
-OpenAPISpecification spec = new OpenAPISpecification(specPath);
+RESTest generates REST Assured test cases like the following one:
 
-List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+```java
+@Test
+public void test_1jylmdhlbau76_GETversionincidentsformat() {
+	String testResultId = "test_1jylmdhlbau76_GETversionincidentsformat";
 
-//We create the filter for the first operation: get an album
-TestConfigurationFilter albumFilter = new TestConfigurationFilter();
-albumFilter.setPath("/albums/{id}");     //This is the endpoint of the operation
-albumFilter.addGetMethod();              //It is a GET operation, so we only add the GET method to the operation
+	NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter(false, false, "none");
 
-//We create the filter for the second operation: get an artist
-TestConfigurationFilter artistFilter = new TestConfigurationFilter();
-artistFilter.setPath("/artists/{id}");      //This is the endpoint of the operation
-artistFilter.addGetMethod();                                  //It is a GET operation, so we only add the GET method to the operation
+	try {
+  	Response response = RestAssured
+		.given()
+			.log().all()
+			.queryParam("incident_type", "unconfirmed")
+			.queryParam("proximity", "whine")
+			.queryParam("occurred_after", "36")
+			.queryParam("query", "camper")
+			.queryParam("page", "18")
+			.filter(new CSVFilter(testResultId, APIName))
+			.filter(allureFilter)
+			.filter(statusCode5XXFilter)
+			.filter(nominalOrFaultyTestCaseFilter)
+			.filter(validationFilter)
+		.when()
+			.get("/v2/incidents");
 
-//Adding the filters to the list
-filters.add(albumFilter);
-filters.add(artistFilter);
-
-//Generating the test configuration file:
-DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
-gen.generate(confPath, filters);
-````
-This is the resulting test configuration file:
-````yaml
----
-auth:
-  required: true
-  queryParams: []
-  headerParams: []
-  apiKeysPath: null
-  headersPath: null
-testConfiguration:
-  testPaths:
-  - testPath: /albums/{id}
-    operations:
-    - operationId: <SET OPERATION ID>
-      method: get
-      testParameters:
-      - name: id
-        weight: null
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: market
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-  - testPath: /artists/{id}
-    operations:
-    - operationId: <SET OPERATION ID>
-      method: get
-      testParameters:
-      - name: id
-        weight: null
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-````
-As Spotify requires an access token to make requests to its API, we need to connect Spotify Developers to our Spotify account to get a token. Spotify denotes that the access token goes into the ``Authorization`` field as a header parameter. We specify this configuration into the test configuration file:
-````yaml
-auth:
-  required: true
-  queryParams: []
-  headerParams: 
-  - name: Authorization
-    value: Bearer <YOUR ACCESS TOKEN>
-  apiKeysPath: null
-  headersPath: null
-...
-````
-You can also use a JSON file to store and use your tokens. We recommend it because you can store several tokens:
-````json
-{
-     "Authorization": [
-         "Bearer <YOUR ACCESS TOKEN 1>",
-         "Bearer <YOUR ACCESS TOKEN 2>",
-        
-        "...",
-        
-         "Bearer <YOUR ACCESS TOKEN N>"
-     ]
+		response.then().log().all();
+		System.out.println("Test passed.");
+	} catch (RuntimeException ex) {
+		System.err.println(ex.getMessage());
+		fail(ex.getMessage());
+	}	
 }
-````
-In this case, you must denote the path to this JSON file in the test configuration file. The file **must** be stored into ``src/main/resources/auth`` folder. The access token of Spotify goes into the header, so we will specify the path to the JSON file in the ``headersPath`` field.
-````yaml
-auth:
-  required: true
-  queryParams: []
-  headerParams: []
-  apiKeysPath: null
-  headersPath: path/to/tokens/file.json   #This is a relative path; the base path is src/main/resources/auth/
-...
-````
-As you can see, the test configuration file can be modified in many ways. Take a look at our developers guide for more information.\
-\
-Now we have to create the properties file, defining the paths of the OAS specification file and the test configuration file. Then we are ready to test the Spotify API.
+```
+
+This test case makes a GET request to the endpoint `/v2/incidents` with several query parameters. Then it asserts that:
+  - The status code is not 500 or higher (server error).
+  - The status code is in the range 2XX if the request is valid or 4XX if the request is faulty.
+  - The response conforms to the OAS specification of the API.
+
+Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `target/allure-reports/bikewise_example/index.html` in your browser:
+
+![Allure](docs/Allure.png)

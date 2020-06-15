@@ -8,7 +8,7 @@ import org.junit.Test;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
-import io.swagger.models.HttpMethod;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 public class RESTAssuredWritterTest {
 	
@@ -26,9 +26,7 @@ public class RESTAssuredWritterTest {
 		
 		tc.addHeaderParameter("Authorization", "Bearer sklfhskdlafjsklf092359wejtu0349");
 		tc.addQueryParameter("status", "pending");
-		
-		tc.setExpectedOutputs(spec.getSpecification().getPath("/pet/findByStatus").getGet().getResponses());
-		
+
 		testCases.add(tc);
 		
 		// Write test case

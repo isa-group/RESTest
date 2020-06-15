@@ -8,6 +8,9 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 
+import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
+import static es.us.isa.restest.util.FileManager.deleteFile;
+
 public class CSVManager {
 
 	
@@ -83,14 +86,9 @@ public class CSVManager {
 	 * @param header Header to add to the first line. If null, no header will be added
 	 */
 	public static void createFileWithHeader(String path, String header) {
-		File csvFile = new File(path);
-		csvFile.delete(); // delete file if it exists
-		try {
-			csvFile.createNewFile();
-			createFileWithHeader(csvFile, header);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		deleteFile(path); // delete file if it exists
+		createFileIfNotExists(path);
+		createFileWithHeader(new File(path), header);
 	}
 
 	private static void createFileWithHeader(File csvFile, String header) {

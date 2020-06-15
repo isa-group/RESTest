@@ -5,10 +5,9 @@ package es.us.isa.restest.searchbased;
 
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
+
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.solution.impl.AbstractGenericSolution;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
@@ -54,8 +53,8 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
     		else
     			testResults=null;
     	}
+    	result.getVariables().removeAll(Collections.singleton(null));
 		return result;
-    	
     }
         
     private TestResult copyTestResult(TestResult testResult) {

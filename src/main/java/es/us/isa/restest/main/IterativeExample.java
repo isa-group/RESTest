@@ -17,9 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.util.FileManager.createDir;
@@ -30,7 +28,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 
 public class IterativeExample {
 
-    private static Integer numTestCases;                    // Number of test cases per operation
+    private static Integer numTestCases = 10;               // Number of test cases per operation
     private static String OAISpecPath;		                // Path to OAS specification file
     private static OpenAPISpecification spec;               // OAS
     private static String confPath;	                        // Path to test configuration file
@@ -43,7 +41,7 @@ public class IterativeExample {
     private static Boolean enableCSVStats = true;           // Set to 'true' if you want statistics in a CSV file.
     private static Boolean ignoreDependencies = false;      // Set to 'true' if you don't want to use IDLReasoner.
     private static Float faultyRatio = 0.1f;                // Percentage of faulty test cases to generate. Defaults to 0.1
-    private static Integer totalNumTestCases = 50;			// Total number of test cases to be generated
+    private static Integer totalNumTestCases = -1;			// Total number of test cases to be generated
     private static Integer timeDelay = -1;                  // Delay between requests
 
     // For CBT only:
@@ -59,7 +57,7 @@ public class IterativeExample {
         if(args.length > 0)
             setEvaluationParameters(args[0]);
         else
-            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/yelp_businessesSearch.properties");
+            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/bikewise.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
@@ -86,7 +84,7 @@ public class IterativeExample {
             // Test case generation + execution + test report generation
             runner.run();
 
-            logger.info("Iteration "  + iteration + ". " +  runner.getNumTestCases() + " test cases generated.");
+            logger.info("Iteration {}. {} test cases generated.", iteration, runner.getNumTestCases());
             iteration++;
         }
 
@@ -102,7 +100,10 @@ public class IterativeExample {
 
     private static void setEvaluationParameters(String evalPropertiesFilePath) {
 
-        numTestCases = Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "numtestcases"));
+        numTestCases = readExperimentProperty(evalPropertiesFilePath, "numtestcases") != null?
+                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "numtestcases")) :
+                numTestCases;
+
         OAISpecPath = readExperimentProperty(evalPropertiesFilePath, "oaispecpath");
         confPath = readExperimentProperty(evalPropertiesFilePath, "confpath");
 
@@ -173,19 +174,23 @@ public class IterativeExample {
         }
         String title = spec.getSpecification().getInfo().getTitle().replaceAll("[^\\p{L}\\p{Nd}\\s]+", "").trim();
         title = (capitalize? title.substring(0,1).toUpperCase() : title.substring(0,1).toLowerCase()) +
-                (title.length() > 1? Arrays.stream(title.substring(1).split("\\s"))
-                        .map(IterativeExample::capitalizeString)
-                        .collect(Collectors.joining())
-                        : "");
+                (title.length() > 1? formatTitle(title.substring(1).split("\\s")) : "");
         return title;
     }
 
-    private static String capitalizeString(String s) {
-        String result = s.substring(0, 1);
-        if(s.length() > 1) {
-            result = s.concat(s.substring(1));
+    private static String formatTitle(String[] sp) {
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < sp.length; i++) {
+            if(i == 0) {
+                builder.append(sp[i]);
+            } else {
+                builder.append(sp[i].substring(0, 1).toUpperCase());
+                if(sp[i].length() > 1) {
+                   builder.append(sp[i].substring(1));
+                }
+            }
         }
-        return result;
+        return builder.toString();
     }
 
     // Create a test case generator
@@ -196,7 +201,7 @@ public class IterativeExample {
         }
 
         // Load configuration
-        TestConfigurationObject conf = loadConfiguration(confPath);
+        TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
         // Create generator
         AbstractTestCaseGenerator generator;
@@ -215,7 +220,7 @@ public class IterativeExample {
 
     // Create a writer for RESTAssured
     private static IWriter createWriter() {
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        String basePath = spec.getSpecification().getServers().get(0).getUrl();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName, basePath);
         writer.setLogging(true);
         writer.setAllureReport(true);
@@ -261,7 +266,7 @@ public class IterativeExample {
             mapper.writeValue(new File(timePath), Timer.getCounters());
         } catch (IOException e) {
             logger.error("The time report cannot be generated. Stack trace:");
-            e.printStackTrace();
+            logger.error(e.getMessage());
         }
         logger.info("Time report generated.");
     }
@@ -270,8 +275,9 @@ public class IterativeExample {
         try {
             TimeUnit.SECONDS.sleep(timeDelay);
         } catch (InterruptedException e) {
-            System.err.println("Error introducing delay: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error introducing delay", e);
+            logger.error(e.getMessage());
+            Thread.currentThread().interrupt();
         }
     }
 }

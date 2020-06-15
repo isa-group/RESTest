@@ -2,30 +2,100 @@
 auth:
   required: true
   queryParams:
-  - name: Parameter name
-    value: Parameter value
+    Parameter name: Parameter value
   headerParams:
-  - name: Parameter name
-    value: Parameter value
+    Parameter name: Parameter value
+  apiKeysPath: null
+  headersPath: null
 testConfiguration:
-  testPaths:
-  - testPath: Path 1
-    operations:
-    - operationId: Operation ID
-      method: get
-      testParameters:
-      - name: Test parameter name
-        weight: 0.5
-        generator:
-          type: Generator type
-          genParameters:
-          - name: Parameter name
-            values:
-            - Parameter value
-            objectValues: null
-          - name: Parameter name 2
-            values:
-            - Parameter value
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: Expected HTTP code
+  operations:
+  - testPath: /path1
+    operationId: Operation ID
+    method: get
+    testParameters:
+    - name: Test parameter name
+      in: query
+      weight: 0.5
+      generator:
+        type: Generator type
+        genParameters:
+        - name: Parameter name
+          values:
+          - Parameter value
+          objectValues: null
+        - name: Parameter name 2
+          values:
+          - Parameter value
+          objectValues: null
+    expectedResponse: Expected HTTP code
+  - testPath: /path1
+    operationId: Operation ID 2
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: 0.5
+      generator:
+        type: Generator type
+        genParameters:
+        - name: Parameter name
+          values:
+          - Parameter value
+          objectValues: null
+        - name: Parameter name 2
+          values:
+          - Parameter value
+          objectValues: null
+    expectedResponse: Expected HTTP code
+  - testPath: /path1
+    operationId: Operation ID 3
+    method: put
+    testParameters:
+    - name: Test parameter name 3
+      in: header
+      weight: 0.5
+      generator:
+        type: Generator type
+        genParameters:
+        - name: Parameter name
+          values:
+          - Parameter value
+          objectValues: null
+        - name: Parameter name 2
+          values:
+          - Parameter value
+          objectValues: null
+    - name: body
+      in: body
+      weight: 0.5
+      generator:
+        type: Generator type
+        genParameters:
+        - name: Parameter name
+          values:
+          - Parameter value
+          objectValues: null
+        - name: Parameter name 2
+          values:
+          - Parameter value
+          objectValues: null
+    expectedResponse: Expected HTTP code
+  - testPath: /path1
+    operationId: Operation ID 4
+    method: delete
+    testParameters:
+    - name: Test parameter name 4
+      in: query
+      weight: 0.5
+      generator:
+        type: Generator type
+        genParameters:
+        - name: Parameter name
+          values:
+          - Parameter value
+          objectValues: null
+        - name: Parameter name 2
+          values:
+          - Parameter value
+          objectValues: null
+    expectedResponse: Expected HTTP code

@@ -14,6 +14,14 @@ import es.us.isa.restest.util.JSONManager;
 
 public class TestDataGeneratorFactory {
 
+	public static final String VALUES = "values";
+	public static final String MIN_LENGTH = "minLength";
+	public static final String MAX_LENGTH = "maxLength";
+
+	private TestDataGeneratorFactory() {
+		//ignore
+	}
+
 	/**
 	 * Create a test data generator based on the data from the test configuration file in JSON
 	 * @param generator
@@ -21,7 +29,7 @@ public class TestDataGeneratorFactory {
 	 */
 	public static ITestDataGenerator createTestDataGenerator(Generator generator) {
 		
-		ITestDataGenerator gen=null;
+		ITestDataGenerator gen;
 		
 		switch(generator.getType()) {
 
@@ -136,7 +144,7 @@ public class TestDataGeneratorFactory {
 		for(GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
 			
-			case "values":
+			case VALUES:
 				gen.setValues(param.getValues());
 				break;
 			case "csv":
@@ -167,7 +175,7 @@ public class TestDataGeneratorFactory {
 		for(GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
 
-				case "values":
+				case VALUES:
 					gen = new InputValueIterator<>(param.getValues());
 					break;
 				default:
@@ -180,7 +188,7 @@ public class TestDataGeneratorFactory {
 	
 	private static ITestDataGenerator createRandomNumber(Generator generator) {
 		
-		RandomNumberGenerator gen = null;
+		RandomNumberGenerator gen;
 		
 		GenParameter typeParam = TestConfigurationVisitor.searchGenParameter("type",generator.getGenParameters());
 		if (typeParam==null || typeParam.getValues().get(0) == null) 
@@ -324,7 +332,7 @@ public class TestDataGeneratorFactory {
 
 	// Create a random regexp generator
 	private static RandomRegExpGenerator createRandomRegExpGenerator(Generator generator) {
-		RandomRegExpGenerator gen = null;
+		RandomRegExpGenerator gen;
 
 		GenParameter regExpParam = TestConfigurationVisitor.searchGenParameter("regExp",generator.getGenParameters());
 		if (regExpParam==null || regExpParam.getValues().get(0) == null)
@@ -335,10 +343,10 @@ public class TestDataGeneratorFactory {
 		// Set parameters
 		for(GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
-				case "minLength":
+				case MIN_LENGTH:
 					gen.setMinLength(Integer.parseInt(param.getValues().get(0)));
 					break;
-				case "maxLength":
+				case MAX_LENGTH:
 					gen.setMaxLength(Integer.parseInt(param.getValues().get(0)));
 					break;
 				case "regExp":
@@ -379,7 +387,7 @@ public class TestDataGeneratorFactory {
 		for(GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
 
-				case "values":
+				case VALUES:
 					gen.setValues(param.getObjectValues());
 					break;
 				case "files":
@@ -427,10 +435,10 @@ public class TestDataGeneratorFactory {
 		for(GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
 
-				case "minLength":
+				case MIN_LENGTH:
 					gen.setMinLength(Integer.parseInt(param.getValues().get(0)));
 					break;
-				case "maxLength":
+				case MAX_LENGTH:
 					gen.setMaxLength(Integer.parseInt(param.getValues().get(0)));
 					break;
 				case "includeSpecialCharacters":
@@ -451,17 +459,17 @@ public class TestDataGeneratorFactory {
 	}
 
 	private static ITestDataGenerator createBoundaryStringGenerator(Generator generator) {
-		ITestDataGenerator gen = null;
+		ITestDataGenerator gen;
 		BoundaryStringConfigurator boundStrConf = new BoundaryStringConfigurator();
 
 		// Set parameters of the BoundaryStringConfigurator
 		for(GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
 
-				case "minLength":
+				case MIN_LENGTH:
 					boundStrConf.setMinLength(Integer.parseInt(param.getValues().get(0)));
 					break;
-				case "maxLength":
+				case MAX_LENGTH:
 					boundStrConf.setMaxLength(Integer.parseInt(param.getValues().get(0)));
 					break;
 				case "delta":
@@ -489,7 +497,7 @@ public class TestDataGeneratorFactory {
 	}
 
 	private static ITestDataGenerator createBoundaryNumberGenerator(Generator generator) {
-		ITestDataGenerator gen = null;
+		ITestDataGenerator gen;
 		BoundaryNumberConfigurator boundNumbConf = new BoundaryNumberConfigurator();
 
 		GenParameter typeParam = TestConfigurationVisitor.searchGenParameter("type",generator.getGenParameters());

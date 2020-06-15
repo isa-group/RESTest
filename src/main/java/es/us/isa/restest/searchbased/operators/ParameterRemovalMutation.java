@@ -5,6 +5,7 @@
  */
 package es.us.isa.restest.searchbased.operators;
 
+import es.us.isa.restest.specification.ParameterFeatures;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
@@ -23,20 +24,17 @@ public class ParameterRemovalMutation extends AbstractAPITestCaseMutationOperato
     @Override
     protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
         for (TestCase testCase : solution.getVariables()) {            
-            for (String paramName : getAllPresentParameters(testCase)) {
+            for (ParameterFeatures param : getAllPresentParameters(testCase)) {
                 if (getRandomGenerator().nextDouble() <= mutationProbability) {                    
-                    doMutation(paramName, testCase, solution);
+                    doMutation(param, testCase);
                     resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                 }
             }
         }
     }
     
-    private void doMutation(String paramName, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        testCase.removePathParameter(paramName);
-        testCase.removeQueryParameter(paramName);
-        testCase.removeHeaderParameter(paramName);
-        testCase.removeFormParameter(paramName);
+    private void doMutation(ParameterFeatures param, TestCase testCase) {
+        testCase.removeParameter(param);
     }
     
 }

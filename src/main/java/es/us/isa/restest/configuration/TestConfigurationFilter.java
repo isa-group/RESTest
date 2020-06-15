@@ -3,7 +3,7 @@ package es.us.isa.restest.configuration;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import io.swagger.models.HttpMethod;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 /**
  * Class to manage the testing of each API operation individually. A filter is composed
@@ -15,7 +15,7 @@ public class TestConfigurationFilter {
 
 	private String path = null;						// Path to test (null for all)
 	private Collection<HttpMethod> methods;			// Methods to test
-	
+
 	public TestConfigurationFilter() {}
 	
 	public TestConfigurationFilter(String path, Collection<HttpMethod> methods) {
@@ -41,7 +41,7 @@ public class TestConfigurationFilter {
 	
 	public void addGetMethod() {
 		if (methods==null)
-			methods = new ArrayList<HttpMethod>();
+			methods = new ArrayList<>();
 		
 		methods.add(HttpMethod.GET);
 		
@@ -49,7 +49,7 @@ public class TestConfigurationFilter {
 	
 	public void addPostMethod() {
 		if (methods==null)
-			methods = new ArrayList<HttpMethod>();
+			methods = new ArrayList<>();
 		
 		methods.add(HttpMethod.POST);
 		
@@ -57,7 +57,7 @@ public class TestConfigurationFilter {
 	
 	public void addPutMethod() {
 		if (methods==null)
-			methods = new ArrayList<HttpMethod>();
+			methods = new ArrayList<>();
 		
 		methods.add(HttpMethod.PUT);
 		
@@ -65,7 +65,7 @@ public class TestConfigurationFilter {
 	
 	public void addDeleteMethod() {
 		if (methods==null)
-			methods = new ArrayList<HttpMethod>();
+			methods = new ArrayList<>();
 		
 		methods.add(HttpMethod.DELETE);
 		

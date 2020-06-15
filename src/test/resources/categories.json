@@ -56,7 +56,7 @@
 	},
 	{
 		"name": "Validation failures",
-		"traceRegex": ".*Validation failed.*",
+		"traceRegex": ".*\"key\" : \"validation.response.*",
 		"matchedStatuses": [
 			"failed"
 		]

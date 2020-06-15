@@ -29,7 +29,7 @@ public class PetstoreFullTestCaseGenerator {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Petstore/fullConf.yaml");
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Petstore/fullConf.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 3;
@@ -81,7 +81,7 @@ public class PetstoreFullTestCaseGenerator {
         System.out.println("INPUT_CONTENT_TYPE coverage: " + coverageMeter.getCriterionTypeCoverage(OPERATION));
 
         // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+        String basePath = spec.getSpecification().getServers().get(0).getUrl();
         RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PetstoreTest", "restassured", basePath.toLowerCase());
         writer.setOAIValidation(true);
         writer.setLogging(true);

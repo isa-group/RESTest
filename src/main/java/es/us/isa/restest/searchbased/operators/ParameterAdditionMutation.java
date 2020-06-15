@@ -9,15 +9,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.specification.ParameterFeatures;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
-import es.us.isa.restest.configuration.pojos.TestPath;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.SpecificationVisitor;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
 
 /**
  *
@@ -32,59 +32,37 @@ public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperat
     @Override
     protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
         for (TestCase testCase : solution.getVariables()) {            
-            for (String paramName : getNonPresentParameters(testCase,solution)) {
+            for (ParameterFeatures paramFeatures : getNonPresentParameters(testCase,solution)) {
                 if (getRandomGenerator().nextDouble() <= mutationProbability) {                    
-                    doMutation(paramName, testCase, solution);
+                    doMutation(paramFeatures, testCase, solution);
                     resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                 }
             }
         }
     }
 
-    protected Collection<String> getNonPresentParameters(TestCase testCase, RestfulAPITestSuiteSolution solution) {
+    protected Collection<ParameterFeatures> getNonPresentParameters(TestCase testCase, RestfulAPITestSuiteSolution solution) {
     	es.us.isa.restest.configuration.pojos.Operation operation = solution.getProblem().getOperationUnderTest();
     	if(operation==null) {
-    		for(TestPath path:solution.getProblem().getConfig().getTestPaths()) {
-    			for(es.us.isa.restest.configuration.pojos.Operation op:path.getOperations())
-    				if(testCase.getOperationId().equals(op.getOperationId()))
-    				{
-    					operation=op;
-    					break;
-    				}
-    		}
-    		
+            for(es.us.isa.restest.configuration.pojos.Operation op:solution.getProblem().getConfig().getOperations())
+                if(testCase.getOperationId().equals(op.getOperationId())) {
+                    operation=op;
+                    break;
+                }
     	}
-        Operation specOperation = SpecificationVisitor.findOperation(testCase.getOperationId(), solution.getProblem().getApiUnderTest());
-        Collection<String> presentParams=getAllPresentParameters(testCase);
-        Set<String> result=new HashSet<>();
-        for(Parameter param:specOperation.getParameters()){
-            if(!presentParams.contains(param.getName()))
-                result.add(param.getName());
+        Collection<ParameterFeatures> presentParams=getAllPresentParameters(testCase);
+        Set<ParameterFeatures> result=new HashSet<>();
+        for (TestParameter param: operation.getTestParameters()) {
+            ParameterFeatures paramFeatures = new ParameterFeatures(param.getName(), param.getIn(), null);
+            if (!presentParams.contains(paramFeatures))
+                result.add(paramFeatures);
         }
         return result;
     }
 
-    private void doMutation(String paramName, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        
-        Operation specOperation = SpecificationVisitor.findOperation(solution.getProblem().getOperationUnderTest().getOperationId(), solution.getProblem().getApiUnderTest());
-        Parameter specParameter = SpecificationVisitor.findParameter(specOperation, paramName);
-        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(paramName);
-        switch (specParameter.getIn()) {
-            case "header":
-                testCase.addHeaderParameter(paramName, generator.nextValueAsString());
-                break;
-            case "query":
-                testCase.addQueryParameter(paramName, generator.nextValueAsString());
-                break;
-            case "path":
-                testCase.addPathParameter(paramName, generator.nextValueAsString());
-                break;
-            case "body":
-                testCase.setBodyParameter(generator.nextValueAsString());
-                break;
-            default:
-                throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
-        }
+    private void doMutation(ParameterFeatures paramFeatures, TestCase testCase, RestfulAPITestSuiteSolution solution) {
+        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(paramFeatures.getName());
+        testCase.addParameter(paramFeatures, generator.nextValueAsString());
     }
     
 }
