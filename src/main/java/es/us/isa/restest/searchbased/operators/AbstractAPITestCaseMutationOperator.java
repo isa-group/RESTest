@@ -6,13 +6,18 @@
 package es.us.isa.restest.searchbased.operators;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
+import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import io.swagger.v3.oas.models.Operation;
 import org.uma.jmetal.operator.MutationOperator;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 import org.uma.jmetal.util.pseudorandom.RandomGenerator;
+
+import static es.us.isa.restest.util.SpecificationVisitor.findParameter;
 
 /**
  *
@@ -50,29 +55,21 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
         return solution;
     }
 
-    protected Collection<String> getAllPresentParameters(TestCase testCase) {
-        Set<String> parameterNames = new HashSet<>();
-        for (String pathParam : testCase.getPathParameters().keySet()) {
-            assert (!parameterNames.contains(pathParam));
-            parameterNames.add(pathParam);
-        }
-        for (String queryParam : testCase.getQueryParameters().keySet()) {
-            assert (!parameterNames.contains(queryParam));
-            parameterNames.add(queryParam);
-        }
-        for (String headerParam : testCase.getHeaderParameters().keySet()) {
-            assert (!parameterNames.contains(headerParam));
-            parameterNames.add(headerParam);
-        }
-        for (String formParam : testCase.getFormParameters().keySet()) {
-            assert (!parameterNames.contains(formParam));
-            parameterNames.add(formParam);
-        }
+    protected Collection<ParameterFeatures> getAllPresentParameters(TestCase testCase) {
+        Set<ParameterFeatures> parameters = new HashSet<>();
+        for (String pathParam : testCase.getPathParameters().keySet())
+            parameters.add(new ParameterFeatures(pathParam, "path", null));
+        for (String queryParam : testCase.getQueryParameters().keySet())
+            parameters.add(new ParameterFeatures(queryParam, "query", null));
+        for (String headerParam : testCase.getHeaderParameters().keySet())
+            parameters.add(new ParameterFeatures(headerParam, "header", null));
+        for (String formParam : testCase.getFormParameters().keySet())
+            parameters.add(new ParameterFeatures(formParam, "formData", null));
         // TODO: Support body parameter mutation:
         /*if(testCase.getBodyParameter()!=null) {            
             parameterNames.add("body");
         }*/
-        return parameterNames;
+        return parameters;
     }
 
     protected abstract void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution);

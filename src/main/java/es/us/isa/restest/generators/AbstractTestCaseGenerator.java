@@ -185,7 +185,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected abstract boolean hasNext();
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	protected abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);
+	public abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);
 
 	protected void updateIndexes(boolean currentTestFaulty) {
 		// Update indexes

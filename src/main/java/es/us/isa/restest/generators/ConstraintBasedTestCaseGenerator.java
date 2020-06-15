@@ -103,7 +103,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	// Generate the next test case and update the generation index
 	@Override
-	protected TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
+	public TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
 		// This way, all test cases of an operation are not executed one after the other, but randomly:
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
 		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
