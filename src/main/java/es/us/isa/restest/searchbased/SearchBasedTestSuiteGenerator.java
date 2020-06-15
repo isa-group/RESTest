@@ -59,9 +59,9 @@ import com.google.common.collect.Lists;
 public class SearchBasedTestSuiteGenerator {
 
     // Configuration   
-    int nsga2PopulationSize = 10;
-    int maxEvaluations = 10;
-    long seed = 1979;
+    Integer nsga2PopulationSize = 10;
+    Integer maxEvaluations = 10;
+    Long seed = 1979L;
     
     // Members:
     RestfulAPITestSuiteGenerationProblem problem;
@@ -69,33 +69,39 @@ public class SearchBasedTestSuiteGenerator {
     List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms;
     ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experimentBuilder;
 
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath,  String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed) {
-    	this(apiDescriptionPath, configFilePath, Optional.empty(),Optional.empty(),experimentName,objectiveFunctions,experimentName,seed);
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath,  String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed,int maxEvaluations, int populationSize) {
+    	this(apiDescriptionPath, configFilePath, Optional.empty(),Optional.empty(),experimentName,objectiveFunctions,experimentName,seed,maxEvaluations,populationSize);
     }
     
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed) {
-    	this(apiDescriptionPath, configFilePath, resourcePath, method, experimentName, objectiveFunctions,targetPath, seed,null);
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, int maxEvaluations, int populationSize) {
+    	this(apiDescriptionPath, configFilePath, resourcePath, method, experimentName, objectiveFunctions,targetPath, seed,null,maxEvaluations,populationSize);
     }
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize) {
-    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath,fixedTestSuiteSize));
-    }
-    
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize) {
-    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize));
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize,int maxEvaluations, int populationSize) {
+    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath,fixedTestSuiteSize),maxEvaluations,populationSize);
     }
     
-    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, RestfulAPITestSuiteGenerationProblem problem) {
-    	this(experimentName,targetPath,seed,Lists.newArrayList(problem));
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize,int maxEvaluations, int populationSize) {
+    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize),maxEvaluations,populationSize);
     }
     
-    public SearchBasedTestSuiteGenerator( String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems) {
-        this.seed=seed;
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, RestfulAPITestSuiteGenerationProblem problem,int maxEvaluations, int populationSize) {
+    	this(experimentName,targetPath,seed,Lists.newArrayList(problem),maxEvaluations,populationSize);
+    }
+    
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems,int maxEvaluations, int populationSize) {    	
+    	this(experimentName,targetPath,seed,myproblems,configureDefaultAlgorithms(seed,maxEvaluations,populationSize,myproblems));
+    	setMaxEvaluations(maxEvaluations);
+        setPopulationSize(populationSize);
+    }
+    
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems,List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms) {    	
+    	this.seed=seed;        
         JMetalRandom.getInstance().setSeed(seed);
         this.problem=myproblems.get(0);
         this.problems = new ArrayList<>();
         for(RestfulAPITestSuiteGenerationProblem p:myproblems)
         	this.problems.add(new ExperimentProblem<>(p));        
-        this.algorithms = configureDefaultAlgorithms();
+        this.algorithms = algorithms;
          
         experimentBuilder = new ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(experimentName)
                 .setExperimentBaseDirectory(targetPath)
@@ -111,7 +117,7 @@ public class SearchBasedTestSuiteGenerator {
     }
 
     
-    private Algorithm<List<RestfulAPITestSuiteSolution>> createDefaultAlgorithm(long seed, int populationSize, int maxEvaluations, RestfulAPITestSuiteGenerationProblem problem){
+    private static Algorithm<List<RestfulAPITestSuiteSolution>> createDefaultAlgorithm(long seed, int populationSize, int maxEvaluations, RestfulAPITestSuiteGenerationProblem problem){
     	MersenneTwisterGenerator generator=new MersenneTwisterGenerator(seed);
     	Algorithm<List<RestfulAPITestSuiteSolution>> result=null;
     	AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
@@ -130,17 +136,15 @@ public class SearchBasedTestSuiteGenerator {
     	return result;
     }
     
-    private List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> configureDefaultAlgorithms() {
-    
-    	 
+    private static List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> configureDefaultAlgorithms(long seed, int maxEvaluations, int populationSize,List<RestfulAPITestSuiteGenerationProblem> myproblems) {        	 
     	List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> result = new ArrayList<>();
         Algorithm<List<RestfulAPITestSuiteSolution>> algorithm = null; 
         
         ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> expAlg=null;
         int runId=1;
-        for (ExperimentProblem ep : problems) {            
-        	algorithm=createDefaultAlgorithm(seed, nsga2PopulationSize, maxEvaluations, problem);
-            expAlg=new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(algorithm, ep, runId);           
+        for (RestfulAPITestSuiteGenerationProblem problem : myproblems) {            
+        	algorithm=createDefaultAlgorithm(seed, populationSize, maxEvaluations, problem);
+            expAlg=new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(algorithm, new ExperimentProblem<>(problem), runId);           
             result.add(expAlg);
             runId++;
         }
@@ -309,7 +313,7 @@ public class SearchBasedTestSuiteGenerator {
     	return nsga2PopulationSize; 
     }
     
-    public void setPopulationSize(int popSize) {
+    private void setPopulationSize(int popSize) {
     	if(popSize>0)
     		this.nsga2PopulationSize=popSize;
     	else
@@ -328,10 +332,10 @@ public class SearchBasedTestSuiteGenerator {
 		return maxEvaluations;
 	}
     
-    public void setMaxEvaluations(int maxEvaluations) {
-    	if(maxEvaluations>0)
-    		this.maxEvaluations = maxEvaluations;
-    	else
+    private void setMaxEvaluations(int maxEvaluations) {
+    	if(maxEvaluations>0) {
+    		this.maxEvaluations = maxEvaluations;    		
+    	}else
     		throw new IllegalArgumentException("Maximun evaluations should be positive! (argument value was:"+maxEvaluations+")");	
 	}
     

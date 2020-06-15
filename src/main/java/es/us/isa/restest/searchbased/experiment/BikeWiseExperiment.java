@@ -31,7 +31,7 @@ public class BikeWiseExperiment {
     private static int fixedTestSuiteSize = 2;												// Number of test cases per suite
     private static int minTestSuiteSize = 1;
     private static int maxTestSuiteSize = 4;
-    private static int populationSize = 5;												// Population size for the evolutionary algorithm
+    private static int populationSize = 6;												// Population size for the evolutionary algorithm
     private static int maxEvaluations=20;
     private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		    // Path to OAS specification file
     private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		    // Path to test configuration file
@@ -60,10 +60,10 @@ public class BikeWiseExperiment {
                             targetDir,
                             seed,
                             minTestSuiteSize,
-                            maxTestSuiteSize);
-        
-        generator.setPopulationSize(populationSize);
-        generator.setMaxEvaluations(maxEvaluations);        
+                            maxTestSuiteSize,
+                            maxEvaluations,
+                            populationSize);
+                       
         try {
             generator.run();
         } catch (IOException ex) {
