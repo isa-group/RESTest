@@ -7,17 +7,15 @@ import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
-import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 import java.util.*;
 
 import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
-import static es.us.isa.restest.util.SpecificationVisitor.findParameter;
 
 public abstract class AbstractTestCaseGenerator {
 
@@ -76,7 +74,7 @@ public abstract class AbstractTestCaseGenerator {
 				throw new IllegalArgumentException("Specify the path(s) to be tested");
 			}
 
-			for(PathItem.HttpMethod method: filter.getMethods()) {
+			for(HttpMethod method: filter.getMethods()) {
 				// Generate test cases for the operation
 				testCases.addAll(generate(filter.getPath(), method));
 			}
@@ -132,9 +130,9 @@ public abstract class AbstractTestCaseGenerator {
 		return generate(filters);
 	}
 
-	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation, String path, PathItem.HttpMethod method);
+	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation);
 
-	protected Collection<TestCase> generate(String path, PathItem.HttpMethod method) {
+	protected Collection<TestCase> generate(String path, HttpMethod method) {
 
 		// Get test configuration object for the operation
 		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
@@ -142,36 +140,16 @@ public abstract class AbstractTestCaseGenerator {
 		// Create test data generators for each parameter
 		createGenerators(testOperation.getTestParameters());
 
-		return generateOperationTestCases(testOperation, path, method);
+		return generateOperationTestCases(testOperation);
 	}
 
 	protected void setTestCaseParameters(TestCase test, Operation testOperation) {
 		// Set parameters
 		if(testOperation.getTestParameters() != null) {
 			for (TestParameter confParam : testOperation.getTestParameters()) {
-				ParameterFeatures specParameter = findParameter(testOperation.getOpenApiOperation(), confParam.getName(), confParam.getIn());
-
-				if (specParameter.getRequired() || rand.nextFloat() <= confParam.getWeight()) {
+				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
 					ITestDataGenerator generator = generators.get(confParam.getName());
-					switch (specParameter.getIn()) {
-						case "header":
-							test.addHeaderParameter(confParam.getName(), generator.nextValueAsString());
-							break;
-						case "query":
-							test.addQueryParameter(confParam.getName(), generator.nextValueAsString());
-							break;
-						case "path":
-							test.addPathParameter(confParam.getName(), generator.nextValueAsString());
-							break;
-						case "body":
-							test.setBodyParameter(generator.nextValueAsString());
-							break;
-						case "formData":
-							test.addFormParameter(confParam.getName(), generator.nextValueAsString());
-							break;
-						default:
-							throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
-					}
+					test.addParameter(confParam, generator.nextValueAsString());
 				}
 			}
 		}
@@ -207,7 +185,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected abstract boolean hasNext();
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	protected abstract TestCase generateNextTestCase(Operation testOperation, String path, PathItem.HttpMethod method, String faultyReason);
+	protected abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);
 
 	protected void updateIndexes(boolean currentTestFaulty) {
 		// Update indexes

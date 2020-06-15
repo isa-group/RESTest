@@ -20,22 +20,7 @@ public class IDLAdapter {
     public static void idl2restestTestCase(TestCase tc, Map<String, String> request, Operation testOperation) {
         for (Map.Entry<String, String> parameter: request.entrySet()) {
             TestParameter testParameter = searchTestParameter(parameter.getKey(), testOperation.getTestParameters());
-            switch (testParameter.getIn()) {
-                case "header":
-                    tc.addHeaderParameter(parameter.getKey(), parameter.getValue());
-                    break;
-                case "query":
-                    tc.addQueryParameter(parameter.getKey(), parameter.getValue());
-                    break;
-                case "path":
-                    tc.addPathParameter(parameter.getKey(), parameter.getValue());
-                    break;
-                case "formData":
-                    tc.addFormParameter(parameter.getKey(), parameter.getValue());
-                    break;
-                default:
-                    throw new IllegalArgumentException("Parameter type not supported: " + testParameter.getIn());
-            }
+            tc.addParameter(testParameter, parameter.getValue());
         }
     }
 

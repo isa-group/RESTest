@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 
@@ -119,7 +120,7 @@ public class CoverageGatherer {
 
             if (type == OPERATION) {
                 List<String> operationsList = new ArrayList<>(); // list of operations per criterion
-                for (Entry<PathItem.HttpMethod, Operation> operation : currentPathEntry.getValue().readOperationsMap()
+                for (Entry<HttpMethod, Operation> operation : currentPathEntry.getValue().readOperationsMap()
                         .entrySet()) {
                     operationsList.add(operation.getKey().toString()); // collect operations for this path
                 }
@@ -134,9 +135,9 @@ public class CoverageGatherer {
 
     private void getAnotherCoverageCriteria(CriterionType type, List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry) {
         // iterate over the operations of that path
-        Iterator<Entry<PathItem.HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().readOperationsMap().entrySet().iterator();
+        Iterator<Entry<HttpMethod, Operation>> operationsIterator = currentPathEntry.getValue().readOperationsMap().entrySet().iterator();
         while (operationsIterator.hasNext()) {
-            Entry<PathItem.HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
+            Entry<HttpMethod, Operation> currentOperationEntry = operationsIterator.next();
             RequestBody requestBody = currentOperationEntry.getValue().getRequestBody();
 
             if (type == PARAMETER) {
@@ -176,7 +177,7 @@ public class CoverageGatherer {
         } // end of iteration of operations
     }
 
-    private void getParameterCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry, RequestBody requestBody) {
+    private void getParameterCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry, RequestBody requestBody) {
         List<String> parametersList = new ArrayList<>(); // list of parameters per criterion
 
         if(currentOperationEntry.getValue().getParameters() != null) {
@@ -200,7 +201,7 @@ public class CoverageGatherer {
         criteria.add(createCriterion(parametersList, PARAMETER, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
     }
 
-    private void getParameterValueCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry) {
+    private void getParameterValueCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry) {
         // iterate over the parameters of that operation
         if(currentOperationEntry.getValue().getParameters() != null) {
             Iterator<Parameter> parametersIterator = currentOperationEntry.getValue().getParameters().iterator();
@@ -230,7 +231,7 @@ public class CoverageGatherer {
         }
     }
 
-    private void getFormDataParameterValues(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry, RequestBody requestBody) {
+    private void getFormDataParameterValues(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry, RequestBody requestBody) {
         MediaType mediaType = requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
                 requestBody.getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
                 requestBody.getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
@@ -260,7 +261,7 @@ public class CoverageGatherer {
         return parameterValuesList;
     }
 
-    private void getInputContentTypeCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry) {
+    private void getInputContentTypeCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry) {
         RequestBody requestBody = currentOperationEntry.getValue().getRequestBody();
         List<String> contentTypes = requestBody != null ? new ArrayList<>(requestBody.getContent().keySet()) : null;
         if (contentTypes != null) { // there could be no 'requestBody' property, so check it before
@@ -268,7 +269,7 @@ public class CoverageGatherer {
         }
     }
 
-    private void getOutputContentTypeCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry) {
+    private void getOutputContentTypeCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry) {
         ApiResponse response = null;
         for(String statusCode : currentOperationEntry.getValue().getResponses().keySet()) {
             if(statusCode.startsWith("2")) {
@@ -283,7 +284,7 @@ public class CoverageGatherer {
         }
     }
 
-    private void getStatusCodeClassCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry) {
+    private void getStatusCodeClassCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry) {
         List<String> statusCodeClassesList = new ArrayList<>(); // list of statusCodeClasses per criterion
         statusCodeClassesList.add("2XX"); // it is assumed that all API operations should have a successful response
         for (String statusCodeClass : currentOperationEntry.getValue().getResponses().keySet()) {
@@ -295,7 +296,7 @@ public class CoverageGatherer {
         criteria.add(createCriterion(statusCodeClassesList, STATUS_CODE_CLASS, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
     }
 
-    private void getStatusCodeCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry) {
+    private void getStatusCodeCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry) {
         criteria.add(createCriterion(
                 new ArrayList<>(currentOperationEntry.getValue().getResponses().keySet()), // list of status codes for that operation
                 STATUS_CODE,
@@ -303,7 +304,7 @@ public class CoverageGatherer {
         ));
     }
 
-    private void getResponseBodyPropertiesCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<PathItem.HttpMethod, Operation> currentOperationEntry) {
+    private void getResponseBodyPropertiesCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry) {
         // iterate over the responses of that operation
         for (Entry<String, ApiResponse> currentResponseEntry : currentOperationEntry.getValue().getResponses().entrySet()) {
 
