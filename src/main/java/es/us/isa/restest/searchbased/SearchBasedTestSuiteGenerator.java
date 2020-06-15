@@ -6,11 +6,8 @@ package es.us.isa.restest.searchbased;
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
 import es.us.isa.restest.configuration.pojos.Operation;
-import es.us.isa.restest.configuration.pojos.TestConfiguration;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.configuration.pojos.TestPath;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
-import es.us.isa.restest.searchbased.operators.AbstractAPITestCaseMutationOperator;
 import es.us.isa.restest.searchbased.operators.AllMutationOperators;
 import es.us.isa.restest.searchbased.operators.ParameterAdditionMutation;
 import es.us.isa.restest.searchbased.operators.ParameterRemovalMutation;
@@ -25,9 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.uma.jmetal.algorithm.Algorithm;
@@ -154,39 +149,24 @@ public class SearchBasedTestSuiteGenerator {
     private static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
     	OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
-        TestPath pathUnderTest = null;
         Operation operationUnderTest = null;
         if(resourcePath.isPresent() && operation.isPresent()) {
-        	pathUnderTest = findPathUnderTest(configuration,resourcePath.get());
         	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());
         }
-        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, pathUnderTest,operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
+        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
         return problem;
     }
     
     private static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
         OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
-        TestPath pathUnderTest = null;
         Operation operationUnderTest = null;
         if(resourcePath.isPresent() && operation.isPresent()) {
-        	pathUnderTest = findPathUnderTest(configuration,resourcePath.get());
         	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());
         }
-        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, pathUnderTest,operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
+        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
         return problem;
     }
-
-    private static TestPath findPathUnderTest(TestConfigurationObject configuration, String resourcePath) {
-    	TestPath result = null;
-        for (TestPath tp : configuration.getTestConfiguration().getTestPaths()) {
-            if (tp.getTestPath().equalsIgnoreCase(resourcePath)) {
-                        result = tp;
-                        break;
-                    }
-        }
-        return result;
-	}
 
     public void run() throws IOException {
     	JMetalLogger.logger.info("Generating testSuites for: " + problem.getName() + " using as objectives :"+ problem.getObjectiveFunctions() );
@@ -259,7 +239,7 @@ public class SearchBasedTestSuiteGenerator {
         
         TestConfigurationObject tco = null;
         if (configFilePath.isPresent()) {
-            tco = TestConfigurationIO.loadConfiguration(configFilePath.get());        
+            tco = TestConfigurationIO.loadConfiguration(configFilePath.get(), apiUnderTest);
         } else {
             configFilePath = Optional.of("./testConfiguration.txt");
         }
@@ -274,13 +254,10 @@ public class SearchBasedTestSuiteGenerator {
 
     private static Operation findOperationUnderTest(TestConfigurationObject configuration, String resourcePath, String method) {
         Operation result = null;
-        TestPath tp = findPathUnderTest(configuration,resourcePath);
-        if (tp!=null) {
-        	for (Operation op : tp.getOperations()) {
-        		if (op.getMethod().equalsIgnoreCase(method)) {
-                        result = op;
-                        break;
-                }
+        for (Operation op : configuration.getTestConfiguration().getOperations()) {
+            if (op.getMethod().equalsIgnoreCase(method)) {
+                    result = op;
+                    break;
             }
         }
         return result;

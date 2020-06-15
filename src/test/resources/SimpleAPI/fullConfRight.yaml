@@ -2,124 +2,122 @@
 auth:
   required: false
 testConfiguration:
-  testPaths:
-  - testPath: /search
-    operations:
-    - operationId: search
-      method: get
-      testParameters:
-      - name: query
-        weight: null
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-      - name: type
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-              - all
-              - song
-              - artist
-              - album
-              - playlist
-      - name: market
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: csv
-            values:
-            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
-      expectedResponse: 200
-  - testPath: /artists/{artistId}
-    operations:
-    - operationId: findArtistById
-      method: get
-      testParameters:
-      - name: artistId
-        weight: null
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-          - name: min
-            values:
-            - 0
-          - name: max
-            values:
-            - 1000000000
-      expectedResponse: 200
-  - testPath: /artists
-    operations:
-    - operationId: getArtists
-      method: get
-      testParameters:
-      - name: name
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - John
-            - Carlos
-            - Halley
-            - The
-      - name: isAlive
-        weight: 0.5
-        generator:
-          type: RandomBoolean
-          genParameters: []
-      - name: nationality
-        weight: 0.5
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: csv
-            values:
-            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
-      - name: ageUnder
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-          - name: min
-            values:
-            - 1
-          - name: max
-            values:
-            - 100
-      - name: ageOver
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-          - name: min
-            values:
-            - 0
-          - name: max
-            values:
-            - 100
-      paramDependencies:     # Creo que dividir las dependencias entre 'depends' y 'conflicts' es complicado en este contexto
-      - '!(age && ageOver)'
-      - '!(age && ageUnder)'
-      - 'ageOver <= ageUnder'
-      - 'name || isAlive || nationality || ageOver || ageUnder'
-      - 'IF isAlive == true THEN !nationality'
-      - 'IF !name THEN (ageUnder && ageOver)'
-      - 'IF age>150 THEN isAlive=false'
-      expectedResponse: 200
+  operations:
+  - operationId: search
+    testPath: /search
+    method: get
+    testParameters:
+    - name: query
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+    - name: type
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - all
+            - song
+            - artist
+            - album
+            - playlist
+    - name: market
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+    expectedResponse: 200
+  - operationId: findArtistById
+    testPath: /artists/{artistId}
+    method: get
+    testParameters:
+    - name: artistId
+      in: path
+      weight: null
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - 0
+        - name: max
+          values:
+          - 1000000000
+    expectedResponse: 200
+  - operationId: getArtists
+    testPath: /artists
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - John
+          - Carlos
+          - Halley
+          - The
+    - name: isAlive
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomBoolean
+        genParameters: []
+    - name: nationality
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+    - name: ageUnder
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - 1
+        - name: max
+          values:
+          - 100
+    - name: ageOver
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - 0
+        - name: max
+          values:
+          - 100
+    expectedResponse: 200

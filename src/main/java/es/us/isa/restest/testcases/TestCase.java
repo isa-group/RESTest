@@ -2,20 +2,17 @@ package es.us.isa.restest.testcases;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
-import com.atlassian.oai.validator.model.Request;
+import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
-import com.atlassian.oai.validator.report.ValidationReport;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Response;
+import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.specification.ParameterFeatures;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
@@ -42,10 +39,7 @@ public class TestCase implements Serializable {
 	private Map<String, String> queryParameters;			// Input parameters and values
 	private Map<String, String> formParameters;				// Form-data parameters
 	private String bodyParameter;							// Body parameter
-	private String authentication;							// Name of the authentication scheme used in the request (e.g. 'BasicAuth'), null if none
-	private Map<String, Response> expectedOutputs;			// Possible outputs
-	private Response expectedSuccessfulOutput; 				// Expected output in case the request is successful (helpful for stats computation)
-	
+
 	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
 		this.faulty = faulty;
@@ -55,38 +49,22 @@ public class TestCase implements Serializable {
 		this.method = method;
 		this.inputFormat = "application/json";
 		this.outputFormat = "application/json";
-		this.headerParameters = new HashMap<String,String>();
-		this.queryParameters = new HashMap<String,String>();
-		this.pathParameters = new HashMap<String,String>();
-		this.formParameters = new HashMap<String,String>();
-		this.authentication = null;
+		this.headerParameters = new HashMap<>();
+		this.queryParameters = new HashMap<>();
+		this.pathParameters = new HashMap<>();
+		this.formParameters = new HashMap<>();
 	}
 	
 	public TestCase(TestCase testCase) {
-		this(testCase.id,testCase.faulty,testCase.operationId,testCase.path,testCase.method);
+		this(testCase.id, testCase.faulty, testCase.operationId, testCase.path, testCase.method);
 		this.faultyReason = testCase.faultyReason;
 		this.fulfillsDependencies = testCase.fulfillsDependencies;
-		headerParameters.putAll(testCase.headerParameters);
-		queryParameters.putAll(testCase.queryParameters);
-		pathParameters.putAll(testCase.pathParameters);
-		formParameters.putAll(testCase.formParameters);
+		this.inputFormat = testCase.inputFormat;
+		this.headerParameters.putAll(testCase.headerParameters);
+		this.queryParameters.putAll(testCase.queryParameters);
+		this.pathParameters.putAll(testCase.pathParameters);
+		this.formParameters.putAll(testCase.formParameters);
 		this.bodyParameter = testCase.bodyParameter;
-//		this.authentication = testCase.authentication;
-//		this.inputFormat = testCase.inputFormat;
-//		this.outputFormat = testCase.outputFormat;
-//		this.expectedSuccessfulOutput = testCase.expectedSuccessfulOutput;
-//		if(testCase.expectedOutputs!=null) {
-//			this.expectedOutputs = new HashMap<>();
-//			this.expectedOutputs.putAll(testCase.expectedOutputs);
-//		}
-	}
-
-	public Response getExpectedSuccessfulOutput() {
-		return expectedSuccessfulOutput;
-	}
-
-	public void setExpectedSuccessfulOutput(Response expectedSuccessfulOutput) {
-		this.expectedSuccessfulOutput = expectedSuccessfulOutput;
 	}
 
 	public HttpMethod getMethod() {
@@ -105,6 +83,66 @@ public class TestCase implements Serializable {
 		this.path = path;
 	}
 
+	public void addParameter(ParameterFeatures parameter, String value) {
+		addParameter(parameter.getIn(), parameter.getName(), value);
+	}
+
+	public void addParameter(TestParameter parameter, String value) {
+		addParameter(parameter.getIn(), parameter.getName(), value);
+	}
+
+	private void addParameter(String in, String paramName, String paramValue) {
+		switch (in) {
+			case "header":
+				addHeaderParameter(paramName, paramValue);
+				break;
+			case "query":
+				addQueryParameter(paramName, paramValue);
+				break;
+			case "path":
+				addPathParameter(paramName, paramValue);
+				break;
+			case "body":
+				setBodyParameter(paramValue);
+				break;
+			case "formData":
+				addFormParameter(paramName, paramValue);
+				break;
+			default:
+				throw new IllegalArgumentException("Parameter type not supported: " + in);
+		}
+	}
+
+	public void removeParameter(ParameterFeatures parameter) {
+		removeParameter(parameter.getIn(), parameter.getName());
+	}
+
+	public void removeParameter(TestParameter parameter) {
+		removeParameter(parameter.getIn(), parameter.getName());
+	}
+
+	private void removeParameter(String in, String paramName) {
+		switch (in) {
+			case "query":
+				removeQueryParameter(paramName);
+				break;
+			case "header":
+				removeHeaderParameter(paramName);
+				break;
+			case "path":
+				removePathParameter(paramName);
+				break;
+			case "formData":
+				removeFormParameter(paramName);
+				break;
+			case "body":
+				setBodyParameter(null);
+				break;
+			default:
+				throw new IllegalArgumentException("Parameter type '" + in + "' not supported.");
+		}
+	}
+
 	public Map<String, String> getQueryParameters() {
 		return queryParameters;
 	}
@@ -115,14 +153,9 @@ public class TestCase implements Serializable {
 
 	public Map<String, String> getFormParameters() { return formParameters; }
 
-	public void setFormParameters(Map<String, String> formParameters) { this.formParameters = formParameters; }
-
-	public Map<String, Response> getExpectedOutputs() {
-		return expectedOutputs;
-	}
-
-	public void setExpectedOutputs(Map<String, Response> expectedOutputs) {
-		this.expectedOutputs = expectedOutputs;
+	public void setFormParameters(Map<String, String> formParameters) {
+		setFormDataContentType();
+		this.formParameters = formParameters;
 	}
 
 	public String getOperationId() {
@@ -147,14 +180,6 @@ public class TestCase implements Serializable {
 
 	public void setOutputFormat(String outputFormat) {
 		this.outputFormat = outputFormat;
-	}
-
-	public String getAuthentication() {
-		return authentication;
-	}
-
-	public void setAuthentication(String authentication) {
-		this.authentication = authentication;
 	}
 
 	public Map<String, String> getHeaderParameters() {
@@ -189,9 +214,15 @@ public class TestCase implements Serializable {
 		headerParameters.putAll(params);
 	}
 
-	public void addFormParameter(String name, String value) { formParameters.put(name, value); }
+	public void addFormParameter(String name, String value) {
+		setFormDataContentType();
+		formParameters.put(name, value);
+	}
 
-	public void addFormParameters(Map<String,String> params) { formParameters.putAll(params); }
+	public void addFormParameters(Map<String,String> params) {
+		setFormDataContentType();
+		formParameters.putAll(params);
+	}
 
 	public void removeQueryParameter(String name) {
 		queryParameters.remove(name);
@@ -256,12 +287,16 @@ public class TestCase implements Serializable {
 	public void setFaultyReason(String faultyReason) {
 		this.faultyReason = faultyReason;
 	}
-	
+
+	private void setFormDataContentType() {
+		if (!inputFormat.equals("application/x-www-form-urlencoded") && formParameters.size() > 0)
+			inputFormat = "application/x-www-form-urlencoded";
+	}
+
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
 			createFileWithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
-					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter,authentication,expectedOutputs," +
-					"expectedSuccessfulOutput");
+					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter");
 
 		// Generate row
 		String rowBeginning = id + "," + faulty + "," + faultyReason + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
@@ -287,7 +322,7 @@ public class TestCase implements Serializable {
 			LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
 			e.printStackTrace();
 		}
-		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter).append(",,,");
+		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter);
 
 		writeRow(filePath, rowBeginning + rowEnding);
 	}
@@ -298,30 +333,45 @@ public class TestCase implements Serializable {
 	 * @param validator
 	 * @return
 	 */
-	public static Boolean checkFaulty(TestCase tc, SwaggerRequestResponseValidator validator) {
-		final String[] path = {tc.getPath()};
-		tc.getPathParameters().forEach((k, v) -> {
-			path[0] = path[0].replace("{" + k + "}", v);
-		});
-		SimpleRequest request = new SimpleRequest(tc.getMethod().toString(), path[0], tc.getHeaderParameters(), tc.getQueryParameters(), tc.getBodyParameter());
-		return validator.validateOnlyRequest(request).hasErrors();
+	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
+		String fullPath = tc.getPath();
+		for (Map.Entry<String, String> pathParam : tc.getPathParameters().entrySet())
+			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
+
+		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(tc.getMethod().toString(), fullPath)
+				.withBody(tc.getBodyParameter())
+				.withContentType(tc.getInputFormat());
+		tc.getQueryParameters().forEach(requestBuilder::withQueryParam);
+		tc.getHeaderParameters().forEach(requestBuilder::withHeader);
+
+		if (tc.getFormParameters().size() > 0) {
+			StringBuilder formDataBody = new StringBuilder();
+			try {
+				for (Map.Entry<String, String> formParam : tc.getFormParameters().entrySet()) {
+					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(formParam.getValue(), StandardCharsets.UTF_8.toString())).append("&");
+				}
+			} catch (UnsupportedEncodingException e) {
+				LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
+				e.printStackTrace();
+			}
+			requestBuilder.withBody(formDataBody.toString());
+		}
+
+		return validator.validateRequest(requestBuilder.build()).hasErrors();
 	}
-	
+
 	public String toString() {
 		return id;
 	}
 
-	/** 
+	/**
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((authentication == null) ? 0 : authentication.hashCode());
 		result = prime * result + ((bodyParameter == null) ? 0 : bodyParameter.hashCode());
-		result = prime * result + ((expectedOutputs == null) ? 0 : expectedOutputs.hashCode());
-		result = prime * result + ((expectedSuccessfulOutput == null) ? 0 : expectedSuccessfulOutput.hashCode());
 		result = prime * result + ((faulty == null) ? 0 : faulty.hashCode());
 		result = prime * result + ((faultyReason == null) ? 0 : faultyReason.hashCode());
 		result = prime * result + ((formParameters == null) ? 0 : formParameters.hashCode());
@@ -338,7 +388,7 @@ public class TestCase implements Serializable {
 		return result;
 	}
 
-	/** 
+	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -353,32 +403,11 @@ public class TestCase implements Serializable {
 			return false;
 		}
 		TestCase other = (TestCase) obj;
-		if (authentication == null) {
-			if (other.authentication != null) {
-				return false;
-			}
-		} else if (!authentication.equals(other.authentication)) {
-			return false;
-		}
 		if (bodyParameter == null) {
 			if (other.bodyParameter != null) {
 				return false;
 			}
 		} else if (!bodyParameter.equals(other.bodyParameter)) {
-			return false;
-		}
-		if (expectedOutputs == null) {
-			if (other.expectedOutputs != null) {
-				return false;
-			}
-		} else if (!expectedOutputs.equals(other.expectedOutputs)) {
-			return false;
-		}
-		if (expectedSuccessfulOutput == null) {
-			if (other.expectedSuccessfulOutput != null) {
-				return false;
-			}
-		} else if (!expectedSuccessfulOutput.equals(other.expectedSuccessfulOutput)) {
 			return false;
 		}
 		if (faulty == null) {
@@ -470,10 +499,10 @@ public class TestCase implements Serializable {
 		}
 		return true;
 	}
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 }

@@ -36,25 +36,27 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Spotify/forReadmeConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-
-		//We create the filter for the first operation: get an album
-		TestConfigurationFilter albumFilter = new TestConfigurationFilter();
-		albumFilter.setPath("/albums/{id}");     //This is the endpoint of the operation
-		albumFilter.addGetMethod();              //It is a GET operation, so we only add the GET method to the operation
-
-		//We create the filter for the second operation: get an artist
-		TestConfigurationFilter artistFilter = new TestConfigurationFilter();
-		artistFilter.setPath("/artists/{id}");      //This is the endpoint of the operation
-		artistFilter.addGetMethod();                                  //It is a GET operation, so we only add the GET method to the operation
-
-		//Adding the filters to the list
-		filters.add(albumFilter);
-		filters.add(artistFilter);
+//		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+//
+//		//We create the filter for the first operation: get an album
+//		TestConfigurationFilter albumFilter = new TestConfigurationFilter();
+//		albumFilter.setPath("/albums/{id}");     //This is the endpoint of the operation
+//		albumFilter.addGetMethod();              //It is a GET operation, so we only add the GET method to the operation
+//
+//		//We create the filter for the second operation: get an artist
+//		TestConfigurationFilter artistFilter = new TestConfigurationFilter();
+//		artistFilter.setPath("/artists/{id}");      //This is the endpoint of the operation
+//		artistFilter.addGetMethod();                                  //It is a GET operation, so we only add the GET method to the operation
+//
+//		//Adding the filters to the list
+//		filters.add(albumFilter);
+//		filters.add(artistFilter);
 
 		//Generating the test configuration file:
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
-		gen.generate(confPath, filters);
+		gen.generate(confPath
+//				, filters
+		);
 		
 	}
 	

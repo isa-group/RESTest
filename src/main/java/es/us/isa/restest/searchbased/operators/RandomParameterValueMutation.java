@@ -7,6 +7,7 @@ package es.us.isa.restest.searchbased.operators;
 
 import java.util.Collection;
 
+import es.us.isa.restest.specification.ParameterFeatures;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.inputs.ITestDataGenerator;
@@ -36,13 +37,13 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
     @Override
     protected void doMutation(double probability, RestfulAPITestSuiteSolution solution) {
         for (TestCase testCase : solution.getVariables()) {
-            Collection<String> parameters = getAllPresentParameters(testCase);
+            Collection<ParameterFeatures> parameters = getAllPresentParameters(testCase);
             if (parameters.isEmpty()) {
                 parameterAdditionOperator.doMutation(probability, solution);
             } else {
-                for (String paramName : parameters) {
+                for (ParameterFeatures param : parameters) {
                     if (getRandomGenerator().nextDouble() <= probability) {                        
-                        doMutation(paramName, testCase, solution);
+                        doMutation(param, testCase, solution);
                         resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                     }
                 }
@@ -50,25 +51,8 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
         }
     }
 
-    private void doMutation(String confParam, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(confParam);
-        Operation specOperation = SpecificationVisitor.findOperation(solution.getProblem().getOperationUnderTest().getOperationId(), solution.getProblem().getApiUnderTest());
-        Parameter specParameter = SpecificationVisitor.findParameter(specOperation, confParam);
-        switch (specParameter.getIn()) {
-            case "header":
-                testCase.addHeaderParameter(confParam, generator.nextValueAsString());
-                break;
-            case "query":
-                testCase.addQueryParameter(confParam, generator.nextValueAsString());
-                break;
-            case "path":
-                testCase.addPathParameter(confParam, generator.nextValueAsString());
-                break;
-            case "body":
-                testCase.setBodyParameter(generator.nextValueAsString());
-                break;
-            default:
-                throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
-        }
-    }        
+    private void doMutation(ParameterFeatures paramFeatures, TestCase testCase, RestfulAPITestSuiteSolution solution) {
+        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(paramFeatures.getName());
+        testCase.addParameter(paramFeatures, generator.nextValueAsString());
+    }
 }

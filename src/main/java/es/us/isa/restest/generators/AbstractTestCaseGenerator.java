@@ -1,7 +1,6 @@
 package es.us.isa.restest.generators;
 
-import com.atlassian.oai.validator.SwaggerRequestResponseValidator;
-import es.us.isa.idlreasoner.analyzer.Analyzer;
+import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.*;
@@ -11,16 +10,12 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
-import io.swagger.models.HttpMethod;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 import java.util.*;
 
 import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
-import static es.us.isa.restest.util.SpecificationVisitor.findParameter;
-import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 
 public abstract class AbstractTestCaseGenerator {
 
@@ -31,7 +26,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
 	protected AuthManager authManager;						// For if multiple API keys are used for the API
 	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
-	protected SwaggerRequestResponseValidator validator;	// Validator used to know if a test case is valid or not
+	protected OpenApiInteractionValidator validator;	// Validator used to know if a test case is valid or not
 	protected int numberOfTest;								// Number of test cases to be generated for each operation
 	protected int index;									// Number of test cases generated so far
 	protected int nCurrentFaulty;							// Number of faulty test cases generated in the current iteration
@@ -50,7 +45,7 @@ public abstract class AbstractTestCaseGenerator {
 		if (authPath != null)
 			this.authManager = new AuthManager(authPath);
 
-		this.validator = SwaggerRequestResponseValidator.createFor(spec.getPath()).build();
+		this.validator = OpenApiInteractionValidator.createFor(spec.getPath()).build();
 		this.numberOfTest = nTests;
 		this.index = 0;
 		this.nFaulty = 0;
@@ -70,7 +65,7 @@ public abstract class AbstractTestCaseGenerator {
 	 */
 	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
 
-		List<TestCase> testCases = new ArrayList<TestCase>();
+		List<TestCase> testCases = new ArrayList<>();
 		
 		// Generate test cases for each path and method
 		for(TestConfigurationFilter filter:filters) {
@@ -95,77 +90,66 @@ public abstract class AbstractTestCaseGenerator {
 	public Collection<TestCase> generate() {
 		List<TestConfigurationFilter> filters = new ArrayList<>();
 
-		for (TestPath testPath: conf.getTestConfiguration().getTestPaths()) {
-			TestConfigurationFilter filter = new TestConfigurationFilter();
-			filter.setPath(testPath.getTestPath());
-			for (es.us.isa.restest.configuration.pojos.Operation operation: testPath.getOperations()) {
-				switch(operation.getMethod().toLowerCase()) {
-					case "get":
-						filter.addGetMethod();
-						break;
-					case "post":
-						filter.addPostMethod();
-						break;
-					case "put":
-						filter.addPutMethod();
-						break;
-					case "delete":
-						filter.addDeleteMethod();
-						break;
-					default:
-						throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
-								"allowed in the test configuration file");
-				}
+		for (Operation testOperation: conf.getTestConfiguration().getOperations()) {
+			TestConfigurationFilter filter = filters.stream().filter(x -> x.getPath().equalsIgnoreCase(testOperation.getTestPath())).findFirst().orElse(null);
+			int filterIndex = -1;
+
+			if(filter == null) {
+				filter = new TestConfigurationFilter();
+				filter.setPath(testOperation.getTestPath());
+			} else {
+				filterIndex = filters.indexOf(filter);
 			}
-			filters.add(filter);
+
+			switch(testOperation.getMethod().toLowerCase()) {
+				case "get":
+					filter.addGetMethod();
+					break;
+				case "post":
+					filter.addPostMethod();
+					break;
+				case "put":
+					filter.addPutMethod();
+					break;
+				case "delete":
+					filter.addDeleteMethod();
+					break;
+				default:
+					throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
+							"allowed in the test configuration file");
+			}
+
+			if(filterIndex > -1) {
+				filters.set(filterIndex, filter);
+			} else {
+				filters.add(filter);
+			}
+
 		}
 
 		return generate(filters);
 	}
 
-	protected abstract Collection<TestCase> generateOperationTestCases(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method);
+	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation);
 
 	protected Collection<TestCase> generate(String path, HttpMethod method) {
 
-		// Get specification operation
-		Operation specOperation = spec.getSpecification().getPath(path).getOperationMap().get(method);
-
 		// Get test configuration object for the operation
-		es.us.isa.restest.configuration.pojos.Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
+		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
 
 		// Create test data generators for each parameter
 		createGenerators(testOperation.getTestParameters());
 
-		return generateOperationTestCases(specOperation, testOperation, path, method);
+		return generateOperationTestCases(testOperation);
 	}
 
-	protected void setTestCaseParameters(TestCase test, Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation) {
+	protected void setTestCaseParameters(TestCase test, Operation testOperation) {
 		// Set parameters
-		for (TestParameter confParam : testOperation.getTestParameters()) {
-			Parameter specParameter = findParameter(specOperation, confParam.getName());
-
-			if (specParameter.getRequired() || rand.nextFloat() <= confParam.getWeight()) {
-				ITestDataGenerator generator = generators.get(confParam.getName());
-				switch (specParameter.getIn()) {
-					case "header":
-						test.addHeaderParameter(confParam.getName(), generator.nextValueAsString());
-						break;
-					case "query":
-						test.addQueryParameter(confParam.getName(), generator.nextValueAsString());
-						break;
-					case "path":
-						test.addPathParameter(confParam.getName(), generator.nextValueAsString());
-						break;
-					case "body":
-						test.setBodyParameter(generator.nextValueAsString());
-						break;
-					case "formData":
-						test.addFormParameter(confParam.getName(), generator.nextValueAsString());
-						break;
-					default:
-						throw new IllegalArgumentException("Parameter type not supported: " + specParameter.getIn());
+		if(testOperation.getTestParameters() != null) {
+			for (TestParameter confParam : testOperation.getTestParameters()) {
+				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
+					ITestDataGenerator generator = generators.get(confParam.getName());
+					test.addParameter(confParam, generator.nextValueAsString());
 				}
 			}
 		}
@@ -177,13 +161,13 @@ public abstract class AbstractTestCaseGenerator {
 
 			// Header parameters
 			if (conf.getAuth().getHeaderParams()!=null)
-				for (HeaderParam param: conf.getAuth().getHeaderParams())
-					test.addHeaderParameter(param.getName(), param.getValue());
+				for (Map.Entry<String, String> param: conf.getAuth().getHeaderParams().entrySet())
+					test.addHeaderParameter(param.getKey(), param.getValue());
 
 			// Query parameters
 			if (conf.getAuth().getQueryParams()!=null)
-				for (QueryParam param: conf.getAuth().getQueryParams())
-					test.addQueryParameter(param.getName(), param.getValue());
+				for (Map.Entry<String, String> param: conf.getAuth().getQueryParams().entrySet())
+					test.addQueryParameter(param.getKey(), param.getValue());
 
 			// File containing all API keys
 			if (conf.getAuth().getApiKeysPath()!=null)
@@ -201,8 +185,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected abstract boolean hasNext();
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	protected abstract TestCase generateNextTestCase(Operation specOperation,
-			es.us.isa.restest.configuration.pojos.Operation testOperation, String path, HttpMethod method, String faultyReason);
+	public abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);
 
 	protected void updateIndexes(boolean currentTestFaulty) {
 		// Update indexes
@@ -219,11 +202,12 @@ public abstract class AbstractTestCaseGenerator {
 	// Create all generators needed for the parameters of an operation
 	public void createGenerators(List<TestParameter> testParameters) {
 		
-		this.generators = new HashMap<String,ITestDataGenerator>();
-		
-		for(TestParameter param: testParameters)
-			generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
+		this.generators = new HashMap<>();
 
+		if(testParameters != null) {
+			for(TestParameter param: testParameters)
+				generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
+		}
 	}
 
 	public void exportNominalFaultyToCSV(String filePath, String testClassName) {

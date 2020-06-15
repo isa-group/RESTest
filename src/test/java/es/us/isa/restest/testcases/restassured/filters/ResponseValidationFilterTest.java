@@ -40,7 +40,7 @@ public class ResponseValidationFilterTest {
         }
     }
 
-    @Test(expected= ResponseValidationFilter.SwaggerValidationException.class)
+    @Test(expected= ResponseValidationFilter.OpenApiValidationException.class)
     public void shouldNotValidateJSONResponse() {
         Response response = RestAssured
                 .given()

@@ -29,7 +29,7 @@ public class AmadeusRandomTestCaseGenerator {
 		
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Amadeus/confTest.yaml");
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Amadeus/confTest.yaml", spec);
 		
 		// Set number of test cases to be generated on each path, on each operation
 		int numTestCases = 10;
@@ -48,7 +48,7 @@ public class AmadeusRandomTestCaseGenerator {
 		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
 		
 		// Write RESTAssured test cases
-		String basePath = spec.getSpecification().getSchemes().get(0).name() + "://" + spec.getSpecification().getHost() + spec.getSpecification().getBasePath();
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelSearchTest", "restassured", basePath.toLowerCase());
 		writer.setOAIValidation(true);
 		writer.setLogging(true);

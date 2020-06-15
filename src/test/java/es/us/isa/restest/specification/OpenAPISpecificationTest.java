@@ -4,20 +4,18 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import es.us.isa.restest.specification.OpenAPISpecification;
-
 public class OpenAPISpecificationTest {
 
 	@Test
-	public void testOpenAPISpecification() {
+	public void testOpenAPISpecificationv3() {
 		OpenAPISpecification spec = new OpenAPISpecification("http://petstore.swagger.io/v2/swagger.json");
-		assertEquals("Wrong parsing", "petstore.swagger.io", spec.getSpecification().getHost());
+		assertEquals("Wrong parsing", "https://petstore.swagger.io/v2", spec.getSpecification().getServers().get(0).getUrl());
 	}
 
 	@Test
 	public void testGetResponsesFromAPISpecification() {
 		OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Petstore/swagger.json");
-		assertEquals("Wrong number of responses", 2, spec.getSpecification().getPath("/pet/findByStatus").getGet().getResponses().size());
+		assertEquals("Wrong number of responses", 2, spec.getSpecification().getPaths().get("/pet/findByStatus").getGet().getResponses().size());
 	}
 	
 	@Test

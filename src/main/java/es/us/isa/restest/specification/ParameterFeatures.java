@@ -1,13 +1,14 @@
 package es.us.isa.restest.specification;
 
-import io.swagger.models.parameters.AbstractSerializableParameter;
-import io.swagger.models.parameters.Parameter;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * Auxiliary class to store multiple commonly used properties of a Swagger parameter
+ * Auxiliary class to store multiple commonly used properties of an OpenAPI parameter
  */
 public class ParameterFeatures {
     String name;                    // Parameter name
@@ -19,27 +20,40 @@ public class ParameterFeatures {
     BigDecimal max;                 // If parameter is number, max value allowed
     Integer minLength;              // If parameter is string, minLength allowed
     Integer maxLength;              // If parameter is string, maxLength value allowed
+    Boolean required;               // 'true' if the parameter needs to be in the response
 
     public ParameterFeatures(Parameter p) {
         name = p.getName();
         in = p.getIn();
-        if (!in.equals("body")) {
-            type = ((AbstractSerializableParameter) p).getType();
-            format = ((AbstractSerializableParameter) p).getFormat();
-            enumValues = ((AbstractSerializableParameter) p).getEnum();
-            min = ((AbstractSerializableParameter) p).getMinimum();
-            max = ((AbstractSerializableParameter) p).getMaximum();
-            minLength = ((AbstractSerializableParameter) p).getMinLength();
-            maxLength = ((AbstractSerializableParameter) p).getMaxLength();
-        } else {
-            type = null;
-            format = null;
-            enumValues = null;
-            min = null;
-            max = null;
-            minLength = null;
-            maxLength = null;
-        }
+        type = p.getSchema().getType();
+        format = p.getSchema().getFormat();
+        enumValues = p.getSchema().getEnum();
+        min = p.getSchema().getMinimum();
+        max = p.getSchema().getMaximum();
+        minLength = p.getSchema().getMinLength();
+        maxLength = p.getSchema().getMaxLength();
+        required = p.getRequired() == null? Boolean.FALSE : p.getRequired();
+    }
+
+    public ParameterFeatures(String name, String in, Boolean required) {
+        this.name = name;
+        this.in = in;
+        this.required = required;
+    }
+
+    public ParameterFeatures(Schema s, Boolean required) {
+        name = s.getName();
+        type = s.getType();
+        format = s.getFormat();
+        enumValues = s.getEnum();
+        min = s.getMinimum();
+        max = s.getMaximum();
+        minLength = s.getMinLength();
+        maxLength = s.getMaxLength();
+
+        in = "formData";
+        this.required = required;
+
     }
 
     public String getName() {
@@ -112,5 +126,35 @@ public class ParameterFeatures {
 
     public void setMaxLength(Integer maxLength) {
         this.maxLength = maxLength;
+    }
+
+    public Boolean getRequired() {
+        return required;
+    }
+
+    public void setRequired(Boolean required) {
+        this.required = required;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ParameterFeatures that = (ParameterFeatures) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(in, that.in) &&
+                Objects.equals(type, that.type) &&
+                Objects.equals(format, that.format) &&
+                Objects.equals(enumValues, that.enumValues) &&
+                Objects.equals(min, that.min) &&
+                Objects.equals(max, that.max) &&
+                Objects.equals(minLength, that.minLength) &&
+                Objects.equals(maxLength, that.maxLength) &&
+                Objects.equals(required, that.required);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, in, type, format, enumValues, min, max, minLength, maxLength, required);
     }
 }

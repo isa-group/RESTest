@@ -1,7 +1,7 @@
 package es.us.isa.restest.util;
 
 import es.us.isa.restest.testcases.TestCase;
-import io.swagger.models.HttpMethod;
+import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

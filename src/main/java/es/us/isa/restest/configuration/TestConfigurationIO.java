@@ -11,6 +11,10 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.specification.OpenAPISpecification;
+import io.swagger.v3.oas.models.PathItem;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /** Utility class to load and save test configuration files
  * 
@@ -19,33 +23,55 @@ import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
  */
 public class TestConfigurationIO {
 
+	private static Logger logger = LogManager.getLogger(TestConfigurationIO.class);
+
+	private TestConfigurationIO() {}
+
 	/** Load test configuration file
 	 */
-	public static TestConfigurationObject loadConfiguration(String path) {
+	public static TestConfigurationObject loadConfiguration(String path, OpenAPISpecification spec) {
 	    YAMLMapper mapper = new YAMLMapper();
 	    TestConfigurationObject conf=null;
 		try {
 			conf = mapper.readValue(new File(path), TestConfigurationObject.class);
 
+			conf.getTestConfiguration().getOperations().forEach(x -> {
+					PathItem pathItem = spec.getSpecification().getPaths().get(x.getTestPath());
+					switch (x.getMethod().toLowerCase()) {
+						case "get":
+							x.setOpenApiOperation(pathItem.getGet());
+							break;
+						case "post":
+							x.setOpenApiOperation(pathItem.getPost());
+							break;
+						case "put":
+							x.setOpenApiOperation(pathItem.getPut());
+							break;
+						case "delete":
+							x.setOpenApiOperation(pathItem.getDelete());
+							break;
+						default:
+							throw new IllegalArgumentException("Method type not supported: " + x.getMethod());
+					}
+				});
+
 			// Print with format
 			//String prettyConf = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf);
 			//System.out.println(prettyConf);
 		} catch (Exception e) {
-			System.err.println("Error parsing configuration file: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error parsing configuration file: {}", e.getMessage());
 		}
-		
+
 	    return conf;
 	}
-	
+
 	public static String toString (TestConfigurationObject conf) {
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonConf=null;
 		try {
 			jsonConf = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf);
 		} catch (JsonProcessingException e) {
-			System.err.println("Error converting configuration object to a string: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error converting configuration object to a string: {}", e.getMessage());
 		}
 		return jsonConf;
 	}
@@ -63,8 +89,7 @@ public class TestConfigurationIO {
 			confFile.write(yaml);
 			confFile.flush();
 		} catch (IOException e) {
-			System.err.println("Error converting configuration object to a file: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error converting configuration object to a file: {}", e.getMessage());
 		}
 	}
 }
