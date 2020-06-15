@@ -54,7 +54,7 @@ public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperat
         Set<ParameterFeatures> result=new HashSet<>();
         for (TestParameter param: operation.getTestParameters()) {
             ParameterFeatures paramFeatures = new ParameterFeatures(param.getName(), param.getIn(), null);
-            if (presentParams.contains(paramFeatures))
+            if (!presentParams.contains(paramFeatures))
                 result.add(paramFeatures);
         }
         return result;
