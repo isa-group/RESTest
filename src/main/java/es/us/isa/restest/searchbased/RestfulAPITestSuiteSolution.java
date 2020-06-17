@@ -38,7 +38,11 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
 
     @Override
     public String getVariableValueString(int i) {
-        return getVariable(i).toString();
+    	if(i<getVariables().size())
+    		return getVariable(i).toString();
+    	else
+    		return "";
+    			
     }
 
     @Override

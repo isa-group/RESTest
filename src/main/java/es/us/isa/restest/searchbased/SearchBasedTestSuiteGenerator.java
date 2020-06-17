@@ -3,27 +3,13 @@
  */
 package es.us.isa.restest.searchbased;
 
-import es.us.isa.restest.configuration.TestConfigurationIO;
-import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
-import es.us.isa.restest.configuration.pojos.Operation;
-import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
-import es.us.isa.restest.searchbased.operators.AllMutationOperators;
-import es.us.isa.restest.searchbased.operators.ParameterAdditionMutation;
-import es.us.isa.restest.searchbased.operators.ParameterRemovalMutation;
-import es.us.isa.restest.searchbased.operators.RandomParameterValueMutation;
-import es.us.isa.restest.searchbased.operators.ResourceChangeMutation;
-import es.us.isa.restest.searchbased.operators.SinglePointTestSuiteCrossover;
-import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.CURLCommandGenerator;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import org.apache.commons.io.FileUtils;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
@@ -43,6 +29,7 @@ import org.uma.jmetal.util.experiment.component.ExecuteAlgorithms;
 import org.uma.jmetal.util.experiment.component.GenerateBoxplotsWithR;
 import org.uma.jmetal.util.experiment.component.GenerateFriedmanTestTables;
 import org.uma.jmetal.util.experiment.component.GenerateLatexTablesWithStatistics;
+import org.uma.jmetal.util.experiment.component.GenerateReferenceParetoFront;
 import org.uma.jmetal.util.experiment.component.GenerateWilcoxonTestTablesWithR;
 import org.uma.jmetal.util.experiment.util.ExperimentAlgorithm;
 import org.uma.jmetal.util.experiment.util.ExperimentProblem;
@@ -50,6 +37,21 @@ import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 import org.uma.jmetal.util.pseudorandom.impl.MersenneTwisterGenerator;
 
 import com.google.common.collect.Lists;
+
+import es.us.isa.restest.configuration.TestConfigurationIO;
+import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
+import es.us.isa.restest.configuration.pojos.Operation;
+import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
+import es.us.isa.restest.searchbased.operators.AllMutationOperators;
+import es.us.isa.restest.searchbased.operators.ParameterAdditionMutation;
+import es.us.isa.restest.searchbased.operators.ParameterRemovalMutation;
+import es.us.isa.restest.searchbased.operators.RandomParameterValueMutation;
+import es.us.isa.restest.searchbased.operators.ResourceChangeMutation;
+import es.us.isa.restest.searchbased.operators.SinglePointTestSuiteCrossover;
+import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.testcases.TestCase;
+import es.us.isa.restest.util.CURLCommandGenerator;
 
 public class SearchBasedTestSuiteGenerator {
 
@@ -102,17 +104,17 @@ public class SearchBasedTestSuiteGenerator {
                 .setExperimentBaseDirectory(targetPath)
         		.setAlgorithmList(algorithms)
                 .setProblemList(problems)
-                .setOutputParetoFrontFileName("EVAL")
-                .setOutputParetoSetFileName("SOL")
-                .setReferenceFrontDirectory("/pareto_fronts")
+                .setOutputParetoFrontFileName("FUN")
+                .setOutputParetoSetFileName("VAR")
+                .setReferenceFrontDirectory(targetPath+"/pareto_fronts")
                 .setIndicatorList(indicators())
-                .setNumberOfCores(8)
+                .setNumberOfCores(1)
                 .setIndependentRuns(1);
 
     }
 
     
-    private static Algorithm<List<RestfulAPITestSuiteSolution>> createDefaultAlgorithm(long seed, int populationSize, int maxEvaluations, RestfulAPITestSuiteGenerationProblem problem){
+    public static Algorithm<List<RestfulAPITestSuiteSolution>> createDefaultAlgorithm(long seed, int populationSize, int maxEvaluations, RestfulAPITestSuiteGenerationProblem problem){
     	MersenneTwisterGenerator generator=new MersenneTwisterGenerator(seed);
     	Algorithm<List<RestfulAPITestSuiteSolution>> result=null;
     	AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
@@ -136,7 +138,7 @@ public class SearchBasedTestSuiteGenerator {
         Algorithm<List<RestfulAPITestSuiteSolution>> algorithm = null; 
         
         ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> expAlg=null;
-        int runId=1;
+        int runId=0;
         for (RestfulAPITestSuiteGenerationProblem problem : myproblems) {            
         	algorithm=createDefaultAlgorithm(seed, populationSize, maxEvaluations, problem);
             expAlg=new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(algorithm, new ExperimentProblem<>(problem), runId);           
@@ -146,7 +148,7 @@ public class SearchBasedTestSuiteGenerator {
         return result;
     }    
     
-    private static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
+    public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
     	OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
         Operation operationUnderTest = null;
@@ -196,30 +198,53 @@ public class SearchBasedTestSuiteGenerator {
     	 }
     }
 
-	public void runExperiment() throws IOException {
+	public void runExperiment(int independentRuns, int numberOfCores) throws IOException {
 
-        Experiment<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experiment = experimentBuilder.build();
-
+        Experiment<RestfulAPITestSuiteSolution, 
+        			List<RestfulAPITestSuiteSolution>> experiment = experimentBuilder
+        															.setIndependentRuns(independentRuns)
+        															.setNumberOfCores(numberOfCores)
+        															.build();
+        JMetalLogger.logger.info("Generating testSuites for: " + problems.size() + " API(s) using as objectives :"+ problem.getObjectiveFunctions() );
+    	JMetalLogger.logger.info("Up to "+algorithms.size()+" algorithm run(s) will be executed using " + numberOfCores + " processor core(s)");
         ExecuteAlgorithms executeAlgorithms = new ExecuteAlgorithms<>(experiment);
+        long start=System.currentTimeMillis();
         executeAlgorithms.run();
-
+        long end=System.currentTimeMillis();
+        JMetalLogger.logger.info("Algorithm(s) execution finished in "+(end-start)+" ms.");
+        
+        JMetalLogger.logger.info("Generating reference pareto fronts for the problems...");
+        GenerateReferenceParetoFront paretoFrontGenerator=new GenerateReferenceParetoFront(experiment);
+        paretoFrontGenerator.run();
+        JMetalLogger.logger.info("Done!");
+        
+        JMetalLogger.logger.info("Computing Multi-objective quality indicators...");
         ComputeQualityIndicators computeIndicators = new ComputeQualityIndicators<>(experiment);
         computeIndicators.run();
-
+        JMetalLogger.logger.info("Done!");
+        
+        JMetalLogger.logger.info("Generating latex tables with statistics...");
         GenerateLatexTablesWithStatistics latexTablesGenerator = new GenerateLatexTablesWithStatistics(experiment);
         latexTablesGenerator.run();
+        JMetalLogger.logger.info("Done!");
 
+        JMetalLogger.logger.info("Generating additional R scripts...");
         GenerateWilcoxonTestTablesWithR rWicoxonTestTablesGeneartor = new GenerateWilcoxonTestTablesWithR<>(experiment);
         rWicoxonTestTablesGeneartor.run();
+        
+        JMetalLogger.logger.info("Wilcoxon test script done!");
         GenerateFriedmanTestTables rFriedmanTestTablesGenerator = new GenerateFriedmanTestTables<>(experiment);
         rFriedmanTestTablesGenerator.run();
-
+        
+        JMetalLogger.logger.info("Friedman test script done!");
         GenerateBoxplotsWithR rBoxplotGenerator;
+        
+        JMetalLogger.logger.info("Boxplot generator script done!");
         rBoxplotGenerator = new GenerateBoxplotsWithR<>(experiment);
-        rBoxplotGenerator.setRows(3);
-        rBoxplotGenerator.setColumns(3);
+        rBoxplotGenerator.setRows(2);
+        rBoxplotGenerator.setColumns(2);
         rBoxplotGenerator.run();
-
+        JMetalLogger.logger.info("Experiment execution and post-processing finished!");
     }
 
 
