@@ -7,9 +7,12 @@ import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
+import es.us.isa.restest.util.SpecificationVisitor;
+import groovy.lang.Tuple2;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 import java.util.*;
@@ -23,18 +26,20 @@ public abstract class AbstractTestCaseGenerator {
 	protected Random rand;
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
-	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
-	protected AuthManager authManager;						// For if multiple API keys are used for the API
-	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
-	protected OpenApiInteractionValidator validator;	// Validator used to know if a test case is valid or not
-	protected int numberOfTest;								// Number of test cases to be generated for each operation
-	protected int index;									// Number of test cases generated so far
-	protected int nCurrentFaulty;							// Number of faulty test cases generated in the current iteration
-	protected int nCurrentNominal;							// Number of nominal test cases generated in the current iteration
-	protected int nFaulty;									// Number of faulty test cases generated so far
-	protected int nNominal;									// Number of nominal test cases generated so far
+	protected Map<Tuple2<String, String>,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
+	protected AuthManager authManager;										// For if multiple API keys are used for the API
+	protected Float faultyRatio = 0.1f;										// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
+	protected OpenApiInteractionValidator validator;						// Validator used to know if a test case is valid or not
+	protected int numberOfTest;												// Number of test cases to be generated for each operation
+	protected int index;													// Number of test cases generated so far
+	protected int nCurrentFaulty;											// Number of faulty test cases generated in the current iteration
+	protected int nCurrentNominal;											// Number of nominal test cases generated in the current iteration
+	protected int nFaulty;													// Number of faulty test cases generated so far
+	protected int nNominal;													// Number of nominal test cases generated so far
 
 	public AbstractTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
+		preconditions(conf);
+
 		this.spec = spec;
 		this.conf = conf;
 
@@ -56,6 +61,38 @@ public abstract class AbstractTestCaseGenerator {
 		this.rand = new Random();
 		this.seed = rand.nextLong();
 		rand.setSeed(this.seed);
+	}
+
+	/**
+	 * Checks the following preconditions:
+	 * <ol>
+	 *     <li>Each parameter in the testConf must exist in the OAS</li>
+	 *     <li>Each required parameter in the OAS must exist in the testConf and it must have a weight of "null" or "1"</li>
+	 * </ol>
+	 *
+	 * @param conf the test configuration file
+	 */
+	private void preconditions(TestConfigurationObject conf) {
+
+		for(Operation testOperation : conf.getTestConfiguration().getOperations()) {
+			List<ParameterFeatures> requiredParams = SpecificationVisitor.getRequiredParameters(testOperation.getOpenApiOperation());
+
+			if(testOperation.getTestParameters() != null) {
+
+				for(TestParameter testParameter : testOperation.getTestParameters()) {
+
+					ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParameter.getName(), testParameter.getIn());
+					if(param == null) {
+						throw new IllegalArgumentException("Each parameter in the testConf must exist in the OAS; unknown parameter: " + testParameter.getName() + ", in: " + testParameter.getIn());
+					}
+
+					if(requiredParams.contains(param) && testParameter.getWeight() != null && !testParameter.getWeight().equals(1F)) {
+						throw new IllegalArgumentException("Each required parameter in the OAS must exist in the testConf and it must have a weight of 'null' or '1'; parameter: "
+								+ testParameter.getName() + ", in: " + testParameter.getIn() + ", weight: " + testParameter.getWeight());
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -148,7 +185,7 @@ public abstract class AbstractTestCaseGenerator {
 		if(testOperation.getTestParameters() != null) {
 			for (TestParameter confParam : testOperation.getTestParameters()) {
 				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
-					ITestDataGenerator generator = generators.get(confParam.getName());
+					ITestDataGenerator generator = generators.get(new Tuple2<>(confParam.getName(), confParam.getIn()));
 					test.addParameter(confParam, generator.nextValueAsString());
 				}
 			}
@@ -206,7 +243,7 @@ public abstract class AbstractTestCaseGenerator {
 
 		if(testParameters != null) {
 			for(TestParameter param: testParameters)
-				generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
+				generators.put(new Tuple2<>(param.getName(), param.getIn()), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
 		}
 	}
 
