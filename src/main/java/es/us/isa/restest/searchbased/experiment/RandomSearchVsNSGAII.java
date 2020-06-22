@@ -21,8 +21,8 @@ public class RandomSearchVsNSGAII {
 	// Experiment configuration
 	long seed=1979;
 	int NSGAIIpopulationSize=100;
-	int maxEvaluations=1000;
-	int independentRuns=30;
+	int maxEvaluations=10000;
+	int independentRuns=2;
 	
 	// Problem configuration 
 	private String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";		    // Path to OAS specification file
@@ -30,7 +30,7 @@ public class RandomSearchVsNSGAII {
     private String experimentName = "bikewise";                                      // Experiment name
     private String targetDir = "src/generation/java/searchbased";	// Directory where tests will be generated.
     private String resourcePath ="/v2/incidents";
-    private static String method ="GET";
+    private String method ="GET";
     private int minTestSuiteSize=2;
     private int maxTestSuiteSize=10;
 	

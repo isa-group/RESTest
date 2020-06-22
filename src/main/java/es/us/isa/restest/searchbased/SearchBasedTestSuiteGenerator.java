@@ -43,12 +43,15 @@ import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenera
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
+import es.us.isa.restest.searchbased.operators.AddParameterMutation;
+import es.us.isa.restest.searchbased.operators.AddTestCaseMutation;
 import es.us.isa.restest.searchbased.operators.AllMutationOperators;
-import es.us.isa.restest.searchbased.operators.ParameterAdditionMutation;
-import es.us.isa.restest.searchbased.operators.ParameterRemovalMutation;
+import es.us.isa.restest.searchbased.operators.RemoveParameterMutation;
+import es.us.isa.restest.searchbased.operators.RemoveTestCaseMutation;
 import es.us.isa.restest.searchbased.operators.RandomParameterValueMutation;
 import es.us.isa.restest.searchbased.operators.ResourceChangeMutation;
 import es.us.isa.restest.searchbased.operators.SinglePointTestSuiteCrossover;
+import es.us.isa.restest.searchbased.operators.UniformTestCaseCrossover;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.CURLCommandGenerator;
@@ -118,14 +121,16 @@ public class SearchBasedTestSuiteGenerator {
     	MersenneTwisterGenerator generator=new MersenneTwisterGenerator(seed);
     	Algorithm<List<RestfulAPITestSuiteSolution>> result=null;
     	AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
-        		new ParameterAdditionMutation(0.2,generator),
-        		new ParameterRemovalMutation(0.2,generator),
+        		new AddTestCaseMutation(0.2,generator),
+        		new RemoveTestCaseMutation(0.2,generator),
+    			new AddParameterMutation(0.2,generator),
+        		new RemoveParameterMutation(0.2,generator),
         		new RandomParameterValueMutation(0.2,generator),
         		new ResourceChangeMutation(0.2,generator)
         ));
     	result = new NSGAIIBuilder<>(
         		problem,
-        		new SinglePointTestSuiteCrossover(1.0),
+        		new UniformTestCaseCrossover(0.5),
         		mutation,
         		populationSize)
 			.setMaxEvaluations(maxEvaluations)
@@ -159,7 +164,7 @@ public class SearchBasedTestSuiteGenerator {
         return problem;
     }
     
-    private static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
+    public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
         OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
         Operation operationUnderTest = null;
@@ -347,5 +352,9 @@ public class SearchBasedTestSuiteGenerator {
 		this.experimentBuilder.setAlgorithmList(algorithms);
 	}
     
+    
+    public List<ExperimentProblem<RestfulAPITestSuiteSolution>> getProblems() {
+		return problems;
+	}
     
 }

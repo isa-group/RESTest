@@ -28,7 +28,7 @@ public abstract class RestfulAPITestingObjectiveFunction {
     public abstract Double evaluate(RestfulAPITestSuiteSolution solution);
     
 	public String toString() {
-    	return type + " of" + this.getClass().getSimpleName();
+    	return type + " of " + this.getClass().getSimpleName();
     }
     
     public enum ObjectiveFunctionType{MAXIMIZATION,MINIMIZATION};
