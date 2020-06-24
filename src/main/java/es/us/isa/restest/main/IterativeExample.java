@@ -57,7 +57,7 @@ public class IterativeExample {
         if(args.length > 0)
             setEvaluationParameters(args[0]);
         else
-            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/comments.properties");
+            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/comments_betty.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
