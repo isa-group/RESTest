@@ -12,8 +12,8 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
-import groovy.lang.Tuple2;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
+import org.javatuples.Pair;
 
 import java.util.*;
 
@@ -85,7 +85,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		for (TestParameter parameter: testParameters) {
 			if (parameter.getWeight() == null || parameter.getWeight() > 0) {
 				paramValues = new ArrayList<>();
-				generator = generators.get(new Tuple2<>(parameter.getName(), parameter.getIn()));
+				generator = generators.get(Pair.with(parameter.getName(), parameter.getIn()));
 				if (generator instanceof RandomInputValueIterator && ((RandomInputValueIterator) generator).getMaxValues() == 1) {
 					paramValues = ((RandomInputValueIterator) generator).getValues();
 				} else if (generator instanceof RandomBooleanGenerator) {

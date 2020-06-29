@@ -12,8 +12,8 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
 import es.us.isa.restest.util.SpecificationVisitor;
-import groovy.lang.Tuple2;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
+import org.javatuples.Pair;
 
 import java.util.*;
 
@@ -26,7 +26,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected Random rand;
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
-	protected Map<Tuple2<String, String>,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
+	protected Map<Pair<String, String>,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
 	protected AuthManager authManager;										// For if multiple API keys are used for the API
 	protected Float faultyRatio = 0.1f;										// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
 	protected OpenApiInteractionValidator validator;						// Validator used to know if a test case is valid or not
@@ -185,7 +185,7 @@ public abstract class AbstractTestCaseGenerator {
 		if(testOperation.getTestParameters() != null) {
 			for (TestParameter confParam : testOperation.getTestParameters()) {
 				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
-					ITestDataGenerator generator = generators.get(new Tuple2<>(confParam.getName(), confParam.getIn()));
+					ITestDataGenerator generator = generators.get(Pair.with(confParam.getName(), confParam.getIn()));
 					test.addParameter(confParam, generator.nextValueAsString());
 				}
 			}
@@ -243,7 +243,7 @@ public abstract class AbstractTestCaseGenerator {
 
 		if(testParameters != null) {
 			for(TestParameter param: testParameters)
-				generators.put(new Tuple2<>(param.getName(), param.getIn()), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
+				generators.put(Pair.with(param.getName(), param.getIn()), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
 		}
 	}
 

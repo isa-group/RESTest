@@ -219,6 +219,13 @@
 			<version>2.13.3</version>
 		</dependency>
 
+		<!-- Java tuples -->
+		<dependency>
+			<groupId>org.javatuples</groupId>
+			<artifactId>javatuples</artifactId>
+			<version>1.2</version>
+		</dependency>
+
 
 		<!-- LOCAL DEPENDENCIES -->
 		<!-- JSONmutator local dependency -->
