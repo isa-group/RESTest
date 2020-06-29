@@ -85,9 +85,9 @@ public class SpecificationVisitor {
 		Iterator<Map.Entry> formDataIterator = mediaType.getSchema().getProperties().entrySet().iterator();
 
 		while (formDataIterator.hasNext()) {
-			Schema s = ((Map.Entry<String, Schema>) formDataIterator.next()).getValue();
-			if (s.getName().equalsIgnoreCase(paramName)) {
-				param = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
+			Map.Entry<String, Schema> formDataEntry = formDataIterator.next();
+			if (formDataEntry.getKey().equalsIgnoreCase(paramName)) {
+				param = new ParameterFeatures(formDataEntry.getKey(), formDataEntry.getValue(), mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(formDataEntry.getKey()));
 				break;
 			}
 		}
@@ -122,10 +122,10 @@ public class SpecificationVisitor {
 
 			if(mediaType.getSchema().getRequired() != null && !mediaType.getSchema().getRequired().isEmpty()) {
 
-				for(Object o : mediaType.getSchema().getProperties().keySet()) {
-					Schema s = ((Map.Entry<String, Schema>) o).getValue();
+				for(Object schemaProperty : mediaType.getSchema().getProperties().entrySet()) {
+					Schema s = ((Map.Entry<String, Schema>) schemaProperty).getValue();
 					if(mediaType.getSchema().getRequired().contains(s.getName())) {
-						requiredParameters.add(new ParameterFeatures(s, true));
+						requiredParameters.add(new ParameterFeatures(((Map.Entry<String, Schema>) schemaProperty).getKey(), s, true));
 					}
 				}
 			}
@@ -185,7 +185,7 @@ public class SpecificationVisitor {
 			for(Object o : mediaType.getSchema().getProperties().entrySet()) {
 
 				Schema s = ((Map.Entry<String, Schema>) o).getValue();
-				ParameterFeatures p = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
+				ParameterFeatures p = new ParameterFeatures(((Map.Entry<String, Schema>) o).getKey(), s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
 
 				if ((p.getType().equals("integer") || p.getType().equals("number")
 						|| p.getType().equals(BOOLEAN_TYPE) || (p.getType().equals("string")
