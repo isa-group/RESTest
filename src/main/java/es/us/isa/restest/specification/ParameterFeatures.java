@@ -40,8 +40,8 @@ public class ParameterFeatures {
         this.required = required;
     }
 
-    public ParameterFeatures(Schema s, Boolean required) {
-        name = s.getName();
+    public ParameterFeatures(String name, Schema s, Boolean required) {
+        this.name = name;
         type = s.getType();
         format = s.getFormat();
         enumValues = s.getEnum();

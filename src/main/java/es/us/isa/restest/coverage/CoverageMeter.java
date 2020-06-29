@@ -222,21 +222,31 @@ public class CoverageMeter {
         return 100; // if the criterion doesn't exist, return 100% coverage by default
     }
 
-    public void computeCoverageAPosteriori() {
+    /**
+     * Based on {@code this} CoverageMeter object, returns a modified CoverageMeter
+     * whose input coverage counts only those elements whose response was successful.
+     *
+     * @return A modified CoverageMeter object
+     */
+    public CoverageMeter getAPosteriorCoverageMeter() {
+        CoverageMeter aPosterioriCoverageMeter = new CoverageMeter(new CoverageGatherer(coverageGatherer.getSpec()));
 
         if(testResults != null) {
-            List<TestResult> testResultsCopy = new ArrayList<>(testResults);
-            List<String> invalidResponseResultsIds = testResultsCopy.stream()
-                    .filter(x -> Integer.parseInt(x.getStatusCode()) >= 400)
+            List<String> invalidResponseResultsIds = new ArrayList<>(testResults).stream()
+                    .filter(testResult -> Integer.parseInt(testResult.getStatusCode()) >= 400)
                     .map(TestResult::getId)
                     .collect(Collectors.toList());
 
-            resetCoverage();
-            setCoveredOutputElements();
-
-            getTestSuite().removeIf(x -> invalidResponseResultsIds.contains(x.getId()));
-            setCoveredInputElements();
+            aPosterioriCoverageMeter.testSuite = testSuite;
+            aPosterioriCoverageMeter.testResults = testResults;
+            aPosterioriCoverageMeter.setCoveredOutputElements();
+            aPosterioriCoverageMeter.testSuite = testSuite.stream()
+                    .filter(testCase -> !invalidResponseResultsIds.contains(testCase.getId()))
+                    .collect(Collectors.toList());
+            aPosterioriCoverageMeter.setCoveredInputElements();
         }
+
+        return aPosterioriCoverageMeter;
     }
 
     /**

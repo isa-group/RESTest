@@ -102,8 +102,7 @@ public class StatsReportManager {
             logger.info("Coverage report a priori generated.");
 
             // Generate coverage report (input coverage a posteriori)
-            coverageMeter.computeCoverageAPosteriori();
-            exportCoverageReport(coverageMeter, coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.posteriori.file"));
+            exportCoverageReport(coverageMeter.getAPosteriorCoverageMeter(), coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.posteriori.file"));
             logger.info("Coverage report a posteriori generated.");
 
         }
