@@ -10,18 +10,19 @@ public class IterativeExampleTest {
 
     @Test
     public void testIterativeExampleWithBasicPropertiesFile() {
-        String[] args = {"src/main/resources/ExperimentsSetup/bikewise_test.properties"};
+        String[] args = {"src/main/resources/ExperimentsSetup/comments_betty.properties"};
         IterativeExample.main(args);
 
-        assertTrue(checkIfExists("src/generation/java/bikewise_example"));
+        assertTrue(checkIfExists("src/generation/java/commentsTest1"));
 
-        assertTrue(checkIfExists("target/allure-results/bikewise_example"));
-        assertTrue(checkIfExists("target/allure-reports/bikewise_example"));
-        assertTrue(checkIfExists("target/test-data/bikewise_example/time.json"));
-        assertTrue(checkIfExists("target/coverage-data/bikewise_example/test-coverage.json"));
-        assertTrue(checkIfExists("target/test-data/bikewise_example/test-cases.csv"));
-        assertTrue(checkIfExists("target/test-data/bikewise_example/nominal-faulty.csv"));
-        assertTrue(checkIfExists("target/test-data/bikewise_example/test-results.csv"));
+        assertTrue(checkIfExists("target/allure-results/commentsTest1"));
+        assertTrue(checkIfExists("target/allure-reports/commentsTest1"));
+        assertTrue(checkIfExists("target/test-data/commentsTest1/time.json"));
+        assertTrue(checkIfExists("target/coverage-data/commentsTest1/test-coverage-priori.json"));
+        assertTrue(checkIfExists("target/coverage-data/commentsTest1/test-coverage-posteriori.json"));
+        assertTrue(checkIfExists("target/test-data/commentsTest1/test-cases.csv"));
+        assertTrue(checkIfExists("target/test-data/commentsTest1/nominal-faulty.csv"));
+        assertTrue(checkIfExists("target/test-data/commentsTest1/test-results.csv"));
 
     }
 }

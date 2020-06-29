@@ -1,18 +1,9 @@
-/**
- * 
- */
 package es.us.isa.restest.runners;
 
-import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
-import es.us.isa.restest.coverage.CoverageMeter;
-import es.us.isa.restest.coverage.CoverageResults;
-import es.us.isa.restest.testcases.TestResult;
 import es.us.isa.restest.util.*;
 import es.us.isa.restest.util.ClassLoader;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
@@ -22,7 +13,6 @@ import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 
-import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.Timer.TestStep.*;
 
 /**
@@ -60,7 +50,7 @@ public class RESTestRunner {
 		// Load test class
 		String filePath = targetDir + "/" + testClassName + ".java";
 		String className = packageName + "." + testClassName;
-		logger.info("Compiling and loading test class " + className + ".java");
+		logger.info("Compiling and loading test class {}.java", className);
 		Class<?> testClass = ClassLoader.loadClass(filePath, className);
 		
 		// Test execution
@@ -69,8 +59,8 @@ public class RESTestRunner {
 		testExecution(testClass);
 
 		// Print number of faulty and nominal test cases
-		logger.info("Nominal test cases generated: " + generator.getnNominal());
-		logger.info("Faulty test cases generated: " + generator.getnFaulty());
+		logger.info("Nominal test cases generated: {}", generator.getnNominal());
+		logger.info("Faulty test cases generated: {}", generator.getnFaulty());
 
 
 		if (statsReportManager.getEnableCSVStats()) {
@@ -119,7 +109,7 @@ public class RESTestRunner {
         
         // Write test cases
         String filePath = targetDir + "/" + testClassName + ".java";
-        logger.info("Writing " + testCases.size() + " test cases to test class " + filePath);
+        logger.info("Writing {} test cases to test class {}", testCases.size(), filePath);
         writer.write(testCases);
 
 	}
@@ -133,7 +123,7 @@ public class RESTestRunner {
 		Result result = junit.run(testClass);
 		Timer.stopCounting(TEST_SUITE_EXECUTION);
 		int successfulTests = result.getRunCount() - result.getFailureCount() - result.getIgnoreCount();
-		logger.info(result.getRunCount() + " tests run in " + result.getRunTime()/1000 + " seconds. Successful: " + successfulTests +" , Failures: " + result.getFailureCount() + ", Ignored: " + result.getIgnoreCount());
+		logger.info("{} tests run in {} seconds. Successful: {}, Failures: {}, Ignored: {}", result.getRunCount(), result.getRunTime()/1000, successfulTests, result.getFailureCount(), result.getIgnoreCount());
 
 	}
 	

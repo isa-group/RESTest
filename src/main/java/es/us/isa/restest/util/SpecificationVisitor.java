@@ -34,19 +34,19 @@ public class SpecificationVisitor {
 	 * @return
 	 */
 	public static ParameterFeatures findParameter(Operation operation, String paramName, String in) {
-		ParameterFeatures param = null;
+		ParameterFeatures param;
 
 		switch(in) {
 			case "header":
 			case "path":
 			case "query":
-				param = findQueryHeaderPathParameter(operation, paramName, param);
+				param = findQueryHeaderPathParameter(operation, paramName);
 				break;
 			case "body":
-				param = findBodyParameter(operation, param);
+				param = findBodyParameter(operation);
 				break;
 			case "formData":
-				param = findFormDataParameter(operation, paramName, param);
+				param = findFormDataParameter(operation, paramName);
 				break;
 			default:
 				throw new IllegalArgumentException("Parameter type not supported: " + in);
@@ -55,7 +55,8 @@ public class SpecificationVisitor {
 		return param;
 	}
 
-	private static ParameterFeatures findQueryHeaderPathParameter(Operation operation, String paramName, ParameterFeatures param) {
+	private static ParameterFeatures findQueryHeaderPathParameter(Operation operation, String paramName) {
+		ParameterFeatures param = null;
 		boolean found = false;
 		Iterator<Parameter> it = operation.getParameters().iterator();
 		while (it.hasNext() && !found) {
@@ -68,14 +69,16 @@ public class SpecificationVisitor {
 		return param;
 	}
 
-	private static ParameterFeatures findBodyParameter(Operation operation, ParameterFeatures param) {
+	private static ParameterFeatures findBodyParameter(Operation operation) {
+		ParameterFeatures param = null;
 		if(operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
 			param = new ParameterFeatures("body", "body", operation.getRequestBody().getRequired());
 		}
 		return param;
 	}
 
-	private static ParameterFeatures findFormDataParameter(Operation operation, String paramName, ParameterFeatures param) {
+	private static ParameterFeatures findFormDataParameter(Operation operation, String paramName) {
+		ParameterFeatures param = null;
 		MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
 				operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
 				operation.getRequestBody().getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
@@ -97,6 +100,7 @@ public class SpecificationVisitor {
 	 * @return
 	 */
 	public static List<ParameterFeatures> getRequiredParameters(Operation operation) {
+
 		List<ParameterFeatures> requiredParameters = new ArrayList<>();
 		if(operation.getParameters() != null) {
 			operation.getParameters().stream()

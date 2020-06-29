@@ -93,21 +93,31 @@ public class StatsReportManager {
             // Update CoverageMeter with the test results
             String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file");
             List<TestResult> trs = TestManager.getTestResults(csvTrPath);
-            coverageMeter.setTestResults(trs);
+            coverageMeter.addTestResults(trs);
         }
 
         if (enableInputCoverage || enableOutputCoverage) {
-            // Generate coverage report
-            CoverageResults results = new CoverageResults(coverageMeter);
-            results.setCoverageOfCoverageCriteriaFromCoverageMeter(coverageMeter);
-            results.setCoverageOfCriterionTypeFromCoverageMeter(coverageMeter);
-            try {
-                results.exportCoverageReportToJSON(coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.file"));
-            } catch (IOException e) {
-                logger.error("The coverage report cannot be generated. Stack trace:");
-                logger.log(Level.valueOf("context"), e);
-            }
-            logger.info("Coverage report generated.");
+            // Generate coverage report (input coverage a priori)
+            exportCoverageReport(coverageMeter, coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.priori.file"));
+            logger.info("Coverage report a priori generated.");
+
+            // Generate coverage report (input coverage a posteriori)
+            coverageMeter.computeCoverageAPosteriori();
+            exportCoverageReport(coverageMeter, coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.posteriori.file"));
+            logger.info("Coverage report a posteriori generated.");
+
+        }
+    }
+
+    private void exportCoverageReport(CoverageMeter coverageMeter, String path) {
+        CoverageResults results = new CoverageResults(coverageMeter);
+        results.setCoverageOfCoverageCriteriaFromCoverageMeter(coverageMeter);
+        results.setCoverageOfCriterionTypeFromCoverageMeter(coverageMeter);
+        try {
+            results.exportCoverageReportToJSON(path);
+        } catch (IOException e) {
+            logger.error("The coverage report cannot be generated. Stack trace:");
+            logger.log(Level.valueOf("context"), e);
         }
     }
 }

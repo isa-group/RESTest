@@ -20,13 +20,13 @@ public class RESTestRunnerTest {
 
     @Test
     public void testRunner() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Bikewise/swagger.yaml");
-        TestConfigurationObject conf = loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/YouTube/swagger_betty.yaml");
+        TestConfigurationObject conf = loadConfiguration("src/test/resources/YouTube/testConf_betty.yaml", spec);
 
         createDir("src/generation/java/runnerTest");
 
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter("src/test/resources/Bikewise/swagger.yaml", "src/generation/java/runnerTest", "RunnerTest", "runnerTest", basePath);
+        RESTAssuredWriter writer = new RESTAssuredWriter("src/test/resources/YouTube/swagger_betty.yaml", "src/generation/java/runnerTest", "RunnerTest", "runnerTest", basePath);
         writer.setLogging(true);
         writer.setAllureReport(true);
         writer.setEnableStats(true);
@@ -63,7 +63,8 @@ public class RESTestRunnerTest {
 
         assertTrue(checkIfExists("target/allure-results/RunnerTest"));
         assertTrue(checkIfExists("target/allure-reports/RunnerTest"));
-        assertTrue(checkIfExists("target/coverage-data/RunnerTest/test-coverage.json"));
+        assertTrue(checkIfExists("target/coverage-data/RunnerTest/test-coverage-priori.json"));
+        assertTrue(checkIfExists("target/coverage-data/RunnerTest/test-coverage-posteriori.json"));
         assertTrue(checkIfExists("target/test-data/RunnerTest/test-cases.csv"));
         assertTrue(checkIfExists("target/test-data/RunnerTest/nominal-faulty.csv"));
         assertTrue(checkIfExists("target/test-data/RunnerTest/test-results.csv"));

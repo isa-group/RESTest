@@ -5,6 +5,7 @@ import static es.us.isa.restest.coverage.CriterionType.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
@@ -21,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Class for the measurement of test coverage
- * 
+ *
  * @author Alberto Martin-Lopez
  */
 public class CoverageMeter {
@@ -130,7 +131,7 @@ public class CoverageMeter {
 
     /**
      * Get covered elements from all coverage criteria in the API
-     * 
+     *
      * @param criterionType Type of criteria to consider: "input", "output" or null for all
      * @return Number of covered elements collected among all coverage criteria
      */
@@ -143,7 +144,7 @@ public class CoverageMeter {
 
     /**
      * Get total coverage (input and output) considering all criteria
-     * 
+     *
      * @return Coverage percentage
      */
     public float getTotalCoverage() {
@@ -155,7 +156,7 @@ public class CoverageMeter {
 
     /**
      * Get input coverage considering all input criteria
-     * 
+     *
      * @return Coverage percentage
      */
     public float getInputCoverage() {
@@ -167,7 +168,7 @@ public class CoverageMeter {
 
     /**
      * Get output coverage considering all output criteria
-     * 
+     *
      * @return Coverage percentage
      */
     public float getOutputCoverage() {
@@ -179,7 +180,7 @@ public class CoverageMeter {
 
     /**
      * Get coverage of all criteria of a given type
-     * 
+     *
      * @param type Type of criterion to check coverage (e.g. PATH, STATUS_CODE, etc.)
      * @return Coverage percentage
      */
@@ -197,13 +198,13 @@ public class CoverageMeter {
                 .filter(c -> c.getType() == type)
                 .mapToLong(CoverageCriterion::getCoveredElementsCount)
                 .sum();
-        
+
         return 100 * (float) coveredElements / (float) allElements;
     }
 
     /**
      * Get coverage of a single criterion, identified by its type and rootPath
-     * 
+     *
      * @param type Type of criterion (e.g. PATH, STATUS_CODE, etc.)
      * @param rootPath path that uniquely identifies the criterion (e.g. "/pet->getPetById->id")
      * @return Coverage percentage
@@ -219,6 +220,23 @@ public class CoverageMeter {
         }
 
         return 100; // if the criterion doesn't exist, return 100% coverage by default
+    }
+
+    public void computeCoverageAPosteriori() {
+
+        if(testResults != null) {
+            List<TestResult> testResultsCopy = new ArrayList<>(testResults);
+            List<String> invalidResponseResultsIds = testResultsCopy.stream()
+                    .filter(x -> Integer.parseInt(x.getStatusCode()) >= 400)
+                    .map(TestResult::getId)
+                    .collect(Collectors.toList());
+
+            resetCoverage();
+            setCoveredOutputElements();
+
+            getTestSuite().removeIf(x -> invalidResponseResultsIds.contains(x.getId()));
+            setCoveredInputElements();
+        }
     }
 
     /**
@@ -417,12 +435,12 @@ public class CoverageMeter {
         if (overwrite)
             createFileWithHeader(path, "criterionType,rootPath,element,isCovered");
         coverageGatherer.getCoverageCriteria().stream()
-            .filter(criterion -> CriterionType.getTypes(criterionType).contains(criterion.getType()))
-            .forEach(criterion -> criterion.getElements()
-                .forEach((element, isCovered) ->
-                    writeRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered)
-                )
-            );
+                .filter(criterion -> CriterionType.getTypes(criterionType).contains(criterion.getType()))
+                .forEach(criterion -> criterion.getElements()
+                        .forEach((element, isCovered) ->
+                                writeRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered)
+                        )
+                );
     }
 
     public static void exportCoverageOfTestCaseToCSV(String path, TestCase tc) {
@@ -506,3 +524,4 @@ public class CoverageMeter {
     }
 
 }
+
