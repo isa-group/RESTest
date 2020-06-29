@@ -15,9 +15,9 @@ import es.us.isa.restest.testcases.TestCase;
  *
  * @author japar
  */
-public class ParameterRemovalMutation extends AbstractAPITestCaseMutationOperator {
+public class RemoveParameterMutation extends AbstractAPITestCaseMutationOperator {
     
-    public ParameterRemovalMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
+    public RemoveParameterMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         super(mutationProbability, randomGenerator);
     }
     

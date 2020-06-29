@@ -66,10 +66,10 @@ public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITes
         offspring.add(offspring2);
     
       // 1. We choose randomly the cases for the parameter crossover:
-    	int parent1TestCaseIndex=pointRandomGenerator.getRandomValue(0, parent1.getNumberOfVariables()-1);
-    	int parent2TestCaseIndex=pointRandomGenerator.getRandomValue(0, parent2.getNumberOfVariables()-1);
+    	int parent1TestCaseIndex=pointRandomGenerator.getRandomValue(0, parent1.getVariables().size()-1);
+    	int parent2TestCaseIndex=pointRandomGenerator.getRandomValue(0, parent2.getVariables().size()-1);
     	TestCase testCase1=offspring1.getVariable(parent1TestCaseIndex);
-    	TestCase testCase2=offspring2.getVariable(parent1TestCaseIndex);
+    	TestCase testCase2=offspring2.getVariable(parent2TestCaseIndex);
     	// Crossover is applied only between testcases of the same operation: 
     	if(testCase1.getOperationId().equals(testCase2.getOperationId())) 
       // 2. 3. Apply the crossover:
@@ -105,15 +105,24 @@ public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITes
 	}
 
 	private void doCrossover(double probability,Map<String,String> parameters1,Map<String,String> parameters2) {
-		Set<String> processed=new HashSet<String>();		
+		Set<String> processed=new HashSet<String>();	
+		List<String> paramsToProcess=new ArrayList<>();
 		for(String param:parameters1.keySet()) {
 			processed.add(param);
 			if(crossoverRandomGenerator.getRandomValue() < probability) 
-				doCrossover(param,parameters1,parameters2);
+				paramsToProcess.add(param);
 		}
+		for(String param:paramsToProcess) {			
+			doCrossover(param,parameters1,parameters2);
+		}
+		paramsToProcess.clear(); 
 		for(String param:parameters2.keySet()) 
-			if(crossoverRandomGenerator.getRandomValue() < probability) 
-				doCrossover(param,parameters2,parameters1);
+			if(crossoverRandomGenerator.getRandomValue() < probability && !processed.contains(param)) 
+				paramsToProcess.add(param);
+		for(String param:paramsToProcess) {
+			processed.add(param);
+			doCrossover(param,parameters2,parameters1);
+		}
 	}
 	
 	private void doCrossover(String param, Map<String, String> parameters1, Map<String, String> parameters2) {

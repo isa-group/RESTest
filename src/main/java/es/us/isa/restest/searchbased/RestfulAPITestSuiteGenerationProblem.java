@@ -104,7 +104,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         }
 
         assert (objFuncs != null);
-        assert (objectiveFunctions.size() > 0);
+        assert (objFuncs.size() > 0);
         this.objectiveFunctions = objFuncs;
 
         setNumberOfObjectives(this.objectiveFunctions.size());

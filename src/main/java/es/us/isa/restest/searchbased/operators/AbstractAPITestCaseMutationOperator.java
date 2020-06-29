@@ -49,8 +49,7 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
 
     @Override
     public RestfulAPITestSuiteSolution execute(RestfulAPITestSuiteSolution solution) {
-        assert (solution != null);
-
+        assert (solution != null);        
         doMutation(getMutationProbability(), solution);
         return solution;
     }

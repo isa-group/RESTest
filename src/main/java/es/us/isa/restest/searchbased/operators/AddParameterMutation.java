@@ -24,9 +24,9 @@ import es.us.isa.restest.util.SpecificationVisitor;
  *
  * @author japar
  */
-public class ParameterAdditionMutation extends AbstractAPITestCaseMutationOperator {
+public class AddParameterMutation extends AbstractAPITestCaseMutationOperator {
 
-    public ParameterAdditionMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
+    public AddParameterMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         super(mutationProbability, randomGenerator);
     }
         

@@ -83,6 +83,7 @@
 		<restassured.version>4.2.0</restassured.version>
 		<jackson.version>2.11.0</jackson.version>
 		<allure.version>2.13.3</allure.version>
+		<mockito.version>3.3.3</mockito.version>
         <argLine></argLine>
 	</properties>
 
@@ -191,6 +192,12 @@
 			<groupId>io.qameta.allure</groupId>
 			<artifactId>allure-rest-assured</artifactId>
 			<version>${allure.version}</version>
+		</dependency>
+		<!-- Mockito -->
+		<dependency>
+  			<groupId>org.mockito</groupId>
+  			<artifactId>mockito-core</artifactId>
+  			<version>${mockito.version}</version>
 		</dependency>
 
 

@@ -28,11 +28,11 @@ import io.swagger.models.parameters.Parameter;
  */
 public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOperator {
 
-    private ParameterAdditionMutation parameterAdditionOperator;
+    private AddParameterMutation parameterAdditionOperator;
 
     public RandomParameterValueMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         super(mutationProbability, randomGenerator);
-        parameterAdditionOperator = new ParameterAdditionMutation(mutationProbability, randomGenerator);
+        parameterAdditionOperator = new AddParameterMutation(mutationProbability, randomGenerator);
     }
 
     @Override
