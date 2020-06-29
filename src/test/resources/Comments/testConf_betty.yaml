@@ -87,7 +87,7 @@ testConfiguration:
     testParameters:
     - name: body
       in: body
-      weight: 0.5
+      weight: null
       generator:
         type: ObjectPerturbator
         genParameters:
@@ -103,7 +103,7 @@ testConfiguration:
     testParameters:
     - name: body
       in: body
-      weight: 0.5
+      weight: null
       generator:
         type: ObjectPerturbator
         genParameters:
