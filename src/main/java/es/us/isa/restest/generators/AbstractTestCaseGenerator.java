@@ -296,11 +296,11 @@ public abstract class AbstractTestCaseGenerator {
 		this.nCurrentNominal = nCurrentNominal;
 	}
 
-	public Map<String, ITestDataGenerator> getGenerators() {
+	public Map<Pair<String, String>, ITestDataGenerator> getGenerators() {
 		return generators;
 	}
 
-	public void setGenerators(Map<String, ITestDataGenerator> generators) {
+	public void setGenerators(Map<Pair<String, String>, ITestDataGenerator> generators) {
 		this.generators = generators;
 	}
 

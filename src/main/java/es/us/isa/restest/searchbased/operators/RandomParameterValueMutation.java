@@ -8,6 +8,7 @@ package es.us.isa.restest.searchbased.operators;
 import java.util.Collection;
 
 import es.us.isa.restest.specification.ParameterFeatures;
+import org.javatuples.Pair;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.inputs.ITestDataGenerator;
@@ -52,7 +53,7 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
     }
 
     private void doMutation(ParameterFeatures paramFeatures, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(paramFeatures.getName());
+        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
         testCase.addParameter(paramFeatures, generator.nextValueAsString());
     }
 }
