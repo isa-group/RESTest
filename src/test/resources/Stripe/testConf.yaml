@@ -177,7 +177,7 @@ testConfiguration:
           objectValues: null
     - name: unit_label
       in: formData
-      weight: 0.5
+      weight: null
       generator:
         type: RandomString
         genParameters:
@@ -190,6 +190,9 @@ testConfiguration:
         - name: includeNumbers
           values:
             - true
+        - name: includeAlphabetic
+          values:
+            - false
     - name: url
       in: formData
       weight: 0.5

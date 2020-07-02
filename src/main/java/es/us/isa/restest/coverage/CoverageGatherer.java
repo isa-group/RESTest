@@ -3,6 +3,7 @@ package es.us.isa.restest.coverage;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -195,7 +196,7 @@ public class CoverageGatherer {
                     requestBody.getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
 
             for(Object entry : mediaType.getSchema().getProperties().entrySet()) {
-                parametersList.add(((Entry<String, Schema>) entry).getValue().getName());
+                parametersList.add(((Entry<String, Schema>) entry).getKey());
             }
         }
         criteria.add(createCriterion(parametersList, PARAMETER, currentPathEntry.getKey() + "->" + currentOperationEntry.getKey().toString()));
@@ -309,16 +310,18 @@ public class CoverageGatherer {
         for (Entry<String, ApiResponse> currentResponseEntry : currentOperationEntry.getValue().getResponses().entrySet()) {
 
             // iterate over the media type responses of that ApiResponse
-            for (Entry<String, MediaType> currentMediaTypeEntry : currentResponseEntry.getValue().getContent().entrySet()) {
-                Schema mediaTypeSchema = currentMediaTypeEntry.getValue().getSchema();
+            if(currentResponseEntry.getValue().getContent() != null) {
+                for (Entry<String, MediaType> currentMediaTypeEntry : currentResponseEntry.getValue().getContent().entrySet()) {
+                    Schema mediaTypeSchema = currentMediaTypeEntry.getValue().getSchema();
 
-                if (mediaTypeSchema != null && currentMediaTypeEntry.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)) { // if the response actually returns a body
-                    addResponseBodyPropertiesCriterion(mediaTypeSchema, criteria,
-                            currentPathEntry.getKey() + "->" +
-                                    currentOperationEntry.getKey().toString() + "->" +
-                                    currentResponseEntry.getKey() + "->" // note the final arrow, since new elements will be added to the rootPath
-                    );
-                    break;
+                    if (mediaTypeSchema != null && currentMediaTypeEntry.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)) { // if the response actually returns a body
+                        addResponseBodyPropertiesCriterion(mediaTypeSchema, criteria,
+                                currentPathEntry.getKey() + "->" +
+                                        currentOperationEntry.getKey().toString() + "->" +
+                                        currentResponseEntry.getKey() + "->" // note the final arrow, since new elements will be added to the rootPath
+                        );
+                        break;
+                    }
                 }
             }
 
@@ -342,27 +345,32 @@ public class CoverageGatherer {
         String currentResponseRef = null;
         Map<String, Schema> openApiProperties = null;
 
-        if (mediaTypeSchema.get$ref() != null) { // the response is an object and its schema is defined in the OpenAPI 'ref' tag
-            currentResponseRef = mediaTypeSchema.get$ref();
-            rootPathSuffix += "{"; // update rootPathSuffix
-        } else if (mediaTypeSchema.getType().equals("array")) { // the response is an array
-            if (((ArraySchema)mediaTypeSchema).getItems().get$ref() != null) { // each item of the array has the schema of the OpenAPI 'ref' tag
-                currentResponseRef = ((ArraySchema)mediaTypeSchema).getItems().get$ref();
-                rootPathSuffix += "[{"; // update rootPathSuffix to reflect depth level inside the response body
-            }
-        } else if (mediaTypeSchema.getType().equals("object") && mediaTypeSchema.getProperties() != null) { // the response is an object and its schema is defined right after
-            openApiProperties = mediaTypeSchema.getProperties();
-            rootPathSuffix += "{"; // update rootPathSuffix
-        }
-        if (currentResponseRef != null) { // if the response body refers to a OpenAPI definition, get properties from that object
-            openApiProperties = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef.replace("#/components/schemas/", "")).getProperties();
-        }
+        if(mediaTypeSchema instanceof ComposedSchema && ((ComposedSchema) mediaTypeSchema).getAnyOf() != null) {
+            addResponseBodyPropertiesCriterion(((ComposedSchema) mediaTypeSchema).getAnyOf().get(0), criteria, baseRootPath);
 
-        if (openApiProperties != null) { // if there are properties to cover in this iteration, add new criterion
-            baseRootPath += rootPathSuffix; // update rootPath with the suffix, since a new criterion will be added
-            criteria.add(createCriterion(new ArrayList<>(openApiProperties.keySet()), RESPONSE_BODY_PROPERTIES, baseRootPath));
-            for (Entry<String, Schema> openApiProperty: openApiProperties.entrySet()) { // Recursively add criteria for each property
-                addResponseBodyPropertiesCriterion(openApiProperty.getValue(), criteria, baseRootPath+openApiProperty.getKey()); // update rootPath with the name of the property
+        } else {
+            if (mediaTypeSchema.get$ref() != null) { // the response is an object and its schema is defined in the OpenAPI 'ref' tag
+                currentResponseRef = mediaTypeSchema.get$ref();
+                rootPathSuffix += "{"; // update rootPathSuffix
+            } else if (mediaTypeSchema.getType().equals("array")) { // the response is an array
+                if (((ArraySchema)mediaTypeSchema).getItems().get$ref() != null) { // each item of the array has the schema of the OpenAPI 'ref' tag
+                    currentResponseRef = ((ArraySchema)mediaTypeSchema).getItems().get$ref();
+                    rootPathSuffix += "[{"; // update rootPathSuffix to reflect depth level inside the response body
+                }
+            } else if (mediaTypeSchema.getType().equals("object") && mediaTypeSchema.getProperties() != null) { // the response is an object and its schema is defined right after
+                openApiProperties = mediaTypeSchema.getProperties();
+                rootPathSuffix += "{"; // update rootPathSuffix
+            }
+            if (currentResponseRef != null) { // if the response body refers to a OpenAPI definition, get properties from that object
+                openApiProperties = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef.replace("#/components/schemas/", "")).getProperties();
+            }
+
+            if (openApiProperties != null) { // if there are properties to cover in this iteration, add new criterion
+                baseRootPath += rootPathSuffix; // update rootPath with the suffix, since a new criterion will be added
+                criteria.add(createCriterion(new ArrayList<>(openApiProperties.keySet()), RESPONSE_BODY_PROPERTIES, baseRootPath));
+                for (Entry<String, Schema> openApiProperty: openApiProperties.entrySet()) { // Recursively add criteria for each property
+                    addResponseBodyPropertiesCriterion(openApiProperty.getValue(), criteria, baseRootPath+openApiProperty.getKey()); // update rootPath with the name of the property
+                }
             }
         }
     }

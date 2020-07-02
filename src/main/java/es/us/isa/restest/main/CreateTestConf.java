@@ -23,7 +23,7 @@ public class CreateTestConf {
             openApiSpecPath = args[0];
 
         } else {
-            openApiSpecPath = "src/test/resources/Comments/swagger.yaml";
+            openApiSpecPath = "src/test/resources/Stripe/spec3.yaml";
         }
 
         generateTestConfPath();
@@ -85,6 +85,6 @@ public class CreateTestConf {
     private static void generateTestConfPath() {
         String[] sp = openApiSpecPath.split("/");
         int end = sp[sp.length-1].isEmpty()? sp.length-2 : sp.length-1;
-        confPath = Arrays.stream(sp, 0, end).collect(Collectors.joining("/", "", "/testConf.yaml"));
+        confPath = Arrays.stream(sp, 0, end).collect(Collectors.joining("/", "", "/testConfOAS3.yaml"));
     }
 }
