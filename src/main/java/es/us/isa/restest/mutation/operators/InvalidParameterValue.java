@@ -80,7 +80,7 @@ public class InvalidParameterValue extends AbstractMutationOperator {
         if(randomSelection < 1f/alt && !param.getEnumValues().contains(randomBoolean))
             tc.addParameter(param, randomBoolean); // Boolean enum
         else if(randomSelection < 2f/alt)
-            tc.addParameter(param, formatStringParameter(randomString)); // String enum
+            tc.addParameter(param, randomString); // String enum
         else
             tc.addParameter(param, randomBigInt); // Number enum
     }
@@ -90,7 +90,7 @@ public class InvalidParameterValue extends AbstractMutationOperator {
         int alt = 2; // Number of total alternatives when mutating the parameter
 
         if(randomSelection < 1f/alt)
-            tc.addParameter(param, formatStringParameter(randomString)); //Boolean parameter with string type
+            tc.addParameter(param, randomString); //Boolean parameter with string type
         else
             tc.addParameter(param, randomBigInt); // Boolean parameter with int type
     }
@@ -108,7 +108,7 @@ public class InvalidParameterValue extends AbstractMutationOperator {
             } else if (!mutationsTried.get(1) && randomSelection < 2f / alt) { // Number with max constraint. Violate it
                 if (violateMaxConstraintOfNumber(tc, param, randomSmallInt, mutationsTried)) return true;
             } else if (!mutationsTried.get(2) && randomSelection < 3f / alt) { // Number parameter with string type
-                tc.addParameter(param, formatStringParameter(randomString));
+                tc.addParameter(param, randomString);
                 return true;
             } else { // Number parameter with boolean type
                 tc.addParameter(param, randomBoolean);
@@ -154,19 +154,19 @@ public class InvalidParameterValue extends AbstractMutationOperator {
             randomSelection = ThreadLocalRandom.current().nextFloat();
             if (!mutationsTried.get(0) && randomSelection < 1f / alt) { // String with format (URL, email, etc.). Violate format using random string
                 if (param.getFormat() != null) {
-                    tc.addParameter(param, formatStringParameter(randomString));
+                    tc.addParameter(param, randomString);
                     return true;
                 } else
                     mutationsTried.set(0, true); // This mutation cannot be applied, do not try again
             } else if (!mutationsTried.get(1) && randomSelection < 2f / alt) { // Replace with string with fewer chars than minLength
                 if (param.getMinLength() != null && param.getMinLength() > 1) {
-                    tc.addParameter(param, formatStringParameter(RandomStringUtils.randomAlphabetic(param.getMinLength() - 1)));
+                    tc.addParameter(param, RandomStringUtils.randomAlphabetic(param.getMinLength() - 1));
                     return true;
                 } else
                     mutationsTried.set(1, true); // This mutation cannot be applied, do not try again
             } else if (!mutationsTried.get(2) && randomSelection < 3f / alt) { // Replace with string with more chars than maxLength
                 if (param.getMaxLength() != null) {
-                    tc.addParameter(param, formatStringParameter(RandomStringUtils.randomAlphabetic(param.getMaxLength() + randomSmallInt)));
+                    tc.addParameter(param, RandomStringUtils.randomAlphabetic(param.getMaxLength() + randomSmallInt));
                     return true;
                 } else
                     mutationsTried.set(2, true); // This mutation cannot be applied, do not try again
@@ -176,15 +176,5 @@ public class InvalidParameterValue extends AbstractMutationOperator {
         }
         return false;
     }
-
-    private static String formatStringParameter(String value) {
-        String result = value;
-        if(value.matches("([0-9]|[1-9]([0-9])*)(\\.([0-9])*[1-9])?")) {
-            result = "\"" + value + "\"";
-        }
-
-        return result;
-    }
-
 
 }

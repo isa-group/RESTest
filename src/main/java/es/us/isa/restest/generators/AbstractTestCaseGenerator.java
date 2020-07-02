@@ -186,12 +186,7 @@ public abstract class AbstractTestCaseGenerator {
 			for (TestParameter confParam : testOperation.getTestParameters()) {
 				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
 					ITestDataGenerator generator = generators.get(Pair.with(confParam.getName(), confParam.getIn()));
-					String value = generator.nextValueAsString();
-					if(value.matches("([0-9]|[1-9]([0-9])*)(\\.([0-9])*[1-9])?")
-							&& SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), confParam.getName(), confParam.getIn()).getType().equals("string")) {
-						value = "\"" + value + "\"";
-					}
-					test.addParameter(confParam, value);
+					test.addParameter(confParam, generator.nextValueAsString());
 				}
 			}
 		}

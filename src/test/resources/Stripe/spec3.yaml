@@ -19089,10 +19089,10 @@ paths:
                 "$ref": "#/components/schemas/product"
           description: Successful response.
         default:
-#          content:
-#            application/json:
-#              schema:
-#                "$ref": "#/components/schemas/error"
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/error"
           description: Error response.
 security:
   - basicAuth: []
