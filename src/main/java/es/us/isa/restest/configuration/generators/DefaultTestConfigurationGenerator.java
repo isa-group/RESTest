@@ -424,7 +424,11 @@ public class DefaultTestConfigurationGenerator {
 				} else {
 
 					TestParameter testParam = new TestParameter();
-					Encoding encoding = mediaType.getEncoding().get(parameterName);
+
+					Encoding encoding = null;
+					if(mediaType.getEncoding() != null) {
+						encoding = mediaType.getEncoding().get(parameterName);
+					}
 
 					if(parameterSchema.getType().equals("array") && encoding != null && encoding.getStyle().equals(Encoding.StyleEnum.DEEP_OBJECT)) {
 						testParam.setName(parameterName + "[]");
