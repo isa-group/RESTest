@@ -23,7 +23,7 @@ public class CreateTestConf {
             openApiSpecPath = args[0];
 
         } else {
-            openApiSpecPath = "src/test/resources/Comments/swagger.yaml";
+            openApiSpecPath = "src/test/resources/Stripe/spec3.yaml";
         }
 
         generateTestConfPath();
