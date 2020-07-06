@@ -6,10 +6,7 @@ package es.us.isa.restest.searchbased;
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfiguration;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
-import es.us.isa.restest.inputs.ITestDataGenerator;
-import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction.ObjectiveFunctionType;
 import es.us.isa.restest.specification.OpenAPISpecification;
@@ -23,7 +20,6 @@ import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 import static es.us.isa.restest.util.TestManager.getLastTestResult;
 
 import es.us.isa.restest.util.PropertyManager;
-import es.us.isa.restest.util.SpecificationVisitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +49,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     // Elements under Tests:
     String OAISpecPath;
     OpenAPISpecification apiUnderTest;
-    Operation operationUnderTest;
+//    Operation operationUnderTest;
 
     // Test case creation configuration
     String testClassNamePrefix;
@@ -61,7 +57,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     String targetPath;
 //    List<TestParameter> parameters;
 //    Map<String, ITestDataGenerator> generators;
-    TestConfiguration config;
+    TestConfigurationObject config;
     
     // Random number generator
     PseudoRandomGenerator randomGenerator;
@@ -69,17 +65,19 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     // Transient test case creation objects;
     StatsReportManager statsReportManager;
     RESTAssuredWriter iWriter;
-    RandomTestCaseGenerator randomTestCaseGenerator;
-    
+
+    Map<String, RandomTestCaseGenerator> randomTestCaseGenerators; // key: operationId
+    Map<String, Operation> operationsUnderTest; // key: operationId
+
     // Optimization problem configuration
     List<RestfulAPITestingObjectiveFunction> objectiveFunctions;
 
-    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
-    	this(apiUnderTest,operationUnderTest,configuration,objFuncs,targetPath,JMetalRandom.getInstance().getRandomGenerator(),null);
+    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath) {
+    	this(apiUnderTest,configuration,objFuncs,targetPath,JMetalRandom.getInstance().getRandomGenerator(),null);
     }
     
-    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
-    	this(apiUnderTest, operationUnderTest, configuration, objFuncs, targetPath, randomGenerator,null);
+    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
+    	this(apiUnderTest, configuration, objFuncs, targetPath, randomGenerator,null);
     	if(maxTestSuiteSize!=null) {
     		this.setNumberOfVariables(maxTestSuiteSize);
     		this.fixedTestSuiteSize=null;    		
@@ -88,19 +86,24 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     	this.minTestSuiteSize=minTestSuiteSize;
     }
     
-    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, Operation operationUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator, Integer fixedTestSuiteSize) {
+    public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, PseudoRandomGenerator randomGenerator, Integer fixedTestSuiteSize) {
     	this.testsPackage="searchbased";
     	this.apiUnderTest = apiUnderTest;
         this.setName(apiUnderTest.getSpecification().getInfo().getTitle());
-        this.config=configuration.getTestConfiguration();
+        this.config = configuration;
         this.targetPath = targetPath;
         this.randomGenerator = randomGenerator;
         this.iWriter = createWriter(targetPath);
         this.statsReportManager = createStatsReportManager();
-        this.randomTestCaseGenerator = new RandomTestCaseGenerator(apiUnderTest, configuration, Integer.MAX_VALUE);
-        if(operationUnderTest!=null) {
-            this.operationUnderTest = operationUnderTest;
-            this.randomTestCaseGenerator.createGenerators(operationUnderTest.getTestParameters());
+
+        // Initialize operations and test case generators
+        this.operationsUnderTest = new HashMap<>();
+        this.randomTestCaseGenerators = new HashMap<>();
+        for (Operation op: this.config.getTestConfiguration().getOperations()) {
+            operationsUnderTest.put(op.getOperationId(), op);
+            RandomTestCaseGenerator randomTestCaseGenerator = new RandomTestCaseGenerator(apiUnderTest, configuration, Integer.MAX_VALUE);
+            randomTestCaseGenerator.createGenerators(op.getTestParameters());
+            randomTestCaseGenerators.put(op.getOperationId(), randomTestCaseGenerator);
         }
 
         assert (objFuncs != null);
@@ -112,24 +115,13 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
 
     private int computeDefaultTestSuiteSize() {
-    	int result=1;
     	if(fixedTestSuiteSize!=null)
     		return fixedTestSuiteSize;
     	else if(maxTestSuiteSize!=null) {    		
     		return maxTestSuiteSize;
-    	}else if(operationUnderTest==null) {
-	    	// If we are testing the whole API we use the number of paths:			
-    		result=apiUnderTest.getSpecification().getPaths().size();
-    		// we use this value for the default fixed test suite size
-    		fixedTestSuiteSize=result;
-		}else {
-			// If we are testing a specific operation we use the number of parameters plus one 
-			// (just in case no parameters are present):
-			result=operationUnderTest.getTestParameters().size()+1;
-			// we use this value for the default fixed test suite size
-			fixedTestSuiteSize=result;
 		}
-		return result;
+    	// Default suite size is noOfOperations * 4
+		return config.getTestConfiguration().getOperations().size() * 4;
 	}
 
 	@Override
@@ -157,22 +149,8 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         return new RestfulAPITestSuiteSolution(this);
     }
 
-    public Operation getOperationUnderTest() {
-        return operationUnderTest;
-    }
-
     public OpenAPISpecification getApiUnderTest() {
         return apiUnderTest;
-    }
-
-    private Map<String, ITestDataGenerator> createGenerators(List<TestParameter> testParameters) {
-        HashMap<String, ITestDataGenerator> result = new HashMap<>();
-
-        for (TestParameter param : testParameters) {
-            result.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
-        }
-
-        return result;
     }
 
     private void invokeMissingTests(RestfulAPITestSuiteSolution s) {
@@ -266,25 +244,29 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
 
 	public TestCase createRandomTestCase() {
-		es.us.isa.restest.configuration.pojos.Operation operation=operationUnderTest;
-		String faulty="none";
-		if(operationUnderTest==null){
-			operation=chooseRandomOperation();
-            randomTestCaseGenerator.createGenerators(operation.getTestParameters());
-		}
-		TestCase testCase = randomTestCaseGenerator.generateNextTestCase(operation,faulty);
+		es.us.isa.restest.configuration.pojos.Operation operation = getRandomOperation();
+		String faulty = getRandomFaultyReason();
+		TestCase testCase = randomTestCaseGenerators.get(operation.getOperationId()).generateNextTestCase(operation,faulty);
 		if (!hasDependencies(operation.getOpenApiOperation()))
 		    testCase.setFulfillsDependencies(true);
 		return testCase;
 	}	
 
-	private es.us.isa.restest.configuration.pojos.Operation chooseRandomOperation() {
-		List<es.us.isa.restest.configuration.pojos.Operation> operations=config.getOperations();
-		es.us.isa.restest.configuration.pojos.Operation result=null;
-		int index=randomGenerator.nextInt(0,operations.size()-1);
-		result=operations.get(index);
-		return result;
+	private es.us.isa.restest.configuration.pojos.Operation getRandomOperation() {
+		List<es.us.isa.restest.configuration.pojos.Operation> operations=config.getTestConfiguration().getOperations();
+		return operations.get(randomGenerator.nextInt(0, operations.size()-1));
 	}
+
+	private String getRandomFaultyReason() {
+        double prob = randomGenerator.nextDouble();
+        if (prob < 0.5)
+            return "none";
+        else if (prob < 0.75)
+            return "individual_parameter_constraint";
+        else
+            return "inter_parameter_dependency";
+
+    }
 
 	public String getTestsPackage() {
 		return testsPackage;
@@ -294,7 +276,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 		this.testsPackage = testsPackage;
 	}
 	
-	public TestConfiguration getConfig() {
+	public TestConfigurationObject getConfig() {
 		return config;
 	}
 
@@ -323,12 +305,12 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 		return objectiveFunctions;
 	}
 
-    public RandomTestCaseGenerator getRandomTestCaseGenerator() {
-        return randomTestCaseGenerator;
+    public Map<String, RandomTestCaseGenerator> getRandomTestCaseGenerators() {
+        return randomTestCaseGenerators;
     }
 
-    public void setRandomTestCaseGenerator(RandomTestCaseGenerator randomTestCaseGenerator) {
-        this.randomTestCaseGenerator = randomTestCaseGenerator;
+    public Map<String, Operation> getOperationsUnderTest() {
+        return operationsUnderTest;
     }
 
 	public Integer getMaxTestSuiteSize() {

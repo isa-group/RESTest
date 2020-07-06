@@ -37,8 +37,6 @@ public class BikeWiseExperiment {
     private static String confPath = "src/test/resources/Bikewise/fullConf.yaml";		    // Path to test configuration file
     private static String experimentName = "bikewise";                                      // Experiment name
     private static String targetDir = "src/generation/java/searchbased";	// Directory where tests will be generated.
-    private static String resourcePath ="/v2/incidents";
-    private static String method ="GET";
     private static long seed = 1979;
     
     public static void main(String[] args) {
@@ -52,9 +50,7 @@ public class BikeWiseExperiment {
     	
         SearchBasedTestSuiteGenerator generator=new SearchBasedTestSuiteGenerator(
                             OAISpecPath, 
-                            Optional.of(confPath),
-                            Optional.of(resourcePath),
-                            Optional.of(method),
+                            confPath,
                             experimentName,
                             objectiveFunctions,
                             targetDir,

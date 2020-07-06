@@ -53,7 +53,7 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
     }
 
     private void doMutation(ParameterFeatures paramFeatures, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
+        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerators().get(testCase.getOperationId()).getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
         testCase.addParameter(paramFeatures, generator.nextValueAsString());
     }
 }

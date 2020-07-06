@@ -83,10 +83,8 @@ public class RandomSearchVsNSGAII {
 		List<RestfulAPITestSuiteGenerationProblem> problems=new ArrayList<>();
 		RestfulAPITestSuiteGenerationProblem bikewiseProblem=SearchBasedTestSuiteGenerator
 																.buildProblem(OAISpecPath, 
-																			Optional.of(confPath),
-																			Optional.of(resourcePath), 
-																			Optional.of(method), 
-																			objectiveFunctions, 
+																			confPath,
+																			objectiveFunctions,
 																			targetDir, 
 																			minTestSuiteSize, 
 																			maxTestSuiteSize);

@@ -21,10 +21,8 @@ public abstract class AbstractSearchBasedTest {
 			problems.add(
 					SearchBasedTestSuiteGenerator.
 						buildProblem(OAISpecPaths.get(i),
-							Optional.of(confPaths.get(i)),
-							Optional.of(resourcePaths.get(i)),
-							Optional.of(methods.get(i)),
-							List.of(new SuiteSize()), 
+							confPaths.get(i),
+							List.of(new SuiteSize()),
 							targetDir, 2, 2)					
 					);
 		}

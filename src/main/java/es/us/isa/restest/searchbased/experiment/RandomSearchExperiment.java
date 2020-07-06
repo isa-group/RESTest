@@ -41,9 +41,7 @@ public class RandomSearchExperiment {
 	    		);
 	    SearchBasedTestSuiteGenerator generator=new SearchBasedTestSuiteGenerator(
                 OAISpecPath, 
-                Optional.of(confPath),
-                Optional.of(resourcePath),
-                Optional.of(method),
+                confPath,
                 experimentName,
                 objectiveFunctions,
                 targetDir,

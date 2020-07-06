@@ -43,14 +43,8 @@ public class AddParameterMutation extends AbstractAPITestCaseMutationOperator {
     }
 
     protected Collection<ParameterFeatures> getNonPresentParameters(TestCase testCase, RestfulAPITestSuiteSolution solution) {
-    	es.us.isa.restest.configuration.pojos.Operation operation = solution.getProblem().getOperationUnderTest();
-    	if(operation==null) {
-            for(es.us.isa.restest.configuration.pojos.Operation op:solution.getProblem().getConfig().getOperations())
-                if(testCase.getOperationId().equals(op.getOperationId())) {
-                    operation=op;
-                    break;
-                }
-    	}
+    	es.us.isa.restest.configuration.pojos.Operation operation = solution.getProblem().getOperationsUnderTest().get(testCase.getOperationId());
+
         Collection<ParameterFeatures> presentParams=getAllPresentParameters(testCase);
         Set<ParameterFeatures> result=new HashSet<>();
         for (TestParameter param: operation.getTestParameters()) {
@@ -62,7 +56,7 @@ public class AddParameterMutation extends AbstractAPITestCaseMutationOperator {
     }
 
     private void doMutation(ParameterFeatures paramFeatures, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerator().getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
+        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerators().get(testCase.getOperationId()).getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
         testCase.addParameter(paramFeatures, generator.nextValueAsString());
     }
     

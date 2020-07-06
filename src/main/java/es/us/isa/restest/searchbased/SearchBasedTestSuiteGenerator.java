@@ -50,7 +50,6 @@ import es.us.isa.restest.searchbased.operators.RemoveParameterMutation;
 import es.us.isa.restest.searchbased.operators.RemoveTestCaseMutation;
 import es.us.isa.restest.searchbased.operators.RandomParameterValueMutation;
 import es.us.isa.restest.searchbased.operators.ResourceChangeMutation;
-import es.us.isa.restest.searchbased.operators.SinglePointTestSuiteCrossover;
 import es.us.isa.restest.searchbased.operators.UniformTestCaseCrossover;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
@@ -68,20 +67,16 @@ public class SearchBasedTestSuiteGenerator {
     private final List<ExperimentProblem<RestfulAPITestSuiteSolution>> problems;
     List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms;
     ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experimentBuilder;
-
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath,  String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed,int maxEvaluations, int populationSize) {
-    	this(apiDescriptionPath, configFilePath, Optional.empty(),Optional.empty(),experimentName,objectiveFunctions,experimentName,seed,maxEvaluations,populationSize);
+    
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions, String targetPath, long seed, int maxEvaluations, int populationSize) {
+    	this(apiDescriptionPath, configFilePath, experimentName, objectiveFunctions,targetPath, seed,null,maxEvaluations,populationSize);
+    }
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize,int maxEvaluations, int populationSize) {
+    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, objectiveFunctions, targetPath,fixedTestSuiteSize),maxEvaluations,populationSize);
     }
     
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, int maxEvaluations, int populationSize) {
-    	this(apiDescriptionPath, configFilePath, resourcePath, method, experimentName, objectiveFunctions,targetPath, seed,null,maxEvaluations,populationSize);
-    }
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize,int maxEvaluations, int populationSize) {
-    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath,fixedTestSuiteSize),maxEvaluations,populationSize);
-    }
-    
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> method, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize,int maxEvaluations, int populationSize) {
-    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, resourcePath, method,objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize),maxEvaluations,populationSize);
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize,int maxEvaluations, int populationSize) {
+    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize),maxEvaluations,populationSize);
     }
     
     public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, RestfulAPITestSuiteGenerationProblem problem,int maxEvaluations, int populationSize) {
@@ -153,26 +148,16 @@ public class SearchBasedTestSuiteGenerator {
         return result;
     }    
     
-    public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
+    public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, String configFilePath, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
     	OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
-        TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
-        Operation operationUnderTest = null;
-        if(resourcePath.isPresent() && operation.isPresent()) {
-        	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());
-        }
-        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
-        return problem;
+        TestConfigurationObject configuration = TestConfigurationIO.loadConfiguration(configFilePath, apiUnderTest);
+        return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
     }
     
-    public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, Optional<String> configFilePath, Optional<String> resourcePath, Optional<String> operation,List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
+    public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, String configFilePath, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
         OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
-        TestConfigurationObject configuration = loadTestConfiguration(apiUnderTest, configFilePath);
-        Operation operationUnderTest = null;
-        if(resourcePath.isPresent() && operation.isPresent()) {
-        	operationUnderTest=findOperationUnderTest(configuration, resourcePath.get(), operation.get());
-        }
-        RestfulAPITestSuiteGenerationProblem problem = new RestfulAPITestSuiteGenerationProblem(apiUnderTest, operationUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
-        return problem;
+        TestConfigurationObject configuration = TestConfigurationIO.loadConfiguration(configFilePath, apiUnderTest);
+        return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
     }
 
     public void run() throws IOException {
@@ -263,23 +248,6 @@ public class SearchBasedTestSuiteGenerator {
         result.add(new InvertedGenerationalDistance<>());
         result.add(new InvertedGenerationalDistancePlus<>());
         return result;
-    }
-
-    private static TestConfigurationObject loadTestConfiguration(OpenAPISpecification apiUnderTest, Optional<String> configFilePath) {
-        
-        TestConfigurationObject tco = null;
-        if (configFilePath.isPresent()) {
-            tco = TestConfigurationIO.loadConfiguration(configFilePath.get(), apiUnderTest);
-        } else {
-            configFilePath = Optional.of("./testConfiguration.txt");
-        }
-
-        if (tco == null) {
-            DefaultTestConfigurationGenerator generator = new DefaultTestConfigurationGenerator(apiUnderTest);
-            tco = generator.generate(configFilePath.get(), Collections.EMPTY_LIST);
-            
-        }
-        return tco;
     }
 
     private static Operation findOperationUnderTest(TestConfigurationObject configuration, String resourcePath, String method) {
