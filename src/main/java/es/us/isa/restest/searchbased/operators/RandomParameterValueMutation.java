@@ -14,9 +14,8 @@ import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.SpecificationVisitor;
-import io.swagger.models.Operation;
-import io.swagger.models.parameters.Parameter;
+
+import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
 
 /**
  *
@@ -49,11 +48,12 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
                     }
                 }
             }
+            updateTestCaseFaultyReason(solution, testCase);
         }
     }
 
     private void doMutation(ParameterFeatures paramFeatures, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerators().get(testCase.getOperationId()).getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
+        ITestDataGenerator generator = solution.getProblem().getTestCaseGenerators().get(testCase.getOperationId()).getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
         testCase.addParameter(paramFeatures, generator.nextValueAsString());
     }
 }

@@ -192,7 +192,7 @@ public abstract class AbstractTestCaseGenerator {
 		}
 	}
 
-	protected void authenticateTestCase(TestCase test) {
+	public void authenticateTestCase(TestCase test) {
 		// Authentication
 		if (conf.getAuth().getRequired()) {
 
@@ -294,6 +294,14 @@ public abstract class AbstractTestCaseGenerator {
 
 	public void setnCurrentNominal(int nCurrentNominal) {
 		this.nCurrentNominal = nCurrentNominal;
+	}
+
+	public OpenApiInteractionValidator getValidator() {
+		return validator;
+	}
+
+	public void setValidator(OpenApiInteractionValidator validator) {
+		this.validator = validator;
 	}
 
 	public Map<Pair<String, String>, ITestDataGenerator> getGenerators() {

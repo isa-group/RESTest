@@ -4,9 +4,8 @@
 package es.us.isa.restest.searchbased;
 
 import es.us.isa.restest.configuration.pojos.Operation;
-import es.us.isa.restest.configuration.pojos.TestConfiguration;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction.ObjectiveFunctionType;
 import es.us.isa.restest.specification.OpenAPISpecification;
@@ -16,7 +15,6 @@ import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.StatsReportManager;
 
 import static es.us.isa.restest.util.FileManager.createDir;
-import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 import static es.us.isa.restest.util.TestManager.getLastTestResult;
 
 import es.us.isa.restest.util.PropertyManager;
@@ -66,7 +64,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     StatsReportManager statsReportManager;
     RESTAssuredWriter iWriter;
 
-    Map<String, RandomTestCaseGenerator> randomTestCaseGenerators; // key: operationId
+    Map<String, ConstraintBasedTestCaseGenerator> testCaseGenerators; // key: operationId
     Map<String, Operation> operationsUnderTest; // key: operationId
 
     // Optimization problem configuration
@@ -98,12 +96,13 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
         // Initialize operations and test case generators
         this.operationsUnderTest = new HashMap<>();
-        this.randomTestCaseGenerators = new HashMap<>();
+        this.testCaseGenerators = new HashMap<>();
         for (Operation op: this.config.getTestConfiguration().getOperations()) {
             operationsUnderTest.put(op.getOperationId(), op);
-            RandomTestCaseGenerator randomTestCaseGenerator = new RandomTestCaseGenerator(apiUnderTest, configuration, Integer.MAX_VALUE);
-            randomTestCaseGenerator.createGenerators(op.getTestParameters());
-            randomTestCaseGenerators.put(op.getOperationId(), randomTestCaseGenerator);
+            ConstraintBasedTestCaseGenerator testCaseGenerator = new ConstraintBasedTestCaseGenerator(apiUnderTest, configuration, Integer.MAX_VALUE);
+            testCaseGenerator.setUpIDLReasoner(op);
+            testCaseGenerator.createGenerators(op.getTestParameters());
+            testCaseGenerators.put(op.getOperationId(), testCaseGenerator);
         }
 
         assert (objFuncs != null);
@@ -244,20 +243,21 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     }
 
 	public TestCase createRandomTestCase() {
-		es.us.isa.restest.configuration.pojos.Operation operation = getRandomOperation();
-		String faulty = getRandomFaultyReason();
-		TestCase testCase = randomTestCaseGenerators.get(operation.getOperationId()).generateNextTestCase(operation,faulty);
-		if (!hasDependencies(operation.getOpenApiOperation()))
-		    testCase.setFulfillsDependencies(true);
+		Operation operation = chooseRandomOperation();
+		String faulty = chooseRandomFaultyReason();
+		ConstraintBasedTestCaseGenerator testCaseGenerator = testCaseGenerators.get(operation.getOperationId());
+		testCaseGenerator.checkIDLReasonerData(operation, faulty);
+		TestCase testCase = testCaseGenerator.generateNextTestCase(operation, faulty);
+		testCaseGenerator.authenticateTestCase(testCase);
 		return testCase;
-	}	
+	}
 
-	private es.us.isa.restest.configuration.pojos.Operation getRandomOperation() {
-		List<es.us.isa.restest.configuration.pojos.Operation> operations=config.getTestConfiguration().getOperations();
+	private Operation chooseRandomOperation() {
+		List<Operation> operations=config.getTestConfiguration().getOperations();
 		return operations.get(randomGenerator.nextInt(0, operations.size()-1));
 	}
 
-	private String getRandomFaultyReason() {
+	private String chooseRandomFaultyReason() {
         double prob = randomGenerator.nextDouble();
         if (prob < 0.5)
             return "none";
@@ -305,8 +305,8 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 		return objectiveFunctions;
 	}
 
-    public Map<String, RandomTestCaseGenerator> getRandomTestCaseGenerators() {
-        return randomTestCaseGenerators;
+    public Map<String, ConstraintBasedTestCaseGenerator> getTestCaseGenerators() {
+        return testCaseGenerators;
     }
 
     public Map<String, Operation> getOperationsUnderTest() {

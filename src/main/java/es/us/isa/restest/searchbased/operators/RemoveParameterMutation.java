@@ -6,10 +6,15 @@
 package es.us.isa.restest.searchbased.operators;
 
 import es.us.isa.restest.specification.ParameterFeatures;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
+
+import java.util.Optional;
+
+import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
 
 /**
  *
@@ -30,6 +35,7 @@ public class RemoveParameterMutation extends AbstractAPITestCaseMutationOperator
                     resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                 }
             }
+            updateTestCaseFaultyReason(solution, testCase);
         }
     }
     

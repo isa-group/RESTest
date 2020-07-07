@@ -4,18 +4,24 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
+import com.atlassian.oai.validator.report.ValidationReport;
+import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.util.IDLAdapter;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
+import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static java.net.URLEncoder.encode;
 
 /** Domain-independent test case
@@ -327,13 +333,7 @@ public class TestCase implements Serializable {
 		writeRow(filePath, rowBeginning + rowEnding);
 	}
 
-	/**
-	 * Returns true if the test case is faulty, false otherwise
-	 * @param tc
-	 * @param validator
-	 * @return
-	 */
-	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
+	public static List<String> getFaultyReasons(TestCase tc, OpenApiInteractionValidator validator) {
 		String fullPath = tc.getPath();
 		for (Map.Entry<String, String> pathParam : tc.getPathParameters().entrySet())
 			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
@@ -357,7 +357,29 @@ public class TestCase implements Serializable {
 			requestBuilder.withBody(formDataBody.toString());
 		}
 
-		return validator.validateRequest(requestBuilder.build()).hasErrors();
+		return validator.validateRequest(requestBuilder.build()).getMessages().stream().map(ValidationReport.Message::getKey).collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns true if the test case is faulty, false otherwise
+	 * @param tc
+	 * @param validator
+	 * @return
+	 */
+	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
+		return !getFaultyReasons(tc, validator).isEmpty();
+	}
+
+	/**
+	 * Returns true if the test case fulfills inter-parameter dependencies, false otherwise
+	 * @param tc
+	 * @param idlReasoner
+	 * @return
+	 */
+	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
+		if (idlReasoner == null)
+			return true;
+		return idlReasoner.isValidRequest(restest2idlTestCase(tc));
 	}
 
 	public String toString() {

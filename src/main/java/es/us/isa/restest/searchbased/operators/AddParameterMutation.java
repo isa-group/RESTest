@@ -11,14 +11,14 @@ import java.util.Set;
 
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
-import io.swagger.v3.oas.models.parameters.Parameter;
 import org.javatuples.Pair;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.SpecificationVisitor;
+
+import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
 
 /**
  *
@@ -39,6 +39,7 @@ public class AddParameterMutation extends AbstractAPITestCaseMutationOperator {
                     resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
                 }
             }
+            updateTestCaseFaultyReason(solution, testCase);
         }
     }
 
@@ -56,7 +57,7 @@ public class AddParameterMutation extends AbstractAPITestCaseMutationOperator {
     }
 
     private void doMutation(ParameterFeatures paramFeatures, TestCase testCase, RestfulAPITestSuiteSolution solution) {
-        ITestDataGenerator generator = solution.getProblem().getRandomTestCaseGenerators().get(testCase.getOperationId()).getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
+        ITestDataGenerator generator = solution.getProblem().getTestCaseGenerators().get(testCase.getOperationId()).getGenerators().get(Pair.with(paramFeatures.getName(), paramFeatures.getIn()));
         testCase.addParameter(paramFeatures, generator.nextValueAsString());
     }
     

@@ -15,6 +15,8 @@ import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 
+import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
+
 public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITestSuiteSolution> {
 
 	  	private double crossoverProbability;
@@ -71,9 +73,13 @@ public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITes
     	TestCase testCase1=offspring1.getVariable(parent1TestCaseIndex);
     	TestCase testCase2=offspring2.getVariable(parent2TestCaseIndex);
     	// Crossover is applied only between testcases of the same operation: 
-    	if(testCase1.getOperationId().equals(testCase2.getOperationId())) 
-      // 2. 3. Apply the crossover:
-    		doCrossover(probability,testCase1,testCase2);                      
+    	if(testCase1.getOperationId().equals(testCase2.getOperationId())) {
+			// 2. 3. Apply the crossover:
+			doCrossover(probability, testCase1, testCase2);
+			updateTestCaseFaultyReason(parent1, testCase1);
+			updateTestCaseFaultyReason(parent1, testCase2);
+		}
+
     	return offspring;
 
 	}
