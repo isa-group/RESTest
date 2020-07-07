@@ -118,14 +118,14 @@ public class SearchBasedTestSuiteGenerator {
     	AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
         		new AddTestCaseMutation(0.2,generator),
         		new RemoveTestCaseMutation(0.2,generator),
-    			new AddParameterMutation(0.2,generator),
-        		new RemoveParameterMutation(0.2,generator),
-        		new RandomParameterValueMutation(0.2,generator),
-        		new ResourceChangeMutation(0.2,generator)
+    			new AddParameterMutation(0.001,generator),
+        		new RemoveParameterMutation(0.001,generator),
+        		new RandomParameterValueMutation(0.001,generator),
+        		new ResourceChangeMutation(0.001,generator)
         ));
     	result = new NSGAIIBuilder<>(
         		problem,
-        		new UniformTestCaseCrossover(0.5),
+        		new UniformTestCaseCrossover(0.001),
         		mutation,
         		populationSize)
 			.setMaxEvaluations(maxEvaluations)
