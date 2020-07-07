@@ -32,6 +32,7 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
 
     private double mutationProbability;
     private PseudoRandomGenerator randomGenerator;
+    protected boolean mutationApplied;
 
     public AbstractAPITestCaseMutationOperator(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         this.mutationProbability = mutationProbability;
@@ -77,8 +78,4 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
     }
 
     protected abstract void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution);
-
-    protected void resetTestResult(String testCaseId, RestfulAPITestSuiteSolution solution) {
-        solution.setTestResult(testCaseId, null);
-    }
 }

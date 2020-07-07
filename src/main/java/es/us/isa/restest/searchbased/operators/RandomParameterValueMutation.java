@@ -15,6 +15,7 @@ import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 
+import static es.us.isa.restest.searchbased.operators.Utils.resetTestResult;
 import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
 
 /**
@@ -37,6 +38,7 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
     @Override
     protected void doMutation(double probability, RestfulAPITestSuiteSolution solution) {
         for (TestCase testCase : solution.getVariables()) {
+            mutationApplied = false;
             Collection<ParameterFeatures> parameters = getAllPresentParameters(testCase);
             if (parameters.isEmpty()) {
                 parameterAdditionOperator.doMutation(probability, solution);
@@ -44,11 +46,15 @@ public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOpe
                 for (ParameterFeatures param : parameters) {
                     if (getRandomGenerator().nextDouble() <= probability) {                        
                         doMutation(param, testCase, solution);
-                        resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
+                        if (!mutationApplied) mutationApplied = true;
                     }
                 }
             }
-            updateTestCaseFaultyReason(solution, testCase);
+
+            if (mutationApplied) {
+                updateTestCaseFaultyReason(solution, testCase);
+                resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
+            }
         }
     }
 
