@@ -14,18 +14,20 @@ import static es.us.isa.restest.testcases.TestCase.getFaultyReasons;
 public class Utils {
 
     static void updateTestCaseFaultyReason(RestfulAPITestSuiteSolution solution, TestCase testCase) {
-        List<String> faultyReasons = getFaultyReasons(testCase, solution.getProblem().getTestCaseGenerators().get(testCase.getOperationId()).getValidator());
-        if (!faultyReasons.isEmpty()) {
-            testCase.setFaultyReason(String.join(", ", faultyReasons));
-            testCase.setFaulty(true);
-        } else if (checkFulfillsDependencies(testCase, solution.getProblem().getTestCaseGenerators().get(testCase.getOperationId()).getIdlReasoner())) {
-            testCase.setFaultyReason("inter_parameter_dependency");
-            testCase.setFulfillsDependencies(false);
-            testCase.setFaulty(true);
-        } else {
-            testCase.setFaultyReason("none");
-            testCase.setFulfillsDependencies(true);
-            testCase.setFaulty(false);
+        if (testCase.getEnableOracles()) {
+            List<String> faultyReasons = getFaultyReasons(testCase, solution.getProblem().getTestCaseGenerators().get(testCase.getOperationId()).getValidator());
+            if (!faultyReasons.isEmpty()) {
+                testCase.setFaultyReason(String.join(", ", faultyReasons));
+                testCase.setFaulty(true);
+            } else if (checkFulfillsDependencies(testCase, solution.getProblem().getTestCaseGenerators().get(testCase.getOperationId()).getIdlReasoner())) {
+                testCase.setFaultyReason("inter_parameter_dependency");
+                testCase.setFulfillsDependencies(false);
+                testCase.setFaulty(true);
+            } else {
+                testCase.setFaultyReason("none");
+                testCase.setFulfillsDependencies(true);
+                testCase.setFaulty(false);
+            }
         }
     }
 

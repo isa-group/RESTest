@@ -312,6 +312,14 @@ public abstract class AbstractTestCaseGenerator {
 		this.generators = generators;
 	}
 
+	public AuthManager getAuthManager() {
+		return authManager;
+	}
+
+	public void setAuthManager(AuthManager authManager) {
+		this.authManager = authManager;
+	}
+
 	protected String removeNotAlfanumericCharacters(String s) {
 		return s.replaceAll("[^A-Za-z0-9]", "");
 	}

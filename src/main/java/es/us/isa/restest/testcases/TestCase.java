@@ -35,6 +35,7 @@ public class TestCase implements Serializable {
 	private Boolean faulty;									// True if the expected response is a 4XX status code
 	private Boolean fulfillsDependencies;					// True if it does not violate any inter-parameter dependencies
 	private String faultyReason;							// "none", "individual_parameter_constraint", "invalid_request_body" or "inter_parameter_dependency"
+	private Boolean enableOracles;							// True (default) if you want to assert the response. False if you only want to execute the request
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
@@ -50,6 +51,7 @@ public class TestCase implements Serializable {
 		this.id = id;
 		this.faulty = faulty;
 		this.fulfillsDependencies = false; // By default, a test case does not satisfy inter-parameter dependencies
+		this.enableOracles = true;
 		this.operationId = operationId;
 		this.path = path;
 		this.method = method;
@@ -65,6 +67,7 @@ public class TestCase implements Serializable {
 		this(testCase.id, testCase.faulty, testCase.operationId, testCase.path, testCase.method);
 		this.faultyReason = testCase.faultyReason;
 		this.fulfillsDependencies = testCase.fulfillsDependencies;
+		this.enableOracles = testCase.enableOracles;
 		this.inputFormat = testCase.inputFormat;
 		this.headerParameters.putAll(testCase.headerParameters);
 		this.queryParameters.putAll(testCase.queryParameters);
@@ -294,6 +297,14 @@ public class TestCase implements Serializable {
 		this.faultyReason = faultyReason;
 	}
 
+	public Boolean getEnableOracles() {
+		return enableOracles;
+	}
+
+	public void setEnableOracles(Boolean enableOracles) {
+		this.enableOracles = enableOracles;
+	}
+
 	private void setFormDataContentType() {
 		if (!inputFormat.equals("application/x-www-form-urlencoded") && formParameters.size() > 0)
 			inputFormat = "application/x-www-form-urlencoded";
@@ -396,6 +407,7 @@ public class TestCase implements Serializable {
 		result = prime * result + ((bodyParameter == null) ? 0 : bodyParameter.hashCode());
 		result = prime * result + ((faulty == null) ? 0 : faulty.hashCode());
 		result = prime * result + ((faultyReason == null) ? 0 : faultyReason.hashCode());
+		result = prime * result + ((enableOracles == null) ? 0 : enableOracles.hashCode());
 		result = prime * result + ((formParameters == null) ? 0 : formParameters.hashCode());
 		result = prime * result + ((fulfillsDependencies == null) ? 0 : fulfillsDependencies.hashCode());
 		result = prime * result + ((headerParameters == null) ? 0 : headerParameters.hashCode());
@@ -444,6 +456,13 @@ public class TestCase implements Serializable {
 				return false;
 			}
 		} else if (!faultyReason.equals(other.faultyReason)) {
+			return false;
+		}
+		if (enableOracles == null) {
+			if (other.enableOracles != null) {
+				return false;
+			}
+		} else if (!enableOracles.equals(other.enableOracles)) {
 			return false;
 		}
 		if (formParameters == null) {

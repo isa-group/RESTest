@@ -249,6 +249,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 		testCaseGenerator.checkIDLReasonerData(operation, faulty);
 		TestCase testCase = testCaseGenerator.generateNextTestCase(operation, faulty);
 		testCaseGenerator.authenticateTestCase(testCase);
+//		testCase.setEnableOracles(false);
 		return testCase;
 	}
 
