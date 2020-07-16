@@ -1,6 +1,7 @@
 package es.us.isa.restest.searchbased.experiment;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ public class RandomSearchExperiment {
 	    String method ="GET";
 	    int minTestSuiteSize=2;
 	    int maxTestSuiteSize=10;
-	    List<RestfulAPITestingObjectiveFunction> objectiveFunctions=List.of(
+	    List<RestfulAPITestingObjectiveFunction> objectiveFunctions= Arrays.asList(
 	    		new SuiteSize(),
 	    		new InputCoverage()
 	    		);
@@ -50,10 +51,10 @@ public class RandomSearchExperiment {
                 maxTestSuiteSize,
                 maxEvaluations,
                 populationSize);
-	    List<RestfulAPITestSuiteGenerationProblem> problems = List.of();
+	    List<RestfulAPITestSuiteGenerationProblem> problems = Arrays.asList();
 	    List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms = null;
 	    Algorithm<List<RestfulAPITestSuiteSolution>> randomSearch=new RandomSearch(generator.getProblems().get(0).getProblem(),maxEvaluations);
-	    generator.setAlgorithms(List.of(new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(randomSearch,generator.getProblems().get(0),0)));
+	    generator.setAlgorithms(Arrays.asList(new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(randomSearch,generator.getProblems().get(0),0)));
 	    try {
 			generator.run();
 		} catch (IOException e) {

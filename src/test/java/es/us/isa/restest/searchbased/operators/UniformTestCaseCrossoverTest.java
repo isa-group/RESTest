@@ -1,5 +1,6 @@
 package es.us.isa.restest.searchbased.operators;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -18,7 +19,7 @@ public class UniformTestCaseCrossoverTest extends AbstractSearchBasedTest {
 			// Arrange | Fixture:
 			RestfulAPITestSuiteSolution parent1=problem.createSolution();
 			RestfulAPITestSuiteSolution parent2=problem.createSolution();
-			List<RestfulAPITestSuiteSolution> parents=List.of(parent1,parent2);
+			List<RestfulAPITestSuiteSolution> parents=Arrays.asList(parent1,parent2);
 			UniformTestCaseCrossover sut=new UniformTestCaseCrossover(0.0);
 			// Act (SUT invocation):
 			List<RestfulAPITestSuiteSolution> offspring=sut.execute(parents);			
@@ -35,7 +36,7 @@ public class UniformTestCaseCrossoverTest extends AbstractSearchBasedTest {
 			// Arrange | Fixture:
 			RestfulAPITestSuiteSolution parent1=problem.createSolution();
 			RestfulAPITestSuiteSolution parent2=problem.createSolution();
-			List<RestfulAPITestSuiteSolution> parents=List.of(parent1,parent2);
+			List<RestfulAPITestSuiteSolution> parents= Arrays.asList(parent1,parent2);
 			UniformTestCaseCrossover sut=new UniformTestCaseCrossover(1.0);
 			// Act (SUT invocation):
 			List<RestfulAPITestSuiteSolution> offspring=sut.execute(parents);			
