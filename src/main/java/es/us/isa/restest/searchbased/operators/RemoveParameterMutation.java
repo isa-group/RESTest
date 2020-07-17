@@ -31,18 +31,12 @@ public class RemoveParameterMutation extends AbstractAPITestCaseMutationOperator
     
     @Override
     protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
-        Auth authConf = solution.getProblem().getConfig().getAuth();
         for (TestCase testCase : solution.getVariables()) {
-            AuthManager authManager = solution.getProblem().getTestCaseGenerators().get(testCase.getId()).getAuthManager();
             mutationApplied = false;
             for (ParameterFeatures param : getAllPresentParameters(testCase)) {
-                if (!authConf.getHeaderParams().containsKey(param.getName()) && // Do not remove auth parameters
-                        !authConf.getQueryParams().containsKey(param.getName()) &&
-                        !authManager.getAuthPropertyNames().contains(param.getName())) {
-                    if (getRandomGenerator().nextDouble() <= mutationProbability) {
-                        doMutation(param, testCase);
-                        if (!mutationApplied) mutationApplied = true;
-                    }
+                if (getRandomGenerator().nextDouble() <= mutationProbability) {
+                    doMutation(param, testCase);
+                    if (!mutationApplied) mutationApplied = true;
                 }
             }
 
