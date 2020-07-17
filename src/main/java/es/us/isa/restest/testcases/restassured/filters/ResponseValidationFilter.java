@@ -37,10 +37,17 @@ public class ResponseValidationFilter implements OrderedFilter {
     public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
         final Response response = ctx.next(requestSpec, responseSpec);
         final Request restAssuredRequest = RestAssuredRequest.of(requestSpec);
-        final ValidationReport validationReport = validator.validateResponse(restAssuredRequest.getPath(), restAssuredRequest.getMethod(), RestAssuredResponse.of(response));
+
+        filterValidation(response, restAssuredRequest.getPath(), restAssuredRequest.getMethod().toString());
+
+        return response;
+    }
+
+    // If OAS validation error is found, throw exception
+    public void filterValidation(Response response, String path, String method) {
+        final ValidationReport validationReport = validator.validateResponse(path, Request.Method.valueOf(method), RestAssuredResponse.of(response));
         if (validationReport.hasErrors())
             throw new OpenApiValidationException(validationReport);
-        return response;
     }
 
     public static class OpenApiValidationException extends RuntimeException {
