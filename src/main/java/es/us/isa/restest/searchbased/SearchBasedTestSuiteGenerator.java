@@ -151,13 +151,13 @@ public class SearchBasedTestSuiteGenerator {
     public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, String configFilePath, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
     	OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfigurationObject configuration = TestConfigurationIO.loadConfiguration(configFilePath, apiUnderTest);
-        return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
+        return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, configuration, objFuncs, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
     }
     
     public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, String configFilePath, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
         OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
         TestConfigurationObject configuration = TestConfigurationIO.loadConfiguration(configFilePath, apiUnderTest);
-        return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, configuration, objFuncs, targetPath, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
+        return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, configuration, objFuncs, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
     }
 
     public void run() throws IOException {
@@ -250,38 +250,8 @@ public class SearchBasedTestSuiteGenerator {
         return result;
     }
 
-    private static Operation findOperationUnderTest(TestConfigurationObject configuration, String resourcePath, String method) {
-        Operation result = null;
-        for (Operation op : configuration.getTestConfiguration().getOperations()) {
-            if (op.getMethod().equalsIgnoreCase(method)) {
-                    result = op;
-                    break;
-            }
-        }
-        return result;
-    }
-
     public ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> getExperimentBuilder() {
         return experimentBuilder;
-    }
-
-    // Delete a directory
-    private void deleteDir(String dirPath) {
-        File dir = new File(dirPath);
-
-        try {
-            FileUtils.deleteDirectory(dir);
-        } catch (IOException e) {
-            System.err.println("Error deleting target dir");
-            e.printStackTrace();
-        }
-    }
-
-    // Create target dir if it does not exist
-    private void createTargetDir() {
-        String targetDir = this.problem.targetPath;
-        File dir = new File(targetDir + "/");
-        dir.mkdirs();
     }
 
     public int getPopulationSize(){

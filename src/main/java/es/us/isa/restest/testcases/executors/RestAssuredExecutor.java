@@ -53,8 +53,10 @@ public class RestAssuredExecutor {
 
         // Send request and get response
         Response response = request
+                .log().all()
                 .when()
                 .request(testCase.getMethod().toString(), basePath + testCase.getPath());
+        response.then().log().all();
 
         // Assert response and update counters
         if (testCase.getEnableOracles()) {
