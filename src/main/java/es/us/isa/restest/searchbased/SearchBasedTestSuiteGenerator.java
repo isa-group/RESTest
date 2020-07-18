@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import es.us.isa.restest.searchbased.operators.*;
 import org.apache.commons.io.FileUtils;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
@@ -43,14 +44,6 @@ import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenera
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
-import es.us.isa.restest.searchbased.operators.AddParameterMutation;
-import es.us.isa.restest.searchbased.operators.AddTestCaseMutation;
-import es.us.isa.restest.searchbased.operators.AllMutationOperators;
-import es.us.isa.restest.searchbased.operators.RemoveParameterMutation;
-import es.us.isa.restest.searchbased.operators.RemoveTestCaseMutation;
-import es.us.isa.restest.searchbased.operators.RandomParameterValueMutation;
-import es.us.isa.restest.searchbased.operators.ResourceChangeMutation;
-import es.us.isa.restest.searchbased.operators.UniformTestCaseCrossover;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.CURLCommandGenerator;
@@ -118,10 +111,11 @@ public class SearchBasedTestSuiteGenerator {
     	AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
         		new AddTestCaseMutation(0.2,generator),
         		new RemoveTestCaseMutation(0.2,generator),
-    			new AddParameterMutation(0.001,generator),
-        		new RemoveParameterMutation(0.001,generator),
-        		new RandomParameterValueMutation(0.001,generator),
-        		new ResourceChangeMutation(0.001,generator)
+                new ReplaceTestCaseMutation(0.2,generator),
+    			new AddParameterMutation(0.01,generator),
+        		new RemoveParameterMutation(0.01,generator),
+        		new RandomParameterValueMutation(0.01,generator),
+        		new ResourceChangeMutation(0.01,generator)
         ));
     	result = new NSGAIIBuilder<>(
         		problem,
