@@ -17,7 +17,7 @@ public class InputCoverage extends RestfulAPITestingObjectiveFunction{
 
     CoverageMeter coverageMeter=null;
     public InputCoverage() {
-		super(ObjectiveFunctionType.MAXIMIZATION,false);
+		super(ObjectiveFunctionType.MAXIMIZATION,false,false);
 	}
     @Override
     public Double evaluate(RestfulAPITestSuiteSolution solution) {

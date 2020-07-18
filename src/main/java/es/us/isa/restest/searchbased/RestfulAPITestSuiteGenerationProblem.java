@@ -55,6 +55,8 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
     // Optimization problem configuration
     List<RestfulAPITestingObjectiveFunction> objectiveFunctions;
+    boolean requiresTestExecution;
+    boolean requiresTestOracles;
 
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs) {
     	this(apiUnderTest,configuration,objFuncs,JMetalRandom.getInstance().getRandomGenerator(),null);
@@ -91,6 +93,15 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         assert (objFuncs != null);
         assert (objFuncs.size() > 0);
         this.objectiveFunctions = objFuncs;
+        requiresTestExecution = false;
+        requiresTestOracles = false;
+
+        for (RestfulAPITestingObjectiveFunction objFunc: objectiveFunctions) {
+            if (objFunc.isRequiresTestExecution())
+                requiresTestExecution = true;
+            if (objFunc.isRequiresOracles())
+                requiresTestOracles = true;
+        }
 
         setNumberOfObjectives(this.objectiveFunctions.size());
         setNumberOfVariables(computeDefaultTestSuiteSize());
@@ -108,13 +119,10 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
 	@Override
     public void evaluate(RestfulAPITestSuiteSolution s) {
+        if (requiresTestExecution) // Run tests only if some objective function requires it
+            invokeMissingTests(s);
+
         int i = 0;
-        for (RestfulAPITestingObjectiveFunction objFunc: objectiveFunctions) {
-            if (objFunc.isRequiresTestExecution()) {
-                invokeMissingTests(s); // Run tests only if some objective function requires it
-                break;
-            }
-        }
         for (RestfulAPITestingObjectiveFunction objFunc : objectiveFunctions) {
             s.setObjective(i, objFunc.getType().equals(
             		ObjectiveFunctionType.MINIMIZATION)
@@ -161,7 +169,8 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 		testCaseGenerator.checkIDLReasonerData(operation, faulty);
 		TestCase testCase = testCaseGenerator.generateNextTestCase(operation, faulty);
 		testCaseGenerator.authenticateTestCase(testCase);
-//		testCase.setEnableOracles(false);
+        if (!requiresTestOracles) // If no objective function requires oracles, disable them
+            testCase.setEnableOracles(false);
 		return testCase;
 	}
 
