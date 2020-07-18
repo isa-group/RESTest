@@ -125,7 +125,7 @@ public class SearchBasedTestSuiteGenerator {
         ));
     	result = new NSGAIIBuilder<>(
         		problem,
-        		new UniformTestCaseCrossover(0.001),
+        		new UniformTestCaseCrossover(0.01),
         		mutation,
         		populationSize)
 			.setMaxEvaluations(maxEvaluations)
