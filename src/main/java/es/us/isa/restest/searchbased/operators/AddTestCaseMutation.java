@@ -16,7 +16,7 @@ public class AddTestCaseMutation extends AbstractAPITestCaseMutationOperator {
 		if(solution.getProblem().getFixedTestSuiteSize()!=null)
 			return;
 		// If the size of the suite is not maximal
-		if(solution.getVariables().size()<solution.getProblem().getMaxTestSuiteSize()) {
+		if(solution.getVariables().size()<solution.getProblem().getMaxTestSuiteSize() && getRandomGenerator().nextDouble() <= mutationProbability) {
 			// We add a random test case to the suite:
 			solution.getVariables().add(solution.getProblem().createRandomTestCase());
 		}

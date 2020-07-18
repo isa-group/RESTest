@@ -12,9 +12,7 @@ public abstract class AbstractSearchBasedTest {
 	List<String> OAISpecPaths = Arrays.asList("src/test/resources/Bikewise/swagger.yaml");
 	// Path to test configuration files
 	List<String> confPaths = Arrays.asList("src/test/resources/Bikewise/fullConf.yaml");
-	List<String> resourcePaths =Arrays.asList("/v2/incidents");
 	String targetDir ="src/generation/java/searchbasedtests";
-	List<String> methods =Arrays.asList("GET");
 	public List<RestfulAPITestSuiteGenerationProblem> createTestProblems(){
 		List<RestfulAPITestSuiteGenerationProblem> problems=new ArrayList<>();
 		for(int i=0;i<OAISpecPaths.size();i++)
@@ -23,8 +21,8 @@ public abstract class AbstractSearchBasedTest {
 					SearchBasedTestSuiteGenerator.
 						buildProblem(OAISpecPaths.get(i),
 							confPaths.get(i),
-								Arrays.asList(new SuiteSize()),
-							targetDir, 2, 2)					
+							Arrays.asList(new SuiteSize()),
+							targetDir, 2, 4)
 					);
 		}
 		return problems;
