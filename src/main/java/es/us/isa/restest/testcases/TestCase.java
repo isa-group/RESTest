@@ -366,6 +366,7 @@ public class TestCase implements Serializable {
 				e.printStackTrace();
 			}
 			requestBuilder.withBody(formDataBody.toString());
+			requestBuilder.withContentType("application/x-www-form-urlencoded");
 		}
 
 		return validator.validateRequest(requestBuilder.build()).getMessages().stream().map(ValidationReport.Message::getKey).collect(Collectors.toList());
