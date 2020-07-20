@@ -10,7 +10,7 @@ testConfiguration:
   - testPath: /products
     operationId: getAllProducts
     method: get
-    testParameters: null
+    testParameters: []
     expectedResponse: 200
   - testPath: "/products/{productName}"
     operationId: getProductByName
