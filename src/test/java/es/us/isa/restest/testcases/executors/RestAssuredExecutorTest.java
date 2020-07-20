@@ -3,6 +3,7 @@ package es.us.isa.restest.testcases.executors;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
+import es.us.isa.restest.testcases.restassured.executors.RestAssuredExecutor;
 import io.swagger.v3.oas.models.PathItem;
 import org.junit.Test;
 

@@ -11,25 +11,13 @@ import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiv
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
-import es.us.isa.restest.testcases.executors.RestAssuredExecutor;
-import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
-import es.us.isa.restest.util.StatsReportManager;
+import es.us.isa.restest.testcases.restassured.executors.RestAssuredExecutor;
 
-import static es.us.isa.restest.util.FileManager.createDir;
-import static es.us.isa.restest.util.TestManager.getLastTestResult;
-
-import es.us.isa.restest.util.PropertyManager;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.runner.JUnitCore;
-import org.junit.runner.Result;
 import org.uma.jmetal.problem.impl.AbstractGenericProblem;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;

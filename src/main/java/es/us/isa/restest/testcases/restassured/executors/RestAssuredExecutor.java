@@ -1,4 +1,4 @@
-package es.us.isa.restest.testcases.executors;
+package es.us.isa.restest.testcases.restassured.executors;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
