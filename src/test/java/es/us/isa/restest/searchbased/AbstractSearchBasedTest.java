@@ -22,7 +22,7 @@ public abstract class AbstractSearchBasedTest {
 						buildProblem(OAISpecPaths.get(i),
 							confPaths.get(i),
 							Arrays.asList(new SuiteSize()),
-							targetDir, 2, 4)
+							targetDir, 2, 2)
 					);
 		}
 		return problems;
