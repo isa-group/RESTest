@@ -27,7 +27,7 @@ public class RestAssuredExecutor {
 
     public RestAssuredExecutor(OpenAPISpecification oasSpec) {
         this.oasSpec = oasSpec;
-        basePath = oasSpec.getSpecification().getServers().get(0).getUrl();
+        basePath = oasSpec.getSpecification().getServers().get(0).getUrl().replaceAll("/$", "");
         validationFilter = new ResponseValidationFilter(oasSpec.getPath());
         statusCode5XXFilter = new StatusCode5XXFilter();
         totalTests = 0;
@@ -77,7 +77,7 @@ public class RestAssuredExecutor {
 
         totalTests++;
 
-        return new TestResult(testCase.getId(), Integer.toString(response.getStatusCode()), response.getBody().asString(), response.getContentType());
+        return new TestResult(testCase.getId(), Integer.toString(response.getStatusCode()), response.getBody().asString(), response.getContentType(), lastTestPassed);
     }
 
     public int getTotalTests() {

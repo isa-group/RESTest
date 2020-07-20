@@ -1,8 +1,6 @@
 package es.us.isa.restest.testcases;
 
 
-import java.util.Map;
-
 import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
 import static es.us.isa.restest.util.CSVManager.writeRow;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
@@ -18,13 +16,20 @@ public class TestResult {
     private String statusCode;      // Status code returned in the response
     private String responseBody;    // Body (if any) returned in the response
     private String outputFormat;    // Format of the response (JSON, XML, etc.)
+    private Boolean passed;         // null = test was not checked (oracles disabled)
 //    private TestCase testCase;      // Test case that corresponds to this test result
+
+    public TestResult(String id, String statusCode, String responseBody, String outputFormat, Boolean passed) {
+        this(id, statusCode, responseBody, outputFormat);
+        this.passed = passed;
+    }
 
     public TestResult(String id, String statusCode, String responseBody, String outputFormat) {
         this.id = id;
         this.statusCode = statusCode;
         this.responseBody = responseBody;
         this.outputFormat = outputFormat;
+        this.passed = null;
 //        this.testCase = testCase;
     }
     
@@ -33,6 +38,7 @@ public class TestResult {
         this.statusCode = testResult.statusCode;
         this.responseBody = testResult.responseBody;
         this.outputFormat = testResult.outputFormat;
+        this.passed = testResult.passed;
     }
 
     public String getId() {
@@ -65,6 +71,14 @@ public class TestResult {
 
     public void setOutputFormat(String outputFormat) {
         this.outputFormat = outputFormat;
+    }
+
+    public Boolean getPassed() {
+        return passed;
+    }
+
+    public void setPassed(Boolean passed) {
+        this.passed = passed;
     }
 
     public void exportToCSV(String filePath) {
