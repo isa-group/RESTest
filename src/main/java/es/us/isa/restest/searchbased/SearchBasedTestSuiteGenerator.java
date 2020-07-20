@@ -109,9 +109,9 @@ public class SearchBasedTestSuiteGenerator {
     	MersenneTwisterGenerator generator=new MersenneTwisterGenerator(seed);
     	Algorithm<List<RestfulAPITestSuiteSolution>> result=null;
     	AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
-        		new AddTestCaseMutation(0.2,generator),
-        		new RemoveTestCaseMutation(0.2,generator),
-                new ReplaceTestCaseMutation(0.2,generator),
+        		new AddTestCaseMutation(0.1,generator),
+        		new RemoveTestCaseMutation(0.1,generator),
+                new ReplaceTestCaseMutation(0.1,generator),
     			new AddParameterMutation(0.01,generator),
         		new RemoveParameterMutation(0.01,generator),
         		new RandomParameterValueMutation(0.01,generator),

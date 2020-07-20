@@ -87,7 +87,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         for (RestfulAPITestingObjectiveFunction objFunc: objectiveFunctions) {
             if (objFunc.isRequiresTestExecution())
                 requiresTestExecution = true;
-            if (objFunc.isRequiresOracles())
+            if (objFunc.isRequiresTestOracles())
                 requiresTestOracles = true;
         }
 
