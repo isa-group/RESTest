@@ -163,8 +163,8 @@ public class TestCase implements Serializable {
 	public Map<String, String> getFormParameters() { return formParameters; }
 
 	public void setFormParameters(Map<String, String> formParameters) {
-		setFormDataContentType();
 		this.formParameters = formParameters;
+		setFormDataContentType();
 	}
 
 	public String getOperationId() {
@@ -224,13 +224,13 @@ public class TestCase implements Serializable {
 	}
 
 	public void addFormParameter(String name, String value) {
-		setFormDataContentType();
 		formParameters.put(name, value);
+		setFormDataContentType();
 	}
 
 	public void addFormParameters(Map<String,String> params) {
-		setFormDataContentType();
 		formParameters.putAll(params);
+		setFormDataContentType();
 	}
 
 	public void removeQueryParameter(String name) {
