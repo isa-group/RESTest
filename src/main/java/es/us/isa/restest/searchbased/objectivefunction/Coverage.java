@@ -18,7 +18,7 @@ public class Coverage extends RestfulAPITestingObjectiveFunction{
 	CoverageMeter coverageMeter=null;
     
 	public Coverage() {
-		super(ObjectiveFunctionType.MAXIMIZATION);		
+		super(ObjectiveFunctionType.MAXIMIZATION,true,false);
 	}
 	
     @Override

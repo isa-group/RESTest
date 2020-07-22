@@ -10,14 +10,19 @@ import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import io.swagger.v3.oas.models.Operation;
 import org.uma.jmetal.operator.MutationOperator;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 
+import static es.us.isa.restest.testcases.TestCase.checkFulfillsDependencies;
+import static es.us.isa.restest.testcases.TestCase.getFaultyReasons;
 import static es.us.isa.restest.util.SpecificationVisitor.findParameter;
+import static es.us.isa.restest.util.SpecificationVisitor.getRequiredParameters;
 
 /**
  *
@@ -27,6 +32,7 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
 
     private double mutationProbability;
     private PseudoRandomGenerator randomGenerator;
+    protected boolean mutationApplied;
 
     public AbstractAPITestCaseMutationOperator(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         this.mutationProbability = mutationProbability;
@@ -72,8 +78,4 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
     }
 
     protected abstract void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution);
-
-    protected void resetTestResult(String testCaseId, RestfulAPITestSuiteSolution solution) {
-        solution.setTestResult(testCaseId, null);
-    }
 }

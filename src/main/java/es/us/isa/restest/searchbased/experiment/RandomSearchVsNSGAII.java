@@ -2,6 +2,7 @@ package es.us.isa.restest.searchbased.experiment;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -83,10 +84,8 @@ public class RandomSearchVsNSGAII {
 		List<RestfulAPITestSuiteGenerationProblem> problems=new ArrayList<>();
 		RestfulAPITestSuiteGenerationProblem bikewiseProblem=SearchBasedTestSuiteGenerator
 																.buildProblem(OAISpecPath, 
-																			Optional.of(confPath),
-																			Optional.of(resourcePath), 
-																			Optional.of(method), 
-																			objectiveFunctions, 
+																			confPath,
+																			objectiveFunctions,
 																			targetDir, 
 																			minTestSuiteSize, 
 																			maxTestSuiteSize);
@@ -95,10 +94,10 @@ public class RandomSearchVsNSGAII {
 	}
 	
 	private  List<RestfulAPITestingObjectiveFunction> createObjectiveFunctions(){
-		return List.of(
+		return Arrays.asList(
 				new SuiteSize(),
 				new InputCoverage()
-				);
+		);
 		
 	}
 }

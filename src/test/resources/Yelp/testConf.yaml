@@ -1,18 +1,18 @@
 ---
 auth:
   required: true
-  queryParams: []
-  headerParams: []
+  queryParams: {}
+  headerParams: {}
   apiKeysPath: null
   headersPath: Yelp/headers.json
 testConfiguration:
-  testPaths:
-  - testPath: /businesses/search
-    operations:
+  operations:
     - operationId: getBusinesses
+      testPath: /businesses/search
       method: get
       testParameters:
       - name: term
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -28,6 +28,7 @@ testConfiguration:
                 - cafe
                 - ok
       - name: location
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -45,6 +46,7 @@ testConfiguration:
             - San Francisco
             - Krakow
       - name: latitude
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -59,6 +61,7 @@ testConfiguration:
             values:
             - 33.125898
       - name: longitude
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -73,6 +76,7 @@ testConfiguration:
             values:
             - -79.958475
       - name: radius
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -90,6 +94,7 @@ testConfiguration:
             - 40000
             objectValues: null
       - name: categories
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -104,6 +109,7 @@ testConfiguration:
             values:
             - 5
       - name: locale
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -112,6 +118,7 @@ testConfiguration:
               values:
                 - src/main/resources/TestData/yelp-locales.csv
       - name: limit
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -129,6 +136,7 @@ testConfiguration:
             - 50
             objectValues: null
       - name: offset
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -146,6 +154,7 @@ testConfiguration:
             - 1000
             objectValues: null
       - name: sort_by
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -158,6 +167,7 @@ testConfiguration:
             - distance
             objectValues: null
       - name: price
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -175,11 +185,13 @@ testConfiguration:
               values:
                 - 4
       - name: open_now
+        in: query
         weight: 0.5
         generator:
           type: RandomBoolean
           genParameters: []
       - name: open_at
+        in: query
         weight: 0.5
         generator:
           type: RandomNumber
@@ -197,6 +209,7 @@ testConfiguration:
             - 2147483647
             objectValues: null
       - name: attributes
+        in: query
         weight: 0.5
         generator:
           type: RandomInputValue
@@ -218,5 +231,3 @@ testConfiguration:
             - name: maxValues
               values:
                 - 3
-      paramDependencies: null
-      expectedResponse: 200

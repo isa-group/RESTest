@@ -216,6 +216,13 @@
 			<version>3.10</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.8</version>
+		</dependency>
+
 		<!-- Apache Commongs Math -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -263,6 +270,13 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<version>2.13.3</version>
+		</dependency>
+
+		<!-- Java tuples -->
+		<dependency>
+			<groupId>org.javatuples</groupId>
+			<artifactId>javatuples</artifactId>
+			<version>1.2</version>
 		</dependency>
 
 

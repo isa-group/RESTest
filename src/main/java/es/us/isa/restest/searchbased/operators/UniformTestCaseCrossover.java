@@ -15,11 +15,15 @@ import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 
+import static es.us.isa.restest.searchbased.operators.Utils.resetTestResult;
+import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
+
 public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITestSuiteSolution> {
 
 	  	private double crossoverProbability;
 	    private RandomGenerator<Double> crossoverRandomGenerator;
 	    private BoundedRandomGenerator<Integer> pointRandomGenerator;
+	    private boolean mutationApplied;
 
 	    public UniformTestCaseCrossover(double crossoverProbability) {
 	        this(
@@ -71,9 +75,18 @@ public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITes
     	TestCase testCase1=offspring1.getVariable(parent1TestCaseIndex);
     	TestCase testCase2=offspring2.getVariable(parent2TestCaseIndex);
     	// Crossover is applied only between testcases of the same operation: 
-    	if(testCase1.getOperationId().equals(testCase2.getOperationId())) 
-      // 2. 3. Apply the crossover:
-    		doCrossover(probability,testCase1,testCase2);                      
+    	if(testCase1.getOperationId().equals(testCase2.getOperationId())) {
+			// 2. 3. Apply the crossover:
+			mutationApplied = false;
+			doCrossover(probability, testCase1, testCase2);
+			if (mutationApplied) {
+				updateTestCaseFaultyReason(parent1, testCase1);
+				updateTestCaseFaultyReason(parent2, testCase2);
+				resetTestResult(testCase1.getId(), offspring1); // The test case changed, reset test result
+				resetTestResult(testCase2.getId(), offspring2); // The test case changed, reset test result
+			}
+		}
+
     	return offspring;
 
 	}
@@ -109,16 +122,20 @@ public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITes
 		List<String> paramsToProcess=new ArrayList<>();
 		for(String param:parameters1.keySet()) {
 			processed.add(param);
-			if(crossoverRandomGenerator.getRandomValue() < probability) 
+			if(crossoverRandomGenerator.getRandomValue() < probability) {
 				paramsToProcess.add(param);
+				if (!mutationApplied) mutationApplied = true;
+			}
 		}
 		for(String param:paramsToProcess) {			
 			doCrossover(param,parameters1,parameters2);
 		}
 		paramsToProcess.clear(); 
 		for(String param:parameters2.keySet()) 
-			if(crossoverRandomGenerator.getRandomValue() < probability && !processed.contains(param)) 
+			if(crossoverRandomGenerator.getRandomValue() < probability && !processed.contains(param)) {
 				paramsToProcess.add(param);
+				if (!mutationApplied) mutationApplied = true;
+			}
 		for(String param:paramsToProcess) {
 			processed.add(param);
 			doCrossover(param,parameters2,parameters1);

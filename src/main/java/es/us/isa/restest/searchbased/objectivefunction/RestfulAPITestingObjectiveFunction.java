@@ -14,15 +14,16 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 public abstract class RestfulAPITestingObjectiveFunction {
     ObjectiveFunctionType type;
     boolean requiresTestExecution;
-    
+    boolean requiresTestOracles;
     
     public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type) {
-    	this(type,true);
+    	this(type,true,true);
     }
-    
-    public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type, boolean requiresTestExecution) {
+
+    public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type, boolean requiresTestExecution, boolean requiresTestOracles) {
     	this.type=type;
     	this.requiresTestExecution =requiresTestExecution;
+    	this.requiresTestOracles = requiresTestOracles;
 	}    
     
     public abstract Double evaluate(RestfulAPITestSuiteSolution solution);
@@ -36,7 +37,19 @@ public abstract class RestfulAPITestingObjectiveFunction {
     public boolean isRequiresTestExecution() {
 		return requiresTestExecution;
 	}
-    
+
+    public void setRequiresTestExecution(boolean requiresTestExecution) {
+        this.requiresTestExecution = requiresTestExecution;
+    }
+
+    public boolean isRequiresTestOracles() {
+        return requiresTestOracles;
+    }
+
+    public void setRequiresTestOracles(boolean requiresTestOracles) {
+        this.requiresTestOracles = requiresTestOracles;
+    }
+
     public ObjectiveFunctionType getType() {
 		return type;
 	}

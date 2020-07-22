@@ -4,18 +4,24 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
+import com.atlassian.oai.validator.report.ValidationReport;
+import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.util.IDLAdapter;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
+import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static java.net.URLEncoder.encode;
 
 /** Domain-independent test case
@@ -29,6 +35,7 @@ public class TestCase implements Serializable {
 	private Boolean faulty;									// True if the expected response is a 4XX status code
 	private Boolean fulfillsDependencies;					// True if it does not violate any inter-parameter dependencies
 	private String faultyReason;							// "none", "individual_parameter_constraint", "invalid_request_body" or "inter_parameter_dependency"
+	private Boolean enableOracles;							// True (default) if you want to assert the response. False if you only want to execute the request
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
@@ -44,6 +51,7 @@ public class TestCase implements Serializable {
 		this.id = id;
 		this.faulty = faulty;
 		this.fulfillsDependencies = false; // By default, a test case does not satisfy inter-parameter dependencies
+		this.enableOracles = true;
 		this.operationId = operationId;
 		this.path = path;
 		this.method = method;
@@ -59,6 +67,7 @@ public class TestCase implements Serializable {
 		this(testCase.id, testCase.faulty, testCase.operationId, testCase.path, testCase.method);
 		this.faultyReason = testCase.faultyReason;
 		this.fulfillsDependencies = testCase.fulfillsDependencies;
+		this.enableOracles = testCase.enableOracles;
 		this.inputFormat = testCase.inputFormat;
 		this.headerParameters.putAll(testCase.headerParameters);
 		this.queryParameters.putAll(testCase.queryParameters);
@@ -154,8 +163,8 @@ public class TestCase implements Serializable {
 	public Map<String, String> getFormParameters() { return formParameters; }
 
 	public void setFormParameters(Map<String, String> formParameters) {
-		setFormDataContentType();
 		this.formParameters = formParameters;
+		setFormDataContentType();
 	}
 
 	public String getOperationId() {
@@ -215,13 +224,13 @@ public class TestCase implements Serializable {
 	}
 
 	public void addFormParameter(String name, String value) {
-		setFormDataContentType();
 		formParameters.put(name, value);
+		setFormDataContentType();
 	}
 
 	public void addFormParameters(Map<String,String> params) {
-		setFormDataContentType();
 		formParameters.putAll(params);
+		setFormDataContentType();
 	}
 
 	public void removeQueryParameter(String name) {
@@ -288,6 +297,14 @@ public class TestCase implements Serializable {
 		this.faultyReason = faultyReason;
 	}
 
+	public Boolean getEnableOracles() {
+		return enableOracles;
+	}
+
+	public void setEnableOracles(Boolean enableOracles) {
+		this.enableOracles = enableOracles;
+	}
+
 	private void setFormDataContentType() {
 		if (!inputFormat.equals("application/x-www-form-urlencoded") && formParameters.size() > 0)
 			inputFormat = "application/x-www-form-urlencoded";
@@ -327,13 +344,7 @@ public class TestCase implements Serializable {
 		writeRow(filePath, rowBeginning + rowEnding);
 	}
 
-	/**
-	 * Returns true if the test case is faulty, false otherwise
-	 * @param tc
-	 * @param validator
-	 * @return
-	 */
-	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
+	public static List<String> getFaultyReasons(TestCase tc, OpenApiInteractionValidator validator) {
 		String fullPath = tc.getPath();
 		for (Map.Entry<String, String> pathParam : tc.getPathParameters().entrySet())
 			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
@@ -355,9 +366,32 @@ public class TestCase implements Serializable {
 				e.printStackTrace();
 			}
 			requestBuilder.withBody(formDataBody.toString());
+			requestBuilder.withContentType("application/x-www-form-urlencoded");
 		}
 
-		return validator.validateRequest(requestBuilder.build()).hasErrors();
+		return validator.validateRequest(requestBuilder.build()).getMessages().stream().map(ValidationReport.Message::getKey).collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns true if the test case is faulty, false otherwise
+	 * @param tc
+	 * @param validator
+	 * @return
+	 */
+	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
+		return !getFaultyReasons(tc, validator).isEmpty();
+	}
+
+	/**
+	 * Returns true if the test case fulfills inter-parameter dependencies, false otherwise
+	 * @param tc
+	 * @param idlReasoner
+	 * @return
+	 */
+	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
+		if (idlReasoner == null)
+			return true;
+		return idlReasoner.isValidRequest(restest2idlTestCase(tc));
 	}
 
 	public String toString() {
@@ -374,6 +408,7 @@ public class TestCase implements Serializable {
 		result = prime * result + ((bodyParameter == null) ? 0 : bodyParameter.hashCode());
 		result = prime * result + ((faulty == null) ? 0 : faulty.hashCode());
 		result = prime * result + ((faultyReason == null) ? 0 : faultyReason.hashCode());
+		result = prime * result + ((enableOracles == null) ? 0 : enableOracles.hashCode());
 		result = prime * result + ((formParameters == null) ? 0 : formParameters.hashCode());
 		result = prime * result + ((fulfillsDependencies == null) ? 0 : fulfillsDependencies.hashCode());
 		result = prime * result + ((headerParameters == null) ? 0 : headerParameters.hashCode());
@@ -422,6 +457,13 @@ public class TestCase implements Serializable {
 				return false;
 			}
 		} else if (!faultyReason.equals(other.faultyReason)) {
+			return false;
+		}
+		if (enableOracles == null) {
+			if (other.enableOracles != null) {
+				return false;
+			}
+		} else if (!enableOracles.equals(other.enableOracles)) {
 			return false;
 		}
 		if (formParameters == null) {

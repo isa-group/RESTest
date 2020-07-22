@@ -13,6 +13,7 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
+import org.javatuples.Pair;
 
 import java.util.*;
 
@@ -35,15 +36,26 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		super(spec, conf, nTests);
 	}
 
-	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
-
-		List<TestCase> testCases = new ArrayList<>();
-
+	public void setUpIDLReasoner(Operation testOperation) {
 		if (hasDependencies(testOperation.getOpenApiOperation())) // If the operation contains dependencies, create new IDLReasoner for that operation
 			idlReasoner = new Analyzer("oas", spec.getPath(), testOperation.getTestPath(), testOperation.getMethod());
 		else // Otherwise, set it to null so that it's not used
 			idlReasoner = null;
+	}
+
+	public void checkIDLReasonerData(Operation testOperation, String faultyReason) {
+		if (idlReasoner != null && index%reloadInputDataEvery == 0 && !faultyReason.equals(INDIVIDUAL_PARAMETER_CONSTRAINT)) {
+			Map <String, List<String>> inputData = generateInputData(testOperation.getTestParameters()); // Update input data
+			idlReasoner.updateData(inputData);
+		}
+	}
+
+	@Override
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
+
+		setUpIDLReasoner(testOperation);
+
+		List<TestCase> testCases = new ArrayList<>();
 
 		// Whether the next test case to generate must be faulty or not
 		String faultyReason = "none";
@@ -55,10 +67,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		}
 
 		while (hasNext()) {
-			if (idlReasoner != null && index%reloadInputDataEvery == 0 && !faultyReason.equals(INDIVIDUAL_PARAMETER_CONSTRAINT)) {
-				Map <String, List<String>> inputData = generateInputData(testOperation.getTestParameters()); // Update input data
-				idlReasoner.updateData(inputData);
-			}
+			checkIDLReasonerData(testOperation, faultyReason);
 
 			// Generate faulty test cases until faultyRatio is reached
 			if (!faultyReason.equals("none")) {
@@ -84,7 +93,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		for (TestParameter parameter: testParameters) {
 			if (parameter.getWeight() == null || parameter.getWeight() > 0) {
 				paramValues = new ArrayList<>();
-				generator = generators.get(parameter.getName());
+				generator = generators.get(Pair.with(parameter.getName(), parameter.getIn()));
 				if (generator instanceof RandomInputValueIterator && ((RandomInputValueIterator) generator).getMaxValues() == 1) {
 					paramValues = ((RandomInputValueIterator) generator).getValues();
 				} else if (generator instanceof RandomBooleanGenerator) {
@@ -178,5 +187,13 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	public void setInputDataMaxValues(Integer inputDataMaxValues) {
 		this.inputDataMaxValues = inputDataMaxValues;
+	}
+
+	public Analyzer getIdlReasoner() {
+		return idlReasoner;
+	}
+
+	public void setIdlReasoner(Analyzer idlReasoner) {
+		this.idlReasoner = idlReasoner;
 	}
 }

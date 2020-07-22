@@ -33,6 +33,13 @@ public class NominalOrFaultyTestCaseFilter implements OrderedFilter {
     public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
         Response response = ctx.next(requestSpec, responseSpec);
 
+        filterValidation(response);
+
+        return response;
+    }
+
+    // If nominal/faulty validation error is found, throw exception
+    public void filterValidation(Response response) {
         // If test case [is faulty] AND [returned status code below 400 (5XX is handled by a previous filter)]
         if (testCaseIsFaulty && response.getStatusCode() < 400) {
             throw new RuntimeException("This faulty test case was expecting a 4XX status code(" + faultyReason + "), but received other. Conformance error found.");
@@ -40,8 +47,6 @@ public class NominalOrFaultyTestCaseFilter implements OrderedFilter {
         } else if (!testCaseIsFaulty && dependenciesFulfilled && response.getStatusCode() == 400) {
             throw new RuntimeException("This test case's input was correct, but received a 400 (Bad Request) status code. Conformance error found.");
         }
-
-        return response;
     }
 
     @Override

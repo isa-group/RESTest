@@ -5,11 +5,19 @@
  */
 package es.us.isa.restest.searchbased.operators;
 
+import es.us.isa.restest.configuration.pojos.Auth;
 import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.util.AuthManager;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
+
+import java.util.Optional;
+
+import static es.us.isa.restest.searchbased.operators.Utils.resetTestResult;
+import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
 
 /**
  *
@@ -23,12 +31,18 @@ public class RemoveParameterMutation extends AbstractAPITestCaseMutationOperator
     
     @Override
     protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
-        for (TestCase testCase : solution.getVariables()) {            
+        for (TestCase testCase : solution.getVariables()) {
+            mutationApplied = false;
             for (ParameterFeatures param : getAllPresentParameters(testCase)) {
-                if (getRandomGenerator().nextDouble() <= mutationProbability) {                    
+                if (getRandomGenerator().nextDouble() <= mutationProbability) {
                     doMutation(param, testCase);
-                    resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
+                    if (!mutationApplied) mutationApplied = true;
                 }
+            }
+
+            if (mutationApplied) {
+                updateTestCaseFaultyReason(solution, testCase);
+                resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
             }
         }
     }

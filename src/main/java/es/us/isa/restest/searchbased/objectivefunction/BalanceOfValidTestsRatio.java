@@ -23,7 +23,7 @@ public class BalanceOfValidTestsRatio extends RestfulAPITestingObjectiveFunction
 	}		
 	
 	public BalanceOfValidTestsRatio (double targetRatio) {
-		super(ObjectiveFunctionType.MAXIMIZATION);
+		super(ObjectiveFunctionType.MAXIMIZATION,false,true);
 		this.targetRatio=targetRatio;
 	}
 	

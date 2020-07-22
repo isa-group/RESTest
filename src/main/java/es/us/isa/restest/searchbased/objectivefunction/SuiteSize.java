@@ -14,7 +14,7 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 public class SuiteSize extends RestfulAPITestingObjectiveFunction{
 
     public SuiteSize() {
-		super(ObjectiveFunctionType.MINIMIZATION,false);
+		super(ObjectiveFunctionType.MINIMIZATION,false,false);
 	}
 
 	@Override

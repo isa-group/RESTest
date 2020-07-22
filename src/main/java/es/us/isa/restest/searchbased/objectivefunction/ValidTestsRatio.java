@@ -15,7 +15,7 @@ import es.us.isa.restest.testcases.TestCase;
 public class ValidTestsRatio extends RestfulAPITestingObjectiveFunction {
 
 	public ValidTestsRatio(ObjectiveFunctionType type) {
-		super(type,false);
+		super(type,false,true);
 	}
 	
     @Override
