@@ -69,7 +69,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			test.setFaultyReason("none");
 		}
 
-		if (!test.getFaulty() && checkFaulty(test, validator, testOperation.getOpenApiOperation())) { // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
+		if (!test.getFaulty() && checkFaulty(test, validator)) { // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
 			test.setFaulty(true);
 			test.setFaultyReason("invalid_request_body");
 		}

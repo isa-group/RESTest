@@ -14,8 +14,6 @@ import com.atlassian.oai.validator.report.ValidationReport;
 import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
-import es.us.isa.restest.util.SpecificationVisitor;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 
@@ -344,7 +342,7 @@ public class TestCase implements Serializable {
 		writeRow(filePath, rowBeginning + rowEnding);
 	}
 
-	public static List<String> getFaultyReasons(TestCase tc, OpenApiInteractionValidator validator, Operation oasOperation) {
+	public static List<String> getFaultyReasons(TestCase tc, OpenApiInteractionValidator validator) {
 		String fullPath = tc.getPath();
 		for (Map.Entry<String, String> pathParam : tc.getPathParameters().entrySet())
 			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
@@ -359,14 +357,7 @@ public class TestCase implements Serializable {
 			StringBuilder formDataBody = new StringBuilder();
 			try {
 				for (Map.Entry<String, String> formParam : tc.getFormParameters().entrySet()) {
-					String value = formParam.getValue();
-
-					String parameterType = SpecificationVisitor.findParameter(oasOperation, formParam.getKey(), "formData").getType();
-					if(parameterType.equals("string") && value.matches("([0-9]|[1-9]([0-9])*)(\\.([0-9])*[1-9])?")) {
-						value = "\"" + formParam.getValue() + "\"";
-					}
-
-					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(value, StandardCharsets.UTF_8.toString())).append("&");
+					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(formParam.getValue(), StandardCharsets.UTF_8.toString())).append("&");
 				}
 			} catch (UnsupportedEncodingException e) {
 				LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
@@ -385,8 +376,8 @@ public class TestCase implements Serializable {
 	 * @param validator
 	 * @return
 	 */
-	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator, Operation oasOperation) {
-		return !getFaultyReasons(tc, validator, oasOperation).isEmpty();
+	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
+		return !getFaultyReasons(tc, validator).isEmpty();
 	}
 
 	/**
