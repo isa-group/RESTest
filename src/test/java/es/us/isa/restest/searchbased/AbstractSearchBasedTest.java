@@ -13,6 +13,8 @@ public abstract class AbstractSearchBasedTest {
 	// Path to test configuration files
 	List<String> confPaths = Arrays.asList("src/test/resources/Bikewise/fullConf.yaml");
 	String targetDir ="src/generation/java/searchbasedtests";
+	// Fixed test suite size
+	protected int testSuiteSize = 4;
 	public List<RestfulAPITestSuiteGenerationProblem> createTestProblems(){
 		List<RestfulAPITestSuiteGenerationProblem> problems=new ArrayList<>();
 		for(int i=0;i<OAISpecPaths.size();i++)
@@ -22,7 +24,7 @@ public abstract class AbstractSearchBasedTest {
 						buildProblem(OAISpecPaths.get(i),
 							confPaths.get(i),
 							Arrays.asList(new SuiteSize()),
-							targetDir, 2, 2)
+							targetDir, testSuiteSize, testSuiteSize)
 					);
 		}
 		return problems;
