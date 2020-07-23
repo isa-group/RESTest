@@ -86,6 +86,14 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
         getVariables().set(i, tc);
     }
 
+    public void addVariable(TestCase  tc){
+        getVariables().add(tc);
+    }
+
+    public void removeVariable(int i) {
+        getVariables().remove(i);
+    }
+
     /**
      * CAREFUL! This method replaces (i.e., eliminates and inserts) a test result
      * with another, it doesn't add a new one.
@@ -104,6 +112,10 @@ public class RestfulAPITestSuiteSolution extends AbstractGenericSolution<TestCas
 
     public TestResult getTestResult(String testCaseId) {
         return testResults.get(testCaseId);
+    }
+
+    public void removeTestResult(String id) {
+        testResults.remove(id);
     }
 
     public void addTestResults(Map<String, TestResult> results) {
