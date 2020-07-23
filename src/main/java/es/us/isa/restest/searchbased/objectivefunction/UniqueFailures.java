@@ -5,12 +5,11 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
 import org.apache.commons.text.similarity.JaccardSimilarity;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
-import org.javatuples.Pair;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * This function maximizes the total number of different failures uncovered by the
@@ -23,19 +22,17 @@ import java.util.stream.Stream;
 public class UniqueFailures extends RestfulAPITestingObjectiveFunction {
 
     private double similarityThreshold = 1; // Used to compare how different response bodies are
-    private JaroWinklerSimilarity similarityMetric;
-//    private JaccardSimilarity similarityMetric;
+    private SimilarityMeter similarityMeter;
 
     public UniqueFailures() {
         super(RestfulAPITestingObjectiveFunction.ObjectiveFunctionType.MAXIMIZATION,true,true);
     }
 
-    public UniqueFailures(double similarityThreshold) {
+    public UniqueFailures(SIMILARITY_METRIC similarityMetric, double similarityThreshold) {
         super(RestfulAPITestingObjectiveFunction.ObjectiveFunctionType.MAXIMIZATION,true,true);
+        similarityMeter = new SimilarityMeter(similarityMetric);
         assert(similarityThreshold < 1);
         this.similarityThreshold = similarityThreshold;
-        this.similarityMetric = new JaroWinklerSimilarity();
-//        this.similarityMetric = new JaccardSimilarity();
     }
 
     @Override
@@ -52,11 +49,57 @@ public class UniqueFailures extends RestfulAPITestingObjectiveFunction {
                         (f.getValue0().equals(failure.getValue0()) &&               // add failures in a new operation with a new status code
                         f.getValue1().equals(failure.getValue1()))
                                 &&                                                  // OR in same operation/status code, but different enough
-                        similarityMetric.apply(f.getValue2(), failure.getValue2()) > similarityThreshold)))
+                        similarityMeter.apply(f.getValue2(), failure.getValue2()) > similarityThreshold)))
                     failures.add(failure);
             }
         }
 
         return (double) failures.size();
+    }
+
+    public enum SIMILARITY_METRIC {
+        JACCARD,
+        JARO_WINKLER,
+        LEVENSHTEIN
+    }
+
+    public class SimilarityMeter {
+
+        private SIMILARITY_METRIC similarityMetric;
+        private JaccardSimilarity jaccardMeter;
+        private JaroWinklerSimilarity jaroWinklerMeter;
+        private LevenshteinDistance levenshteinMeter;
+
+        public SimilarityMeter(SIMILARITY_METRIC similarityMetric) {
+            this.similarityMetric = similarityMetric;
+
+            switch (similarityMetric) {
+                case JACCARD:
+                    jaccardMeter = new JaccardSimilarity();
+                    break;
+                case JARO_WINKLER:
+                    jaroWinklerMeter = new JaroWinklerSimilarity();
+                    break;
+                case LEVENSHTEIN:
+                    levenshteinMeter = new LevenshteinDistance();
+                    break;
+                default:
+                    throw new IllegalArgumentException("The similarity metric " + similarityMetric + " is not supported");
+            }
+        }
+
+        public Double apply (CharSequence left, CharSequence right) {
+            switch (similarityMetric) {
+                case JACCARD:
+                    return jaccardMeter.apply(left, right);
+                case JARO_WINKLER:
+                    return jaroWinklerMeter.apply(left, right);
+                case LEVENSHTEIN: // Computed as: 1 - (distance / average_string_length)
+                    return 1 - (double)new LevenshteinDistance().apply(left, right) / ((double)(left.length() + right.length())/2);
+                default:
+                    throw new IllegalArgumentException("The similarity metric " + similarityMetric + " is not supported");
+            }
+        }
+
     }
 }
