@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import es.us.isa.restest.specification.ParameterFeatures;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Encoding;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -22,10 +23,10 @@ public class SpecificationVisitor {
 		//Utility class
 	}
 
-	public static final String MEDIA_TYPE_APPLICATION_JSON_REGEX = "^application/.*(\\\\+)?json.*$";
-	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
-	public static final String BOOLEAN_TYPE = "boolean";
+	private static final String MEDIA_TYPE_APPLICATION_JSON_REGEX = "^application/.*(\\\\+)?json.*$";
+	private static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+	private static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
+	private static final String BOOLEAN_TYPE = "boolean";
 
 	/**
 	 * Returns the operation's parameter with name "paramName"
@@ -89,6 +90,19 @@ public class SpecificationVisitor {
 			if (formDataEntry.getKey().equalsIgnoreCase(paramName)) {
 				param = new ParameterFeatures(formDataEntry.getKey(), formDataEntry.getValue(), mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(formDataEntry.getKey()));
 				break;
+
+			} else if(paramName.startsWith(formDataEntry.getKey()) && paramName.contains("[") && mediaType.getEncoding() != null && mediaType.getEncoding().get(formDataEntry.getKey()) != null
+					&& mediaType.getEncoding().get(formDataEntry.getKey()).getStyle().equals(Encoding.StyleEnum.DEEP_OBJECT)) {
+
+				String propertyName = paramName.split("\\[")[1];
+				if(propertyName.equals("]") && formDataEntry.getValue().getType().equals("array")) {
+					param = new ParameterFeatures(paramName, formDataEntry.getValue(), mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(formDataEntry.getKey()));
+					break;
+				} else if(formDataEntry.getValue().getType().equals("object") && formDataEntry.getValue().getProperties().containsKey(propertyName.substring(0, propertyName.length()-1))) {
+					Schema schema = (Schema) formDataEntry.getValue().getProperties().get(propertyName.substring(0, propertyName.length()-1));
+					param = new ParameterFeatures(paramName, schema, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(formDataEntry.getKey()) && schema.getRequired().contains(propertyName.substring(0, propertyName.length()-1)));
+					break;
+				}
 			}
 		}
 		return param;

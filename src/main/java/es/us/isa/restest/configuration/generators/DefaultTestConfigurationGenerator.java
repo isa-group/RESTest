@@ -15,7 +15,10 @@ import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfiguration;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.inputs.ITestDataGenerator;
+import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -165,34 +168,71 @@ public class DefaultTestConfigurationGenerator {
 
 	// Generate test configuration data for input parameters
 	private List<TestParameter> generateTestParameters(List<Parameter> parameters) {
-		
 		List<TestParameter> testParameters = new ArrayList<>();
 		for(Parameter param: parameters) {
 			Schema schema = param.getSchema();
-			TestParameter testParam = new TestParameter();
-			testParam.setName(param.getName());
-			testParam.setIn(param.getIn());
-			
-			// Set default weight for optional parameters
-			if (param.getRequired() == null || !param.getRequired())
-				testParam.setWeight(0.5f);
-
-			// Set generator for the parameter
-			Generator gen = new Generator();
-			gen.setGenParameters(new ArrayList<>());
 
 			// If it's a path or query parameter, get type to set a useful generator
-			if (param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header")) {
-				generateGenerator(gen, schema);
+			if ((param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header")) && schema.getType().equals("object")) {
+				testParameters.addAll(generateObjectParameters(param.getSchema(), param.getName(), param.getIn(), param.getRequired(), param.getStyle(), null, param.getExplode()));
 			} else {
-				setDefaultGenerator(gen);
-			}
 
-			testParam.setGenerator(gen);
-			testParameters.add(testParam);
+				TestParameter testParam = new TestParameter();
+				testParam.setName(param.getName());
+				testParam.setIn(param.getIn());
+
+				// Set default weight for optional parameters
+				if (param.getRequired() == null || !param.getRequired())
+					testParam.setWeight(0.5f);
+
+				// Set generator for the parameter
+				Generator gen = new Generator();
+				gen.setGenParameters(new ArrayList<>());
+
+				if(param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header")) {
+					generateGenerator(gen, schema);
+
+				} else {
+					setDefaultGenerator(gen);
+				}
+
+				testParam.setGenerator(gen);
+				testParameters.add(testParam);
+			}
 		}
-		
+
 		return testParameters;
+	}
+
+	private List<TestParameter> generateObjectParameters(Schema schema, String objectName, String in, Boolean required, Parameter.StyleEnum styleParam, Encoding.StyleEnum styleFormData, Boolean explode) {
+		List<TestParameter> propertyParams = new ArrayList<>();
+
+		if(schema.getProperties() != null) {
+			for(Object o : schema.getProperties().entrySet()) {
+				Map.Entry<String, Schema> property = (Map.Entry<String, Schema>) o;
+
+				TestParameter propertyParam = new TestParameter();
+				if((styleParam != null && styleParam.equals(Parameter.StyleEnum.DEEPOBJECT)) || (styleFormData != null && styleFormData.equals(Encoding.StyleEnum.DEEP_OBJECT))) {
+					propertyParam.setName(objectName + "[" + property.getKey() + "]");
+				} else {
+					propertyParam.setName(property.getKey());
+				}
+
+				if (required == null || !required || schema.getRequired() == null || !schema.getRequired().contains(property.getKey()))
+					propertyParam.setWeight(0.5f);
+
+				propertyParam.setIn(in);
+
+				Generator propertyGen = new Generator();
+				propertyGen.setGenParameters(new ArrayList<>());
+
+				generateGenerator(propertyGen, property.getValue());
+				propertyParam.setGenerator(propertyGen);
+				propertyParams.add(propertyParam);
+			}
+		}
+
+		return propertyParams;
 	}
 
 	private void generateGenerator(Generator gen, Schema schema) {
@@ -368,20 +408,47 @@ public class DefaultTestConfigurationGenerator {
 
 			for(Object entry : mediaType.getSchema().getProperties().entrySet()) {
 				Schema parameterSchema = ((Entry<String, Schema>) entry).getValue();
-				TestParameter testParam = new TestParameter();
-				testParam.setName(parameterSchema.getName());
-				testParam.setIn("formData");
+				String parameterName = ((Entry<String, Schema>) entry).getKey();
 
-				if (mediaType.getSchema().getRequired() == null || !mediaType.getSchema().getRequired().contains(parameterSchema.getName())) {
-					testParam.setWeight(0.5f);
+				if(parameterSchema.getType().equals("object")) {
+					Encoding encoding = mediaType.getEncoding() != null? mediaType.getEncoding().get(parameterName) : null;
+
+					if(encoding == null) {
+						testParameters.addAll(generateObjectParameters(parameterSchema, parameterName, "formData", parameterSchema.getRequired() != null && parameterSchema.getRequired().contains(parameterName),
+								null, null, null));
+					} else {
+						testParameters.addAll(generateObjectParameters(parameterSchema, parameterName, "formData", parameterSchema.getRequired() != null && parameterSchema.getRequired().contains(parameterName),
+								null, encoding.getStyle(), encoding.getExplode()));
+					}
+
+				} else {
+
+					TestParameter testParam = new TestParameter();
+
+					Encoding encoding = null;
+					if(mediaType.getEncoding() != null) {
+						encoding = mediaType.getEncoding().get(parameterName);
+					}
+
+					if(parameterSchema.getType().equals("array") && encoding != null && encoding.getStyle().equals(Encoding.StyleEnum.DEEP_OBJECT)) {
+						testParam.setName(parameterName + "[]");
+					} else {
+						testParam.setName(parameterName);
+					}
+
+					testParam.setIn("formData");
+
+					if (mediaType.getSchema().getRequired() == null || !mediaType.getSchema().getRequired().contains(parameterSchema.getName())) {
+						testParam.setWeight(0.5f);
+					}
+
+					Generator gen = new Generator();
+					gen.setGenParameters(new ArrayList<>());
+					generateGenerator(gen, parameterSchema);
+
+					testParam.setGenerator(gen);
+					testParameters.add(testParam);
 				}
-
-				Generator gen = new Generator();
-				gen.setGenParameters(new ArrayList<>());
-				generateGenerator(gen, parameterSchema);
-
-				testParam.setGenerator(gen);
-				testParameters.add(testParam);
 			}
 		}
 

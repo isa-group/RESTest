@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
@@ -15,7 +14,6 @@ import com.atlassian.oai.validator.report.ValidationReport;
 import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
-import es.us.isa.restest.util.IDLAdapter;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 
@@ -541,10 +539,4 @@ public class TestCase implements Serializable {
 		}
 		return true;
 	}
-
-
-
-
-
-
 }
