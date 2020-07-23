@@ -190,6 +190,9 @@ testConfiguration:
         - name: includeNumbers
           values:
             - true
+        - name: includeAlphabetic
+          values:
+            - false
     - name: url
       in: formData
       weight: 0.5
