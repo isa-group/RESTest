@@ -95,7 +95,11 @@ public class UniqueFailures extends RestfulAPITestingObjectiveFunction {
                 case JARO_WINKLER:
                     return jaroWinklerMeter.apply(left, right);
                 case LEVENSHTEIN: // Computed as: 1 - (distance / average_string_length)
-                    return 1 - (double)new LevenshteinDistance().apply(left, right) / ((double)(left.length() + right.length())/2);
+                    double averageStringLength = (double)(left.length() + right.length())/2;
+                    if (averageStringLength != 0)
+                        return 1 - (double)new LevenshteinDistance().apply(left, right) / ((double)(left.length() + right.length())/2);
+                    else
+                        return 1d;
                 default:
                     throw new IllegalArgumentException("The similarity metric " + similarityMetric + " is not supported");
             }
