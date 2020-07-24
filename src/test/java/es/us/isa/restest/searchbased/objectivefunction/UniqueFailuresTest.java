@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 
+import static es.us.isa.restest.searchbased.objectivefunction.SimilarityMeter.METRIC.*;
 import static org.junit.Assert.assertEquals;
 
 public class UniqueFailuresTest extends AbstractSearchBasedTest {
@@ -82,7 +83,7 @@ public class UniqueFailuresTest extends AbstractSearchBasedTest {
             solution.setTestResult(tc.getId(), new TestResult(tc.getId(), "500", "Same body", "application/json", false));
         }
 
-        UniqueFailures objFunc = new UniqueFailures(UniqueFailures.SIMILARITY_METRIC.JACCARD, 0.9);
+        UniqueFailures objFunc = new UniqueFailures(JACCARD, 0.9);
         Double expectedValue=1.0;
         assertEquals("All failures are the same, the function should return 1", expectedValue, objFunc.evaluate(solution));
     }
@@ -99,7 +100,7 @@ public class UniqueFailuresTest extends AbstractSearchBasedTest {
             solution.setTestResult(tc.getId(), new TestResult(tc.getId(), "500", "Same body Same body Same body Same body Same body Same body "+tc.getId().charAt(tc.getId().length()-i-1), "application/json", false));
         }
 
-        UniqueFailures objFunc = new UniqueFailures(UniqueFailures.SIMILARITY_METRIC.LEVENSHTEIN, 0.9);
+        UniqueFailures objFunc = new UniqueFailures(LEVENSHTEIN, 0.9);
         Double expectedValue=1.0;
         assertEquals("All failures are almost the same, the function should return 1", expectedValue, objFunc.evaluate(solution));
     }
@@ -117,7 +118,7 @@ public class UniqueFailuresTest extends AbstractSearchBasedTest {
             solution.setTestResult(tc.getId(), new TestResult(tc.getId(), "500", bodies[i], "application/json", false));
         }
 
-        UniqueFailures objFunc = new UniqueFailures(UniqueFailures.SIMILARITY_METRIC.JARO_WINKLER, 0.1);
+        UniqueFailures objFunc = new UniqueFailures(JARO_WINKLER, 0.1);
         Double expectedValue=4.0;
         assertEquals("All failures are very different, the function should return 4", expectedValue, objFunc.evaluate(solution));
     }
