@@ -42,10 +42,10 @@ public class RestAssuredExecutor {
         testCase.getQueryParameters().forEach(request::queryParam);
         testCase.getHeaderParameters().forEach(request::header);
         testCase.getPathParameters().forEach(request::pathParam);
-        if (!testCase.getFormParameters().isEmpty()) {
-            request.contentType("application/x-www-form-urlencoded");
+        if (testCase.getInputFormat().equals("application/x-www-form-urlencoded"))
+            request.contentType(testCase.getInputFormat());
+        if (!testCase.getFormParameters().isEmpty())
             testCase.getFormParameters().forEach(request::formParam);
-        }
         if (testCase.getBodyParameter() != null && !testCase.getBodyParameter().equals("")) {
             request.contentType("application/json");
             request.body(testCase.getBodyParameter());

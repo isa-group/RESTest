@@ -11,6 +11,7 @@ import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
 import es.us.isa.restest.util.CSVManager;
+import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.javatuples.Pair;
@@ -192,6 +193,11 @@ public abstract class AbstractTestCaseGenerator {
 		}
 	}
 
+	protected void updateContentType(TestCase test, io.swagger.v3.oas.models.Operation operation) {
+		if (operation.getRequestBody() != null && operation.getRequestBody().getContent().containsKey("application/x-www-form-urlencoded"))
+			test.setInputFormat("application/x-www-form-urlencoded");
+	}
+
 	public void authenticateTestCase(TestCase test) {
 		// Authentication
 		if (conf.getAuth().getRequired()) {
@@ -220,6 +226,15 @@ public abstract class AbstractTestCaseGenerator {
 
 	// Returns true if there are more test cases to be generated. To be implemented on each subclass.
 	protected abstract boolean hasNext();
+
+	protected TestCase createTestCaseTemplate(Operation testOperation, String faultyReason) {
+		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
+		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
+		updateContentType(test, testOperation.getOpenApiOperation());
+		test.setFaultyReason(faultyReason);
+
+		return test;
+	}
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
 	public abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);

@@ -21,7 +21,7 @@ public class SuiteSizeTest extends AbstractSearchBasedTest {
 			// Act:
 			Double value=sut.evaluate(solution);
 			// Assert:
-			Double expectedValue=2.0;
+			Double expectedValue=4.0;
 			assertEquals(value,expectedValue);
 		}
 	}
