@@ -7,16 +7,17 @@ import java.util.List;
 import java.util.Optional;
 
 import org.uma.jmetal.algorithm.Algorithm;
-import org.uma.jmetal.algorithm.multiobjective.randomsearch.RandomSearch;
 import org.uma.jmetal.util.experiment.util.ExperimentAlgorithm;
 import org.uma.jmetal.util.experiment.util.ExperimentProblem;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteGenerationProblem;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.searchbased.SearchBasedTestSuiteGenerator;
+import es.us.isa.restest.searchbased.algorithms.RandomSearch;
 import es.us.isa.restest.searchbased.objectivefunction.InputCoverage;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
 import es.us.isa.restest.searchbased.objectivefunction.SuiteSize;
+import es.us.isa.restest.searchbased.terminationcriteria.MaxEvaluations;
 
 public class RandomSearchVsNSGAII {
 	// Experiment configuration
@@ -53,8 +54,8 @@ public class RandomSearchVsNSGAII {
 		for(int runId=0;runId<independentRuns;runId++) {
 			for(RestfulAPITestSuiteGenerationProblem problem:problems) {
 				ep=new ExperimentProblem<>(problem);
-				NSGAII=SearchBasedTestSuiteGenerator.createDefaultAlgorithm(seed,NSGAIIpopulationSize, maxEvaluations, problem);
-				randomSearch=new RandomSearch(problem,maxEvaluations);
+				NSGAII=SearchBasedTestSuiteGenerator.createDefaultAlgorithm(seed,NSGAIIpopulationSize, maxEvaluations, problem.clone());
+				randomSearch=new RandomSearch(problem.clone(),new MaxEvaluations(maxEvaluations));
 				algorithms.add(new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(NSGAII, "NSGAII", ep,runId ));			
 				algorithms.add(new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(randomSearch,"RandomSearch",ep,runId));			
 			}

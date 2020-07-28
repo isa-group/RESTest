@@ -23,3 +23,10 @@ jMetal.log
 
 /idl_aux_files
 src/test/resources/file-manager/*
+.classpath
+
+.factorypath
+
+.project
+
+src/main/resources/TestConfigurationMetamodel/configuration-model-output.yaml

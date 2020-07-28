@@ -7,13 +7,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 import es.us.isa.restest.searchbased.operators.*;
+import es.us.isa.restest.searchbased.terminationcriteria.MaxEvaluations;
+import es.us.isa.restest.searchbased.terminationcriteria.TerminationCriterion;
+
 import org.apache.commons.io.FileUtils;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
+import org.uma.jmetal.operator.SelectionOperator;
+import org.uma.jmetal.operator.impl.selection.BinaryTournamentSelection;
 import org.uma.jmetal.qualityindicator.impl.Epsilon;
 import org.uma.jmetal.qualityindicator.impl.GenerationalDistance;
 import org.uma.jmetal.qualityindicator.impl.GenericIndicator;
@@ -23,6 +29,10 @@ import org.uma.jmetal.qualityindicator.impl.Spread;
 import org.uma.jmetal.qualityindicator.impl.hypervolume.PISAHypervolume;
 import org.uma.jmetal.util.AlgorithmRunner;
 import org.uma.jmetal.util.JMetalLogger;
+import org.uma.jmetal.util.comparator.DominanceComparator;
+import org.uma.jmetal.util.comparator.RankingAndCrowdingDistanceComparator;
+import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
+import org.uma.jmetal.util.evaluator.impl.SequentialSolutionListEvaluator;
 import org.uma.jmetal.util.experiment.Experiment;
 import org.uma.jmetal.util.experiment.ExperimentBuilder;
 import org.uma.jmetal.util.experiment.component.ComputeQualityIndicators;
@@ -43,6 +53,7 @@ import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.searchbased.algorithms.NSGAII;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
@@ -52,8 +63,8 @@ public class SearchBasedTestSuiteGenerator {
 
     // Configuration   
     Integer nsga2PopulationSize = 10;
-    Integer maxEvaluations = 10;
     Long seed = 1979L;
+    TerminationCriterion tc;
     
     // Members:
     RestfulAPITestSuiteGenerationProblem problem;
@@ -61,25 +72,25 @@ public class SearchBasedTestSuiteGenerator {
     List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms;
     ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experimentBuilder;
     
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions, String targetPath, long seed, int maxEvaluations, int populationSize) {
-    	this(apiDescriptionPath, configFilePath, experimentName, objectiveFunctions,targetPath, seed,null,maxEvaluations,populationSize);
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions, String targetPath, long seed, int populationSize,TerminationCriterion tc) {
+    	this(apiDescriptionPath, configFilePath, experimentName, objectiveFunctions,targetPath, seed,null,populationSize,tc);
     }
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize,int maxEvaluations, int populationSize) {
-    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, objectiveFunctions, targetPath,fixedTestSuiteSize),maxEvaluations,populationSize);
-    }
-    
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize,int maxEvaluations, int populationSize) {
-    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize),maxEvaluations,populationSize);
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize, int populationSize,TerminationCriterion tc) {
+    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, objectiveFunctions, targetPath,fixedTestSuiteSize),populationSize,tc);
     }
     
-    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, RestfulAPITestSuiteGenerationProblem problem,int maxEvaluations, int populationSize) {
-    	this(experimentName,targetPath,seed,Lists.newArrayList(problem),maxEvaluations,populationSize);
+    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize, int populationSize,TerminationCriterion tc) {
+    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize),populationSize,tc);
     }
     
-    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems,int maxEvaluations, int populationSize) {    	
-    	this(experimentName,targetPath,seed,myproblems,configureDefaultAlgorithms(seed,maxEvaluations,populationSize,myproblems));
-    	setMaxEvaluations(maxEvaluations);
-        setPopulationSize(populationSize);
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, RestfulAPITestSuiteGenerationProblem problem, int populationSize,TerminationCriterion tc) {
+    	this(experimentName,targetPath,seed,Lists.newArrayList(problem),populationSize,tc);
+    }
+    
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems, int populationSize,TerminationCriterion tc) {    	
+    	this(experimentName,targetPath,seed,myproblems,configureDefaultAlgorithms(seed,populationSize,myproblems,tc));
+        this.tc=tc;
+    	setPopulationSize(populationSize);
     }
     
     public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems,List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms) {    	
@@ -106,6 +117,12 @@ public class SearchBasedTestSuiteGenerator {
 
     
     public static Algorithm<List<RestfulAPITestSuiteSolution>> createDefaultAlgorithm(long seed, int populationSize, int maxEvaluations, RestfulAPITestSuiteGenerationProblem problem){
+    	Algorithm<List<RestfulAPITestSuiteSolution>> result=createDefaultAlgorithm(seed, populationSize, problem,new MaxEvaluations(maxEvaluations));
+    	return result;
+    }
+    
+    
+    public static Algorithm<List<RestfulAPITestSuiteSolution>> createDefaultAlgorithm(long seed, int populationSize, RestfulAPITestSuiteGenerationProblem problem,TerminationCriterion tc){
     	MersenneTwisterGenerator generator=new MersenneTwisterGenerator(seed);
     	Algorithm<List<RestfulAPITestSuiteSolution>> result=null;
     	AllMutationOperators mutation=new AllMutationOperators(Lists.newArrayList(
@@ -117,24 +134,28 @@ public class SearchBasedTestSuiteGenerator {
         		new RandomParameterValueMutation(0.01,generator),
         		new ResourceChangeMutation(0.01,generator)
         ));
-    	result = new NSGAIIBuilder<>(
-        		problem,
+    	
+    	 SelectionOperator<List<RestfulAPITestSuiteSolution>, RestfulAPITestSuiteSolution> selectionOperator= 
+    			 new BinaryTournamentSelection<RestfulAPITestSuiteSolution>(new RankingAndCrowdingDistanceComparator<RestfulAPITestSuiteSolution>()) ;;
+    	 SolutionListEvaluator<RestfulAPITestSuiteSolution> evaluator=new SequentialSolutionListEvaluator<RestfulAPITestSuiteSolution>();    	     	 
+    	 
+    	result = new NSGAII(
+        		problem, populationSize, populationSize, populationSize,
         		new UniformTestCaseCrossover(0.01),
-        		mutation,
-        		populationSize)
-			.setMaxEvaluations(maxEvaluations)
-			.build();
+        		mutation, 
+        		selectionOperator, evaluator,
+        		tc);			
     	return result;
     }
     
-    private static List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> configureDefaultAlgorithms(long seed, int maxEvaluations, int populationSize,List<RestfulAPITestSuiteGenerationProblem> myproblems) {        	 
+    private static List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> configureDefaultAlgorithms(long seed, int populationSize,List<RestfulAPITestSuiteGenerationProblem> myproblems,TerminationCriterion tc) {        	 
     	List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> result = new ArrayList<>();
         Algorithm<List<RestfulAPITestSuiteSolution>> algorithm = null; 
         
         ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> expAlg=null;
         int runId=0;
         for (RestfulAPITestSuiteGenerationProblem problem : myproblems) {            
-        	algorithm=createDefaultAlgorithm(seed, populationSize, maxEvaluations, problem);
+        	algorithm=createDefaultAlgorithm(seed, populationSize,problem,tc);
             expAlg=new ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>(algorithm, new ExperimentProblem<>(problem), runId);           
             result.add(expAlg);
             runId++;
@@ -256,7 +277,7 @@ public class SearchBasedTestSuiteGenerator {
     	if(popSize>0)
     		this.nsga2PopulationSize=popSize;
     	else
-    		throw new IllegalArgumentException("Population size should be positive! (argument value was:"+maxEvaluations+")");
+    		throw new IllegalArgumentException("Population size should be positive! (argument value was:"+popSize+")");
     }
     
     public long getSeed() {
@@ -265,18 +286,7 @@ public class SearchBasedTestSuiteGenerator {
     
     public void setSeed(long seed) {
     	this.seed = seed;
-    }
-    
-    public int getMaxEvaluations() {
-		return maxEvaluations;
-	}
-    
-    private void setMaxEvaluations(int maxEvaluations) {
-    	if(maxEvaluations>0) {
-    		this.maxEvaluations = maxEvaluations;    		
-    	}else
-    		throw new IllegalArgumentException("Maximun evaluations should be positive! (argument value was:"+maxEvaluations+")");	
-	}
+    }       
     
     public void setAlgorithms(
 			List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms) {

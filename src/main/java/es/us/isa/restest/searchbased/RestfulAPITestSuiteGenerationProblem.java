@@ -45,9 +45,10 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     List<RestfulAPITestingObjectiveFunction> objectiveFunctions;
     boolean requiresTestExecution;
     boolean requiresTestOracles;
+    long testCasesExecuted;
 
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs) {
-    	this(apiUnderTest,configuration,objFuncs,JMetalRandom.getInstance().getRandomGenerator(),null);
+    	this(apiUnderTest,configuration,objFuncs,JMetalRandom.getInstance().getRandomGenerator(),null);    	
     }
     
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, PseudoRandomGenerator randomGenerator, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
@@ -58,6 +59,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     	}    	    	
     	this.maxTestSuiteSize=maxTestSuiteSize;
     	this.minTestSuiteSize=minTestSuiteSize;
+    	
     }
     
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, PseudoRandomGenerator randomGenerator, Integer fixedTestSuiteSize) {
@@ -83,6 +85,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         this.objectiveFunctions = objFuncs;
         requiresTestExecution = false;
         requiresTestOracles = false;
+        this.testCasesExecuted=0;
 
         for (RestfulAPITestingObjectiveFunction objFunc: objectiveFunctions) {
             if (objFunc.isRequiresTestExecution())
@@ -94,6 +97,12 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
         setNumberOfObjectives(this.objectiveFunctions.size());
         setNumberOfVariables(computeDefaultTestSuiteSize());
     }
+    
+    public RestfulAPITestSuiteGenerationProblem clone() {
+    	return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, config, objectiveFunctions, randomGenerator, minTestSuiteSize, maxTestSuiteSize);
+    }
+    
+    
 
     private int computeDefaultTestSuiteSize() {
     	if(fixedTestSuiteSize!=null)
@@ -144,8 +153,10 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
     private Map<String, TestResult> execute(List<TestCase> missingTestCases) {
         Map<String, TestResult> results = new HashMap<>();
-        for (TestCase testCase: missingTestCases)
+        for (TestCase testCase: missingTestCases) {
             results.put(testCase.getId(), testCaseExecutor.executeTest(testCase));
+            testCasesExecuted++;
+        }
 
         return results;
     }
@@ -215,6 +226,10 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
 	public Integer getFixedTestSuiteSize() {
 		return fixedTestSuiteSize;
+	}
+
+	public long getTestCasesExecuted() {
+		return testCasesExecuted;		
 	}
 	
 	

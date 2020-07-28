@@ -16,6 +16,7 @@ import es.us.isa.restest.searchbased.SearchBasedTestSuiteGenerator;
 import es.us.isa.restest.searchbased.objectivefunction.InputCoverage;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
 import es.us.isa.restest.searchbased.objectivefunction.SuiteSize;
+import es.us.isa.restest.searchbased.terminationcriteria.MaxEvaluations;
 
 public class RandomSearchExperiment {
 
@@ -48,9 +49,9 @@ public class RandomSearchExperiment {
                 targetDir,
                 seed,
                 minTestSuiteSize,
-                maxTestSuiteSize,
-                maxEvaluations,
-                populationSize);
+                maxTestSuiteSize,                
+                populationSize,
+                new MaxEvaluations(maxEvaluations));
 	    List<RestfulAPITestSuiteGenerationProblem> problems = Arrays.asList();
 	    List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms = null;
 	    Algorithm<List<RestfulAPITestSuiteSolution>> randomSearch=new RandomSearch(generator.getProblems().get(0).getProblem(),maxEvaluations);

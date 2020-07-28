@@ -10,10 +10,13 @@ import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.uma.jmetal.operator.MutationOperator;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
+
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -24,6 +27,7 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
     private double mutationProbability;
     private PseudoRandomGenerator randomGenerator;
     protected boolean mutationApplied;
+    public List<String> securityParamNames=Lists.newArrayList("Authorization","Application-Authorization","auth-token","access_token"); 
 
     public AbstractAPITestCaseMutationOperator(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         this.mutationProbability = mutationProbability;
@@ -52,15 +56,25 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
     }
 
     protected Collection<ParameterFeatures> getAllPresentParameters(TestCase testCase) {
+    	return getAllPresentParameters(testCase, false,false);
+    }
+    
+    protected Collection<ParameterFeatures> getAllPresentParameters(TestCase testCase,boolean includePathParameters, boolean includeSecurityParameters) {
         Set<ParameterFeatures> parameters = new HashSet<>();
-        for (String pathParam : testCase.getPathParameters().keySet())
-            parameters.add(new ParameterFeatures(pathParam, "path", null));
-        for (String queryParam : testCase.getQueryParameters().keySet())
-            parameters.add(new ParameterFeatures(queryParam, "query", null));
+        if(includePathParameters) {
+        	for (String pathParam : testCase.getPathParameters().keySet())
+        		parameters.add(new ParameterFeatures(pathParam, "path", null));
+        }
+        for (String queryParam : testCase.getQueryParameters().keySet()) {
+        	if(includeSecurityParameters || !isSecurityParameter(queryParam) )
+        		parameters.add(new ParameterFeatures(queryParam, "query", null));
+        }
         for (String headerParam : testCase.getHeaderParameters().keySet())
-            parameters.add(new ParameterFeatures(headerParam, "header", null));
+        	if(includeSecurityParameters || !isSecurityParameter(headerParam) ) 
+        		parameters.add(new ParameterFeatures(headerParam, "header", null));
         for (String formParam : testCase.getFormParameters().keySet())
-            parameters.add(new ParameterFeatures(formParam, "formData", null));
+        	if(includeSecurityParameters || !isSecurityParameter(formParam) )
+        		parameters.add(new ParameterFeatures(formParam, "formData", null));
         // TODO: Support body parameter mutation:
         /*if(testCase.getBodyParameter()!=null) {            
             parameterNames.add("body");
@@ -68,5 +82,9 @@ public abstract class AbstractAPITestCaseMutationOperator implements MutationOpe
         return parameters;
     }
 
-    protected abstract void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution);
+    private boolean isSecurityParameter(String paramName) {
+		return securityParamNames.contains(paramName);
+	}
+
+	protected abstract void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution);
 }

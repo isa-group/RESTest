@@ -14,6 +14,8 @@ import es.us.isa.restest.searchbased.objectivefunction.InputCoverage;
 import es.us.isa.restest.searchbased.objectivefunction.RestfulAPITestingObjectiveFunction;
 import es.us.isa.restest.searchbased.objectivefunction.SuiteSize;
 import es.us.isa.restest.searchbased.objectivefunction.UniqueFailures;
+import es.us.isa.restest.searchbased.terminationcriteria.MaxEvaluations;
+import es.us.isa.restest.searchbased.terminationcriteria.MaxExecutedRequests;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static es.us.isa.restest.util.FileManager.createDir;
+import static es.us.isa.restest.searchbased.terminationcriteria.And.and;
 
 /**
  *
@@ -34,6 +37,7 @@ public class BikeWiseExperiment {
     private static int maxTestSuiteSize = 10;
     private static int populationSize = 10; // Population size for the evolutionary algorithm
     private static int maxEvaluations = 1000;
+    private static int maxExecutedRequests=900;
     private static String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml"; // Path to OAS specification file
     private static String confPath = "src/test/resources/Bikewise/fullConf.yaml"; // Path to test configuration file
     private static String experimentName = "bikewise"; // Experiment name
@@ -57,9 +61,10 @@ public class BikeWiseExperiment {
                             targetDir,
                             seed,
                             minTestSuiteSize,
-                            maxTestSuiteSize,
-                            maxEvaluations,
-                            populationSize);
+                            maxTestSuiteSize,                            
+                            populationSize,
+                            and(	new MaxEvaluations(maxEvaluations),
+                            		new MaxExecutedRequests(maxExecutedRequests)));
                        
         try {
             generator.run();

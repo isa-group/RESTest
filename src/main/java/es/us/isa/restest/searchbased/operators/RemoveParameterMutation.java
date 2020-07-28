@@ -25,11 +25,18 @@ import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaulty
  */
 public class RemoveParameterMutation extends AbstractAPITestCaseMutationOperator {
     
+	boolean removePathParameters;
+	
     public RemoveParameterMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
-        super(mutationProbability, randomGenerator);
+        this(mutationProbability, randomGenerator,false);
     }
     
-    @Override
+    public RemoveParameterMutation(double mutationProbability, PseudoRandomGenerator randomGenerator, boolean removePathParameters) {
+		super(mutationProbability,randomGenerator);
+		this.removePathParameters=removePathParameters;
+	}
+
+	@Override
     protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
         for (TestCase testCase : solution.getVariables()) {
             mutationApplied = false;
