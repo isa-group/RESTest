@@ -53,7 +53,7 @@ public class ParameterAdditionMutationTest extends AbstractSearchBasedTest {
 				originalTestCase=solution.getVariable(i);
 				mutatedTestCase=result.getVariable(i);
 				// Path parameters:
-				assertTrue(mutatedTestCase.getPathParameters().entrySet().containsAll(originalTestCase.getPathParameters().entrySet()));
+				assertTrue(mutatedTestCase.getPathParameters().keySet().containsAll(originalTestCase.getPathParameters().keySet()));
 				assertTrue(mutatedTestCase.getPathParameters().entrySet().size()>=originalTestCase.getPathParameters().entrySet().size());
 				// Query parameters:
 				assertTrue(mutatedTestCase.getQueryParameters().entrySet().containsAll(originalTestCase.getQueryParameters().entrySet()));
