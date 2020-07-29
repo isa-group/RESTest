@@ -52,7 +52,7 @@ public class SpecificationVisitor {
 			default:
 				throw new IllegalArgumentException("Parameter type not supported: " + in);
 		}
-	
+
 		return param;
 	}
 

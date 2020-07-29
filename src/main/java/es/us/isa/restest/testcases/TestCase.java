@@ -4,20 +4,22 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
+import com.atlassian.oai.validator.report.ValidationReport;
+import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
-import es.us.isa.restest.util.SpecificationVisitor;
-import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
+import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static java.net.URLEncoder.encode;
 
 /** Domain-independent test case
@@ -31,6 +33,7 @@ public class TestCase implements Serializable {
 	private Boolean faulty;									// True if the expected response is a 4XX status code
 	private Boolean fulfillsDependencies;					// True if it does not violate any inter-parameter dependencies
 	private String faultyReason;							// "none", "individual_parameter_constraint", "invalid_request_body" or "inter_parameter_dependency"
+	private Boolean enableOracles;							// True (default) if you want to assert the response. False if you only want to execute the request
 	private String operationId;								// Id of the operation (ex. getAlbums)
 	private HttpMethod method;								// HTTP method
 	private String path;									// Request path
@@ -46,6 +49,7 @@ public class TestCase implements Serializable {
 		this.id = id;
 		this.faulty = faulty;
 		this.fulfillsDependencies = false; // By default, a test case does not satisfy inter-parameter dependencies
+		this.enableOracles = true;
 		this.operationId = operationId;
 		this.path = path;
 		this.method = method;
@@ -61,12 +65,13 @@ public class TestCase implements Serializable {
 		this(testCase.id, testCase.faulty, testCase.operationId, testCase.path, testCase.method);
 		this.faultyReason = testCase.faultyReason;
 		this.fulfillsDependencies = testCase.fulfillsDependencies;
+		this.enableOracles = testCase.enableOracles;
 		this.inputFormat = testCase.inputFormat;
+		this.headerParameters.putAll(testCase.headerParameters);
+		this.queryParameters.putAll(testCase.queryParameters);
+		this.pathParameters.putAll(testCase.pathParameters);
+		this.formParameters.putAll(testCase.formParameters);
 		this.bodyParameter = testCase.bodyParameter;
-		this.pathParameters = testCase.pathParameters;
-		this.queryParameters = testCase.queryParameters;
-		this.headerParameters = testCase.headerParameters;
-		this.formParameters = testCase.formParameters;
 	}
 
 	public HttpMethod getMethod() {
@@ -156,8 +161,8 @@ public class TestCase implements Serializable {
 	public Map<String, String> getFormParameters() { return formParameters; }
 
 	public void setFormParameters(Map<String, String> formParameters) {
-		setFormDataContentType();
 		this.formParameters = formParameters;
+		setFormDataContentType();
 	}
 
 	public String getOperationId() {
@@ -217,13 +222,13 @@ public class TestCase implements Serializable {
 	}
 
 	public void addFormParameter(String name, String value) {
-		setFormDataContentType();
 		formParameters.put(name, value);
+		setFormDataContentType();
 	}
 
 	public void addFormParameters(Map<String,String> params) {
-		setFormDataContentType();
 		formParameters.putAll(params);
+		setFormDataContentType();
 	}
 
 	public void removeQueryParameter(String name) {
@@ -290,35 +295,17 @@ public class TestCase implements Serializable {
 		this.faultyReason = faultyReason;
 	}
 
+	public Boolean getEnableOracles() {
+		return enableOracles;
+	}
+
+	public void setEnableOracles(Boolean enableOracles) {
+		this.enableOracles = enableOracles;
+	}
+
 	private void setFormDataContentType() {
 		if (!inputFormat.equals("application/x-www-form-urlencoded") && formParameters.size() > 0)
 			inputFormat = "application/x-www-form-urlencoded";
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		TestCase testCase = (TestCase) o;
-		return Objects.equals(id, testCase.id) &&
-				Objects.equals(faulty, testCase.faulty) &&
-				Objects.equals(fulfillsDependencies, testCase.fulfillsDependencies) &&
-				Objects.equals(faultyReason, testCase.faultyReason) &&
-				Objects.equals(operationId, testCase.operationId) &&
-				method == testCase.method &&
-				Objects.equals(path, testCase.path) &&
-				Objects.equals(inputFormat, testCase.inputFormat) &&
-				Objects.equals(outputFormat, testCase.outputFormat) &&
-				Objects.equals(headerParameters, testCase.headerParameters) &&
-				Objects.equals(pathParameters, testCase.pathParameters) &&
-				Objects.equals(queryParameters, testCase.queryParameters) &&
-				Objects.equals(formParameters, testCase.formParameters) &&
-				Objects.equals(bodyParameter, testCase.bodyParameter);
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(id, faulty, fulfillsDependencies, faultyReason, operationId, method, path, inputFormat, outputFormat, headerParameters, pathParameters, queryParameters, formParameters, bodyParameter);
 	}
 
 	public void exportToCSV(String filePath) {
@@ -355,13 +342,7 @@ public class TestCase implements Serializable {
 		writeRow(filePath, rowBeginning + rowEnding);
 	}
 
-	/**
-	 * Returns true if the test case is faulty, false otherwise
-	 * @param tc
-	 * @param validator
-	 * @return
-	 */
-	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator, Operation oasOperation) {
+	public static List<String> getFaultyReasons(TestCase tc, OpenApiInteractionValidator validator) {
 		String fullPath = tc.getPath();
 		for (Map.Entry<String, String> pathParam : tc.getPathParameters().entrySet())
 			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
@@ -376,22 +357,186 @@ public class TestCase implements Serializable {
 			StringBuilder formDataBody = new StringBuilder();
 			try {
 				for (Map.Entry<String, String> formParam : tc.getFormParameters().entrySet()) {
-					String value = formParam.getValue();
-
-					String parameterType = SpecificationVisitor.findParameter(oasOperation, formParam.getKey(), "formData").getType();
-					if(parameterType.equals("string") && value.matches("([0-9]|[1-9]([0-9])*)(\\.([0-9])*[1-9])?")) {
-						value = "\"" + formParam.getValue() + "\"";
-					}
-
-					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(value, StandardCharsets.UTF_8.toString())).append("&");
+					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(formParam.getValue(), StandardCharsets.UTF_8.toString())).append("&");
 				}
 			} catch (UnsupportedEncodingException e) {
 				LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
 				e.printStackTrace();
 			}
 			requestBuilder.withBody(formDataBody.toString());
+			requestBuilder.withContentType("application/x-www-form-urlencoded");
 		}
 
-		return validator.validateRequest(requestBuilder.build()).hasErrors();
+		return validator.validateRequest(requestBuilder.build()).getMessages().stream().map(ValidationReport.Message::getKey).collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns true if the test case is faulty, false otherwise
+	 * @param tc
+	 * @param validator
+	 * @return
+	 */
+	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
+		return !getFaultyReasons(tc, validator).isEmpty();
+	}
+
+	/**
+	 * Returns true if the test case fulfills inter-parameter dependencies, false otherwise
+	 * @param tc
+	 * @param idlReasoner
+	 * @return
+	 */
+	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
+		if (idlReasoner == null)
+			return true;
+		return idlReasoner.isValidRequest(restest2idlTestCase(tc));
+	}
+
+	public String toString() {
+		return id;
+	}
+
+	/**
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((bodyParameter == null) ? 0 : bodyParameter.hashCode());
+		result = prime * result + ((faulty == null) ? 0 : faulty.hashCode());
+		result = prime * result + ((faultyReason == null) ? 0 : faultyReason.hashCode());
+		result = prime * result + ((enableOracles == null) ? 0 : enableOracles.hashCode());
+		result = prime * result + ((formParameters == null) ? 0 : formParameters.hashCode());
+		result = prime * result + ((fulfillsDependencies == null) ? 0 : fulfillsDependencies.hashCode());
+		result = prime * result + ((headerParameters == null) ? 0 : headerParameters.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((inputFormat == null) ? 0 : inputFormat.hashCode());
+		result = prime * result + ((method == null) ? 0 : method.hashCode());
+		result = prime * result + ((operationId == null) ? 0 : operationId.hashCode());
+		result = prime * result + ((outputFormat == null) ? 0 : outputFormat.hashCode());
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		result = prime * result + ((pathParameters == null) ? 0 : pathParameters.hashCode());
+		result = prime * result + ((queryParameters == null) ? 0 : queryParameters.hashCode());
+		return result;
+	}
+
+	/**
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (!(obj instanceof TestCase)) {
+			return false;
+		}
+		TestCase other = (TestCase) obj;
+		if (bodyParameter == null) {
+			if (other.bodyParameter != null) {
+				return false;
+			}
+		} else if (!bodyParameter.equals(other.bodyParameter)) {
+			return false;
+		}
+		if (faulty == null) {
+			if (other.faulty != null) {
+				return false;
+			}
+		} else if (!faulty.equals(other.faulty)) {
+			return false;
+		}
+		if (faultyReason == null) {
+			if (other.faultyReason != null) {
+				return false;
+			}
+		} else if (!faultyReason.equals(other.faultyReason)) {
+			return false;
+		}
+		if (enableOracles == null) {
+			if (other.enableOracles != null) {
+				return false;
+			}
+		} else if (!enableOracles.equals(other.enableOracles)) {
+			return false;
+		}
+		if (formParameters == null) {
+			if (other.formParameters != null) {
+				return false;
+			}
+		} else if (!formParameters.equals(other.formParameters)) {
+			return false;
+		}
+		if (fulfillsDependencies == null) {
+			if (other.fulfillsDependencies != null) {
+				return false;
+			}
+		} else if (!fulfillsDependencies.equals(other.fulfillsDependencies)) {
+			return false;
+		}
+		if (headerParameters == null) {
+			if (other.headerParameters != null) {
+				return false;
+			}
+		} else if (!headerParameters.equals(other.headerParameters)) {
+			return false;
+		}
+		if (id == null) {
+			if (other.id != null) {
+				return false;
+			}
+		} else if (!id.equals(other.id)) {
+			return false;
+		}
+		if (inputFormat == null) {
+			if (other.inputFormat != null) {
+				return false;
+			}
+		} else if (!inputFormat.equals(other.inputFormat)) {
+			return false;
+		}
+		if (method != other.method) {
+			return false;
+		}
+		if (operationId == null) {
+			if (other.operationId != null) {
+				return false;
+			}
+		} else if (!operationId.equals(other.operationId)) {
+			return false;
+		}
+		if (outputFormat == null) {
+			if (other.outputFormat != null) {
+				return false;
+			}
+		} else if (!outputFormat.equals(other.outputFormat)) {
+			return false;
+		}
+		if (path == null) {
+			if (other.path != null) {
+				return false;
+			}
+		} else if (!path.equals(other.path)) {
+			return false;
+		}
+		if (pathParameters == null) {
+			if (other.pathParameters != null) {
+				return false;
+			}
+		} else if (!pathParameters.equals(other.pathParameters)) {
+			return false;
+		}
+		if (queryParameters == null) {
+			if (other.queryParameters != null) {
+				return false;
+			}
+		} else if (!queryParameters.equals(other.queryParameters)) {
+			return false;
+		}
+		return true;
 	}
 }

@@ -177,7 +177,7 @@ testConfiguration:
           objectValues: null
     - name: unit_label
       in: formData
-      weight: null
+      weight: 0.5
       generator:
         type: RandomString
         genParameters:

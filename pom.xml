@@ -24,29 +24,40 @@
 		<url>https://github.com/isa-group/RESTest/issues</url>
 	</issueManagement>
 
-	<developers>
-		<developer>
-			<id>Martin-Lopez</id>
-			<name>Alberto Martin-Lopez</name>
-			<email>amarlop@us.es</email>
-			<url>http://personal.us.es/amarlop/</url>
-			<organization>University of Seville</organization>
-			<organizationUrl>http://www.us.es</organizationUrl>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>segura</id>
-			<name>Sergio Segura</name>
-			<email>sergiosegura@us.es</email>
-			<url>http://personal.us.es/sergiosegura/</url>
-			<organization>University of Seville</organization>
-			<organizationUrl>http://www.us.es</organizationUrl>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</developer>
+    <developers>
+        <developer>
+            <id>Martin-Lopez</id>
+            <name>Alberto Martin-Lopez</name>
+            <email>amarlop@us.es</email>
+            <url>http://personal.us.es/amarlop/</url>
+            <organization>University of Seville</organization>
+            <organizationUrl>http://www.us.es</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>segura</id>
+            <name>Sergio Segura</name>
+            <email>sergiosegura@us.es</email>
+            <url>http://personal.us.es/sergiosegura/</url>
+            <organization>University of Seville</organization>
+            <organizationUrl>http://www.us.es</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>japarejo</id>
+            <name>José Antonio Parejo</name>
+            <email>japarejo@us.es</email>
+            <url>https://www.isa.us.es/3.0/members/jose-a-parejo/</url>
+            <organization>University of Seville</organization>
+            <organizationUrl>http://www.us.es</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
 		<developer>
 			<id>jfdelarosa</id>
 			<name>José Ramón Fernández de la Rosa</name>
@@ -66,12 +77,14 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<aspectj.version>1.9.5</aspectj.version>
-		<argLine></argLine>
+		<jmetal.version>5.9</jmetal.version>
 		<swagger.version>2.1.2</swagger.version>
 		<openapivalidator.version>2.10.0</openapivalidator.version>
 		<restassured.version>4.2.0</restassured.version>
 		<jackson.version>2.11.0</jackson.version>
 		<allure.version>2.13.3</allure.version>
+		<mockito.version>3.3.3</mockito.version>
+        <argLine></argLine>
 	</properties>
 
 	<dependencies>
@@ -132,7 +145,34 @@
 		</dependency>
 
 
-		<!-- TEST DEPENDENCIES -->
+        <!-- JMETAL DEPENDENCIES -->
+        <!-- JMetal multi-objective optimization framework  -->
+        <dependency>
+            <groupId>org.uma.jmetal</groupId>
+            <artifactId>jmetal-core</artifactId>
+            <version>${jmetal.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.uma.jmetal</groupId>
+            <artifactId>jmetal-problem</artifactId>
+            <version>${jmetal.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.uma.jmetal</groupId>
+            <artifactId>jmetal-algorithm</artifactId>
+            <version>${jmetal.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.uma.jmetal</groupId>
+            <artifactId>jmetal-exec</artifactId>
+            <version>${jmetal.version}</version>
+        </dependency>
+
+
+        <!-- TEST DEPENDENCIES -->
 		<!-- JUnit 4 -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -153,6 +193,12 @@
 			<artifactId>allure-rest-assured</artifactId>
 			<version>${allure.version}</version>
 		</dependency>
+		<!-- Mockito -->
+		<dependency>
+  			<groupId>org.mockito</groupId>
+  			<artifactId>mockito-core</artifactId>
+  			<version>${mockito.version}</version>
+		</dependency>
 
 
 		<!-- MISC DEPENDENCIES -->
@@ -168,6 +214,13 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.10</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.8</version>
 		</dependency>
 
 		<!-- Apache Commongs Math -->

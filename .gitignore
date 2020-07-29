@@ -5,6 +5,7 @@
 /.project/
 RESTest.iml
 TODO.txt
+jMetal.log
 /target
 /allure-results/
 /src/test/resources/csvData/csvSample.csv
@@ -22,3 +23,10 @@ TODO.txt
 
 /idl_aux_files
 src/test/resources/file-manager/*
+.classpath
+
+.factorypath
+
+.project
+
+src/main/resources/TestConfigurationMetamodel/configuration-model-output.yaml

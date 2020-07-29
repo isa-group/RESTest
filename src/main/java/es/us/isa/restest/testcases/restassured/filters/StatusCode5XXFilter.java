@@ -21,12 +21,15 @@ public class StatusCode5XXFilter implements OrderedFilter {
     public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
         Response response = ctx.next(requestSpec, responseSpec);
 
-        // If 5XX status code is found, throw exception
-        if (response.getStatusCode() >= 500) {
-            throw new RuntimeException("Received status 5XX. Server error found.");
-        }
+        filterValidation(response);
 
         return response;
+    }
+
+    // If 5XX status code is found, throw exception
+    public void filterValidation(Response response) {
+        if (response.getStatusCode() >= 500)
+            throw new RuntimeException("Received status 5XX. Server error found.");
     }
 
     @Override

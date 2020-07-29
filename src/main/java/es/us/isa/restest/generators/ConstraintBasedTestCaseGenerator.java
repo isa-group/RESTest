@@ -36,15 +36,26 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		super(spec, conf, nTests);
 	}
 
-	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
-
-		List<TestCase> testCases = new ArrayList<>();
-
+	public void setUpIDLReasoner(Operation testOperation) {
 		if (hasDependencies(testOperation.getOpenApiOperation())) // If the operation contains dependencies, create new IDLReasoner for that operation
 			idlReasoner = new Analyzer("oas", spec.getPath(), testOperation.getTestPath(), testOperation.getMethod());
 		else // Otherwise, set it to null so that it's not used
 			idlReasoner = null;
+	}
+
+	public void checkIDLReasonerData(Operation testOperation, String faultyReason) {
+		if (idlReasoner != null && index%reloadInputDataEvery == 0 && !faultyReason.equals(INDIVIDUAL_PARAMETER_CONSTRAINT)) {
+			Map <String, List<String>> inputData = generateInputData(testOperation.getTestParameters()); // Update input data
+			idlReasoner.updateData(inputData);
+		}
+	}
+
+	@Override
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
+
+		setUpIDLReasoner(testOperation);
+
+		List<TestCase> testCases = new ArrayList<>();
 
 		// Whether the next test case to generate must be faulty or not
 		String faultyReason = "none";
@@ -56,10 +67,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		}
 
 		while (hasNext()) {
-			if (idlReasoner != null && index%reloadInputDataEvery == 0 && !faultyReason.equals(INDIVIDUAL_PARAMETER_CONSTRAINT)) {
-				Map <String, List<String>> inputData = generateInputData(testOperation.getTestParameters()); // Update input data
-				idlReasoner.updateData(inputData);
-			}
+			checkIDLReasonerData(testOperation, faultyReason);
 
 			// Generate faulty test cases until faultyRatio is reached
 			if (!faultyReason.equals("none")) {
@@ -104,11 +112,8 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	// Generate the next test case and update the generation index
 	@Override
-	protected TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
-		// This way, all test cases of an operation are not executed one after the other, but randomly:
-		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
-		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
-		test.setFaultyReason(faultyReason);
+	public TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
+		TestCase test = createTestCaseTemplate(testOperation, faultyReason);
 
 		switch (faultyReason) {
 			case "none":
@@ -139,7 +144,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 				throw new IllegalArgumentException("The faulty reason '" + faultyReason + "' is not supported.");
 		}
 
-		if (!test.getFaulty() && checkFaulty(test, validator, testOperation.getOpenApiOperation())) { // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
+		if (!test.getFaulty() && checkFaulty(test, validator)) { // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
 			test.setFaulty(true);
 			test.setFaultyReason("invalid_request_body");
 		}
@@ -179,5 +184,13 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	public void setInputDataMaxValues(Integer inputDataMaxValues) {
 		this.inputDataMaxValues = inputDataMaxValues;
+	}
+
+	public Analyzer getIdlReasoner() {
+		return idlReasoner;
+	}
+
+	public void setIdlReasoner(Analyzer idlReasoner) {
+		this.idlReasoner = idlReasoner;
 	}
 }
