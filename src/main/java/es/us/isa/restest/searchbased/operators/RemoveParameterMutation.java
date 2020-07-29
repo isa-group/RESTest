@@ -14,6 +14,7 @@ import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import static es.us.isa.restest.searchbased.operators.Utils.resetTestResult;
@@ -26,14 +27,20 @@ import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaulty
 public class RemoveParameterMutation extends AbstractAPITestCaseMutationOperator {
     
 	boolean removePathParameters;
+	boolean removeSecurityParameters;
 	
     public RemoveParameterMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
-        this(mutationProbability, randomGenerator,false);
+        this(mutationProbability, randomGenerator,false,false);
     }
     
     public RemoveParameterMutation(double mutationProbability, PseudoRandomGenerator randomGenerator, boolean removePathParameters) {
-		super(mutationProbability,randomGenerator);
+		this(mutationProbability,randomGenerator,removePathParameters,false);
+    }
+    
+    public RemoveParameterMutation(double mutationProbability, PseudoRandomGenerator randomGenerator, boolean removePathParameters,boolean removeSecurityParameters) {
+    	super(mutationProbability,randomGenerator);
 		this.removePathParameters=removePathParameters;
+		this.removeSecurityParameters=removeSecurityParameters;
 	}
 
 	@Override
@@ -56,6 +63,11 @@ public class RemoveParameterMutation extends AbstractAPITestCaseMutationOperator
     
     private void doMutation(ParameterFeatures param, TestCase testCase) {
         testCase.removeParameter(param);
+    }
+    
+    @Override
+    protected Collection<ParameterFeatures> getAllPresentParameters(TestCase testCase) {
+    	return getAllPresentParameters(testCase, removePathParameters,removeSecurityParameters);
     }
     
 }
