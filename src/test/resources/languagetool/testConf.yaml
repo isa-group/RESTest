@@ -1,0 +1,135 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /check
+    operationId: check
+    method: post
+    testParameters:
+    - name: text
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 3
+          objectValues: null
+        - name: minWords
+          values:
+            - 1
+          objectValues: null
+    - name: data
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "{\"annotation\":[\n {\"text\": \"A \"},\n {\"markup\": \"<b>\"},\n {\"text\": \"test\"},\n {\"markup\": \"</b>\"}\n]}"
+          objectValues: null
+    - name: language
+      in: formData
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - 'src/main/resources/TestData/languagetool-codes.csv'
+          objectValues: null
+    - name: altLanguages
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-codes.csv'
+            objectValues: null
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
+    - name: motherTongue
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-codes.csv'
+            objectValues: null
+    - name: preferredVariants
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-codes.csv'
+            objectValues: null
+    - name: enabledRules
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - '1,2,3,4'
+            objectValues: null
+    - name: disabledRules
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - '1,2,3,4'
+            objectValues: null
+    - name: enabledCategories
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - '1,2,3,4'
+            objectValues: null
+    - name: disabledCategories
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - '1,2,3,4'
+            objectValues: null
+    - name: enabledOnly
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomBoolean
+        genParameters: []
+    expectedResponse: 200
+#  - testPath: /languages
+#    operationId: getLanguages
+#    method: get
+#    testParameters: null
+#    expectedResponse: 200
