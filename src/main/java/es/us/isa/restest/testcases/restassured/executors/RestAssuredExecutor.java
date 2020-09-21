@@ -18,6 +18,7 @@ public class RestAssuredExecutor {
 
     private OpenAPISpecification oasSpec;
     private String basePath;
+    private boolean logging;
     private ResponseValidationFilter validationFilter;
     private StatusCode5XXFilter statusCode5XXFilter;
     private int totalTests;
@@ -28,6 +29,7 @@ public class RestAssuredExecutor {
     public RestAssuredExecutor(OpenAPISpecification oasSpec) {
         this.oasSpec = oasSpec;
         basePath = oasSpec.getSpecification().getServers().get(0).getUrl().replaceAll("/$", "");
+        logging = true;
         validationFilter = new ResponseValidationFilter(oasSpec.getPath());
         statusCode5XXFilter = new StatusCode5XXFilter();
         totalTests = 0;
@@ -39,6 +41,8 @@ public class RestAssuredExecutor {
     public TestResult executeTest(TestCase testCase) {
         // Build request
         RequestSpecification request = RestAssured.given();
+        if (logging)
+            request.log().all();
         testCase.getQueryParameters().forEach(request::queryParam);
         testCase.getHeaderParameters().forEach(request::header);
         testCase.getPathParameters().forEach(request::pathParam);
@@ -53,10 +57,12 @@ public class RestAssuredExecutor {
 
         // Send request and get response
         Response response = request
-                .log().all()
                 .when()
                 .request(testCase.getMethod().toString(), basePath + testCase.getPath());
-        response.then().log().all();
+        if (logging)
+            response.then().log().all();
+        else
+            response.then();
 
         // Assert response and update counters
         if (testCase.getEnableOracles()) {
@@ -110,5 +116,13 @@ public class RestAssuredExecutor {
 
     public void setLastTestPassed(Boolean lastTestPassed) {
         this.lastTestPassed = lastTestPassed;
+    }
+
+    public boolean isLogging() {
+        return logging;
+    }
+
+    public void setLogging(boolean logging) {
+        this.logging = logging;
     }
 }

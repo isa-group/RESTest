@@ -6,6 +6,8 @@
 package es.us.isa.restest.searchbased.operators;
 
 import es.us.isa.restest.specification.ParameterFeatures;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
@@ -21,7 +23,9 @@ import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaulty
  * @author japar
  */
 public class RemoveParameterMutation extends AbstractMutationOperator {
-    
+
+    private static final Logger logger = LogManager.getLogger(RemoveParameterMutation.class.getName());
+
 	boolean removePathParameters;
 	boolean removeSecurityParameters;
 	
@@ -51,6 +55,7 @@ public class RemoveParameterMutation extends AbstractMutationOperator {
             }
 
             if (mutationApplied) {
+                logger.info("Mutation probability fulfilled! Parameter removed from test case.");
                 updateTestCaseFaultyReason(solution, testCase);
                 resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
             }

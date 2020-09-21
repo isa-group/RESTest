@@ -6,9 +6,12 @@ import java.util.List;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.searchbased.algorithms.SearchBasedAlgorithm;
 import es.us.isa.restest.testcases.TestResult;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ResponseCodesObtained implements TerminationCriterion {
 
+	private static final Logger logger = LogManager.getLogger(ResponseCodesObtained.class.getName());
 	private List<Integer> requiredResponseCodes=null;
 
 	public ResponseCodesObtained(List<Integer> codes) {
@@ -21,6 +24,7 @@ public class ResponseCodesObtained implements TerminationCriterion {
 		for(int i=0;i<requiredResponseCodes.size() && result;i++) {
 			result=containsResponseCodes(requiredResponseCodes.get(i),t.getResult());
 		}
+		// TODO: Add logging before returning
 		return result;
 	}
 

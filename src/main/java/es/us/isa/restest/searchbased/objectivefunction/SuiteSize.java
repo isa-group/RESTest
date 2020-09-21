@@ -19,6 +19,7 @@ public class SuiteSize extends RestfulAPITestingObjectiveFunction{
 
 	@Override
     public Double evaluate(RestfulAPITestSuiteSolution solution) {
+        logEvaluation(solution.getNumberOfVariables());
         return (double)solution.getNumberOfVariables();
     }
     

@@ -18,11 +18,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.uma.jmetal.problem.impl.AbstractGenericProblem;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem<RestfulAPITestSuiteSolution> {
+
+    private static final Logger logger = LogManager.getLogger(RestfulAPITestSuiteGenerationProblem.class.getName());
 
 	// TestSuiteSizeParameters :
 	// We support 3 suite size configuration mechanisms:
@@ -65,6 +69,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
     public RestfulAPITestSuiteGenerationProblem(OpenAPISpecification apiUnderTest, TestConfigurationObject configuration, List<RestfulAPITestingObjectiveFunction> objFuncs, PseudoRandomGenerator randomGenerator, Integer fixedTestSuiteSize) {
     	this.apiUnderTest = apiUnderTest;
     	testCaseExecutor = new RestAssuredExecutor(apiUnderTest);
+    	testCaseExecutor.setLogging(false);
         this.setName(apiUnderTest.getSpecification().getInfo().getTitle());
         this.config = configuration;
         this.randomGenerator = randomGenerator;
@@ -116,6 +121,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 
 	@Override
     public void evaluate(RestfulAPITestSuiteSolution s) {
+        logger.info("Evaluating solution...");
         if (requiresTestExecution) // Run tests only if some objective function requires it
             invokeMissingTests(s);
 

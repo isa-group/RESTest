@@ -37,7 +37,9 @@ public class UniqueFailures extends RestfulAPITestingObjectiveFunction {
 
     @Override
     public Double evaluate(RestfulAPITestSuiteSolution solution) {
-        return (double) getFailures(solution).size();
+        double numOfFailures = getFailures(solution).size();
+        logEvaluation(numOfFailures);
+        return numOfFailures;
     }
 
     public List<Triplet<String, String, String>> getFailures(RestfulAPITestSuiteSolution solution) {

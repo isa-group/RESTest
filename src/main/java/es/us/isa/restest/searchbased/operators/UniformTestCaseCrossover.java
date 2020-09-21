@@ -8,6 +8,8 @@ import java.util.Set;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.uma.jmetal.util.pseudorandom.BoundedRandomGenerator;
 import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 
@@ -15,6 +17,8 @@ import static es.us.isa.restest.searchbased.operators.Utils.resetTestResult;
 import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
 
 public class UniformTestCaseCrossover extends AbstractCrossoverOperator {
+
+	private static final Logger logger = LogManager.getLogger(UniformTestCaseCrossover.class.getName());
 
 	    private boolean mutationApplied;
 
@@ -54,6 +58,7 @@ public class UniformTestCaseCrossover extends AbstractCrossoverOperator {
 			mutationApplied = false;
 			doCrossover(probability, testCase1, testCase2);
 			if (mutationApplied) {
+				logger.info("Crossover probability fulfilled! Two test CASES have been crossed over.");
 				updateTestCaseFaultyReason(parent1, testCase1);
 				updateTestCaseFaultyReason(parent2, testCase2);
 				resetTestResult(testCase1.getId(), offspring1); // The test case changed, reset test result

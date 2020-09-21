@@ -13,7 +13,7 @@ import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
  *
  * @author japarejo
  */
-public class Coverage extends RestfulAPITestingObjectiveFunction{    
+public class Coverage extends RestfulAPITestingObjectiveFunction{
 
 	CoverageMeter coverageMeter=null;
     
@@ -30,6 +30,7 @@ public class Coverage extends RestfulAPITestingObjectiveFunction{
         coverageMeter.setTestResults(solution.getTestResults());
         double coveredElements=(double)coverageMeter.getCoveredTotalElements();
         double totalElements=(double)coverageMeter.getAllTotalElements();
+        logEvaluation(coveredElements/totalElements);
         return coveredElements/totalElements;
     }
     

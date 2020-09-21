@@ -6,12 +6,17 @@
 package es.us.isa.restest.searchbased.objectivefunction;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
+import es.us.isa.restest.searchbased.terminationcriteria.MaxEvaluations;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author japarejo
  */
 public abstract class RestfulAPITestingObjectiveFunction {
+
+    private final Logger logger;
     ObjectiveFunctionType type;
     boolean requiresTestExecution;
     boolean requiresTestOracles;
@@ -21,6 +26,7 @@ public abstract class RestfulAPITestingObjectiveFunction {
     }
 
     public RestfulAPITestingObjectiveFunction(ObjectiveFunctionType type, boolean requiresTestExecution, boolean requiresTestOracles) {
+        logger = LogManager.getLogger(this.getClass().getName());
     	this.type=type;
     	this.requiresTestExecution =requiresTestExecution;
     	this.requiresTestOracles = requiresTestOracles;
@@ -53,4 +59,8 @@ public abstract class RestfulAPITestingObjectiveFunction {
     public ObjectiveFunctionType getType() {
 		return type;
 	}
+
+	public void logEvaluation(double value) {
+        logger.info("Evaluating fitness function: " + value);
+    }
 }

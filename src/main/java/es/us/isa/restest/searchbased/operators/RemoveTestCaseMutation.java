@@ -1,11 +1,15 @@
 package es.us.isa.restest.searchbased.operators;
 
 import es.us.isa.restest.testcases.TestCase;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 
 public class RemoveTestCaseMutation extends AbstractMutationOperator {
+
+	private static final Logger logger = LogManager.getLogger(RemoveTestCaseMutation.class.getName());
 
 	public RemoveTestCaseMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
 		super(mutationProbability, randomGenerator);		
@@ -24,6 +28,7 @@ public class RemoveTestCaseMutation extends AbstractMutationOperator {
 			TestCase removedTestCase = solution.getVariable(removedTestCaseIndex);
 			solution.removeVariable(removedTestCaseIndex);
 			solution.removeTestResult(removedTestCase.getId());
+			logger.info("Mutation probability fulfilled! Test case removed from test suite.");
 		}
 	}
 

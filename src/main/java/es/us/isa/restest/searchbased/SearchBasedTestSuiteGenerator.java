@@ -11,11 +11,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+import es.us.isa.restest.runners.RESTestRunner;
 import es.us.isa.restest.searchbased.operators.*;
 import es.us.isa.restest.searchbased.terminationcriteria.MaxEvaluations;
 import es.us.isa.restest.searchbased.terminationcriteria.TerminationCriterion;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
 import org.uma.jmetal.operator.SelectionOperator;
@@ -61,6 +64,8 @@ import es.us.isa.restest.util.CURLCommandGenerator;
 
 public class SearchBasedTestSuiteGenerator {
 
+    private static final Logger logger = LogManager.getLogger(SearchBasedTestSuiteGenerator.class.getName());
+
     // Configuration   
     Integer nsga2PopulationSize = 10;
     Long seed = 1979L;
@@ -94,7 +99,8 @@ public class SearchBasedTestSuiteGenerator {
     }
     
     public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems,List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms) {    	
-    	this.seed=seed;        
+    	logger.info("Creating search-based experiment");
+        this.seed=seed;
         JMetalRandom.getInstance().setSeed(seed);
         this.problem=myproblems.get(0);
         this.problems = new ArrayList<>();

@@ -5,12 +5,15 @@
  */
 package es.us.isa.restest.searchbased.operators;
 
+import es.us.isa.restest.searchbased.RestfulAPITestSuiteGenerationProblem;
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 import java.util.ArrayList;
 import java.util.List;
 
 import es.us.isa.restest.testcases.TestResult;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.pseudorandom.BoundedRandomGenerator;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
@@ -22,6 +25,8 @@ import org.uma.jmetal.util.pseudorandom.RandomGenerator;
  * @author japarejo
  */
 public class SinglePointTestSuiteCrossover extends AbstractCrossoverOperator {
+
+    private static final Logger logger = LogManager.getLogger(SinglePointTestSuiteCrossover.class.getName());
 
     public SinglePointTestSuiteCrossover(double crossoverProbability) {
         super(crossoverProbability);
@@ -63,25 +68,26 @@ public class SinglePointTestSuiteCrossover extends AbstractCrossoverOperator {
         offspring.add(offspring2);
 
     if (crossoverRandomGenerator.getRandomValue() < probability) {
-      // 1. Get the total number of params
-      int totalNumberOfVars= Math.min(parent1.getNumberOfVariables(),parent2.getNumberOfVariables());
+        // 1. Get the total number of params
+        int totalNumberOfVars= Math.min(parent1.getNumberOfVariables(),parent2.getNumberOfVariables());
 
-      // 2. Calculate the point to make the crossover
-      int crossoverPoint = pointRandomGenerator.getRandomValue(0, totalNumberOfVars - 1);
+        // 2. Calculate the point to make the crossover
+        int crossoverPoint = pointRandomGenerator.getRandomValue(0, totalNumberOfVars - 1);
 
 
-      // 3. Apply the crossover to the variable;
-      TestCase testCase;
-      TestResult testResult;
-      for(int i=0;i<=crossoverPoint;i++){
-          testCase=offspring1.getVariable(i);
-          testResult=offspring1.getTestResult(testCase.getId());
-          offspring1.replaceTestResult(testCase.getId(), offspring2.getTestResult(offspring2.getVariable(i).getId()));
-          offspring1.setVariable(i,offspring2.getVariable(i));
-          offspring2.replaceTestResult(offspring2.getVariable(i).getId(), testResult);
-          offspring2.setVariable(i,testCase);
-      }
+        // 3. Apply the crossover to the variable;
+        TestCase testCase;
+        TestResult testResult;
+        for(int i=0;i<=crossoverPoint;i++){
+            testCase=offspring1.getVariable(i);
+            testResult=offspring1.getTestResult(testCase.getId());
+            offspring1.replaceTestResult(testCase.getId(), offspring2.getTestResult(offspring2.getVariable(i).getId()));
+            offspring1.setVariable(i,offspring2.getVariable(i));
+            offspring2.replaceTestResult(offspring2.getVariable(i).getId(), testResult);
+            offspring2.setVariable(i,testCase);
+        }
 
+        logger.info("Crossover probability fulfilled! Two test SUITES have been crossed over.");
     }
     return offspring;
     }

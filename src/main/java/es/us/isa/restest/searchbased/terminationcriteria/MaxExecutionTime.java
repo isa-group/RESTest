@@ -1,9 +1,12 @@
 package es.us.isa.restest.searchbased.terminationcriteria;
 
 import es.us.isa.restest.searchbased.algorithms.SearchBasedAlgorithm;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class MaxExecutionTime implements TerminationCriterion{
 
+	private static final Logger logger = LogManager.getLogger(MaxExecutionTime.class.getName());
 	private Long start;
 	private long duration;
 	
@@ -17,8 +20,10 @@ public class MaxExecutionTime implements TerminationCriterion{
 	public boolean test(SearchBasedAlgorithm t) {
 		if(start==null) {
 			start=System.currentTimeMillis();
-		}		
-		return System.currentTimeMillis() - start >= duration;
+		}
+		long now = System.currentTimeMillis();
+		logger.info("Stopping criterion state: " + (now-start) + " / " + duration);
+		return now - start >= duration;
 	}
 
 	public enum TimeUnit {

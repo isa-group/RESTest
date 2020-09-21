@@ -73,6 +73,7 @@ public class Diversity extends RestfulAPITestingObjectiveFunction {
                 throw new IllegalArgumentException("The element type " + elementType + " is not supported");
         }
 
+        logEvaluation(globalDiversity);
         return globalDiversity;
     }
 

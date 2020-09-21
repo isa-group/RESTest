@@ -29,6 +29,7 @@ public class OutputCoverage extends RestfulAPITestingObjectiveFunction{
         coverageMeter.setTestResults(solution.getTestResults());
         double coveredOutputElements=(double)coverageMeter.getCoveredOutputElements();
         double totalOutputElements=(double)coverageMeter.getAllOutputElements();
+        logEvaluation(coveredOutputElements/totalOutputElements);
         return coveredOutputElements/totalOutputElements;
     }
     

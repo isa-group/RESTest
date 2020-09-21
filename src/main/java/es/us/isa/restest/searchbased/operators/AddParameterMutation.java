@@ -11,6 +11,8 @@ import java.util.Set;
 
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javatuples.Pair;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
@@ -27,6 +29,8 @@ import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaulty
  */
 public class AddParameterMutation extends AbstractMutationOperator {
 
+    private static final Logger logger = LogManager.getLogger(AddParameterMutation.class.getName());
+
     public AddParameterMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         super(mutationProbability, randomGenerator);
     }
@@ -42,6 +46,7 @@ public class AddParameterMutation extends AbstractMutationOperator {
                 }
             }
             if (mutationApplied) {
+                logger.info("Mutation probability fulfilled! Parameter added to test case.");
                 updateTestCaseFaultyReason(solution, testCase);
                 resetTestResult(testCase.getId(), solution); // The test case changed, reset test result
             }
