@@ -7,7 +7,7 @@ import es.us.isa.restest.testcases.TestCase;
 
 import static es.us.isa.restest.searchbased.operators.Utils.resetTestResult;
 
-public class ResourceChangeMutation extends AbstractAPITestCaseMutationOperator { 
+public class ResourceChangeMutation extends AbstractMutationOperator {
 
 
 

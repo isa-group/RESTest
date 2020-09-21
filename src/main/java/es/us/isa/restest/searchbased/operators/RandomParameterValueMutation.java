@@ -26,7 +26,7 @@ import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaulty
  *
  * @author japarejo
  */
-public class RandomParameterValueMutation extends AbstractAPITestCaseMutationOperator {
+public class RandomParameterValueMutation extends AbstractMutationOperator {
 
     private AddParameterMutation parameterAdditionOperator;
 

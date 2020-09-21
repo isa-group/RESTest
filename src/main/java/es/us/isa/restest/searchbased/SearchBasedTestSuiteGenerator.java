@@ -134,6 +134,10 @@ public class SearchBasedTestSuiteGenerator {
         		new RandomParameterValueMutation(0.01,generator),
         		new ResourceChangeMutation(0.01,generator)
         ));
+    	AllCrossoverOperators crossover=new AllCrossoverOperators(Lists.newArrayList(
+    	        new UniformTestCaseCrossover(0.01),
+                new SinglePointTestSuiteCrossover(0.1)
+        ));
     	
     	 SelectionOperator<List<RestfulAPITestSuiteSolution>, RestfulAPITestSuiteSolution> selectionOperator= 
     			 new BinaryTournamentSelection<RestfulAPITestSuiteSolution>(new RankingAndCrowdingDistanceComparator<RestfulAPITestSuiteSolution>()) ;;
@@ -141,7 +145,7 @@ public class SearchBasedTestSuiteGenerator {
     	 
     	result = new NSGAII(
         		problem, populationSize, populationSize, populationSize,
-        		new UniformTestCaseCrossover(0.01),
+                crossover,
         		mutation, 
         		selectionOperator, evaluator,
         		tc);			

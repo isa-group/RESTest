@@ -6,61 +6,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.uma.jmetal.operator.CrossoverOperator;
-import org.uma.jmetal.util.JMetalException;
-import org.uma.jmetal.util.pseudorandom.BoundedRandomGenerator;
-import org.uma.jmetal.util.pseudorandom.JMetalRandom;
-import org.uma.jmetal.util.pseudorandom.RandomGenerator;
-
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
+import org.uma.jmetal.util.pseudorandom.BoundedRandomGenerator;
+import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 
 import static es.us.isa.restest.searchbased.operators.Utils.resetTestResult;
 import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
 
-public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITestSuiteSolution> {
+public class UniformTestCaseCrossover extends AbstractCrossoverOperator {
 
-	  	private double crossoverProbability;
-	    private RandomGenerator<Double> crossoverRandomGenerator;
-	    private BoundedRandomGenerator<Integer> pointRandomGenerator;
 	    private boolean mutationApplied;
 
 	    public UniformTestCaseCrossover(double crossoverProbability) {
-	        this(
-	                crossoverProbability,
-	                () -> JMetalRandom.getInstance().nextDouble(),
-	                (a, b) -> JMetalRandom.getInstance().nextInt(a, b));
+	        super(crossoverProbability);
+	    }
+
+	    public UniformTestCaseCrossover(double crossoverProbability, RandomGenerator<Double> randomGenerator) {
+	        super(crossoverProbability, randomGenerator);
 	    }
 
 	    public UniformTestCaseCrossover(
-	            double crossoverProbability, RandomGenerator<Double> randomGenerator) {
-	        this(
-	                crossoverProbability,
-	                randomGenerator,
-	                BoundedRandomGenerator.fromDoubleToInteger(randomGenerator));
+				double crossoverProbability,
+				RandomGenerator<Double> crossoverRandomGenerator,
+				BoundedRandomGenerator<Integer> pointRandomGenerator) {
+	        super(crossoverProbability, crossoverRandomGenerator, pointRandomGenerator);
 	    }
 
-	    public UniformTestCaseCrossover(
-	            double crossoverProbability,
-	            RandomGenerator<Double> crossoverRandomGenerator,
-	            BoundedRandomGenerator<Integer> pointRandomGenerator) {
-	        if (crossoverProbability < 0) {
-	            throw new JMetalException("Crossover probability is negative: " + crossoverProbability);
-	        }
-	        this.crossoverProbability = crossoverProbability;
-	        this.crossoverRandomGenerator = crossoverRandomGenerator;
-	        this.pointRandomGenerator = pointRandomGenerator;
-	    }
-	
 	@Override
-	public List<RestfulAPITestSuiteSolution> execute(List<RestfulAPITestSuiteSolution> solutions) {
-		assert(solutions!=null);
-        assert(solutions.size() == 2);
-
-        return doCrossover(crossoverProbability, solutions.get(0), solutions.get(1));
-	}
-
-	private List<RestfulAPITestSuiteSolution> doCrossover(double probability,
+	protected List<RestfulAPITestSuiteSolution> doCrossover(double probability,
 			RestfulAPITestSuiteSolution parent1,
 			RestfulAPITestSuiteSolution parent2) {
 		List<RestfulAPITestSuiteSolution> offspring = new ArrayList<>(2);
@@ -158,16 +132,6 @@ public class UniformTestCaseCrossover implements CrossoverOperator<RestfulAPITes
 	private void doHeadersCrossover(double probability, TestCase testCase1, TestCase testCase2) {
 		doCrossover(probability,testCase1.getHeaderParameters(),testCase2.getHeaderParameters());
 		
-	}
-
-	@Override
-	public int getNumberOfRequiredParents() {
-		return 2;
-	}
-
-	@Override
-	public int getNumberOfGeneratedChildren() {		
-		return 2;
 	}
 
 }

@@ -5,7 +5,7 @@ import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 
-public class AddTestCaseMutation extends AbstractAPITestCaseMutationOperator {
+public class AddTestCaseMutation extends AbstractMutationOperator {
 
 	public AddTestCaseMutation(double mutationProbability, PseudoRandomGenerator randomGenerator) {
 		super(mutationProbability, randomGenerator);

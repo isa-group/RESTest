@@ -22,14 +22,14 @@ import com.google.common.collect.Lists;
  *
  * @author japar
  */
-public abstract class AbstractAPITestCaseMutationOperator implements MutationOperator<RestfulAPITestSuiteSolution> {
+public abstract class AbstractMutationOperator implements MutationOperator<RestfulAPITestSuiteSolution> {
 
     private double mutationProbability;
     private PseudoRandomGenerator randomGenerator;
     protected boolean mutationApplied;
     public List<String> securityParamNames=Lists.newArrayList("Authorization","Application-Authorization","auth-token","access_token"); 
 
-    public AbstractAPITestCaseMutationOperator(double mutationProbability, PseudoRandomGenerator randomGenerator) {
+    public AbstractMutationOperator(double mutationProbability, PseudoRandomGenerator randomGenerator) {
         this.mutationProbability = mutationProbability;
         this.randomGenerator = randomGenerator;
     }

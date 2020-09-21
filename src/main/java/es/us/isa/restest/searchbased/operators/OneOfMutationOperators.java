@@ -6,12 +6,12 @@ import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 
-public class OneOfMutationOperators extends AbstractAPITestCaseMutationOperator {
+public class OneOfMutationOperators extends AbstractMutationOperator {
 
-	Map<? extends AbstractAPITestCaseMutationOperator,Double> operators;
+	Map<? extends AbstractMutationOperator,Double> operators;
 	Double total;
 	
-	public OneOfMutationOperators(double mutationProbability, PseudoRandomGenerator randomGenerator,Map<? extends AbstractAPITestCaseMutationOperator,Double> operators) {
+	public OneOfMutationOperators(double mutationProbability, PseudoRandomGenerator randomGenerator,Map<? extends AbstractMutationOperator,Double> operators) {
 		super(mutationProbability, randomGenerator);
 		this.operators=operators;
 		this.total=0.0;
@@ -23,10 +23,10 @@ public class OneOfMutationOperators extends AbstractAPITestCaseMutationOperator 
 	protected void doMutation(double mutationProbability, RestfulAPITestSuiteSolution solution) {
 		double value=this.getRandomGenerator().nextDouble(0.0, total);
 		double threshold=0;
-		for(Map.Entry<? extends AbstractAPITestCaseMutationOperator,Double> entry:operators.entrySet()) {
+		for(Map.Entry<? extends AbstractMutationOperator,Double> entry:operators.entrySet()) {
 			threshold+=entry.getValue();
 			if(threshold>=value) {
-				entry.getKey().doMutation(mutationProbability, solution);
+				entry.getKey().execute(solution);
 			}
 		}
 	}

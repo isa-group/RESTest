@@ -5,17 +5,13 @@
  */
 package es.us.isa.restest.searchbased.operators;
 
-import es.us.isa.restest.configuration.pojos.Auth;
 import es.us.isa.restest.specification.ParameterFeatures;
-import es.us.isa.restest.util.AuthManager;
-import io.swagger.v3.oas.models.parameters.Parameter;
 import org.uma.jmetal.util.pseudorandom.PseudoRandomGenerator;
 
 import es.us.isa.restest.searchbased.RestfulAPITestSuiteSolution;
 import es.us.isa.restest.testcases.TestCase;
 
 import java.util.Collection;
-import java.util.Optional;
 
 import static es.us.isa.restest.searchbased.operators.Utils.resetTestResult;
 import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaultyReason;
@@ -24,7 +20,7 @@ import static es.us.isa.restest.searchbased.operators.Utils.updateTestCaseFaulty
  *
  * @author japar
  */
-public class RemoveParameterMutation extends AbstractAPITestCaseMutationOperator {
+public class RemoveParameterMutation extends AbstractMutationOperator {
     
 	boolean removePathParameters;
 	boolean removeSecurityParameters;

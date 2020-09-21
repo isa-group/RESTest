@@ -11,59 +11,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 import es.us.isa.restest.testcases.TestResult;
-import org.uma.jmetal.operator.CrossoverOperator;
 import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.pseudorandom.BoundedRandomGenerator;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
 import org.uma.jmetal.util.pseudorandom.RandomGenerator;
 
 
-
 /**
  *
  * @author japarejo
  */
-public class SinglePointTestSuiteCrossover implements CrossoverOperator<RestfulAPITestSuiteSolution> {
-
-    private double crossoverProbability;
-    private RandomGenerator<Double> crossoverRandomGenerator;
-    private BoundedRandomGenerator<Integer> pointRandomGenerator;
+public class SinglePointTestSuiteCrossover extends AbstractCrossoverOperator {
 
     public SinglePointTestSuiteCrossover(double crossoverProbability) {
-        this(
-                crossoverProbability,
-                () -> JMetalRandom.getInstance().nextDouble(),
-                (a, b) -> JMetalRandom.getInstance().nextInt(a, b));
+        super(crossoverProbability);
     }
 
-    public SinglePointTestSuiteCrossover(
-            double crossoverProbability, RandomGenerator<Double> randomGenerator) {
-        this(
-                crossoverProbability,
-                randomGenerator,
-                BoundedRandomGenerator.fromDoubleToInteger(randomGenerator));
+    public SinglePointTestSuiteCrossover(double crossoverProbability, RandomGenerator<Double> randomGenerator) {
+        super(crossoverProbability, randomGenerator);
     }
 
     public SinglePointTestSuiteCrossover(
             double crossoverProbability,
             RandomGenerator<Double> crossoverRandomGenerator,
             BoundedRandomGenerator<Integer> pointRandomGenerator) {
-        if (crossoverProbability < 0) {
-            throw new JMetalException("Crossover probability is negative: " + crossoverProbability);
-        }
-        this.crossoverProbability = crossoverProbability;
-        this.crossoverRandomGenerator = crossoverRandomGenerator;
-        this.pointRandomGenerator = pointRandomGenerator;
-    }
-
-    @Override
-    public int getNumberOfRequiredParents() {
-        return 2;
-    }
-
-    @Override
-    public int getNumberOfGeneratedChildren() {
-        return 2;
+        super(crossoverProbability, crossoverRandomGenerator, pointRandomGenerator);
     }
 
     public double getCrossoverProbability() {
@@ -74,23 +46,16 @@ public class SinglePointTestSuiteCrossover implements CrossoverOperator<RestfulA
         this.crossoverProbability = crossoverProbability;
     }
 
+    /**
+    * Perform the crossover operation.
+    *
+    * @param probability Crossover setProbability
+    * @param parent1 The first parent
+    * @param parent2 The second parent
+    * @return An array containing the two offspring
+    */
     @Override
-    public List<RestfulAPITestSuiteSolution> execute(List<RestfulAPITestSuiteSolution> solutions) {
-        assert(solutions!=null);
-        assert(solutions.size() == 2);
-
-        return doCrossover(crossoverProbability, solutions.get(0), solutions.get(1));
-    }
-    
-     /**
-   * Perform the crossover operation.
-   *
-   * @param probability Crossover setProbability
-   * @param parent1 The first parent
-   * @param parent2 The second parent
-   * @return An array containing the two offspring
-   */
-    private List<RestfulAPITestSuiteSolution> doCrossover(double probability, RestfulAPITestSuiteSolution parent1, RestfulAPITestSuiteSolution parent2) {
+    protected List<RestfulAPITestSuiteSolution> doCrossover(double probability, RestfulAPITestSuiteSolution parent1, RestfulAPITestSuiteSolution parent2) {
         List<RestfulAPITestSuiteSolution> offspring = new ArrayList<>(2);
         RestfulAPITestSuiteSolution offspring1=(RestfulAPITestSuiteSolution) parent1.copy();
         RestfulAPITestSuiteSolution offspring2=(RestfulAPITestSuiteSolution) parent2.copy();
