@@ -10,7 +10,8 @@ public class MaxEvaluations implements TerminationCriterion {
 
 	private int maxEvaluations;	
 	
-	public MaxEvaluations(int maxEvaluations) {		
+	public MaxEvaluations(int maxEvaluations) {
+		this.maxEvaluations=maxEvaluations;
 	}
 	
 	@Override
