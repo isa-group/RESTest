@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import es.us.isa.restest.specification.OpenAPISpecification;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.algorithm.multiobjective.randomsearch.RandomSearch;
 import org.uma.jmetal.problem.Problem;
@@ -33,16 +34,17 @@ public class RandomSearchExperiment {
 	    String confPath = "src/test/resources/Bikewise/fullConf.yaml";		    // Path to test configuration file
 	    String experimentName = "bikewise";                                      // Experiment name
 	    String targetDir = "src/generation/java/searchbased";	// Directory where tests will be generated.
+		String testClassName = "BikewiseTest"; // Name of the class where tests will be written.
 	    String resourcePath ="/v2/incidents";
 	    String method ="GET";
 	    int minTestSuiteSize=2;
 	    int maxTestSuiteSize=10;
 	    List<RestfulAPITestingObjectiveFunction> objectiveFunctions= Arrays.asList(
-	    		new SuiteSize(),
-	    		new InputCoverage()
+				new InputCoverage(),
+	    		new SuiteSize()
 	    		);
 	    SearchBasedTestSuiteGenerator generator=new SearchBasedTestSuiteGenerator(
-                OAISpecPath, 
+				new OpenAPISpecification(OAISpecPath),
                 confPath,
                 experimentName,
                 objectiveFunctions,
@@ -51,7 +53,8 @@ public class RandomSearchExperiment {
                 minTestSuiteSize,
                 maxTestSuiteSize,                
                 populationSize,
-                new MaxEvaluations(maxEvaluations));
+                new MaxEvaluations(maxEvaluations),
+				null);
 	    List<RestfulAPITestSuiteGenerationProblem> problems = Arrays.asList();
 	    List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms = null;
 	    Algorithm<List<RestfulAPITestSuiteSolution>> randomSearch=new RandomSearch(generator.getProblems().get(0).getProblem(),maxEvaluations);

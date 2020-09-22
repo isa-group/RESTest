@@ -16,6 +16,7 @@ import es.us.isa.restest.searchbased.operators.*;
 import es.us.isa.restest.searchbased.terminationcriteria.MaxEvaluations;
 import es.us.isa.restest.searchbased.terminationcriteria.TerminationCriterion;
 
+import es.us.isa.restest.util.Timer;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,9 +63,13 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.CURLCommandGenerator;
 
+import static es.us.isa.restest.util.Timer.TestStep.TEST_SUITE_GENERATION;
+
 public class SearchBasedTestSuiteGenerator {
 
     private static final Logger logger = LogManager.getLogger(SearchBasedTestSuiteGenerator.class.getName());
+
+    RESTestRunner restestRunner;
 
     // Configuration   
     Integer nsga2PopulationSize = 10;
@@ -77,29 +82,30 @@ public class SearchBasedTestSuiteGenerator {
     List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms;
     ExperimentBuilder<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>> experimentBuilder;
     
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions, String targetPath, long seed, int populationSize,TerminationCriterion tc) {
-    	this(apiDescriptionPath, configFilePath, experimentName, objectiveFunctions,targetPath, seed,null,populationSize,tc);
+    public SearchBasedTestSuiteGenerator(OpenAPISpecification spec, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions, String targetPath, long seed, int populationSize,TerminationCriterion tc, RESTestRunner runner) {
+    	this(spec, configFilePath, experimentName, objectiveFunctions,targetPath, seed,null,populationSize,tc, runner);
     }
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize, int populationSize,TerminationCriterion tc) {
-    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, objectiveFunctions, targetPath,fixedTestSuiteSize),populationSize,tc);
-    }
-    
-    public SearchBasedTestSuiteGenerator(String apiDescriptionPath, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize, int populationSize,TerminationCriterion tc) {
-    	this(experimentName,targetPath,seed,buildProblem(apiDescriptionPath, configFilePath, objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize),populationSize,tc);
+    public SearchBasedTestSuiteGenerator(OpenAPISpecification spec, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer fixedTestSuiteSize, int populationSize,TerminationCriterion tc, RESTestRunner runner) {
+        this(experimentName,targetPath,seed,buildProblem(spec, configFilePath, objectiveFunctions, targetPath,fixedTestSuiteSize),populationSize,tc, runner);
     }
     
-    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, RestfulAPITestSuiteGenerationProblem problem, int populationSize,TerminationCriterion tc) {
-    	this(experimentName,targetPath,seed,Lists.newArrayList(problem),populationSize,tc);
+    public SearchBasedTestSuiteGenerator(OpenAPISpecification spec, String configFilePath, String experimentName, List<RestfulAPITestingObjectiveFunction> objectiveFunctions,String targetPath, long seed, Integer minTestSuiteSize,Integer maxTestSuiteSize, int populationSize,TerminationCriterion tc, RESTestRunner runner) {
+    	this(experimentName,targetPath,seed,buildProblem(spec, configFilePath, objectiveFunctions, targetPath,minTestSuiteSize,maxTestSuiteSize),populationSize,tc, runner);
     }
     
-    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems, int populationSize,TerminationCriterion tc) {    	
-    	this(experimentName,targetPath,seed,myproblems,configureDefaultAlgorithms(seed,populationSize,myproblems,tc));
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, RestfulAPITestSuiteGenerationProblem problem, int populationSize,TerminationCriterion tc, RESTestRunner runner) {
+    	this(experimentName,targetPath,seed,Lists.newArrayList(problem),populationSize,tc, runner);
+    }
+    
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems, int populationSize,TerminationCriterion tc, RESTestRunner runner) {
+    	this(experimentName,targetPath,seed,myproblems,configureDefaultAlgorithms(seed,populationSize,myproblems,tc), runner);
         this.tc=tc;
     	setPopulationSize(populationSize);
     }
     
-    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems,List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms) {    	
+    public SearchBasedTestSuiteGenerator(String experimentName, String targetPath, long seed, List<RestfulAPITestSuiteGenerationProblem> myproblems,List<ExperimentAlgorithm<RestfulAPITestSuiteSolution, List<RestfulAPITestSuiteSolution>>> algorithms, RESTestRunner runner) {
     	logger.info("Creating search-based experiment");
+    	this.restestRunner = runner;
         this.seed=seed;
         JMetalRandom.getInstance().setSeed(seed);
         this.problem=myproblems.get(0);
@@ -173,23 +179,23 @@ public class SearchBasedTestSuiteGenerator {
         return result;
     }    
     
-    public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, String configFilePath, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
-    	OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
-        TestConfigurationObject configuration = TestConfigurationIO.loadConfiguration(configFilePath, apiUnderTest);
-        return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, configuration, objFuncs, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
+    public static RestfulAPITestSuiteGenerationProblem buildProblem(OpenAPISpecification spec, String configFilePath, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer minTestSuiteSize, Integer maxTestSuiteSize) {
+        TestConfigurationObject configuration = TestConfigurationIO.loadConfiguration(configFilePath, spec);
+        return new RestfulAPITestSuiteGenerationProblem(spec, configuration, objFuncs, JMetalRandom.getInstance().getRandomGenerator(),minTestSuiteSize,maxTestSuiteSize);
     }
     
-    public static RestfulAPITestSuiteGenerationProblem buildProblem(String apiDescriptionPath, String configFilePath, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
-        OpenAPISpecification apiUnderTest = new OpenAPISpecification(apiDescriptionPath);
-        TestConfigurationObject configuration = TestConfigurationIO.loadConfiguration(configFilePath, apiUnderTest);
-        return new RestfulAPITestSuiteGenerationProblem(apiUnderTest, configuration, objFuncs, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
+    public static RestfulAPITestSuiteGenerationProblem buildProblem(OpenAPISpecification spec, String configFilePath, List<RestfulAPITestingObjectiveFunction> objFuncs, String targetPath, Integer fixedTestSuiteSize) {
+        TestConfigurationObject configuration = TestConfigurationIO.loadConfiguration(configFilePath, spec);
+        return new RestfulAPITestSuiteGenerationProblem(spec, configuration, objFuncs, JMetalRandom.getInstance().getRandomGenerator(),fixedTestSuiteSize);
     }
 
     public void run() throws IOException {
     	JMetalLogger.logger.info("Generating testSuites for: " + problem.getName() + " using as objectives :"+ problem.getObjectiveFunctions() );
     	JMetalLogger.logger.info("Starting the execution of: " + algorithms.get(0).getAlgorithm().getClass().getSimpleName());
+        Timer.startCounting(TEST_SUITE_GENERATION);
     	 AlgorithmRunner algorithmRunner = new AlgorithmRunner.Executor((Algorithm<?>) algorithms.get(0).getAlgorithm())
     		        .execute() ;
+        Timer.stopCounting(TEST_SUITE_GENERATION);
     	 long computingTime = algorithmRunner.getComputingTime() ;
 
     	 List<RestfulAPITestSuiteSolution> suites=algorithms.get(0).getAlgorithm().getResult();
@@ -199,6 +205,7 @@ public class SearchBasedTestSuiteGenerator {
     	 JMetalLogger.logger.info("Objectives values have been written to file FUN.tsv");
     	 JMetalLogger.logger.info("Variables values have been written to file VAR.tsv");
     	 int index=1;
+         RestfulAPITestSuiteSolution bestSolution = suites.get(0);
     	 for(RestfulAPITestSuiteSolution suite:suites) {
     		 JMetalLogger.logger.info("TestSuite "+index);
     		 for(int i=0;i<suite.getNumberOfObjectives();i++) {
@@ -210,7 +217,13 @@ public class SearchBasedTestSuiteGenerator {
     			 i++;
     		 }
     		 index++;
+    		 // Update best solution according to best value of preferred objective function (first one in the array):
+             if (suite.getObjective(0) < bestSolution.getObjective(0))
+                 bestSolution = suite;
     	 }
+
+    	 // Execute best test suite with RESTestRunner
+        restestRunner.run(bestSolution.getVariables());
     }
 
 	public void runExperiment(int independentRuns, int numberOfCores) throws IOException {

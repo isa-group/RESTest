@@ -67,7 +67,7 @@ public class IterativeExample {
         IWriter writer = createWriter();                                    // Test case writer
         AllureReportManager reportManager = createAllureReportManager();    // Allure test case reporter
         StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
-        RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, statsReportManager);
+        RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, (RESTAssuredWriter) writer, reportManager, statsReportManager);
 
         int iteration = 1;
         while (totalNumTestCases == -1 || runner.getNumTestCases() < totalNumTestCases) {

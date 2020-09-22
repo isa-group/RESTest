@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import es.us.isa.restest.specification.OpenAPISpecification;
 import org.uma.jmetal.algorithm.Algorithm;
 import org.uma.jmetal.util.experiment.util.ExperimentAlgorithm;
 import org.uma.jmetal.util.experiment.util.ExperimentProblem;
@@ -70,7 +72,7 @@ public class RandomSearchVsNSGAII {
     public void run()
     {
     	String experimentName="RandomSearchVsNSGAII";
-    	SearchBasedTestSuiteGenerator generator=new SearchBasedTestSuiteGenerator(experimentName, targetDir, seed, problems,algorithms);
+    	SearchBasedTestSuiteGenerator generator=new SearchBasedTestSuiteGenerator(experimentName, targetDir, seed, problems,algorithms, null);
     	try {
 			generator.runExperiment(independentRuns,8);
 		} catch (IOException e) {			
@@ -82,7 +84,7 @@ public class RandomSearchVsNSGAII {
 	private List<RestfulAPITestSuiteGenerationProblem> createProblems(List<RestfulAPITestingObjectiveFunction> objectiveFunctions) {
 		List<RestfulAPITestSuiteGenerationProblem> problems=new ArrayList<>();
 		RestfulAPITestSuiteGenerationProblem bikewiseProblem=SearchBasedTestSuiteGenerator
-																.buildProblem(OAISpecPath, 
+																.buildProblem(new OpenAPISpecification(OAISpecPath),
 																			confPath,
 																			objectiveFunctions,
 																			targetDir, 
@@ -94,8 +96,8 @@ public class RandomSearchVsNSGAII {
 	
 	private  List<RestfulAPITestingObjectiveFunction> createObjectiveFunctions(){
 		return Arrays.asList(
-				new SuiteSize(),
-				new InputCoverage()
+				new InputCoverage(),
+				new SuiteSize()
 		);
 		
 	}

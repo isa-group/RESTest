@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import es.us.isa.restest.searchbased.objectivefunction.SuiteSize;
+import es.us.isa.restest.specification.OpenAPISpecification;
 
 public abstract class AbstractSearchBasedTest {
 	// Paths to OAS specification files
@@ -21,7 +22,7 @@ public abstract class AbstractSearchBasedTest {
 		{
 			problems.add(
 					SearchBasedTestSuiteGenerator.
-						buildProblem(OAISpecPaths.get(i),
+						buildProblem(new OpenAPISpecification(OAISpecPaths.get(i)),
 							confPaths.get(i),
 							Arrays.asList(new SuiteSize()),
 							targetDir, testSuiteSize, testSuiteSize)

@@ -2,6 +2,9 @@ package es.us.isa.restest.runners;
 
 import java.util.Collection;
 
+import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
+import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
 import es.us.isa.restest.util.ClassLoader;
 import org.apache.logging.log4j.LogManager;
@@ -26,13 +29,13 @@ public class RESTestRunner {
 	private String testClassName;						// Name of the class to be generated
 	private String packageName;							// Package name
 	private AbstractTestCaseGenerator generator;   		// Test case generator
-	private IWriter writer;								// RESTAssured writer
+	private RESTAssuredWriter writer;								// RESTAssured writer
 	private AllureReportManager allureReportManager;	// Allure report manager
 	private StatsReportManager statsReportManager;		// Stats report manager
 	private int numTestCases = 0;						// Number of test cases generated so far
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, RESTAssuredWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
@@ -41,22 +44,36 @@ public class RESTestRunner {
 		this.allureReportManager = reportManager;
 		this.statsReportManager = statsReportManager;
 	}
+
+	public void run(Collection<TestCase> testCases) {
+		logger.info("Exporting test cases coverage to CSV");
+		String csvTcPath = statsReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
+		testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
+		statsReportManager.getCoverageMeter().setTestSuite(testCases);
+
+		// Write test cases
+		String filePath = targetDir + "/" + testClassName + ".java";
+		logger.info("Writing {} test cases to test class {}", testCases.size(), filePath);
+		writer.write(testCases);
+
+		// Test execution
+		logger.info("Running tests");
+		System.setProperty("allure.results.directory", allureReportManager.getResultsDirPath());
+		testExecution(getTestClass());
+
+		// Report generation
+		generateReports();
+	}
 	
 	public void run() {
 
 		// Test generation and writing (RESTAssured)
 		testGeneration();
-		
-		// Load test class
-		String filePath = targetDir + "/" + testClassName + ".java";
-		String className = packageName + "." + testClassName;
-		logger.info("Compiling and loading test class {}.java", className);
-		Class<?> testClass = ClassLoader.loadClass(filePath, className);
-		
+
 		// Test execution
 		logger.info("Running tests");
 		System.setProperty("allure.results.directory", allureReportManager.getResultsDirPath());
-		testExecution(testClass);
+		testExecution(getTestClass());
 
 		// Print number of faulty and nominal test cases
 		logger.info("Nominal test cases generated: {}", generator.getnNominal());
@@ -68,7 +85,12 @@ public class RESTestRunner {
 			String csvNFPath = statsReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.nominalfaulty.file");
 			generator.exportNominalFaultyToCSV(csvNFPath, testClassName);
 		}
-		
+
+		// Report generation
+		generateReports();
+	}
+
+	private void generateReports() {
 		// Generate test report
 		logger.info("Generating test report");
 		allureReportManager.generateReport();
@@ -76,6 +98,14 @@ public class RESTestRunner {
 		// Generate coverage report
 		logger.info("Generating coverage report");
 		statsReportManager.generateReport();
+	}
+
+	private Class<?> getTestClass() {
+		// Load test class
+		String filePath = targetDir + "/" + testClassName + ".java";
+		String className = packageName + "." + testClassName;
+		logger.info("Compiling and loading test class {}.java", className);
+		return ClassLoader.loadClass(filePath, className);
 	}
 
 	private void testGeneration() {
