@@ -21,17 +21,22 @@ import java.util.*;
 import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
 
+/**
+ * Abstract class to be implemented by test case generators
+ * @author Sergio Segura
+ */
+
 public abstract class AbstractTestCaseGenerator {
 
-	protected long seed = -1;								// Seed
+	protected long seed = -1;												// Seed
 	protected Random rand;
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
-	protected Map<Pair<String, String>,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
+	protected Map<Pair<String, String>,ITestDataGenerator> generators;		// Test data generators Map<Pair<ParameterName,Type(query or path)>, Generator (random, boundaryValue, fixedlist...)>
 	protected AuthManager authManager;										// For if multiple API keys are used for the API
 	protected Float faultyRatio = 0.1f;										// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
 	protected OpenApiInteractionValidator validator;						// Validator used to know if a test case is valid or not
-	protected int numberOfTest;												// Number of test cases to be generated for each operation
+	protected int numberOfTests;											// Number of test cases to be generated for each operation
 	protected int index;													// Number of test cases generated so far
 	protected int nCurrentFaulty;											// Number of faulty test cases generated in the current iteration
 	protected int nCurrentNominal;											// Number of nominal test cases generated in the current iteration
@@ -52,7 +57,7 @@ public abstract class AbstractTestCaseGenerator {
 			this.authManager = new AuthManager(authPath);
 
 		this.validator = OpenApiInteractionValidator.createFor(spec.getPath()).build();
-		this.numberOfTest = nTests;
+		this.numberOfTests = nTests;
 		this.index = 0;
 		this.nFaulty = 0;
 		this.nNominal = 0;
@@ -98,7 +103,7 @@ public abstract class AbstractTestCaseGenerator {
 
 	/**
 	 * Generate a set of test cases
-	 * @param filters Set the paths and HTTP methods to be included in the test configuration file
+	 * @param filters Set the paths and HTTP methods to be tested
 	 * @return Generated test cases (duplicates are possible)
 	 */
 	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
@@ -128,6 +133,7 @@ public abstract class AbstractTestCaseGenerator {
 	public Collection<TestCase> generate() {
 		List<TestConfigurationFilter> filters = new ArrayList<>();
 
+		// Create filters for all the operations in the API
 		for (Operation testOperation: conf.getTestConfiguration().getOperations()) {
 			TestConfigurationFilter filter = filters.stream().filter(x -> x.getPath().equalsIgnoreCase(testOperation.getTestPath())).findFirst().orElse(null);
 			int filterIndex = -1;
@@ -167,9 +173,12 @@ public abstract class AbstractTestCaseGenerator {
 
 		return generate(filters);
 	}
-
+	
+	
+	/* Generate test cases for testOperation */
 	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation);
 
+	/* Generate test cases for the operation defined by path/method */
 	protected Collection<TestCase> generate(String path, HttpMethod method) {
 
 		// Get test configuration object for the operation
@@ -181,6 +190,8 @@ public abstract class AbstractTestCaseGenerator {
 		return generateOperationTestCases(testOperation);
 	}
 
+	
+	// Select the parameters to be included in the test case based on their weight in the test configuration file.
 	protected void setTestCaseParameters(TestCase test, Operation testOperation) {
 		// Set parameters
 		if(testOperation.getTestParameters() != null) {
@@ -192,12 +203,14 @@ public abstract class AbstractTestCaseGenerator {
 			}
 		}
 	}
-
+	
+	
 	protected void updateContentType(TestCase test, io.swagger.v3.oas.models.Operation operation) {
 		if (operation.getRequestBody() != null && operation.getRequestBody().getContent().containsKey("application/x-www-form-urlencoded"))
 			test.setInputFormat("application/x-www-form-urlencoded");
 	}
 
+	// Set authentication details
 	public void authenticateTestCase(TestCase test) {
 		// Authentication
 		if (conf.getAuth().getRequired()) {
@@ -227,6 +240,7 @@ public abstract class AbstractTestCaseGenerator {
 	// Returns true if there are more test cases to be generated. To be implemented on each subclass.
 	protected abstract boolean hasNext();
 
+	// Create an empty test case with a random name.
 	protected TestCase createTestCaseTemplate(Operation testOperation, String faultyReason) {
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
 		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
@@ -236,13 +250,15 @@ public abstract class AbstractTestCaseGenerator {
 		return test;
 	}
 	
+	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
 	public abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);
 
-	protected void updateIndexes(boolean currentTestFaulty) {
+	
+	protected void updateIndexes(TestCase test) {
 		// Update indexes
 		index++;
-		if (currentTestFaulty) {
+		if (test.getFaulty()) {
 			nCurrentFaulty++;
 			nFaulty++;
 		} else {
@@ -251,7 +267,7 @@ public abstract class AbstractTestCaseGenerator {
 		}
 	}
 	
-	// Create all generators needed for the parameters of an operation
+	// Create all generators needed for the parameters of an operation. 
 	public void createGenerators(List<TestParameter> testParameters) {
 		
 		this.generators = new HashMap<>();
@@ -262,6 +278,7 @@ public abstract class AbstractTestCaseGenerator {
 		}
 	}
 
+	
 	public void exportNominalFaultyToCSV(String filePath, String testClassName) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
 			createFileWithHeader(filePath, "test_id,nNominal,nFaulty");

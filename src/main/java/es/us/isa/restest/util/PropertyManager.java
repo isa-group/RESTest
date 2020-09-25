@@ -34,7 +34,7 @@ public class PropertyManager {
 		
 	}
 
-	public static String readExperimentProperty(String evalPropertiesFilePath, String name) {
+	public static String readProperty(String evalPropertiesFilePath, String name) {
 
 		if (experimentProperties ==null) {
 			experimentProperties = new Properties();

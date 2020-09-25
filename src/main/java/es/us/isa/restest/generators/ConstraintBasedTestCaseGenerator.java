@@ -71,9 +71,9 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 			// Generate faulty test cases until faultyRatio is reached
 			if (!faultyReason.equals("none")) {
-				if ((float)index/(float)numberOfTest >= faultyRatio*faultyDependencyRatio)
+				if ((float)index/(float)numberOfTests >= faultyRatio*faultyDependencyRatio)
 					faultyReason = INDIVIDUAL_PARAMETER_CONSTRAINT;
-				if ((float)index/(float)numberOfTest >= faultyRatio)
+				if ((float)index/(float)numberOfTests >= faultyRatio)
 					faultyReason = "none";
 			}
 			Timer.startCounting(TEST_CASE_GENERATION);
@@ -150,14 +150,15 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		}
 
 		// Update indexes
-		updateIndexes(test.getFaulty());
+		updateIndexes(test);
+		
 		return test;
 	}
 	
 	// Returns true if there are more test cases to be generated
 	protected boolean hasNext() {
-		Boolean res = index<numberOfTest;
-		if (index == numberOfTest)
+		Boolean res = index<numberOfTests;
+		if (index == numberOfTests)
 			index = 0;
 		return res;
 	}

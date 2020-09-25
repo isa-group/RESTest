@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Set of static methods to mutate a test case, e.g. to make it faulty.
+ * Set of static methods to mutate a test case. For example, removing a mandatory parameter to make a valid test case faulty.
  *
  * @author Alberto Martin-Lopez
  */

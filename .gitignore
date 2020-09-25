@@ -30,3 +30,4 @@ src/test/resources/file-manager/*
 .project
 
 src/main/resources/TestConfigurationMetamodel/configuration-model-output.yaml
+/bin/

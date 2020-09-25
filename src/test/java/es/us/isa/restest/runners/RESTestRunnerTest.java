@@ -4,11 +4,12 @@ import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.reporting.AllureReportManager;
+import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
-import es.us.isa.restest.util.AllureReportManager;
 import es.us.isa.restest.util.PropertyManager;
-import es.us.isa.restest.util.StatsReportManager;
+
 import org.junit.Test;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;

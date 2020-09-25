@@ -1,8 +1,11 @@
-package es.us.isa.restest.util;
+package es.us.isa.restest.reporting;
 
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.coverage.CoverageResults;
 import es.us.isa.restest.testcases.TestResult;
+import es.us.isa.restest.util.PropertyManager;
+import es.us.isa.restest.util.TestManager;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

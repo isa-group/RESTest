@@ -7,6 +7,8 @@ import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.reporting.AllureReportManager;
+import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.runners.RESTestRunner;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
@@ -22,15 +24,19 @@ import java.util.concurrent.TimeUnit;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.util.FileManager.deleteDir;
-import static es.us.isa.restest.util.PropertyManager.readExperimentProperty;
+import static es.us.isa.restest.util.PropertyManager.readProperty;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import static es.us.isa.restest.util.Timer.TestStep.ALL;
 
-public class IterativeExample {
+
+/*
+ * This class show the basic workflow of test case generation -> test case execution -> test reporting
+ */
+public class TestGenerationAndExecution {
 
     private static Integer numTestCases = 10;               // Number of test cases per operation
     private static String OAISpecPath;		                // Path to OAS specification file
-    private static OpenAPISpecification spec;               // OAS
+    private static OpenAPISpecification spec;               // OAS specification
     private static String confPath;	                        // Path to test configuration file
     private static String targetDirJava;	                // Directory where tests will be generated.
     private static String packageName;						// Package name.
@@ -41,23 +47,25 @@ public class IterativeExample {
     private static Boolean enableCSVStats = true;           // Set to 'true' if you want statistics in a CSV file.
     private static Boolean ignoreDependencies = false;      // Set to 'true' if you don't want to use IDLReasoner.
     private static Float faultyRatio = 0.1f;                // Percentage of faulty test cases to generate. Defaults to 0.1
-    private static Integer totalNumTestCases = -1;			// Total number of test cases to be generated
-    private static Integer timeDelay = -1;                  // Delay between requests
+    private static Integer totalNumTestCases = -1;			// Total number of test cases to be generated (-1 for infinite loop)
+    private static Integer timeDelay = -1;                  // Delay between requests in seconds (-1 for no delay)
 
     // For CBT only:
     private static Float faultyDependencyRatio = 0.5f;      // Percentage of faulty test cases due to dependencies to generate. Defaults to 0.05 (0.1*0.5)
     private static Integer reloadInputDataEvery = 100;      // Number of requests using the same randomly generated input data
     private static Integer inputDataMaxValues = 1000;       // Number of values used for each parameter when reloading input data
 
-    private static final Logger logger = LogManager.getLogger(IterativeExample.class.getName());
+    private static final Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
+    
     public static void main(String[] args) {
         Timer.startCounting(ALL);
-
+        
+        // Read .properties file path. This file contains the configuration parameter for the generation
         if(args.length > 0)
-            setEvaluationParameters(args[0]);
+            readParameterValues(args[0]);
         else
-            setEvaluationParameters(readProperty("evaluation.properties.dir") +  "/comments_betty.properties");
+            readParameterValues(readProperty("evaluation.properties.dir") +  "/comments_betty.properties");
 
         // Create target directory if it does not exists
         createDir(targetDirJava);
@@ -69,12 +77,13 @@ public class IterativeExample {
         StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
         RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer, reportManager, statsReportManager);
 
+        // Main loop
         int iteration = 1;
         while (totalNumTestCases == -1 || runner.getNumTestCases() < totalNumTestCases) {
 
             // Introduce optional delay
             if (iteration!=1 && timeDelay!=-1)
-                delay();
+                delay(timeDelay);
 
             // Generate unique test class name to avoid the same class being loaded everytime
             String className = testClassName + "_" + IDGenerator.generateId();
@@ -83,14 +92,9 @@ public class IterativeExample {
 
             // Test case generation + execution + test report generation
             runner.run();
-
+ 
             logger.info("Iteration {}. {} test cases generated.", iteration, runner.getNumTestCases());
             iteration++;
-        }
-
-        if(enableCSVStats) {
-            String csvNFPath = statsReportManager.getTestDataDir() + "/" + readProperty("data.tests.testcases.nominalfaulty.file");
-            generator.exportNominalFaultyToCSV(csvNFPath, "total");
         }
 
         Timer.stopCounting(ALL);
@@ -98,104 +102,94 @@ public class IterativeExample {
         generateTimeReport();
     }
 
-    private static void setEvaluationParameters(String evalPropertiesFilePath) {
+    // Read the parameter values from a .properties file
+    private static void readParameterValues(String evalPropertiesFilePath) {
 
-        numTestCases = readExperimentProperty(evalPropertiesFilePath, "numtestcases") != null?
-                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "numtestcases")) :
+        numTestCases = readProperty(evalPropertiesFilePath, "numtestcases") != null?
+                Integer.parseInt(readProperty(evalPropertiesFilePath, "numtestcases")) :
                 numTestCases;
 
-        OAISpecPath = readExperimentProperty(evalPropertiesFilePath, "oaispecpath");
-        confPath = readExperimentProperty(evalPropertiesFilePath, "confpath");
+        OAISpecPath = readProperty(evalPropertiesFilePath, "oaispecpath");
+        confPath = readProperty(evalPropertiesFilePath, "confpath");
 
-        targetDirJava = readExperimentProperty(evalPropertiesFilePath, "targetdirjava") != null?
-                readExperimentProperty(evalPropertiesFilePath, "targetdirjava") :
+        targetDirJava = readProperty(evalPropertiesFilePath, "targetdirjava") != null?
+                readProperty(evalPropertiesFilePath, "targetdirjava") :
                 generateDefaultTargetDir();
 
-        packageName = readExperimentProperty(evalPropertiesFilePath, "packagename") != null?
-                readExperimentProperty(evalPropertiesFilePath, "packagename") :
-                getOASTitle(false);
+        packageName = readProperty(evalPropertiesFilePath, "packagename") != null?
+                readProperty(evalPropertiesFilePath, "packagename") :
+                getAPITitle(false);
 
-        experimentName = readExperimentProperty(evalPropertiesFilePath, "experimentname") != null?
-                readExperimentProperty(evalPropertiesFilePath, "experimentname") :
-                getOASTitle(false);
+        experimentName = readProperty(evalPropertiesFilePath, "experimentname") != null?
+                readProperty(evalPropertiesFilePath, "experimentname") :
+                getAPITitle(false);
 
-        testClassName = readExperimentProperty(evalPropertiesFilePath, "testclassname") != null?
-                readExperimentProperty(evalPropertiesFilePath, "testclassname") :
-                getOASTitle(true);
+        testClassName = readProperty(evalPropertiesFilePath, "testclassname") != null?
+                readProperty(evalPropertiesFilePath, "testclassname") :
+                getAPITitle(true);
 
-        enableInputCoverage = readExperimentProperty(evalPropertiesFilePath, "enableinputcoverage") != null?
-                Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enableinputcoverage")) :
+        enableInputCoverage = readProperty(evalPropertiesFilePath, "enableinputcoverage") != null?
+                Boolean.parseBoolean(readProperty(evalPropertiesFilePath, "enableinputcoverage")) :
                 enableInputCoverage;
 
-        enableOutputCoverage = readExperimentProperty(evalPropertiesFilePath, "enableoutputcoverage") != null?
-                Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enableoutputcoverage")) :
+        enableOutputCoverage = readProperty(evalPropertiesFilePath, "enableoutputcoverage") != null?
+                Boolean.parseBoolean(readProperty(evalPropertiesFilePath, "enableoutputcoverage")) :
                 enableOutputCoverage;
 
-        enableCSVStats = readExperimentProperty(evalPropertiesFilePath, "enablecsvstats") != null?
-                Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "enablecsvstats")) :
+        enableCSVStats = readProperty(evalPropertiesFilePath, "enablecsvstats") != null?
+                Boolean.parseBoolean(readProperty(evalPropertiesFilePath, "enablecsvstats")) :
                 enableCSVStats;
 
-        ignoreDependencies = readExperimentProperty(evalPropertiesFilePath, "ignoredependencies") != null?
-                Boolean.parseBoolean(readExperimentProperty(evalPropertiesFilePath, "ignoredependencies")) :
+        ignoreDependencies = readProperty(evalPropertiesFilePath, "ignoredependencies") != null?
+                Boolean.parseBoolean(readProperty(evalPropertiesFilePath, "ignoredependencies")) :
                 ignoreDependencies;
 
-        totalNumTestCases = readExperimentProperty(evalPropertiesFilePath, "numtotaltestcases") != null?
-                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "numtotaltestcases")) :
+        totalNumTestCases = readProperty(evalPropertiesFilePath, "numtotaltestcases") != null?
+                Integer.parseInt(readProperty(evalPropertiesFilePath, "numtotaltestcases")) :
                 totalNumTestCases;
 
-        timeDelay = readExperimentProperty(evalPropertiesFilePath, "delay") != null?
-                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "delay")) :
+        timeDelay = readProperty(evalPropertiesFilePath, "delay") != null?
+                Integer.parseInt(readProperty(evalPropertiesFilePath, "delay")) :
                 timeDelay;
 
-        faultyRatio = readExperimentProperty(evalPropertiesFilePath, "faultyratio") != null?
-                Float.parseFloat(readExperimentProperty(evalPropertiesFilePath, "faultyratio")) :
+        faultyRatio = readProperty(evalPropertiesFilePath, "faultyratio") != null?
+                Float.parseFloat(readProperty(evalPropertiesFilePath, "faultyratio")) :
                 faultyRatio;
 
-        faultyDependencyRatio = readExperimentProperty(evalPropertiesFilePath, "faultydependencyratio") != null?
-                Float.parseFloat(readExperimentProperty(evalPropertiesFilePath, "faultydependencyratio")) :
+        faultyDependencyRatio = readProperty(evalPropertiesFilePath, "faultydependencyratio") != null?
+                Float.parseFloat(readProperty(evalPropertiesFilePath, "faultydependencyratio")) :
                 faultyDependencyRatio;
 
-        reloadInputDataEvery = readExperimentProperty(evalPropertiesFilePath, "reloadinputdataevery") != null?
-                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "reloadinputdataevery")) :
+        reloadInputDataEvery = readProperty(evalPropertiesFilePath, "reloadinputdataevery") != null?
+                Integer.parseInt(readProperty(evalPropertiesFilePath, "reloadinputdataevery")) :
                 reloadInputDataEvery;
 
-        inputDataMaxValues = readExperimentProperty(evalPropertiesFilePath, "inputdatamaxvalues") != null?
-                Integer.parseInt(readExperimentProperty(evalPropertiesFilePath, "inputdatamaxvalues")) :
+        inputDataMaxValues = readProperty(evalPropertiesFilePath, "inputdatamaxvalues") != null?
+                Integer.parseInt(readProperty(evalPropertiesFilePath, "inputdatamaxvalues")) :
                 inputDataMaxValues;
     }
 
+    
+    
     private static String generateDefaultTargetDir() {
-        return "src/generation/java/" + getOASTitle(false);
+        return "src/generation/java/" + getAPITitle(false);
     }
-
-    private static String getOASTitle(boolean capitalize) {
+    
+    
+    // Return the title of the API
+    private static String getAPITitle(boolean capitalize) {
+    	
         if(spec == null) {
             spec = new OpenAPISpecification(OAISpecPath);
         }
-        String title = spec.getSpecification().getInfo().getTitle().replaceAll("[^\\p{L}\\p{Nd}\\s]+", "").trim();
-        title = (capitalize? title.substring(0,1).toUpperCase() : title.substring(0,1).toLowerCase()) +
-                (title.length() > 1? formatTitle(title.substring(1).split("\\s")) : "");
-        return title;
+        
+        return spec.getTitle(capitalize);
     }
 
-    private static String formatTitle(String[] sp) {
-        StringBuilder builder = new StringBuilder();
-        for(int i = 0; i < sp.length; i++) {
-            if(i == 0) {
-                builder.append(sp[i]);
-            } else {
-                builder.append(sp[i].substring(0, 1).toUpperCase());
-                if(sp[i].length() > 1) {
-                   builder.append(sp[i].substring(1));
-                }
-            }
-        }
-        return builder.toString();
-    }
 
     // Create a test case generator
     private static AbstractTestCaseGenerator createGenerator() {
-        // Load spec
+        // Load specification
         if(spec == null) {
             spec = new OpenAPISpecification(OAISpecPath);
         }
@@ -244,6 +238,7 @@ public class IterativeExample {
         return arm;
     }
 
+    // Create an statistics report manager
     private static StatsReportManager createStatsReportManager() {
         String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/" + experimentName;
         String coverageDataDir = PropertyManager.readProperty("data.coverage.dir") + "/" + experimentName;
@@ -259,6 +254,7 @@ public class IterativeExample {
         return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage, enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
     }
 
+    
     private static void generateTimeReport() {
         ObjectMapper mapper = new ObjectMapper();
         String timePath = readProperty("data.tests.dir") + "/" + experimentName + "/" + readProperty("data.tests.time");
@@ -271,9 +267,14 @@ public class IterativeExample {
         logger.info("Time report generated.");
     }
 
-    private static void delay() {
+    
+    /*
+     * Stop the execution n seconds
+     */
+    private static void delay(Integer time) {
         try {
-            TimeUnit.SECONDS.sleep(timeDelay);
+        	logger.info("Introducing delay of {} seconds", time);
+            TimeUnit.SECONDS.sleep(time);
         } catch (InterruptedException e) {
             logger.error("Error introducing delay", e);
             logger.error(e.getMessage());

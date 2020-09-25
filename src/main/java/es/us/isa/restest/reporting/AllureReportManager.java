@@ -1,9 +1,11 @@
-package es.us.isa.restest.util;
+package es.us.isa.restest.reporting;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+
+import es.us.isa.restest.util.PropertyManager;
 
 /**
  * Class for managing the generation of test reports with Allure

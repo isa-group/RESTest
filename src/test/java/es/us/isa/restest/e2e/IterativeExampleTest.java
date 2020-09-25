@@ -1,6 +1,6 @@
 package es.us.isa.restest.e2e;
 
-import es.us.isa.restest.main.IterativeExample;
+import es.us.isa.restest.main.TestGenerationAndExecution;
 import org.junit.Test;
 
 import static es.us.isa.restest.util.FileManager.checkIfExists;
@@ -11,7 +11,7 @@ public class IterativeExampleTest {
     @Test
     public void testIterativeExampleWithBasicPropertiesFile() {
         String[] args = {"src/main/resources/ExperimentsSetup/comments_betty.properties"};
-        IterativeExample.main(args);
+        TestGenerationAndExecution.main(args);
 
         assertTrue(checkIfExists("src/generation/java/commentsTest1"));
 

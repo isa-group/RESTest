@@ -20,6 +20,15 @@ public class BoundaryStringConfigurator {
         includeNullCharacter =  true;
     }
 
+    
+    /**
+     * 
+     * @param minLength Minimum length of the string to be generated
+     * @param maxLength Maximum length of the string to be generated
+     * @param delta Number of characters to be added/removed from min/max boundaries
+     * @param includeEmptyString Empty string generations
+     * @param includeNullCharacter	Include null characters ("\0")
+     */
     public BoundaryStringConfigurator(int minLength, int maxLength, int delta, boolean includeEmptyString, boolean includeNullCharacter) {
         this.minLength = minLength;
         this.maxLength = maxLength;

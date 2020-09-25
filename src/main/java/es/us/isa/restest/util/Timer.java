@@ -42,5 +42,4 @@ public class Timer {
             return name;
         }
     }
-
 }

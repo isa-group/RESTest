@@ -19,6 +19,10 @@ public class InputValueIterator<T> implements ITestDataGenerator{
 
 	}
     
+    /**
+     * 
+     * @param values List of the values to be returned (data dictionary).
+     */
     public InputValueIterator(List<T> values) {
     	this.values = values;
     	this.iterator = values.iterator();
@@ -28,6 +32,10 @@ public class InputValueIterator<T> implements ITestDataGenerator{
 		return values;
 	}
 
+	/**
+     * 
+     * @param values List of the values to be returned (data dictionary).
+     */
 	public void setValues(List<T> values) {
 		this.values = values;
 	}

@@ -10,13 +10,15 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
+import es.us.isa.restest.reporting.AllureReportManager;
+import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 
 import static es.us.isa.restest.util.Timer.TestStep.*;
 
 /**
- * This class a basic test workflow: test generation -> test writing -> class compilation and loading -> test execution -> test report generation -> test coverage report generation
+ * This class implements a basic test workflow: test generation -> test writing -> class compilation and loading -> test execution -> test report generation -> test coverage report generation
  * @author Sergio Segura
  *
  */
@@ -50,6 +52,7 @@ public class RESTestRunner {
 		// Load test class
 		String filePath = targetDir + "/" + testClassName + ".java";
 		String className = packageName + "." + testClassName;
+		logger.info("File path: {}", filePath);
 		logger.info("Compiling and loading test class {}.java", className);
 		Class<?> testClass = ClassLoader.loadClass(filePath, className);
 		
@@ -61,7 +64,6 @@ public class RESTestRunner {
 		// Print number of faulty and nominal test cases
 		logger.info("Nominal test cases generated: {}", generator.getnNominal());
 		logger.info("Faulty test cases generated: {}", generator.getnFaulty());
-
 
 		if (statsReportManager.getEnableCSVStats()) {
 			logger.info("Exporting number of faulty and nominal test cases to CSV");

@@ -27,22 +27,23 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 		List<TestCase> testCases = new ArrayList<>();
 
-		// Whether the next test case to generate must be faulty or not
+		// If faultyRatio > 0 generate faulty test cases (by default due to violations in individual parameter constraints)
 		String faultyReason = "none";
 		if (faultyRatio > 0)
 			faultyReason = "individual_parameter_constraint";
 
 		while (hasNext()) {
 
-			// Generate faulty test cases until faultyRatio is reached
-			if (!faultyReason.equals("none") && (float)index/(float)numberOfTest >= faultyRatio)
+			// If the ratio of faulty test cases has been reached, stop generating faulty test cases
+			if (!faultyReason.equals("none") && (float)index/(float)numberOfTests >= faultyRatio)
 				faultyReason = "none";
 
 			// Create test case with specific parameters and values
 			Timer.startCounting(TEST_CASE_GENERATION);
 			TestCase test = generateNextTestCase(testOperation, faultyReason);
 			Timer.stopCounting(TEST_CASE_GENERATION);
-			// Authentication
+			
+			// Set authentication data (if any)
 			authenticateTestCase(test);
 
 			// Add test case to the collection
@@ -55,30 +56,46 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	// Generate the next test case and update the generation index
 	@Override
 	public TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
+		
+		// Create an empty test case with a random id
 		TestCase test = createTestCaseTemplate(testOperation, faultyReason);
 
-		// Set parameters
+		// Set parameters and values using the selected test data generators. This is where the actual test case is created.
 		setTestCaseParameters(test, testOperation);
 
-		if (!faultyReason.equals("none") && !makeTestCaseFaulty(test, testOperation.getOpenApiOperation())) { // If this test case must be faulty
-			test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
-			test.setFaultyReason("none");
-		}
-
-		if (!test.getFaulty() && checkFaulty(test, validator)) { // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
-			test.setFaulty(true);
-			test.setFaultyReason("invalid_request_body");
-		}
-
-		updateIndexes(test.getFaulty());
+		// If more faulty test case need to be generated, try mutating the current test case to make it invalid
+		if (!faultyReason.equals("none"))
+			mutateTestCase(test, testOperation);
+		
+		updateIndexes(test);
+		
 		return test;
 	}
 	
+	
+	// Mutate the current test case to make it invalid (if possible)
+	private void mutateTestCase(TestCase test, Operation testOperation) {
+		
+		// Try to mutate the test case to make it faulty (if it returns false it means that not mutation could be applied)
+		if (!makeTestCaseFaulty(test, testOperation.getOpenApiOperation())) { 
+			test.setFaulty(false); 
+			test.setFaultyReason("none");
+		}
+
+		// The test case could still be invalid if the body has been mutated. Check with a validator
+		if (!test.getFaulty() && checkFaulty(test, validator)) { 
+			test.setFaulty(true);
+			test.setFaultyReason("invalid_request_body");
+		}
+		
+	}
+
 	// Returns true if there are more test cases to be generated
 	protected boolean hasNext() {
-		Boolean res = index<numberOfTest;
-		if (index == numberOfTest)
+		Boolean res = index<numberOfTests;
+		if (index == numberOfTests)
 			index = 0;
 		return res;
 	}
+	
 }
