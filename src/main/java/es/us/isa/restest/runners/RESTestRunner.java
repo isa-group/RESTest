@@ -52,7 +52,6 @@ public class RESTestRunner {
 		// Load test class
 		String filePath = targetDir + "/" + testClassName + ".java";
 		String className = packageName + "." + testClassName;
-		logger.info("File path: {}", filePath);
 		logger.info("Compiling and loading test class {}.java", className);
 		Class<?> testClass = ClassLoader.loadClass(filePath, className);
 		
@@ -60,16 +59,6 @@ public class RESTestRunner {
 		logger.info("Running tests");
 		System.setProperty("allure.results.directory", allureReportManager.getResultsDirPath());
 		testExecution(testClass);
-
-		// Print number of faulty and nominal test cases
-		logger.info("Nominal test cases generated: {}", generator.getnNominal());
-		logger.info("Faulty test cases generated: {}", generator.getnFaulty());
-
-		if (statsReportManager.getEnableCSVStats()) {
-			logger.info("Exporting number of faulty and nominal test cases to CSV");
-			String csvNFPath = statsReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.nominalfaulty.file");
-			generator.exportNominalFaultyToCSV(csvNFPath, testClassName);
-		}
 		
 		// Generate test report
 		logger.info("Generating test report");
@@ -84,30 +73,13 @@ public class RESTestRunner {
 	    
 		// Generate test cases
 		logger.info("Generating tests");
-		generator.setnCurrentFaulty(0);
-		generator.setnCurrentNominal(0);
 		Timer.startCounting(TEST_SUITE_GENERATION);
 		Collection<TestCase> testCases = generator.generate();
 		Timer.stopCounting(TEST_SUITE_GENERATION);
         this.numTestCases += testCases.size();
 
-        // Export test cases and nFaulty and nNominal to CSV if enableStats is true
-		if (statsReportManager.getEnableCSVStats()) {
-			logger.info("Exporting test cases coverage to CSV");
-			String csvTcPath = statsReportManager.getTestDataDir() + "/" + PropertyManager.readProperty("data.tests.testcases.file");
-			testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
-
-//			// Generate input coverage data if enableStats and enableInputCoverage is true.
-//			if(statsReportManager.getEnableInputCoverage()) {
-//				String csvTcCoveragePath = statsReportManager.getCoverageDataDir() + "/" + PropertyManager.readProperty("data.coverage.testcases.file");
-//				testCases.forEach(tc -> CoverageMeter.exportCoverageOfTestCaseToCSV(csvTcCoveragePath, tc));
-//			}
-		}
-
-      // Update CoverageMeter with recently created test suite (if coverage is enabled).
-		if (statsReportManager.getEnableInputCoverage() || statsReportManager.getEnableOutputCoverage()) {
-			statsReportManager.getCoverageMeter().addTestSuite(testCases);
-		}
+        // Pass test cases to the statistic report manager (CSV writing, coverage)
+        statsReportManager.setTestCases(testCases);
         
         // Write test cases
         String filePath = targetDir + "/" + testClassName + ".java";

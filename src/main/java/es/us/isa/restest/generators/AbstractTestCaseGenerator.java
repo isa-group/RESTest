@@ -68,6 +68,17 @@ public abstract class AbstractTestCaseGenerator {
 		this.seed = rand.nextLong();
 		rand.setSeed(this.seed);
 	}
+	
+	
+	// Reset numerical counters
+	private void reset() {
+		this.index = 0;
+		this.nFaulty = 0;
+		this.nNominal = 0;
+		this.nCurrentFaulty = 0;
+		this.nCurrentNominal = 0;
+
+	}
 
 	/**
 	 * Checks the following preconditions:
@@ -109,6 +120,9 @@ public abstract class AbstractTestCaseGenerator {
 	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
 
 		List<TestCase> testCases = new ArrayList<>();
+		
+		// Reset generator's counters
+		reset();
 		
 		// Generate test cases for each path and method
 		for(TestConfigurationFilter filter:filters) {
@@ -278,15 +292,6 @@ public abstract class AbstractTestCaseGenerator {
 		}
 	}
 
-	
-	public void exportNominalFaultyToCSV(String filePath, String testClassName) {
-		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "test_id,nNominal,nFaulty");
-		if (testClassName.equals("total"))
-			CSVManager.writeRow(filePath, testClassName + "," + nNominal + "," + nFaulty);
-		else
-			CSVManager.writeRow(filePath, testClassName + "," + nCurrentNominal + "," + nCurrentFaulty);
-	}
 
 	public Float getFaultyRatio() {
 		return faultyRatio;

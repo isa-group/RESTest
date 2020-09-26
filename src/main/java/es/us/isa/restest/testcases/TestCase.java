@@ -3,6 +3,7 @@ package es.us.isa.restest.testcases;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -308,6 +309,8 @@ public class TestCase implements Serializable {
 			inputFormat = "application/x-www-form-urlencoded";
 	}
 
+	
+	// Export the test case to CSV
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
 			createFileWithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
@@ -341,6 +344,8 @@ public class TestCase implements Serializable {
 
 		writeRow(filePath, rowBeginning + rowEnding);
 	}
+	
+	
 
 	public static List<String> getFaultyReasons(TestCase tc, OpenApiInteractionValidator validator) {
 		String fullPath = tc.getPath();

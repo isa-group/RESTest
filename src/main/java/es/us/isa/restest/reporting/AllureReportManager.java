@@ -76,6 +76,7 @@ public class AllureReportManager {
 		}
 		
 	}
+	
 
 	// Copy the history subfolder of the allure report to the allure results directory to enable the trend view.
 	private void copyHistoryDirectory() {

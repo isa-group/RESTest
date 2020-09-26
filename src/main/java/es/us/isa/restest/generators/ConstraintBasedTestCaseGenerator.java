@@ -7,6 +7,7 @@ import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.random.RandomBooleanGenerator;
 import es.us.isa.restest.inputs.random.RandomInputValueIterator;
+import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.specification.OpenAPISpecification;
 
 import es.us.isa.restest.testcases.TestCase;
@@ -17,7 +18,6 @@ import org.javatuples.Pair;
 
 import java.util.*;
 
-import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
 import static es.us.isa.restest.testcases.TestCase.checkFaulty;
 import static es.us.isa.restest.util.IDLAdapter.idl2restestTestCase;
 import static es.us.isa.restest.util.SpecificationVisitor.*;
@@ -135,7 +135,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 				break;
 			case INDIVIDUAL_PARAMETER_CONSTRAINT:
 				setTestCaseParameters(test, testOperation);
-				if (!makeTestCaseFaulty(test, testOperation.getOpenApiOperation())) {
+				if (!TestCaseMutation.mutate(test, testOperation.getOpenApiOperation())) {
 					test.setFaulty(false);
 					test.setFaultyReason("none");
 				}

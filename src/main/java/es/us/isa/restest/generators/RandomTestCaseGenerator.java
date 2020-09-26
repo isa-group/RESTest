@@ -1,20 +1,18 @@
 package es.us.isa.restest.generators;
 
+import static es.us.isa.restest.testcases.TestCase.checkFaulty;
+import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.Timer;
-import io.swagger.v3.oas.models.PathItem.HttpMethod;
-
-import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
-import static es.us.isa.restest.testcases.TestCase.checkFaulty;
-import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
 
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
@@ -77,7 +75,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	private void mutateTestCase(TestCase test, Operation testOperation) {
 		
 		// Try to mutate the test case to make it faulty (if it returns false it means that not mutation could be applied)
-		if (!makeTestCaseFaulty(test, testOperation.getOpenApiOperation())) { 
+		if (!TestCaseMutation.mutate(test, testOperation.getOpenApiOperation())) { 
 			test.setFaulty(false); 
 			test.setFaultyReason("none");
 		}

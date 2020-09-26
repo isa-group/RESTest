@@ -37,13 +37,14 @@ public class InvalidParameterValue extends AbstractMutationOperator {
 
     public static Boolean mutate(TestCase tc, Operation specOperation) {
         List<ParameterFeatures> candidateParameters = getParametersSubjectToInvalidValueChange(specOperation); // Parameters that can be mutated to create a faulty test case
-        if (!candidateParameters.isEmpty()) {
-            ParameterFeatures selectedParam = candidateParameters.get(ThreadLocalRandom.current().nextInt(0, candidateParameters.size())); // Select one randomly
-            setParameterToInvalidValue(tc, selectedParam); // Mutate it to create a faulty test case
-            return true; // Mutation applied
-        } else {
-            return false; // Mutation not applied
-        }
+        
+        if (candidateParameters.isEmpty())
+        	return false;
+        	
+        ParameterFeatures selectedParam = candidateParameters.get(ThreadLocalRandom.current().nextInt(0, candidateParameters.size())); // Select one randomly
+        setParameterToInvalidValue(tc, selectedParam); // Mutate it to create a faulty test case
+        return true; // Mutation applied
+        
     }
 
     /**
