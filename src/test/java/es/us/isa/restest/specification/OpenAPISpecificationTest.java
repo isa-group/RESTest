@@ -8,7 +8,7 @@ public class OpenAPISpecificationTest {
 
 	@Test
 	public void testOpenAPISpecificationv3() {
-		OpenAPISpecification spec = new OpenAPISpecification("http://petstore.swagger.io/v2/swagger.json");
+		OpenAPISpecification spec = new OpenAPISpecification("https://petstore.swagger.io/v2/swagger.json");
 		assertEquals("Wrong parsing", "https://petstore.swagger.io/v2", spec.getSpecification().getServers().get(0).getUrl());
 	}
 
