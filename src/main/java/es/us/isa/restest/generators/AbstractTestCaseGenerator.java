@@ -33,13 +33,11 @@ public abstract class AbstractTestCaseGenerator {
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
 	protected Map<Pair<String, String>,ITestDataGenerator> generators;		// Test data generators Map<Pair<ParameterName,Type(query or path)>, Generator (random, boundaryValue, fixedlist...)>
+	protected OpenApiInteractionValidator validator;						// Validator used to know if a test case is valid or not
 	protected AuthManager authManager;										// For if multiple API keys are used for the API
 	protected Float faultyRatio = 0.1f;										// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
-	protected OpenApiInteractionValidator validator;						// Validator used to know if a test case is valid or not
 	protected int numberOfTests;											// Number of test cases to be generated for each operation
 	protected int index;													// Number of test cases generated so far
-	protected int nCurrentFaulty;											// Number of faulty test cases generated in the current iteration
-	protected int nCurrentNominal;											// Number of nominal test cases generated in the current iteration
 	protected int nFaulty;													// Number of faulty test cases generated so far
 	protected int nNominal;													// Number of nominal test cases generated so far
 
@@ -56,13 +54,13 @@ public abstract class AbstractTestCaseGenerator {
 		if (authPath != null)
 			this.authManager = new AuthManager(authPath);
 
+		// Test case validator
 		this.validator = OpenApiInteractionValidator.createFor(spec.getPath()).build();
+		
 		this.numberOfTests = nTests;
 		this.index = 0;
 		this.nFaulty = 0;
 		this.nNominal = 0;
-		this.nCurrentFaulty = 0;
-		this.nCurrentNominal = 0;
 
 		this.rand = new Random();
 		this.seed = rand.nextLong();
@@ -75,8 +73,6 @@ public abstract class AbstractTestCaseGenerator {
 		this.index = 0;
 		this.nFaulty = 0;
 		this.nNominal = 0;
-		this.nCurrentFaulty = 0;
-		this.nCurrentNominal = 0;
 
 	}
 
@@ -120,9 +116,6 @@ public abstract class AbstractTestCaseGenerator {
 	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
 
 		List<TestCase> testCases = new ArrayList<>();
-		
-		// Reset generator's counters
-		reset();
 		
 		// Generate test cases for each path and method
 		for(TestConfigurationFilter filter:filters) {
@@ -191,10 +184,16 @@ public abstract class AbstractTestCaseGenerator {
 	
 	/* Generate test cases for testOperation */
 	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation);
+	
+	// Generate the next test case and update the generation index. To be implemented on each subclass.
+	public abstract TestCase generateNextTestCase(Operation testOperation);
 
 	/* Generate test cases for the operation defined by path/method */
 	protected Collection<TestCase> generate(String path, HttpMethod method) {
 
+		// Reset generator's counters
+		reset();
+		
 		// Get test configuration object for the operation
 		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
 
@@ -255,28 +254,20 @@ public abstract class AbstractTestCaseGenerator {
 	protected abstract boolean hasNext();
 
 	// Create an empty test case with a random name.
-	protected TestCase createTestCaseTemplate(Operation testOperation, String faultyReason) {
+	protected TestCase createTestCaseTemplate(Operation testOperation) {
 		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
-		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
+		TestCase test = new TestCase(testId, false, testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
 		updateContentType(test, testOperation.getOpenApiOperation());
-		test.setFaultyReason(faultyReason);
 
 		return test;
 	}
-	
-	
-	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	public abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);
-
-	
+		
 	protected void updateIndexes(TestCase test) {
 		// Update indexes
 		index++;
 		if (test.getFaulty()) {
-			nCurrentFaulty++;
 			nFaulty++;
 		} else {
-			nCurrentNominal++;
 			nNominal++;
 		}
 	}
@@ -317,30 +308,6 @@ public abstract class AbstractTestCaseGenerator {
 		this.nNominal = nNominal;
 	}
 
-	public int getnCurrentFaulty() {
-		return nCurrentFaulty;
-	}
-
-	public void setnCurrentFaulty(int nCurrentFaulty) {
-		this.nCurrentFaulty = nCurrentFaulty;
-	}
-
-	public int getnCurrentNominal() {
-		return nCurrentNominal;
-	}
-
-	public void setnCurrentNominal(int nCurrentNominal) {
-		this.nCurrentNominal = nCurrentNominal;
-	}
-
-	public OpenApiInteractionValidator getValidator() {
-		return validator;
-	}
-
-	public void setValidator(OpenApiInteractionValidator validator) {
-		this.validator = validator;
-	}
-
 	public Map<Pair<String, String>, ITestDataGenerator> getGenerators() {
 		return generators;
 	}
@@ -361,12 +328,17 @@ public abstract class AbstractTestCaseGenerator {
 		return s.replaceAll("[^A-Za-z0-9]", "");
 	}
 
-	private long getSeed() {
+	public long getSeed() {
 		return this.seed;
 	}
 
-	private void setSeed(long seed) {
+	public void setSeed(long seed) {
 		this.seed = seed;
 		rand.setSeed(seed);
+	}
+
+
+	public OpenApiInteractionValidator getValidator() {
+		return validator;
 	}
 }

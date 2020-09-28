@@ -7,6 +7,7 @@ import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.runners.RESTestRunner;
@@ -120,7 +121,7 @@ public class TestGenerationAndExecution {
 		switch (generator) {
 		case "RT":
 			gen = new RandomTestCaseGenerator(spec, conf, numTestCases);
-			gen.setFaultyRatio(faultyRatio);
+			((RandomTestCaseGenerator) gen).setFaultyRatio(faultyRatio);
 			break;
 		case "CBT":
 			gen = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
@@ -158,6 +159,7 @@ public class TestGenerationAndExecution {
 		deleteDir(allureReportDir);
 
 		AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir);
+		arm.setEnvironmentProperties(propertiesFilePath);
 		arm.setHistoryTrend(true);
 		return arm;
 	}
@@ -213,10 +215,10 @@ public class TestGenerationAndExecution {
 		generator = readParameterValue("generator");
 		logger.info("Generator: {}", generator);
 		
-		OAISpecPath = readParameterValue("oaispecpath");
+		OAISpecPath = readParameterValue("oas.path");
 		logger.info("OAS path: {}", OAISpecPath);
 		
-		confPath = readParameterValue("confpath");
+		confPath = readParameterValue("conf.path");
 		logger.info("Test configuration path: {}", confPath);
 		
 		targetDirJava = readParameterValue("test.target.dir");
@@ -231,8 +233,8 @@ public class TestGenerationAndExecution {
 		testClassName = readParameterValue("testclass.name");
 		logger.info("Test class name: {}", testClassName);
 
-		if (readParameterValue("numtestcases") != null)
-			numTestCases = Integer.parseInt(readParameterValue("numtestcases"));
+		if (readParameterValue("testsperoperation") != null)
+			numTestCases = Integer.parseInt(readParameterValue("testsperoperation"));
 		logger.info("Number of test cases per operation: {}", numTestCases);
 
 		if (readParameterValue("numtotaltestcases") != null)
@@ -251,32 +253,30 @@ public class TestGenerationAndExecution {
 			inputDataMaxValues = Integer.parseInt(readParameterValue("inputdatamaxvalues"));
 		logger.info("Max input test data (CBT): {}", inputDataMaxValues);
 
-		if (readParameterValue("enableinputcoverage") != null)
-			enableInputCoverage = Boolean.parseBoolean(readParameterValue("enableinputcoverage"));
+		if (readParameterValue("coverage.input") != null)
+			enableInputCoverage = Boolean.parseBoolean(readParameterValue("coverage.input"));
 		logger.info("Input coverage: {}", enableInputCoverage);
 
-		if (readParameterValue("enableoutputcoverage") != null)
-			enableOutputCoverage = Boolean.parseBoolean(readParameterValue("enableoutputcoverage"));
+		if (readParameterValue("coverage.output") != null)
+			enableOutputCoverage = Boolean.parseBoolean(readParameterValue("coverage.output"));
 		logger.info("Output coverage: {}", enableOutputCoverage);
 
-		if (readParameterValue("enablecsvstats") != null)
-			enableCSVStats = Boolean.parseBoolean(readParameterValue("enablecsvstats"));
+		if (readParameterValue("stats.csv") != null)
+			enableCSVStats = Boolean.parseBoolean(readParameterValue("stats.csv"));
 		logger.info("CSV statistics: {}", enableCSVStats);
 
-		if (readParameterValue("faultyratio") != null)
-			faultyRatio = Float.parseFloat(readParameterValue("faultyratio"));
+		if (readParameterValue("faulty.ratio") != null)
+			faultyRatio = Float.parseFloat(readParameterValue("faulty.ratio"));
 		logger.info("Faulty ratio: {}", faultyRatio);
 
-		if (readParameterValue("faultydependencyratio") != null)
-			faultyDependencyRatio = Float.parseFloat(readParameterValue("faultydependencyratio"));
+		if (readParameterValue("faulty.dependency.ratio") != null)
+			faultyDependencyRatio = Float.parseFloat(readParameterValue("faulty.dependency.ratio"));
 		logger.info("Faulty dependency ratio: {}", faultyDependencyRatio);
 		
-		
-
+	
 	}
 
-	// Read the parameter value from the local .properties file. If the value is not
-	// found, it reads it form the global .properties file (config.properties)
+	// Read the parameter value from the local .properties file. If the value is not found, it reads it form the global .properties file (config.properties)
 	private static String readParameterValue(String propertyName) {
 
 		String value = null;

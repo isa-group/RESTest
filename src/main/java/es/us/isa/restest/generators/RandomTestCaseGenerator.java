@@ -14,7 +14,15 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.Timer;
 
+/**
+ *  This class implements a simple random test case generator
+ * @author Sergio Segura
+ *
+ */
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
+	
+	public static final String INDIVIDUAL_PARAMETER_CONSTRAINT = "individual_parameter_constraint";
+	public static final String INVALID_REQUEST_BODY = "inter_parameter_dependency";
 	
 	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
@@ -25,20 +33,11 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 		List<TestCase> testCases = new ArrayList<>();
 
-		// If faultyRatio > 0 generate faulty test cases (by default due to violations in individual parameter constraints)
-		String faultyReason = "none";
-		if (faultyRatio > 0)
-			faultyReason = "individual_parameter_constraint";
-
 		while (hasNext()) {
-
-			// If the ratio of faulty test cases has been reached, stop generating faulty test cases
-			if (!faultyReason.equals("none") && (float)index/(float)numberOfTests >= faultyRatio)
-				faultyReason = "none";
 
 			// Create test case with specific parameters and values
 			Timer.startCounting(TEST_CASE_GENERATION);
-			TestCase test = generateNextTestCase(testOperation, faultyReason);
+			TestCase test = generateNextTestCase(testOperation);
 			Timer.stopCounting(TEST_CASE_GENERATION);
 			
 			// Set authentication data (if any)
@@ -46,54 +45,51 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			// Add test case to the collection
 			testCases.add(test);
+			
+			// Update indexes
+			updateIndexes(test);
 		}
 
 		return testCases;
 	}
 
 	// Generate the next test case and update the generation index
-	@Override
-	public TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
+	public TestCase generateNextTestCase(Operation testOperation) {
 		
 		// Create an empty test case with a random id
-		TestCase test = createTestCaseTemplate(testOperation, faultyReason);
+		TestCase test = createTestCaseTemplate(testOperation);
 
 		// Set parameters and values using the selected test data generators. This is where the actual test case is created.
 		setTestCaseParameters(test, testOperation);
-
-		// If more faulty test case need to be generated, try mutating the current test case to make it invalid
-		if (!faultyReason.equals("none"))
+		
+		// If more faulty test cases need to be generated, try mutating the current test case to make it invalid
+		if (nFaulty < (faultyRatio * numberOfTests))
 			mutateTestCase(test, testOperation);
-		
-		updateIndexes(test);
-		
+
 		return test;
 	}
 	
-	
-	// Mutate the current test case to make it invalid (if possible)
+
+	/* Mutate the test case trying to make it invalid */
 	private void mutateTestCase(TestCase test, Operation testOperation) {
 		
-		// Try to mutate the test case to make it faulty (if it returns false it means that not mutation could be applied)
-		if (!TestCaseMutation.mutate(test, testOperation.getOpenApiOperation())) { 
-			test.setFaulty(false); 
-			test.setFaultyReason("none");
+		String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
+		if (mutationDescription!="") {
+			test.setFaulty(true);
+			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
 		}
-
-		// The test case could still be invalid if the body has been mutated. Check with a validator
+		
+		// Watch out! The test case could still be faulty if the body has been perturbated (for creating new test data from existing inputs)
 		if (!test.getFaulty() && checkFaulty(test, validator)) { 
 			test.setFaulty(true);
-			test.setFaultyReason("invalid_request_body");
+			test.setFaultyReason(INVALID_REQUEST_BODY);
 		}
 		
 	}
 
 	// Returns true if there are more test cases to be generated
 	protected boolean hasNext() {
-		Boolean res = index<numberOfTests;
-		if (index == numberOfTests)
-			index = 0;
-		return res;
+		return index < numberOfTests;
 	}
 	
 }

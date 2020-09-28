@@ -77,6 +77,19 @@ public class AllureReportManager {
 		
 	}
 	
+	public void setEnvironmentProperties(String propertiesFilePath) {
+		File sourceFile = new File(propertiesFilePath);
+		File targetFile = new File(resultsDirPath + "/environment.properties");
+		
+		try {
+			FileUtils.copyFile(sourceFile, targetFile);
+		} catch (IOException e) {
+			System.err.println("Error copying Allure environment.properties file:" + e.getMessage());
+			e.printStackTrace();
+		}
+		
+	}
+	
 
 	// Copy the history subfolder of the allure report to the allure results directory to enable the trend view.
 	private void copyHistoryDirectory() {
@@ -145,5 +158,7 @@ public class AllureReportManager {
 	public void setReportDirPath(String reportDirPath) {
 		this.reportDirPath = reportDirPath;
 	}
+
+
 
 }

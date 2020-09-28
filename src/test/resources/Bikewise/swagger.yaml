@@ -22,7 +22,7 @@ info:
         url: https://github.com/lucybot/api-spec-converter
         version: 2.7.18
       format: swagger
-      url: https://bikewise.org/api/v2/swagger_doc
+      url: https://www.bikewise.org/documentation/api_v2
       version: '1.2'
   x-preferred: true
   x-providerName: bikewise.org

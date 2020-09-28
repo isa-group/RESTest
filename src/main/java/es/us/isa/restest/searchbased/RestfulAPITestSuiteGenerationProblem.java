@@ -165,7 +165,7 @@ public class RestfulAPITestSuiteGenerationProblem extends AbstractGenericProblem
 		Operation operation = chooseRandomOperation();
 		String faulty = chooseRandomFaultyReason();
 		ConstraintBasedTestCaseGenerator testCaseGenerator = testCaseGenerators.get(operation.getOperationId());
-		testCaseGenerator.checkIDLReasonerData(operation, faulty);
+		testCaseGenerator.checkIDLReasonerData(operation);
 		TestCase testCase = testCaseGenerator.generateNextTestCase(operation, faulty);
 		testCaseGenerator.authenticateTestCase(testCase);
         if (!requiresTestOracles) // If no objective function requires oracles, disable them

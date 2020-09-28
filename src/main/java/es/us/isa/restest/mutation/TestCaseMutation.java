@@ -28,26 +28,28 @@ public class TestCaseMutation {
      *     <li>Change type of parameter value (e.g. use a string for an integer parameter).</li>
      *     <li>Violate a constraint of a parameter (e.g. use an integer value higher than the maximum.</li>
      * </ol>
-     * @param nominalTestCase Original valid test case. NOTE: If the mutation is applied, the original
+     * @param testCase Original valid test case. NOTE: If the mutation is applied, the original
      *                        {@code nominalTestCase} object will not be preserved, it should be cloned
      *                        before calling this method.
-     * @return True if the test case turned faulty, false otherwise
+     * @return a string indicating the mutation operator applied, empty if none.
      */
-	public static boolean mutate(TestCase nominalTestCase, Operation specOperation) {
-		boolean mutationApplied = false;
+	public static String mutate(TestCase testCase, Operation specOperation) {
+		String mutationApplied = "";
 		
 		// Shuffle list of operators
 		List<String> operators = Arrays.asList(mutationOperators);
 		Collections.shuffle(operators);
 		
 		int index = 0;
-		while (index<operators.size() && !mutationApplied) {
+		while (index<operators.size() && mutationApplied=="") {
 			switch(operators.get(index)) {
 				case "INVALID_VALUE":
-					mutationApplied = InvalidParameterValue.mutate(nominalTestCase, specOperation);
+					if (InvalidParameterValue.mutate(testCase, specOperation))
+						mutationApplied = "Invalid parameter value";
 					break;
 				case "REMOVE_REQUIRED_PARAMETER":
-					mutationApplied = RemoveRequiredParameter.mutate(nominalTestCase, specOperation);
+					if (RemoveRequiredParameter.mutate(testCase, specOperation))
+						mutationApplied = "Required parameter removed";
 					break;
 				default:
 			}

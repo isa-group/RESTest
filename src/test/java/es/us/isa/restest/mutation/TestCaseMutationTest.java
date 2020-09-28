@@ -21,7 +21,7 @@ public class TestCaseMutationTest {
         tc.addQueryParameter("limit", "2");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertTrue("The test case should be mutated", mutate(tc, spec.getSpecification().getPaths().get("/comments").getGet()));
+        assertTrue("The test case should be mutated", mutate(tc, spec.getSpecification().getPaths().get("/comments").getGet())!="");
         assertNotEquals("The two test cases should be different", tc, oldTc);
     }
 
@@ -32,7 +32,7 @@ public class TestCaseMutationTest {
         tc.addPathParameter("id", "c1");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertFalse("The test case should NOT be mutated", mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet()));
+        assertFalse("The test case should NOT be mutated", mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet())!="");
         assertEquals("Both test cases should be equal", tc, oldTc);
     }
 
