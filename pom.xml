@@ -283,35 +283,59 @@
 		<!-- LOCAL DEPENDENCIES -->
 		<!-- JSONmutator local dependency -->
 		<dependency>
-			<groupId>JSONmutator</groupId>
-			<artifactId>JSONmutator</artifactId>
+			<groupId>es.us.isa</groupId>
+			<artifactId>json-mutator</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/JSONmutator.jar</systemPath>
 		</dependency>
 
 		<!-- IDLreasoner local dependency -->
 		<dependency>
-			<groupId>IDLreasoner</groupId>
-			<artifactId>IDLreasoner</artifactId>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idl-reasoner</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/IDLreasoner.jar</systemPath>
 		</dependency>
 
 		<!-- IDL2MiniZincMapper local dependency -->
 		<dependency>
-			<groupId>IDL2MiniZincMapper</groupId>
-			<artifactId>IDL2MiniZincMapper</artifactId>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idl-2-minizinc-mapper</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/IDL2MiniZincMapper.jar</systemPath>
 		</dependency>
 
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>8</source>
+					<target>8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>es.us.isa.restest.main.IterativeExample</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
