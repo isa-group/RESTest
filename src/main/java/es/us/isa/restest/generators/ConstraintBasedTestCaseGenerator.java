@@ -66,7 +66,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	 * @param testOperation API operation under test
 	 */
 	public void checkIDLReasonerData(Operation testOperation) {
-		if (idlReasoner != null && index%reloadInputDataEvery == 0) {
+		if (idlReasoner != null && nTests%reloadInputDataEvery == 0) {
 			Map <String, List<String>> inputData = generateInputData(testOperation.getTestParameters()); // Update input data
 			idlReasoner.updateData(inputData);
 		}
@@ -85,9 +85,9 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		if (idlReasoner==null) // The operation has no inter-parameter dependencies
 			maxFaultyTestDueToDependencyViolations = 0;
 		else
-			maxFaultyTestDueToDependencyViolations = (int) (numberOfTests * faultyRatio * faultyDependencyRatio);
+			maxFaultyTestDueToDependencyViolations = (int) ((numberOfTests * faultyRatio * faultyDependencyRatio));
 		
-		maxFaultyTestsDueToIndividualConstraints = (int) ((numberOfTests * faultyRatio) - nFaultyTestDueToDependencyViolations);
+		maxFaultyTestsDueToIndividualConstraints = (int) (((numberOfTests * faultyRatio) - nFaultyTestDueToDependencyViolations));
 		
 		nFaultyTestDueToDependencyViolations = 0;
 		nFaultyTestsDueToIndividualConstraint = 0;
@@ -260,7 +260,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	
 	// Returns true if there are more test cases to be generated
 	protected boolean hasNext() {
-		return index < numberOfTests;
+		return nTests < numberOfTests;
 	}
 
 	public Float getFaultyDependencyRatio() {

@@ -89,7 +89,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	// Returns true if there are more test cases to be generated
 	protected boolean hasNext() {
-		return index < numberOfTests;
+		return nTests < numberOfTests;
 	}
 	
 }
