@@ -44,25 +44,6 @@ public class RESTestRunner {
 		this.statsReportManager = statsReportManager;
 	}
 
-	public void run(Collection<TestCase> testCases) {
-		// Pass test cases to the statistic report manager (CSV writing, coverage)
-		statsReportManager.setTestCases(testCases);
-
-		// Write test cases
-		String filePath = targetDir + "/" + testClassName + ".java";
-		logger.info("Writing {} test cases to test class {}", testCases.size(), filePath);
-		writer.write(testCases);
-
-		// Test execution
-		logger.info("Running tests");
-		System.setProperty("allure.results.directory", allureReportManager.getResultsDirPath());
-		testExecution(getTestClass());
-
-		// Report generation
-		generateReports();
-	}
-
-
 	public void run() {
 
 		// Test generation and writing (RESTAssured)
