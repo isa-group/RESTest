@@ -7,6 +7,7 @@ import java.util.List;
 
 import static es.us.isa.restest.testcases.TestCase.checkFulfillsDependencies;
 import static es.us.isa.restest.testcases.TestCase.getFaultyReasons;
+import com.atlassian.oai.validator.OpenApiInteractionValidator;
 
 /**
  * This class contains common utilities to all mutation operators

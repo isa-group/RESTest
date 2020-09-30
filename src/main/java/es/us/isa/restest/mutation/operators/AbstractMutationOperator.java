@@ -1,6 +1,5 @@
 package es.us.isa.restest.mutation.operators;
 
-import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.Operation;
 

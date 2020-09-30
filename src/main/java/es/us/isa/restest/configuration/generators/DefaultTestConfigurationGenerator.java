@@ -30,12 +30,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Class to manage the generation of test configuration files from an OpenAPI specification.
- * A testConf file is used to generate better test cases, for example by specifying the necessary
- * authentication data (like an API key) or by providing values to a specific parameter.
- * Automatically generated testConfs are pretty simple, the developer should make an effort to
- * augment it.
+ * TestConfiguration objects are key in RESTest. They include all the
+ * information required to test an API (data dictionaries, authentication data,
+ * etc), complementing the information provided by the API specification. This
+ * class manage the generation of a default test configuration file from an
+ * OpenAPI specification. Default test configuration files are currently pretty
+ * simply and should be manually updated before testing (ex. adding specific
+ * data dictionaries).
  */
+
 public class DefaultTestConfigurationGenerator {
 
 	public static final String RANDOM_REG_EXP = "RandomRegExp";
@@ -71,10 +74,11 @@ public class DefaultTestConfigurationGenerator {
 
 	/**
 	 * Generate a default test configuration file for a given Open API specification
+	 * 
 	 * @param destination Path of the output test configuration file
 	 * @return
 	 */
-	public TestConfigurationObject generate (String destination) {
+	public TestConfigurationObject generate(String destination) {
 		TestConfigurationFilter filter = new TestConfigurationFilter();
 		filter.setPath(null);
 		filter.addAllMethods();
@@ -83,98 +87,108 @@ public class DefaultTestConfigurationGenerator {
 
 	/**
 	 * Generate a default test configuration file for a given Open API specification
+	 * 
 	 * @param destination Path of the output test configuration file
-	 * @param filters Set the paths and HTTP methods to be included in the test configuration file,
-	 *                i.e. those that will be tested
+	 * @param filters     Set the paths and HTTP methods to be included in the test
+	 *                    configuration file, i.e. those that will be tested
 	 * @return
 	 */
-	public TestConfigurationObject generate (String destination, Collection<TestConfigurationFilter> filters) {
-		
+	public TestConfigurationObject generate(String destination, Collection<TestConfigurationFilter> filters) {
+
 		TestConfigurationObject conf = new TestConfigurationObject();
-		
+
 		// Authentication configuration (not required by default)
 		conf.setAuth(generateDefaultAuthentication());
-		// TODO: Read authentication settings from specification (https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securitySchemeObject)
-		
+		// TODO: Read authentication settings from specification
+		// (https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#securitySchemeObject)
+
 		// Operations
 		TestConfiguration testConf = new TestConfiguration();
 		testConf.setOperations(generateOperations(filters));
-			
+
 		conf.setTestConfiguration(testConf);
-		
+
 		// Write configuration to file
 		TestConfigurationIO.toFile(conf, destination);
-		
+
 		return conf;
 	}
 
 	// Generate the test configuration data for operations
 	private List<Operation> generateOperations(Collection<TestConfigurationFilter> filters) {
-		
+
 		List<Operation> operations = new ArrayList<>();
 
-		for (TestConfigurationFilter filter: filters) {
+		for (TestConfigurationFilter filter : filters) {
 			Paths paths = spec.getSpecification().getPaths();
-			for(Entry<String, PathItem> path: paths.entrySet())
-				if (filter.getPath()==null || path.getKey().equalsIgnoreCase(filter.getPath()))
-					operations.addAll(generateOperationsOfPath(path,filter.getMethods())); // For every filter, add its path to testConf
+			for (Entry<String, PathItem> path : paths.entrySet())
+				if (filter.getPath() == null || path.getKey().equalsIgnoreCase(filter.getPath()))
+					operations.addAll(generateOperationsOfPath(path, filter.getMethods())); // For every filter, add its
+																							// path to testConf
 		}
 		return operations;
 	}
 
-	// Generate the test configuration data for the operations of a specific input path
+	// Generate the test configuration data for the operations of a specific input
+	// path
 	private List<Operation> generateOperationsOfPath(Entry<String, PathItem> path, Collection<HttpMethod> methods) {
 
 		List<Operation> pathOperations = new ArrayList<>();
-		
-		for (Entry<HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry : path.getValue().readOperationsMap().entrySet())
+
+		for (Entry<HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry : path.getValue().readOperationsMap()
+				.entrySet())
 			if (methods.contains(operationEntry.getKey())) // Generate only filtered methods
 				pathOperations.add(generateOperation(operationEntry, path.getKey()));
-		
+
 		return pathOperations;
 	}
 
 	// Generate test configuration data for a GET operation
-	private Operation generateOperation(Entry<HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry, String path) {
+	private Operation generateOperation(Entry<HttpMethod, io.swagger.v3.oas.models.Operation> operationEntry,
+			String path) {
 		Operation testOperation = new Operation();
 		testOperation.setTestPath(path);
-		
+
 		// Set operation id (if defined)
-		if (operationEntry.getValue().getOperationId()!=null)
+		if (operationEntry.getValue().getOperationId() != null)
 			testOperation.setOperationId(operationEntry.getValue().getOperationId());
 		else
 			testOperation.setOperationId("<SET OPERATION ID>");
-		
+
 		// Set HTTP method
 		testOperation.setMethod(operationEntry.getKey().name().toLowerCase());
-		
+
 		// Set parameters
-		if(operationEntry.getValue().getParameters() != null) {
+		if (operationEntry.getValue().getParameters() != null) {
 			testOperation.setTestParameters(generateTestParameters(operationEntry.getValue().getParameters()));
 		}
 
-		//Set request body parameters
-		if(operationEntry.getValue().getRequestBody() != null && testOperation.getTestParameters() == null) {
-			testOperation.setTestParameters(generateRequestBodyTestParameters(operationEntry.getValue().getRequestBody()));
-		} else if(operationEntry.getValue().getRequestBody() != null) {
-			testOperation.getTestParameters().addAll(generateRequestBodyTestParameters(operationEntry.getValue().getRequestBody()));
+		// Set request body parameters
+		if (operationEntry.getValue().getRequestBody() != null && testOperation.getTestParameters() == null) {
+			testOperation
+					.setTestParameters(generateRequestBodyTestParameters(operationEntry.getValue().getRequestBody()));
+		} else if (operationEntry.getValue().getRequestBody() != null) {
+			testOperation.getTestParameters()
+					.addAll(generateRequestBodyTestParameters(operationEntry.getValue().getRequestBody()));
 		}
 
 		// Set expected output
 		testOperation.setExpectedResponse("200");
-		
+
 		return testOperation;
 	}
 
 	// Generate test configuration data for input parameters
 	private List<TestParameter> generateTestParameters(List<Parameter> parameters) {
 		List<TestParameter> testParameters = new ArrayList<>();
-		for(Parameter param: parameters) {
+		for (Parameter param : parameters) {
 			Schema schema = param.getSchema();
 
 			// If it's a path or query parameter, get type to set a useful generator
-			if ((param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header")) && schema.getType().equals("object")) {
-				testParameters.addAll(generateObjectParameters(param.getSchema(), param.getName(), param.getIn(), param.getRequired(), param.getStyle(), null, param.getExplode()));
+			if ((param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header"))
+					&& schema.getType().equals("object")) {
+				testParameters.addAll(generateObjectParameters(param.getSchema(), param.getName(), param.getIn(),
+						param.getRequired(), param.getStyle(), null, param.getExplode()));
 			} else {
 
 				TestParameter testParam = new TestParameter();
@@ -189,7 +203,7 @@ public class DefaultTestConfigurationGenerator {
 				Generator gen = new Generator();
 				gen.setGenParameters(new ArrayList<>());
 
-				if(param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header")) {
+				if (param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header")) {
 					generateGenerator(gen, schema);
 
 				} else {
@@ -204,21 +218,24 @@ public class DefaultTestConfigurationGenerator {
 		return testParameters;
 	}
 
-	private List<TestParameter> generateObjectParameters(Schema schema, String objectName, String in, Boolean required, Parameter.StyleEnum styleParam, Encoding.StyleEnum styleFormData, Boolean explode) {
+	private List<TestParameter> generateObjectParameters(Schema schema, String objectName, String in, Boolean required,
+			Parameter.StyleEnum styleParam, Encoding.StyleEnum styleFormData, Boolean explode) {
 		List<TestParameter> propertyParams = new ArrayList<>();
 
-		if(schema.getProperties() != null) {
-			for(Object o : schema.getProperties().entrySet()) {
+		if (schema.getProperties() != null) {
+			for (Object o : schema.getProperties().entrySet()) {
 				Map.Entry<String, Schema> property = (Map.Entry<String, Schema>) o;
 
 				TestParameter propertyParam = new TestParameter();
-				if((styleParam != null && styleParam.equals(Parameter.StyleEnum.DEEPOBJECT)) || (styleFormData != null && styleFormData.equals(Encoding.StyleEnum.DEEP_OBJECT))) {
+				if ((styleParam != null && styleParam.equals(Parameter.StyleEnum.DEEPOBJECT))
+						|| (styleFormData != null && styleFormData.equals(Encoding.StyleEnum.DEEP_OBJECT))) {
 					propertyParam.setName(objectName + "[" + property.getKey() + "]");
 				} else {
 					propertyParam.setName(property.getKey());
 				}
 
-				if (required == null || !required || schema.getRequired() == null || !schema.getRequired().contains(property.getKey()))
+				if (required == null || !required || schema.getRequired() == null
+						|| !schema.getRequired().contains(property.getKey()))
 					propertyParam.setWeight(0.5f);
 
 				propertyParam.setIn(in);
@@ -244,7 +261,8 @@ public class DefaultTestConfigurationGenerator {
 			paramType = ((ArraySchema) schema).getItems().getType();
 		}
 
-		// If the param is enum, set generator to input value iterator with the values defined in the enum
+		// If the param is enum, set generator to input value iterator with the values
+		// defined in the enum
 		if (paramEnumValues != null) {
 			paramType = "enum";
 		}
@@ -253,91 +271,96 @@ public class DefaultTestConfigurationGenerator {
 		GenParameter genParam1 = new GenParameter();
 
 		switch (paramType) {
-			case "string":
-				generateStringGenerator(gen, schema.getFormat(), schema.getPattern(), schema.getMinLength(), schema.getMaxLength());
-				break;
-			case "number":
-			case "integer":
-				generateNumberGenerator(gen, schema.getFormat(), schema.getMinimum(), schema.getMaximum(), schema.getExclusiveMinimum(), schema.getExclusiveMaximum());
-				break;
-			case "boolean":
-				gen.setType(RANDOM_BOOLEAN);         // Random number generator
-				gen.setGenParameters(genParams);
-				break;
-			case "enum":
-				gen.setType(RANDOM_INPUT_VALUE);
-				genParam1.setName(GEN_PARAM_VALUES);
-				genParam1.setValues(paramEnumValues);
-				genParams.add(genParam1);
-				gen.setGenParameters(genParams);
-				break;
-			default:
-				throw new IllegalArgumentException("The parameter type " + paramType + " is not allowed in query or path");
+		case "string":
+			generateStringGenerator(gen, schema.getFormat(), schema.getPattern(), schema.getMinLength(),
+					schema.getMaxLength());
+			break;
+		case "number":
+		case "integer":
+			generateNumberGenerator(gen, schema.getFormat(), schema.getMinimum(), schema.getMaximum(),
+					schema.getExclusiveMinimum(), schema.getExclusiveMaximum());
+			break;
+		case "boolean":
+			gen.setType(RANDOM_BOOLEAN); // Random number generator
+			gen.setGenParameters(genParams);
+			break;
+		case "enum":
+			gen.setType(RANDOM_INPUT_VALUE);
+			genParam1.setName(GEN_PARAM_VALUES);
+			genParam1.setValues(paramEnumValues);
+			genParams.add(genParam1);
+			gen.setGenParameters(genParams);
+			break;
+		default:
+			throw new IllegalArgumentException("The parameter type " + paramType + " is not allowed in query or path");
 		}
 	}
 
-	private void generateStringGenerator(Generator gen, String format, String pattern, Integer minLength, Integer maxLength) {
+	private void generateStringGenerator(Generator gen, String format, String pattern, Integer minLength,
+			Integer maxLength) {
 		GenParameter genParam1 = new GenParameter();
-		if(pattern != null) {
+		if (pattern != null) {
 			gen.setType(RANDOM_REG_EXP);
 			genParam1.setName(GEN_PARAM_REG_EXP);
 			genParam1.setValues(Collections.singletonList(pattern));
 			gen.getGenParameters().add(genParam1);
-		} else if(format == null) {
+		} else if (format == null) {
 			gen.setType(RANDOM_ENGLISH_WORD);
 			genParam1.setName(GEN_PARAM_MAX_WORDS);
 			genParam1.setValues(Collections.singletonList("1"));
 			gen.getGenParameters().add(genParam1);
 		} else {
 			switch (format) {
-				case "date":
-					gen.setType(RANDOM_DATE);
-					genParam1.setName(GEN_PARAM_FORMAT);
-					genParam1.setValues(Collections.singletonList("yyyy-MM-dd"));
-					gen.getGenParameters().add(genParam1);
-					break;
-				case "date-time":
-					gen.setType(RANDOM_DATE);
-					genParam1.setName(GEN_PARAM_FORMAT);
-					genParam1.setValues(Collections.singletonList("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-					gen.getGenParameters().add(genParam1);
-					break;
-				case "email":
-					gen.setType(RANDOM_REG_EXP);
-					genParam1.setName(GEN_PARAM_REG_EXP);
-					genParam1.setValues(Collections.singletonList("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"));
-					gen.getGenParameters().add(genParam1);
-					break;
-				case "uri":
-				case "url":
-					gen.setType(RANDOM_REG_EXP);
-					genParam1.setName(GEN_PARAM_REG_EXP);
-					genParam1.setValues(Collections.singletonList("https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"));
-					gen.getGenParameters().add(genParam1);
-					break;
-				case "binary":
-				case "byte":
-					gen.setType(RANDOM_INPUT_VALUE);
-					genParam1.setName(GEN_PARAM_VALUES);
-					genParam1.setValues(Arrays.asList("path/to/file", "path/to/another/file"));
-					gen.getGenParameters().add(genParam1);
-					break;
-				default:
-					gen.setType(RANDOM_ENGLISH_WORD);
-					genParam1.setName(GEN_PARAM_MAX_WORDS);
-					genParam1.setValues(Collections.singletonList("1"));
-					gen.getGenParameters().add(genParam1);
+			case "date":
+				gen.setType(RANDOM_DATE);
+				genParam1.setName(GEN_PARAM_FORMAT);
+				genParam1.setValues(Collections.singletonList("yyyy-MM-dd"));
+				gen.getGenParameters().add(genParam1);
+				break;
+			case "date-time":
+				gen.setType(RANDOM_DATE);
+				genParam1.setName(GEN_PARAM_FORMAT);
+				genParam1.setValues(Collections.singletonList("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+				gen.getGenParameters().add(genParam1);
+				break;
+			case "email":
+				gen.setType(RANDOM_REG_EXP);
+				genParam1.setName(GEN_PARAM_REG_EXP);
+				genParam1.setValues(Collections.singletonList(
+						"(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"));
+				gen.getGenParameters().add(genParam1);
+				break;
+			case "uri":
+			case "url":
+				gen.setType(RANDOM_REG_EXP);
+				genParam1.setName(GEN_PARAM_REG_EXP);
+				genParam1.setValues(Collections.singletonList(
+						"https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"));
+				gen.getGenParameters().add(genParam1);
+				break;
+			case "binary":
+			case "byte":
+				gen.setType(RANDOM_INPUT_VALUE);
+				genParam1.setName(GEN_PARAM_VALUES);
+				genParam1.setValues(Arrays.asList("path/to/file", "path/to/another/file"));
+				gen.getGenParameters().add(genParam1);
+				break;
+			default:
+				gen.setType(RANDOM_ENGLISH_WORD);
+				genParam1.setName(GEN_PARAM_MAX_WORDS);
+				genParam1.setValues(Collections.singletonList("1"));
+				gen.getGenParameters().add(genParam1);
 			}
 		}
 
-		if(!gen.getType().equals(RANDOM_ENGLISH_WORD) && minLength != null) {
+		if (!gen.getType().equals(RANDOM_ENGLISH_WORD) && minLength != null) {
 			GenParameter minLengthGenParam = new GenParameter();
 			minLengthGenParam.setName(GEN_PARAM_MIN_LENGTH);
 			minLengthGenParam.setValues(Collections.singletonList(minLength.toString()));
 			gen.getGenParameters().add(minLengthGenParam);
 		}
 
-		if(!gen.getType().equals(RANDOM_ENGLISH_WORD) && maxLength != null) {
+		if (!gen.getType().equals(RANDOM_ENGLISH_WORD) && maxLength != null) {
 			GenParameter maxLengthGenParam = new GenParameter();
 			maxLengthGenParam.setName(GEN_PARAM_MAX_LENGTH);
 			maxLengthGenParam.setValues(Collections.singletonList(maxLength.toString()));
@@ -346,7 +369,8 @@ public class DefaultTestConfigurationGenerator {
 
 	}
 
-	private void generateNumberGenerator(Generator gen, String format, BigDecimal minimum, BigDecimal maximum, Boolean exclusiveMinimum, Boolean exclusiveMaximum) {
+	private void generateNumberGenerator(Generator gen, String format, BigDecimal minimum, BigDecimal maximum,
+			Boolean exclusiveMinimum, Boolean exclusiveMaximum) {
 		GenParameter type = new GenParameter();
 		GenParameter min = new GenParameter();
 		GenParameter max = new GenParameter();
@@ -354,24 +378,23 @@ public class DefaultTestConfigurationGenerator {
 		gen.setType(RANDOM_NUMBER);
 
 		type.setName(GEN_PARAM_TYPE);
-		type.setValues(Collections.singletonList((format == null? "integer" : format)));
+		type.setValues(Collections.singletonList((format == null ? "integer" : format)));
 		gen.getGenParameters().add(type);
 
 		min.setName(GEN_PARAM_MIN);
-		if(minimum != null && exclusiveMinimum != null && exclusiveMinimum) {
+		if (minimum != null && exclusiveMinimum != null && exclusiveMinimum) {
 			min.setValues(Collections.singletonList(minimum.add(new BigDecimal(1)).toString()));
-		} else if(minimum != null) {
+		} else if (minimum != null) {
 			min.setValues(Collections.singletonList(minimum.toString()));
 		} else {
 			min.setValues(Collections.singletonList("1"));
 		}
 		gen.getGenParameters().add(min);
 
-
 		max.setName(GEN_PARAM_MAX);
-		if(maximum != null && exclusiveMaximum != null && exclusiveMaximum) {
+		if (maximum != null && exclusiveMaximum != null && exclusiveMaximum) {
 			max.setValues(Collections.singletonList(maximum.add(new BigDecimal(-1)).toString()));
-		} else if(maximum != null) {
+		} else if (maximum != null) {
 			max.setValues(Collections.singletonList(maximum.toString()));
 		} else {
 			max.setValues(Collections.singletonList("100"));
@@ -380,10 +403,11 @@ public class DefaultTestConfigurationGenerator {
 	}
 
 	private List<TestParameter> generateRequestBodyTestParameters(RequestBody requestBody) {
-		// TODO: set smarter generators for body parameters (and maybe others like headers or form-data)
+		// TODO: set smarter generators for body parameters (and maybe others like
+		// headers or form-data)
 		List<TestParameter> testParameters = new ArrayList<>();
 
-		if(requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON)) {
+		if (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON)) {
 
 			TestParameter testParam = new TestParameter();
 			testParam.setName("body");
@@ -400,24 +424,31 @@ public class DefaultTestConfigurationGenerator {
 			testParam.setGenerator(gen);
 			testParameters.add(testParam);
 
-		} else if(requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) || requestBody.getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA)) {
+		} else if (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED)
+				|| requestBody.getContent().containsKey(MEDIA_TYPE_MULTIPART_FORM_DATA)) {
 
-			MediaType mediaType = requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
-					requestBody.getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
-					requestBody.getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
+			MediaType mediaType = requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED)
+					? requestBody.getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED)
+					: requestBody.getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
 
-			for(Object entry : mediaType.getSchema().getProperties().entrySet()) {
+			for (Object entry : mediaType.getSchema().getProperties().entrySet()) {
 				Schema parameterSchema = ((Entry<String, Schema>) entry).getValue();
 				String parameterName = ((Entry<String, Schema>) entry).getKey();
 
-				if(parameterSchema.getType().equals("object")) {
-					Encoding encoding = mediaType.getEncoding() != null? mediaType.getEncoding().get(parameterName) : null;
+				if (parameterSchema.getType().equals("object")) {
+					Encoding encoding = mediaType.getEncoding() != null ? mediaType.getEncoding().get(parameterName)
+							: null;
 
-					if(encoding == null) {
-						testParameters.addAll(generateObjectParameters(parameterSchema, parameterName, "formData", parameterSchema.getRequired() != null && parameterSchema.getRequired().contains(parameterName),
-								null, null, null));
+					if (encoding == null) {
+						testParameters
+								.addAll(generateObjectParameters(parameterSchema, parameterName, "formData",
+										parameterSchema.getRequired() != null
+												&& parameterSchema.getRequired().contains(parameterName),
+										null, null, null));
 					} else {
-						testParameters.addAll(generateObjectParameters(parameterSchema, parameterName, "formData", parameterSchema.getRequired() != null && parameterSchema.getRequired().contains(parameterName),
+						testParameters.addAll(generateObjectParameters(parameterSchema, parameterName, "formData",
+								parameterSchema.getRequired() != null
+										&& parameterSchema.getRequired().contains(parameterName),
 								null, encoding.getStyle(), encoding.getExplode()));
 					}
 
@@ -426,11 +457,12 @@ public class DefaultTestConfigurationGenerator {
 					TestParameter testParam = new TestParameter();
 
 					Encoding encoding = null;
-					if(mediaType.getEncoding() != null) {
+					if (mediaType.getEncoding() != null) {
 						encoding = mediaType.getEncoding().get(parameterName);
 					}
 
-					if(parameterSchema.getType().equals("array") && encoding != null && encoding.getStyle().equals(Encoding.StyleEnum.DEEP_OBJECT)) {
+					if (parameterSchema.getType().equals("array") && encoding != null
+							&& encoding.getStyle().equals(Encoding.StyleEnum.DEEP_OBJECT)) {
 						testParam.setName(parameterName + "[]");
 					} else {
 						testParam.setName(parameterName);
@@ -438,7 +470,8 @@ public class DefaultTestConfigurationGenerator {
 
 					testParam.setIn("formData");
 
-					if (mediaType.getSchema().getRequired() == null || !mediaType.getSchema().getRequired().contains(parameterSchema.getName())) {
+					if (mediaType.getSchema().getRequired() == null
+							|| !mediaType.getSchema().getRequired().contains(parameterSchema.getName())) {
 						testParam.setWeight(0.5f);
 					}
 
@@ -465,7 +498,8 @@ public class DefaultTestConfigurationGenerator {
 		// Look for 'examples' field in the parameter object
 		if (mediaType.getExamples() != null) {
 			try {
-				bodyParam = objectMapper.writeValueAsString(mediaType.getExamples().entrySet().iterator().next().getValue());
+				bodyParam = objectMapper
+						.writeValueAsString(mediaType.getExamples().entrySet().iterator().next().getValue());
 			} catch (JsonProcessingException e) {
 				logger.error(e.getMessage(), e);
 			}
@@ -484,7 +518,8 @@ public class DefaultTestConfigurationGenerator {
 		else if (mediaType.getSchema().get$ref() != null) {
 			String bodyReference = mediaType.getSchema().get$ref();
 			try {
-				bodyParam = objectMapper.writeValueAsString(spec.getSpecification().getComponents().getSchemas().get(bodyReference.replace("#/components/schemas/", "")).getExample());
+				bodyParam = objectMapper.writeValueAsString(spec.getSpecification().getComponents().getSchemas()
+						.get(bodyReference.replace("#/components/schemas/", "")).getExample());
 			} catch (JsonProcessingException e) {
 				logger.error(e.getMessage(), e);
 			}
@@ -523,5 +558,5 @@ public class DefaultTestConfigurationGenerator {
 		auth.setQueryParams(new HashMap<>());
 		return auth;
 	}
-	
+
 }
