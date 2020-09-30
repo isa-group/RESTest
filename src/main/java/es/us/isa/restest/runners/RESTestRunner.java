@@ -57,7 +57,7 @@ public class RESTestRunner {
 		generateReports();
 	}
 
-	private void generateReports() {
+	protected void generateReports() {
 		// Generate test report
 		logger.info("Generating test report");
 		allureReportManager.generateReport();
@@ -67,7 +67,7 @@ public class RESTestRunner {
 		statsReportManager.generateReport();
 	}
 
-	private Class<?> getTestClass() {
+	protected Class<?> getTestClass() {
 		// Load test class
 		String filePath = targetDir + "/" + testClassName + ".java";
 		String className = packageName + "." + testClassName;
