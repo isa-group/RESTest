@@ -32,7 +32,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	public static final String INDIVIDUAL_PARAMETER_CONSTRAINT = "individual_parameter_constraint";
 	public static final String INTER_PARAMETER_DEPENDENCY = "inter_parameter_dependency";
-	public static final String INVALID_REQUEST_BODY = "inter_parameter_dependency";
+	public static final String INVALID_REQUEST_BODY = "invalid_request_body";
 	private Float faultyDependencyRatio = 0.5f;												// Ratio of faulty test cases due to inter-parameter deps. Defaults to 0.5
 	private Integer reloadInputDataEvery = 100;      										// Number of requests using the same randomly generated input data
 	private Integer inputDataMaxValues = 1000;       										// Number of values used for each parameter when reloading input data

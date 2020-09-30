@@ -32,7 +32,8 @@ public class TestCaseMutationTest {
         tc.addPathParameter("id", "c1");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertFalse("The test case should NOT be mutated", mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet())!="");
+
+        assertTrue("The test case should NOT be mutated", mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet())=="");
         assertEquals("Both test cases should be equal", tc, oldTc);
     }
 

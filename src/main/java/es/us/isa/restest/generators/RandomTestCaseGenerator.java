@@ -22,7 +22,7 @@ import es.us.isa.restest.util.Timer;
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
 	public static final String INDIVIDUAL_PARAMETER_CONSTRAINT = "individual_parameter_constraint";
-	public static final String INVALID_REQUEST_BODY = "inter_parameter_dependency";
+	public static final String INVALID_REQUEST_BODY = "invalid_request_body";
 	
 	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
@@ -63,8 +63,14 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		setTestCaseParameters(test, testOperation);
 		
 		// If more faulty test cases need to be generated, try mutating the current test case to make it invalid
-		if (nFaulty < (faultyRatio * numberOfTests))
+		if (nFaulty < (int) (faultyRatio * numberOfTests))
 			mutateTestCase(test, testOperation);
+		
+		// Watch out! The test case could still be faulty if the body has been perturbated (for creating new test data from existing inputs)
+		if (!test.getFaulty() && checkFaulty(test, validator)) { 
+			test.setFaulty(true);
+			test.setFaultyReason(INVALID_REQUEST_BODY);
+		}
 
 		return test;
 	}
@@ -77,12 +83,6 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		if (mutationDescription!="") {
 			test.setFaulty(true);
 			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
-		}
-		
-		// Watch out! The test case could still be faulty if the body has been perturbated (for creating new test data from existing inputs)
-		if (!test.getFaulty() && checkFaulty(test, validator)) { 
-			test.setFaulty(true);
-			test.setFaultyReason(INVALID_REQUEST_BODY);
 		}
 		
 	}
