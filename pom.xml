@@ -198,6 +198,7 @@
   			<groupId>org.mockito</groupId>
   			<artifactId>mockito-core</artifactId>
   			<version>${mockito.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 
@@ -319,7 +320,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>es.us.isa.restest.main.IterativeExample</mainClass>
+							<mainClass>es.us.isa.restest.main.TestGenerationAndExecution</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>
