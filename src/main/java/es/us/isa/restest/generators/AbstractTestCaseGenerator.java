@@ -71,7 +71,8 @@ public abstract class AbstractTestCaseGenerator {
 		ValidationErrorsWhitelist whitelist = ValidationErrorsWhitelist.create()
 				.withRule(
 						"Ignore non-strings for string-type formData parameters",
-						allOf( // logical AND: all conditions must be satisfied to whitelist a message
+						allOf(
+								headerContainsSubstring("Content-Type", "application/x-www-form-urlencoded"),
 								messageHasKey("validation.request.body.schema.type"),
 								messageContainsSubstring("does not match any allowed primitive type (allowed: [\"string\"])")
 						)

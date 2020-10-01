@@ -372,7 +372,9 @@ public class TestCase implements Serializable {
 			requestBuilder.withContentType("application/x-www-form-urlencoded");
 		}
 
-		return validator.validateRequest(requestBuilder.build()).getMessages().stream().map(ValidationReport.Message::getKey).collect(Collectors.toList());
+		return validator.validateRequest(requestBuilder.build()).getMessages().stream()
+				.filter(m -> m.getLevel() != ValidationReport.Level.IGNORE)
+				.map(m -> m.getKey() + ": " + m.getMessage()).collect(Collectors.toList());
 	}
 
 	/**
