@@ -24,13 +24,13 @@ import static es.us.isa.restest.util.Timer.TestStep.*;
  */
 public class RESTestRunner {
 
-	private String targetDir;							// Directory where tests will be generated
-	private String testClassName;						// Name of the class to be generated
+	protected String targetDir;							// Directory where tests will be generated
+	protected String testClassName;						// Name of the class to be generated
 	private String packageName;							// Package name
 	private AbstractTestCaseGenerator generator;   		// Test case generator
-	private IWriter writer;								// RESTAssured writer
-	private AllureReportManager allureReportManager;	// Allure report manager
-	private StatsReportManager statsReportManager;		// Stats report manager
+	protected IWriter writer;							// RESTAssured writer
+	protected AllureReportManager allureReportManager;	// Allure report manager
+	protected StatsReportManager statsReportManager;	// Stats report manager
 	private int numTestCases = 0;						// Number of test cases generated so far
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 
