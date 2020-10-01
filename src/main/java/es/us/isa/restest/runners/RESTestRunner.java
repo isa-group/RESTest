@@ -94,7 +94,7 @@ public class RESTestRunner {
 
 	}
 
-	private void testExecution(Class<?> testClass)  {
+	protected void testExecution(Class<?> testClass)  {
 		
 		JUnitCore junit = new JUnitCore();
 		//junit.addListener(new TextListener(System.out));
