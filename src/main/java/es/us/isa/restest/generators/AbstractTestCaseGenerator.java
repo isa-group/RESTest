@@ -1,6 +1,8 @@
 package es.us.isa.restest.generators;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
+import com.atlassian.oai.validator.whitelist.ValidationErrorsWhitelist;
+import com.atlassian.oai.validator.whitelist.rule.WhitelistRules;
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationVisitor;
 import es.us.isa.restest.configuration.pojos.*;
@@ -18,6 +20,7 @@ import org.javatuples.Pair;
 
 import java.util.*;
 
+import static com.atlassian.oai.validator.whitelist.rule.WhitelistRules.*;
 import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
 
@@ -62,8 +65,18 @@ public abstract class AbstractTestCaseGenerator {
 		if (authPath != null)
 			this.authManager = new AuthManager(authPath);
 
-		// Test case validator
-		this.validator = OpenApiInteractionValidator.createFor(spec.getPath()).build();
+		// Test case validator:
+		// Whitelist: Fix for swagger-validation library: formData parameters defined as string should not
+		// violate the schema when using numbers or booleans, since those are still strings.
+		ValidationErrorsWhitelist whitelist = ValidationErrorsWhitelist.create()
+				.withRule(
+						"Ignore non-strings for string-type formData parameters",
+						allOf( // logical AND: all conditions must be satisfied to whitelist a message
+								messageHasKey("validation.request.body.schema.type"),
+								messageContainsSubstring("does not match any allowed primitive type (allowed: [\"string\"])")
+						)
+				);
+		this.validator = OpenApiInteractionValidator.createFor(spec.getPath()).withWhitelist(whitelist).build();
 		
 		this.numberOfTests = nTests;
 		
