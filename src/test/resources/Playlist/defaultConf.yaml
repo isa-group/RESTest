@@ -1,143 +1,99 @@
 ---
 auth:
   required: true
-  queryParams: []
-  headerParams: []
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
 testConfiguration:
-  testPaths:
-  - testPath: /songs/{id}
-    operations:
-    - operationId: getSong
-      method: get
-      testParameters:
-      - name: id
-        weight: null
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-    - operationId: deleteSong
-      method: delete
-      testParameters:
-      - name: id
-        weight: null
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
+  operations:
+  - testPath: "/songs/{id}"
+    operationId: getSong
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/songs/{id}"
+    operationId: deleteSong
+    method: delete
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
   - testPath: /songs
-    operations:
-    - operationId: getAllSongs
-      method: get
-      testParameters: []
-      paramDependencies: null
-      expectedResponse: 200
-    - operationId: putSong
-      method: put
-      testParameters:
-      - name: body
-        weight: null
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - '{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
-              Like Teen Spirit"}'
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-    - operationId: postSong
-      method: post
-      testParameters:
-      - name: body
-        weight: null
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - '{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
-              Like Teen Spirit"}'
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-  - testPath: /lists/{id}
-    operations:
-    - operationId: getList
-      method: get
-      testParameters:
-      - name: id
-        weight: null
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-    - operationId: deleteList
-      method: delete
-      testParameters:
-      - name: id
-        weight: null
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
+    operationId: getAllSongs
+    method: get
+    testParameters: null
+    expectedResponse: 200
+  - testPath: /songs
+    operationId: putSong
+    method: put
+    testParameters: []
+    expectedResponse: 200
+  - testPath: /songs
+    operationId: postSong
+    method: post
+    testParameters: []
+    expectedResponse: 200
+  - testPath: "/lists/{id}"
+    operationId: getList
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/lists/{id}"
+    operationId: deleteList
+    method: delete
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
   - testPath: /lists
-    operations:
-    - operationId: getAllLists
-      method: get
-      testParameters: []
-      paramDependencies: null
-      expectedResponse: 200
-    - operationId: putList
-      method: put
-      testParameters:
-      - name: body
-        weight: null
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - '{"songs":[{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
-              Like Teen Spirit"},{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
-              Like Teen Spirit"}],"name":"Smell Like Teen Spirit","description":"Nirvana","id":"d290f1ee-6c54-4b01-90e6-d701748f0851"}'
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
-    - operationId: postList
-      method: post
-      testParameters:
-      - name: body
-        weight: null
-        generator:
-          type: RandomInputValue
-          genParameters:
-          - name: values
-            values:
-            - '{"songs":[{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
-              Like Teen Spirit"},{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
-              Like Teen Spirit"}],"name":"Smell Like Teen Spirit","description":"Nirvana","id":"d290f1ee-6c54-4b01-90e6-d701748f0851"}'
-            objectValues: null
-      paramDependencies: null
-      expectedResponse: 200
+    operationId: getAllLists
+    method: get
+    testParameters: null
+    expectedResponse: 200
+  - testPath: /lists
+    operationId: putList
+    method: put
+    testParameters: []
+    expectedResponse: 200
+  - testPath: /lists
+    operationId: postList
+    method: post
+    testParameters: []
+    expectedResponse: 200

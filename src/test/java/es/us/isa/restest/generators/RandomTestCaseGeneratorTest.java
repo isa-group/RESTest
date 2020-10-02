@@ -392,6 +392,39 @@ public class RandomTestCaseGeneratorTest {
     }
     
     
+	@Test
+	public void commentsFullTestCaseGeneratorWithPerturbationAndFaults() {
+		
+		// Load specification
+		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+		
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf_forTestSuite3.yaml", spec);
+		
+		// Set number of test cases to be generated on each path
+		int numTestCases = 10;
+		
+        // Faulty ratio
+        float faultyRatio = 0.1f;
+		
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+		
+		assertEquals("Incorrect number of test cases", 30, testCases.size());
+        assertEquals("Incorrect number of faulty test cases generated", generator.getnFaulty(), testCases.stream().filter(TestCase::getFaulty).count());
+        assertEquals("Incorrect number of faulty test cases", (int) (faultyRatio*testCases.size()), testCases.stream().filter(c -> c.getFaulty()).count());
+		
+		// Write test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest", "restassured", basePath);
+		writer.setOAIValidation(true);
+		writer.write(testCases);	
+	}
+    
     
     // RANDOM TEST CASE GENERATION WITH FILTERS. NO FAULTS
     
@@ -715,7 +748,7 @@ public class RandomTestCaseGeneratorTest {
 		
 		assertEquals("Incorrect number of test cases", 18, testCases.size());
 	    assertEquals("Incorrect number of faulty test cases generated", generator.getnFaulty(), testCases.stream().filter(TestCase::getFaulty).count());
-	    assertEquals("Incorrect number of faulty test cases", 6, testCases.stream().filter(c -> c.getFaulty()).count());
+	    assertEquals("Incorrect number of faulty test cases", (int) (faultyRatio*testCases.size()), testCases.stream().filter(c -> c.getFaulty()).count());
 		 
 		// Check coverage
 		/*

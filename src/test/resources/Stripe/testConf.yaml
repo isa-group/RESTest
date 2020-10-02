@@ -4,11 +4,11 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: null
-  headersPath: Stripe/headers.json
+  headersPath: null
 testConfiguration:
   operations:
-  - operationId: PostProducts
-    testPath: /v1/products
+  - testPath: /v1/products
+    operationId: PostProducts
     method: post
     testParameters:
     - name: active
@@ -17,21 +17,16 @@ testConfiguration:
       generator:
         type: RandomBoolean
         genParameters: []
-    - name: attributes[]
+    - name: "attributes[]"
       in: formData
       weight: 0.5
       generator:
-        type: RandomString
+        type: RandomEnglishWord
         genParameters:
-          - name: minLength
-            values:
-              - 5
-          - name: maxLength
-            values:
-              - 20
-          - name: includeNumbers
-            values:
-              - false
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
     - name: caption
       in: formData
       weight: 0.5
@@ -42,9 +37,9 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: deactivate_on[]
+    - name: "deactivate_on[]"
       in: formData
-      weight: 0
+      weight: 0.5
       generator:
         type: RandomEnglishWord
         genParameters:
@@ -62,7 +57,7 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: expand[]
+    - name: "expand[]"
       in: formData
       weight: 0.5
       generator:
@@ -74,20 +69,15 @@ testConfiguration:
           objectValues: null
     - name: id
       in: formData
-      weight: 0
+      weight: 0.5
       generator:
-        type: RandomString
+        type: RandomEnglishWord
         genParameters:
-        - name: minLength
+        - name: maxWords
           values:
-          - 15
-        - name: maxLength
-          values:
-          - 20
-        - name: includeNumbers
-          values:
-          - true
-    - name: images[]
+          - 1
+          objectValues: null
+    - name: "images[]"
       in: formData
       weight: 0.5
       generator:
@@ -107,42 +97,78 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: package_dimensions[height]
+    - name: "package_dimensions[height]"
       in: formData
       weight: 0.5
       generator:
-        type: RandomRegExp
+        type: RandomNumber
         genParameters:
-          - name: regExp
-            values:
-              - ([0-9]|[1-9]\d)(\.\d\d?)?
-    - name: package_dimensions[length]
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: "package_dimensions[length]"
       in: formData
       weight: 0.5
       generator:
-        type: RandomRegExp
+        type: RandomNumber
         genParameters:
-          - name: regExp
-            values:
-              - ([0-9]|[1-9]\d)(\.\d\d?)?
-    - name: package_dimensions[weight]
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: "package_dimensions[weight]"
       in: formData
       weight: 0.5
       generator:
-        type: RandomRegExp
+        type: RandomNumber
         genParameters:
-          - name: regExp
-            values:
-              - ([0-9]|[1-9]\d)(\.\d\d?)?
-    - name: package_dimensions[width]
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: "package_dimensions[width]"
       in: formData
       weight: 0.5
       generator:
-        type: RandomRegExp
+        type: RandomNumber
         genParameters:
-          - name: regExp
-            values:
-              - ([0-9]|[1-9]\d)(\.\d\d?)?
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
     - name: shippable
       in: formData
       weight: 0.5
@@ -153,17 +179,12 @@ testConfiguration:
       in: formData
       weight: 0.5
       generator:
-        type: RandomString
+        type: RandomEnglishWord
         genParameters:
-          - name: minLength
-            values:
-              - 5
-          - name: maxLength
-            values:
-              - 20
-          - name: includeNumbers
-            values:
-              - false
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
     - name: type
       in: formData
       weight: 0.5
@@ -179,20 +200,12 @@ testConfiguration:
       in: formData
       weight: 0.5
       generator:
-        type: RandomString
+        type: RandomEnglishWord
         genParameters:
-        - name: minLength
+        - name: maxWords
           values:
-            - 1
-        - name: maxLength
-          values:
-            - 12
-        - name: includeNumbers
-          values:
-            - true
-        - name: includeAlphabetic
-          values:
-            - false
+          - 1
+          objectValues: null
     - name: url
       in: formData
       weight: 0.5
@@ -203,3 +216,4 @@ testConfiguration:
           values:
           - 1
           objectValues: null
+    expectedResponse: 200

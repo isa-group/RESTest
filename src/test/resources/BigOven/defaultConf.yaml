@@ -1,521 +1,560 @@
 ---
 auth:
   required: true
-  queryParams: []
-  headerParams: []
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
 testConfiguration:
-  testPaths:
+  operations:
   - testPath: /recipes
-    operations:
-    - operationId: Recipe_RecipeSearch
-      method: get
-      testParameters:
-      - name: any_kw
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: folder
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: coll
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: filter
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: title_kw
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: userId
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: username
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: token
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: photos
-        weight: 0.5
-        generator:
-          type: RandomBoolean
-          genParameters: []
-      - name: boostmine
-        weight: 0.5
-        generator:
-          type: RandomBoolean
-          genParameters: []
-      - name: include_cat
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: exclude_cat
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: include_primarycat
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: exclude_primarycat
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: include_ing
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: exclude_ing
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: cuisine
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: db
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: userset
-        weight: 0.5
-        generator:
-          type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-      - name: servingsMin
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: totalMins
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: maxIngredients
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: minIngredients
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: rpp
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: pg
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: vtn
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: vgn
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: chs
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: glf
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: ntf
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: dyf
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: sff
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: slf
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: tnf
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: wmf
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: rmf
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: cps
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: champion
-        weight: 0.5
-        generator:
-          type: RandomNumber
-          genParameters:
-          - name: type
-            values:
-            - integer
-            objectValues: null
-          - name: min
-            values:
-            - 1
-            objectValues: null
-          - name: max
-            values:
-            - 100
-            objectValues: null
-      - name: synonyms
-        weight: 0.5
-        generator:
-          type: RandomBoolean
-          genParameters: []
-      paramDependencies: null
-      expectedResponse: 200
+    operationId: Recipe_RecipeSearch
+    method: get
+    testParameters:
+    - name: any_kw
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: folder
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: coll
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: filter
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: title_kw
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: userId
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: username
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: token
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: photos
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomBoolean
+        genParameters: []
+    - name: boostmine
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomBoolean
+        genParameters: []
+    - name: include_cat
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: exclude_cat
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: include_primarycat
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: exclude_primarycat
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: include_ing
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: exclude_ing
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: cuisine
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: db
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: userset
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: servingsMin
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - double
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: totalMins
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: maxIngredients
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: minIngredients
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: rpp
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: pg
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: vtn
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: vgn
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: chs
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: glf
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: ntf
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: dyf
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: sff
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: slf
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: tnf
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: wmf
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: rmf
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: cps
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: champion
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: synonyms
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomBoolean
+        genParameters: []
+    expectedResponse: 200
