@@ -23,17 +23,17 @@ testConfiguration:
           objectValues: null
         - name: minWords
           values:
-            - 1
+          - 1
           objectValues: null
     - name: data
       in: formData
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: RandomRegExp
         genParameters:
-        - name: values
+        - name: regExp
           values:
-          - "{\"annotation\":[\n {\"text\": \"A \"},\n {\"markup\": \"<b>\"},\n {\"text\": \"test\"},\n {\"markup\": \"</b>\"}\n]}"
+          - '\{\"(annotation|text)\": \[((\{\"text\": \"(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
           objectValues: null
     - name: language
       in: formData
@@ -43,7 +43,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/main/resources/TestData/languagetool-codes.csv'
+          - 'src/main/resources/TestData/languagetool-codes-with-auto.csv'
           objectValues: null
     - name: altLanguages
       in: formData
@@ -53,7 +53,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/main/resources/TestData/languagetool-codes.csv'
+              - 'src/main/resources/TestData/languagetool-codes-variants.csv'
             objectValues: null
           - name: minValues
             values:
@@ -79,7 +79,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/main/resources/TestData/languagetool-codes.csv'
+              - 'src/main/resources/TestData/languagetool-codes-variants.csv'
             objectValues: null
     - name: enabledRules
       in: formData
@@ -87,9 +87,9 @@ testConfiguration:
       generator:
         type: RandomInputValue
         genParameters:
-          - name: values
+          - name: csv
             values:
-              - '1,2,3,4'
+              - 'src/main/resources/TestData/languagetool-rules.csv'
             objectValues: null
     - name: disabledRules
       in: formData
@@ -97,9 +97,9 @@ testConfiguration:
       generator:
         type: RandomInputValue
         genParameters:
-          - name: values
+          - name: csv
             values:
-              - '1,2,3,4'
+              - 'src/main/resources/TestData/languagetool-rules.csv'
             objectValues: null
     - name: enabledCategories
       in: formData
@@ -107,9 +107,9 @@ testConfiguration:
       generator:
         type: RandomInputValue
         genParameters:
-          - name: values
+          - name: csv
             values:
-              - '1,2,3,4'
+              - 'src/main/resources/TestData/languagetool-categories.csv'
             objectValues: null
     - name: disabledCategories
       in: formData
@@ -117,9 +117,9 @@ testConfiguration:
       generator:
         type: RandomInputValue
         genParameters:
-          - name: values
+          - name: csv
             values:
-              - '1,2,3,4'
+              - 'src/main/resources/TestData/languagetool-categories.csv'
             objectValues: null
     - name: enabledOnly
       in: formData

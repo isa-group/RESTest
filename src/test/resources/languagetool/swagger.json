@@ -21,6 +21,7 @@
       "post": {
         "summary": "Check a text",
         "description": "The main feature - check a text with LanguageTool for possible style and grammar issues.",
+        "operationId": "check",
         "parameters": [
           {
             "name": "text",
@@ -93,6 +94,12 @@
             "default": false,
             "description": "If true, only the rules and categories whose IDs are specified with `enabledRules` or `enabledCategories` are enabled."
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(text, data);",
+          "IF preferredVariants THEN language=='auto';",
+          "IF enabledOnly==true THEN NOT (disabledRules OR disabledCategories);",
+          "IF enabledOnly==true THEN (enabledRules OR enabledCategories);"
         ],
         "responses": {
           "200": {
@@ -306,6 +313,7 @@
     "/languages": {
       "get": {
         "summary": "Get a list of supported languages.",
+        "operationId": "get",
         "responses": {
           "200": {
             "description": "An array of language objects.",
