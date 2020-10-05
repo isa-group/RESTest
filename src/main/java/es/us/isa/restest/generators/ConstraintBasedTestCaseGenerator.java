@@ -87,7 +87,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		else
 			maxFaultyTestDueToDependencyViolations = (int) ((numberOfTests * faultyRatio * faultyDependencyRatio));
 		
-		maxFaultyTestsDueToIndividualConstraints = (int) (((numberOfTests * faultyRatio) - nFaultyTestDueToDependencyViolations));
+		maxFaultyTestsDueToIndividualConstraints = (int) (((numberOfTests * faultyRatio) - maxFaultyTestDueToDependencyViolations));
 		
 		nFaultyTestDueToDependencyViolations = 0;
 		nFaultyTestsDueToIndividualConstraint = 0;
