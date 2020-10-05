@@ -7,16 +7,17 @@ import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.executeSPARQLQuery;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.generateQuery;
-import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
+import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
 
@@ -33,7 +34,7 @@ public class SemanticInputGenerator {
     // TODO: Take restrictions (regExp, min, max, etc.) into consideration
     // TODO: Take arrays into consideration
     // TODO: Take datatypes into consideration
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // Generate an updated testConf.yaml file with auto-generated inputs
 //        if(args.length > 0)
 //            setEvaluationParameters(args[0]);
@@ -81,14 +82,24 @@ public class SemanticInputGenerator {
 
         // Create dir for automatically generated csv files
         createDir(csvPath);
-
+        
         // Generate a csv file for each parameter
         // File name = OperationName_ParameterName
         // Delete file if it exists
         for(SemanticOperation operation: semanticOperations){
             for(TestParameter parameter: operation.getSemanticParameters().keySet()){
-                String fileName = "/" + operation.getOperationName() + "_" + parameter.getName();
+                String fileName = "/" + operation.getOperationName() + "_" + parameter.getName() + ".csv";
+                String path = csvPath + fileName;
+                deleteFile(path);
+                createFileIfNotExists(path);
 
+                // Write the Set of values as a csv file
+                FileWriter writer = new FileWriter(path);
+                String collect = operation.getSemanticParameters().get(parameter)
+                        .stream().collect(Collectors.joining("\n"));
+
+                writer.write(collect);
+                writer.close();
             }
         }
 

@@ -1,0 +1,84 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /book
+    operationId: getBook
+    method: get
+    testParameters:
+    - name: author
+      in: query
+      weight: null
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: title
+      in: query
+      weight: null
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: publisher
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: isbn
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: regExp
+          values:
+          - "^[0-9]*[-| ][0-9]*[-| ][0-9]*[-| ][0-9]*[-| ][0-9]*$"
+          objectValues: null
+    - name: genre
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: values
+          values:
+          - scienceFiction
+          - fantasy
+          - historical
+          objectValues: null
+    - name: numberOfPages
+      in: query
+      weight: null
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 200
+          objectValues: null
+    expectedResponse: 200

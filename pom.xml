@@ -291,17 +291,34 @@
 		<!-- LOCAL DEPENDENCIES -->
 		<!-- JSONmutator local dependency -->
 		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>json-mutator</artifactId>
+			<groupId>JSONmutator</groupId>
+			<artifactId>JSONmutator</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/JSONmutator.jar</systemPath>
 		</dependency>
 
 		<!-- IDLreasoner local dependency -->
 		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>idl-reasoner</artifactId>
+			<groupId>IDLreasoner</groupId>
+			<artifactId>IDLreasoner</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/IDLreasoner.jar</systemPath>
 		</dependency>
+<!--		&lt;!&ndash; JSONmutator local dependency &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>es.us.isa</groupId>-->
+<!--			<artifactId>json-mutator</artifactId>-->
+<!--			<version>0.0.1-SNAPSHOT</version>-->
+<!--		</dependency>-->
+
+<!--		&lt;!&ndash; IDLreasoner local dependency &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>es.us.isa</groupId>-->
+<!--			<artifactId>idl-reasoner</artifactId>-->
+<!--			<version>0.0.1-SNAPSHOT</version>-->
+<!--		</dependency>-->
 
 		<!-- IDL2MiniZincMapper local dependency -->
 		<dependency>
