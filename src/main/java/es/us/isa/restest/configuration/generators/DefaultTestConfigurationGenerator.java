@@ -48,6 +48,7 @@ public class DefaultTestConfigurationGenerator {
 	public static final String RANDOM_BOOLEAN = "RandomBoolean";
 	public static final String RANDOM_INPUT_VALUE = "RandomInputValue";
 	public static final String OBJECT_PERTURBATOR = "ObjectPerturbator";
+	public static final String SEMANTIC_PARAMETER = "SemanticParameter";
 
 	public static final String GEN_PARAM_VALUES = "values";
 	public static final String GEN_PARAM_STRING_OBJECT = "stringObject";
