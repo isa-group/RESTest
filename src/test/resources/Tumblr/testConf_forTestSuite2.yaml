@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
-  apiKeysPath: Tumblr/apikeys.json
+  apiKeysPath: null
   headersPath: null
 testConfiguration:
   operations:

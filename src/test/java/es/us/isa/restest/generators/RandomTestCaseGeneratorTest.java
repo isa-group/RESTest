@@ -603,7 +603,7 @@ public class RandomTestCaseGeneratorTest {
 
 		// Load configuration
 		TestConfigurationObject conf = TestConfigurationIO
-				.loadConfiguration("src/test/resources/Foursquare/testConf.yaml", spec);
+				.loadConfiguration("src/test/resources/Foursquare/testConf_forTestSuite2.yaml", spec);
 
 		// Set number of test cases to be generated on each path, on each operation (HTTP method)
 		int numTestCases = 10;
@@ -643,7 +643,7 @@ public class RandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Marvel/testConf.yaml",
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Marvel/testConf_forTestSuite2.yaml",
 				spec);
 
 		// Set number of test cases to be generated on each path, on each operation
@@ -767,7 +767,7 @@ public class RandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf.yaml",
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf_forTestSuite2.yaml",
 				spec);
 
 		// Set number of test cases to be generated on each path, on each operation
