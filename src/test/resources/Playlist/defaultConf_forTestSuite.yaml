@@ -1,0 +1,99 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+    - testPath: "/songs/{id}"
+      operationId: getSong
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generator:
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/songs/{id}"
+      operationId: deleteSong
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generator:
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /songs
+      operationId: getAllSongs
+      method: get
+      testParameters: null
+      expectedResponse: 200
+    - testPath: /songs
+      operationId: putSong
+      method: put
+      testParameters: []
+      expectedResponse: 200
+    - testPath: /songs
+      operationId: postSong
+      method: post
+      testParameters: []
+      expectedResponse: 200
+    - testPath: "/lists/{id}"
+      operationId: getList
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generator:
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/lists/{id}"
+      operationId: deleteList
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generator:
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /lists
+      operationId: getAllLists
+      method: get
+      testParameters: null
+      expectedResponse: 200
+    - testPath: /lists
+      operationId: putList
+      method: put
+      testParameters: []
+      expectedResponse: 200
+    - testPath: /lists
+      operationId: postList
+      method: post
+      testParameters: []
+      expectedResponse: 200

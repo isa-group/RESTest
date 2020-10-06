@@ -65,7 +65,7 @@ public class RandomTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 4;
@@ -97,7 +97,7 @@ public class RandomTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 5;
@@ -126,7 +126,7 @@ public class RandomTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/DataAtWork/fullConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/DataAtWork/fullConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 1;
@@ -154,7 +154,7 @@ public class RandomTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Foursquare/testConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Foursquare/testConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 10;
@@ -183,7 +183,7 @@ public class RandomTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Marvel/testConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Marvel/testConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 4;
@@ -213,7 +213,7 @@ public class RandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Playlist/defaultConf.yaml", spec);
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Playlist/defaultConf_forTestSuite.yaml", spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 3;
@@ -269,7 +269,7 @@ public class RandomTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 4;
@@ -302,7 +302,7 @@ public class RandomTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 5;
@@ -331,7 +331,7 @@ public class RandomTestCaseGeneratorTest {
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf.yaml", spec);
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf_forTestSuite.yaml", spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 20;
@@ -366,7 +366,7 @@ public class RandomTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Travel/testConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Travel/testConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path
         int numTestCases = 20;
@@ -584,7 +584,7 @@ public class RandomTestCaseGeneratorTest {
 
 		// Load configuration
 		TestConfigurationObject conf = TestConfigurationIO
-				.loadConfiguration("src/test/resources/Petstore/fullConf.yaml", spec);
+				.loadConfiguration("src/test/resources/Petstore/fullConf_forTestSuite.yaml", spec);
 
 		// Set number of test cases to be generated on each path, on each operation
 		// (HTTP method)
@@ -702,7 +702,7 @@ public class RandomTestCaseGeneratorTest {
 
 		// Load configuration
 		TestConfigurationObject conf = TestConfigurationIO
-				.loadConfiguration("src/test/resources/Petstore/fullConf.yaml", spec);
+				.loadConfiguration("src/test/resources/Petstore/fullConf_forTestSuite.yaml", spec);
 
 		// Set number of test cases to be generated on each path, on each operation
 		// (HTTP method)
