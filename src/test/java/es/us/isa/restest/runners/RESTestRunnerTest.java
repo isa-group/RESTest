@@ -9,6 +9,7 @@ import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.PropertyManager;
+import es.us.isa.restest.util.RESTestException;
 
 import org.junit.Test;
 
@@ -20,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 public class RESTestRunnerTest {
 
     @Test
-    public void testRunner() {
+    public void testRunner() throws RESTestException {
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/YouTube/swagger_betty.yaml");
         TestConfigurationObject conf = loadConfiguration("src/test/resources/YouTube/testConf_betty.yaml", spec);
 

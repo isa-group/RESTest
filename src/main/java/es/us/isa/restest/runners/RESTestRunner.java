@@ -44,7 +44,7 @@ public class RESTestRunner {
 		this.statsReportManager = statsReportManager;
 	}
 
-	public void run() {
+	public void run() throws RESTestException {
 
 		// Test generation and writing (RESTAssured)
 		testGeneration();
@@ -75,7 +75,7 @@ public class RESTestRunner {
 		return ClassLoader.loadClass(filePath, className);
 	}
 
-	private void testGeneration() {
+	private void testGeneration() throws RESTestException {
 	    
 		// Generate test cases
 		logger.info("Generating tests");

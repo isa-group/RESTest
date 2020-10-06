@@ -57,7 +57,7 @@ public class TestGenerationAndExecution {
 
 	private static final Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws RESTestException {
 		Timer.startCounting(ALL);
 
 		// Read .properties file path. This file contains the configuration parameter

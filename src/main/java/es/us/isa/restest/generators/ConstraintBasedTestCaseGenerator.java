@@ -1,5 +1,18 @@
 package es.us.isa.restest.generators;
 
+import static es.us.isa.restest.util.IDLAdapter.idl2restestTestCase;
+import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
+import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.javatuples.Pair;
+
 import es.us.isa.idlreasoner.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
@@ -9,19 +22,10 @@ import es.us.isa.restest.inputs.random.RandomBooleanGenerator;
 import es.us.isa.restest.inputs.random.RandomInputValueIterator;
 import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.specification.OpenAPISpecification;
-
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.IDGenerator;
+import es.us.isa.restest.util.OASAPIValidator;
+import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.util.Timer;
-import io.swagger.v3.oas.models.PathItem.HttpMethod;
-import org.javatuples.Pair;
-
-import java.util.*;
-
-import static es.us.isa.restest.testcases.TestCase.checkFaulty;
-import static es.us.isa.restest.util.IDLAdapter.idl2restestTestCase;
-import static es.us.isa.restest.util.SpecificationVisitor.*;
-import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
 
 /**
  * This class implements a constraint-based test case generator using IDLReasoner, a CSP-based tool for the automated analysis of inter-parameter dependencies
@@ -32,7 +36,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	public static final String INDIVIDUAL_PARAMETER_CONSTRAINT = "individual_parameter_constraint";
 	public static final String INTER_PARAMETER_DEPENDENCY = "inter_parameter_dependency";
-	public static final String INVALID_REQUEST_BODY = "invalid_request_body";
+
 	private Float faultyDependencyRatio = 0.5f;												// Ratio of faulty test cases due to inter-parameter deps. Defaults to 0.5
 	private Integer reloadInputDataEvery = 100;      										// Number of requests using the same randomly generated input data
 	private Integer inputDataMaxValues = 1000;       										// Number of values used for each parameter when reloading input data
@@ -43,7 +47,6 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	private int maxFaultyTestsDueToIndividualConstraints;										// Maximum number of faulty test cases due to individual constraints to be generated
 	private int nFaultyTestDueToDependencyViolations;											// Current number of faulty test cases due to dependency violations to be generated
 	private int nFaultyTestsDueToIndividualConstraint;											// Current number of faulty test cases due to individual constraints to be generated
-	private int nFaultyTestsDuetoInvalidRequestBody;											// Current number of faulty test cases due to invalid request body
 	
 	public ConstraintBasedTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
@@ -75,11 +78,15 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	/*
 	 * Generate the collection of test cases 
 	 */
-	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) throws RESTestException {
 
+		
+		List<TestCase> testCases = new ArrayList<>();
+		
 		setUpIDLReasoner(testOperation);
 
-		List<TestCase> testCases = new ArrayList<>();
+		// Reset counters for the current operation
+		resetOperation();
 		
 		// Calculate number and type of faulty tests to be generated
 		if (idlReasoner==null) // The operation has no inter-parameter dependencies
@@ -91,15 +98,14 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		
 		nFaultyTestDueToDependencyViolations = 0;
 		nFaultyTestsDueToIndividualConstraint = 0;
-		nFaultyTestsDuetoInvalidRequestBody = 0;
 		
 
 		while (hasNext()) {
 			checkIDLReasonerData(testOperation);
 
-			Timer.startCounting(TEST_CASE_GENERATION);
+			//Timer.startCounting(TEST_CASE_GENERATION);
 			TestCase test = generateNextTestCase(testOperation);
-			Timer.stopCounting(TEST_CASE_GENERATION);
+			//Timer.stopCounting(TEST_CASE_GENERATION);
 			
 			// Set authentication data
 			authenticateTestCase(test);
@@ -117,7 +123,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 
 	// Generate the next test case and update the generation index
-	public TestCase generateNextTestCase(Operation testOperation) {
+	public TestCase generateNextTestCase(Operation testOperation) throws RESTestException {
 		
 		TestCase test = null;
 		
@@ -136,15 +142,14 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	}
 	
 
-	
-
 	/**
 	 * Returns a valid or invalid test cases based on the faultyReason provided. 
 	 * @param testOperation API operation under test
 	 * @param faultyReason Faulty reason. Possible values: "none", "individual_parameter_constraint", and "inter_parameter_dependency"
 	 * @return
+	 * @throws RESTestException 
 	 */
-	public TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
+	public TestCase generateNextTestCase(Operation testOperation, String faultyReason) throws RESTestException {
 		
 		TestCase test;
 
@@ -165,26 +170,21 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		}
 
 		
-		// Watch out! The test case could still be faulty if the body has been perturbated (for creating new test data from existing inputs)
-		if (!test.getFaulty() && checkFaulty(test, validator)) { 
-			test.setFaulty(true);
-			test.setFaultyReason(INVALID_REQUEST_BODY);
-			nFaultyTestsDuetoInvalidRequestBody++;
-		}
-		
 		return test;
 	}
 	
 	
 
 	/* Returns a valid test case satisfying all the individual constraints and inter-parameter dependencies described in the API specification */ 
-	private TestCase generateValidTestCase(Operation testOperation) {
-		TestCase test = createTestCaseTemplate(testOperation);
+	private TestCase generateValidTestCase(Operation testOperation) throws RESTestException {
+		TestCase test = null;
 		
-		if (idlReasoner != null)		// The operation has inter-parameter dependencies
+		if (idlReasoner != null) {		// The operation has inter-parameter dependencies
+			test = createTestCaseTemplate(testOperation);
 			idl2restestTestCase(test, idlReasoner.getRandomValidRequest(), testOperation); // Generate valid test case with IDLReasoner
+		}
 		else 							// The operation has no inter-parameter dependences: generate a random test case
-			setTestCaseParameters(test, testOperation); // Generate valid test case normally (no need to manage deps.)
+			test = generateRandomTestCase(testOperation); // Generate valid test case normally (no need to manage deps.)
 
 		test.setFaulty(false);
 		test.setFaultyReason("none");
@@ -195,11 +195,9 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	
 	
 	/* Returns a faulty test case violating an individual constraint (ex. excluding a required parameter) */
-	private TestCase generateFaultyTestCaseDueToIndividualConstraints(Operation testOperation) {
+	private TestCase generateFaultyTestCaseDueToIndividualConstraints(Operation testOperation) throws RESTestException {
 		
-		TestCase test = createTestCaseTemplate(testOperation);
-		
-		setTestCaseParameters(test, testOperation);
+		TestCase test = generateRandomTestCase(testOperation);
 		
 		String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
 		if (mutationDescription!="") {		// A mutation has been applied
@@ -213,17 +211,18 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	
 	
 	/* Returns a faulty test case violating one ore more inter-parameter dependency constraints */
-	private TestCase generateFaultyTestCaseDueToViolatedDependencies(Operation testOperation) {
+	private TestCase generateFaultyTestCaseDueToViolatedDependencies(Operation testOperation) throws RESTestException {
 		
-		TestCase test = createTestCaseTemplate(testOperation);
+		TestCase test = null;
 		
 		if (idlReasoner != null) {		// The operation has inter-parameter dependencies
+			test = createTestCaseTemplate(testOperation);
 			idl2restestTestCase(test, idlReasoner.getRandomInvalidRequest(), testOperation); // Generate invalid test case with IDLReasoner
 			test.setFaulty(true);
 			test.setFaultyReason(INTER_PARAMETER_DEPENDENCY);
 			nFaultyTestDueToDependencyViolations++;
 		} else {						// The operation has no inter-parameter dependencies
-			setTestCaseParameters(test, testOperation); // Impossible (no deps.), generate valid request
+			test = generateRandomTestCase(testOperation); // Impossible (no deps.), generate valid request
 			test.setFaulty(false);
 			test.setFaultyReason("none");
 			test.setFulfillsDependencies(true);
@@ -293,5 +292,13 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 	public void setIdlReasoner(Analyzer idlReasoner) {
 		this.idlReasoner = idlReasoner;
+	}
+
+	public int getnFaultyTestDueToDependencyViolations() {
+		return nFaultyTestDueToDependencyViolations;
+	}
+
+	public int getnFaultyTestsDueToIndividualConstraint() {
+		return nFaultyTestsDueToIndividualConstraint;
 	}
 }

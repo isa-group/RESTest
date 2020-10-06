@@ -8,6 +8,7 @@ import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
+import es.us.isa.restest.util.RESTestException;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,559 +26,10 @@ import java.util.List;
 
 public class RandomTestCaseGeneratorTest {
 
-	
-	// RANDOM TEST CASE GENERATION. NO FILTERS. NO FAULTS
-	
-    @Test
-    public void iceAndFireFullTestCaseGenerator() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/AnApiOfIceAndFire/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration (empty)
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AnApiOfIceAndFire/testConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 1;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 0, testCases.size());
-
-        // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "IAFTest", "restassured", basePath.toLowerCase());
-        writer.setOAIValidation(true);
-        writer.setLogging(true);
-        writer.write(testCases);
-
-    }
-    
-    
-    @Test
-    public void amadeusHotelFullTestCaseGenerator() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 4;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 4, testCases.size());
-
-        // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase());
-        writer.setOAIValidation(true);
-        writer.setLogging(true);
-        writer.write(testCases);
-
-    }
-    
-    
-
-	
-    @Test
-    public void bikewiseFullTestCaseGenerator() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 5;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 20, testCases.size());
-
-        // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase());
-        writer.setOAIValidation(true);
-        writer.setLogging(true);
-        writer.write(testCases);
-
-    }
-    
-    
-    @Test
-    public void dataAtWorkFullTestCaseGeneratorTest() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/DataAtWork/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/DataAtWork/fullConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 1;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 13, testCases.size());
-
-        // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "DataAtWorkTest", "restassured", basePath.toLowerCase());
-        writer.setOAIValidation(true);
-        writer.setLogging(true);
-        writer.write(testCases);
-
-    }
-    
-    @Test
-    public void foursquareFullTestCaseGenerator() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/Foursquare/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Foursquare/testConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 10;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 10, testCases.size());
-
-        // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "FoursquareTest", "restassured", basePath.toLowerCase());
-        writer.setOAIValidation(true);
-        writer.setLogging(true);
-        writer.write(testCases);
-
-    }
-    
-    @Test
-    public void marvelFullTestCaseGenerator() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/Marvel/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Marvel/testConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 4;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 24, testCases.size());
-
-        // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "MarvelTest", "restassured", basePath.toLowerCase());
-        writer.setOAIValidation(true);
-        writer.setLogging(true);
-        writer.write(testCases);
-
-    }
-    
-	@Test
-	public void playlistFullTestCaseGenerator() {
-		
-		// Load specification
-		String OAISpecPath = "src/test/resources/Playlist/spec.yaml";
-		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-		
-		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Playlist/defaultConf.yaml", spec);
-		
-		// Set number of test cases to be generated on each path
-		int numTestCases = 3;
-		
-		// Create generator and filter
-		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-		Collection<TestCase> testCases = generator.generate();
-		
-		assertEquals("Incorrect number of test cases", 30, testCases.size());
-		
-		// Write test cases
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PlaylistTest", "restassured", basePath.toLowerCase());
-		writer.setOAIValidation(true);
-		writer.write(testCases);	
-		}
-	
-	
-    @Test
-    public void simpleAPIFullTestCaseGenerator() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/SimpleAPI/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/SimpleAPI/fullConfRight.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 5;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 15, testCases.size());
-
-        // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "SimpleAPITest", "restassured", basePath.toLowerCase());
-        writer.setOAIValidation(true);
-        writer.setLogging(true);
-        writer.write(testCases);
-
-    }
-    
-    
-    @Test
-    public void tumblrFullTestCaseGenerator() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/Tumblr/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 4;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 4, testCases.size());
-
-        // Write RESTAssured test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "TumblrTest", "restassured", basePath.toLowerCase());
-        writer.setOAIValidation(true);
-        writer.setLogging(true);
-        writer.write(testCases);
-
-    }
-    
-    
-    // RANDOM TEST CASE GENERATION WITH FAULTS. NO FILTERS
-    
-    
-    @Test
-    public void bikewiseFullTestCaseGeneratorWithFaults() {
-        // Load specification
-        String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path, on each operation (HTTP method)
-        int numTestCases = 5;
-        
-        // Faulty ratio
-        float faultyRatio = 0.2f;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-		generator.setFaultyRatio(faultyRatio);
-
-        Collection<TestCase> testCases = generator.generate();
-        
-
-        assertEquals("Incorrect number of test cases", 20, testCases.size());
-        assertEquals("Incorrect number of faulty test cases generated", generator.getnFaulty(), testCases.stream().filter(TestCase::getFaulty).count());
-        assertEquals("Incorrect number of faulty test cases", (int) (faultyRatio*testCases.size()), testCases.stream().filter(c -> c.getFaulty()).count());
-    }
-    
-    
-	@Test
-	public void commentsFullTestCaseGeneratorWithFaults() {
-		
-		// Load specification
-		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
-		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-		
-		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf.yaml", spec);
-		
-		// Set number of test cases to be generated on each path
-		int numTestCases = 20;
-		
-        // Faulty ratio
-        float faultyRatio = 0.5f;
-		
-		// Create generator
-		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-		generator.setFaultyRatio(faultyRatio);
-
-		Collection<TestCase> testCases = generator.generate();
-		
-		assertEquals("Incorrect number of test cases", 80, testCases.size());
-        assertEquals("Incorrect number of faulty test cases generated", generator.getnFaulty(), testCases.stream().filter(c -> c.getFaulty()).count());
-        assertEquals("Incorrect number of faulty test cases", 30, testCases.stream().filter(c -> c.getFaulty()).count());			// One of the 4 operations cannot be mutated.
-		
-		// Write test cases
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest", "restassured", basePath);
-		writer.setOAIValidation(true);
-		writer.write(testCases);	
-	}
-	
-    
-    @Test
-    @Ignore        // To avoid the test failing in Travis
-    public void travelTestCaseGeneratorWithFaults() {
-
-        // Load specification
-        String OAISpecPath = "src/test/resources/Travel/swagger.yaml";
-        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-        // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Travel/testConf.yaml", spec);
-
-        // Set number of test cases to be generated on each path
-        int numTestCases = 20;
-        
-        // Faulty ratio
-        float faultyRatio = 0.5f;
-
-        // Create generator and filter
-        AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-        generator.setFaultyRatio(faultyRatio);
-
-        Collection<TestCase> testCases = generator.generate();
-
-        assertEquals("Incorrect number of test cases", 120, testCases.size());
-        assertEquals("Incorrect number of faulty test cases generated", generator.getnFaulty(), testCases.stream().filter(TestCase::getFaulty).count());
-        assertEquals("Incorrect number of faulty test cases", (int) (faultyRatio*testCases.size()), testCases.stream().filter(c -> c.getFaulty()).count());
-
-        // Write test cases
-        String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "TravelTest", "restassured", basePath);
-        writer.setOAIValidation(true);
-        writer.write(testCases);
-    }
-    
-    
-	@Test
-	public void commentsFullTestCaseGeneratorWithPerturbationAndFaults() {
-		
-		// Load specification
-		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
-		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-		
-		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf_forTestSuite3.yaml", spec);
-		
-		// Set number of test cases to be generated on each path
-		int numTestCases = 10;
-		
-        // Faulty ratio
-        float faultyRatio = 0.1f;
-		
-		// Create generator and filter
-		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-		generator.setFaultyRatio(faultyRatio);
-
-		Collection<TestCase> testCases = generator.generate();
-		
-		assertEquals("Incorrect number of test cases", 30, testCases.size());
-        assertEquals("Incorrect number of faulty test cases generated", generator.getnFaulty(), testCases.stream().filter(TestCase::getFaulty).count());
-        assertEquals("Incorrect number of faulty test cases", (int) (faultyRatio*testCases.size()), testCases.stream().filter(c -> c.getFaulty()).count());
-		
-		// Write test cases
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest", "restassured", basePath);
-		writer.setOAIValidation(true);
-		writer.write(testCases);	
-	}
-    
-    
-    // RANDOM TEST CASE GENERATION WITH FILTERS. NO FAULTS
-    
-    
-	@Test
-	public void amadeusSearchHotelsWithFilter() {
-		
-
-		// Load specification
-		String OAISpecPath = "src/test/resources/Amadeus/spec.yaml";
-		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-		
-		
-		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Amadeus/confTest.yaml", spec);
-		
-		// Set number of test cases to be generated on each path, on each operation
-		int numTestCases = 10;
-		
-		// Create generator and filter
-		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-		
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/hotels/search-airport");
-		filter.addGetMethod();
-		filters.add(filter);
-		
-		Collection<TestCase> testCases = generator.generate(filters);
-		
-		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
-		
-		// Write RESTAssured test cases
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelSearchTest", "restassured", basePath.toLowerCase());
-		writer.setOAIValidation(true);
-		writer.setLogging(true);
-		writer.write(testCases);
-
-	}
-    
-    
-    
+	// PET STORE
 
 	@Test
-	public void spotifyGetAlbumWithFilter() {
-		
-
-		// Load specification
-		String OAISpecPath = "src/test/resources/Spotify/spec.yaml";
-		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-		
-		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/confTest.yaml", spec);
-		
-		// Set number of test cases to be generated on each path
-		int numTestCases = 10;
-		
-		// Create generator and filter
-		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-		
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/albums");
-		filter.addGetMethod();
-		filters.add(filter);
-		
-		Collection<TestCase> testCases = generator.generate(filters);
-		
-		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
-		
-		// Write RESTAssured test cases
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "SpotifyGetAlbumTest", "restassured", basePath.toLowerCase());
-		writer.setOAIValidation(true);
-		writer.write(testCases);
-
-	}
-
-	@Test
-	public void spotifyGetArtistWithFilter() {
-
-
-		// Load specification
-		String OAISpecPath = "src/test/resources/Spotify/spec.json";
-		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/defaultConf.json", spec);
-
-		// Set number of test cases to be generated on each path
-		int numTestCases = 10;
-
-		// Create generator and filter
-		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/artists");
-		filter.addGetMethod();
-		filters.add(filter);
-
-		Collection<TestCase> testCases = generator.generate(filters);
-
-		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
-
-		// Write RESTAssured test cases
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "SpotifyGetArtistTest", "restassured", basePath.toLowerCase());
-		writer.setOAIValidation(true);
-		writer.write(testCases);
-
-	}
-	
-	
-	@Test
-	public void spotifySearchWithFilter() {
-		
-
-		// Load specification
-		String OAISpecPath = "src/test/resources/Spotify/spec.yaml";
-		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-		
-		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/confTest.yaml", spec);
-		
-		// Set number of test cases to be generated on each path
-		int numTestCases = 20;
-		
-		// Create generator and filter
-		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-		
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/search");
-		filter.addGetMethod();
-		filters.add(filter);
-		
-		Collection<TestCase> testCases = generator.generate(filters);
-		
-		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
-		
-		// Write RESTAssured test cases
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "SpotifySearchTest", "restassured", basePath.toLowerCase());
-		writer.setOAIValidation(true);
-		writer.setLogging(true);
-		writer.write(testCases);
-
-	}
-	
-	@Test
-	public void petstoreTestCaseGeneratorWithFilters() {
+	public void petstoreTestCaseGeneratorWithFilters() throws RESTestException {
 		// Load specification
 		String OAISpecPath = "src/test/resources/Petstore/swagger.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
@@ -622,23 +74,18 @@ public class RandomTestCaseGeneratorTest {
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
-		 assertEquals("Incorrect number of test cases", 18, testCases.size());
-		 
-
-		// Check coverage
-		/*
-		CoverageGatherer coverageGatherer = new CoverageGatherer(spec);
-		CoverageMeter coverageMeter = new CoverageMeter(coverageGatherer, testCases);
-		System.out.println("Total coverage: " + coverageMeter.getTotalCoverage());
-		System.out.println("Input coverage: " + coverageMeter.getInputCoverage());
-		System.out.println("PATH coverage: " + coverageMeter.getCriterionTypeCoverage(PATH));
-		System.out.println("OPERATION coverage: " + coverageMeter.getCriterionTypeCoverage(OPERATION));
-		System.out.println("PARAMETER coverage: " + coverageMeter.getCriterionTypeCoverage(PARAMETER));
-		System.out.println("PARAMETER_VALUE coverage: " + coverageMeter.getCriterionTypeCoverage(PARAMETER_VALUE));
-		System.out.println("AUTHENTICATION coverage: " + coverageMeter.getCriterionTypeCoverage(AUTHENTICATION));
-		System.out.println("INPUT_CONTENT_TYPE coverage: " + coverageMeter.getCriterionTypeCoverage(OPERATION));
-
-		 */
+		
+		// Expected results
+		int expectedNumberOfTestCases = 18;	
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+		
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PetstoreTest",
@@ -648,54 +95,9 @@ public class RandomTestCaseGeneratorTest {
 		writer.write(testCases);
 
 	}
-	
-	
-    // RANDOM TEST CASE GENERATION WITH FILTERS AND FAULTS
-	
-	
+
 	@Test
-	public void spotifyGetArtistWithFilterAndFaults() {
-
-
-		// Load specification
-		String OAISpecPath = "src/test/resources/Spotify/spec.json";
-		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
-
-		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/defaultConf.json", spec);
-
-		// Set number of test cases to be generated on each path
-		int numTestCases = 10;
-		
-        // Faulty ratio
-        float faultyRatio = 0.5f;
-
-		// Create generator and filter
-		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
-		generator.setFaultyRatio(faultyRatio);
-
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/artists");
-		filter.addGetMethod();
-		filters.add(filter);
-
-		Collection<TestCase> testCases = generator.generate(filters);
-
-		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
-        assertEquals("Incorrect number of faulty test cases generated", generator.getnFaulty(), testCases.stream().filter(TestCase::getFaulty).count());
-        assertEquals("Incorrect number of faulty test cases", (int) (faultyRatio*testCases.size()), testCases.stream().filter(c -> c.getFaulty()).count());
-
-		// Write RESTAssured test cases
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "SpotifyGetArtistTest", "restassured", basePath.toLowerCase());
-		writer.setOAIValidation(true);
-		writer.write(testCases);
-
-	}
-	
-	@Test
-	public void petstoreTestCaseGeneratorWithFiltersAndFaults() {
+	public void petstoreTestCaseGeneratorWithFiltersAndFaults() throws RESTestException {
 		// Load specification
 		String OAISpecPath = "src/test/resources/Petstore/swagger.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
@@ -707,10 +109,9 @@ public class RandomTestCaseGeneratorTest {
 		// Set number of test cases to be generated on each path, on each operation
 		// (HTTP method)
 		int numTestCases = 3;
-		
-        // Faulty ratio
-        float faultyRatio = 0.5f;
 
+		// Faulty ratio
+		float faultyRatio = 0.5f;
 
 		// Create generator and filter
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
@@ -744,29 +145,816 @@ public class RandomTestCaseGeneratorTest {
 		filters.add(filter5);
 
 		Collection<TestCase> testCases = generator.generate(filters);
+
 		
+		// Expected results
+		int expectedNumberOfTestCases = 18;
+		int expectedNumberOfInvalidTestCases = 4;
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
 		
-		assertEquals("Incorrect number of test cases", 18, testCases.size());
-	    assertEquals("Incorrect number of faulty test cases generated", generator.getnFaulty(), testCases.stream().filter(TestCase::getFaulty).count());
-	    assertEquals("Incorrect number of faulty test cases", (int) (faultyRatio*testCases.size()), testCases.stream().filter(c -> c.getFaulty()).count());
-		 
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+		
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+
 		// Check coverage
 		/*
-		CoverageGatherer coverageGatherer = new CoverageGatherer(spec);
-		CoverageMeter coverageMeter = new CoverageMeter(coverageGatherer, testCases);
-		System.out.println("Total coverage: " + coverageMeter.getTotalCoverage());
-		System.out.println("Input coverage: " + coverageMeter.getInputCoverage());
-		System.out.println("PATH coverage: " + coverageMeter.getCriterionTypeCoverage(PATH));
-		System.out.println("OPERATION coverage: " + coverageMeter.getCriterionTypeCoverage(OPERATION));
-		System.out.println("PARAMETER coverage: " + coverageMeter.getCriterionTypeCoverage(PARAMETER));
-		System.out.println("PARAMETER_VALUE coverage: " + coverageMeter.getCriterionTypeCoverage(PARAMETER_VALUE));
-		System.out.println("AUTHENTICATION coverage: " + coverageMeter.getCriterionTypeCoverage(AUTHENTICATION));
-		System.out.println("INPUT_CONTENT_TYPE coverage: " + coverageMeter.getCriterionTypeCoverage(OPERATION));
-
+		 * CoverageGatherer coverageGatherer = new CoverageGatherer(spec); CoverageMeter
+		 * coverageMeter = new CoverageMeter(coverageGatherer, testCases);
+		 * System.out.println("Total coverage: " + coverageMeter.getTotalCoverage());
+		 * System.out.println("Input coverage: " + coverageMeter.getInputCoverage());
+		 * System.out.println("PATH coverage: " +
+		 * coverageMeter.getCriterionTypeCoverage(PATH));
+		 * System.out.println("OPERATION coverage: " +
+		 * coverageMeter.getCriterionTypeCoverage(OPERATION));
+		 * System.out.println("PARAMETER coverage: " +
+		 * coverageMeter.getCriterionTypeCoverage(PARAMETER));
+		 * System.out.println("PARAMETER_VALUE coverage: " +
+		 * coverageMeter.getCriterionTypeCoverage(PARAMETER_VALUE));
+		 * System.out.println("AUTHENTICATION coverage: " +
+		 * coverageMeter.getCriterionTypeCoverage(AUTHENTICATION));
+		 * System.out.println("INPUT_CONTENT_TYPE coverage: " +
+		 * coverageMeter.getCriterionTypeCoverage(OPERATION));
+		 * 
 		 */
 
+	}
+
+	// BIKEWISE
+
+	@Test
+	public void bikewiseFullTestCaseGenerator() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 5;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		// Expected results
+		int expectedNumberOfTestCases = 20;		// All should be valid
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+		
+
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest",
+				"restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
 
 	}
-    
-    
+
+	@Test
+	public void bikewiseFullTestCaseGeneratorWithFaults() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 5;
+
+		// Faulty ratio
+		float faultyRatio = 0.2f;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		
+		// Expected results
+		int expectedNumberOfTestCases = 20;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+		
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+	}
+
+	// AMADEUS
+
+	@Test
+	public void amadeusHotelFullTestCaseGenerator() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 4;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		Collection<TestCase> testCases = generator.generate();
+
+	
+		// Expected results
+		int expectedNumberOfTestCases = 4;
+
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", 4, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"AmadeusHotelTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
+
+	}
+
+	@Test
+	public void amadeusSearchHotelsWithFilter() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Amadeus/spec.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Amadeus/confTest.yaml",
+				spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		int numTestCases = 10;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		List<TestConfigurationFilter> filters = new ArrayList<>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath("/hotels/search-airport");
+		filter.addGetMethod();
+		filters.add(filter);
+
+		Collection<TestCase> testCases = generator.generate(filters);
+
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", numTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", numTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		/*
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"AmadeusHotelSearchTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
+		
+		*/
+
+	}
+
+	// SPOTIFY
+
+	@Test
+	public void spotifyGetAlbumWithFilter() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Spotify/spec.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/confTest.yaml",
+				spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 10;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		List<TestConfigurationFilter> filters = new ArrayList<>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath("/albums");
+		filter.addGetMethod();
+		filters.add(filter);
+
+		Collection<TestCase> testCases = generator.generate(filters);
+
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", numTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", numTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"SpotifyGetAlbumTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.write(testCases);
+
+	}
+
+	@Test
+	public void spotifyGetArtistWithFilter() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Spotify/spec.json";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Spotify/defaultConf.json", spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 10;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		List<TestConfigurationFilter> filters = new ArrayList<>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath("/artists");
+		filter.addGetMethod();
+		filters.add(filter);
+
+		Collection<TestCase> testCases = generator.generate(filters);
+
+		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
+
+		/*
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"SpotifyGetArtistTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.write(testCases);
+		*/
+
+	}
+
+	@Test
+	public void spotifySearchWithFilter() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Spotify/spec.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Spotify/confTest.yaml",
+				spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 20;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		List<TestConfigurationFilter> filters = new ArrayList<>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath("/search");
+		filter.addGetMethod();
+		filters.add(filter);
+
+		Collection<TestCase> testCases = generator.generate(filters);
+
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", numTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", numTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		/*
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"SpotifySearchTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
+		*/
+
+	}
+
+	@Test
+	public void spotifyGetArtistWithFilterAndFaults() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Spotify/spec.json";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Spotify/defaultConf.json", spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 10;
+
+		// Faulty ratio
+		float faultyRatio = 0.5f;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+
+		List<TestConfigurationFilter> filters = new ArrayList<>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath("/artists");
+		filter.addGetMethod();
+		filters.add(filter);
+
+		Collection<TestCase> testCases = generator.generate(filters);
+
+		
+		// Expected results
+		int expectedNumberOfTestCases = numTestCases;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", numTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+		
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+
+		/*
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"SpotifyGetArtistTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.write(testCases);
+		*/
+
+	}
+
+	// DATA AT WORK
+
+	@Test
+	public void dataAtWorkFullTestCaseGeneratorTest() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/DataAtWork/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/DataAtWork/fullConf.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 1;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		// Expected results
+		int expectedNumberOfTestCases = 13;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"DataAtWorkTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
+
+	}
+
+	// FOURSQUARE
+
+	@Test
+	public void foursquareFullTestCaseGenerator() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Foursquare/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Foursquare/testConf.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation (HTTP method)
+		int numTestCases = 10;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		
+		// Expected results
+		int expectedNumberOfTestCases = 10;
+		
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"FoursquareTest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
+
+	}
+
+	// MARVEL
+
+	@Test
+	public void marvelFullTestCaseGenerator() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Marvel/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Marvel/testConf.yaml",
+				spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 4;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		// Expected results
+		int expectedNumberOfTestCases = 24;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "MarvelTest",
+				"restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
+
+	}
+
+	// PLAYLIST
+
+	@Test
+	public void playlistFullTestCaseGenerator() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Playlist/spec.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Playlist/defaultConf.yaml", spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 3;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		// Expected results
+		int expectedNumberOfTestCases = 30;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Write test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PlaylistTest",
+				"restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.write(testCases);
+	}
+
+	// SIMPLE API
+
+	@Test
+	public void simpleAPIFullTestCaseGenerator() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/SimpleAPI/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/SimpleAPI/fullConfRight.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 5;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		// Expected results
+		int expectedNumberOfTestCases = 15;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
+				"SimpleAPITest", "restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
+
+	}
+
+	// TUMBLR
+
+	@Test
+	public void tumblrFullTestCaseGenerator() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Tumblr/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Tumblr/testConf.yaml",
+				spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 4;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+
+		Collection<TestCase> testCases = generator.generate();
+
+
+		// Expected results
+		int expectedNumberOfTestCases = 4;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Write RESTAssured test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "TumblrTest",
+				"restassured", basePath.toLowerCase());
+		writer.setOAIValidation(true);
+		writer.setLogging(true);
+		writer.write(testCases);
+
+	}
+
+	// COMMENTS
+
+	@Test
+	public void commentsFullTestCaseGeneratorWithFaults() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Comments/testConf.yaml", spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 20;
+
+		// Faulty ratio
+		float faultyRatio = 0.5f;
+
+		// Create generator
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+		
+		// Expected results
+		int expectedNumberOfTestCases = 80;
+		int expectedNumberOfInvalidTestCases = 30;
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+		
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count()); // One of the 4 operations cannot be mutated.
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+
+		// Write test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest",
+				"restassured", basePath);
+		writer.setOAIValidation(true);
+		writer.write(testCases);
+	}
+
+	@Test
+	public void commentsFullTestCaseGeneratorWithPerturbationAndFaults() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Comments/testConf_forTestSuite3.yaml", spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 10;
+
+		// Faulty ratio
+		float faultyRatio = 0.1f;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		
+		// Expected results
+		int expectedNumberOfTestCases = 30;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+		
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+
+		/*
+		// Write test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest",
+				"restassured", basePath);
+		writer.setOAIValidation(true);
+		writer.write(testCases);
+		*/
+	}
+
+	// TRAVEL
+
+	@Test
+
+	public void travelTestCaseGeneratorWithFaults() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/Travel/swagger.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Travel/testConf.yaml",
+				spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 20;
+
+		// Faulty ratio
+		float faultyRatio = 0.5f;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+
+		
+		// Expected results
+		int expectedNumberOfTestCases = 120;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+		
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+		
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+		
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+
+		// Write test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "TravelTest",
+				"restassured", basePath);
+		writer.setOAIValidation(true);
+		writer.write(testCases);
+	}
+
 }

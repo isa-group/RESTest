@@ -1,6 +1,5 @@
 package es.us.isa.restest.generators;
 
-import static es.us.isa.restest.testcases.TestCase.checkFaulty;
 import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
 
 import java.util.ArrayList;
@@ -12,6 +11,8 @@ import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
+import es.us.isa.restest.util.OASAPIValidator;
+import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.util.Timer;
 
 /**
@@ -22,23 +23,25 @@ import es.us.isa.restest.util.Timer;
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
 	public static final String INDIVIDUAL_PARAMETER_CONSTRAINT = "individual_parameter_constraint";
-	public static final String INVALID_REQUEST_BODY = "invalid_request_body";
-	
+
 	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
 	}
 
 	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) throws RESTestException {
 
 		List<TestCase> testCases = new ArrayList<>();
 
+		// Reset counters for the current operation
+		resetOperation();
+		
 		while (hasNext()) {
 
 			// Create test case with specific parameters and values
-			Timer.startCounting(TEST_CASE_GENERATION);
+			//Timer.startCounting(TEST_CASE_GENERATION);
 			TestCase test = generateNextTestCase(testOperation);
-			Timer.stopCounting(TEST_CASE_GENERATION);
+			//Timer.stopCounting(TEST_CASE_GENERATION);
 			
 			// Set authentication data (if any)
 			authenticateTestCase(test);
@@ -48,30 +51,23 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			
 			// Update indexes
 			updateIndexes(test);
-		}
 
+		}
+		
 		return testCases;
 	}
+	
 
 	// Generate the next test case and update the generation index
-	public TestCase generateNextTestCase(Operation testOperation) {
+	public TestCase generateNextTestCase(Operation testOperation) throws RESTestException {
 		
-		// Create an empty test case with a random id
-		TestCase test = createTestCaseTemplate(testOperation);
-
-		// Set parameters and values using the selected test data generators. This is where the actual test case is created.
-		setTestCaseParameters(test, testOperation);
+		// Create a random test case with a random id
+		TestCase test = generateRandomTestCase(testOperation);
 		
 		// If more faulty test cases need to be generated, try mutating the current test case to make it invalid
 		if (nFaulty < (int) (faultyRatio * numberOfTests))
 			mutateTestCase(test, testOperation);
 		
-		// Watch out! The test case could still be faulty if the body has been perturbated (for creating new test data from existing inputs)
-		if (!test.getFaulty() && checkFaulty(test, validator)) { 
-			test.setFaulty(true);
-			test.setFaultyReason(INVALID_REQUEST_BODY);
-		}
-
 		return test;
 	}
 	
@@ -83,7 +79,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 		if (mutationDescription!="") {
 			test.setFaulty(true);
 			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
-		}
+		} 
 		
 	}
 

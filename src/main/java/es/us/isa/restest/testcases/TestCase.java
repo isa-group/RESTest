@@ -346,22 +346,22 @@ public class TestCase implements Serializable {
 	}
 	
 	
-
-	public static List<String> getFaultyReasons(TestCase tc, OpenApiInteractionValidator validator) {
-		String fullPath = tc.getPath();
-		for (Map.Entry<String, String> pathParam : tc.getPathParameters().entrySet())
+	
+	public List<String> getValidationErrors(OpenApiInteractionValidator validator) {
+		String fullPath = this.getPath();
+		for (Map.Entry<String, String> pathParam : this.getPathParameters().entrySet())
 			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
 
-		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(tc.getMethod().toString(), fullPath)
-				.withBody(tc.getBodyParameter())
-				.withContentType(tc.getInputFormat());
-		tc.getQueryParameters().forEach(requestBuilder::withQueryParam);
-		tc.getHeaderParameters().forEach(requestBuilder::withHeader);
+		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(this.getMethod().toString(), fullPath)
+				.withBody(this.getBodyParameter())
+				.withContentType(this.getInputFormat());
+		this.getQueryParameters().forEach(requestBuilder::withQueryParam);
+		this.getHeaderParameters().forEach(requestBuilder::withHeader);
 
-		if (tc.getFormParameters().size() > 0) {
+		if (this.getFormParameters().size() > 0) {
 			StringBuilder formDataBody = new StringBuilder();
 			try {
-				for (Map.Entry<String, String> formParam : tc.getFormParameters().entrySet()) {
+				for (Map.Entry<String, String> formParam : this.getFormParameters().entrySet()) {
 					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(formParam.getValue(), StandardCharsets.UTF_8.toString())).append("&");
 				}
 			} catch (UnsupportedEncodingException e) {
@@ -376,15 +376,17 @@ public class TestCase implements Serializable {
 				.filter(m -> m.getLevel() != ValidationReport.Level.IGNORE)
 				.map(m -> m.getKey() + ": " + m.getMessage()).collect(Collectors.toList());
 	}
+	
 
 	/**
-	 * Returns true if the test case is faulty, false otherwise
+	 * Returns true if the test case is valid according to the specification, false otherwise.
 	 * @param tc
 	 * @param validator
 	 * @return
 	 */
-	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
-		return !getFaultyReasons(tc, validator).isEmpty();
+	public Boolean isValid(OpenApiInteractionValidator validator) {
+		
+		return getValidationErrors(validator).isEmpty();
 	}
 
 	/**
