@@ -105,6 +105,7 @@
           "200": {
             "description": "the result of checking the text",
             "schema": {
+              "type": "object",
               "properties": {
                 "software": {
                   "type": "object",
