@@ -26,7 +26,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 5;
@@ -54,7 +54,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 5;
@@ -121,7 +121,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 4;
@@ -186,7 +186,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 40;
