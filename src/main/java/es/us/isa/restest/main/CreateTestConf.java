@@ -98,6 +98,8 @@ public class CreateTestConf {
                         throw new IllegalArgumentException("HTTP method not supported: " + method);
                 }
             }
+
+            filters.add(filter);
         }
 
         return filters;
