@@ -149,7 +149,7 @@ public class RandomTestCaseGeneratorTest {
 		
 		// Expected results
 		int expectedNumberOfTestCases = 18;
-		int expectedNumberOfInvalidTestCases = 4;
+		int expectedNumberOfInvalidTestCases = 6;
 		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
 
 		// Total number of test cases

@@ -1,96 +1,93 @@
 ---
 auth:
   required: true
-  queryParams: {}
-  headerParams: {}
-  apiKeysPath: null
+  queryParams: []
+  headerParams: []
+  apiKeysPath: Tumblr/apikeys.json
   headersPath: null
 testConfiguration:
-  operations:
-  - testPath: "/blog/{blog-identifier}/likes"
-    operationId: getBlogLikes
-    method: get
-    testParameters:
-    - name: blog-identifier
-      in: path
-      weight: null
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: limit
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    - name: offset
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    - name: before
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    - name: after
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    expectedResponse: 200
+  testPaths:
+  - testPath: /blog/{blog-identifier}/likes
+    operations:
+    - operationId: getBlogLikes
+      method: get
+      testParameters:
+      - name: blog-identifier
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - "restestbenchmark.tumblr.com"
+            objectValues: null
+      - name: limit
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 20
+            objectValues: null
+      - name: offset
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 0
+            objectValues: null
+          - name: max
+            values:
+            - 10
+            objectValues: null
+      - name: before
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 0
+            objectValues: null
+          - name: max
+            values:
+            - 2147483647
+            objectValues: null
+      - name: after
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 0
+            objectValues: null
+          - name: max
+            values:
+            - 2147483647
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
