@@ -76,6 +76,8 @@ paths:
       - songs
       summary: Post a song
       operationId: postSong
+      consumes:
+        - application/json
       parameters:
       - in: body
         name: body
@@ -95,6 +97,8 @@ paths:
       - songs
       summary: Put a song
       operationId: putSong
+      consumes:
+        - application/json
       parameters:
       - in: body
         name: body
@@ -173,6 +177,8 @@ paths:
       - lists
       summary: Post a list
       operationId: postList
+      consumes:
+        - application/json
       parameters:
       - in: body
         name: body
@@ -192,6 +198,8 @@ paths:
       - lists
       summary: Put a list
       operationId: putList
+      consumes:
+        - application/json
       parameters:
       - in: body
         name: body
