@@ -1,0 +1,799 @@
+{
+  "info": {
+    "_postman_id": "ff975aa1-4b5f-4555-a853-58a2a83822a6",
+    "name": "test_collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "test_ure00m1243si_getTrips",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips?offset=false",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips"
+          ],
+          "query": [
+            {
+              "key": "offset",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_s1039041meye_getTrips",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips?offset=tSYnrzdmBsqMufn&limit=57",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips"
+          ],
+          "query": [
+            {
+              "key": "offset",
+              "value": "tSYnrzdmBsqMufn"
+            },
+            {
+              "key": "limit",
+              "value": "57"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_vb92k2w86nn5_getTrips",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips?limit=100",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "100"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_rhjc74k5frz7_getTrips",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips?limit=51",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "51"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_1jeqizlne52lh_getTripsFromUser",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips/user?password=set-aside&maxPriceAirbnb=99&isAdmin=true&sort=8434&username=withal",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips",
+            "user"
+          ],
+          "query": [
+            {
+              "key": "password",
+              "value": "set-aside"
+            },
+            {
+              "key": "maxPriceAirbnb",
+              "value": "99"
+            },
+            {
+              "key": "isAdmin",
+              "value": "true"
+            },
+            {
+              "key": "sort",
+              "value": "8434"
+            },
+            {
+              "key": "username",
+              "value": "withal"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_qe9eez5iz41i_getTripsFromUser",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips/user?password=acyclic&maxPriceAirbnb=21&isAdmin=true&username=abstemiously",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips",
+            "user"
+          ],
+          "query": [
+            {
+              "key": "password",
+              "value": "acyclic"
+            },
+            {
+              "key": "maxPriceAirbnb",
+              "value": "21"
+            },
+            {
+              "key": "isAdmin",
+              "value": "true"
+            },
+            {
+              "key": "username",
+              "value": "abstemiously"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_s5054j63lgf7_getTripsFromUser",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips/user?password=formulary&maxPriceAirbnb=91&username=intricately&includeTripsWithUnsetAirbnbPrice=true",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips",
+            "user"
+          ],
+          "query": [
+            {
+              "key": "password",
+              "value": "formulary"
+            },
+            {
+              "key": "maxPriceAirbnb",
+              "value": "91"
+            },
+            {
+              "key": "username",
+              "value": "intricately"
+            },
+            {
+              "key": "includeTripsWithUnsetAirbnbPrice",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_1jezbuj3a38te_getTripsFromUser",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips/user?password=navigable&username=favorably&includeTripsWithUnsetAirbnbPrice=true",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips",
+            "user"
+          ],
+          "query": [
+            {
+              "key": "password",
+              "value": "navigable"
+            },
+            {
+              "key": "username",
+              "value": "favorably"
+            },
+            {
+              "key": "includeTripsWithUnsetAirbnbPrice",
+              "value": "true"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_rhahs8zy8j78_deleteTripsFromUser",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips/user?password=allergenic&username=guinean",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips",
+            "user"
+          ],
+          "query": [
+            {
+              "key": "password",
+              "value": "allergenic"
+            },
+            {
+              "key": "username",
+              "value": "guinean"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_s4v51x59wcvo_deleteTripsFromUser",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips/user?password=increased&username=carcharhinus",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips",
+            "user"
+          ],
+          "query": [
+            {
+              "key": "password",
+              "value": "increased"
+            },
+            {
+              "key": "username",
+              "value": "carcharhinus"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_1ibkb9vr1o9bm_deleteTripsFromUser",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips/user?password=bifid&idTrip=21&username=determinant",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips",
+            "user"
+          ],
+          "query": [
+            {
+              "key": "password",
+              "value": "bifid"
+            },
+            {
+              "key": "idTrip",
+              "value": "21"
+            },
+            {
+              "key": "username",
+              "value": "determinant"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_qhib9m02r5fb_deleteTripsFromUser",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/trips/user?password=neurotic&idTrip=87&username=ctenocephalus",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "trips",
+            "user"
+          ],
+          "query": [
+            {
+              "key": "password",
+              "value": "neurotic"
+            },
+            {
+              "key": "idTrip",
+              "value": "87"
+            },
+            {
+              "key": "username",
+              "value": "ctenocephalus"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_1iv6l3mzq23ap_getUser",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_1iuqh5pcg2k4i_getUser",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users?id=false",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "false"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_1h7ts0erzl4kl_getUser",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users?id=72",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "72"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_toihawn1fy9c_getUser",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users?id=68",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "68"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_soccf0c6wjzm_updateUser",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_r17c0ro72p84_updateUser",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_uve4aasiyvs4_updateUser",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"idUser\":1,\"username\":\"User\",\"password\":\"Password\",\"newUsername\":\"User1\",\"newPassword\":\"O\",\"province\":\"Sevilla\",\"phone\":\"342233434\"}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_to7aoxsrg1gm_updateUser",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"idUser\":1,\"username\":\"User\",\"password\":\"Password\",\"newUsername\":\"User1\",\"newPassword\":\"Password1\",\"province\":\"bmQpgZVKv\",\"phone\":\"342233434\"}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_s10j5mva1zkz_createUser",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_trwvr38poggz_createUser",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_ubombpcg4ego_createUser",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"idUser\":1,\"username\":\"User\",\"password\":\"Password\",\"province\":\"Sevilla\",\"phone\":\"3422833434\"}"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test_vf6z0bbjajqc_createUser",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8084/TravelAPI/api/users",
+          "protocol": "http",
+          "host": [
+            "localhost:8084"
+          ],
+          "path": [
+            "TravelAPI",
+            "api",
+            "users"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"idUser\":1,\"username\":\"User\",\"password\":\"Password\",\"province\":\"MYPug\",\"phone\":\"342233434\"}"
+        }
+      },
+      "response": []
+    }
+  ]
+}

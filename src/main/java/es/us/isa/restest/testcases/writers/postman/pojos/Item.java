@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Item {
@@ -45,5 +46,20 @@ public class Item {
 
     public void setResponse(List<Object> response) {
         this.response = response;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return Objects.equals(name, item.name) &&
+                Objects.equals(request, item.request) &&
+                Objects.equals(response, item.response);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, request, response);
     }
 }

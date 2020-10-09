@@ -4,6 +4,8 @@ package es.us.isa.restest.testcases.writers.postman.pojos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Urlencoded {
 
@@ -42,5 +44,20 @@ public class Urlencoded {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Urlencoded that = (Urlencoded) o;
+        return Objects.equals(key, that.key) &&
+                Objects.equals(value, that.value) &&
+                Objects.equals(type, that.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, value, type);
     }
 }

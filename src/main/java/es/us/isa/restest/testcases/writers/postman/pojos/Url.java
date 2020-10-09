@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Url {
@@ -69,5 +70,22 @@ public class Url {
 
     public void setQuery(List<Query> query) {
         this.query = query;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Url url = (Url) o;
+        return Objects.equals(raw, url.raw) &&
+                Objects.equals(protocol, url.protocol) &&
+                Objects.equals(host, url.host) &&
+                Objects.equals(path, url.path) &&
+                Objects.equals(query, url.query);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(raw, protocol, host, path, query);
     }
 }

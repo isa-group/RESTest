@@ -3,6 +3,8 @@ package es.us.isa.restest.testcases.writers.postman.pojos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Header {
 
@@ -41,5 +43,20 @@ public class Header {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Header header = (Header) o;
+        return Objects.equals(key, header.key) &&
+                Objects.equals(value, header.value) &&
+                Objects.equals(type, header.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, value, type);
     }
 }

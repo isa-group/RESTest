@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostmanCollectionObject {
@@ -35,5 +36,19 @@ public class PostmanCollectionObject {
 
     public void setItem(List<Item> item) {
         this.item = item;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PostmanCollectionObject that = (PostmanCollectionObject) o;
+        return Objects.equals(info, that.info) &&
+                Objects.equals(item, that.item);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(info, item);
     }
 }

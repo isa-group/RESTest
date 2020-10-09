@@ -3,6 +3,8 @@ package es.us.isa.restest.testcases.writers.postman.pojos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Objects;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Info {
 
@@ -41,5 +43,20 @@ public class Info {
 
     public void setSchema(String schema) {
         this.schema = schema;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Info info = (Info) o;
+        return Objects.equals(_postman_id, info._postman_id) &&
+                Objects.equals(name, info.name) &&
+                Objects.equals(schema, info.schema);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_postman_id, name, schema);
     }
 }

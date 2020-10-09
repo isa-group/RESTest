@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Request {
@@ -55,5 +56,21 @@ public class Request {
 
     public void setBody(Body body) {
         this.body = body;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Request request = (Request) o;
+        return Objects.equals(method, request.method) &&
+                Objects.equals(header, request.header) &&
+                Objects.equals(url, request.url) &&
+                Objects.equals(body, request.body);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(method, header, url, body);
     }
 }

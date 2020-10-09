@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Body {
@@ -46,5 +47,20 @@ public class Body {
 
     public void setUrlencoded(List<Urlencoded> urlencoded) {
         this.urlencoded = urlencoded;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Body body = (Body) o;
+        return Objects.equals(mode, body.mode) &&
+                Objects.equals(raw, body.raw) &&
+                Objects.equals(urlencoded, body.urlencoded);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mode, raw, urlencoded);
     }
 }
