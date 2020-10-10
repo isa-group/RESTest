@@ -121,6 +121,31 @@ public class TestCase implements Serializable {
 		}
 	}
 
+	public String getParameterValue(ParameterFeatures parameter) {
+		return getParameterValue(parameter.getIn(), parameter.getName());
+	}
+
+	public String getParameterValue(TestParameter parameter) {
+		return getParameterValue(parameter.getIn(), parameter.getName());
+	}
+
+	public String getParameterValue(String in, String paramName) {
+		switch (in) {
+			case "header":
+				return getHeaderParameters().get(paramName);
+			case "query":
+				return getQueryParameters().get(paramName);
+			case "path":
+				return getPathParameters().get(paramName);
+			case "body":
+				return getBodyParameter();
+			case "formData":
+				return getFormParameters().get(paramName);
+			default:
+				throw new IllegalArgumentException("Parameter type not supported: " + in);
+		}
+	}
+
 	public void removeParameter(ParameterFeatures parameter) {
 		removeParameter(parameter.getIn(), parameter.getName());
 	}
