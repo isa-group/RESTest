@@ -58,7 +58,7 @@ public class PostmanWriterTest {
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Stripe/testConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Stripe/testConf_forTestSuite.yaml", spec);
 
         // Set number of test cases to be generated on each path
         int numTestCases = 8;

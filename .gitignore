@@ -20,6 +20,7 @@ jMetal.log
 !/src/main/resources/auth/Sample
 /src/main/resources/auth/Sample/*
 !/src/main/resources/auth/Sample/apikeys.json
+!/src/main/resources/auth/Sample/headers.json
 
 /idl_aux_files
 src/test/resources/file-manager/*
