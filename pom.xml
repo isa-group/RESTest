@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>RESTest</groupId>
-	<artifactId>RESTest</artifactId>
+	<groupId>es.us.isa</groupId>
+	<artifactId>restest</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
@@ -24,29 +24,40 @@
 		<url>https://github.com/isa-group/RESTest/issues</url>
 	</issueManagement>
 
-	<developers>
-		<developer>
-			<id>Martin-Lopez</id>
-			<name>Alberto Martin-Lopez</name>
-			<email>amarlop@us.es</email>
-			<url>http://personal.us.es/amarlop/</url>
-			<organization>University of Seville</organization>
-			<organizationUrl>http://www.us.es</organizationUrl>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>segura</id>
-			<name>Sergio Segura</name>
-			<email>sergiosegura@us.es</email>
-			<url>http://personal.us.es/sergiosegura/</url>
-			<organization>University of Seville</organization>
-			<organizationUrl>http://www.us.es</organizationUrl>
-			<roles>
-				<role>Developer</role>
-			</roles>
-		</developer>
+    <developers>
+        <developer>
+            <id>Martin-Lopez</id>
+            <name>Alberto Martin-Lopez</name>
+            <email>amarlop@us.es</email>
+            <url>http://personal.us.es/amarlop/</url>
+            <organization>University of Seville</organization>
+            <organizationUrl>http://www.us.es</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>segura</id>
+            <name>Sergio Segura</name>
+            <email>sergiosegura@us.es</email>
+            <url>http://personal.us.es/sergiosegura/</url>
+            <organization>University of Seville</organization>
+            <organizationUrl>http://www.us.es</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>japarejo</id>
+            <name>José Antonio Parejo</name>
+            <email>japarejo@us.es</email>
+            <url>https://www.isa.us.es/3.0/members/jose-a-parejo/</url>
+            <organization>University of Seville</organization>
+            <organizationUrl>http://www.us.es</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
 		<developer>
 			<id>jfdelarosa</id>
 			<name>José Ramón Fernández de la Rosa</name>
@@ -66,12 +77,14 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<aspectj.version>1.9.5</aspectj.version>
-		<argLine></argLine>
+		<jmetal.version>5.9</jmetal.version>
 		<swagger.version>2.1.2</swagger.version>
-		<openapivalidator.version>2.10.0</openapivalidator.version>
+		<openapivalidator.version>2.11.0</openapivalidator.version>
 		<restassured.version>4.2.0</restassured.version>
 		<jackson.version>2.11.0</jackson.version>
 		<allure.version>2.13.3</allure.version>
+		<mockito.version>3.3.3</mockito.version>
+        <argLine></argLine>
 	</properties>
 
 	<dependencies>
@@ -132,7 +145,34 @@
 		</dependency>
 
 
-		<!-- TEST DEPENDENCIES -->
+        <!-- JMETAL DEPENDENCIES -->
+        <!-- JMetal multi-objective optimization framework  -->
+        <dependency>
+            <groupId>org.uma.jmetal</groupId>
+            <artifactId>jmetal-core</artifactId>
+            <version>${jmetal.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.uma.jmetal</groupId>
+            <artifactId>jmetal-problem</artifactId>
+            <version>${jmetal.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.uma.jmetal</groupId>
+            <artifactId>jmetal-algorithm</artifactId>
+            <version>${jmetal.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.uma.jmetal</groupId>
+            <artifactId>jmetal-exec</artifactId>
+            <version>${jmetal.version}</version>
+        </dependency>
+
+
+        <!-- TEST DEPENDENCIES -->
 		<!-- JUnit 4 -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -153,6 +193,13 @@
 			<artifactId>allure-rest-assured</artifactId>
 			<version>${allure.version}</version>
 		</dependency>
+		<!-- Mockito -->
+		<dependency>
+  			<groupId>org.mockito</groupId>
+  			<artifactId>mockito-core</artifactId>
+  			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
 
 
 		<!-- MISC DEPENDENCIES -->
@@ -168,6 +215,13 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.10</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+			<version>1.8</version>
 		</dependency>
 
 		<!-- Apache Commongs Math -->
@@ -219,39 +273,76 @@
 			<version>2.13.3</version>
 		</dependency>
 
+		<!-- Java tuples -->
+		<dependency>
+			<groupId>org.javatuples</groupId>
+			<artifactId>javatuples</artifactId>
+			<version>1.2</version>
+		</dependency>
+
 
 		<!-- LOCAL DEPENDENCIES -->
 		<!-- JSONmutator local dependency -->
 		<dependency>
-			<groupId>JSONmutator</groupId>
-			<artifactId>JSONmutator</artifactId>
+			<groupId>es.us.isa</groupId>
+			<artifactId>json-mutator</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/JSONmutator.jar</systemPath>
 		</dependency>
 
 		<!-- IDLreasoner local dependency -->
 		<dependency>
-			<groupId>IDLreasoner</groupId>
-			<artifactId>IDLreasoner</artifactId>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idl-reasoner</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/IDLreasoner.jar</systemPath>
 		</dependency>
 
 		<!-- IDL2MiniZincMapper local dependency -->
 		<dependency>
-			<groupId>IDL2MiniZincMapper</groupId>
-			<artifactId>IDL2MiniZincMapper</artifactId>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idl-2-minizinc-mapper</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/IDL2MiniZincMapper.jar</systemPath>
 		</dependency>
 
 	</dependencies>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>8</source>
+					<target>8</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>es.us.isa.restest.main.TestGenerationAndExecution</mainClass>
+									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+									<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+								</manifest>
+							</archive>
+							<finalName>restest-full</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+							<descriptorRefs>
+								<descriptorRef>jar-with-dependencies</descriptorRef>
+							</descriptorRefs>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>

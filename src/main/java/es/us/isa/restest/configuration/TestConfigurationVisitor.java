@@ -9,6 +9,10 @@ import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 
+
+/**
+ * This class provides direct access to different part of test configuration objects.
+ */
 public class TestConfigurationVisitor {
 
 	private TestConfigurationVisitor() {}

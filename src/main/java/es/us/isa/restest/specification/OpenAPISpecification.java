@@ -30,4 +30,33 @@ public class OpenAPISpecification {
 	public String getPath() {
 		return path;
 	}
+	
+	
+	// Return the specification title
+    public String getTitle(boolean capitalize) {
+    	String title ="";
+    	
+    	if (specification!=null) {
+	        title = specification.getInfo().getTitle().replaceAll("[^\\p{L}\\p{Nd}\\s]+", "").trim();
+	        title = (capitalize? title.substring(0,1).toUpperCase() : title.substring(0,1).toLowerCase()) +
+	                (title.length() > 1? formatTitle(title.substring(1).split("\\s")) : "");
+    	}
+        return title;
+    }
+
+    
+    private static String formatTitle(String[] sp) {
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < sp.length; i++) {
+            if(i == 0) {
+                builder.append(sp[i]);
+            } else {
+                builder.append(sp[i].substring(0, 1).toUpperCase());
+                if(sp[i].length() > 1) {
+                   builder.append(sp[i].substring(1));
+                }
+            }
+        }
+        return builder.toString();
+    }
 }

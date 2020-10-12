@@ -1,40 +1,65 @@
 package es.us.isa.restest.generators;
 
-import com.atlassian.oai.validator.OpenApiInteractionValidator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import org.javatuples.Pair;
+
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationVisitor;
-import es.us.isa.restest.configuration.pojos.*;
+import es.us.isa.restest.configuration.pojos.Operation;
+import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
+import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
-import es.us.isa.restest.util.CSVManager;
+import es.us.isa.restest.util.IDGenerator;
+import es.us.isa.restest.util.OASAPIValidator;
+import es.us.isa.restest.util.SpecificationVisitor;
+import es.us.isa.restest.util.RESTestException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
-import java.util.*;
-
-import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
-import static es.us.isa.restest.util.FileManager.checkIfExists;
+/**
+ * Abstract class to be implemented by test case generators
+ * @author Sergio Segura
+ */
 
 public abstract class AbstractTestCaseGenerator {
 
-	protected long seed = -1;								// Seed
+	protected long seed = -1;												// Seed
 	protected Random rand;
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
-	protected Map<String,ITestDataGenerator> generators;	// Test data generators (random, boundaryValue, fixedlist...)
-	protected AuthManager authManager;						// For if multiple API keys are used for the API
-	protected Float faultyRatio = 0.1f;						// Ratio (0-1) of faulty test cases to be generated. Defaults to 0.1
-	protected OpenApiInteractionValidator validator;	// Validator used to know if a test case is valid or not
-	protected int numberOfTest;								// Number of test cases to be generated for each operation
-	protected int index;									// Number of test cases generated so far
-	protected int nCurrentFaulty;							// Number of faulty test cases generated in the current iteration
-	protected int nCurrentNominal;							// Number of nominal test cases generated in the current iteration
-	protected int nFaulty;									// Number of faulty test cases generated so far
-	protected int nNominal;									// Number of nominal test cases generated so far
+	protected Map<Pair<String, String>,ITestDataGenerator> generators;		// Test data generators Map<Pair<ParameterName,Type(query or path)>, Generator (random, boundaryValue, fixedlist...)>
+	protected AuthManager authManager;										// For if multiple API keys are used for the API
+	protected Float faultyRatio = 0f;										// Ratio (0-1) of faulty test cases to be generated on each operation. Defaults to 0.1
+	protected int numberOfTests;											// Number of test cases to be generated for each operation
+	private int maxTriesPerTestCase=100;									// Maximum number of tries for generating a random test case conforming the input OAS schema.
+	
+	// Global counters
+	protected int nTotalTests;												// Number of test cases generated so far
+	protected int nTotalFaulty;												// Number of faulty test cases generated so far
+	protected int nTotalNominal;											// Number of nominal test cases generated so far
+	
+	// Local counters for each operation
+	protected int nTests;													// Number of test cases generated for the current operation
+	protected int nFaulty;													// Number of faulty test cases generated for the current operation
+	protected int nNominal;													// Number of nominal test cases generated for the current operation
+	
+	
+
 
 	public AbstractTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
+		preconditions(conf);
+
 		this.spec = spec;
 		this.conf = conf;
 
@@ -45,25 +70,75 @@ public abstract class AbstractTestCaseGenerator {
 		if (authPath != null)
 			this.authManager = new AuthManager(authPath);
 
-		this.validator = OpenApiInteractionValidator.createFor(spec.getPath()).build();
-		this.numberOfTest = nTests;
-		this.index = 0;
-		this.nFaulty = 0;
-		this.nNominal = 0;
-		this.nCurrentFaulty = 0;
-		this.nCurrentNominal = 0;
+		
+		this.numberOfTests = nTests;
+		
+		// Reset counters
+		resetGenerator();
+		
 
 		this.rand = new Random();
 		this.seed = rand.nextLong();
 		rand.setSeed(this.seed);
 	}
+	
+	
+	// Reset all numerical counters
+	public void resetGenerator() {
+		this.nTotalTests = 0;
+		this.nTotalFaulty = 0;
+		this.nTotalNominal = 0;
+		this.nTests = 0;
+		this.nFaulty = 0;
+		this.nNominal = 0;
+	}
+	
+	// Reset counters for the current operation
+	protected void resetOperation() {
+		this.nTests = 0;
+		this.nFaulty = 0;
+		this.nNominal = 0;
+	}
+
+	/**
+	 * Checks the following preconditions:
+	 * <ol>
+	 *     <li>Each parameter in the testConf must exist in the OAS</li>
+	 *     <li>Each required parameter in the OAS must exist in the testConf and it must have a weight of "null" or "1"</li>
+	 * </ol>
+	 *
+	 * @param conf the test configuration file
+	 */
+	private void preconditions(TestConfigurationObject conf) {
+
+		for(Operation testOperation : conf.getTestConfiguration().getOperations()) {
+			List<ParameterFeatures> requiredParams = SpecificationVisitor.getRequiredParameters(testOperation.getOpenApiOperation());
+
+			if(testOperation.getTestParameters() != null) {
+
+				for(TestParameter testParameter : testOperation.getTestParameters()) {
+
+					ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParameter.getName(), testParameter.getIn());
+					if(param == null) {
+						throw new IllegalArgumentException("Each parameter in the testConf must exist in the OAS; unknown parameter: " + testParameter.getName() + ", in: " + testParameter.getIn());
+					}
+
+					if(requiredParams.contains(param) && testParameter.getWeight() != null && !testParameter.getWeight().equals(1F)) {
+						throw new IllegalArgumentException("Each required parameter in the OAS must exist in the testConf and it must have a weight of 'null' or '1'; parameter: "
+								+ testParameter.getName() + ", in: " + testParameter.getIn() + ", weight: " + testParameter.getWeight());
+					}
+				}
+			}
+		}
+	}
 
 	/**
 	 * Generate a set of test cases
-	 * @param filters Set the paths and HTTP methods to be included in the test configuration file
+	 * @param filters Set the paths and HTTP methods to be tested
 	 * @return Generated test cases (duplicates are possible)
+	 * @throws RESTestException 
 	 */
-	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
+	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) throws RESTestException {
 
 		List<TestCase> testCases = new ArrayList<>();
 		
@@ -86,10 +161,12 @@ public abstract class AbstractTestCaseGenerator {
 	/**
 	 * Generate a set of test cases for the whole configuration file (all paths, all operations)
 	 * @return Generated test cases (duplicates are possible)
+	 * @throws RESTestException 
 	 */
-	public Collection<TestCase> generate() {
+	public Collection<TestCase> generate() throws RESTestException {
 		List<TestConfigurationFilter> filters = new ArrayList<>();
 
+		// Create filters for all the operations in the API
 		for (Operation testOperation: conf.getTestConfiguration().getOperations()) {
 			TestConfigurationFilter filter = filters.stream().filter(x -> x.getPath().equalsIgnoreCase(testOperation.getTestPath())).findFirst().orElse(null);
 			int filterIndex = -1;
@@ -115,7 +192,7 @@ public abstract class AbstractTestCaseGenerator {
 					filter.addDeleteMethod();
 					break;
 				default:
-					throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
+					throw new RESTestException("Methods other than GET, POST, PUT and DELETE are not " +
 							"allowed in the test configuration file");
 			}
 
@@ -129,10 +206,16 @@ public abstract class AbstractTestCaseGenerator {
 
 		return generate(filters);
 	}
+	
+	
+	/* Generate test cases for testOperation */
+	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation) throws RESTestException;
+	
+	// Generate the next test case and update the generation index. To be implemented on each subclass.
+	public abstract TestCase generateNextTestCase(Operation testOperation) throws RESTestException;
 
-	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation);
-
-	protected Collection<TestCase> generate(String path, HttpMethod method) {
+	/* Generate test cases for the operation defined by path/method */
+	protected Collection<TestCase> generate(String path, HttpMethod method) throws RESTestException {
 
 		// Get test configuration object for the operation
 		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
@@ -143,19 +226,77 @@ public abstract class AbstractTestCaseGenerator {
 		return generateOperationTestCases(testOperation);
 	}
 
-	protected void setTestCaseParameters(TestCase test, Operation testOperation) {
-		// Set parameters
+
+	
+	/* Generate a basic valid random test case according to the test configuration file in two steps: 
+	* 	1) Select the parameters to be included in the test case based on their weight.
+	* 	2) Generate valid test values with the corresponding test data generators in the test configuration file. Input objects (if any) are not perturbated yet
+	* 	3) Try to perturbate input objects (if any). If no valid perturbation can be generated, set the parameter to the original object provided in the test configuration file 
+	*/
+	protected TestCase generateRandomTestCase(Operation testOperation) throws RESTestException {
+		
+		TestCase test = createTestCaseTemplate(testOperation);
+		boolean perturbation = false;
+		
+		// Set parameters and values. Objects (if any) are initially not perturbated
 		if(testOperation.getTestParameters() != null) {
 			for (TestParameter confParam : testOperation.getTestParameters()) {
 				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
-					ITestDataGenerator generator = generators.get(confParam.getName());
+					ITestDataGenerator generator = generators.get(Pair.with(confParam.getName(), confParam.getIn()));
+					if (generator instanceof ObjectPerturbator) {
+						test.addParameter(confParam, ((ObjectPerturbator) generator).getOriginalStringObject());		// Objects are not perturbated yet
+						perturbation = true;
+					}
+					else
+						test.addParameter(confParam, generator.nextValueAsString());
+				}
+			}
+		}
+		
+		// Make sure the test case generate conforms to the specification. Otherwise, throw an exception and stop the execution
+		List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
+		if (!errors.isEmpty()) {
+			throw new RESTestException("The test case generated does not conform to the specification: " + errors);
+		}
+			
+		// If a perturbation generator is included in the test configuration file, try to generate a new (valid) test case by perturbating a valid input object
+		if (perturbation)
+			perturbate(test, testOperation);
+		
+		return test;
+	}
+	
+	
+	
+	/* Try to perturbate input objects using the ObjectPerturbator. If not possible, set the parameter to the original object provided in the test configuration file */
+	private void perturbate(TestCase test, Operation testOperation) {
+		
+		for (TestParameter confParam : testOperation.getTestParameters()) { 
+			ITestDataGenerator generator = generators.get(Pair.with(confParam.getName(), confParam.getIn()));
+			if (generator instanceof ObjectPerturbator) {
+				boolean valid = false;
+				for(int i=0;i<maxTriesPerTestCase && !valid; i++) {
 					test.addParameter(confParam, generator.nextValueAsString());
+					valid = test.isValid(OASAPIValidator.getValidator(spec));
+				}
+				
+				// No valid perturbations generated. Set original object
+				if (!valid) {
+					test.addParameter(confParam, ((ObjectPerturbator) generator).getOriginalStringObject());
+					System.err.println("Maximum number of tries reached when trying to perturbate the input object for the operation " + testOperation.getOpenApiOperation().getOperationId());
 				}
 			}
 		}
 	}
 
-	protected void authenticateTestCase(TestCase test) {
+
+	protected void updateContentType(TestCase test, io.swagger.v3.oas.models.Operation operation) {
+		if (operation.getRequestBody() != null && operation.getRequestBody().getContent().containsKey("application/x-www-form-urlencoded"))
+			test.setInputFormat("application/x-www-form-urlencoded");
+	}
+
+	// Set authentication details
+	public void authenticateTestCase(TestCase test) {
 		// Authentication
 		if (conf.getAuth().getRequired()) {
 
@@ -182,42 +323,42 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	// Returns true if there are more test cases to be generated. To be implemented on each subclass.
-	protected abstract boolean hasNext();
-	
-	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	protected abstract TestCase generateNextTestCase(Operation testOperation, String faultyReason);
+	protected abstract boolean hasNext() throws RESTestException;
 
-	protected void updateIndexes(boolean currentTestFaulty) {
-		// Update indexes
-		index++;
-		if (currentTestFaulty) {
-			nCurrentFaulty++;
-			nFaulty++;
+	// Create an empty test case with a random name.
+	protected TestCase createTestCaseTemplate(Operation testOperation) {
+		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
+		TestCase test = new TestCase(testId, false, testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
+		updateContentType(test, testOperation.getOpenApiOperation());
+
+		return test;
+	}
+	
+	
+	// Update counters
+	protected void updateIndexes(TestCase test) {
+		nTotalTests++;		// Total number of test cases generated by the generator
+		nTests++;			// Number of test cases generated for the current operation
+		if (test.getFaulty()) {
+			nTotalFaulty++;		// Total number of faulty test cases
+			nFaulty++;			// Number of faulty test cases generated for the current operation
 		} else {
-			nCurrentNominal++;
-			nNominal++;
+			nTotalNominal++;		// Total number of nominal test cases
+			nNominal++;				// Number of nominal test cases generated for the current operation
 		}
 	}
 	
-	// Create all generators needed for the parameters of an operation
-	protected void createGenerators(List<TestParameter> testParameters) {
+	// Create all generators needed for the parameters of an operation. 
+	public void createGenerators(List<TestParameter> testParameters) {
 		
 		this.generators = new HashMap<>();
 
 		if(testParameters != null) {
 			for(TestParameter param: testParameters)
-				generators.put(param.getName(), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
+				generators.put(Pair.with(param.getName(), param.getIn()), TestDataGeneratorFactory.createTestDataGenerator(param.getGenerator()));
 		}
 	}
 
-	public void exportNominalFaultyToCSV(String filePath, String testClassName) {
-		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "test_id,nNominal,nFaulty");
-		if (testClassName.equals("total"))
-			CSVManager.writeRow(filePath, testClassName + "," + nNominal + "," + nFaulty);
-		else
-			CSVManager.writeRow(filePath, testClassName + "," + nCurrentNominal + "," + nCurrentFaulty);
-	}
 
 	public Float getFaultyRatio() {
 		return faultyRatio;
@@ -228,47 +369,58 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	public int getnFaulty() {
-		return nFaulty;
+		return nTotalFaulty;
 	}
 
 	public void setnFaulty(int nFaulty) {
-		this.nFaulty = nFaulty;
+		this.nTotalFaulty = nFaulty;
 	}
 
 	public int getnNominal() {
-		return nNominal;
+		return nTotalNominal;
 	}
 
 	public void setnNominal(int nNominal) {
-		this.nNominal = nNominal;
+		this.nTotalNominal = nNominal;
 	}
 
-	public int getnCurrentFaulty() {
-		return nCurrentFaulty;
+	public Map<Pair<String, String>, ITestDataGenerator> getGenerators() {
+		return generators;
 	}
 
-	public void setnCurrentFaulty(int nCurrentFaulty) {
-		this.nCurrentFaulty = nCurrentFaulty;
+	public void setGenerators(Map<Pair<String, String>, ITestDataGenerator> generators) {
+		this.generators = generators;
 	}
 
-	public int getnCurrentNominal() {
-		return nCurrentNominal;
+	public AuthManager getAuthManager() {
+		return authManager;
 	}
 
-	public void setnCurrentNominal(int nCurrentNominal) {
-		this.nCurrentNominal = nCurrentNominal;
+	public void setAuthManager(AuthManager authManager) {
+		this.authManager = authManager;
 	}
 
 	protected String removeNotAlfanumericCharacters(String s) {
 		return s.replaceAll("[^A-Za-z0-9]", "");
 	}
 
-	private long getSeed() {
+	public long getSeed() {
 		return this.seed;
 	}
 
-	private void setSeed(long seed) {
+	public void setSeed(long seed) {
 		this.seed = seed;
 		rand.setSeed(seed);
 	}
+
+
+	public int getMaxTriesPerTestCase() {
+		return maxTriesPerTestCase;
+	}
+
+
+	public void setMaxTriesPerTestCase(int maxTriesPerTestCase) {
+		this.maxTriesPerTestCase = maxTriesPerTestCase;
+	}
+
 }

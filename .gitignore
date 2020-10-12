@@ -5,6 +5,7 @@
 /.project/
 RESTest.iml
 TODO.txt
+jMetal.log
 /target
 /allure-results/
 /src/test/resources/csvData/csvSample.csv
@@ -19,6 +20,18 @@ TODO.txt
 !/src/main/resources/auth/Sample
 /src/main/resources/auth/Sample/*
 !/src/main/resources/auth/Sample/apikeys.json
+!/src/main/resources/auth/Sample/headers.json
 
 /idl_aux_files
 src/test/resources/file-manager/*
+.classpath
+
+.factorypath
+
+.project
+
+src/main/resources/TestConfigurationMetamodel/configuration-model-output.yaml
+src/test/resources/restest-test-resources/compare2.postman_collection.json
+src/test/resources/restest-test-resources/test_collection.postman_collection.json
+src/test/resources/restest-test-resources/test_collection_urlencoded.postman_collection.json
+/bin/

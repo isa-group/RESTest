@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import es.us.isa.restest.specification.ParameterFeatures;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Encoding;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
@@ -22,10 +23,10 @@ public class SpecificationVisitor {
 		//Utility class
 	}
 
-	public static final String MEDIA_TYPE_APPLICATION_JSON_REGEX = "^application/.*(\\\\+)?json.*$";
-	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
-	public static final String BOOLEAN_TYPE = "boolean";
+	private static final String MEDIA_TYPE_APPLICATION_JSON_REGEX = "^application/.*(\\\\+)?json.*$";
+	private static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+	private static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
+	private static final String BOOLEAN_TYPE = "boolean";
 
 	/**
 	 * Returns the operation's parameter with name "paramName"
@@ -34,28 +35,29 @@ public class SpecificationVisitor {
 	 * @return
 	 */
 	public static ParameterFeatures findParameter(Operation operation, String paramName, String in) {
-		ParameterFeatures param = null;
+		ParameterFeatures param;
 
 		switch(in) {
 			case "header":
 			case "path":
 			case "query":
-				param = findQueryHeaderPathParameter(operation, paramName, param);
+				param = findQueryHeaderPathParameter(operation, paramName);
 				break;
 			case "body":
-				param = findBodyParameter(operation, param);
+				param = findBodyParameter(operation);
 				break;
 			case "formData":
-				param = findFormDataParameter(operation, paramName, param);
+				param = findFormDataParameter(operation, paramName);
 				break;
 			default:
 				throw new IllegalArgumentException("Parameter type not supported: " + in);
 		}
-	
+
 		return param;
 	}
 
-	private static ParameterFeatures findQueryHeaderPathParameter(Operation operation, String paramName, ParameterFeatures param) {
+	private static ParameterFeatures findQueryHeaderPathParameter(Operation operation, String paramName) {
+		ParameterFeatures param = null;
 		boolean found = false;
 		Iterator<Parameter> it = operation.getParameters().iterator();
 		while (it.hasNext() && !found) {
@@ -68,24 +70,39 @@ public class SpecificationVisitor {
 		return param;
 	}
 
-	private static ParameterFeatures findBodyParameter(Operation operation, ParameterFeatures param) {
+	private static ParameterFeatures findBodyParameter(Operation operation) {
+		ParameterFeatures param = null;
 		if(operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
 			param = new ParameterFeatures("body", "body", operation.getRequestBody().getRequired());
 		}
 		return param;
 	}
 
-	private static ParameterFeatures findFormDataParameter(Operation operation, String paramName, ParameterFeatures param) {
+	private static ParameterFeatures findFormDataParameter(Operation operation, String paramName) {
+		ParameterFeatures param = null;
 		MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
 				operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
 				operation.getRequestBody().getContent().get(MEDIA_TYPE_MULTIPART_FORM_DATA);
 		Iterator<Map.Entry> formDataIterator = mediaType.getSchema().getProperties().entrySet().iterator();
 
 		while (formDataIterator.hasNext()) {
-			Schema s = ((Map.Entry<String, Schema>) formDataIterator.next()).getValue();
-			if (s.getName().equalsIgnoreCase(paramName)) {
-				param = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
+			Map.Entry<String, Schema> formDataEntry = formDataIterator.next();
+			if (formDataEntry.getKey().equalsIgnoreCase(paramName)) {
+				param = new ParameterFeatures(formDataEntry.getKey(), formDataEntry.getValue(), mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(formDataEntry.getKey()));
 				break;
+
+			} else if(paramName.startsWith(formDataEntry.getKey()) && paramName.contains("[") && mediaType.getEncoding() != null && mediaType.getEncoding().get(formDataEntry.getKey()) != null
+					&& mediaType.getEncoding().get(formDataEntry.getKey()).getStyle().equals(Encoding.StyleEnum.DEEP_OBJECT)) {
+
+				String propertyName = paramName.split("\\[")[1];
+				if(propertyName.equals("]") && formDataEntry.getValue().getType().equals("array")) {
+					param = new ParameterFeatures(paramName, formDataEntry.getValue(), mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(formDataEntry.getKey()));
+					break;
+				} else if(formDataEntry.getValue().getType().equals("object") && formDataEntry.getValue().getProperties().containsKey(propertyName.substring(0, propertyName.length()-1))) {
+					Schema schema = (Schema) formDataEntry.getValue().getProperties().get(propertyName.substring(0, propertyName.length()-1));
+					param = new ParameterFeatures(paramName, schema, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(formDataEntry.getKey()) && schema.getRequired().contains(propertyName.substring(0, propertyName.length()-1)));
+					break;
+				}
 			}
 		}
 		return param;
@@ -97,6 +114,7 @@ public class SpecificationVisitor {
 	 * @return
 	 */
 	public static List<ParameterFeatures> getRequiredParameters(Operation operation) {
+
 		List<ParameterFeatures> requiredParameters = new ArrayList<>();
 		if(operation.getParameters() != null) {
 			operation.getParameters().stream()
@@ -118,10 +136,10 @@ public class SpecificationVisitor {
 
 			if(mediaType.getSchema().getRequired() != null && !mediaType.getSchema().getRequired().isEmpty()) {
 
-				for(Object o : mediaType.getSchema().getProperties().keySet()) {
-					Schema s = ((Map.Entry<String, Schema>) o).getValue();
+				for(Object schemaProperty : mediaType.getSchema().getProperties().entrySet()) {
+					Schema s = ((Map.Entry<String, Schema>) schemaProperty).getValue();
 					if(mediaType.getSchema().getRequired().contains(s.getName())) {
-						requiredParameters.add(new ParameterFeatures(s, true));
+						requiredParameters.add(new ParameterFeatures(((Map.Entry<String, Schema>) schemaProperty).getKey(), s, true));
 					}
 				}
 			}
@@ -181,7 +199,7 @@ public class SpecificationVisitor {
 			for(Object o : mediaType.getSchema().getProperties().entrySet()) {
 
 				Schema s = ((Map.Entry<String, Schema>) o).getValue();
-				ParameterFeatures p = new ParameterFeatures(s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
+				ParameterFeatures p = new ParameterFeatures(((Map.Entry<String, Schema>) o).getKey(), s, mediaType.getSchema().getRequired() != null && mediaType.getSchema().getRequired().contains(s.getName()));
 
 				if ((p.getType().equals("integer") || p.getType().equals("number")
 						|| p.getType().equals(BOOLEAN_TYPE) || (p.getType().equals("string")

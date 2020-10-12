@@ -1,0 +1,135 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /check
+    operationId: check
+    method: post
+    testParameters:
+    - name: text
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 3
+          objectValues: null
+        - name: minWords
+          values:
+          - 1
+          objectValues: null
+    - name: data
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '\{\"(annotation|text)\": \[((\{\"text\": \"(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will|BREAK\"JSON) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
+          objectValues: null
+    - name: language
+      in: formData
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - 'src/main/resources/TestData/languagetool-codes-with-auto.csv'
+          objectValues: null
+    - name: altLanguages
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-codes-variants.csv'
+            objectValues: null
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
+    - name: motherTongue
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-codes.csv'
+            objectValues: null
+    - name: preferredVariants
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-codes-variants.csv'
+            objectValues: null
+    - name: enabledRules
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-rules.csv'
+            objectValues: null
+    - name: disabledRules
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-rules.csv'
+            objectValues: null
+    - name: enabledCategories
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-categories.csv'
+            objectValues: null
+    - name: disabledCategories
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-categories.csv'
+            objectValues: null
+    - name: enabledOnly
+      in: formData
+      weight: 0.5
+      generator:
+        type: RandomBoolean
+        genParameters: []
+    expectedResponse: 200
+#  - testPath: /languages
+#    operationId: getLanguages
+#    method: get
+#    testParameters: null
+#    expectedResponse: 200

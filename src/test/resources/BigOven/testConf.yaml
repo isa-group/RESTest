@@ -1,0 +1,142 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/article/{term}"
+    operationId: Article_Get
+    method: get
+    testParameters:
+    - name: term
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/article/{term}"
+    operationId: Article_Put
+    method: put
+    testParameters:
+    - name: term
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: body
+      in: body
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - value 1
+          - value 2
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/grocerylist/item/{guid}"
+    operationId: GroceryList_DeleteItemByGuid
+    method: delete
+    testParameters:
+    - name: guid
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/recipe/review/{reviewId}/replies"
+    operationId: Review_GetReplies
+    method: get
+    testParameters:
+    - name: reviewId
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: pg
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: rpp
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/recipe/review/{reviewId}/replies"
+    operationId: Review_PostReply
+    method: post
+    testParameters:
+    - name: reviewId
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: body
+      in: body
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - value 1
+          - value 2
+          objectValues: null
+    expectedResponse: 200

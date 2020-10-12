@@ -13,15 +13,15 @@ public class CreateTestConfTest {
         String[] args = {};
         CreateTestConf.main(args);
 
-        assertTrue(checkIfExists("src/test/resources/Comments/testConf.yaml"));
+        assertTrue(checkIfExists("src/test/resources/BigOven/testConf.yaml"));
     }
 
     @Test
     public void testCreateTestConfWithArgs() {
-        String[] args = {"src/test/resources/AnApiOfIceAndFire/swagger.yaml", "/api/characters:GET,POST", "/api/houses:GET,PUT,DELETE", "/api/books:ALL"};
+        String[] args = {"src/test/resources/BigOven/spec.yaml", "/article/{term}:GET,PUT", "/grocerylist/item/{guid}:DELETE", "/recipe/review/{reviewId}/replies:ALL"};
         CreateTestConf.main(args);
 
-        assertTrue(checkIfExists("src/test/resources/AnApiOfIceAndFire/testConf.yaml"));
+        assertTrue(checkIfExists("src/test/resources/BigOven/testConf.yaml"));
     }
 
 }

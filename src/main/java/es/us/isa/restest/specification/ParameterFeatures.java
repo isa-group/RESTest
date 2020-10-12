@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Auxiliary class to store multiple commonly used properties of an OpenAPI parameter
@@ -40,8 +41,8 @@ public class ParameterFeatures {
         this.required = required;
     }
 
-    public ParameterFeatures(Schema s, Boolean required) {
-        name = s.getName();
+    public ParameterFeatures(String name, Schema s, Boolean required) {
+        this.name = name;
         type = s.getType();
         format = s.getFormat();
         enumValues = s.getEnum();
@@ -133,5 +134,27 @@ public class ParameterFeatures {
 
     public void setRequired(Boolean required) {
         this.required = required;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ParameterFeatures that = (ParameterFeatures) o;
+        return Objects.equals(name, that.name) &&
+                Objects.equals(in, that.in) &&
+                Objects.equals(type, that.type) &&
+                Objects.equals(format, that.format) &&
+                Objects.equals(enumValues, that.enumValues) &&
+                Objects.equals(min, that.min) &&
+                Objects.equals(max, that.max) &&
+                Objects.equals(minLength, that.minLength) &&
+                Objects.equals(maxLength, that.maxLength) &&
+                Objects.equals(required, that.required);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, in, type, format, enumValues, min, max, minLength, maxLength, required);
     }
 }

@@ -27,12 +27,23 @@ The figure below shows how RESTest works:
 ![RESTest](docs/Approach8.png)
 
 ## Quickstart guide
-To get started with RESTest, you can try it yourself with some API, for example, [Bikewise](https://bikewise.org/). First, download the code:
+To get started with RESTest, download the code and move to the parent directory:
 ````
 git clone https://github.com/isa-group/RESTest.git
+cd RESTest
 ````
 
+### Maven configuration
+To build and run RESTest, you **MUST** include the dependencies in the `lib` folder on your local Maven repository (e.g., `~/.m2` folder in Mac). You can do it as follows:
+```sh
+mvn install:install-file -Dfile=lib/JSONmutator.jar -DgroupId=es.us.isa -DartifactId=json-mutator -Dversion=0.0.1-SNAPSHOT -Dpackaging=jar
+mvn install:install-file -Dfile=lib/IDL2MiniZincMapper.jar -DgroupId=es.us.isa -DartifactId=idl-2-minizinc-mapper -Dversion=0.0.1-SNAPSHOT -Dpackaging=jar
+mvn install:install-file -Dfile=lib/IDLreasoner.jar -DgroupId=es.us.isa -DartifactId=idl-reasoner -Dversion=0.0.1-SNAPSHOT -Dpackaging=jar
+```
+
 ### Setting up RESTest
+
+Let's try RESTest with some API, for example, [Bikewise](https://bikewise.org/). Follow these steps:
 
 1. **Get the OAS specification of the API under test**. For Bikewise, it is available at the following path: `src/test/resources/Bikewise/swagger.yaml`.
 
@@ -115,3 +126,16 @@ This test case makes a GET request to the endpoint `/v2/incidents` with several 
 Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `target/allure-reports/bikewise_example/index.html` in your browser:
 
 ![Allure](docs/Allure.png)
+
+## Running RESTest as a JAR
+You can also package RESTest as a JAR file and run it from command line. To do so, first create the JAR:
+
+```
+mvn clean install -DskipTests
+```
+
+Then, run the JAR file passing as argument the path to the properties file, for example:
+
+```
+java -jar target/restest-full.jar src/main/resources/ExperimentsSetup/bikewise.properties
+```

@@ -15,7 +15,7 @@ public abstract class AbstractMutationOperator {
      * @param specOperation
      * @return
      */
-    public static Boolean mutate(TestCase tc, Operation specOperation) {
+    public static String mutate(TestCase tc, Operation specOperation) {
         throw new UnsupportedOperationException("Method not supported on this mutation operator");
     }
 
@@ -24,7 +24,16 @@ public abstract class AbstractMutationOperator {
      * @param tc
      * @return
      */
-    public static Boolean mutate(TestCase tc) {
+    public static String mutate(TestCase tc) {
+        throw new UnsupportedOperationException("Method not supported on this mutation operator");
+    }
+
+    /**
+     * To be overridden by concrete mutation operator
+     * @param tc
+     * @return
+     */
+    public static String mutate(TestCase tc, ParameterFeatures param) {
         throw new UnsupportedOperationException("Method not supported on this mutation operator");
     }
 }

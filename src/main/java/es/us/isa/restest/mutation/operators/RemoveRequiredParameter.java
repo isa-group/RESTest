@@ -25,14 +25,17 @@ public class RemoveRequiredParameter extends AbstractMutationOperator {
      *                      value change.
      * @return True if the mutation was applied, false otherwise.
      */
-    public static Boolean mutate(TestCase tc, Operation specOperation) {
+    public static String mutate(TestCase tc, Operation specOperation) {
         List<ParameterFeatures> candidateParameters = getRequiredNotPathParameters(specOperation); // Path parameters cannot be removed
-        if (!candidateParameters.isEmpty()) {
-            ParameterFeatures selectedParam = candidateParameters.get(ThreadLocalRandom.current().nextInt(0, candidateParameters.size()));
-            tc.removeParameter(selectedParam);
-            return true; // Mutation applied
-        } else {
-            return false; // Mutation not applied
-        }
+        
+        // No required parameters. Mutation not applicable
+        if (candidateParameters.isEmpty())
+        	return "";
+        
+        // Remove random required parameter
+        ParameterFeatures selectedParam = candidateParameters.get(ThreadLocalRandom.current().nextInt(0, candidateParameters.size()));
+        tc.removeParameter(selectedParam);
+        return "Removed required parameter " + selectedParam.getName();
     }
+    
 }

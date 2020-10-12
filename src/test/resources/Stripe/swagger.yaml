@@ -7,7 +7,6 @@ schemes:
   - https
 swagger: '2.0'
 host: api.stripe.com
-basePath: /v1
 info:
   contact:
     email: dev-platform@stripe.com
@@ -20,7 +19,7 @@ info:
   version: '2020-03-02'
   x-stripeSpecFilename: spec2
 paths:
-  "/products":
+  "/v1/products":
     post:
       description: <p>Creates a new product object. To create a product for use with
         orders, see <a href="#create_product">Products</a>.</p>

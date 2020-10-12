@@ -5,6 +5,7 @@ import static es.us.isa.restest.coverage.CriterionType.*;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
@@ -21,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Class for the measurement of test coverage
- * 
+ *
  * @author Alberto Martin-Lopez
  */
 public class CoverageMeter {
@@ -69,12 +70,11 @@ public class CoverageMeter {
     }
 
     public void setTestSuite(Collection<TestCase> testSuite) {
-        resetCoverage();
         this.testSuite = testSuite;
         setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
     }
 
-    private void resetCoverage() {
+    public void resetCoverage() {
         this.coverageGatherer = new CoverageGatherer(this.coverageGatherer.getSpec());
     }
 
@@ -88,7 +88,6 @@ public class CoverageMeter {
     }
 
     public void setTestResults(Collection<TestResult> testResults) {
-        resetCoverage();
         this.testResults = testResults;
         setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
     }
@@ -132,7 +131,7 @@ public class CoverageMeter {
 
     /**
      * Get covered elements from all coverage criteria in the API
-     * 
+     *
      * @param criterionType Type of criteria to consider: "input", "output" or null for all
      * @return Number of covered elements collected among all coverage criteria
      */
@@ -145,7 +144,7 @@ public class CoverageMeter {
 
     /**
      * Get total coverage (input and output) considering all criteria
-     * 
+     *
      * @return Coverage percentage
      */
     public float getTotalCoverage() {
@@ -157,7 +156,7 @@ public class CoverageMeter {
 
     /**
      * Get input coverage considering all input criteria
-     * 
+     *
      * @return Coverage percentage
      */
     public float getInputCoverage() {
@@ -169,7 +168,7 @@ public class CoverageMeter {
 
     /**
      * Get output coverage considering all output criteria
-     * 
+     *
      * @return Coverage percentage
      */
     public float getOutputCoverage() {
@@ -181,7 +180,7 @@ public class CoverageMeter {
 
     /**
      * Get coverage of all criteria of a given type
-     * 
+     *
      * @param type Type of criterion to check coverage (e.g. PATH, STATUS_CODE, etc.)
      * @return Coverage percentage
      */
@@ -199,13 +198,13 @@ public class CoverageMeter {
                 .filter(c -> c.getType() == type)
                 .mapToLong(CoverageCriterion::getCoveredElementsCount)
                 .sum();
-        
+
         return 100 * (float) coveredElements / (float) allElements;
     }
 
     /**
      * Get coverage of a single criterion, identified by its type and rootPath
-     * 
+     *
      * @param type Type of criterion (e.g. PATH, STATUS_CODE, etc.)
      * @param rootPath path that uniquely identifies the criterion (e.g. "/pet->getPetById->id")
      * @return Coverage percentage
@@ -221,6 +220,33 @@ public class CoverageMeter {
         }
 
         return 100; // if the criterion doesn't exist, return 100% coverage by default
+    }
+
+    /**
+     * Based on {@code this} CoverageMeter object, returns a modified CoverageMeter
+     * whose input coverage counts only those elements whose response was successful.
+     *
+     * @return A modified CoverageMeter object
+     */
+    public CoverageMeter getAPosteriorCoverageMeter() {
+        CoverageMeter aPosterioriCoverageMeter = new CoverageMeter(new CoverageGatherer(coverageGatherer.getSpec()));
+
+        if(testResults != null) {
+            List<String> invalidResponseResultsIds = new ArrayList<>(testResults).stream()
+                    .filter(testResult -> Integer.parseInt(testResult.getStatusCode()) >= 400)
+                    .map(TestResult::getId)
+                    .collect(Collectors.toList());
+
+            aPosterioriCoverageMeter.testSuite = testSuite;
+            aPosterioriCoverageMeter.testResults = testResults;
+            aPosterioriCoverageMeter.setCoveredOutputElements();
+            aPosterioriCoverageMeter.testSuite = testSuite.stream()
+                    .filter(testCase -> !invalidResponseResultsIds.contains(testCase.getId()))
+                    .collect(Collectors.toList());
+            aPosterioriCoverageMeter.setCoveredInputElements();
+        }
+
+        return aPosterioriCoverageMeter;
     }
 
     /**
@@ -367,7 +393,7 @@ public class CoverageMeter {
             else { // if we want to export the results to CSV
                 String updatedRootPath = rootPath + responseProperty.getKey();
                 if (!coveredRootPaths.contains(updatedRootPath)) {
-                    writeRow(filePath, testResultId + ",RESPONSE_BODY_PROPERTIES," + rootPath + responseProperty.getKey());
+                    writeCSVRow(filePath, testResultId + ",RESPONSE_BODY_PROPERTIES," + rootPath + responseProperty.getKey());
                     coveredRootPaths.add(updatedRootPath); // add the rootPath to the list of covered ones, in order not to duplicate lines in the CSV file
                 }
             }
@@ -417,63 +443,63 @@ public class CoverageMeter {
      */
     public void exportCoverageToCSV(String path, String criterionType, boolean overwrite) {
         if (overwrite)
-            createFileWithHeader(path, "criterionType,rootPath,element,isCovered");
+            createCSVwithHeader(path, "criterionType,rootPath,element,isCovered");
         coverageGatherer.getCoverageCriteria().stream()
-            .filter(criterion -> CriterionType.getTypes(criterionType).contains(criterion.getType()))
-            .forEach(criterion -> criterion.getElements()
-                .forEach((element, isCovered) ->
-                    writeRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered)
-                )
-            );
+                .filter(criterion -> CriterionType.getTypes(criterionType).contains(criterion.getType()))
+                .forEach(criterion -> criterion.getElements()
+                        .forEach((element, isCovered) ->
+                                writeCSVRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered)
+                        )
+                );
     }
 
     public static void exportCoverageOfTestCaseToCSV(String path, TestCase tc) {
         if (!checkIfExists(path)) // If the file doesn't exist, create it (only once)
-            createFileWithHeader(path, "testCaseId,criterionType,rootPath,element");
+            createCSVwithHeader(path, "testCaseId,criterionType,rootPath,element");
 
         String row;
 
         // Path criterion
         row = tc.getId() + ",PATH,," + tc.getPath();
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Operation criterion
         row = tc.getId() + ",OPERATION," + tc.getPath() + "," + tc.getMethod().toString();
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Parameters and parameter values criteria
         for (Map.Entry<String, String> h: tc.getHeaderParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + h.getKey();
-            writeRow(path, row);
+            writeCSVRow(path, row);
             row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + h.getKey() + "," + h.getValue();
-            writeRow(path, row);
+            writeCSVRow(path, row);
         }
         for (Map.Entry<String, String> p: tc.getPathParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + p.getKey();
-            writeRow(path, row);
+            writeCSVRow(path, row);
             row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + p.getKey() + "," + p.getValue();
-            writeRow(path, row);
+            writeCSVRow(path, row);
         }
         for (Map.Entry<String, String> q: tc.getQueryParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + q.getKey();
-            writeRow(path, row);
+            writeCSVRow(path, row);
             row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + q.getKey() + "," + q.getValue();
-            writeRow(path, row);
+            writeCSVRow(path, row);
         }
         // For the body parameter, we do not consider parameter values, only the parameter itself
         if (tc.getBodyParameter() != null) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + ",body";
-            writeRow(path, row);
+            writeCSVRow(path, row);
         }
 
         // Input content-type criterion
         row = tc.getId() + ",INPUT_CONTENT_TYPE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + tc.getInputFormat();
-        writeRow(path, row);
+        writeCSVRow(path, row);
     }
 
     public static void exportCoverageOfTestResultToCSV(String path, TestResult tr) {
         if (!checkIfExists(path)) // If the file doesn't exist, create it (only once)
-            createFileWithHeader(path, "testResultId,criterionType,element");
+            createCSVwithHeader(path, "testResultId,criterionType,element");
 
         String row;
 
@@ -486,15 +512,15 @@ public class CoverageMeter {
         }
 
         row = tr.getId() + ",STATUS_CODE_CLASS," + statusCodeClass;
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Status code criterion
         row = tr.getId() + ",STATUS_CODE," + tr.getStatusCode();
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Output content-type criterion
         row = tr.getId() + ",OUTPUT_CONTENT_TYPE," + tr.getOutputFormat();
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Response body properties criteria
         ObjectMapper objectMapper = new ObjectMapper();
@@ -508,3 +534,4 @@ public class CoverageMeter {
     }
 
 }
+

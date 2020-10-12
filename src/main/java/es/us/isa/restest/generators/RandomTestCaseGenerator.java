@@ -1,88 +1,91 @@
 package es.us.isa.restest.generators;
 
+import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.IDGenerator;
+import es.us.isa.restest.util.OASAPIValidator;
+import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.util.Timer;
-import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
-import static es.us.isa.restest.mutation.TestCaseMutation.makeTestCaseFaulty;
-import static es.us.isa.restest.testcases.TestCase.checkFaulty;
-import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
-
+/**
+ *  This class implements a simple random test case generator
+ * @author Sergio Segura
+ *
+ */
 public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	
+	public static final String INDIVIDUAL_PARAMETER_CONSTRAINT = "individual_parameter_constraint";
+
 	public RandomTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
 	}
 
 	@Override
-	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) {
+	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) throws RESTestException {
 
 		List<TestCase> testCases = new ArrayList<>();
 
-		// Whether the next test case to generate must be faulty or not
-		String faultyReason = "none";
-		if (faultyRatio > 0)
-			faultyReason = "individual_parameter_constraint";
-
+		// Reset counters for the current operation
+		resetOperation();
+		
 		while (hasNext()) {
 
-			// Generate faulty test cases until faultyRatio is reached
-			if (!faultyReason.equals("none") && (float)index/(float)numberOfTest >= faultyRatio)
-				faultyReason = "none";
-
 			// Create test case with specific parameters and values
-			Timer.startCounting(TEST_CASE_GENERATION);
-			TestCase test = generateNextTestCase(testOperation, faultyReason);
-			Timer.stopCounting(TEST_CASE_GENERATION);
-			// Authentication
+			//Timer.startCounting(TEST_CASE_GENERATION);
+			TestCase test = generateNextTestCase(testOperation);
+			//Timer.stopCounting(TEST_CASE_GENERATION);
+			
+			// Set authentication data (if any)
 			authenticateTestCase(test);
 
 			// Add test case to the collection
 			testCases.add(test);
-		}
+			
+			// Update indexes
+			updateIndexes(test);
 
+		}
+		
 		return testCases;
 	}
+	
 
 	// Generate the next test case and update the generation index
-	@Override
-	protected TestCase generateNextTestCase(Operation testOperation, String faultyReason) {
-
-		// This way, all test cases of an operation are not executed one after the other, but randomly:
-		String testId = "test_" + IDGenerator.generateId() + "_" + removeNotAlfanumericCharacters(testOperation.getOperationId());
-		TestCase test = new TestCase(testId, !faultyReason.equals("none"), testOperation.getOperationId(), testOperation.getTestPath(), HttpMethod.valueOf(testOperation.getMethod().toUpperCase()));
-		test.setFaultyReason(faultyReason);
-
-		// Set parameters
-		setTestCaseParameters(test, testOperation);
-
-		if (!faultyReason.equals("none") && !makeTestCaseFaulty(test, testOperation.getOpenApiOperation())) { // If this test case must be faulty
-			test.setFaulty(false); // ... set faulty to false, in order to have the right oracle
-			test.setFaultyReason("none");
-		}
-
-		if (!test.getFaulty() && checkFaulty(test, validator)) { // Before returning test case, if faulty==false, it may still be faulty (due to mutations of JSONmutator)
-			test.setFaulty(true);
-			test.setFaultyReason("invalid_request_body");
-		}
-
-		updateIndexes(test.getFaulty());
+	public TestCase generateNextTestCase(Operation testOperation) throws RESTestException {
+		
+		// Create a random test case with a random id
+		TestCase test = generateRandomTestCase(testOperation);
+		
+		// If more faulty test cases need to be generated, try mutating the current test case to make it invalid
+		if (nFaulty < (int) (faultyRatio * numberOfTests))
+			mutateTestCase(test, testOperation);
+		
 		return test;
 	}
 	
+
+	/* Mutate the test case trying to make it invalid */
+	private void mutateTestCase(TestCase test, Operation testOperation) {
+		
+		String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
+		if (!mutationDescription.equals("")) {
+			test.setFaulty(true);
+			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
+		} 
+		
+	}
+
 	// Returns true if there are more test cases to be generated
 	protected boolean hasNext() {
-		Boolean res = index<numberOfTest;
-		if (index == numberOfTest)
-			index = 0;
-		return res;
+		return nTests < numberOfTests;
 	}
+	
 }
