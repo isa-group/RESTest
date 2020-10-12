@@ -32,4 +32,6 @@ src/test/resources/file-manager/*
 
 src/main/resources/TestConfigurationMetamodel/configuration-model-output.yaml
 src/test/resources/restest-test-resources/compare2.postman_collection.json
+src/test/resources/restest-test-resources/test_collection.postman_collection.json
+src/test/resources/restest-test-resources/test_collection_urlencoded.postman_collection.json
 /bin/
