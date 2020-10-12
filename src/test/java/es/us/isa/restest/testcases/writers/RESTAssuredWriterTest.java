@@ -1,4 +1,4 @@
-package es.us.isa.restest.testcases.writters;
+package es.us.isa.restest.testcases.writers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,10 +7,9 @@ import org.junit.Test;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
-public class RESTAssuredWritterTest {
+public class RESTAssuredWriterTest {
 	
 	@Test
 	public void test() {

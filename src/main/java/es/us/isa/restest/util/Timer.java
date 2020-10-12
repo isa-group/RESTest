@@ -16,7 +16,8 @@ public class Timer {
         counters.putIfAbsent(step.name, new ArrayList<>());
         List<Long> stepMeasures = counters.get(step.name);
         if (stepMeasures.size() > 0 && stepMeasures.get(stepMeasures.size()-1) < 0)
-            throw new IllegalStateException("A timer of the same type can only be started once before it's stopped.");
+            stepMeasures.remove(stepMeasures.size() - 1);
+//            throw new IllegalStateException("A timer of the same type can only be started once before it's stopped.");
         stepMeasures.add(-new Date().getTime());
     }
 

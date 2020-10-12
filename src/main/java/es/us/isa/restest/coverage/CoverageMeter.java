@@ -393,7 +393,7 @@ public class CoverageMeter {
             else { // if we want to export the results to CSV
                 String updatedRootPath = rootPath + responseProperty.getKey();
                 if (!coveredRootPaths.contains(updatedRootPath)) {
-                    writeRow(filePath, testResultId + ",RESPONSE_BODY_PROPERTIES," + rootPath + responseProperty.getKey());
+                    writeCSVRow(filePath, testResultId + ",RESPONSE_BODY_PROPERTIES," + rootPath + responseProperty.getKey());
                     coveredRootPaths.add(updatedRootPath); // add the rootPath to the list of covered ones, in order not to duplicate lines in the CSV file
                 }
             }
@@ -443,63 +443,63 @@ public class CoverageMeter {
      */
     public void exportCoverageToCSV(String path, String criterionType, boolean overwrite) {
         if (overwrite)
-            createFileWithHeader(path, "criterionType,rootPath,element,isCovered");
+            createCSVwithHeader(path, "criterionType,rootPath,element,isCovered");
         coverageGatherer.getCoverageCriteria().stream()
                 .filter(criterion -> CriterionType.getTypes(criterionType).contains(criterion.getType()))
                 .forEach(criterion -> criterion.getElements()
                         .forEach((element, isCovered) ->
-                                writeRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered)
+                                writeCSVRow(path, criterion.getType().toString() + "," + criterion.getRootPath() + "," + element + "," + isCovered)
                         )
                 );
     }
 
     public static void exportCoverageOfTestCaseToCSV(String path, TestCase tc) {
         if (!checkIfExists(path)) // If the file doesn't exist, create it (only once)
-            createFileWithHeader(path, "testCaseId,criterionType,rootPath,element");
+            createCSVwithHeader(path, "testCaseId,criterionType,rootPath,element");
 
         String row;
 
         // Path criterion
         row = tc.getId() + ",PATH,," + tc.getPath();
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Operation criterion
         row = tc.getId() + ",OPERATION," + tc.getPath() + "," + tc.getMethod().toString();
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Parameters and parameter values criteria
         for (Map.Entry<String, String> h: tc.getHeaderParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + h.getKey();
-            writeRow(path, row);
+            writeCSVRow(path, row);
             row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + h.getKey() + "," + h.getValue();
-            writeRow(path, row);
+            writeCSVRow(path, row);
         }
         for (Map.Entry<String, String> p: tc.getPathParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + p.getKey();
-            writeRow(path, row);
+            writeCSVRow(path, row);
             row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + p.getKey() + "," + p.getValue();
-            writeRow(path, row);
+            writeCSVRow(path, row);
         }
         for (Map.Entry<String, String> q: tc.getQueryParameters().entrySet()) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + "," + q.getKey();
-            writeRow(path, row);
+            writeCSVRow(path, row);
             row = tc.getId() + ",PARAMETER_VALUE," + tc.getPath() + "->" + tc.getMethod().toString() + "->" + q.getKey() + "," + q.getValue();
-            writeRow(path, row);
+            writeCSVRow(path, row);
         }
         // For the body parameter, we do not consider parameter values, only the parameter itself
         if (tc.getBodyParameter() != null) {
             row = tc.getId() + ",PARAMETER," + tc.getPath() + "->" + tc.getMethod().toString() + ",body";
-            writeRow(path, row);
+            writeCSVRow(path, row);
         }
 
         // Input content-type criterion
         row = tc.getId() + ",INPUT_CONTENT_TYPE," + tc.getPath() + "->" + tc.getMethod().toString() + "," + tc.getInputFormat();
-        writeRow(path, row);
+        writeCSVRow(path, row);
     }
 
     public static void exportCoverageOfTestResultToCSV(String path, TestResult tr) {
         if (!checkIfExists(path)) // If the file doesn't exist, create it (only once)
-            createFileWithHeader(path, "testResultId,criterionType,element");
+            createCSVwithHeader(path, "testResultId,criterionType,element");
 
         String row;
 
@@ -512,15 +512,15 @@ public class CoverageMeter {
         }
 
         row = tr.getId() + ",STATUS_CODE_CLASS," + statusCodeClass;
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Status code criterion
         row = tr.getId() + ",STATUS_CODE," + tr.getStatusCode();
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Output content-type criterion
         row = tr.getId() + ",OUTPUT_CONTENT_TYPE," + tr.getOutputFormat();
-        writeRow(path, row);
+        writeCSVRow(path, row);
 
         // Response body properties criteria
         ObjectMapper objectMapper = new ObjectMapper();

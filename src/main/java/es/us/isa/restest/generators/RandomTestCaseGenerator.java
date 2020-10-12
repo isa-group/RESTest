@@ -76,7 +76,7 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	private void mutateTestCase(TestCase test, Operation testOperation) {
 		
 		String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
-		if (mutationDescription!="") {
+		if (!mutationDescription.equals("")) {
 			test.setFaulty(true);
 			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
 		} 

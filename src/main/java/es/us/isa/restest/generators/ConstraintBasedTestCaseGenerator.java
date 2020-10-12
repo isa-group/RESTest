@@ -200,7 +200,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		TestCase test = generateRandomTestCase(testOperation);
 		
 		String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
-		if (mutationDescription!="") {		// A mutation has been applied
+		if (!mutationDescription.equals("")) {		// A mutation has been applied
 			test.setFaulty(true);
 			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
 			nFaultyTestsDueToIndividualConstraint++;

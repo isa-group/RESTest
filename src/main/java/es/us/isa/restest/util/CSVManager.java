@@ -4,14 +4,19 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.us.isa.restest.runners.RESTestRunner;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
 import static es.us.isa.restest.util.FileManager.deleteFile;
 
 public class CSVManager {
 
+	private static final Logger logger = LogManager.getLogger(CSVManager.class.getName());
 	
 	/**
 	 * Returns a list with the values of the first column in the input CSV file
@@ -41,15 +46,16 @@ public class CSVManager {
 	 * Returns a list with the values of all rows (including header, if any)
 	 * of the input CSV file. Each row is a list of strings (one element per field)
 	 * @param path
+	 * @param delimiter
 	 * @return
 	 */
-	public static List<List<String>> readCSV(String path) {
+	public static List<List<String>> readCSV(String path, char delimiter) {
 		List<List<String>> rows = new ArrayList<>();
 
 		Reader in;
 		try {
 			in = new FileReader(path);
-			Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
+			Iterable<CSVRecord> records = CSVFormat.EXCEL.withDelimiter(delimiter).parse(in);
 			for (CSVRecord record : records) {
 				List<String> currentRow = new ArrayList<>();
 				for (String field: record)
@@ -73,40 +79,51 @@ public class CSVManager {
 	 * @return
 	 */
 	public static List<List<String>> readCSV(String path, Boolean includeFirstRow) {
-		List<List<String>> rows = readCSV(path);
+		List<List<String>> rows = readCSV(path, ',');
 		if (!includeFirstRow)
 			rows.remove(0);
 		return rows;
 	}
 
 	/**
+	 * Call {@link #readCSV(String path, char delimiter)} with delimiter=','
+	 */
+	public static List<List<String>> readCSV(String path) {
+		return readCSV(path, ',');
+	}
+
+	/**
 	 * Create a new CSV file in the given path and with the given header.
 	 * @param path Path where to place the file. Parent folders must be already created
 	 * @param header Header to add to the first line. If null, no header will be added
+	 * @param delimiter Character used to separate row values
 	 */
-	public static void createFileWithHeader(String path, String header) {
+	public static void createCSVwithHeader(String path, String header, char delimiter) {
 		deleteFile(path); // delete file if it exists
 		createFileIfNotExists(path);
-		createFileWithHeader(new File(path), header);
-	}
-
-	private static void createFileWithHeader(File csvFile, String header) {
-		try(FileOutputStream oCsvFile = new FileOutputStream(csvFile, true)) {
-			if (header != null) {
-				header += "\n";
-				oCsvFile.write(header.getBytes());
-			}
+		try {
+			new CSVPrinter(new FileWriter(path), CSVFormat.DEFAULT.withHeader(header).withDelimiter(delimiter));
+			writeCSVRow(path, header);
 		} catch (IOException e) {
+			logger.error("The CSV could not be created: {}", path);
 			e.printStackTrace();
 		}
 	}
 
-	public static void writeRow(String path, String row) {
+	/**
+	 * Call {@link #createCSVwithHeader(String path, String header, char delimiter)} with delimiter=','
+	 */
+	public static void createCSVwithHeader(String path, String header) {
+		createCSVwithHeader(path, header, ',');
+	}
+
+	public static void writeCSVRow(String path, String row) {
 		File csvFile = new File(path);
 		try(FileOutputStream oCsvFile = new FileOutputStream(csvFile, true)) {
 			row += "\n";
 			oCsvFile.write(row.getBytes());
 		} catch (IOException e) {
+			logger.error("The line could not be written to the CSV: {}", path);
 			e.printStackTrace();
 		}
 
