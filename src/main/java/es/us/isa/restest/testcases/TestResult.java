@@ -1,8 +1,8 @@
 package es.us.isa.restest.testcases;
 
 
-import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
-import static es.us.isa.restest.util.CSVManager.writeRow;
+import static es.us.isa.restest.util.CSVManager.createCSVwithHeader;
+import static es.us.isa.restest.util.CSVManager.writeCSVRow;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
 
 /**
@@ -83,11 +83,11 @@ public class TestResult {
 
     public void exportToCSV(String filePath) {
         if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-            createFileWithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType");
+            createCSVwithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType");
 
         // Generate row
         String csvResponseBody = "\"" + responseBody.replaceAll("\n", "\\\n").replaceAll("\"", "\"\"") + "\"";
         String row = id + "," + statusCode + "," + csvResponseBody + "," + outputFormat;
-        writeRow(filePath, row);
+        writeCSVRow(filePath, row);
     }
 }

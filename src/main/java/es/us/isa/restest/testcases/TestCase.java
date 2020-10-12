@@ -3,7 +3,6 @@ package es.us.isa.restest.testcases;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -338,7 +337,7 @@ public class TestCase implements Serializable {
 	// Export the test case to CSV
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
+			createCSVwithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
 					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter");
 
 		// Generate row
@@ -367,7 +366,7 @@ public class TestCase implements Serializable {
 		}
 		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter);
 
-		writeRow(filePath, rowBeginning + rowEnding);
+		writeCSVRow(filePath, rowBeginning + rowEnding);
 	}
 	
 	
