@@ -131,11 +131,11 @@ Finally, test failures are collected and they can be easily spotted and analyzed
 You can also package RESTest as a JAR file and run it from command line. To do so, first create the JAR:
 
 ```
-mvn clean compile assembly:single
+mvn clean install -DskipTests
 ```
 
 Then, run the JAR file passing as argument the path to the properties file, for example:
 
 ```
-java -jar target/RESTest-*.jar src/main/resources/ExperimentsSetup/bikewise.properties
+java -jar target/restest-full.jar src/main/resources/ExperimentsSetup/bikewise.properties
 ```
