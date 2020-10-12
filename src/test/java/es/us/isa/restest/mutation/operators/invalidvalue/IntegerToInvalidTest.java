@@ -27,4 +27,19 @@ public class IntegerToInvalidTest {
         } catch (NumberFormatException ignored) {}
         assertNotEquals("The two test cases should be different", tc, oldTc);
     }
+
+    @Test
+    public void integerMinMaxMutationTest() {
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/AmadeusHotel/swagger.yaml");
+        TestCase tc = new TestCase("dfgsdfg", true, "getMultiHotelOffers", "/shopping/hotel-offers", PathItem.HttpMethod.GET);
+
+        ParameterFeatures paramToMutate = new ParameterFeatures(spec.getSpecification().getPaths().get("/shopping/hotel-offers").getGet().getParameters().stream().filter(p -> p.getName().equals("page[limit]")).findFirst().get());
+
+        TestCase tcToMutate = null;
+        for (int i=0; i<10; i++) {
+            tcToMutate = SerializationUtils.clone(tc);
+            IntegerToInvalid.mutate(tcToMutate, paramToMutate);
+            assertNotEquals("The two test cases should be different", tc, tcToMutate);
+        }
+    }
 }
