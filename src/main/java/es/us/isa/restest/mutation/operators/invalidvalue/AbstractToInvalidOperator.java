@@ -73,18 +73,18 @@ public abstract class AbstractToInvalidOperator extends AbstractMutationOperator
                 case VIOLATE_MAX_CONSTRAINT:
                     if (param.getMax() != null) {
                         mutationApplied = getMutationMessage(mutationsList.get(index), param, tc, null);
-                        if (param.getIn().equals(NUMBER_TYPE))
+                        if (param.getType().equals(NUMBER_TYPE))
                             tc.addParameter(param, Double.toString(param.getMax().doubleValue() + ThreadLocalRandom.current().nextDouble(1, 10)));
-                        else if (param.getIn().equals(INTEGER_TYPE))
+                        else if (param.getType().equals(INTEGER_TYPE))
                             tc.addParameter(param, Integer.toString(param.getMax().intValue() + ThreadLocalRandom.current().nextInt(1, 10)));
                     }
                     break;
                 case VIOLATE_MIN_CONSTRAINT:
                     if (param.getMin() != null) {
                         mutationApplied = getMutationMessage(mutationsList.get(index), param, tc, null);
-                        if (param.getIn().equals(NUMBER_TYPE))
+                        if (param.getType().equals(NUMBER_TYPE))
                             tc.addParameter(param, Double.toString(param.getMin().doubleValue() - ThreadLocalRandom.current().nextDouble(1, 10)));
-                        else if (param.getIn().equals(INTEGER_TYPE))
+                        else if (param.getType().equals(INTEGER_TYPE))
                             tc.addParameter(param, Integer.toString(param.getMin().intValue() - ThreadLocalRandom.current().nextInt(1, 10)));
                     }
                     break;
