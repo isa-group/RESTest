@@ -85,7 +85,7 @@ public abstract class AbstractToInvalidOperator extends AbstractMutationOperator
                         if (param.getIn().equals(NUMBER_TYPE))
                             tc.addParameter(param, Double.toString(param.getMin().doubleValue() - ThreadLocalRandom.current().nextDouble(1, 10)));
                         else if (param.getIn().equals(INTEGER_TYPE))
-                            tc.addParameter(param, Integer.toString(param.getMax().intValue() - ThreadLocalRandom.current().nextInt(1, 10)));
+                            tc.addParameter(param, Integer.toString(param.getMin().intValue() - ThreadLocalRandom.current().nextInt(1, 10)));
                     }
                     break;
                 case VIOLATE_FORMAT_CONSTRAINT:
