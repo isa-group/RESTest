@@ -1,13 +1,19 @@
 package es.us.isa.restest.inputs.semantic;
 
+import es.us.isa.restest.specification.OpenAPISpecification;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.*;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 
 
+import java.nio.file.Path;
 import java.util.*;
 import es.us.isa.restest.configuration.pojos.TestParameter;
+
+import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
 
 public class Predicates {
     // TODO: Consider the possibility of adding owl predicates
@@ -16,11 +22,23 @@ public class Predicates {
     // TODO: Add limit
     // TODO: Wordnet/Description in case the function returns no results
     // TODO: size()=0 exception
-    public static Map<TestParameter, List<String>> getPredicates(Set<TestParameter> parameters){
+    public static Map<TestParameter, List<String>> getPredicates(SemanticOperation semanticOperation, OpenAPISpecification spec){
+        Set<TestParameter> parameters = semanticOperation.getSemanticParameters().keySet();
+
         Map<TestParameter, List<String>> res = new HashMap<>();
 
         for(TestParameter p: parameters){
-            List<String> predicates = getPredicatesOfSingleParameter(p.getName());
+            String parameterName = p.getName();
+
+            // If the paramater name is only a character, compare with description
+            if(parameterName.length() == 1){
+                // TODO: NullPointer
+                PathItem pathItem = spec.getSpecification().getPaths().get(semanticOperation.getOperationPath());
+                String description = getParameterDescription(pathItem, p.getName());
+                parameterName =  posTagging(description, p.getName()).get(0);
+            }
+
+            List<String> predicates = getPredicatesOfSingleParameter(parameterName);
             res.put(p, predicates);
         }
         return res;
@@ -36,9 +54,6 @@ public class Predicates {
         List<String> res = executePredicateSPARQLQuery(queryString);
 
         if(res.size() < 5){
-            // TODO: Split camelCase and snakeCase
-            // TODO: Execute query
-            // TODO: Add to res
             String[] words = parameterName.split("_");
             // If snake_case
             if(words.length > 1){
@@ -113,6 +128,48 @@ public class Predicates {
 
         }
         return res;
+    }
+
+    private static String getParameterDescription(PathItem pathItem, String parameterName){
+
+        Operation operation = null;
+
+        switch(parameterName) {
+            case "get":
+                operation = pathItem.getGet();
+                break;
+            case "put":
+                operation = pathItem.getPut();
+                break;
+            case "post":
+                operation = pathItem.getPost();
+                break;
+            case "delete":
+                operation = pathItem.getDelete();
+                break;
+            case "options":
+                operation = pathItem.getOptions();
+                break;
+            case "head":
+                operation = pathItem.getHead();
+                break;
+            case "patch":
+                operation = pathItem.getPatch();
+                break;
+            case "trace":
+                operation = pathItem.getTrace();
+                break;
+        }
+
+        List<Parameter> parameters = operation.getParameters();
+
+        for(Parameter parameter: parameters){
+            if(parameter.getName().equals(parameterName)){
+                return  parameter.getDescription();
+            }
+        }
+
+        return parameterName;
     }
 
 }

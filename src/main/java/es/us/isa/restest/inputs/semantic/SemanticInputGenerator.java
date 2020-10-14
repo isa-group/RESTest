@@ -44,14 +44,13 @@ public class SemanticInputGenerator {
         String szEndpoint = "http://dbpedia.org/sparql";
 
         // Key: OperationName       Value: Parameters
-        // Change to List<SemanticOperation>
         List<SemanticOperation> semanticOperations = getSemanticOperations(conf);
 
-        // TODO: For loop and convert to class
-        for(SemanticOperation semanticOperation: semanticOperations){
-            Set<TestParameter> parameters = semanticOperation.getSemanticParameters().keySet();
 
-            Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(parameters);
+        for(SemanticOperation semanticOperation: semanticOperations){
+
+            // TODO: Refactor
+            Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(semanticOperation, spec);
 
             String queryString = generateQuery(parametersWithPredicates);
             System.out.println(queryString);
@@ -109,7 +108,7 @@ public class SemanticInputGenerator {
 
     public static List<SemanticOperation> getSemanticOperations(TestConfigurationObject testConfigurationObject){
         List<SemanticOperation> semanticOperations = new ArrayList<>();
-        // TODO: Take operations without semantic parameters into consideration
+
         for(Operation operation: testConfigurationObject.getTestConfiguration().getOperations()){
             List<TestParameter> semanticParameters = getSemanticParameters(operation);
             if(semanticParameters.size() > 0){

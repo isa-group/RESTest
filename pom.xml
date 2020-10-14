@@ -288,6 +288,38 @@
 			<type>pom</type>
 		</dependency>
 
+		<!-- Stanford NLP -->
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.0.0</version>
+			<classifier>models</classifier>
+		</dependency>
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.0.0</version>
+			<classifier>models-english</classifier>
+		</dependency>
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.0.0</version>
+			<classifier>models-english-kbp</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-parser</artifactId>
+			<version>3.9.2</version>
+		</dependency>
+
+
 		<!-- LOCAL DEPENDENCIES -->
 		<!-- JSONmutator local dependency -->
 		<dependency>
