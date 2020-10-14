@@ -89,7 +89,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/main/resources/TestData/languagetool-rules.csv'
+              - 'src/main/resources/TestData/languagetool-rules-2.csv'
             objectValues: null
     - name: disabledRules
       in: formData
@@ -99,7 +99,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/main/resources/TestData/languagetool-rules.csv'
+              - 'src/main/resources/TestData/languagetool-rules-2.csv'
             objectValues: null
     - name: enabledCategories
       in: formData
