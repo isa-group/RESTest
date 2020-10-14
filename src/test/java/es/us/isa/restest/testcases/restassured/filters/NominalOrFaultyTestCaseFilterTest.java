@@ -95,7 +95,7 @@ public class NominalOrFaultyTestCaseFilterTest {
                 .log().all()
                 .queryParam("per_page", "13")
                 .queryParam("incident_type", "chop_shop")
-                .queryParam("proximity", "lanthanum")
+                .queryParam("proximity", "hey")
                 .queryParam("proximity_square", "33")
                 .filter(nominalOrFaultyTestCaseFilter)
                 .when()
