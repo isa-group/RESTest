@@ -35,10 +35,6 @@ public class SemanticInputGenerator {
     // TODO: Take arrays into consideration
     // TODO: Take datatypes into consideration
     public static void main(String[] args) throws IOException {
-        // Generate an updated testConf.yaml file with auto-generated inputs
-//        if(args.length > 0)
-//            setEvaluationParameters(args[0]);
-//        else
         setEvaluationParameters(readProperty("evaluation.properties.dir") + "/book.properties");
 
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
@@ -76,7 +72,6 @@ public class SemanticInputGenerator {
 
         }
 
-        // TODO: Write csv
         // TODO: Update TestConf
         // TODO: Add log messages
 

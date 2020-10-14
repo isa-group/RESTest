@@ -26,9 +26,52 @@ public class Predicates {
         return res;
     }
 
+
     public static List<String> getPredicatesOfSingleParameter(String parameterName){
+
         // Query creation
-        // TODO: Order by length (provisional)
+        String queryString = generatePredicateQuery(parameterName);
+
+        // Query execution
+        List<String> res = executePredicateSPARQLQuery(queryString);
+
+        if(res.size() < 5){
+            // TODO: Split camelCase and snakeCase
+            // TODO: Execute query
+            // TODO: Add to res
+            String[] words = parameterName.split("_");
+            // If snake_case
+            if(words.length > 1){
+                // Join words
+                res.addAll(executePredicateSPARQLQuery(String.join("", words)));
+
+                if(res.size() <5) {
+                    // Execute one query for each word in snake_case
+                    for(String word: words){
+                        res.addAll(executePredicateSPARQLQuery(word));
+                    }
+                }
+
+            }
+
+            // If camelCase
+            String[] wordsCamel = parameterName.split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
+            if(res.size() < 5 && wordsCamel.length >1){
+                // Execute one query for each word in camelCase
+                for(String word: wordsCamel){
+                    res.addAll(executePredicateSPARQLQuery(word));
+                }
+
+            }
+        }
+
+        System.out.println(res);
+        return res;
+    }
+
+
+    public static String generatePredicateQuery(String parameterName){
+
         String queryString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                 "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
                 "\n" +
@@ -41,6 +84,11 @@ public class Predicates {
                 "order by strlen(str(?predicate)) " +
                 "\n";
 
+        return queryString;
+    }
+
+
+    public static List<String> executePredicateSPARQLQuery(String queryString){
         List<String> res = new ArrayList<>();
 
         Query query = QueryFactory.create(queryString);
@@ -64,8 +112,7 @@ public class Predicates {
             }
 
         }
-
-        System.out.println(res);
         return res;
     }
+
 }
