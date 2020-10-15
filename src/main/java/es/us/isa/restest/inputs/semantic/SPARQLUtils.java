@@ -91,7 +91,6 @@ public class SPARQLUtils {
         ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
 
         // Execute Query
-//        int iCount = 0;
         ResultSet rs = qexec.execSelect();
 
         rs.getResultVars().stream().forEach(x->res.put(x, new HashSet<String>()));
@@ -101,11 +100,6 @@ public class SPARQLUtils {
 
             // Get Variable Names
             Iterator<String> itVars = qs.varNames();
-
-
-            // Count
-//            iCount++;
-//            System.out.println("\nResult " + iCount + ": ");
 
             while (itVars.hasNext()) {
                 String szVar = itVars.next();
