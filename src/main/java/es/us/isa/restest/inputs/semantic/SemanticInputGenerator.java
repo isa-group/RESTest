@@ -14,9 +14,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
-import static es.us.isa.restest.inputs.semantic.SPARQLUtils.executeSPARQLQuery;
-import static es.us.isa.restest.inputs.semantic.SPARQLUtils.generateQuery;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
+import static es.us.isa.restest.inputs.semantic.SPARQLUtils.*;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
@@ -39,10 +38,6 @@ public class SemanticInputGenerator {
 
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
-
-        // DBPedia Endpoint
-        String szEndpoint = "http://dbpedia.org/sparql";
-
         // Key: OperationName       Value: Parameters
         List<SemanticOperation> semanticOperations = getSemanticOperations(conf);
 
@@ -52,13 +47,12 @@ public class SemanticInputGenerator {
             // TODO: Refactor
             Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(semanticOperation, spec);
 
-            String queryString = generateQuery(parametersWithPredicates);
-            System.out.println(queryString);
+
 
             // Query DBPedia
             Map<String, Set<String>> result = new HashMap<>();
             try{
-                result = executeSPARQLQuery(queryString, szEndpoint);
+                result = getParameterValues(parametersWithPredicates);
             }catch(Exception ex){
                 System.err.println(ex);
             }

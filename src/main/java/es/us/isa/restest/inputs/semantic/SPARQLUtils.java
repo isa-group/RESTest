@@ -8,10 +8,68 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
 public class SPARQLUtils {
+
+    // DBPedia Endpoint
+    private static String szEndpoint = "http://dbpedia.org/sparql";
+
+
+    public static Map<String, Set<String>> getParameterValues(Map<TestParameter, List<String>> parametersWithPredicates) throws Exception {
+
+        // Single operation
+        // TODO: Check if each set has at least ¿100? unique parameters
+        // There is a minimum because all the parameters are required
+        // Pueden ocurrir dos cosas: la sublista es del mismo tamaño (caso del zipCode con lat y lon) o es más pequeña (segundo caso)
+        // En caso de que sea más pequeña, volver a ejecutar query con lista más pequeña
+        // TODO: Consider indivisible predicates (Example: question)
+        Map<String, Set<String>> result = new HashMap<>();
+
+        String queryString = generateQuery(parametersWithPredicates);
+        System.out.println(queryString);
+
+        // TODO: Cambiar para que devuelve Map<TestParameter, values>
+        result = executeSPARQLQuery(queryString, szEndpoint);
+
+        // Reminder: Result es un Map<String, Set<String>> donde String= ParameterName y Set<String> sus valores
+        Set<String> parameterNames = result.keySet();
+        Set<String> subGraphParameterNames = new HashSet<>();
+        if (parameterNames.size() > 1){
+            for(String parameterName: parameterNames){
+                if(result.get(parameterName).size() < 100){
+                    subGraphParameterNames.add(parameterName);
+                }
+            }
+        }
+
+        if(subGraphParameterNames.size() == parameterNames.size()){
+            // Provisional
+            return result;
+            // Caso latLonZip
+            // TODO: Calcular support de las componentes conexas
+            // TODO: Llamar a la componente conexa mayor y a la componente conexa menor por separado
+            // TODO: Volver a llamar con la componente conexa mayor si el tamaño no es > 100
+        }else{
+            // Caso2
+            Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.keySet().stream()
+                    .filter(parametersWithPredicates::containsKey)
+                    .collect(Collectors.toMap(Function.identity(), parametersWithPredicates::get));
+
+
+            // Create SubResult
+            Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
+
+            // Add the results of the recursive call to result
+            for(String parameterName: subResult.keySet()){
+                result.get(parameterName).addAll(subResult.get(parameterName));
+            }
+        }
+
+        return result;
+    }
 
     // Execute a Query
     // TODO: Remove duplicates after filtering (datatype)
