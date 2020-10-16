@@ -81,6 +81,12 @@ public class TestResult {
         this.passed = passed;
     }
 
+    public String getFlatRepresentation() {
+        return this.getStatusCode() +    // Status code
+                this.getOutputFormat() + // Content type
+                this.getResponseBody();  // Body
+    }
+
     public void exportToCSV(String filePath) {
         if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
             createCSVwithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType");

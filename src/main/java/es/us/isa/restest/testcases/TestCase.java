@@ -3,9 +3,7 @@ package es.us.isa.restest.testcases;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
@@ -333,6 +331,38 @@ public class TestCase implements Serializable {
 			inputFormat = "application/x-www-form-urlencoded";
 	}
 
+	public String getFlatRepresentation() {
+		StringBuilder tcRepresentation = new StringBuilder(300);
+
+		tcRepresentation.append(this.getMethod().toString()); // Method
+
+		String path = this.getPath(); // Path
+		for(String pathParameter : this.getPathParameters().keySet())
+			path=path.replace("{"+pathParameter+"}",this.getPathParameters().get(pathParameter));
+		tcRepresentation.append(path);
+
+		tcRepresentation.append(this.getInputFormat()); // Content type
+
+		List<String> queryParameters = new ArrayList<>(this.getQueryParameters().keySet());  // Query parameters
+		Collections.sort(queryParameters);
+		for(String queryParameter : queryParameters)
+			tcRepresentation.append(queryParameter).append(this.getQueryParameters().get(queryParameter));
+
+		List<String> headerParameters = new ArrayList<>(this.getHeaderParameters().keySet());  // Header parameters
+		Collections.sort(headerParameters);
+		for(String headerParameter : headerParameters)
+			tcRepresentation.append(headerParameter).append(this.getHeaderParameters().get(headerParameter));
+
+		List<String> formDataParameters = new ArrayList<>(this.getFormParameters().keySet());  // FormData parameters
+		Collections.sort(formDataParameters);
+		for(String formDataParameter : formDataParameters)
+			tcRepresentation.append(formDataParameter).append(this.getFormParameters().get(formDataParameter));
+
+		if (this.getBodyParameter() != null) // Body
+			tcRepresentation.append(this.getBodyParameter());
+
+		return tcRepresentation.toString();
+	}
 	
 	// Export the test case to CSV
 	public void exportToCSV(String filePath) {
