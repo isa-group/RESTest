@@ -26,50 +26,57 @@ public class SPARQLUtils {
         // Pueden ocurrir dos cosas: la sublista es del mismo tamaño (caso del zipCode con lat y lon) o es más pequeña (segundo caso)
         // En caso de que sea más pequeña, volver a ejecutar query con lista más pequeña
         // TODO: Consider indivisible predicates (Example: question)
-        Map<String, Set<String>> result = new HashMap<>();
 
         String queryString = generateQuery(parametersWithPredicates);
         System.out.println(queryString);
 
-        // TODO: Cambiar para que devuelve Map<TestParameter, values>
-        result = executeSPARQLQuery(queryString, szEndpoint);
+        Map<String, Set<String>> result = executeSPARQLQuery(queryString, szEndpoint);
 
         // Reminder: Result es un Map<String, Set<String>> donde String= ParameterName y Set<String> sus valores
         Set<String> parameterNames = result.keySet();
         Set<String> subGraphParameterNames = new HashSet<>();
+
         if (parameterNames.size() > 1){
             for(String parameterName: parameterNames){
                 if(result.get(parameterName).size() < 100){
                     subGraphParameterNames.add(parameterName);
                 }
             }
-        }
 
-        if(subGraphParameterNames.size() == parameterNames.size()){
-            // Provisional (borrar)
-            return result;
+            if(subGraphParameterNames.size() == parameterNames.size()){     // Same set
 
-            // For para recorrer cada uno de los parámetros
-            // Llamar a la query exceptuando al parámetro correspondiente
-            // Comparar tamaño con el acumulador
+                int maxSize = 0;
+                Map<String, Set<String>> subResult = new HashMap<>();
+                // For para recorrer cada uno de los parámetros
+                for(String subGraphParameterName: subGraphParameterNames){
 
-            // Caso latLonZip
-            // TODO: Calcular support de las componentes conexas
-            // TODO: Llamar a la componente conexa mayor y a la componente conexa menor por separado
-            // TODO: Volver a llamar con la componente conexa mayor si el tamaño no es > 100
-        }else{
-            // Caso2
-            Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
-                    .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    // Llamar a la query exceptuando al parámetro correspondiente
+                    // Comparar tamaño con el acumulador
 
-            // Create SubResult
-            Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
+                }
 
-            // Add the results of the recursive call to result
-            for(String parameterName: subResult.keySet()){
-                result.get(parameterName).addAll(subResult.get(parameterName));
+
+
+
+                // Caso latLonZip
+                // TODO: Calcular support de las componentes conexas
+                // TODO: Llamar a la componente conexa mayor y a la componente conexa menor por separado
+                // TODO: Volver a llamar con la componente conexa mayor si el tamaño no es > 100
+            }else{
+                // Caso2
+                Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
+                        .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                // Create SubResult
+                Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
+
+                // Add the results of the recursive call to result
+                for(String parameterName: subResult.keySet()){
+                    result.get(parameterName).addAll(subResult.get(parameterName));
+                }
             }
+
         }
 
         return result;
@@ -200,6 +207,28 @@ public class SPARQLUtils {
         queryString = queryString + "\n}  \n";
         return queryString;
 
+    }
+
+    public static Integer executeSPARQLQueryCount(String szQuery, String szEndpoint)
+            throws Exception
+    {
+
+        // Create a Query with the given String
+        Query query = QueryFactory.create(szQuery);
+
+        // Create the Execution Factory using the given Endpoint
+        QueryExecution qexec = QueryExecutionFactory.sparqlService(
+                szEndpoint, query);
+
+        // Set Timeout
+        ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
+
+        // Execute Query
+        ResultSet rs = qexec.execSelect();
+
+        QuerySolution qs = rs.next();
+        Integer res = qs.get("?callret-0").asLiteral().getInt();
+        return res;
     }
 
     private static String generateRandomString(List<String> allParameters){
