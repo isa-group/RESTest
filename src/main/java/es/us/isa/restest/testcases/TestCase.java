@@ -452,7 +452,7 @@ public class TestCase implements Serializable {
 	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
 		if (idlReasoner == null)
 			return true;
-		return idlReasoner.isValidRequest(restest2idlTestCase(tc));
+		return idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
 	}
 
 	public String toString() {
