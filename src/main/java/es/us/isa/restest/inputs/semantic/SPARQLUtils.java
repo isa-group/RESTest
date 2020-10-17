@@ -8,7 +8,6 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 
 import java.net.URI;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -20,19 +19,11 @@ public class SPARQLUtils {
 
     public static Map<String, Set<String>> getParameterValues(Map<TestParameter, List<String>> parametersWithPredicates) throws Exception {
 
-        // Single operation
-        // TODO: Check if each set has at least ¿100? unique parameters
-        // There is a minimum because all the parameters are required
-        // Pueden ocurrir dos cosas: la sublista es del mismo tamaño (caso del zipCode con lat y lon) o es más pequeña (segundo caso)
-        // En caso de que sea más pequeña, volver a ejecutar query con lista más pequeña
-        // TODO: Consider indivisible predicates (Example: question)
-
-        String queryString = generateQuery(parametersWithPredicates);
+        String queryString = generateQuery(parametersWithPredicates, false);
         System.out.println(queryString);
 
         Map<String, Set<String>> result = executeSPARQLQuery(queryString, szEndpoint);
 
-        // Reminder: Result es un Map<String, Set<String>> donde String= ParameterName y Set<String> sus valores
         Set<String> parameterNames = result.keySet();
         Set<String> subGraphParameterNames = new HashSet<>();
 
@@ -43,27 +34,49 @@ public class SPARQLUtils {
                 }
             }
 
-            if(subGraphParameterNames.size() == parameterNames.size()){     // Same set
+            if(subGraphParameterNames.size() == parameterNames.size()){     // Same set case
 
-                int maxSize = 0;
-                Map<String, Set<String>> subResult = new HashMap<>();
+                Integer maxSupport = 0;
+                Map<TestParameter, List<String>> subGraphParametersWithPredicates = new HashMap<>();
+                String isolatedParameterName = "";
+
                 // For para recorrer cada uno de los parámetros
                 for(String subGraphParameterName: subGraphParameterNames){
 
-                    // Llamar a la query exceptuando al parámetro correspondiente
+                    Map<TestParameter, List<String>> currentSubGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
+                            .filter(x -> !x.getKey().getName().equals(subGraphParameterName))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                    // Compute support
+                    String queryCount = generateQuery(currentSubGraphParametersWithPredicates, true);
+                    Integer currentSupport = executeSPARQLQueryCount(queryCount, szEndpoint);
+
                     // Comparar tamaño con el acumulador
+                    if(currentSupport > maxSupport){
+                        maxSupport = currentSupport;
+                        subGraphParametersWithPredicates = currentSubGraphParametersWithPredicates;
+                        isolatedParameterName = subGraphParameterName;
+                    }
 
                 }
 
+                // Call the isolated parameter and add to result
+                Map<TestParameter, List<String>> isolatedParameter = parametersWithPredicates.entrySet().stream()
+                        .filter(x -> !subGraphParameterNames.contains(x.getKey()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                Map<String, Set<String>> subResultIsolated = getParameterValues(isolatedParameter);
+                result.get(isolatedParameterName).addAll(subResultIsolated.get(isolatedParameterName));
 
 
+                // Add the subgraph to results
+                Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
+                for(String parameterName: subResult.keySet()){
+                    result.get(parameterName).addAll(subResult.get(parameterName));
+                }
 
-                // Caso latLonZip
-                // TODO: Calcular support de las componentes conexas
-                // TODO: Llamar a la componente conexa mayor y a la componente conexa menor por separado
-                // TODO: Volver a llamar con la componente conexa mayor si el tamaño no es > 100
-            }else{
-                // Caso2
+
+            }else{  // Smaller Set case
                 Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
                         .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -83,8 +96,6 @@ public class SPARQLUtils {
     }
 
     // Execute a Query
-    // TODO: Remove duplicates after filtering (datatype)
-    // Returns List<Map<ParameterName, ParameterValue>>
     // Returns Map<ParameterName, Set<ParameterValue>>
     public static Map<String, Set<String>> executeSPARQLQuery(String szQuery, String szEndpoint)
             throws Exception
@@ -142,7 +153,7 @@ public class SPARQLUtils {
         return res;
     }
 
-    public static String generateQuery(Map<TestParameter, List<String>> parametersWithPredicates) {
+    public static String generateQuery(Map<TestParameter, List<String>> parametersWithPredicates, Boolean count) {
         String queryString = "";
         String filters = "";
 
@@ -162,7 +173,11 @@ public class SPARQLUtils {
         String parametersString = generateParametersString(allParametersName);
 
         // First line
-        queryString = queryString + "Select distinct " + parametersString + "  where { \n\n";
+        if(count){
+            queryString = queryString + "Select distinct count(*)  where { \n\n";
+        }else {
+            queryString = queryString + "Select distinct " + parametersString + "  where { \n\n";
+        }
 
         // Required parameters
         int requiredSize = allParameters.size();

@@ -44,14 +44,12 @@ public class SemanticInputGenerator {
 
         for(SemanticOperation semanticOperation: semanticOperations){
 
-            // TODO: Refactor
             Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(semanticOperation, spec);
 
 
-
-            // Query DBPedia
             Map<String, Set<String>> result = new HashMap<>();
             try{
+                // Query DBPedia
                 result = getParameterValues(parametersWithPredicates);
             }catch(Exception ex){
                 System.err.println(ex);
