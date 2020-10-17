@@ -4,7 +4,6 @@ import es.us.isa.restest.configuration.pojos.TestParameter;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
-import io.swagger.v3.oas.models.parameters.Parameter;
 
 import java.net.URI;
 import java.util.*;
@@ -76,7 +75,7 @@ public class SPARQLUtils {
                 }
 
 
-            }else{  // Smaller Set case
+            }else if ( (subGraphParameterNames.size()>0) && (subGraphParameterNames.size() < parameterNames.size()) ){  // Smaller Set case
                 Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
                         .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

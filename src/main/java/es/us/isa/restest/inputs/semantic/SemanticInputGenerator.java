@@ -34,7 +34,7 @@ public class SemanticInputGenerator {
     // TODO: Take arrays into consideration
     // TODO: Take datatypes into consideration
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/book.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/chickenCoop.properties");
 
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
