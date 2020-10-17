@@ -4,6 +4,7 @@ import es.us.isa.restest.configuration.pojos.TestParameter;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
+import org.junit.Test;
 
 import java.net.URI;
 import java.util.*;
@@ -60,8 +61,11 @@ public class SPARQLUtils {
                 }
 
                 // Call the isolated parameter and add to result
+                // TODO: Bug
+
+                String finalIsolatedParameterName = isolatedParameterName;
                 Map<TestParameter, List<String>> isolatedParameter = parametersWithPredicates.entrySet().stream()
-                        .filter(x -> !subGraphParameterNames.contains(x.getKey()))
+                        .filter(x -> x.getKey().getName().equals(finalIsolatedParameterName))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
                 Map<String, Set<String>> subResultIsolated = getParameterValues(isolatedParameter);
@@ -109,7 +113,7 @@ public class SPARQLUtils {
                 szEndpoint, query);
 
         // Set Timeout
-        ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
+//        ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
 
         // Execute Query
         ResultSet rs = qexec.execSelect();

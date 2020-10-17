@@ -1,0 +1,32 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /weather/forecast/hourly
+    operationId: apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4
+    method: get
+    testParameters:
+    - name: lat
+      in: query
+      weight: null
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    expectedResponse: 200
