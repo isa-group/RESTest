@@ -58,12 +58,14 @@ public class Predicates {
             // If snake_case
             if(words.length > 1){
                 // Join words
-                res.addAll(executePredicateSPARQLQuery(String.join("", words)));
+                String newQuery = generatePredicateQuery(String.join("", words));
+                res.addAll(executePredicateSPARQLQuery(newQuery));
 
                 if(res.size() <5) {
                     // Execute one query for each word in snake_case
                     for(String word: words){
-                        res.addAll(executePredicateSPARQLQuery(word));
+                        String query = generatePredicateQuery(word);
+                        res.addAll(executePredicateSPARQLQuery(query));
                     }
                 }
 
@@ -74,7 +76,8 @@ public class Predicates {
             if(res.size() < 5 && wordsCamel.length >1){
                 // Execute one query for each word in camelCase
                 for(String word: wordsCamel){
-                    res.addAll(executePredicateSPARQLQuery(word));
+                    String query = generatePredicateQuery(word);
+                    res.addAll(executePredicateSPARQLQuery(query));
                 }
 
             }

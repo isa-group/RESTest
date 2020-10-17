@@ -1,0 +1,325 @@
+basePath: /
+host: us-restaurant-menus.p.rapidapi.com
+info:
+  description: Restaurant Menus is an API providing access to a Database of over 350,000
+    Restaurant Menus and over 34,000,00 Individual menu items in the US
+  title: api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99
+  version: apiversion_ed26fad5-ddf3-45d5-8f6b-039119e3f1fb
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /menuitem/{id}:
+    get:
+      description: Get Menu Item By ID
+      operationId: apiendpoint_936e687f-168f-4725-b6f2-8df9f5f39949
+      parameters:
+      - description: menu item ID
+        in: path
+        name: id
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /menuitems/search:
+    get:
+      description: Search Menu Items
+      operationId: apiendpoint_2e4dc899-a9dc-49fd-92de-c8d9619b07bc
+      parameters:
+      - description: Search Distance (in miles)
+        in: query
+        name: distance
+        required: false
+        type: number
+      - description: latitude of search area
+        in: query
+        name: lat
+        required: false
+        type: number
+      - description: page through results
+        in: query
+        name: page
+        required: false
+        type: number
+      - description: Query in format field:value
+        in: query
+        name: q
+        required: false
+        type: string
+      - description: Longitude of search area
+        in: query
+        name: lon
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /menuitems/search/fields:
+    get:
+      description: Search Function which allows for a URI encoded JSON object of fields
+        and values to search for.
+      operationId: apiendpoint_a7b86e99-d4c1-4d61-b1bb-af304a0df869
+      parameters:
+      - description: "URI encoded JSON object of Fields\t"
+        in: query
+        name: fields
+        required: true
+        type: string
+      - description: Page Through Results
+        in: query
+        name: page
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /menuitems/search/geo:
+    get:
+      description: Search Menu Items By Geo Location
+      operationId: apiendpoint_51916c60-f111-40cd-8bb3-32136a0149e0
+      parameters:
+      - description: Page Through Results
+        in: query
+        name: page
+        required: false
+        type: number
+      - description: longitude of search area
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: Query String
+        in: query
+        name: q
+        required: false
+        type: string
+      - description: latitude of search area
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: Search Radius (in miles)
+        in: query
+        name: distance
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /restaurant/{id}:
+    get:
+      description: Get Restaurant By ID
+      operationId: apiendpoint_97e4bb5f-c9f2-405a-a9ce-7f58feabf278
+      parameters:
+      - description: restaurant ID
+        in: path
+        name: id
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /restaurant/{id}/menuitems:
+    get:
+      description: Get Menu Items For Restaurant
+      operationId: apiendpoint_eeba3c1b-799c-4924-be98-dfb67b584be3
+      parameters:
+      - description: page through results
+        in: query
+        name: page
+        required: false
+        type: number
+      - description: restaurant ID
+        in: path
+        name: id
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /restaurants/search:
+    get:
+      description: Search Restaurants with a variety of parameters
+      operationId: apiendpoint_5588b3e1-b33e-4b02-bcc0-ce8f1fd1edf5
+      parameters:
+      - description: Search Distance (in miles)
+        in: query
+        name: distance
+        required: false
+        type: number
+      - description: latitude of search area
+        in: query
+        name: lat
+        required: false
+        type: number
+      - description: page through results
+        in: query
+        name: page
+        required: false
+        type: number
+      - description: Longitude of search area
+        in: query
+        name: lon
+        required: false
+        type: number
+      - description: ' '
+        in: query
+        name: q
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /restaurants/search/fields:
+    get:
+      description: Search Function which allows for a URI encoded JSON object of fields
+        and values to search for.
+      operationId: apiendpoint_1a3a66d7-82b0-4e76-aa71-a61b44466703
+      parameters:
+      - description: URI encoded JSON object of Fields
+        in: query
+        name: fields
+        required: true
+        type: string
+      - description: Page Through Results
+        in: query
+        name: page
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /restaurants/search/geo:
+    get:
+      description: Search Restaurants By Geo Coordinates
+      operationId: apiendpoint_0bd5ae02-6490-4768-ad9d-0bba35c81555
+      parameters:
+      - description: page through results
+        in: query
+        name: page
+        required: false
+        type: number
+      - description: longitude of search area
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: latitude of search area
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: Search Distance (in miles)
+        in: query
+        name: distance
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /restaurants/search/ids:
+    get:
+      description: Searches Restaurants and returns only restaurant IDs
+      operationId: apiendpoint_e4f26b07-240c-461c-960c-8e57c8df05d1
+      parameters:
+      - description: Search Distance (in miles)
+        in: query
+        name: distance
+        required: false
+        type: number
+      - description: page through results
+        in: query
+        name: page
+        required: false
+        type: number
+      - description: ' '
+        in: query
+        name: q
+        required: false
+        type: string
+      - description: latitude of search area
+        in: query
+        name: lat
+        required: false
+        type: number
+      - description: Longitude of search area
+        in: query
+        name: lon
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /restaurants/state/{state}:
+    get:
+      description: Get Restaurants By State
+      operationId: apiendpoint_fab1e820-aeae-4679-8413-3679c3abdcbc
+      parameters:
+      - description: page through results
+        in: query
+        name: page
+        required: false
+        type: number
+      - description: 2 digit State Code
+        in: path
+        name: state
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /restaurants/zip_code/{zip_code}:
+    get:
+      description: Get Restaurants By Zip Code
+      operationId: apiendpoint_eca4002d-ea26-4257-9e62-835d1496648b
+      parameters:
+      - description: Zip Code To Search
+        in: path
+        name: zip_code
+        required: true
+        type: string
+      - description: page through results
+        in: query
+        name: page
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
