@@ -46,18 +46,22 @@ public class SPARQLUtils {
         }
 
         if(subGraphParameterNames.size() == parameterNames.size()){
-            // Provisional
+            // Provisional (borrar)
             return result;
+
+            // For para recorrer cada uno de los parámetros
+            // Llamar a la query exceptuando al parámetro correspondiente
+            // Comparar tamaño con el acumulador
+
             // Caso latLonZip
             // TODO: Calcular support de las componentes conexas
             // TODO: Llamar a la componente conexa mayor y a la componente conexa menor por separado
             // TODO: Volver a llamar con la componente conexa mayor si el tamaño no es > 100
         }else{
             // Caso2
-            Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.keySet().stream()
-                    .filter(parametersWithPredicates::containsKey)
-                    .collect(Collectors.toMap(Function.identity(), parametersWithPredicates::get));
-
+            Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
+                    .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             // Create SubResult
             Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
