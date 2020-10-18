@@ -1,59 +1,53 @@
 package es.us.isa.restest.inputs.semantic;
 
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.parameters.Parameter;
+import es.us.isa.restest.configuration.pojos.GenParameter;
+import es.us.isa.restest.configuration.pojos.Generator;
+import es.us.isa.restest.configuration.pojos.TestParameter;
+
+import java.util.List;
+
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.*;
 
 public class GenerateSPARQLFilters {
 
-    public static String generateSPARQLFilters(Parameter parameter){
+    public static String generateSPARQLFilters(TestParameter parameter){
         String res = "";
-        switch (parameter.getSchema().getType()){
-            case "string":
-                //TODO
-                res = generateSPARQLFiltersString(parameter);
-                break;
-            case "number":      // Combined with integer
-            case "integer":
-                res = generateSPARQLFiltersNumber(parameter);
-                break;
-            case "boolean":
-                // TODO
-                break;
-            case "array":
-                // TODO
-                break;
-            case "object":
-                // TODO
-                break;
+        Generator generator = parameter.getGenerator();
+        List<GenParameter> genParameters = generator.getGenParameters();
+
+        for(GenParameter genParameter: genParameters){
+            switch (genParameter.getName()){
+                case GEN_PARAM_REG_EXP:
+                    res = res + generateSPARQLFilterRegExp(parameter.getName(), genParameter.getValues().get(0));
+                    break;
+                case GEN_PARAM_MIN:
+                    res = res + generateSPARQLFilterMinMax(parameter.getName(), genParameter.getValues().get(0), true);
+                    break;
+                case GEN_PARAM_MAX:
+                    res = res + generateSPARQLFilterMinMax(parameter.getName(), genParameter.getValues().get(0), false);
+                    break;
+            }
         }
-
-
-
 
         return res;
     }
 
-    private static String generateSPARQLFiltersString(Parameter parameter){
-        String res = "";
-        Schema schema = parameter.getSchema();
+    private static String generateSPARQLFilterRegExp(String parameterName, String regexp){
+        String res = "\tFILTER regex(str(?" + parameterName + "), " + " \"" + regexp + "\")\n";
 
-        if(schema.getPattern() != null){
-            res = res + "\tFILTER regex(str(?" + parameter.getName() + "), " + " \"" + schema.getPattern() + "\")\n";
-        }
         return res;
     }
 
-    private static String generateSPARQLFiltersNumber(Parameter parameter){
+
+
+    private static String generateSPARQLFilterMinMax(String parameterName, String number, Boolean isMin){
+
         String res = "";
-        Schema schema = parameter.getSchema();
 
-        // TODO: < or <= ?
-        if(schema.getMinimum() != null){
-            res = res + "\tFILTER (?" + parameter.getName() + " >= " + schema.getMinimum() + " )\n" ;
-        }
-
-        if(schema.getMaximum() != null){
-            res = res + "\tFILTER (?" + parameter.getName() + " <= " + schema.getMaximum() + " )\n" ;
+        if(isMin){
+            res = res + "\tFILTER (?" + parameterName + " >= " + number + " )\n" ;
+        }else{
+            res = res + "\tFILTER (?" + parameterName + " <= " + number + " )\n" ;
         }
 
         return res;

@@ -27,14 +27,11 @@ public class SemanticInputGenerator {
     private static String OAISpecPath;
     private static String confPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";
+    public static final Integer THRESHOLD = 200;
 
-    // TODO: Required and optional parameters in TestConf
-    // TODO: Override enums
-    // TODO: Take restrictions (regExp, min, max, etc.) into consideration
-    // TODO: Take arrays into consideration
-    // TODO: Take datatypes into consideration
+
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/omdb.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/book.properties");
 
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
 

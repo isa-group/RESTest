@@ -1,21 +1,22 @@
 package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.TestParameter;
-import org.apache.jena.base.Sys;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
-import org.junit.Test;
 
 import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static es.us.isa.restest.inputs.semantic.GenerateSPARQLFilters.generateSPARQLFilters;
+import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.THRESHOLD;
+
 
 public class SPARQLUtils {
 
     // DBPedia Endpoint
-    private static String szEndpoint = "http://dbpedia.org/sparql";
+    private static final String szEndpoint = "http://dbpedia.org/sparql";
 
 
     public static Map<String, Set<String>> getParameterValues(Map<TestParameter, List<String>> parametersWithPredicates) throws Exception {
@@ -30,7 +31,7 @@ public class SPARQLUtils {
 
         if (parameterNames.size() > 1){
             for(String parameterName: parameterNames){
-                if(result.get(parameterName).size() < 100){
+                if(result.get(parameterName).size() < THRESHOLD){
                     subGraphParameterNames.add(parameterName);
                 }
             }
@@ -62,8 +63,6 @@ public class SPARQLUtils {
                 }
 
                 // Call the isolated parameter and add to result
-                // TODO: Bug
-
                 String finalIsolatedParameterName = isolatedParameterName;
                 Map<TestParameter, List<String>> isolatedParameter = parametersWithPredicates.entrySet().stream()
                         .filter(x -> x.getKey().getName().equals(finalIsolatedParameterName))
@@ -202,11 +201,8 @@ public class SPARQLUtils {
 
                 queryString = queryString + "\t" + predicatesString + " ?" + currentParameterName + " ; \n";
 
-                // TODO: Test with multiple parameters
-                // TODO: IMPLEMENT
-//                filters = filters + generateSPARQLFilters(currentParameter);
+                filters = filters + generateSPARQLFilters(currentParameter);
             }
-            // TODO: Test with multiple parameters
             TestParameter lastParameter = allParameters.get(requiredSize - 1);
             String lastParameterName = lastParameter.getName();
 
@@ -216,8 +212,8 @@ public class SPARQLUtils {
 
             queryString = queryString + "\t" + predicatesString + " ?" + lastParameterName + " . \n\n";
 
-            // TODO: IMPLEMENT
-//            filters = filters + generateSPARQLFilters(lastParameter);
+
+            filters = filters + generateSPARQLFilters(lastParameter);
         }
 
         // Add filters
