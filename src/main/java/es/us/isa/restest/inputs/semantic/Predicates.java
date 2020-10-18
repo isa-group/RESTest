@@ -34,7 +34,7 @@ public class Predicates {
             if(parameterName.length() == 1){
                 // TODO: NullPointer
                 PathItem pathItem = spec.getSpecification().getPaths().get(semanticOperation.getOperationPath());
-                String description = getParameterDescription(pathItem, p.getName());
+                String description = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
                 parameterName =  posTagging(description, p.getName()).get(0);
             }
 
@@ -133,11 +133,11 @@ public class Predicates {
         return res;
     }
 
-    private static String getParameterDescription(PathItem pathItem, String parameterName){
+    private static String getParameterDescription(PathItem pathItem, String parameterName, String method){
 
         Operation operation = null;
 
-        switch(parameterName) {
+        switch(method) {
             case "get":
                 operation = pathItem.getGet();
                 break;
