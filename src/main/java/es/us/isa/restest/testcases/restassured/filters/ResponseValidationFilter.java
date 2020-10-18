@@ -24,7 +24,7 @@ import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;
  *
  * @author Alberto Martin-Lopez
  */
-public class ResponseValidationFilter implements OrderedFilter {
+public class ResponseValidationFilter extends OracleFilter implements OrderedFilter {
     private final OpenApiInteractionValidator validator;
 
     public ResponseValidationFilter(final String specUrlOrDefinition) {
@@ -46,8 +46,11 @@ public class ResponseValidationFilter implements OrderedFilter {
     // If OAS validation error is found, throw exception
     public void filterValidation(Response response, String path, String method) {
         final ValidationReport validationReport = validator.validateResponse(path, Request.Method.valueOf(method), RestAssuredResponse.of(response));
-        if (validationReport.hasErrors())
+        if (validationReport.hasErrors()) {
+            if (APIName != null && testResultId != null)
+                exportTestResultToCSV(response, false);
             throw new OpenApiValidationException(validationReport);
+        }
     }
 
     public static class OpenApiValidationException extends RuntimeException {

@@ -89,11 +89,11 @@ public class TestResult {
 
     public void exportToCSV(String filePath) {
         if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-            createCSVwithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType");
+            createCSVwithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType,passed");
 
         // Generate row
         String csvResponseBody = "\"" + responseBody.replaceAll("\n", "\\\n").replaceAll("\"", "\"\"") + "\"";
-        String row = id + "," + statusCode + "," + csvResponseBody + "," + outputFormat;
+        String row = id + "," + statusCode + "," + csvResponseBody + "," + outputFormat + "," + passed;
         writeCSVRow(filePath, row);
     }
 }

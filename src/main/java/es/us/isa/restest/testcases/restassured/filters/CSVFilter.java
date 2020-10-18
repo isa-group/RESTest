@@ -11,19 +11,14 @@ import io.restassured.specification.FilterableResponseSpecification;
 
 import static es.us.isa.restest.coverage.CoverageMeter.exportCoverageOfTestResultToCSV;
 
-public class CSVFilter implements OrderedFilter {
-
-    private String APIName;
-    private String testResultId;
+public class CSVFilter extends OracleFilter implements OrderedFilter {
 
     public CSVFilter() {
         super();
     }
 
-    public CSVFilter(String testResultId, String APIName) {
-        super();
-        this.testResultId = testResultId;
-        this.APIName = APIName;
+    public CSVFilter(String APIName) {
+        super(APIName);
     }
 
     @Override
@@ -31,15 +26,13 @@ public class CSVFilter implements OrderedFilter {
         Response response = ctx.next(requestSpec, responseSpec);
 
         // Export output data after receiving API response
-        String testDataFile = PropertyManager.readProperty("data.tests.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.tests.testresults.file");
-        TestResult tr = new TestResult(testResultId, Integer.toString(response.statusCode()), response.asString(), response.contentType());
-        tr.exportToCSV(testDataFile);
+        exportTestResultToCSV(response, true);
 
         return response;
     }
 
     @Override
     public int getOrder() {
-        return Integer.MAX_VALUE; // Lowest priority of all filters, so it runs last before sending the request and first after sending it
+        return Integer.MAX_VALUE-4; // Fifth lowest priority of all filters, so it runs fifth-to-last before sending the request and fifth after sending it
     }
 }
