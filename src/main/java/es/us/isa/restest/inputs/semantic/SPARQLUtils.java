@@ -1,6 +1,7 @@
 package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.TestParameter;
+import org.apache.jena.base.Sys;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
@@ -143,7 +144,9 @@ public class SPARQLUtils {
                 if(szValString.trim().equals("")){
                     URI uri = new URI(szVal.toString());
                     String[] segments = uri.getPath().split("/");
-                    szValString = segments[segments.length-1].replace("_", " ");
+                    if(segments.length > 0){
+                        szValString = segments[segments.length-1].replace("_", " ");
+                    }
                 }
 
                 res.get(szVar).add(szValString);
