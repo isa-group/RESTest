@@ -53,7 +53,7 @@ public class SPARQLUtils {
                     String queryCount = generateQuery(currentSubGraphParametersWithPredicates, true);
                     Integer currentSupport = executeSPARQLQueryCount(queryCount, szEndpoint);
 
-                    // Comparar tamaño con el acumulador
+                    // Compare size with accumulator
                     if(currentSupport > maxSupport){
                         maxSupport = currentSupport;
                         subGraphParametersWithPredicates = currentSubGraphParametersWithPredicates;
@@ -62,6 +62,7 @@ public class SPARQLUtils {
 
                 }
 
+                // TODO: Instead of calling the isolated parameter, find the biggest connected component that contains the isolated parameter (second option) (keep arity)
                 // Call the isolated parameter and add to result
                 String finalIsolatedParameterName = isolatedParameterName;
                 Map<TestParameter, List<String>> isolatedParameter = parametersWithPredicates.entrySet().stream()
