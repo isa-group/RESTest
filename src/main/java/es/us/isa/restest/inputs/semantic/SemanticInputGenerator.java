@@ -1,21 +1,25 @@
 package es.us.isa.restest.inputs.semantic;
 
-import es.us.isa.restest.configuration.pojos.Operation;
-import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.configuration.pojos.*;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
+import nu.xom.jaxen.util.SingletonList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.*;
+import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConf;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
@@ -69,7 +73,13 @@ public class SemanticInputGenerator {
         // Generate a csv file for each parameter
         // File name = OperationName_ParameterName
         // Delete file if it exists
+        TestConfigurationObject newConf = conf;
         for(SemanticOperation operation: semanticOperations){
+
+            Integer opIndex = IntStream.range(0, newConf.getTestConfiguration().getOperations().size())
+                    .filter(i -> operation.getOperationId().equals(newConf.getTestConfiguration().getOperations().get(i).getOperationId()))
+                    .findFirst().getAsInt();
+
             for(TestParameter parameter: operation.getSemanticParameters().keySet()){
                 String fileName = "/" + operation.getOperationName() + "_" + parameter.getName() + ".csv";
                 String path = csvPath + fileName;
@@ -83,8 +93,16 @@ public class SemanticInputGenerator {
 
                 writer.write(collect);
                 writer.close();
+
+                // Update TestConfFile
+                updateTestConf(newConf, parameter, path, opIndex);
+
             }
         }
+
+        // TODO: WRITE SEMANTICTESTCONF AS A FILE
+        System.out.println(newConf.toString());
+        System.out.println("fkljsdlk");
 
     }
 

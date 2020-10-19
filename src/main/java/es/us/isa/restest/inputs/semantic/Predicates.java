@@ -21,7 +21,6 @@ public class Predicates {
     // TODO: Add by combination of length/support
     // TODO: Add limit
     // TODO: Wordnet/Description in case the function returns no results
-    // TODO: size()=0 exception
     public static Map<TestParameter, List<String>> getPredicates(SemanticOperation semanticOperation, OpenAPISpecification spec){
         Set<TestParameter> parameters = semanticOperation.getSemanticParameters().keySet();
 
@@ -32,7 +31,6 @@ public class Predicates {
 
             // If the paramater name is only a character, compare with description
             if(parameterName.length() == 1){
-                // TODO: NullPointer
                 PathItem pathItem = spec.getSpecification().getPaths().get(semanticOperation.getOperationPath());
                 String description = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
                 parameterName =  posTagging(description, p.getName()).get(0);

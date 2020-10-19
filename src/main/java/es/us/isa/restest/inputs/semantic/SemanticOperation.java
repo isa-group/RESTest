@@ -9,6 +9,7 @@ public class SemanticOperation {
     private String operationName = null;
     private String operationPath = null;
     private String operationMethod = null;
+    private String operationId = null;
     private Map<TestParameter, Set<String>> semanticParameters = null;
 
 
@@ -19,6 +20,7 @@ public class SemanticOperation {
         this.operationName = operation.getOperationId();
         this.operationPath = operation.getTestPath();
         this.operationMethod = operation.getMethod();
+        this.operationId = operation.getOperationId();
         this.semanticParameters = map;
 
     }
@@ -29,7 +31,9 @@ public class SemanticOperation {
     public String getOperationPath() {
         return operationPath;
     }
-
+    public String getOperationId() {
+        return operationId;
+    }
     public String getOperationMethod() {
         return operationMethod;
     }
