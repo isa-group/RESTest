@@ -1,5 +1,6 @@
 package es.us.isa.restest.inputs.semantic;
 
+import es.us.isa.restest.main.CreateTestConf;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -11,10 +12,14 @@ import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 
 import java.util.*;
 import es.us.isa.restest.configuration.pojos.TestParameter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
 
 public class Predicates {
+    private static final Logger log = LogManager.getLogger(Predicates.class);
+
     // TODO: Consider the possibility of adding owl predicates
     // TODO: Add support/threshold
     // TODO: Add by combination of length/support
@@ -26,7 +31,9 @@ public class Predicates {
         Map<TestParameter, List<String>> res = new HashMap<>();
 
         for(TestParameter p: parameters){
+
             String parameterName = p.getName();
+            log.info("Obtaining predicates of parameter {}", parameterName);
 
             // If the paramater name is only a character, compare with description
             if(parameterName.length() == 1){

@@ -1,9 +1,12 @@
 package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.main.CreateTestConf;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.URI;
 import java.util.*;
@@ -17,6 +20,7 @@ public class SPARQLUtils {
 
     // DBPedia Endpoint
     private static final String szEndpoint = "http://dbpedia.org/sparql";
+    private static final Logger log = LogManager.getLogger(SPARQLUtils.class);
 
 
     public static Map<String, Set<String>> getParameterValues(Map<TestParameter, List<String>> parametersWithPredicates) throws Exception {
@@ -37,6 +41,7 @@ public class SPARQLUtils {
             }
 
             if(subGraphParameterNames.size() == parameterNames.size()){     // Same set case
+                log.info("Insufficient inputs for all parameters, looking for connected component with greatest support");
 
                 Integer maxSupport = 0;
                 Map<TestParameter, List<String>> subGraphParametersWithPredicates = new HashMap<>();
@@ -62,6 +67,7 @@ public class SPARQLUtils {
 
                 }
 
+                log.info("Isolating parameter {} to increase support", isolatedParameterName);
                 // TODO: Instead of calling the isolated parameter, find the biggest connected component that contains the isolated parameter (second option) (keep arity)
                 // Call the isolated parameter and add to result
                 String finalIsolatedParameterName = isolatedParameterName;
@@ -81,6 +87,8 @@ public class SPARQLUtils {
 
 
             }else if ( (subGraphParameterNames.size()>0) && (subGraphParameterNames.size() < parameterNames.size()) ){  // Smaller Set case
+                log.info("Insufficient inputs for a group of parameters, querying DBPedia with a subset of parameters");
+
                 Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
                         .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

@@ -39,17 +39,21 @@ public class SemanticInputGenerator {
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
         // Key: OperationName       Value: Parameters
+        log.info("Obtaining semantic operations");
         List<SemanticOperation> semanticOperations = getSemanticOperations(conf);
+
 
 
         for(SemanticOperation semanticOperation: semanticOperations){
 
+            log.info("Obtaining predicates of operation {}", semanticOperation.getOperationId());
             Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(semanticOperation, spec);
 
 
             Map<String, Set<String>> result = new HashMap<>();
             try{
                 // Query DBPedia
+                log.info("Querying DBPedia for operation {}...", semanticOperation.getOperationId());
                 result = getParameterValues(parametersWithPredicates);
             }catch(Exception ex){
                 System.err.println(ex);
@@ -63,11 +67,9 @@ public class SemanticInputGenerator {
 
         }
 
-        // TODO: Update TestConf
-        // TODO: Add log messages
-
         // Create dir for automatically generated csv files
         createDir(csvPath);
+        log.info("Generating csv files");
         
         // Generate a csv file for each parameter
         // File name = OperationName_ParameterName
@@ -96,11 +98,14 @@ public class SemanticInputGenerator {
                 // Update TestConfFile
                 updateTestConf(newConf, parameter, path, opIndex);
 
+                log.info("Csv file generated in {}", path);
+
             }
         }
 
-        // Write configuration to file
+        // Write new test configuration to file
         TestConfigurationIO.toFile(newConf, confPath);
+        log.info("Test configuration file updated");
 
     }
 
@@ -117,6 +122,7 @@ public class SemanticInputGenerator {
         for(Operation operation: testConfigurationObject.getTestConfiguration().getOperations()){
             List<TestParameter> semanticParameters = getSemanticParameters(operation);
             if(semanticParameters.size() > 0){
+                log.info("Semantic operation {} added to list of semantic operations", operation.getOperationId());
                 semanticOperations.add(new SemanticOperation(operation, semanticParameters));
             }
         }
