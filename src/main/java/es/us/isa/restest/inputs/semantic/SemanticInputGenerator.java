@@ -1,13 +1,13 @@
 package es.us.isa.restest.inputs.semantic;
 
+import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.*;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
-import nu.xom.jaxen.util.SingletonList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.awt.*;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.*;
@@ -100,9 +99,8 @@ public class SemanticInputGenerator {
             }
         }
 
-        // TODO: WRITE SEMANTICTESTCONF AS A FILE
-        System.out.println(newConf.toString());
-        System.out.println("fkljsdlk");
+        // Write configuration to file
+        TestConfigurationIO.toFile(newConf, confPath);
 
     }
 

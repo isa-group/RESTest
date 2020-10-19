@@ -9,7 +9,6 @@ import org.apache.jena.query.*;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 
 
-import java.nio.file.Path;
 import java.util.*;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 
