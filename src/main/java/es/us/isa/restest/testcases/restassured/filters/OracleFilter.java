@@ -30,15 +30,15 @@ public class OracleFilter {
         this.APIName = APIName;
     }
 
-    protected void exportTestResultToCSV(Response response, Boolean passed) {
+    protected void exportTestResultToCSV(Response response, Boolean passed, String failReason) {
         String testDataFile = PropertyManager.readProperty("data.tests.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.tests.testresults.file");
-        TestResult tr = new TestResult(testResultId, Integer.toString(response.statusCode()), response.asString(), response.contentType(), passed);
+        TestResult tr = new TestResult(testResultId, Integer.toString(response.statusCode()), response.asString(), response.contentType(), passed, failReason);
         tr.exportToCSV(testDataFile);
     }
 
     protected void saveTestResultAndThrowException(Response response, String message) {
         if (APIName != null && testResultId != null)
-            exportTestResultToCSV(response, false);
+            exportTestResultToCSV(response, false, message);
         throw new RuntimeException(message);
     }
 

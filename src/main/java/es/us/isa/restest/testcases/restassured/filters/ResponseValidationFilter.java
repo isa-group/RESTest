@@ -6,6 +6,7 @@ import com.atlassian.oai.validator.report.JsonValidationReportFormat;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.atlassian.oai.validator.restassured.RestAssuredRequest;
 import com.atlassian.oai.validator.restassured.RestAssuredResponse;
+import es.us.isa.restest.testcases.TestResult;
 import io.restassured.filter.FilterContext;
 import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
@@ -48,7 +49,7 @@ public class ResponseValidationFilter extends OracleFilter implements OrderedFil
         final ValidationReport validationReport = validator.validateResponse(path, Request.Method.valueOf(method), RestAssuredResponse.of(response));
         if (validationReport.hasErrors()) {
             if (APIName != null && testResultId != null)
-                exportTestResultToCSV(response, false);
+                exportTestResultToCSV(response, false, "Swagger validation");
             throw new OpenApiValidationException(validationReport);
         }
     }

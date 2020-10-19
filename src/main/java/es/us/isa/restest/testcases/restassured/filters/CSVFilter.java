@@ -26,7 +26,7 @@ public class CSVFilter extends OracleFilter implements OrderedFilter {
         Response response = ctx.next(requestSpec, responseSpec);
 
         // Export output data after receiving API response
-        exportTestResultToCSV(response, true);
+        exportTestResultToCSV(response, true, "none");
 
         return response;
     }
