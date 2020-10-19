@@ -134,7 +134,7 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
 				+  "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
 				+  "\tprivate static final NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter();\n"
-				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);";
+				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
 
 		if (allureReport)
 			content += "\tprivate static final AllureRestAssured allureFilter = new AllureRestAssured();\n";
