@@ -34,7 +34,7 @@ public class SemanticInputGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/book.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/airportinfo.properties");
 
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
@@ -65,6 +65,10 @@ public class SemanticInputGenerator {
                 semanticOperation.setSemanticParameters(map);
             }
 
+        }
+
+        if(semanticOperations.size()==0){
+            log.info("No semantic operations found");
         }
 
         // Create dir for automatically generated csv files

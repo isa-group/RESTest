@@ -319,6 +319,17 @@
 			<version>3.9.2</version>
 		</dependency>
 
+		<!-- PROVISIONAL DEPENDENCIES (REMOVE BEFORE MERGING) -->
+
+		<dependency>
+			<groupId>com.squareup.okhttp</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>2.7.5</version>
+		</dependency>
+
+
+		<!-- END OF PROVISIONAL DEPENDENCIES -->
+
 
 		<!-- LOCAL DEPENDENCIES -->
 		<!-- JSONmutator local dependency -->

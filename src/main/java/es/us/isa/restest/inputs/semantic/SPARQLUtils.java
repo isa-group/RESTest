@@ -23,6 +23,7 @@ public class SPARQLUtils {
     private static final Logger log = LogManager.getLogger(SPARQLUtils.class);
 
 
+
     public static Map<String, Set<String>> getParameterValues(Map<TestParameter, List<String>> parametersWithPredicates) throws Exception {
 
         String queryString = generateQuery(parametersWithPredicates, false);
