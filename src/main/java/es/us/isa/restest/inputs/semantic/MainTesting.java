@@ -54,7 +54,7 @@ public class MainTesting {
                 .url(url)
                 .get()
 //                .addHeader("x-rapidapi-host", host)
-                .addHeader("x-rapidapi-key", "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69")
+                .addHeader("x-rapidapi-key", "xxxxxxxx")
                 .build();
 
         Response response = client.newCall(request).execute();
