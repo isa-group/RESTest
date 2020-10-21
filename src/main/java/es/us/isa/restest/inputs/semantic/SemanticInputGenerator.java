@@ -34,7 +34,7 @@ public class SemanticInputGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/airportinfo.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/chickenCoop.properties");
 
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
 

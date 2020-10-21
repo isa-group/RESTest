@@ -1,0 +1,33 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Provides current weather information for US cities by zip code
+  title: api_7ab34636-d556-42b4-ad3a-6c8b325e7673
+  version: apiversion_e0f94ec2-ea87-4c9f-bc5b-19f4de7cc6dd
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /getweatherzipcode:
+    get:
+      description: Retrieves current US weather information
+      operationId: apiendpoint_76fe646d-db22-4c75-b960-ec7a09adb6b1
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - us-weather-by-zip-code.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Zip code
+        in: query
+        name: zip
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''

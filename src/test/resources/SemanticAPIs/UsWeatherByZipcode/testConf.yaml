@@ -1,0 +1,34 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /getweatherzipcode
+    operationId: apiendpoint_76fe646d-db22-4c75-b960-ec7a09adb6b1
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - us-weather-by-zip-code.p.rapidapi.com
+          objectValues: null
+    - name: zip
+      in: query
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/api_7ab34636-d556-42b4-ad3a-6c8b325e7673/apiendpoint_76fe646d-db22-4c75-b960-ec7a09adb6b1_zip.csv
+          objectValues: null
+    expectedResponse: 200

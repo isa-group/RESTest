@@ -1,30 +1,32 @@
 package es.us.isa.restest.inputs.semantic;
+import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
+import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
-import static es.us.isa.restest.util.PropertyManager.readProperty;
 
-
-public class MainTesting {
+public class MainTestingCoronavirus {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/chickenCoop.properties";
-    private static String operationPath = "/games";
-    private static String semanticParameterName = "title";
+    private static String propertiesPath = "/semantic/coronavirusMap.properties";
+    private static String operationPath = "/v1/summary/region";
+    private static String semanticParameterName = "region";
     private static Integer limit = Integer.MAX_VALUE;
 
     // Parámetros derivados
@@ -55,8 +57,9 @@ public class MainTesting {
         for(String semanticInput: randomSubList){
             try {
 
+
                 System.out.println(semanticInput);
-                String query = "?title=" + semanticInput + "&platform=";            // TODO: Modify
+                String query = "?region=" + semanticInput;            // TODO: Modify
                 String url = baseUrl + operationPath + query;
                 OkHttpClient client = new OkHttpClient();
 

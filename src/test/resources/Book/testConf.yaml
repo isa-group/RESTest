@@ -15,7 +15,7 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -25,7 +25,7 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -35,7 +35,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -45,7 +45,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomRegExp
         genParameters:
         - name: regExp
           values:
@@ -55,7 +55,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -67,7 +67,7 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomNumber
         genParameters:
         - name: type
           values:

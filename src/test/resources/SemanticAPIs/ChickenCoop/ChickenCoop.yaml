@@ -1,5 +1,5 @@
 basePath: /
-host: chicken-coop.p.rapidapi.com
+host: rapidapi.p.rapidapi.com
 info:
   description: This is an unofficial Metacritic API to get all informations about
     games
@@ -14,6 +14,13 @@ paths:
       description: Search a game
       operationId: apiendpoint_a4d6aea1-de46-466f-81cc-acfb6d555237
       parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - chicken-coop.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
       - description: Game's title
         in: query
         name: title
@@ -30,6 +37,13 @@ paths:
       description: Get all game's informations by title and platform.
       operationId: apiendpoint_550d9371-2ad0-445c-af7c-624c52c9c66f
       parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - chicken-coop.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
       - description: Exact game's title
         in: path
         name: title
