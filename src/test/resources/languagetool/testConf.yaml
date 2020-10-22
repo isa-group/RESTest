@@ -54,7 +54,6 @@ testConfiguration:
           - name: csv
             values:
               - 'src/main/resources/TestData/languagetool-codes-variants.csv'
-            objectValues: null
           - name: minValues
             values:
               - 1
@@ -80,7 +79,12 @@ testConfiguration:
           - name: csv
             values:
               - 'src/main/resources/TestData/languagetool-codes-variants.csv'
-            objectValues: null
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
     - name: enabledRules
       in: formData
       weight: 0.5
@@ -90,7 +94,12 @@ testConfiguration:
           - name: csv
             values:
               - 'src/main/resources/TestData/languagetool-rules-2.csv'
-            objectValues: null
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
     - name: disabledRules
       in: formData
       weight: 0.5
@@ -100,7 +109,12 @@ testConfiguration:
           - name: csv
             values:
               - 'src/main/resources/TestData/languagetool-rules-2.csv'
-            objectValues: null
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
     - name: enabledCategories
       in: formData
       weight: 0.5
@@ -110,7 +124,12 @@ testConfiguration:
           - name: csv
             values:
               - 'src/main/resources/TestData/languagetool-categories.csv'
-            objectValues: null
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
     - name: disabledCategories
       in: formData
       weight: 0.5
@@ -120,7 +139,12 @@ testConfiguration:
           - name: csv
             values:
               - 'src/main/resources/TestData/languagetool-categories.csv'
-            objectValues: null
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
     - name: enabledOnly
       in: formData
       weight: 0.5
