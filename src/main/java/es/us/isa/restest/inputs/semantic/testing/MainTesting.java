@@ -64,9 +64,9 @@ public class MainTesting {
                 Request request = new Request.Builder()
                         .url(url)
                         .get()
-                        .addHeader("x-access-token", "5b3ef0bdeca04643188c6610c30056f5")
+                        .addHeader("x-access-token", "xxxxx")
                         .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-key", "69c700dd67msh57b046423099254p1d4b4cjsn1908598eb392")  // TODO: Modify
+                        .addHeader("x-rapidapi-key", "xxxx")  // TODO: Modify
                         .build();
 
                 Response response = client.newCall(request).execute();
