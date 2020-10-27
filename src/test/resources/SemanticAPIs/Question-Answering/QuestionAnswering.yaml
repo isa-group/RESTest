@@ -1,0 +1,128 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: The WebKnox question-answering API allows you to find answers to natural
+    language questions. These questions can be factual such as "What is the capital
+    of Australia" or more complex.
+  title: 53aa3482e4b051a76d23f569
+  version: 53aa3482e4b00287471a048c
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /questions/answers:
+    get:
+      description: Find an answer to a given question.
+      operationId: 53aa3483e4b008bb2ef851a7
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - webknox-question-answering.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Whether the answer can be looked up in a given set of answers.
+        in: query
+        name: answerLookup
+        required: false
+        type: boolean
+      - description: The question.
+        in: query
+        name: question
+        required: true
+        type: string
+      - description: Whether the answer can be searched on the Web. If set to true,
+          the answer might take up to a minute to show up.
+        in: query
+        name: answerSearch
+        required: false
+        type: boolean
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /questions/converse:
+    get:
+      description: Using all question answering functionality to have a contextual
+        conversation with WebKnox.
+      operationId: 580c0128e4b0036abc91a0ed
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - webknox-question-answering.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The question/response by the user.
+        in: query
+        name: text
+        required: true
+        type: string
+      - description: Every conversation has a context, pass a globally unique identifier
+          for your conversation.
+        in: query
+        name: contextId
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /questions/converse/suggest:
+    get:
+      description: Query this endpoint to get suggests about what WebKnox can converse
+        about.
+      operationId: 5814fdb7e4b0c6769899d4b0
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - webknox-question-answering.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The (partial) query of the user to get suggests for.
+        in: query
+        name: query
+        required: true
+        type: string
+      - description: The number of suggests, must be between 1 and 25.
+        in: query
+        name: number
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /questions/quickAnswers:
+    get:
+      description: Get a short, quick answer to a simple question.
+      operationId: 53aa3483e4b051a76d23f56f
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - webknox-question-answering.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: A question or keywords that can be answered with simple facts.
+        in: query
+        name: question
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''

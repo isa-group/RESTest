@@ -1,0 +1,38 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: An API for Public Holidays & Bank Holidays
+  title: api_bbb20b4a-d588-4c4c-86ac-15fbef582aaa
+  version: apiversion_d8cf1e0d-a704-499c-b725-1b1f28748301
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /{Year}/{CountryCode}:
+    get:
+      description: Returns the public holidays from a given year and country.
+      operationId: apiendpoint_6c49df0a-e381-48f5-8719-9d5a95520b1a
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - public-holiday.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: CountryCode
+        in: path
+        name: CountryCode
+        required: true
+        type: string
+      - description: Year
+        in: path
+        name: Year
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''

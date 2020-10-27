@@ -1,4 +1,4 @@
-package es.us.isa.restest.inputs.semantic;
+package es.us.isa.restest.inputs.semantic.testing;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 
@@ -25,7 +25,7 @@ public class MainTestingCoronavirus {
 
     // Parámetros a cambiar
     private static String propertiesPath = "/semantic/coronavirusMap.properties";
-    private static String operationPath = "/v1/summary/region";
+    private static String operationPath = "/v1/spots/day";
     private static String semanticParameterName = "region";
     private static Integer limit = Integer.MAX_VALUE;
 
@@ -45,8 +45,7 @@ public class MainTestingCoronavirus {
         String csvPath = getCsvPath();
         List<String> semanticInputs = readCsv(csvPath);
 
-        Integer fivePercent = (int) (0.05 * semanticInputs.size());
-        Integer maxCut = (limit < fivePercent) ? limit : fivePercent;
+        Integer maxCut = (limit < 20) ? limit : 20;
 
         Collections.shuffle(semanticInputs);
 
@@ -67,17 +66,17 @@ public class MainTestingCoronavirus {
                         .url(url)
                         .get()
                         .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-key", "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69")  // TODO: Modify
+                        .addHeader("x-rapidapi-key", "69c700dd67msh57b046423099254p1d4b4cjsn1908598eb392")  // TODO: Modify
                         .build();
 
                 Response response = client.newCall(request).execute();
 
                 System.out.println("Iteración número " + i + "/" + maxCut);
-                if(response.code() != 404){
-                    System.out.println("RESPONSE CODE: " + response.code());
-                    System.out.println(response.body().string());
-                    System.out.println("--------------------------------------------------------------------------------------");
-                }
+
+                System.out.println("RESPONSE CODE: " + response.code());
+                System.out.println(response.body().string());
+                System.out.println("--------------------------------------------------------------------------------------");
+
 
                 i++;
             }catch (Exception e){

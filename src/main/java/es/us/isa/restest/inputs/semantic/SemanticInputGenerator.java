@@ -10,6 +10,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,13 +31,15 @@ public class SemanticInputGenerator {
     private static OpenAPISpecification spec;
     private static String OAISpecPath;
     private static String confPath;
+    private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";
     public static final Integer THRESHOLD = 200;
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/chickenCoop.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/flightData.properties");
 
+        System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
         // Key: OperationName       Value: Parameters
@@ -108,7 +112,7 @@ public class SemanticInputGenerator {
         }
 
         // Write new test configuration to file
-        TestConfigurationIO.toFile(newConf, confPath);
+        TestConfigurationIO.toFile(newConf, semanticConfPath);
         log.info("Test configuration file updated");
 
     }
@@ -118,6 +122,14 @@ public class SemanticInputGenerator {
         confPath = readProperty(evalPropertiesFilePath, "confpath");
         spec = new OpenAPISpecification(OAISpecPath);
         csvPath = csvPath + spec.getSpecification().getInfo().getTitle();
+
+        Path path = Paths.get(confPath);
+        Path dir = path.getParent();
+        Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
+        Path target = (dir == null) ? fn : dir.resolve(fn);
+
+        semanticConfPath = target.toString();
+
     }
 
     public static List<SemanticOperation> getSemanticOperations(TestConfigurationObject testConfigurationObject){

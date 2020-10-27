@@ -1,0 +1,367 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Get weather and weather forecasts for multiple cities.
+  title: 53aa6041e4b00287471a2b5d
+  version: 53aa6041e4b07e1f4ebec8b4
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /climate/month:
+    get:
+      description: Climate forecast for 30 days allows you to request weather data
+        for the next 30 days. This product is based on a statistical approach to our
+        Historical weather data and is updated with 1-hour frequency.
+      operationId: apiendpoint_dd92e578-3e54-4562-9687-0e22d673fffe
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - community-open-weather-map.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ' '
+        in: query
+        name: q
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /find:
+    get:
+      description: By city name. Input the city name or its part and get the list
+        of the most proper cities in the world. Example - Lon or Lond or London. The
+        more precise city name you put the more precise list you will get. To make
+        it more precise put the city's name or its part, comma, the name of the county
+        or 2-letter country code. You will get all proper cities in chosen county.
+        The order is important - the first is city name than comma than county. Example
+        - Lon, UK or Lon, GB or London, GB or Lon, England. By geographic coordinates.
+      operationId: 53aa6043e4b0a705fcc32c1d
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - community-open-weather-map.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: use this parameter when searching for a city. Do not use with
+          other parameters
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: To limit number of listed cities please setup cnt parameter
+        in: query
+        name: cnt
+        required: false
+        type: number
+      - description: If left blank will default to JSON output. Ability to retrieve
+          data in XML or HTML.
+        in: query
+        name: mode
+        required: false
+        type: string
+      - description: Must be used with lat. Get current weather data when you know
+          the longitude of the city.
+        in: query
+        name: lon
+        required: false
+        type: number
+      - description: To setup accuracy level please use type parameter that have two
+          values - accurate and like. In case of accurate value you will get results
+          that exactly equivalent to your searching word. In case of like value the
+          result is searching by substring. type ['accurate', 'like']  Example
+        in: query
+        name: type
+        required: false
+        type: string
+      - description: Must be used with lon. Get current weather data when you know
+          the latitude of the city.
+        in: query
+        name: lat
+        required: false
+        type: number
+      - description: You can use different types of metric systems by units = metric
+          or imperial
+        in: query
+        name: units
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /forecast:
+    get:
+      description: 5 day forecast is available at any location or city. It includes
+        weather data every 3 hours. Forecast is available in JSON or XML format.
+      operationId: apiendpoint_f719676c-072b-4a2d-ad2e-78f8375ea9c8
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - community-open-weather-map.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: '{city name}, {country code} - city name and country code divided
+          by comma, use ISO 3166 country codes'
+        in: query
+        name: q
+        required: false
+        type: string
+      - description: Standard, metric, and imperial units are available.
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: use 'xml' for xml output
+        in: query
+        name: mode
+        required: false
+        type: string
+      - description: latitude (used with lon)
+        in: query
+        name: lat
+        required: false
+        type: string
+      - description: longitude (used with lat)
+        in: query
+        name: lon
+        required: false
+        type: string
+      - description: 'You can use lang parameter to get the output in your language.
+          We support the following languages that you can use with the corresponded
+          lang values: Arabic - ar, Bulgarian - bg, Catalan - ca, Czech - cz, German
+          - de, Greek - el, English - en, Persian (Farsi) - fa, Finnish - fi, French
+          - fr, Galician - gl, Croatian - hr, Hungarian - hu, Italian - it, Japanese
+          - ja, Korean - kr, Latvian - la, Lithuanian - lt, Macedonian - mk, Dutch
+          - nl, Polish - pl, Portuguese - pt, Romanian - ro, Russian - ru, Swedish
+          - se, Slovak - sk, Slovenian - sl, Spanish - es, Turkish - tr, Ukrainian
+          - ua, Vietnamese - vi, Chinese Simplified - zh_cn, Chinese Traditional -
+          zh_tw.'
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: To limit number of listed cities please setup 'cnt' parameter
+          that specifies the number of lines returned.
+        in: query
+        name: cnt
+        required: false
+        type: string
+      - description: id city ID
+        in: query
+        name: id
+        required: false
+        type: string
+      - description: '{zip code},{country code}'
+        in: query
+        name: zip
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /forecast/daily:
+    get:
+      description: 16 day forecasts is available at any location or city. Forecasts
+        include daily weather and available in JSON or XML format. It is only available
+        for all paid accounts.
+      operationId: 53aa6042e4b051a76d241b79
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - community-open-weather-map.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: city name and country code divided by comma, use ISO 3166 country
+          codes
+        in: query
+        name: q
+        required: false
+        type: string
+      - description: Must be used with lon. Get current weather data when you know
+          the latitude of the city.
+        in: query
+        name: lat
+        required: false
+        type: number
+      - description: Must be used with lat. Get current weather data when you know
+          the longitude of the city.
+        in: query
+        name: lon
+        required: false
+        type: number
+      - description: amount of days in the future to forecast
+        in: query
+        name: cnt
+        required: false
+        type: number
+      - description: You can use different types of metric systems by units = metric
+          or imperial
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: mode - possible values are JSON xml. If mode parameter is empty
+          the format is JSON by default.
+        in: query
+        name: mode
+        required: false
+        type: string
+      - description: city id
+        in: query
+        name: id
+        required: false
+        type: string
+      - description: 'You can use lang parameter to get the output in your language.
+          We support the following languages that you can use with the corresponded
+          lang values: Arabic - ar, Bulgarian - bg, Catalan - ca, Czech - cz, German
+          - de, Greek - el, English - en, Persian (Farsi) - fa, Finnish - fi, French
+          - fr, Galician - gl, Croatian - hr, Hungarian - hu, Italian - it, Japanese
+          - ja, Korean - kr, Latvian - la, Lithuanian - lt, Macedonian - mk, Dutch
+          - nl, Polish - pl, Portuguese - pt, Romanian - ro, Russian - ru, Swedish
+          - se, Slovak - sk, Slovenian - sl, Spanish - es, Turkish - tr, Ukrainian
+          - ua, Vietnamese - vi, Chinese Simplified - zh_cn, Chinese Traditional -
+          zh_tw.'
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: '{zip code},{country code}'
+        in: query
+        name: zip
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /onecall/timemachine:
+    get:
+      description: 'To get access to historical weather data for the **5 previous
+        days**
+
+
+        lat, lon geographical coordinates (latitude, longitude)
+
+        dt date from the 5 previous days (unix time, UTC time zone), e.g. dt=1586468027'
+      operationId: apiendpoint_9efd93b5-a454-4619-9ff8-bd3465aeebe1
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - community-open-weather-map.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ' '
+        in: query
+        name: lat
+        required: true
+        type: string
+      - description: ' '
+        in: query
+        name: lon
+        required: true
+        type: string
+      - description: ' '
+        in: query
+        name: dt
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /weather:
+    get:
+      description: Using this kind of requests you can get weather data in any location
+        on the earth. The current weather data are updated online based on data from
+        more than 40,000 weather stations.
+      operationId: 53aa6041e4b00287471a2b62
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - community-open-weather-map.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: use this parameter when searching for a city.  Do not use with
+          other parameters
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: Must be used with lon.  Get current weather data when you know
+          the latitude of the city.
+        in: query
+        name: lat
+        required: false
+        type: number
+      - description: Must be used with lat.  Get current weather data when you know
+          the longitude of the city.
+        in: query
+        name: lon
+        required: false
+        type: number
+      - description: To use JavaScrip code you can transfer callback functionName
+          to JSONP callback.
+        in: query
+        name: callback
+        required: false
+        type: string
+      - description: Get current weather data when you know the city ID.  Not to be
+          used with lon, lat, or q
+        in: query
+        name: id
+        required: false
+        type: number
+      - description: 'You can use lang parameter to get output in your language. We
+          support the following languages that you can use with the corresponded lang
+          values: English - en, Russian - ru, Italian - it, Spanish - sp, Ukrainian
+          - ua, German - de, Portuguese - pt, Romanian - ro, Polish - pl, Finnish
+          - fi, Dutch - nl, French - fr, Bulgarian - bg, Swedish - se, Chinese Traditional
+          - zh_tw, Chinese Simplified - zh_cn, Turkish - tr'
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: You can use different types of metric systems by units = metric
+          or imperial
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: If left blank will default to JSON output.  Ability to retrieve
+          data in XML or HTML.
+        in: query
+        name: mode
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
