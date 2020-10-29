@@ -22,18 +22,17 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingOMDB {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/flightData.properties";
-    private static String operationPath = "/v2/prices/week-matrix";
-    private static String semanticParameterName = "currency";
+    private static String propertiesPath = "/omdb.properties";
+    private static String operationPath = "/";
+    private static String semanticParameterName = "s";
     private static Integer limit = Integer.MAX_VALUE;
 
     // Parámetros derivados
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
-    private static String baseUrl = "https://rapidapi.p.rapidapi.com";     //"https://climacell-microweather-v1.p.rapidapi.com"; // "https://rapidapi.p.rapidapi.com";
     private static Operation operation;
-    private static String host;
+
     private static TestConfigurationObject conf;
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -55,28 +54,22 @@ public class MainTestingOMDB {
             try {
 
                 System.out.println(semanticInput);
-                String query = "?destination=MOW&origin=LED&currency=" + semanticInput;
-//                String query = "?calendar_type=departure_date&destination=BCN&origin=MOW&currency=" + semanticInput + "&length=None";            // TODO: Modify
-                String url = baseUrl + operationPath + query;
-//                String url = baseUrl + "/2019/" + semanticInput;
+
                 OkHttpClient client = new OkHttpClient();
 
                 Request request = new Request.Builder()
-                        .url(url)
+                        .url("http://www.omdbapi.com/?apikey=bef62484&s=" + semanticInput)
                         .get()
-                        .addHeader("x-access-token", "xxxxxx")
-                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-key", "xxxxx")  // TODO: Modify
                         .build();
 
                 Response response = client.newCall(request).execute();
 
                 System.out.println("Iteración número " + i + "/" + maxCut);
-//                if(response.code() != 404){
+
                 System.out.println("RESPONSE CODE: " + response.code());
                 System.out.println(response.body().string());
                 System.out.println("--------------------------------------------------------------------------------------");
-//                }
+
 
                 i++;
             }catch (Exception e){
@@ -98,7 +91,6 @@ public class MainTestingOMDB {
         conf = loadConfiguration(confPath, spec);
 
         operation = conf.getTestConfiguration().getOperations().stream().filter(x -> x.getTestPath().equals(operationPath)).findFirst().get();
-        host = operation.getTestParameters().stream().filter(x-> x.getName().equals("X-RapidAPI-Host")).findFirst().get().getGenerator().getGenParameters().get(0).getValues().get(0);
 
     }
 

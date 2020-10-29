@@ -7,8 +7,8 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-  - testPath: /questions/answers
-    operationId: 53aa3483e4b008bb2ef851a7
+  - testPath: /api/countrycitylist
+    operationId: apiendpoint_e9e37f14-3a27-4a1f-87c7-cfa8511f0332
     method: get
     testParameters:
     - name: X-RapidAPI-Host
@@ -19,17 +19,21 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - webknox-question-answering.p.rapidapi.com
+          - weather-forecast-14-days.p.rapidapi.com
           objectValues: null
-    - name: answerLookup
+    - name: LANG
       in: query
       weight: 0.5
       generator:
-        type: RandomBoolean
-        genParameters: []
-    - name: question
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: COUNTRY
       in: query
-      weight: null
+      weight: 0.5
       generator:
         type: SemanticParameter
         genParameters:
@@ -37,15 +41,9 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: answerSearch
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomBoolean
-        genParameters: []
     expectedResponse: 200
-  - testPath: /questions/converse
-    operationId: 580c0128e4b0036abc91a0ed
+  - testPath: /api/getforecastdata
+    operationId: apiendpoint_170f3bcc-966f-494d-8534-55d6902259c8
     method: get
     testParameters:
     - name: X-RapidAPI-Host
@@ -56,9 +54,9 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - webknox-question-answering.p.rapidapi.com
+          - weather-forecast-14-days.p.rapidapi.com
           objectValues: null
-    - name: text
+    - name: KEY
       in: query
       weight: null
       generator:
@@ -68,7 +66,7 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: contextId
+    - name: LANG
       in: query
       weight: 0.5
       generator:
@@ -79,8 +77,8 @@ testConfiguration:
           - 1
           objectValues: null
     expectedResponse: 200
-  - testPath: /questions/converse/suggest
-    operationId: 5814fdb7e4b0c6769899d4b0
+  - testPath: /api/getlocation
+    operationId: apiendpoint_3d8b0e4f-798c-4fbc-a0c4-35eb6d3303e4
     method: get
     testParameters:
     - name: X-RapidAPI-Host
@@ -91,11 +89,11 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - webknox-question-answering.p.rapidapi.com
+          - weather-forecast-14-days.p.rapidapi.com
           objectValues: null
-    - name: query
+    - name: LANG
       in: query
-      weight: null
+      weight: 0.5
       generator:
         type: RandomEnglishWord
         genParameters:
@@ -103,42 +101,19 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: number
+    - name: ZIPCODE
       in: query
       weight: 0.5
       generator:
-        type: RandomNumber
+        type: SemanticParameter
         genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
+        - name: maxWords
           values:
           - 1
           objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    expectedResponse: 200
-  - testPath: /questions/quickAnswers
-    operationId: 53aa3483e4b051a76d23f56f
-    method: get
-    testParameters:
-    - name: X-RapidAPI-Host
-      in: header
-      weight: null
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - webknox-question-answering.p.rapidapi.com
-          objectValues: null
-    - name: question
+    - name: city
       in: query
-      weight: null
+      weight: 0.5
       generator:
         type: SemanticParameter
         genParameters:

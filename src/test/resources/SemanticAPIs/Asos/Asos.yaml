@@ -1,0 +1,512 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Asos API helps to query for all information about categories, products,
+    etc... as on official websites
+  title: api_7256fb69-e0dc-45cf-9f55-dc5343d92be6
+  version: apiversion_3f6c2b1d-7efc-4ad8-aa3a-456887cfea43
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /categories/list:
+    get:
+      description: List categories from Asos
+      operationId: apiendpoint_af6aca7a-5916-4a83-9df4-ab17ba799021
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The two letters country code
+        in: query
+        name: country
+        required: false
+        type: string
+      - description: The language code
+        in: query
+        name: lang
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /countries/list:
+    get:
+      description: List countries that Asos supports selling products
+      operationId: apiendpoint_674e1be9-ec80-41c8-ad88-6827b32b0cbc
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The language code
+        in: query
+        name: lang
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /products/detail:
+    get:
+      description: Get detail information of product by id
+      operationId: apiendpoint_4a07e891-2784-471d-b311-88999dc28e63
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Get suitable value from countries/list API
+        in: query
+        name: sizeSchema
+        required: false
+        type: string
+      - description: Get suitable "store" value from countries/list API, this param
+          is not sideId as in products/list API
+        in: query
+        name: store
+        required: false
+        type: string
+      - description: Get suitable value from countries/list API
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: Get id value from products/list API
+        in: query
+        name: id
+        required: true
+        type: number
+      - description: Get suitable value from countries/list API
+        in: query
+        name: currency
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /products/list:
+    get:
+      description: List products, search products with options and filters
+      operationId: apiendpoint_c4ef4a7f-279c-496a-8b6f-71d6c3878855
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Filter option by Range, look for "id" of "facetValues" in the
+          response of this API. You can pass this params multiple times, such as :
+          ...&attribute_10155= 8391&attribute_10155=8392'
+        in: query
+        name: attribute_10155
+        required: false
+        type: string
+      - description: Get value from siteId field from countries/list API
+        in: query
+        name: store
+        required: true
+        type: number
+      - description: Get value from categories/list API
+        in: query
+        name: categoryId
+        required: true
+        type: string
+      - description: 'Filter option by Style, you can pass this params multiple times,
+          such as : ...&attribute_1046= 8391&attribute_1046=8392'
+        in: query
+        name: attribute_1046
+        required: false
+        type: number
+      - description: The number of items per page
+        in: query
+        name: limit
+        required: true
+        type: string
+      - description: 'Filter option by Product Type, you can pass this params multiple
+          times, such as : ...&attribute_1047= 8391&attribute_1047=8392'
+        in: query
+        name: attribute_1047
+        required: false
+        type: string
+      - description: Filter option by Max Price ( integer value )
+        in: query
+        name: max
+        required: false
+        type: number
+      - description: Get suitable value from countries/list API
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: Get suitable value from countries/list API
+        in: query
+        name: sizeSchema
+        required: false
+        type: string
+      - description: Filter option by Min Price ( integer value )
+        in: query
+        name: min
+        required: false
+        type: number
+      - description: One of the following pricedesc|priceasc|freshness (Newest)
+        in: query
+        name: sort
+        required: false
+        type: string
+      - description: The language code
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: 'Filter option by Color, look for "id" of "facetValues" in the
+          response of this API. You can pass this params multiple times, such as :
+          ...&base_colour= 8391&base_colour=8392'
+        in: query
+        name: base_colour
+        required: false
+        type: number
+      - description: The country code
+        in: query
+        name: country
+        required: false
+        type: string
+      - description: 'Filter option by Brand, look for "id" of "facetValues" in the
+          response of this API. You can pass this params multiple times, such as :
+          ...&brand= 8391&brand=8392'
+        in: query
+        name: brand
+        required: false
+        type: string
+      - description: The offset to skip already viewed products
+        in: query
+        name: offset
+        required: true
+        type: string
+      - description: 'Filter option by Size, look for "id" of "facetValues" in the
+          response of this API. You can pass this params multiple times, such as :
+          ...&size= 8391&size=8392'
+        in: query
+        name: size
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /products/v2/list:
+    get:
+      description: List products, search products with options and filters version
+        2
+      operationId: apiendpoint_e192acbc-fd6b-4116-9b51-f5a86bc41179
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The offset to skip already viewed products
+        in: query
+        name: offset
+        required: true
+        type: number
+      - description: The value of categoryId field from categories/list API
+        in: query
+        name: categoryId
+        required: true
+        type: number
+      - description: 'Filter option by Brand, look for "id" of "facetValues" in the
+          response of this API (separated by comma for multiple values), such as :
+          ...&brand=8391,8392'
+        in: query
+        name: brand
+        required: false
+        type: string
+      - description: 'Filter option by Sale/New Season (separated by comma for multiple
+          values), such as : ...&range=new_season'
+        in: query
+        name: range
+        required: false
+        type: string
+      - description: The number of items per page
+        in: query
+        name: limit
+        required: true
+        type: number
+      - description: The country code
+        in: query
+        name: country
+        required: false
+        type: string
+      - description: 'Filter option by Product Type (separated by comma for multiple
+          values), such as : ...&attribute_1047=8391,8392'
+        in: query
+        name: attribute_1047
+        required: false
+        type: string
+      - description: 'Filter option by Style (separated by comma for multiple values),
+          such as : ...&attribute_1046=8391,8392'
+        in: query
+        name: attribute_1046
+        required: false
+        type: string
+      - description: Get value from store field from countries/list API
+        in: query
+        name: store
+        required: true
+        type: string
+      - description: Filter option by Min Price ( integer value )
+        in: query
+        name: priceMin
+        required: false
+        type: number
+      - description: Get suitable value from countries/list API
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: 'Filter option by Range (separated by comma for multiple values),
+          such as : ...&attribute_10155=8391,8392'
+        in: query
+        name: attribute_10155
+        required: false
+        type: string
+      - description: 'Filter option by Leather / Non Leather (separated by comma for
+          multiple values), such as : ...&attribute_10147=8391,8392'
+        in: query
+        name: attribute_10147
+        required: false
+        type: string
+      - description: Filter option by Max Price ( integer value )
+        in: query
+        name: priceMax
+        required: false
+        type: number
+      - description: 'Filter option by Size, look for "id" of "facetValues" in the
+          response of this API (separated by comma for multiple values), such as :
+          ...&size=8391,8392'
+        in: query
+        name: size
+        required: false
+        type: string
+      - description: One of the following pricedesc|priceasc|freshness (Newest)
+        in: query
+        name: sort
+        required: false
+        type: string
+      - description: The language code
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: Search for products by name (do not use this parameter with categoryId)
+        in: query
+        name: q
+        required: false
+        type: string
+      - description: 'Filter option by Color, look for "id" of "facetValues" in the
+          response of this API (separated by comma for multiple values), such as :
+          ...&base_colour=8391,8392'
+        in: query
+        name: base_colour
+        required: false
+        type: string
+      - description: Get suitable value from countries/list API
+        in: query
+        name: sizeSchema
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /products/v2/list-similarities:
+    get:
+      description: List similar products by product id
+      operationId: apiendpoint_df68ed4e-2edf-4611-acc1-51be3ea96b0b
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The value of id field that returned in .../products/v2/list
+        in: query
+        name: id
+        required: true
+        type: number
+      - description: The store code gotten from .../countries/list
+        in: query
+        name: store
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /products/v3/detail:
+    get:
+      description: Get detail information of product by id
+      operationId: apiendpoint_9b326d70-567d-47a9-b5cc-f1b58990e004
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Get suitable "store" value from countries/list API, this param
+          is not sideId as in products/list API
+        in: query
+        name: store
+        required: false
+        type: string
+      - description: Get suitable value from countries/list API
+        in: query
+        name: sizeSchema
+        required: false
+        type: string
+      - description: Get id value from products/list API
+        in: query
+        name: id
+        required: true
+        type: number
+      - description: Get suitable value from countries/list API
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: Get suitable value from countries/list API
+        in: query
+        name: currency
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /products/v3/list-similarities:
+    get:
+      description: List similar products by product id
+      operationId: apiendpoint_64c830ef-8e57-4a9a-be30-b29c81290b08
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The language code
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: Get suitable value from .../countries/list endpoint
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: The value of id field that returned in .../products/v2/list
+        in: query
+        name: id
+        required: true
+        type: number
+      - description: The store code gotten from .../countries/list
+        in: query
+        name: store
+        required: false
+        type: string
+      - description: Get suitable value from .../countries/list endpoint
+        in: query
+        name: sizeSchema
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /v2/auto-complete:
+    get:
+      description: Get auto complete suggestion by product name
+      operationId: apiendpoint_3aea55d6-65c3-4169-a7c7-f4a3ce810163
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - asos2.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The country code gotten from .../countries/list API
+        in: query
+        name: country
+        required: false
+        type: string
+      - description: The currency code gotten from .../countries/list API
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: The sizeSchema code gotten from .../countries/list API
+        in: query
+        name: sizeSchema
+        required: false
+        type: string
+      - description: The store code gotten from .../countries/list API
+        in: query
+        name: store
+        required: false
+        type: string
+      - description: The language code gotten from .../countries/list API
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: Name of products
+        in: query
+        name: q
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''

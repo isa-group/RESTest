@@ -25,10 +25,10 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_7ab34636-d556-42b4-ad3a-6c8b325e7673/apiendpoint_76fe646d-db22-4c75-b960-ec7a09adb6b1_zip.csv
           objectValues: null
     expectedResponse: 200

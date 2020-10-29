@@ -31,11 +31,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/53aa3482e4b051a76d23f569/53aa3483e4b008bb2ef851a7_question.csv
           objectValues: null
     - name: answerSearch
       in: query
@@ -140,10 +140,10 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/53aa3482e4b051a76d23f569/53aa3483e4b051a76d23f56f_question.csv
           objectValues: null
     expectedResponse: 200

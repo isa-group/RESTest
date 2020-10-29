@@ -7,11 +7,31 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-  - testPath: /
-    operationId: search
+  - testPath: /Geocode
+    operationId: apiendpoint_530cb41f-763e-411b-bc52-eb71137b6430
     method: get
     testParameters:
-    - name: t
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - trueway-geocoding.p.rapidapi.com
+          objectValues: null
+    - name: address
+      in: query
+      weight: null
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: language
       in: query
       weight: 0.5
       generator:
@@ -21,7 +41,17 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: i
+    - name: bounds
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: country
       in: query
       weight: 0.5
       generator:
@@ -31,81 +61,34 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: s
+    expectedResponse: 200
+  - testPath: /ReverseGeocode
+    operationId: apiendpoint_d2bc70db-66bc-4b9f-895b-518a1e4d91c4
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - trueway-geocoding.p.rapidapi.com
+          objectValues: null
+    - name: language
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-    - name: page
+    - name: location
       in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    - name: "y"
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-    - name: type
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - movie
-          - series
-          - episode
-          objectValues: null
-    - name: plot
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - short
-          - full
-          objectValues: null
-    - name: r
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - json
-          - xml
-          objectValues: null
-    - name: callback
-      in: query
-      weight: 0.5
+      weight: null
       generator:
         type: RandomEnglishWord
         genParameters:

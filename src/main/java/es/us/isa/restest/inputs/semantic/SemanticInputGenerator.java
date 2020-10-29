@@ -37,7 +37,7 @@ public class SemanticInputGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/flightData.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/greatCircleMapper.properties");
 
         System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);

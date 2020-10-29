@@ -7,8 +7,8 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-  - testPath: /questions/answers
-    operationId: 53aa3483e4b008bb2ef851a7
+  - testPath: "/aircraft/read/{icao_iata}"
+    operationId: 53aa36c7e4b0f2c97546f2d5
     method: get
     testParameters:
     - name: X-RapidAPI-Host
@@ -19,15 +19,9 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - webknox-question-answering.p.rapidapi.com
+          - greatcirclemapper.p.rapidapi.com
           objectValues: null
-    - name: answerLookup
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomBoolean
-        genParameters: []
-    - name: question
+    - name: icao_iata
       in: query
       weight: null
       generator:
@@ -37,15 +31,9 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: answerSearch
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomBoolean
-        genParameters: []
     expectedResponse: 200
-  - testPath: /questions/converse
-    operationId: 580c0128e4b0036abc91a0ed
+  - testPath: "/airports/read/{icao_iata}"
+    operationId: 53aa36c7e4b0f2c97546f2d6
     method: get
     testParameters:
     - name: X-RapidAPI-Host
@@ -56,31 +44,21 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - webknox-question-answering.p.rapidapi.com
+          - greatcirclemapper.p.rapidapi.com
           objectValues: null
-    - name: text
+    - name: icao_iata
       in: query
       weight: null
       generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: contextId
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
     expectedResponse: 200
-  - testPath: /questions/converse/suggest
-    operationId: 5814fdb7e4b0c6769899d4b0
+  - testPath: "/airports/route/{route}/{speed}"
+    operationId: 53aa36c7e4b008bb2ef85605
     method: get
     testParameters:
     - name: X-RapidAPI-Host
@@ -91,52 +69,64 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - webknox-question-answering.p.rapidapi.com
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+    - name: content-type
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: vary
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: speed
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: route
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/airports/search/{query}"
+    operationId: 53aa36c8e4b051a76d23f9a8
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
           objectValues: null
     - name: query
-      in: query
-      weight: null
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: number
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    expectedResponse: 200
-  - testPath: /questions/quickAnswers
-    operationId: 53aa3483e4b051a76d23f56f
-    method: get
-    testParameters:
-    - name: X-RapidAPI-Host
-      in: header
-      weight: null
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - webknox-question-answering.p.rapidapi.com
-          objectValues: null
-    - name: question
       in: query
       weight: null
       generator:

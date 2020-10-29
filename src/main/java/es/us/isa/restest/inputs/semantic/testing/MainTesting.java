@@ -22,16 +22,16 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTesting {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/flightData.properties";
-    private static String operationPath = "/v2/prices/week-matrix";
-    private static String semanticParameterName = "currency";
-    private static Integer limit = Integer.MAX_VALUE;
+    private static String propertiesPath = "/semantic/greatCircleMapper.properties";
+    private static String operationPath = "/airports/read/{icao_iata}";
+    private static String semanticParameterName = "icao_iata";
+    private static String baseUrl = "https://greatcirclemapper.p.rapidapi.com";     //"https://climacell-microweather-v1.p.rapidapi.com"; // "https://rapidapi.p.rapidapi.com";
+    private static Integer limit = 10;
 
     // Parámetros derivados
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
-    private static String baseUrl = "https://rapidapi.p.rapidapi.com";     //"https://climacell-microweather-v1.p.rapidapi.com"; // "https://rapidapi.p.rapidapi.com";
     private static Operation operation;
     private static String host;
     private static TestConfigurationObject conf;
@@ -41,6 +41,8 @@ public class MainTesting {
 
         String csvPath = getCsvPath();
         List<String> semanticInputs = readCsv(csvPath);
+
+        System.out.println("Number of inputs " + semanticInputs.size());
 
         Integer maxCut = (limit < 20) ? limit : 20;
 
@@ -55,28 +57,28 @@ public class MainTesting {
             try {
 
                 System.out.println(semanticInput);
-                String query = "?destination=MOW&origin=LED&currency=" + semanticInput;
-//                String query = "?calendar_type=departure_date&destination=BCN&origin=MOW&currency=" + semanticInput + "&length=None";            // TODO: Modify
-                String url = baseUrl + operationPath + query;
-//                String url = baseUrl + "/2019/" + semanticInput;
+
+
+                // ?country=US&currency=USD&sizeSchema=US&store=US&lang=en-US&q=bikini%20top
+                String query = "/airports/read/" + semanticInput;         // TODO: Modify
+                String url = baseUrl + query;
                 OkHttpClient client = new OkHttpClient();
 
                 Request request = new Request.Builder()
                         .url(url)
                         .get()
-                        .addHeader("x-access-token", "xxxxx")
                         .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-key", "xxxx")  // TODO: Modify
+                        .addHeader("x-rapidapi-key", "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69")  // TODO: Modify
                         .build();
 
                 Response response = client.newCall(request).execute();
 
                 System.out.println("Iteración número " + i + "/" + maxCut);
-//                if(response.code() != 404){
+
                 System.out.println("RESPONSE CODE: " + response.code());
                 System.out.println(response.body().string());
                 System.out.println("--------------------------------------------------------------------------------------");
-//                }
+
 
                 i++;
             }catch (Exception e){
