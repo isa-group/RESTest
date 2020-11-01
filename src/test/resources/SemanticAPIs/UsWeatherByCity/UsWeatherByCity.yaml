@@ -1,0 +1,38 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Provides current weather information for US cities by city and state
+  title: api_9845c6b1-0eb2-403d-b62a-d53bbe49e1c7
+  version: apiversion_666edcad-cb75-4bc5-b0e6-a1f0ded25c96
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /getweather:
+    get:
+      description: Retrieves current US weather information
+      operationId: apiendpoint_661351f2-afff-44dd-abcb-9da4e10c4049
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - us-weather-by-city.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: City
+        in: query
+        name: city
+        required: true
+        type: string
+      - description: State
+        in: query
+        name: state
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''

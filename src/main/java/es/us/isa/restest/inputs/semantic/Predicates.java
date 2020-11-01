@@ -39,7 +39,12 @@ public class Predicates {
             if(parameterName.length() == 1){
                 PathItem pathItem = spec.getSpecification().getPaths().get(semanticOperation.getOperationPath());
                 String description = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
-                parameterName =  posTagging(description, p.getName()).get(0);
+
+                List<String> possibleNames = posTagging(description, p.getName());
+                if(possibleNames.size()>0){
+                    parameterName = possibleNames.get(0);
+                }
+
             }
 
             List<String> predicates = getPredicatesOfSingleParameter(parameterName);

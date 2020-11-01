@@ -1,0 +1,60 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Access movie and TV information similar to that of IMDB. Get Title,
+    Year, Metascore Rating, IMDB rating, Release date, Runtime, Genre, Directors,
+    Writers, Actors, Plot, Awards, Posters & tons of other data for each title.
+  title: api_fab85a39-b3fa-4fe7-9929-5f1964110c32
+  version: apiversion_7ec20910-0464-4483-86f1-a8e7080749db
+schemes:
+  - https
+swagger: '2.0'
+paths:
+  /:
+    get:
+      description: Search for Movies by ID or Title
+      operationId: apiendpoint_843d3708-42a9-4240-8a68-2ced0372c20f
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - movie-database-imdb-alternative.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: JSONP callback name
+          in: query
+          name: callback
+          required: false
+          type: string
+        - description: A valid IMDb ID (e.g. tt4154796)
+          in: query
+          name: i
+          required: false
+          type: string
+        - description: 'Type of result to return: (movie, series, episode)'
+          in: query
+          name: type
+          required: false
+          type: string
+        - description: 'The data type to return: (json, xml)'
+          in: query
+          name: r
+          required: false
+          type: string
+        - description: 'Return short or full plot: (short, full)'
+          in: query
+          name: plot
+          required: false
+          type: string
+        - description: Year of release (e.g. 2019)
+          in: query
+          name: y
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''

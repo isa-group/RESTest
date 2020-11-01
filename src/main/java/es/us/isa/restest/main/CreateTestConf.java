@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class CreateTestConf {
 
     private static final Logger log = LogManager.getLogger(CreateTestConf.class);
-    private static String openApiSpecPath = "src/test/resources/SemanticAPIs/GreatCircleMapper/GreatCircleMapper.yaml";			    // OAS file path
+    private static String openApiSpecPath = "src/test/resources/SemanticAPIs/Api-football/Api-football.yaml";			    // OAS file path
     private static String confPath;																// Test configuration path
 
     

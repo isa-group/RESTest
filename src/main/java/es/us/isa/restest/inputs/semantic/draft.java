@@ -14,17 +14,17 @@ public class draft {
         OkHttpClient client = new OkHttpClient();
 
         Request request = new Request.Builder()
-                .url("https://rapidapi.p.rapidapi.com/v2/prices/nearest-places-matrix?destination=MOW&origin=LED&currency=RUB")
+                .url("https://us-weather-by-city.p.rapidapi.com/getweather?city=San%20Francisco&state=CA")
                 .get()
-                .addHeader("x-access-token", "5b3ef0bdeca04643188c6610c30056f5")
-                .addHeader("x-rapidapi-key", "69c700dd67msh57b046423099254p1d4b4cjsn1908598eb392")
-                .addHeader("x-rapidapi-host", "travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com")
+                .addHeader("x-rapidapi-host", "us-weather-by-city.p.rapidapi.com")
+                .addHeader("x-rapidapi-key", "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69")
                 .build();
 
         Response response = client.newCall(request).execute();
 
         System.out.println("RESPONSE CODE: " + response.code());
         System.out.println(response.body().string());
+        System.out.println("--------------------------------------------------------------------------------------");
 
     }
 }

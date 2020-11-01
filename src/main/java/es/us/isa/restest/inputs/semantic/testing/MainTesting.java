@@ -22,11 +22,11 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTesting {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/greatCircleMapper.properties";
-    private static String operationPath = "/airports/read/{icao_iata}";
-    private static String semanticParameterName = "icao_iata";
-    private static String baseUrl = "https://greatcirclemapper.p.rapidapi.com";     //"https://climacell-microweather-v1.p.rapidapi.com"; // "https://rapidapi.p.rapidapi.com";
-    private static Integer limit = 10;
+    private static String propertiesPath = "/semantic/apiBasketball.properties";
+    private static String operationPath = "/standings";
+    private static String semanticParameterName = "group";
+    private static String baseUrl = "https://api-basketball.p.rapidapi.com";     //"https://climacell-microweather-v1.p.rapidapi.com"; // "https://rapidapi.p.rapidapi.com";
+    private static Integer limit = Integer.MAX_VALUE;
 
     // Parámetros derivados
     private static OpenAPISpecification spec;
@@ -58,10 +58,9 @@ public class MainTesting {
 
                 System.out.println(semanticInput);
 
+                String query = "?season=2019-2020&league=12&group=" + semanticInput;         // TODO: Modify
+                String url = baseUrl + operationPath + query;
 
-                // ?country=US&currency=USD&sizeSchema=US&store=US&lang=en-US&q=bikini%20top
-                String query = "/airports/read/" + semanticInput;         // TODO: Modify
-                String url = baseUrl + query;
                 OkHttpClient client = new OkHttpClient();
 
                 Request request = new Request.Builder()
@@ -85,7 +84,7 @@ public class MainTesting {
                 System.out.println(e);
             }
 
-            TimeUnit.SECONDS.sleep(1);
+            TimeUnit.SECONDS.sleep(5);
 
         }
 
