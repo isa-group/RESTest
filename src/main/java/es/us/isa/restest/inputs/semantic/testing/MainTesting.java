@@ -22,10 +22,10 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTesting {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/apiBasketball.properties";
-    private static String operationPath = "/standings";
-    private static String semanticParameterName = "group";
-    private static String baseUrl = "https://api-basketball.p.rapidapi.com";     //"https://climacell-microweather-v1.p.rapidapi.com"; // "https://rapidapi.p.rapidapi.com";
+    private static String propertiesPath = "/semantic/apiFootball.properties";
+    private static String operationPath = "/v2/players/search/{name}";
+    private static String semanticParameterName = "name";
+    private static String baseUrl = "https://api-football-v1.p.rapidapi.com";
     private static Integer limit = Integer.MAX_VALUE;
 
     // Parámetros derivados
@@ -58,8 +58,11 @@ public class MainTesting {
 
                 System.out.println(semanticInput);
 
-                String query = "?season=2019-2020&league=12&group=" + semanticInput;         // TODO: Modify
-                String url = baseUrl + operationPath + query;
+//                String query = "?season=2019-2020&league=12&group=" + semanticInput;         // TODO: Modify
+//                String url = baseUrl + operationPath + query;
+//                /v2/leagues/type/league/{country}
+//                /v2/leagues/type/league/england/2019  EJEMPLO
+                String url = baseUrl + "/v2/players/search/" + semanticInput;
 
                 OkHttpClient client = new OkHttpClient();
 

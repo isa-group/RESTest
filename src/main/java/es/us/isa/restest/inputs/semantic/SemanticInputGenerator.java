@@ -33,11 +33,11 @@ public class SemanticInputGenerator {
     private static String confPath;
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";
-    public static final Integer THRESHOLD = 200;
+    public static final Integer THRESHOLD = 100;
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/apiBasketball.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/apiFootball.properties");
 
         System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
