@@ -12727,7 +12727,7 @@ paths:
               - owner
               - collaborator
               - organization_member
-          default: owner,collaborator,organization_member
+#          default: owner,collaborator,organization_member
         - name: sort
           in: query
           type: string
