@@ -291,7 +291,8 @@ public class RESTAssuredWriter implements IWriter {
 			
 //		if (logging)
 //			content +="\t\t\t\t.log().ifValidationFails()\n";
-		content +="\t\t\t\t.log().all()\n";
+		if (logging)
+			content +="\t\t\t\t.log().all()\n";
 
 		return content;
 	}
@@ -382,7 +383,10 @@ public class RESTAssuredWriter implements IWriter {
 //			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
 //			         + "\n\t\t\tresponse.then().log().ifError();\n";
 //		}
-		content += "\n\t\t\tresponse.then().log().all();\n";
+		content += "\n\t\t\tresponse.then()";
+		if (logging)
+			content += ".log().all()";
+		content += ";\n";
 		
 //		if (OAIValidation)
 //			content += "\t\t} catch (RuntimeException ex) {\n"
