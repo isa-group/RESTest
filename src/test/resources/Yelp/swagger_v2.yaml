@@ -1,0 +1,210 @@
+swagger: '2.0'
+info:
+  description: Yelp API
+  version: 1.0.0
+  title: Yelp API
+host: api.yelp.com
+basePath: /v3
+schemes:
+  - https
+paths:
+  /businesses/search:
+    get:
+      operationId: getBusinesses
+      summary: Get businesses
+      description: Get businesses
+      produces:
+        - application/json
+      parameters:
+        - name: term
+          in: query
+          type: string
+          required: false
+        - name: location
+          in: query
+          type: string
+          required: false
+        - name: latitude
+          in: query
+          type: string
+          required: false
+        - name: longitude
+          in: query
+          type: string
+          required: false
+        - name: radius
+          in: query
+          type: integer
+          required: false
+          maximum: 40000
+        - name: categories
+          in: query
+          type: array
+          required: false
+          items:
+            type: string
+        - name: locale
+          in: query
+          type: string
+          required: false
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          maximum: 50
+        - name: offset
+          in: query
+          type: integer
+          required: false
+        - name: sort_by
+          in: query
+          type: string
+          required: false
+          enum:
+            - best_match
+            - rating
+            - review_count
+            - distance
+        - name: price
+          in: query
+          type: array
+          required: false
+          items:
+            type: string
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+        - name: open_now
+          in: query
+          type: boolean
+          required: false
+        - name: open_at
+          in: query
+          type: integer
+          required: false
+          maximum: 2147483647
+        - name: attributes
+          in: query
+          type: array
+          required: false
+          items:
+            type: string
+            enum:
+              - hot_and_new
+              - request_a_quote
+              - reservation
+              - waitlist_reservation
+              - cashback
+              - deals
+              - gender_neutral_restrooms
+              - open_to_all
+              - wheelchair_accessible
+      x-dependencies:
+        - Or(location, latitude AND longitude);
+        - ZeroOrOne(open_now, open_at);
+        - IF offset AND limit THEN offset + limit <= 1000;
+        - IF offset AND NOT limit THEN offset <= 980;
+      responses:
+        200:
+          description: Returns all businesses
+          schema:
+            $ref: '#/definitions/BusinessesResult'
+        400:
+          description: bad request
+definitions:
+  BusinessesResult:
+    type: object
+    properties:
+      total:
+        type: integer
+      region:
+        type: object
+        properties:
+          center:
+            type: object
+            properties:
+              latitude:
+                type: number
+              longitude:
+                type: number
+      businesses:
+        type: array
+        items:
+          type: object
+          properties:
+            categories:
+              type: array
+              items:
+                type: object
+                properties:
+                  alias:
+                    type: string
+                  title:
+                    type: string
+            coordinates:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+            display_phone:
+              type: string
+            distance:
+              type: number
+            id:
+              type: string
+            alias:
+              type: string
+            is_closed:
+              type: boolean
+            name:
+              type: string
+            phone:
+              type: string
+            price:
+              type: string
+              enum:
+                - $
+                - $$
+                - $$$
+                - $$$$
+            rating:
+              type: number
+              minimum: 1
+              maximum: 5
+            review_count:
+              type: integer
+            url:
+              type: string
+            transactions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - pickup
+                  - delivery
+                  - restaurant_reservation
+            location:
+              type: object
+              properties:
+                address1:
+                  type: string
+                address2:
+                  type: string
+                address3:
+                  type: string
+                city:
+                  type: string
+                country:
+                  type: string
+                display_address:
+                  type: array
+                  items:
+                    type: string
+                state:
+                  type: string
+                zip_code:
+                  type: string
