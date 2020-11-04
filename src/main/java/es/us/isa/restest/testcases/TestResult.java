@@ -17,11 +17,13 @@ public class TestResult {
     private String responseBody;    // Body (if any) returned in the response
     private String outputFormat;    // Format of the response (JSON, XML, etc.)
     private Boolean passed;         // null = test was not checked (oracles disabled)
+    private String failReason;      // null = test was not checked (oracles disabled)
 //    private TestCase testCase;      // Test case that corresponds to this test result
 
-    public TestResult(String id, String statusCode, String responseBody, String outputFormat, Boolean passed) {
+    public TestResult(String id, String statusCode, String responseBody, String outputFormat, Boolean passed, String failReason) {
         this(id, statusCode, responseBody, outputFormat);
         this.passed = passed;
+        this.failReason = failReason;
     }
 
     public TestResult(String id, String statusCode, String responseBody, String outputFormat) {
@@ -30,6 +32,7 @@ public class TestResult {
         this.responseBody = responseBody;
         this.outputFormat = outputFormat;
         this.passed = null;
+        this.failReason = null;
 //        this.testCase = testCase;
     }
     
@@ -39,6 +42,7 @@ public class TestResult {
         this.responseBody = testResult.responseBody;
         this.outputFormat = testResult.outputFormat;
         this.passed = testResult.passed;
+        this.failReason = testResult.failReason;
     }
 
     public String getId() {
@@ -81,13 +85,27 @@ public class TestResult {
         this.passed = passed;
     }
 
+    public String getFailReason() {
+        return failReason;
+    }
+
+    public void setFailReason(String failReason) {
+        this.failReason = failReason;
+    }
+
+    public String getFlatRepresentation() {
+        return this.getStatusCode() +    // Status code
+                this.getOutputFormat() + // Content type
+                this.getResponseBody();  // Body
+    }
+
     public void exportToCSV(String filePath) {
         if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-            createCSVwithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType");
+            createCSVwithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType,passed,failReason");
 
         // Generate row
         String csvResponseBody = "\"" + responseBody.replaceAll("\n", "\\\n").replaceAll("\"", "\"\"") + "\"";
-        String row = id + "," + statusCode + "," + csvResponseBody + "," + outputFormat;
+        String row = id + "," + statusCode + "," + csvResponseBody + "," + outputFormat + "," + passed + "," + failReason;
         writeCSVRow(filePath, row);
     }
 }

@@ -18,10 +18,14 @@ import io.restassured.specification.FilterableResponseSpecification;
  *     mutates a valid input request body into an invalid one.</li>
  * </ol>
  */
-public class NominalOrFaultyTestCaseFilter implements OrderedFilter {
+public class NominalOrFaultyTestCaseFilter extends OracleFilter implements OrderedFilter {
     private Boolean testCaseIsFaulty; // Whether this test case is faulty or not
     private Boolean dependenciesFulfilled; // Whether this test case fulfills all inter-parameter dependencies or not
     private String faultyReason; // Why the test case is faulty
+
+    public NominalOrFaultyTestCaseFilter() {
+        super();
+    }
 
     public NominalOrFaultyTestCaseFilter(Boolean testCaseIsFaulty, Boolean dependenciesFulfilled, String faultyReason) {
         this.testCaseIsFaulty = testCaseIsFaulty;
@@ -41,12 +45,17 @@ public class NominalOrFaultyTestCaseFilter implements OrderedFilter {
     // If nominal/faulty validation error is found, throw exception
     public void filterValidation(Response response) {
         // If test case [is faulty] AND [returned status code below 400 (5XX is handled by a previous filter)]
-        if (testCaseIsFaulty && response.getStatusCode() < 400) {
-            throw new RuntimeException("This faulty test case was expecting a 4XX status code(" + faultyReason + "), but received other. Conformance error found.");
+        if (testCaseIsFaulty && response.getStatusCode() < 400)
+            saveTestResultAndThrowException(response, "This faulty test case was expecting a 4XX status code(" + faultyReason + "), but received other. Conformance error found.");
         // If test case [is valid] AND [returned status code 400]
-        } else if (!testCaseIsFaulty && dependenciesFulfilled && response.getStatusCode() == 400) {
-            throw new RuntimeException("This test case's input was correct, but received a 400 (Bad Request) status code. Conformance error found.");
-        }
+        else if (!testCaseIsFaulty && dependenciesFulfilled && response.getStatusCode() == 400)
+            saveTestResultAndThrowException(response, "This test case's input was correct, but received a 400 (Bad Request) status code. Conformance error found.");
+    }
+
+    public void updateFaultyData(Boolean testCaseIsFaulty, Boolean dependenciesFulfilled, String faultyReason) {
+        this.testCaseIsFaulty = testCaseIsFaulty;
+        this.dependenciesFulfilled = dependenciesFulfilled;
+        this.faultyReason = faultyReason;
     }
 
     @Override

@@ -132,14 +132,17 @@ public class RESTAssuredWriter implements IWriter {
 		
 //		if (OAIValidation)
 		content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
-				+  "\tprivate final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n"
-				+  "\tprivate StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n";
+				+  "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
+				+  "\tprivate static final NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter();\n"
+				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
 
 		if (allureReport)
-			content += "\tprivate AllureRestAssured allureFilter = new AllureRestAssured();\n";
+			content += "\tprivate static final AllureRestAssured allureFilter = new AllureRestAssured();\n";
 
-		if (enableStats || enableOutputCoverage) // This is only needed to export output data to the proper folder
-			content += "\tprivate final String APIName = \"" + APIName + "\";\n";
+		if (enableStats || enableOutputCoverage) { // This is only needed to export output data to the proper folder
+			content += "\tprivate static final String APIName = \"" + APIName + "\";\n"
+					+  "\tprivate static final CSVFilter csvFilter = new CSVFilter(APIName);\n";
+		}
 
 		content += "\n";
 		
@@ -147,10 +150,21 @@ public class RESTAssuredWriter implements IWriter {
 	}
 	
 	private String generateSetUp(String baseURI) {
-		return 	"\t@BeforeClass\n "
-			  + "\tpublic static void setUp() {\n"
-			  + "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n"
-			  +	"\t}\n\n";
+		String content = "";
+
+		content += "\t@BeforeClass\n "
+				+  "\tpublic static void setUp() {\n"
+			  	+  "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n";
+
+		if (enableStats || enableOutputCoverage) {
+			content += "\t\tstatusCode5XXFilter.setAPIName(APIName);\n"
+					+  "\t\tnominalOrFaultyTestCaseFilter.setAPIName(APIName);\n"
+					+  "\t\tvalidationFilter.setAPIName(APIName);\n";
+		}
+
+		content += "\t}\n\n";
+
+		return content;
 	}
 
 	private String generateTest(TestCase t, int instance) {
@@ -228,8 +242,19 @@ public class RESTAssuredWriter implements IWriter {
 	}
 
 	private String generateFiltersInitialization(TestCase t) {
-		return "\t\tNominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = " +
-			   "new NominalOrFaultyTestCaseFilter(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n\n";
+		String content = "";
+
+		content += "\t\tnominalOrFaultyTestCaseFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n";
+
+		if (enableStats || enableOutputCoverage)
+			content += "\t\tcsvFilter.setTestResultId(testResultId);\n" +
+					"\t\tstatusCode5XXFilter.setTestResultId(testResultId);\n" +
+					"\t\tnominalOrFaultyTestCaseFilter.setTestResultId(testResultId);\n" +
+					"\t\tvalidationFilter.setTestResultId(testResultId);\n";
+
+		content += "\n";
+
+		return content;
 	}
 
 	private String generateTryBlockStart() {
@@ -266,7 +291,8 @@ public class RESTAssuredWriter implements IWriter {
 			
 //		if (logging)
 //			content +="\t\t\t\t.log().ifValidationFails()\n";
-		content +="\t\t\t\t.log().all()\n";
+		if (logging)
+			content +="\t\t\t\t.log().all()\n";
 
 		return content;
 	}
@@ -331,8 +357,6 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateFilters(TestCase t) {
 		String content = "";
 
-		if (enableStats || enableOutputCoverage) // CSV filter
-			content += "\t\t\t\t.filter(new CSVFilter(testResultId, APIName))\n";
 //		if (enableOutputCoverage) // Coverage filter
 //			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
 		if (allureReport) // Allure filter
@@ -343,7 +367,8 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\t\t\t\t.filter(nominalOrFaultyTestCaseFilter)\n";
 //		if (OAIValidation)
 		content += "\t\t\t\t.filter(validationFilter)\n";
-
+		if (enableStats || enableOutputCoverage) // CSV filter
+			content += "\t\t\t\t.filter(csvFilter)\n";
 
 		return content;
 	}
@@ -358,7 +383,10 @@ public class RESTAssuredWriter implements IWriter {
 //			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
 //			         + "\n\t\t\tresponse.then().log().ifError();\n";
 //		}
-		content += "\n\t\t\tresponse.then().log().all();\n";
+		content += "\n\t\t\tresponse.then()";
+		if (logging)
+			content += ".log().all()";
+		content += ";\n";
 		
 //		if (OAIValidation)
 //			content += "\t\t} catch (RuntimeException ex) {\n"
@@ -451,7 +479,7 @@ public class RESTAssuredWriter implements IWriter {
 		return "\t\t} catch (RuntimeException ex) {\n"
 				+  "\t\t\tSystem.err.println(ex.getMessage());\n"
 				+  "\t\t\tfail(ex.getMessage());\n"
-				+  "\t\t}";
+				+  "\t\t}\n";
 	}
 		
 	private void saveToFile(String path, String className, String contentFile) {

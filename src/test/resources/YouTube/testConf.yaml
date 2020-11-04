@@ -102,11 +102,7 @@ testConfiguration:
             objectValues: null
       - name: maxResults
         in: query
-<<<<<<< HEAD
-        weight: 0
-=======
         weight: 0.5
->>>>>>> 4f9c58ec7969093cea89e06f2cea9c5de62ef040
         generator:
           type: RandomNumber
           genParameters:
