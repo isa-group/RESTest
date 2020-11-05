@@ -22,9 +22,9 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTesting {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/apiFootball.properties";
-    private static String operationPath = "/v2/players/search/{name}";
-    private static String semanticParameterName = "name";
+    private static String propertiesPath = "/semantic/weatherForecast14Days.properties";
+    private static String operationPath = "/api/getlocation";
+    private static String semanticParameterName = "COUNTRY";
     private static String baseUrl = "https://api-football-v1.p.rapidapi.com";
     private static Integer limit = Integer.MAX_VALUE;
 
@@ -64,21 +64,21 @@ public class MainTesting {
 //                /v2/leagues/type/league/england/2019  EJEMPLO
                 String url = baseUrl + "/v2/players/search/" + semanticInput;
 
-                OkHttpClient client = new OkHttpClient();
-
-                Request request = new Request.Builder()
-                        .url(url)
-                        .get()
-                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-key", "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69")  // TODO: Modify
-                        .build();
-
-                Response response = client.newCall(request).execute();
+//                OkHttpClient client = new OkHttpClient();
+//
+//                Request request = new Request.Builder()
+//                        .url(url)
+//                        .get()
+//                        .addHeader("x-rapidapi-host", host)
+//                        .addHeader("x-rapidapi-key", "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69")  // TODO: Modify
+//                        .build();
+//
+//                Response response = client.newCall(request).execute();
 
                 System.out.println("Iteración número " + i + "/" + maxCut);
 
-                System.out.println("RESPONSE CODE: " + response.code());
-                System.out.println(response.body().string());
+//                System.out.println("RESPONSE CODE: " + response.code());
+//                System.out.println(response.body().string());
                 System.out.println("--------------------------------------------------------------------------------------");
 
 
@@ -87,7 +87,7 @@ public class MainTesting {
                 System.out.println(e);
             }
 
-            TimeUnit.SECONDS.sleep(5);
+//            TimeUnit.SECONDS.sleep(5);
 
         }
 
