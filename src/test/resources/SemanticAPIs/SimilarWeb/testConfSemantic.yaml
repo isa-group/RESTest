@@ -25,11 +25,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_f3967e19-1e7f-4658-86e7-905a18f731f1/apiendpoint_2ce91292-9e14-4896-a97b-83ac9f94b6f2_website.csv
           objectValues: null
     expectedResponse: 200
   - testPath: /trafficoverview
@@ -50,10 +50,10 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_f3967e19-1e7f-4658-86e7-905a18f731f1/apiendpoint_855fcf33-1b5a-4e58-aeb2-8c10b9537951_website.csv
           objectValues: null
     expectedResponse: 200

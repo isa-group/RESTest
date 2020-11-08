@@ -11,6 +11,8 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.PropertiesUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +22,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class NLPUtils {
+
+    private static final Logger log = LogManager.getLogger(NLPUtils.class);
 
     private static String stopwordsPath = "src/main/java/es/us/isa/restest/inputs/semantic/englishStopWords.txt";
     private static String rules = "src/main/java/es/us/isa/restest/inputs/semantic/rules.txt";
@@ -147,10 +151,15 @@ public class NLPUtils {
 
                 if(priority == 2.0){
                     String[] array = matched.getValue().get().toString().split(" ");
+
+                    log.info("Added {} and {} to candidates list", array[0], name+array[1]);
+
                     match.add(array[0]);
                     match.add(name + array[1]);
                 }else{
-                    match.add(matched.getValue().get().toString());
+                    String candidate = matched.getValue().get().toString();
+                    log.info("Added {} to candidates list",candidate );
+                    match.add(candidate);
                 }
 
                 if(res.keySet().contains(priority)){

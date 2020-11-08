@@ -39,7 +39,7 @@ public class SemanticInputGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/apiFootball.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/similarWeb.properties");
 
         System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);

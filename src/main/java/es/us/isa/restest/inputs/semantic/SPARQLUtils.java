@@ -1,12 +1,12 @@
 package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.TestParameter;
-import es.us.isa.restest.main.CreateTestConf;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 
 import java.net.URI;
 import java.util.*;
@@ -127,6 +127,7 @@ public class SPARQLUtils {
         ResultSet rs = qexec.execSelect();
 
         rs.getResultVars().stream().forEach(x->res.put(x, new HashSet<String>()));
+
         while (rs.hasNext()) {
             // Get Result
             QuerySolution qs = rs.next();
@@ -135,6 +136,7 @@ public class SPARQLUtils {
             Iterator<String> itVars = qs.varNames();
 
             while (itVars.hasNext()) {
+
                 String szVar = itVars.next();
 
                 // Gets an RDF node
@@ -142,8 +144,16 @@ public class SPARQLUtils {
                 String szValString = "";
 
                 if(szVal.isURIResource()){
-                    szValString = szVal.asResource().getLocalName().replace("_", " ").trim();
 
+
+                    szValString = szVal.asResource().toString();
+
+                    URI uri = new URI(szValString);
+                    String host = uri.getHost();
+
+                    if(host!=null && szEndpoint.contains(uri.getHost())){
+                        szValString = szVal.asResource().getLocalName().replace("_", " ").trim();
+                    }
                 }else{
                     szValString = szVal.asLiteral().getString();
                 }

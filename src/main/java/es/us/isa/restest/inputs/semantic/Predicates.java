@@ -8,7 +8,6 @@ import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.*;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,7 +41,7 @@ public class Predicates {
             String parameterDescription = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
 
             // If the paramater name is only a character, compare with description
-            if(parameterName.length() == 1){
+            if(parameterName.length() == 1 && parameterDescription!=null){
                 List<String> possibleNames = posTagging(parameterDescription, p.getName());
                 if(possibleNames.size()>0){
                     parameterName = possibleNames.get(0);
@@ -50,7 +49,14 @@ public class Predicates {
             }
 
             // DESCRIPTION
-            Map<Double, Set<String>> descriptionCandidates = extractPredicateCandidatesFromDescription(parameterName, parameterDescription);
+            Map<Double, Set<String>> descriptionCandidates = new HashMap<>();
+
+            if(parameterDescription != null){
+                // Extract candidates from description
+                descriptionCandidates = extractPredicateCandidatesFromDescription(parameterName, parameterDescription);
+            }
+
+            // Compute support ordered by priority, if one of the candidates surpasses the threshold, it is used as predicate
             String predicateDescription = getPredicatesFromDescription(descriptionCandidates, p);
 
             if(predicateDescription != null){
@@ -78,6 +84,7 @@ public class Predicates {
                 String predicate = executePredicateSPARQLQuery(queryString, testParameter);
 
                 if(predicate != null){
+                    log.info("Candidate {} selected with predicate: {}", match, predicate);
                     return  predicate;
                 }
             }
@@ -189,7 +196,7 @@ public class Predicates {
 
                 Integer support = computeSupportOfPredicate(szVal, testParameter);
 
-                if(support < minSupport){
+                if(support >= minSupport){
                     return szVal;
                 }
             }
