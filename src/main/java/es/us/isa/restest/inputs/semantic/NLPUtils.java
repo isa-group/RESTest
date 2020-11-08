@@ -1,22 +1,28 @@
 package es.us.isa.restest.inputs.semantic;
 
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.tokensregex.CoreMapExpressionExtractor;
+import edu.stanford.nlp.ling.tokensregex.Env;
+import edu.stanford.nlp.ling.tokensregex.MatchedExpression;
+import edu.stanford.nlp.ling.tokensregex.TokenSequencePattern;
+import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.CoreDocument;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.PropertiesUtils;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class NLPUtils {
 
     private static String stopwordsPath = "src/main/java/es/us/isa/restest/inputs/semantic/englishStopWords.txt";
+    private static String rules = "src/main/java/es/us/isa/restest/inputs/semantic/rules.txt";
 
     // With Comparator
     public static List<String> posTagging(String description, String name){
@@ -110,5 +116,54 @@ public class NLPUtils {
                 " "
         );
     }
+
+    public static Map<Double, Set<String>> extractPredicateCandidatesFromDescription(String name, String description){
+
+        Map<Double, Set<String>> res = new HashMap<>();
+
+        // Remove html tags
+        description = description.replaceAll("\\<.*?\\>", "");
+
+        Env env = TokenSequencePattern.getNewEnv();
+        env.bind("$NAME_RULE1", "/(?i)"+name+"/" );
+        env.bind("$NAME_RULE2", "/(?i)"+name+".*/" );
+        CoreMapExpressionExtractor<MatchedExpression> extractor = CoreMapExpressionExtractor
+                .createExtractorFromFiles(env, rules);
+
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(PropertiesUtils.asProperties("annotators", "tokenize,ssplit,pos,lemma"));
+
+        Annotation annotation = new Annotation(description);
+
+        pipeline.annotate(annotation);
+
+        List<CoreMap> sentences = annotation.get(CoreAnnotations.SentencesAnnotation.class);
+
+        for (CoreMap sentence : sentences) {
+            List<MatchedExpression> matchedExpressionsInSentence = extractor.extractExpressions(sentence);
+            for (MatchedExpression matched: matchedExpressionsInSentence){
+                Double priority = matched.getPriority();
+
+                Set<String> match = new HashSet<>();
+
+                if(priority == 2.0){
+                    String[] array = matched.getValue().get().toString().split(" ");
+                    match.add(array[0]);
+                    match.add(name + array[1]);
+                }else{
+                    match.add(matched.getValue().get().toString());
+                }
+
+                if(res.keySet().contains(priority)){
+                    res.get(priority).addAll(match);
+                }else{
+                    res.put(priority, match);
+                }
+            }
+
+        }
+        return res;
+    }
+
+
 
 }

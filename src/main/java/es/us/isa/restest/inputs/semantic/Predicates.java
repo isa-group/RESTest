@@ -1,6 +1,5 @@
 package es.us.isa.restest.inputs.semantic;
 
-import es.us.isa.restest.main.CreateTestConf;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -11,20 +10,23 @@ import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 
 
 import java.util.*;
+import java.util.stream.Collectors;
+
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static es.us.isa.restest.inputs.semantic.NLPUtils.extractPredicateCandidatesFromDescription;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
+import static es.us.isa.restest.inputs.semantic.SPARQLUtils.executeSPARQLQueryCount;
+import static es.us.isa.restest.inputs.semantic.SPARQLUtils.generateQuery;
+import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.szEndpoint;
 
 public class Predicates {
+
+    private static final Integer minSupport = 20;
     private static final Logger log = LogManager.getLogger(Predicates.class);
 
-    // TODO: Consider the possibility of adding owl predicates
-    // TODO: Add support/threshold
-    // TODO: Add by combination of length/support
-    // TODO: Add limit
-    // TODO: Wordnet/Description in case the function returns no results
     public static Map<TestParameter, List<String>> getPredicates(SemanticOperation semanticOperation, OpenAPISpecification spec){
         Set<TestParameter> parameters = semanticOperation.getSemanticParameters().keySet();
 
@@ -35,46 +37,87 @@ public class Predicates {
             String parameterName = p.getName();
             log.info("Obtaining predicates of parameter {}", parameterName);
 
+            // Get description
+            PathItem pathItem = spec.getSpecification().getPaths().get(semanticOperation.getOperationPath());
+            String parameterDescription = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
+
             // If the paramater name is only a character, compare with description
             if(parameterName.length() == 1){
-                PathItem pathItem = spec.getSpecification().getPaths().get(semanticOperation.getOperationPath());
-                String description = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
-
-                List<String> possibleNames = posTagging(description, p.getName());
+                List<String> possibleNames = posTagging(parameterDescription, p.getName());
                 if(possibleNames.size()>0){
                     parameterName = possibleNames.get(0);
                 }
-
             }
 
-            List<String> predicates = getPredicatesOfSingleParameter(parameterName);
-            res.put(p, predicates);
+            // DESCRIPTION
+            Map<Double, Set<String>> descriptionCandidates = extractPredicateCandidatesFromDescription(parameterName, parameterDescription);
+            String predicateDescription = getPredicatesFromDescription(descriptionCandidates, p);
+
+            if(predicateDescription != null){
+                res.put(p, Collections.singletonList(predicateDescription));
+            }else{
+                // PARAMETER NAME
+                List<String> predicates = getPredicatesOfSingleParameter(parameterName, p);
+                if(predicates.size()>0){
+                    res.put(p, predicates);
+                }
+            }
         }
+
         return res;
     }
 
+    public static String getPredicatesFromDescription(Map<Double, Set<String>> descriptionCandidates, TestParameter testParameter){
 
-    public static List<String> getPredicatesOfSingleParameter(String parameterName){
+        List<Double> orderedKeySet = descriptionCandidates.keySet().stream().sorted(Collections.reverseOrder()).collect(Collectors.toList());
 
+        for(Double key: orderedKeySet){
+            for(String match: descriptionCandidates.get(key)){
+
+                String queryString = generatePredicateQuery(match);
+                String predicate = executePredicateSPARQLQuery(queryString, testParameter);
+
+                if(predicate != null){
+                    return  predicate;
+                }
+            }
+        }
+
+        return null;
+    }
+
+
+    public static List<String> getPredicatesOfSingleParameter(String parameterName, TestParameter testParameter){
+
+        // PARAMETER NAME
         // Query creation
         String queryString = generatePredicateQuery(parameterName);
 
         // Query execution
-        List<String> res = executePredicateSPARQLQuery(queryString);
+        String predicate = executePredicateSPARQLQuery(queryString, testParameter);
 
-        if(res.size() < 5){
+        if(predicate == null){
             String[] words = parameterName.split("_");
             // If snake_case
             if(words.length > 1){
-                // Join words
+                // Join words (convert to camel case)
                 String newQuery = generatePredicateQuery(String.join("", words));
-                res.addAll(executePredicateSPARQLQuery(newQuery));
+                predicate = executePredicateSPARQLQuery(newQuery, testParameter);
 
-                if(res.size() <5) {
+                if(predicate == null) {
                     // Execute one query for each word in snake_case
+                    List<String> predicates = new ArrayList<>();
                     for(String word: words){
+
                         String query = generatePredicateQuery(word);
-                        res.addAll(executePredicateSPARQLQuery(query));
+                        String wordPredicate = executePredicateSPARQLQuery(query, testParameter);
+                        if(wordPredicate!=null){
+                            predicates.add(wordPredicate);
+                        }
+
+                    }
+                    if(predicates.size()>0){
+                        return predicates;
                     }
                 }
 
@@ -82,18 +125,28 @@ public class Predicates {
 
             // If camelCase
             String[] wordsCamel = parameterName.split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
-            if(res.size() < 5 && wordsCamel.length >1){
+            if(predicate==null && wordsCamel.length >1){
+                List<String> predicates = new ArrayList<>();
                 // Execute one query for each word in camelCase
                 for(String word: wordsCamel){
                     String query = generatePredicateQuery(word);
-                    res.addAll(executePredicateSPARQLQuery(query));
+                    String wordPredicate = executePredicateSPARQLQuery(query, testParameter);
+                    if(wordPredicate!=null){
+                        predicates.add(wordPredicate);
+                    }
+                }
+                if(predicates.size() > 0){
+                    return predicates;
                 }
 
             }
         }
 
-        System.out.println(res);
-        return res;
+        if(predicate != null){
+            return Collections.singletonList(predicate);
+        }else{
+            return new ArrayList<>();
+        }
     }
 
 
@@ -115,11 +168,10 @@ public class Predicates {
     }
 
 
-    public static List<String> executePredicateSPARQLQuery(String queryString){
-        List<String> res = new ArrayList<>();
+    public static String executePredicateSPARQLQuery(String queryString, TestParameter testParameter){
 
         Query query = QueryFactory.create(queryString);
-        QueryExecution qexec = QueryExecutionFactory.sparqlService("http://dbpedia.org/sparql", query);
+        QueryExecution qexec = QueryExecutionFactory.sparqlService(szEndpoint, query);
         ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
 
         // Execute query
@@ -132,15 +184,35 @@ public class Predicates {
             Iterator<String> itVars = qs.varNames();
 
             while(itVars.hasNext()){
-                String sVar =itVars.next();
+                String sVar = itVars.next();
                 String szVal = qs.get(sVar).toString();
 
-                res.add(szVal);
+                Integer support = computeSupportOfPredicate(szVal, testParameter);
+
+                if(support < minSupport){
+                    return szVal;
+                }
             }
 
         }
-        return res;
+
+        return null;
     }
+
+    public static Integer computeSupportOfPredicate(String predicate, TestParameter testParameter){
+
+        // Generate query
+        Map<TestParameter, List<String>> parameterWithPredicate = new HashMap<>();
+        parameterWithPredicate.put(testParameter, Collections.singletonList(predicate));
+
+        String queryString = generateQuery(parameterWithPredicate, true);
+
+        // Execute query
+        Integer supportOfPredicate = executeSPARQLQueryCount(queryString, szEndpoint);
+
+        return supportOfPredicate;
+    }
+
 
     private static String getParameterDescription(PathItem pathItem, String parameterName, String method){
 

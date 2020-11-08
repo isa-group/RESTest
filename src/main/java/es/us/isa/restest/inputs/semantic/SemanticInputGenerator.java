@@ -34,6 +34,8 @@ public class SemanticInputGenerator {
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";
     public static final Integer THRESHOLD = 100;
+    // DBPedia Endpoint
+    public static final String szEndpoint = "http://dbpedia.org/sparql";
 
 
     public static void main(String[] args) throws IOException {

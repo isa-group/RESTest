@@ -14,12 +14,11 @@ import java.util.stream.Collectors;
 
 import static es.us.isa.restest.inputs.semantic.GenerateSPARQLFilters.generateSPARQLFilters;
 import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.THRESHOLD;
+import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.szEndpoint;
 
 
 public class SPARQLUtils {
 
-    // DBPedia Endpoint
-    private static final String szEndpoint = "http://dbpedia.org/sparql";
     private static final Logger log = LogManager.getLogger(SPARQLUtils.class);
 
 
@@ -69,7 +68,6 @@ public class SPARQLUtils {
                 }
 
                 log.info("Isolating parameter {} to increase support", isolatedParameterName);
-                // TODO: Instead of calling the isolated parameter, find the biggest connected component that contains the isolated parameter (second option) (keep arity)
                 // Call the isolated parameter and add to result
                 String finalIsolatedParameterName = isolatedParameterName;
                 Map<TestParameter, List<String>> isolatedParameter = parametersWithPredicates.entrySet().stream()
@@ -160,7 +158,6 @@ public class SPARQLUtils {
 
                 res.get(szVar).add(szValString);
 
-//                System.out.println("[" + szVar + "]: " + szValString);
             }
 
         }
@@ -173,9 +170,9 @@ public class SPARQLUtils {
         String filters = "";
 
         // Add prefixes
-        queryString = queryString + "PREFIX dbo: <http://dbpedia.org/ontology/> \n";
-        queryString = queryString + "PREFIX dbp: <http://dbpedia.org/property/> \n";
-        queryString = queryString + "PREFIX dbr: <http://dbpedia.org/resource/> \n";
+//        queryString = queryString + "PREFIX dbo: <http://dbpedia.org/ontology/> \n";
+//        queryString = queryString + "PREFIX dbp: <http://dbpedia.org/property/> \n";
+//        queryString = queryString + "PREFIX dbr: <http://dbpedia.org/resource/> \n";
 
         List<TestParameter> allParameters = new ArrayList<>(parametersWithPredicates.keySet());
         List<String> allParametersName = allParameters.stream()
@@ -236,9 +233,8 @@ public class SPARQLUtils {
 
     }
 
-    public static Integer executeSPARQLQueryCount(String szQuery, String szEndpoint)
-            throws Exception
-    {
+
+    public static Integer executeSPARQLQueryCount(String szQuery, String szEndpoint){
 
         // Create a Query with the given String
         Query query = QueryFactory.create(szQuery);
