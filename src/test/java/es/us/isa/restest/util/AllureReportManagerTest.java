@@ -3,6 +3,7 @@ package es.us.isa.restest.util;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -20,7 +21,7 @@ public class AllureReportManagerTest {
 	public void testGenerateReport() {
 
 		// Generate report
-		AllureReportManager arm = new AllureReportManager(resultsDir, reportDir);
+		AllureReportManager arm = new AllureReportManager(resultsDir, reportDir, new ArrayList<>());
 		arm.generateReport();
 		
 		File dir = new File(reportDir);
