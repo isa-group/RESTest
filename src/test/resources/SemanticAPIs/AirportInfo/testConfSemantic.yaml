@@ -25,20 +25,20 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_0de4a286-91f3-4060-8fa7-7415c8a65ca8/apiendpoint_340c4d83-e0ae-4e4e-8759-5d53a53349c7_iata.csv
           objectValues: null
     - name: icao
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_0de4a286-91f3-4060-8fa7-7415c8a65ca8/apiendpoint_340c4d83-e0ae-4e4e-8759-5d53a53349c7_icao.csv
           objectValues: null
     expectedResponse: 200

@@ -88,11 +88,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/53aa6043e4b0a705fcc32c1d_lon.csv
           objectValues: null
     - name: type
       in: query
@@ -108,11 +108,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/53aa6043e4b0a705fcc32c1d_lat.csv
           objectValues: null
     - name: units
       in: query
@@ -173,21 +173,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/apiendpoint_f719676c-072b-4a2d-ad2e-78f8375ea9c8_lat.csv
           objectValues: null
     - name: lon
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/apiendpoint_f719676c-072b-4a2d-ad2e-78f8375ea9c8_lon.csv
           objectValues: null
     - name: lang
       in: query
@@ -258,21 +258,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/53aa6042e4b051a76d241b79_lat.csv
           objectValues: null
     - name: lon
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/53aa6042e4b051a76d241b79_lon.csv
           objectValues: null
     - name: cnt
       in: query
@@ -361,21 +361,21 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/apiendpoint_9efd93b5-a454-4619-9ff8-bd3465aeebe1_lat.csv
           objectValues: null
     - name: lon
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/apiendpoint_9efd93b5-a454-4619-9ff8-bd3465aeebe1_lon.csv
           objectValues: null
     - name: dt
       in: query
@@ -416,21 +416,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/53aa6041e4b00287471a2b62_lat.csv
           objectValues: null
     - name: lon
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/53aa6041e4b00287471a2b5d/53aa6041e4b00287471a2b62_lon.csv
           objectValues: null
     - name: callback
       in: query

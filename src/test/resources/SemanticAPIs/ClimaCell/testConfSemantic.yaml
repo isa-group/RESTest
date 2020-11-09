@@ -45,11 +45,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/5b801ddee4b0b497acc1c2d3/apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4_lat.csv
           objectValues: null
     - name: unit_system
       in: query
@@ -66,11 +66,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/5b801ddee4b0b497acc1c2d3/apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4_lon.csv
           objectValues: null
     expectedResponse: 200
   - testPath: /weather/nowcast
@@ -91,21 +91,21 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/5b801ddee4b0b497acc1c2d3/apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491_lat.csv
           objectValues: null
     - name: lon
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/5b801ddee4b0b497acc1c2d3/apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491_lon.csv
           objectValues: null
     - name: fields
       in: query
@@ -157,21 +157,21 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/5b801ddee4b0b497acc1c2d3/apiendpoint_d775527a-c5c0-44f6-9c34-9c943f7b8131_lat.csv
           objectValues: null
     - name: lon
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/5b801ddee4b0b497acc1c2d3/apiendpoint_d775527a-c5c0-44f6-9c34-9c943f7b8131_lon.csv
           objectValues: null
     - name: unit_system
       in: query

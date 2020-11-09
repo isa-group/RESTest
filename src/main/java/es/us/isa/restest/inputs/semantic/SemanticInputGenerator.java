@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
@@ -39,7 +40,7 @@ public class SemanticInputGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/similarWeb.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/greatCircleMapper.properties");
 
         System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
@@ -67,13 +68,21 @@ public class SemanticInputGenerator {
 
             for(TestParameter testParameter: semanticOperation.getSemanticParameters().keySet()){
                 Map<TestParameter, Set<String>> map = semanticOperation.getSemanticParameters();
+
+                Set<String> values = result.get(testParameter.getName());
+
+                if(values == null){
+                    map.put(testParameter, new HashSet<>());
+                }else{
+                    map.put(testParameter, values);
+                }
+
                 map.put(testParameter, result.get(testParameter.getName()));
                 semanticOperation.setSemanticParameters(map);
             }
-
         }
 
-        if(semanticOperations.size()==0){
+        if(semanticOperations.size() == 0){
             log.info("No semantic operations found");
         }
 
@@ -99,8 +108,12 @@ public class SemanticInputGenerator {
 
                 // Write the Set of values as a csv file
                 FileWriter writer = new FileWriter(path);
-                String collect = operation.getSemanticParameters().get(parameter)
-                        .stream().collect(Collectors.joining("\n"));
+
+                String collect = Optional.ofNullable(operation.getSemanticParameters().get(parameter))
+                        .map(Collection::stream).orElseGet(Stream::empty).collect(Collectors.joining("\n"));
+
+//                String collect = operation.getSemanticParameters().get(parameter)
+//                        .stream().collect(Collectors.joining("\n"));
 
                 writer.write(collect);
                 writer.close();

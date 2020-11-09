@@ -25,20 +25,20 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_bbb20b4a-d588-4c4c-86ac-15fbef582aaa/apiendpoint_6c49df0a-e381-48f5-8719-9d5a95520b1a_CountryCode.csv
           objectValues: null
     - name: Year
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_bbb20b4a-d588-4c4c-86ac-15fbef582aaa/apiendpoint_6c49df0a-e381-48f5-8719-9d5a95520b1a_Year.csv
           objectValues: null
     expectedResponse: 200

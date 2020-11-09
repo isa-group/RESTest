@@ -22,10 +22,10 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTesting {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/weatherForecast14Days.properties";
-    private static String operationPath = "/api/getlocation";
-    private static String semanticParameterName = "COUNTRY";
-    private static String baseUrl = "https://api-football-v1.p.rapidapi.com";
+    private static String propertiesPath = "/semantic/usWeatherByZipcode.properties";
+    private static String operationPath = "/getweatherzipcode";
+    private static String semanticParameterName = "zip";
+    private static String baseUrl = "https://us-weather-by-zip-code.p.rapidapi.com";
     private static Integer limit = Integer.MAX_VALUE;
 
     // Parámetros derivados
@@ -41,6 +41,7 @@ public class MainTesting {
 
         String csvPath = getCsvPath();
         List<String> semanticInputs = readCsv(csvPath);
+
 
         System.out.println("Number of inputs " + semanticInputs.size());
 
@@ -58,27 +59,29 @@ public class MainTesting {
 
                 System.out.println(semanticInput);
 
-//                String query = "?season=2019-2020&league=12&group=" + semanticInput;         // TODO: Modify
-//                String url = baseUrl + operationPath + query;
-//                /v2/leagues/type/league/{country}
-//                /v2/leagues/type/league/england/2019  EJEMPLO
-                String url = baseUrl + "/v2/players/search/" + semanticInput;
+                String query = "?zip=" + semanticInput; // + "&dt=1604707200";         // TODO: Modify
+                String url = baseUrl + operationPath + query;
 
-//                OkHttpClient client = new OkHttpClient();
-//
-//                Request request = new Request.Builder()
-//                        .url(url)
-//                        .get()
-//                        .addHeader("x-rapidapi-host", host)
-//                        .addHeader("x-rapidapi-key", "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69")  // TODO: Modify
-//                        .build();
-//
-//                Response response = client.newCall(request).execute();
+                System.out.println(url);
+
+                OkHttpClient client = new OkHttpClient();
+
+                Request request = new Request.Builder()
+                        .url(url)
+                        .get()
+                        .addHeader("x-rapidapi-host", host)
+                        .addHeader("x-rapidapi-key", "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69")  // TODO: Modify
+                        .build();
+                // 69c700dd67msh57b046423099254p1d4b4cjsn1908598eb392
+                // 6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69
+                // b2f36b9a46mshc151d9a789e5858p18700cjsnae3bd54dbcd9
+
+                Response response = client.newCall(request).execute();
 
                 System.out.println("Iteración número " + i + "/" + maxCut);
 
-//                System.out.println("RESPONSE CODE: " + response.code());
-//                System.out.println(response.body().string());
+                System.out.println("RESPONSE CODE: " + response.code());
+                System.out.println(response.body().string());
                 System.out.println("--------------------------------------------------------------------------------------");
 
 
@@ -87,7 +90,7 @@ public class MainTesting {
                 System.out.println(e);
             }
 
-//            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(2);
 
         }
 

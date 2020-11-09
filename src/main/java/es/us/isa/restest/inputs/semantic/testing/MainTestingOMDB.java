@@ -24,7 +24,7 @@ public class MainTestingOMDB {
     // Parámetros a cambiar
     private static String propertiesPath = "/omdb.properties";
     private static String operationPath = "/";
-    private static String semanticParameterName = "s";
+    private static String semanticParameterName = "y";
     private static Integer limit = Integer.MAX_VALUE;
 
     // Parámetros derivados
@@ -58,7 +58,7 @@ public class MainTestingOMDB {
                 OkHttpClient client = new OkHttpClient();
 
                 Request request = new Request.Builder()
-                        .url("http://www.omdbapi.com/?apikey=bef62484&s=" + semanticInput)
+                        .url("http://www.omdbapi.com/?apikey=bef62484&y=" + semanticInput)
                         .get()
                         .build();
 

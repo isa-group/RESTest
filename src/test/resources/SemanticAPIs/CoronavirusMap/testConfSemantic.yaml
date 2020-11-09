@@ -40,11 +40,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_60755bd3-98c1-445d-a06b-84e57ee3977b/apiendpoint_d126da0b-acf9-426c-b592-13958c69090e_region.csv
           objectValues: null
     - name: date
       in: query
@@ -85,11 +85,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_60755bd3-98c1-445d-a06b-84e57ee3977b/apiendpoint_7da52e68-19c3-408e-bb8c-73e833a1a641_region.csv
           objectValues: null
     expectedResponse: 200
   - testPath: /v1/spots/region?region=china
@@ -140,11 +140,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_60755bd3-98c1-445d-a06b-84e57ee3977b/apiendpoint_6c397b43-e924-4a95-85ee-9a2af405099c_region.csv
           objectValues: null
     - name: date
       in: query
@@ -185,11 +185,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_60755bd3-98c1-445d-a06b-84e57ee3977b/apiendpoint_c9227fac-13ff-4803-b0fe-cefadd7fffa4_region.csv
           objectValues: null
     expectedResponse: 200
   - testPath: /v1/summary/latest
@@ -225,10 +225,10 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/api_60755bd3-98c1-445d-a06b-84e57ee3977b/apiendpoint_158e48c7-634a-4654-b4a8-2ddf896cb656_region.csv
           objectValues: null
     expectedResponse: 200

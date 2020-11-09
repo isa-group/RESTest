@@ -25,82 +25,87 @@ public class SPARQLUtils {
 
     public static Map<String, Set<String>> getParameterValues(Map<TestParameter, List<String>> parametersWithPredicates) throws Exception {
 
-        String queryString = generateQuery(parametersWithPredicates, false);
-        System.out.println(queryString);
+        Map<String, Set<String>> result = new HashMap<>();
 
-        Map<String, Set<String>> result = executeSPARQLQuery(queryString, szEndpoint);
+        if(parametersWithPredicates.keySet().size()>0) {
 
-        Set<String> parameterNames = result.keySet();
-        Set<String> subGraphParameterNames = new HashSet<>();
+            String queryString = generateQuery(parametersWithPredicates, false);
+            System.out.println(queryString);
 
-        if (parameterNames.size() > 1){
-            for(String parameterName: parameterNames){
-                if(result.get(parameterName).size() < THRESHOLD){
-                    subGraphParameterNames.add(parameterName);
+            result = executeSPARQLQuery(queryString, szEndpoint);
+
+            Set<String> parameterNames = result.keySet();
+            Set<String> subGraphParameterNames = new HashSet<>();
+
+            if (parameterNames.size() > 1) {
+                for (String parameterName : parameterNames) {
+                    if (result.get(parameterName).size() < THRESHOLD) {
+                        subGraphParameterNames.add(parameterName);
+                    }
                 }
-            }
 
-            if(subGraphParameterNames.size() == parameterNames.size()){     // Same set case
-                log.info("Insufficient inputs for all parameters, looking for connected component with greatest support");
+                if (subGraphParameterNames.size() == parameterNames.size()) {     // Same set case
+                    log.info("Insufficient inputs for all parameters, looking for connected component with greatest support");
 
-                Integer maxSupport = 0;
-                Map<TestParameter, List<String>> subGraphParametersWithPredicates = new HashMap<>();
-                String isolatedParameterName = "";
+                    Integer maxSupport = 0;
+                    Map<TestParameter, List<String>> subGraphParametersWithPredicates = new HashMap<>();
+                    String isolatedParameterName = "";
 
-                // For para recorrer cada uno de los parámetros
-                for(String subGraphParameterName: subGraphParameterNames){
+                    // For para recorrer cada uno de los parámetros
+                    for (String subGraphParameterName : subGraphParameterNames) {
 
-                    Map<TestParameter, List<String>> currentSubGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
-                            .filter(x -> !x.getKey().getName().equals(subGraphParameterName))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                        Map<TestParameter, List<String>> currentSubGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
+                                .filter(x -> !x.getKey().getName().equals(subGraphParameterName))
+                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-                    // Compute support
-                    String queryCount = generateQuery(currentSubGraphParametersWithPredicates, true);
-                    Integer currentSupport = executeSPARQLQueryCount(queryCount, szEndpoint);
+                        // Compute support
+                        String queryCount = generateQuery(currentSubGraphParametersWithPredicates, true);
+                        Integer currentSupport = executeSPARQLQueryCount(queryCount, szEndpoint);
 
-                    // Compare size with accumulator
-                    if(currentSupport > maxSupport){
-                        maxSupport = currentSupport;
-                        subGraphParametersWithPredicates = currentSubGraphParametersWithPredicates;
-                        isolatedParameterName = subGraphParameterName;
+                        // Compare size with accumulator
+                        if (currentSupport >= maxSupport) {
+                            maxSupport = currentSupport;
+                            subGraphParametersWithPredicates = currentSubGraphParametersWithPredicates;
+                            isolatedParameterName = subGraphParameterName;
+                        }
+
                     }
 
+                    log.info("Isolating parameter {} to increase support", isolatedParameterName);
+                    // Call the isolated parameter and add to result
+                    String finalIsolatedParameterName = isolatedParameterName;
+                    Map<TestParameter, List<String>> isolatedParameter = parametersWithPredicates.entrySet().stream()
+                            .filter(x -> x.getKey().getName().equals(finalIsolatedParameterName))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                    Map<String, Set<String>> subResultIsolated = getParameterValues(isolatedParameter);
+                    result.get(isolatedParameterName).addAll(subResultIsolated.get(isolatedParameterName));
+
+
+                    // Add the subgraph to results
+                    Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
+                    for (String parameterName : subResult.keySet()) {
+                        result.get(parameterName).addAll(subResult.get(parameterName));
+                    }
+
+
+                } else if ((subGraphParameterNames.size() > 0) && (subGraphParameterNames.size() < parameterNames.size())) {  // Smaller Set case
+                    log.info("Insufficient inputs for a group of parameters, querying DBPedia with a subset of parameters");
+
+                    Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
+                            .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                    // Create SubResult
+                    Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
+
+                    // Add the results of the recursive call to result
+                    for (String parameterName : subResult.keySet()) {
+                        result.get(parameterName).addAll(subResult.get(parameterName));
+                    }
                 }
 
-                log.info("Isolating parameter {} to increase support", isolatedParameterName);
-                // Call the isolated parameter and add to result
-                String finalIsolatedParameterName = isolatedParameterName;
-                Map<TestParameter, List<String>> isolatedParameter = parametersWithPredicates.entrySet().stream()
-                        .filter(x -> x.getKey().getName().equals(finalIsolatedParameterName))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-                Map<String, Set<String>> subResultIsolated = getParameterValues(isolatedParameter);
-                result.get(isolatedParameterName).addAll(subResultIsolated.get(isolatedParameterName));
-
-
-                // Add the subgraph to results
-                Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
-                for(String parameterName: subResult.keySet()){
-                    result.get(parameterName).addAll(subResult.get(parameterName));
-                }
-
-
-            }else if ( (subGraphParameterNames.size()>0) && (subGraphParameterNames.size() < parameterNames.size()) ){  // Smaller Set case
-                log.info("Insufficient inputs for a group of parameters, querying DBPedia with a subset of parameters");
-
-                Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
-                        .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-                // Create SubResult
-                Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
-
-                // Add the results of the recursive call to result
-                for(String parameterName: subResult.keySet()){
-                    result.get(parameterName).addAll(subResult.get(parameterName));
-                }
             }
-
         }
 
         return result;
