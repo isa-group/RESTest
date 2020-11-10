@@ -7,7 +7,6 @@ import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
-import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.runners.RESTestRunner;
@@ -20,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
@@ -158,7 +158,10 @@ public class TestGenerationAndExecution {
 		deleteDir(allureResultsDir);
 		deleteDir(allureReportDir);
 
-		AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir);
+		//Find auth property names (if any)
+		List<String> authProperties = AllureAuthManager.findAuthProperties(spec, confPath);
+
+		AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir, authProperties);
 		arm.setEnvironmentProperties(propertiesFilePath);
 		arm.setHistoryTrend(true);
 		return arm;

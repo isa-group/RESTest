@@ -13,6 +13,8 @@ import es.us.isa.restest.util.RESTestException;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
+
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
@@ -42,7 +44,7 @@ public class RESTestRunnerTest {
         deleteDir(allureResultsDir);
         deleteDir(allureReportDir);
 
-        AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir);
+        AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir, new ArrayList<>());
         arm.setHistoryTrend(true);
 
         String testDataDir = PropertyManager.readProperty("data.tests.dir") + "/RunnerTest";
