@@ -7,7 +7,8 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.postman.pojos.*;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class PostmanWriter implements IWriter {
     private String jsonPath = "src/test/resources";     // Path to write JSON file (Postman collection)
     private String baseURI;							    // API base URI
 
-    private static Logger logger = Logger.getLogger(PostmanWriter.class);
+    private static Logger logger = LogManager.getLogger(PostmanWriter.class.getName());
 
     private static final String postmanSchema = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json";
 

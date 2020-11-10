@@ -33,7 +33,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '\{\"(annotation|text)\": \[((\{\"text\": \"(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will|BREAK\"JSON) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
+          - '\{\"annotation\": \[((\{\"text\": \"(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will|BREAK\"JSON) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
           objectValues: null
     - name: language
       in: formData
