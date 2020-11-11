@@ -40,7 +40,7 @@ public class SemanticInputGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/greatCircleMapper.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/amadeus_standard.properties");
 
         System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);

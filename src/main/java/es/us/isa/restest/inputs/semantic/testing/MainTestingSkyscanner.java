@@ -18,14 +18,13 @@ import java.util.concurrent.TimeUnit;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 
-
-public class MainTesting {
+public class MainTestingSkyscanner {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/chickenCoop.properties";
-    private static String operationPath = "/games";
-    private static String semanticParameterName = "title";
-    private static String baseUrl = "https://chicken-coop.p.rapidapi.com";
+    private static String propertiesPath = "/semantic/skyscanner.properties";
+    private static String operationPath = "/apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}";
+    private static String semanticParameterName = "locale";
+    private static String baseUrl = "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com";
     private static Integer limit = Integer.MAX_VALUE;
 
     // Parámetros derivados
@@ -59,9 +58,10 @@ public class MainTesting {
 
                 System.out.println(semanticInput);
 
-                String query = "?title="+ semanticInput;         // TODO: Modify
-                String url = baseUrl + operationPath + query;
-
+//                String query = "?latitude=49.6848&longitude=" + semanticInput;         // TODO: Modify
+//                String url = baseUrl + operationPath + query;
+                String url = baseUrl + "/apiservices/browseroutes/v1.0/US/USD/"+semanticInput+"/SFO-sky/JFK-sky/anytime/anytime";
+//                                      /apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}
 
 
                 // country                  US
@@ -93,9 +93,8 @@ public class MainTesting {
                 Request request = new Request.Builder()
                         .url(url)
                         .get()
-//                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-key", "xxxx")  // TODO: Modify
+                        .addHeader("x-rapidapi-key", "xxx")
+                        .addHeader("x-rapidapi-host", "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com")
                         .build();
 
                 Response response = client.newCall(request).execute();
@@ -154,6 +153,7 @@ public class MainTesting {
         }
         return res;
     }
+
 
 
 }
