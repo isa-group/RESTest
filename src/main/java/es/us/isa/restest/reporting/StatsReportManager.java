@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 
+ *
  * This class generates the statistics related to the generation and execution of test cases. Currently, it generates test cases in CVS format and coverage data
  *
  */
@@ -29,7 +29,7 @@ public class StatsReportManager {
     private boolean enableOutputCoverage = true;
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
-    
+
 
     private static final Logger logger = LogManager.getLogger(StatsReportManager.class.getName());
 
@@ -53,31 +53,31 @@ public class StatsReportManager {
 
     // Generate statistics
     public void generateReport() {
-        
-    	// Generate CVS stats
-    	if (enableCSVStats)
-    		generateCSVStats();
-    	
-    	// Generate coverage stats
-    	if (enableInputCoverage || enableOutputCoverage)
-    		generateCoverageStats();
-    	
+
+        // Generate CVS stats
+        if (enableCSVStats)
+            generateCSVStats();
+
+        // Generate coverage stats
+        if (enableInputCoverage || enableOutputCoverage)
+            generateCoverageStats();
+
     }
-    
+
     // Generate CVS statistics (test cases to CSV)
     private void generateCSVStats() {
-		logger.info("Exporting test cases coverage to CSV");
-		String csvTcPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testcases.file");
-		testCases.forEach(tc -> tc.exportToCSV(csvTcPath));	
-	}
+        logger.info("Exporting test cases coverage to CSV");
+        String csvTcPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testcases.file");
+        testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
+    }
 
-	// Generate coverage statistics
+    // Generate coverage statistics
     private void generateCoverageStats() {
-    	
-    	// Add test cases
-    	getCoverageMeter().addTestSuite(testCases);
-    	
-    	if (enableOutputCoverage) {
+
+        // Add test cases
+        getCoverageMeter().addTestSuite(testCases);
+
+        if (enableOutputCoverage) {
             // Update CoverageMeter with the test results
             String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file");
             List<TestResult> trs = TestManager.getTestResults(csvTrPath);
@@ -94,20 +94,15 @@ public class StatsReportManager {
             logger.info("Coverage report a posteriori generated.");
 
         }
-	}
+    }
 
-	private void exportCoverageReport(CoverageMeter coverageMeter, String path) {
+    private void exportCoverageReport(CoverageMeter coverageMeter, String path) {
         CoverageResults results = new CoverageResults(coverageMeter);
         results.setCoverageOfCoverageCriteriaFromCoverageMeter(coverageMeter);
         results.setCoverageOfCriterionTypeFromCoverageMeter(coverageMeter);
-        try {
-            results.exportCoverageReportToJSON(path);
-        } catch (IOException e) {
-            logger.error("The coverage report cannot be generated. Stack trace:");
-            logger.log(Level.valueOf("context"), e);
-        }
+        results.exportCoverageReportToCSV(path);
     }
-	
+
     public String getTestDataDir() {
         return testDataDir;
     }
@@ -156,8 +151,8 @@ public class StatsReportManager {
         this.coverageMeter = coverageMeter;
     }
 
-	public void setTestCases(Collection<TestCase> testCases) {
-		this.testCases = testCases;
-	}
-    
+    public void setTestCases(Collection<TestCase> testCases) {
+        this.testCases = testCases;
+    }
+
 }
