@@ -1,6 +1,5 @@
 package es.us.isa.restest.main;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
@@ -17,8 +16,6 @@ import es.us.isa.restest.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -101,7 +98,7 @@ public class TestGenerationAndExecution {
 
 		Timer.stopCounting(ALL);
 
-		generateTimeReport();
+		generateTimeReport(iteration-1);
 	}
 
 
@@ -184,12 +181,11 @@ public class TestGenerationAndExecution {
 				enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
 	}
 
-	private static void generateTimeReport() {
-		ObjectMapper mapper = new ObjectMapper();
+	private static void generateTimeReport(Integer iterations) {
 		String timePath = readParameterValue("data.tests.dir") + "/" + experimentName + "/" + readParameterValue("data.tests.time");
 		try {
-			mapper.writeValue(new File(timePath), Timer.getCounters());
-		} catch (IOException e) {
+			Timer.exportToCSV(timePath, iterations);
+		} catch (RuntimeException e) {
 			logger.error("The time report cannot be generated. Stack trace:");
 			logger.error(e.getMessage());
 		}
