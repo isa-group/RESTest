@@ -12,7 +12,7 @@ public class IterativeExampleTest {
 
     @Test
     public void testIterativeExampleWithBasicPropertiesFile() throws RESTestException {
-        String[] args = {"src/main/resources/ExperimentsSetup/bikewise_test.properties"};
+        String[] args = {"src/test/resources/Bikewise/bikewise_test.properties"};
         TestGenerationAndExecution.main(args);
 
         assertTrue(checkIfExists("src/generation/java/bikewise"));
