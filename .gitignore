@@ -15,6 +15,7 @@ jMetal.log
 /src/test/resources/csvData/test-results.csv
 /src/test/resources/csvData/test-results-coverage.csv
 /src/test/resources/csvData/test-coverage.json
+/src/test/resources/csvData/test-coverage.csv
 
 /src/main/resources/auth/*
 !/src/main/resources/auth/Sample

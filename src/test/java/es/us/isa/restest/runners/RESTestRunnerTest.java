@@ -67,8 +67,8 @@ public class RESTestRunnerTest {
 
         assertTrue(checkIfExists("target/allure-results/RunnerTest"));
         assertTrue(checkIfExists("target/allure-reports/RunnerTest"));
-        assertTrue(checkIfExists("target/coverage-data/RunnerTest/test-coverage-priori.json"));
-        assertTrue(checkIfExists("target/coverage-data/RunnerTest/test-coverage-posteriori.json"));
+        assertTrue(checkIfExists("target/coverage-data/RunnerTest/test-coverage-priori.csv"));
+        assertTrue(checkIfExists("target/coverage-data/RunnerTest/test-coverage-posteriori.csv"));
         assertTrue(checkIfExists("target/test-data/RunnerTest/test-cases.csv"));
 //        assertTrue(checkIfExists("target/test-data/RunnerTest/nominal-faulty.csv"));
         assertTrue(checkIfExists("target/test-data/RunnerTest/test-results.csv"));
