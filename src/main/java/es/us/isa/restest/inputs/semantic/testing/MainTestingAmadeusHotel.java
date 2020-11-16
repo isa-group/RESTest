@@ -19,13 +19,13 @@ import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfigurat
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 
-public class MainTesting {
+public class MainTestingAmadeusHotel {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/chickenCoop.properties";
-    private static String operationPath = "/games";
-    private static String semanticParameterName = "title";
-    private static String baseUrl = "https://chicken-coop.p.rapidapi.com";
+    private static String propertiesPath = "/semantic/amadeus_standard.properties";
+    private static String operationPath = "/airports/autocomplete";
+    private static String semanticParameterName = "country";
+    private static String baseUrl = "https://api.sandbox.amadeus.com/v1.2";
     private static Integer limit = Integer.MAX_VALUE;
 
     // Parámetros derivados
@@ -59,7 +59,8 @@ public class MainTesting {
 
                 System.out.println(semanticInput);
 
-                String query = "?title="+ semanticInput;         // TODO: Modify
+//                String query = "?cityCode="+ semanticInput + "&radius=300&radiusUnit=KM";         // TODO: Modify
+                String query = "";//"?term=a";
                 String url = baseUrl + operationPath + query;
 
 
@@ -67,12 +68,15 @@ public class MainTesting {
 
                 OkHttpClient client = new OkHttpClient();
 
+                client.setConnectTimeout(30, TimeUnit.SECONDS); // connect timeout
+                client.setReadTimeout(30, TimeUnit.SECONDS);    // socket timeout
+
                 Request request = new Request.Builder()
                         .url(url)
                         .get()
 //                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-key", "xxxx")  // TODO: Modify
+//                        .addHeader("x-rapidapi-host", host)
+                        .addHeader("Authorization", "Bearer xOvVJ12YPWYgGtUXCfdCwTKed55g")  // TODO: Modify
                         .build();
 
                 Response response = client.newCall(request).execute();
@@ -104,7 +108,7 @@ public class MainTesting {
         conf = loadConfiguration(confPath, spec);
 
         operation = conf.getTestConfiguration().getOperations().stream().filter(x -> x.getTestPath().equals(operationPath)).findFirst().get();
-        host = operation.getTestParameters().stream().filter(x-> x.getName().equals("X-RapidAPI-Host")).findFirst().get().getGenerator().getGenParameters().get(0).getValues().get(0);
+//        host = operation.getTestParameters().stream().filter(x-> x.getName().equals("X-RapidAPI-Host")).findFirst().get().getGenerator().getGenParameters().get(0).getValues().get(0);
 
     }
 
