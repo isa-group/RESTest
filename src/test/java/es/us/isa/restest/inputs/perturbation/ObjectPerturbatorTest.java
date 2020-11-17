@@ -91,10 +91,10 @@ public class ObjectPerturbatorTest {
 
     @Test
     public void testConstructorWithArgumentFile() throws IOException {
-        String filePath = "src/main/resources/auth/Sample/apikeys.json";
+        String filePath = "src/test/resources/auth/Sample/apikeys.json";
 
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonObject = mapper.readTree(new File("src/main/resources/auth/Sample/apikeys.json"));
+        JsonNode jsonObject = mapper.readTree(new File("src/test/resources/auth/Sample/apikeys.json"));
 
         GenParameter stringObject = new GenParameter();
         stringObject.setName("file");

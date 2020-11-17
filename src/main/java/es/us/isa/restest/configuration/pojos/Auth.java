@@ -8,8 +8,8 @@ public class Auth {
     private Boolean required;
     private Map<String, String> queryParams = null;
     private Map<String, String> headerParams = null;
-    private String apiKeysPath; // JSON file containing array of API keys (path relative to src/main/resources/auth/)
-    private String headersPath; // JSON file containing array of auth headers (path relative to src/main/resources/auth/)
+    private String apiKeysPath; // JSON file containing array of API keys (path relative to src/test/resources/auth/)
+    private String headersPath; // JSON file containing array of auth headers (path relative to src/test/resources/auth/)
 
     public Boolean getRequired() {
         return required;

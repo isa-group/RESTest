@@ -48,7 +48,7 @@ public class AllureReportManager {
 		if (historyTrend)
 			copyHistoryDirectory();
 	
-		// If category loading is enabled, we must copy the file "categories.json" to the allure results directory.
+		// If category loading is enabled, we must copy the file "allure-categories.json" to the allure results directory.
 		if (loadCategories)
 			copyCategoryFile();
 		
@@ -69,7 +69,7 @@ public class AllureReportManager {
 		}
 	}
 	
-	// Copy the files categories.json file from the resource directory to the allure results directory
+	// Copy the files allure-categories.json file from the resource directory to the allure results directory
 	private void copyCategoryFile() {
 		
 		File sourceFile = new File(PropertyManager.readProperty("allure.categories.path"));
