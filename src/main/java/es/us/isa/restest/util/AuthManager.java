@@ -65,7 +65,7 @@ import static java.lang.System.exit;
 public class AuthManager {
 
 
-    private static final String AUTH_BASE_PATH = "src/main/resources/auth/";
+    private static final String AUTH_BASE_PATH = "src/test/resources/auth/";
     private Map<String, List<String>> authProperties;
     private int counter;
     private int itCounter;  /* It resets to zero when the algorithm obtains an auth key for every parameter.
