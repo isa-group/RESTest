@@ -182,6 +182,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     expectedResponse: 200
   - testPath: "/v2/alpha/{alphacode}"
     operationId: v2Alphacode
@@ -203,6 +206,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: alphacode
       in: path
       weight: null
@@ -234,6 +240,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: codes
       in: query
       weight: null
@@ -274,6 +283,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: currency
       in: path
       weight: null
@@ -305,6 +317,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: name
       in: path
       weight: null
@@ -342,6 +357,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: callingcode
       in: path
       weight: null
@@ -373,6 +391,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: capital
       in: path
       weight: null
@@ -404,6 +425,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: region
       in: path
       weight: null
@@ -435,6 +459,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: subregion
       in: path
       weight: null
@@ -466,6 +493,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: lang
       in: path
       weight: null
@@ -497,6 +527,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: demonym
       in: path
       weight: null
@@ -528,6 +561,9 @@ testConfiguration:
         - name: maxValues
           values:
             - 5
+        - name: separator
+          values:
+            - ';'
     - name: regionalbloc
       in: path
       weight: null

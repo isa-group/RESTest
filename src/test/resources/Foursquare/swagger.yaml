@@ -165,6 +165,12 @@ paths:
         - IF sw OR ne THEN intent=='browse';
         - IF sw OR ne THEN NOT (ll OR radius);
         - AllOrNone(providerId, linkedId);
+        # Alternative version of dependencies
+#        - IF ZeroOrOne(providerId, linkedId) THEN Or(intent, ll, near);
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='global' THEN query;
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='match' THEN (name OR query) AND (ll OR near);
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='checkin' THEN ll OR near;
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='browse' THEN OnlyOne(sw AND ne, near OR (ll AND radius)) AND ZeroOrOne(sw AND ne, radius) AND AllOrNone(sw, ne);
       responses:
         "200":
           description: OK
