@@ -1,5 +1,6 @@
 package es.us.isa.restest.generators;
 
+import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
 
 import java.util.ArrayList;
@@ -35,12 +36,15 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 
 		// Reset counters for the current operation
 		resetOperation();
+
+		boolean fulfillsDependencies = !hasDependencies(testOperation.getOpenApiOperation());
 		
 		while (hasNext()) {
 
 			// Create test case with specific parameters and values
 			//Timer.startCounting(TEST_CASE_GENERATION);
 			TestCase test = generateNextTestCase(testOperation);
+			test.setFulfillsDependencies(fulfillsDependencies);
 			//Timer.stopCounting(TEST_CASE_GENERATION);
 			
 			// Set authentication data (if any)

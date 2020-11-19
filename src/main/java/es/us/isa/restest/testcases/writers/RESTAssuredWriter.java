@@ -344,6 +344,7 @@ public class RESTAssuredWriter implements IWriter {
 		String content = "";
 
 		if ((t.getFormParameters() == null || t.getFormParameters().size() == 0) &&
+				t.getBodyParameter() != null &&
 				(t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
 				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE)))
 			content += "\t\t\t\t.contentType(\"application/json\")\n";
