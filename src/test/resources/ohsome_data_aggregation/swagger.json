@@ -136,6 +136,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies":  [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -266,6 +271,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -394,6 +404,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -525,6 +540,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -653,6 +673,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -783,6 +808,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -927,6 +957,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -1073,6 +1108,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1216,6 +1256,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -1362,6 +1407,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1490,6 +1540,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -1621,6 +1676,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -1749,6 +1809,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -1879,6 +1944,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -2023,6 +2093,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -2169,6 +2244,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -2305,6 +2385,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -2443,6 +2528,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -2587,6 +2677,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -2733,6 +2828,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -2861,6 +2961,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -2991,6 +3096,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -3149,6 +3259,12 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
         ],
         "responses": {
           "200": {
@@ -3309,6 +3425,12 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -3466,6 +3588,12 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
         ],
         "responses": {
           "200": {
@@ -3626,6 +3754,12 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -3754,6 +3888,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -3885,6 +4024,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -4013,6 +4157,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -4144,6 +4293,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -4271,6 +4425,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -4400,6 +4559,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -4544,6 +4708,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -4690,6 +4859,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -4833,6 +5007,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -4979,6 +5158,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -5107,6 +5291,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -5238,6 +5427,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -5365,6 +5559,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -5494,6 +5693,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -5638,6 +5842,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -5784,6 +5993,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -5920,6 +6134,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -6058,6 +6277,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -6202,6 +6426,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -6348,6 +6577,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -6476,6 +6710,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -6606,6 +6845,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -6764,6 +7008,12 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
         ],
         "responses": {
           "200": {
@@ -6924,6 +7174,12 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -7081,6 +7337,12 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
         ],
         "responses": {
           "200": {
@@ -7241,6 +7503,12 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -7369,6 +7637,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -7500,6 +7773,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -7628,6 +7906,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -7759,6 +8042,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -7886,6 +8174,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -8015,6 +8308,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -8159,6 +8457,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -8305,6 +8608,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -8448,6 +8756,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -8594,6 +8907,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -8722,6 +9040,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -8853,6 +9176,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -8980,6 +9308,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -9109,6 +9442,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -9253,6 +9591,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -9399,6 +9742,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -9535,6 +9883,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -9673,6 +10026,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -9817,6 +10175,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -9963,6 +10326,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -10091,6 +10459,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -10221,6 +10594,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -10379,6 +10757,12 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
         ],
         "responses": {
           "200": {
@@ -10539,6 +10923,12 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -10696,6 +11086,12 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
         ],
         "responses": {
           "200": {
@@ -10856,6 +11252,12 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -10984,6 +11386,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -11115,6 +11522,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -11243,6 +11655,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -11374,6 +11791,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -11502,6 +11924,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -11632,6 +12059,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -11776,6 +12208,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -11922,6 +12359,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -12065,6 +12507,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -12211,6 +12658,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -12339,6 +12791,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -12470,6 +12927,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -12598,6 +13060,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -12728,6 +13195,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -12872,6 +13344,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -13018,6 +13495,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -13154,6 +13636,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -13292,6 +13779,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -13436,6 +13928,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -13582,6 +14079,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -13710,6 +14212,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -13840,6 +14347,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -13998,6 +14510,12 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
         ],
         "responses": {
           "200": {
@@ -14158,6 +14676,12 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -14315,6 +14839,12 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
         ],
         "responses": {
           "200": {
@@ -14475,6 +15005,12 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;",
+          "IF values2 THEN keys2;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -14603,6 +15139,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -14734,6 +15275,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -14862,6 +15408,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -14993,6 +15544,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -15121,6 +15677,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -15251,6 +15812,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -15395,6 +15961,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -15541,6 +16112,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -15669,6 +16245,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -15800,6 +16381,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -15928,6 +16514,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -16058,6 +16649,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -16196,6 +16792,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -16333,6 +16934,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -16477,6 +17083,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -16623,6 +17234,11 @@
             "type": "string"
           }
         ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -16751,6 +17367,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
@@ -16881,6 +17502,11 @@
             "required": false,
             "type": "string"
           }
+        ],
+        "x-dependencies": [
+          "OnlyOne(bboxes, bcircles, bpolys);",
+          "ZeroOrOne(filter, Or(types, keys, values));",
+          "IF values THEN keys;"
         ],
         "responses": {
           "200": {
