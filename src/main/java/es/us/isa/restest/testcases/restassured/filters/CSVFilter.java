@@ -17,8 +17,8 @@ public class CSVFilter extends OracleFilter implements OrderedFilter {
         super();
     }
 
-    public CSVFilter(String APIName) {
-        super(APIName);
+    public CSVFilter(String APIName, String testId) {
+        super(APIName, testId);
     }
 
     @Override

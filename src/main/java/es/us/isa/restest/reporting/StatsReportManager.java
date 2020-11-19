@@ -52,45 +52,45 @@ public class StatsReportManager {
     }
 
     // Generate statistics
-    public void generateReport() {
+    public void generateReport(String testId) {
 
         // Generate CVS stats
         if (enableCSVStats)
-            generateCSVStats();
+            generateCSVStats(testId);
 
         // Generate coverage stats
         if (enableInputCoverage || enableOutputCoverage)
-            generateCoverageStats();
+            generateCoverageStats(testId);
 
     }
 
     // Generate CVS statistics (test cases to CSV)
-    private void generateCSVStats() {
+    private void generateCSVStats(String testId) {
         logger.info("Exporting test cases coverage to CSV");
-        String csvTcPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testcases.file");
+        String csvTcPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testcases.file") + "_" + testId + ".csv";
         testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
     }
 
     // Generate coverage statistics
-    private void generateCoverageStats() {
+    private void generateCoverageStats(String testId) {
 
         // Add test cases
         getCoverageMeter().addTestSuite(testCases);
 
         if (enableOutputCoverage) {
             // Update CoverageMeter with the test results
-            String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file");
+            String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
             List<TestResult> trs = TestManager.getTestResults(csvTrPath);
             coverageMeter.addTestResults(trs);
         }
 
         if (enableInputCoverage || enableOutputCoverage) {
             // Generate coverage report (input coverage a priori)
-            exportCoverageReport(coverageMeter, coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.priori.file"));
+            exportCoverageReport(coverageMeter, coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.priori.file") + "_" + testId + ".csv");
             logger.info("Coverage report a priori generated.");
 
             // Generate coverage report (input coverage a posteriori)
-            exportCoverageReport(coverageMeter.getAPosteriorCoverageMeter(), coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.posteriori.file"));
+            exportCoverageReport(coverageMeter.getAPosteriorCoverageMeter(), coverageDataDir + "/" + PropertyManager.readProperty("data.coverage.computation.posteriori.file") + "_" + testId + ".csv");
             logger.info("Coverage report a posteriori generated.");
 
         }
