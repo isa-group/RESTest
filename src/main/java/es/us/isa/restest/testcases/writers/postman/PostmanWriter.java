@@ -12,6 +12,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /** This class defines a test writer for Postman. It creates a JSON file with a collection of
@@ -93,8 +96,17 @@ public class PostmanWriter implements IWriter {
         StringBuilder queryParamsString = new StringBuilder("?");
         List<Query> queryParams = new ArrayList<>();
         for (Map.Entry<String, String> queryParam : tc.getQueryParameters().entrySet()) {
-            queryParams.add(new Query(queryParam.getKey(), queryParam.getValue()));
-            queryParamsString.append(queryParam.getKey()).append("=").append(queryParam.getValue()).append("&");
+            String queryParamName = null;
+            String queryParamValue;
+            try {
+                queryParamName = queryParam.getKey();
+                queryParamValue = URLEncoder.encode(queryParam.getValue(), StandardCharsets.UTF_8.toString());
+            } catch (UnsupportedEncodingException e) {
+                logger.error("Query parameter {} could not be URLencoded. Adding it without encoding.", queryParam.getKey());
+                queryParamValue = queryParam.getValue();
+            }
+            queryParams.add(new Query(queryParamName, queryParamValue));
+            queryParamsString.append(queryParamName).append("=").append(queryParamValue).append("&");
         }
 
         String fullUrl = baseURI.replaceAll("/$", "") + pathParamsString + queryParamsString.substring(0, queryParamsString.length()-1);
