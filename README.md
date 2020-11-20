@@ -54,24 +54,59 @@ Let's try RESTest with some API, for example, [Bikewise](https://bikewise.org/).
 1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/Properties-files). You can find the RESTest configuration file for the Bikewise API at `src/main/resources/ExperimentsSetup/bikewise.properties`. With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`:
 
 ```properties
-numtestcases=10
-oaispecpath=src/test/resources/Bikewise/swagger.yaml
-confpath=src/test/resources/Bikewise/testConf.yaml
-targetdirjava=src/generation/java/bikewise_example
-packagename=bikewise_example
-experimentname=bikewise_example
-testclassname=BikewiseTest
-enableinputcoverage=true
-enableoutputcoverage=true
-enablecsvstats=true
-ignoredependencies=true
-numtotaltestcases=40
-delay=-1
-faultyratio=0
+# CONFIGURATION PARAMETERS
 
-# CBT only:
-faultydependencyratio=0
+# Test case generator
+generator=CBT
+
+# Number of test cases to be generated per operation on each iteration
+testsperoperation=5
+
+# OAS specification
+oas.path=src/test/resources/Bikewise/swagger.yaml
+
+# Test configuration file
+conf.path=src/test/resources/Bikewise/fullConf.yaml
+
+# Directory where the test cases will be generated  
+test.target.dir=src/generation/java/bikewise
+
+# Package name
+test.target.package=bikewise
+
+# Experiment name (for naming related folders and files)
+experiment.name=bikewise
+
+# Name of the test class to be generated
+testclass.name=BikewiseTest
+
+# Measure input coverage
+coverage.input=true
+
+# Measure output coverage
+coverage.output=true
+
+# Enable CSV statistics
+stats.csv=true
+
+# Maximum number of test cases to be generated
+numtotaltestcases=40
+
+# Optional delay between each iteration (in seconds)
+delay=-1
+
+# Ratio of faulty test cases to be generated (negative testing)
+faulty.ratio=0
+
+# CONFIGURATION SETTINGS FOR CONSTRAINT-BASED TESTING
+
+# Ratio of faulty test cases to be generated due to broken dependencies.
+faulty.dependency.ratio=0
+
+# Number of test cases after which new test data will be loaded.
 reloadinputdataevery=10
+
+# Max number of data values for each parameter
 inputdatamaxvalues=10
 ```
 
