@@ -15765,7 +15765,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -15892,7 +15892,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -16019,7 +16019,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -16146,7 +16146,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -16273,7 +16273,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -16400,7 +16400,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -16554,7 +16554,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -16708,7 +16708,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -16835,7 +16835,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -16962,7 +16962,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -17085,19 +17085,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomDate
+        type: RandomRegExp
         genParameters:
-        - name: startDate
+        - name: regExp
           values:
-          - 2007-10-08
-          objectValues: null
-        - name: endDate
-          values:
-          - 2018-05-10
-          objectValues: null
-        - name: format
-          values:
-          - yyyy-MM-dd
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -17220,19 +17212,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomDate
+        type: RandomRegExp
         genParameters:
-        - name: startDate
+        - name: regExp
           values:
-          - 2007-10-08
-          objectValues: null
-        - name: endDate
-          values:
-          - 2018-05-10
-          objectValues: null
-        - name: format
-          values:
-          - yyyy-MM-dd
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -17375,7 +17359,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -17518,7 +17502,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - '//P[123]Y([1-9]|(1[01]))M([1-9]|(1[0-9])|(2[0-8]))D'
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -17668,19 +17652,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomDate
+        type: RandomRegExp
         genParameters:
-        - name: startDate
+        - name: regExp
           values:
-          - 2007-10-08
-          objectValues: null
-        - name: endDate
-          values:
-          - 2018-05-10
-          objectValues: null
-        - name: format
-          values:
-          - yyyy-MM-dd
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -17830,19 +17806,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomDate
+        type: RandomRegExp
         genParameters:
-        - name: startDate
+        - name: regExp
           values:
-          - 2007-10-08
-          objectValues: null
-        - name: endDate
-          values:
-          - 2018-05-10
-          objectValues: null
-        - name: format
-          values:
-          - yyyy-MM-dd
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -17965,19 +17933,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomDate
+        type: RandomRegExp
         genParameters:
-        - name: startDate
+        - name: regExp
           values:
-          - 2007-10-08
-          objectValues: null
-        - name: endDate
-          values:
-          - 2018-05-10
-          objectValues: null
-        - name: format
-          values:
-          - yyyy-MM-dd
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
@@ -18100,19 +18060,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomDate
+        type: RandomRegExp
         genParameters:
-        - name: startDate
+        - name: regExp
           values:
-          - 2007-10-08
-          objectValues: null
-        - name: endDate
-          values:
-          - 2018-05-10
-          objectValues: null
-        - name: format
-          values:
-          - yyyy-MM-dd
+          - '//P([123]Y)?(([1-9]|(1[01]))M)?([1-9]|(1[0-9])|(2[0-8]))D'
           objectValues: null
     - name: timeout
       in: query
