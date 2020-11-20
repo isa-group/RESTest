@@ -226,11 +226,9 @@ public class TestGenerationAndExecution {
 		targetDirJava = readParameterValue("test.target.dir");
 		logger.info("Target dir for test classes: {}", targetDirJava);
 		
-		packageName = readParameterValue("test.target.package");
-		logger.info("Package name: {}", packageName);
-		
 		experimentName = readParameterValue("experiment.name");
 		logger.info("Experiment name: {}", experimentName);
+		packageName = experimentName;
 		
 		testClassName = readParameterValue("testclass.name");
 		logger.info("Test class name: {}", testClassName);
