@@ -31,6 +31,7 @@ public class RESTAssuredWriter implements IWriter {
 	private String specPath;						// Path to OAS specification file
 	private String testFilePath;					// Path to test configuration file
 	private String className;						// Test class name
+	private String testId;							// Test suite ID
 	private String packageName;						// Package name
 	private String baseURI;							// API base URI
 
@@ -141,7 +142,8 @@ public class RESTAssuredWriter implements IWriter {
 
 		if (enableStats || enableOutputCoverage) { // This is only needed to export output data to the proper folder
 			content += "\tprivate static final String APIName = \"" + APIName + "\";\n"
-					+  "\tprivate static final CSVFilter csvFilter = new CSVFilter(APIName);\n";
+					+  "\tprivate static final String testId = \"" + testId + "\";\n"
+					+  "\tprivate static final CSVFilter csvFilter = new CSVFilter(APIName, testId);\n";
 		}
 
 		content += "\n";
@@ -158,8 +160,11 @@ public class RESTAssuredWriter implements IWriter {
 
 		if (enableStats || enableOutputCoverage) {
 			content += "\t\tstatusCode5XXFilter.setAPIName(APIName);\n"
+					+  "\t\tstatusCode5XXFilter.setTestId(testId);\n"
 					+  "\t\tnominalOrFaultyTestCaseFilter.setAPIName(APIName);\n"
-					+  "\t\tvalidationFilter.setAPIName(APIName);\n";
+					+  "\t\tnominalOrFaultyTestCaseFilter.setTestId(testId);\n"
+					+  "\t\tvalidationFilter.setAPIName(APIName);\n"
+					+  "\t\tvalidationFilter.setTestId(testId);\n";
 		}
 
 		content += "\t}\n\n";
@@ -579,5 +584,9 @@ public class RESTAssuredWriter implements IWriter {
 
 	public void setAPIName(String APIName) {
 		this.APIName = APIName;
+	}
+
+	public void setTestId(String testId) {
+		this.testId = testId;
 	}
 }

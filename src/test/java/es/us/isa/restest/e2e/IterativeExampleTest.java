@@ -20,10 +20,8 @@ public class IterativeExampleTest {
         assertTrue(checkIfExists("target/allure-results/bikewise"));
         assertTrue(checkIfExists("target/allure-reports/bikewise"));
         assertTrue(checkIfExists("target/test-data/bikewise/time.csv"));
-        assertTrue(checkIfExists("target/coverage-data/bikewise/test-coverage-priori.csv"));
-        assertTrue(checkIfExists("target/coverage-data/bikewise/test-coverage-posteriori.csv"));
-        assertTrue(checkIfExists("target/test-data/bikewise/test-cases.csv"));
-        assertTrue(checkIfExists("target/test-data/bikewise/test-results.csv"));
+        assertTrue(checkIfExists("target/coverage-data/bikewise"));
+        assertTrue(checkIfExists("target/test-data/bikewise"));
 
     }
 }

@@ -13,6 +13,7 @@ import io.restassured.response.Response;
 public class OracleFilter {
 
     protected String APIName;
+    protected String testId;
     protected String testResultId;
 
     public OracleFilter() {
@@ -24,14 +25,14 @@ public class OracleFilter {
         this.APIName = APIName;
     }
 
-    public OracleFilter(String testResultId, String APIName) {
+    public OracleFilter(String APIName, String testId) {
         super();
-        this.testResultId = testResultId;
+        this.testId = testId;
         this.APIName = APIName;
     }
 
     protected void exportTestResultToCSV(Response response, Boolean passed, String failReason) {
-        String testDataFile = PropertyManager.readProperty("data.tests.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.tests.testresults.file");
+        String testDataFile = PropertyManager.readProperty("data.tests.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
         TestResult tr = new TestResult(testResultId, Integer.toString(response.statusCode()), response.asString(), response.contentType(), passed, failReason);
         tr.exportToCSV(testDataFile);
     }
@@ -56,5 +57,9 @@ public class OracleFilter {
 
     public void setAPIName(String APIName) {
         this.APIName = APIName;
+    }
+
+    public void setTestId(String testId) {
+        this.testId = testId;
     }
 }
