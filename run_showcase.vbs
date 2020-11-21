@@ -2,30 +2,30 @@
 Set objShell = WScript.CreateObject("WScript.Shell")
 
 ' Test YouTube Search API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/YouTube/youtube_search.properties > target/logs/log_youtube_search.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=youtube_search -jar restest-full.jar data\YouTube\youtube_search.properties > logs/log_youtube_search.log"), 0, True
 
 ' Test YouTube Videos API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/YouTube/youtube_getVideos.properties > target/logs/log_youtube_getVideos.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=youtube_getVideos -jar restest-full.jar data\YouTube\youtube_getVideos.properties > logs/log_youtube_getVideos.log"), 0, True
 
 ' Test YouTube Comments API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/YouTube/youtube_getCommentThreads.properties > target/logs/log_youtube_getCommentThreads.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=youtube_getCommentThreads -jar restest-full.jar data\YouTube\youtube_getCommentThreads.properties > logs/log_youtube_getCommentThreads.log"), 0, True
 
 ' Test Stripe Coupons API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/Stripe/stripe_createCoupon.properties > target/logs/log_stripe_createCoupon.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=stripe_createCoupon -jar restest-full.jar data\Stripe\stripe_createCoupon.properties > logs/log_stripe_createCoupon.log"), 0, True
 
 ' Test Stripe Products API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/Stripe/stripe_createProduct.properties > target/logs/log_stripe_createProduct.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=stripe_createProduct -jar restest-full.jar data\Stripe\stripe_createProduct.properties > logs/log_stripe_createProduct.log"), 0, True
 
 ' Test GitHub API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/GitHub/github_getUserRepos.properties > target/logs/log_github.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=github_getUserRepos -jar restest-full.jar data\GitHub\github_getUserRepos.properties > logs/log_github.log"), 0, True
 
 ' Test Tumblr API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/Tumblr/tumblr.properties > target/logs/log_tumblr.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=tumblr -jar restest-full.jar data\Tumblr\tumblr.properties > logs/log_tumblr.log"), 0, True
 
 ' Test Foursquare API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/Foursquare/foursquare.properties > target/logs/log_foursquare.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=foursquare -jar restest-full.jar data\Foursquare\foursquare.properties > logs/log_foursquare.log"), 0, True
 
 ' Test Yelp API
-objShell.Run("cmd.exe /C start /B java -jar target/restest-full.jar src/test/resources/Yelp/yelp_businessesSearch.properties > target/logs/yelp_businessesSearch.txt"), 0, True
+objShell.Run("cmd.exe /C start /B java -Dname=yelp_businessesSearch -jar restest-full.jar data\Yelp\yelp_businessesSearch.properties > logs/yelp_businessesSearch.log"), 0, True
 
 WScript.Echo("The showcase is running in background. You can close this window.")
