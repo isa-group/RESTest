@@ -2,6 +2,10 @@ package es.us.isa.restest.util;
 
 import java.util.*;
 
+import static es.us.isa.restest.util.CSVManager.createCSVwithHeader;
+import static es.us.isa.restest.util.CSVManager.writeCSVRow;
+import static es.us.isa.restest.util.FileManager.checkIfExists;
+
 public class Timer {
 
     private static Map<String, List<Long>> counters = new HashMap<>();
@@ -25,6 +29,47 @@ public class Timer {
         Long stopTime = new Date().getTime();
         List<Long> stepMeasures = counters.get(step.name);
         stepMeasures.set(stepMeasures.size()-1, stopTime+stepMeasures.get(stepMeasures.size()-1));
+    }
+
+    public static void exportToCSV(String path, Integer iterations) {
+        if (!checkIfExists(path)) { // If the file doesn't exist, create it (only once)
+            StringBuilder header = new StringBuilder();
+            boolean first = true;
+
+            for(String counterName : counters.keySet()) {
+                if (first) {
+                    header.append(counterName);
+                    first = false;
+                } else header.append(",").append(counterName);
+            }
+
+            createCSVwithHeader(path, header.toString());
+
+
+            for(int i = 0; i < iterations; i++) {
+                writeRow(path, i);
+            }
+        }
+    }
+
+    private static void writeRow(String path, int i) {
+        StringBuilder row = new StringBuilder();
+        boolean first = true;
+
+        for(Map.Entry<String, List<Long>> entry : counters.entrySet()) {
+            Long value;
+
+            if(entry.getKey().equals("Whole process")) {
+                value = entry.getValue().get(0);
+            } else value = entry.getValue().get(i);
+
+            if (first) {
+                row.append(value);
+                first = false;
+            } else row.append(",").append(value);
+        }
+
+        writeCSVRow(path, row.toString());
     }
 
     public enum TestStep {

@@ -20,7 +20,7 @@ The figure below shows how RESTest works:
 
 1. **Abstract test case generation**: The system and the test models drive the generation of abstract test cases following user-defined test case generation strategies such as random testing. In parallel, inter-parameter dependencies, if any, are fed into the tool [IDLReasoner](https://github.com/isa-group/IDLReasoner), providing support for their automated analysis during test case generation, for instance, to check whether an API call satisfies all the inter-parameter dependencies defined in the specification.
 
-1. **Test case generation**: The abstract test cases are instantiated into a specific programming language or testing framework using a [test writer](https://github.com/isa-group/RESTest/wiki/Writers). RESTest currently supports the generation of [REST Assured](http://rest-assured.io/) test cases.
+1. **Test case generation**: The abstract test cases are instantiated into a specific programming language or testing framework using a [test writer](https://github.com/isa-group/RESTest/wiki/Test-writers). RESTest currently supports the generation of [REST Assured](http://rest-assured.io/) test cases.
 
 1. **Test case execution**: The test cases are executed and a set of reports and statistics are generated. These data are machine-readable, therefore test generation algorithms can react to them and generate more sophisticated test cases (e.g., with search-based approaches).
 
@@ -38,7 +38,7 @@ To build and run RESTest, you **MUST** include the dependencies in the `lib` fol
 ```sh
 mvn install:install-file -Dfile=lib/JSONmutator.jar -DgroupId=es.us.isa -DartifactId=json-mutator -Dversion=0.0.1-SNAPSHOT -Dpackaging=jar
 mvn install:install-file -Dfile=lib/IDL2MiniZincMapper.jar -DgroupId=es.us.isa -DartifactId=idl-2-minizinc-mapper -Dversion=0.0.1-SNAPSHOT -Dpackaging=jar
-mvn install:install-file -Dfile=lib/IDLreasoner.jar -DgroupId=es.us.isa -DartifactId=idl-reasoner -Dversion=0.0.1-SNAPSHOT -Dpackaging=jar
+mvn org.apache.maven.plugins:maven-install-plugin:3.0.0-M1:install-file -Dfile=lib/IDLreasoner.jar
 ```
 
 ### Setting up RESTest
@@ -51,31 +51,66 @@ Let's try RESTest with some API, for example, [Bikewise](https://bikewise.org/).
 
 1. **(Optional) Modify the test configuration file to tailor your needs**. For example, you can remove some operations you are not interested to test. For more info, visit the [Wiki](https://github.com/isa-group/RESTest/wiki/Test-configuration-files).
 
-1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/Properties-files). You can find the RESTest configuration file for the Bikewise API at `src/main/resources/ExperimentsSetup/bikewise.properties`. With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`:
+1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/RESTest-configuration-files). You can find the RESTest configuration file for the Bikewise API at `src/main/resources/ExperimentsSetup/bikewise.properties`. With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`:
 
 ```properties
-numtestcases=10
-oaispecpath=src/test/resources/Bikewise/swagger.yaml
-confpath=src/test/resources/Bikewise/testConf.yaml
-targetdirjava=src/generation/java/bikewise_example
-packagename=bikewise_example
-experimentname=bikewise_example
-testclassname=BikewiseTest
-enableinputcoverage=true
-enableoutputcoverage=true
-enablecsvstats=true
-ignoredependencies=true
-numtotaltestcases=40
-delay=-1
-faultyratio=0
+# CONFIGURATION PARAMETERS
 
-# CBT only:
-faultydependencyratio=0
+# Test case generator
+generator=CBT
+
+# Number of test cases to be generated per operation on each iteration
+testsperoperation=5
+
+# OAS specification
+oas.path=src/test/resources/Bikewise/swagger.yaml
+
+# Test configuration file
+conf.path=src/test/resources/Bikewise/fullConf.yaml
+
+# Directory where the test cases will be generated  
+test.target.dir=src/generation/java/bikewise
+
+# Package name
+test.target.package=bikewise
+
+# Experiment name (for naming related folders and files)
+experiment.name=bikewise
+
+# Name of the test class to be generated
+testclass.name=BikewiseTest
+
+# Measure input coverage
+coverage.input=true
+
+# Measure output coverage
+coverage.output=true
+
+# Enable CSV statistics
+stats.csv=true
+
+# Maximum number of test cases to be generated
+numtotaltestcases=40
+
+# Optional delay between each iteration (in seconds)
+delay=-1
+
+# Ratio of faulty test cases to be generated (negative testing)
+faulty.ratio=0
+
+# CONFIGURATION SETTINGS FOR CONSTRAINT-BASED TESTING
+
+# Ratio of faulty test cases to be generated due to broken dependencies.
+faulty.dependency.ratio=0
+
+# Number of test cases after which new test data will be loaded.
 reloadinputdataevery=10
+
+# Max number of data values for each parameter
 inputdatamaxvalues=10
 ```
 
-5. **Run RESTest**. Edit [the following line of IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java#L62) to set the path to the properties file. Then, run the [IterativeExample](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/IterativeExample.java) class, located under the `es.us.isa.restest.main` package.
+5. **Run RESTest**. Edit [the following line of TestGenerationAndExecution](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/TestGenerationAndExecution.java#L36) to set the path to the RESTest configuration file. Then, run the [TestGenerationAndExecution](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/TestGenerationAndExecution.java) class, located under the `es.us.isa.restest.main` package.
 
 ````java
 setEvaluationParameters("src/main/resources/ExperimentsSetup/bikewise.properties");

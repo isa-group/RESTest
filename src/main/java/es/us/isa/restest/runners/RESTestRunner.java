@@ -26,6 +26,7 @@ public class RESTestRunner {
 
 	protected String targetDir;							// Directory where tests will be generated
 	protected String testClassName;						// Name of the class to be generated
+	private String testId;
 	private String packageName;							// Package name
 	private AbstractTestCaseGenerator generator;   		// Test case generator
 	protected IWriter writer;							// RESTAssured writer
@@ -64,7 +65,7 @@ public class RESTestRunner {
 
 		// Generate coverage report
 		logger.info("Generating coverage report");
-		statsReportManager.generateReport();
+		statsReportManager.generateReport(testId);
 	}
 
 	protected Class<?> getTestClass() {
@@ -129,5 +130,9 @@ public class RESTestRunner {
 	
 	public void resetNumTestCases() {
 		this.numTestCases=0;
+	}
+
+	public void setTestId(String testId) {
+		this.testId = testId;
 	}
 }

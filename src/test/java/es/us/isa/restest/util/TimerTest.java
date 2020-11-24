@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static es.us.isa.restest.util.Timer.TestStep.*;
+import static es.us.isa.restest.util.Timer.exportToCSV;
 import static es.us.isa.restest.util.Timer.resetCounters;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -48,12 +49,11 @@ public class TimerTest {
         assertTrue("The second TEST_SUITE_GENERATION counter should have lasted 1000ms at least", Timer.getCounters().get(TEST_SUITE_GENERATION.getName()).get(1) >= 400);
         assertTrue("The second TEST_SUITE_EXECUTION counter should have lasted 0ms at least", Timer.getCounters().get(TEST_SUITE_EXECUTION.getName()).get(1) >= 200);
 
-        ObjectMapper mapper = new ObjectMapper();
         String timePath = PropertyManager.readProperty("data.tests.dir") + "/" + PropertyManager.readProperty("data.tests.time");
-        try {
-            mapper.writeValue(new File(timePath), Timer.getCounters());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        exportToCSV(timePath, 2);
+        assertTrue("The time report should have been created in " + timePath, FileManager.checkIfExists(timePath));
+
     }
+
+
 }

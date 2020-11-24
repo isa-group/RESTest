@@ -15,12 +15,13 @@ jMetal.log
 /src/test/resources/csvData/test-results.csv
 /src/test/resources/csvData/test-results-coverage.csv
 /src/test/resources/csvData/test-coverage.json
+/src/test/resources/csvData/test-coverage.csv
 
-/src/main/resources/auth/*
-!/src/main/resources/auth/Sample
-/src/main/resources/auth/Sample/*
-!/src/main/resources/auth/Sample/apikeys.json
-!/src/main/resources/auth/Sample/headers.json
+/src/test/resources/auth/*
+!/src/test/resources/auth/Sample
+/src/test/resources/auth/Sample/*
+!/src/test/resources/auth/Sample/apikeys.json
+!/src/test/resources/auth/Sample/headers.json
 
 /idl_aux_files
 src/test/resources/file-manager/*

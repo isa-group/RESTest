@@ -1,6 +1,7 @@
 package es.us.isa.restest.generators;
 
 import static es.us.isa.restest.util.IDLAdapter.idl2restestTestCase;
+import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 import static es.us.isa.restest.util.Timer.TestStep.TEST_CASE_GENERATION;
 
@@ -126,13 +127,13 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	public TestCase generateNextTestCase(Operation testOperation) throws RESTestException {
 		
 		TestCase test = null;
-		
-		if (nFaultyTestsDueToIndividualConstraint < maxFaultyTestsDueToIndividualConstraints)		// Try generating a faulty test case violating an individual constraint
-			test = generateNextTestCase(testOperation, INDIVIDUAL_PARAMETER_CONSTRAINT);
-		
-		else if (nFaultyTestDueToDependencyViolations < maxFaultyTestDueToDependencyViolations)		// Try generating a faulty test case violating one or more inter-parameter dependency
+
+		if (nFaultyTestDueToDependencyViolations < maxFaultyTestDueToDependencyViolations)		// Try generating a faulty test case violating one or more inter-parameter dependency
 			test = generateNextTestCase(testOperation, INTER_PARAMETER_DEPENDENCY);
-			
+
+		else if (nFaultyTestsDueToIndividualConstraint < maxFaultyTestsDueToIndividualConstraints)		// Try generating a faulty test case violating an individual constraint
+			test = generateNextTestCase(testOperation, INDIVIDUAL_PARAMETER_CONSTRAINT);
+
 		// If a faulty test case has not been created. Generate a valid test case.
 		if (test==null)
 			test = generateNextTestCase(testOperation, "none");
@@ -204,7 +205,8 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 			test.setFaulty(true);
 			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
 			nFaultyTestsDueToIndividualConstraint++;
-		}	
+		} else
+			test = null;
 	
 		return test;
 	}

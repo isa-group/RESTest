@@ -1,6 +1,5 @@
 package es.us.isa.restest.main;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
@@ -17,8 +16,6 @@ import es.us.isa.restest.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +30,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/main/resources/ExperimentsSetup/api.properties";
+	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
 	private static OpenAPISpecification spec; 							// OAS specification
@@ -88,9 +85,12 @@ public class TestGenerationAndExecution {
 				delay(timeDelay);
 
 			// Generate unique test class name to avoid the same class being loaded everytime
-			String className = testClassName + "_" + IDGenerator.generateId();
+			String id = IDGenerator.generateId();
+			String className = testClassName + "_" + id;
 			((RESTAssuredWriter) writer).setClassName(className);
+			((RESTAssuredWriter) writer).setTestId(id);
 			runner.setTestClassName(className);
+			runner.setTestId(id);
 
 			// Test case generation + execution + test report generation
 			runner.run();
@@ -101,7 +101,7 @@ public class TestGenerationAndExecution {
 
 		Timer.stopCounting(ALL);
 
-		generateTimeReport();
+		generateTimeReport(iteration-1);
 	}
 
 
@@ -184,12 +184,11 @@ public class TestGenerationAndExecution {
 				enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
 	}
 
-	private static void generateTimeReport() {
-		ObjectMapper mapper = new ObjectMapper();
+	private static void generateTimeReport(Integer iterations) {
 		String timePath = readParameterValue("data.tests.dir") + "/" + experimentName + "/" + readParameterValue("data.tests.time");
 		try {
-			mapper.writeValue(new File(timePath), Timer.getCounters());
-		} catch (IOException e) {
+			Timer.exportToCSV(timePath, iterations);
+		} catch (RuntimeException e) {
 			logger.error("The time report cannot be generated. Stack trace:");
 			logger.error(e.getMessage());
 		}
@@ -227,11 +226,9 @@ public class TestGenerationAndExecution {
 		targetDirJava = readParameterValue("test.target.dir");
 		logger.info("Target dir for test classes: {}", targetDirJava);
 		
-		packageName = readParameterValue("test.target.package");
-		logger.info("Package name: {}", packageName);
-		
 		experimentName = readParameterValue("experiment.name");
 		logger.info("Experiment name: {}", experimentName);
+		packageName = experimentName;
 		
 		testClassName = readParameterValue("testclass.name");
 		logger.info("Test class name: {}", testClassName);

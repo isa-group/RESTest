@@ -8,6 +8,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static es.us.isa.restest.util.CSVManager.createCSVwithHeader;
+import static es.us.isa.restest.util.CSVManager.writeCSVRow;
+import static es.us.isa.restest.util.FileManager.checkIfExists;
+
 /**
  * Class that represents the results of the coverage computation of a test. It details the total
  * coverage, the input coverage, the output coverage and the coverage of every coverage criterion, plus
@@ -266,6 +270,25 @@ public class CoverageResults {
     public void exportCoverageReportToJSON(String path) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(new File(path), this);
+    }
+
+    public void exportCoverageReportToCSV(String path) {
+        if (!checkIfExists(path))  { // If the file doesn't exist, create it (only once)
+            StringBuilder header = new StringBuilder("coverageLevel,totalCoverage,inputCoverage,outputCoverage,pathCoverage,operationCoverage,inputContentTypeCoverage," +
+                    "outputContentTypeCoverage,parameterCoverage,statusCodeClassCoverage,parameterValueCoverage,statusCodeCoverage,responseBodyPropertiesCoverage");
+            for(CoverageCriterionResult cc : coverageOfCoverageCriteria) {
+                header.append(",").append(cc.getCoverageCriterion());
+            }
+            createCSVwithHeader(path, header.toString());
+        }
+
+        StringBuilder row = new StringBuilder(coverageLevel + "," + totalCoverage + "," + inputCoverage + "," + outputCoverage + "," + pathCoverage + "," + operationCoverage + "," + inputContentTypeCoverage +
+                "," + outputContentTypeCoverage + "," + parameterCoverage + "," + statusCodeClassCoverage + "," + parameterValueCoverage + "," + statusCodeCoverage + "," +
+                responseBodyPropertiesCoverage);
+        for(CoverageCriterionResult cc : coverageOfCoverageCriteria) {
+            row.append(",").append(cc.getCoverage());
+        }
+        writeCSVRow(path, row.toString());
     }
 
 

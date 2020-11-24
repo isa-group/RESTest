@@ -12,18 +12,16 @@ public class IterativeExampleTest {
 
     @Test
     public void testIterativeExampleWithBasicPropertiesFile() throws RESTestException {
-        String[] args = {"src/main/resources/ExperimentsSetup/bikewise_test.properties"};
+        String[] args = {"src/test/resources/Bikewise/bikewise_test.properties"};
         TestGenerationAndExecution.main(args);
 
         assertTrue(checkIfExists("src/generation/java/bikewise"));
 
         assertTrue(checkIfExists("target/allure-results/bikewise"));
         assertTrue(checkIfExists("target/allure-reports/bikewise"));
-        assertTrue(checkIfExists("target/test-data/bikewise/time.json"));
-        assertTrue(checkIfExists("target/coverage-data/bikewise/test-coverage-priori.json"));
-        assertTrue(checkIfExists("target/coverage-data/bikewise/test-coverage-posteriori.json"));
-        assertTrue(checkIfExists("target/test-data/bikewise/test-cases.csv"));
-        assertTrue(checkIfExists("target/test-data/bikewise/test-results.csv"));
+        assertTrue(checkIfExists("target/test-data/bikewise/time.csv"));
+        assertTrue(checkIfExists("target/coverage-data/bikewise"));
+        assertTrue(checkIfExists("target/test-data/bikewise"));
 
     }
 }
