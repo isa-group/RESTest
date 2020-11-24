@@ -9,7 +9,7 @@ addons:
     token:
       secure: rTGm+VAl9LAxGiigH/7S/kxR7ug8XldGRZhz0SOZXj+qqOT+piIHt42u/7b485B+f5ku+dEjeDmuHL08+DfYg7CgE70dgKIodtTjSjBioOTiUkSegGChFWg6livSHeDNXQ6Ok1+Htv4otpU9BdxJsWNbKcNadaicy5sgsBp2ug2ePOMQZfhS0gbhtRJtK76E3GyYjJJsi2R9V+qmK6o1swUvBYuQXBYQRTxp0k0NWdQWS8Mmfo0VfSx+x5sXVXfLIXL2ltOzY7bvD4Q6z+JyNWvg6dM3zZ/6VvGOVAon3p+jLY0mwYJWvyFFiycF1VqqOdADy5I0cnjgjlgmN+Epa4311dLsp4Q91op/SLsCOd0Uf1R29PN1Gs0V4jo+gsIJy/9DAkADJrQihpM1t0/XwfVdKieAVua0sy+HH1GGZ1DOUWSlPJ9B+p1bGhFygFyVphmvD51HKe4z7uhkEAgTxpYYcpDCgpi4gaT7TXZrPbEcIpgvl+vo8cVjptbJk21kk48ZjB1oxKUjBaHeGgu7qbcC3SDeZ8ATyV1RJTcjWaYqcoMRJcnc5Jz7jBrOfPn1rjL2t4BvsmSh5kPTW4+cWQ+9TlFUK6swBEShu0FzWuP1f4jqJRMxulyGEYIk5AI3VQ1xyE5RZ9y2K5mn78N5+y1qydaByZuOb9nm4CT49Zs=
 install:
-  - ./install_dependencies.sh
+  - ./scripts/install_dependencies.sh
 script:
 - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=isa-group_RESTest
   -Dsonar.projectName=RESTest -Dsonar.sources=src/main/java -Dsonar.tests=src/test/java
