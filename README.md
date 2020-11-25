@@ -51,7 +51,7 @@ Let's try RESTest with some API, for example, [Bikewise](https://bikewise.org/).
 
 1. **(Optional) Modify the test configuration file to tailor your needs**. For example, you can remove some operations you are not interested to test. For more info, visit the [Wiki](https://github.com/isa-group/RESTest/wiki/Test-configuration-files).
 
-1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/RESTest-configuration-files). You can find the RESTest configuration file for the Bikewise API at `src/main/resources/ExperimentsSetup/bikewise.properties`. With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`:
+1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/RESTest-configuration-files). You can find the RESTest configuration file for the Bikewise API at `src/test/resources/Bikewise/bikewise.properties`. With this configuration, a total of 40 nominal test cases will be randomly generated, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise_example`:
 
 ```properties
 # CONFIGURATION PARAMETERS
@@ -113,7 +113,7 @@ inputdatamaxvalues=10
 5. **Run RESTest**. Edit [the following line of TestGenerationAndExecution](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/TestGenerationAndExecution.java#L36) to set the path to the RESTest configuration file. Then, run the [TestGenerationAndExecution](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/TestGenerationAndExecution.java) class, located under the `es.us.isa.restest.main` package.
 
 ````java
-setEvaluationParameters("src/main/resources/ExperimentsSetup/bikewise.properties");
+setEvaluationParameters("src/test/resources/Bikewise/bikewise.properties");
 ````
 
 ### Generated test cases and test reports
@@ -172,5 +172,5 @@ mvn clean install -DskipTests
 Then, run the JAR file passing as argument the path to the properties file, for example:
 
 ```
-java -jar target/restest-full.jar src/main/resources/ExperimentsSetup/bikewise.properties
+java -jar target/restest-full.jar src/test/resources/Bikewise/bikewise.properties
 ```

@@ -9,7 +9,9 @@ import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 
+import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static es.us.isa.restest.util.FileManager.deleteFile;
+import static org.junit.Assert.assertTrue;
 
 public class DefaultTestConfigurationGeneratorTest {
 
@@ -28,6 +30,7 @@ public class DefaultTestConfigurationGeneratorTest {
 		
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 	
@@ -60,6 +63,7 @@ public class DefaultTestConfigurationGeneratorTest {
 		gen.generate(confPath
 //				, filters
 		);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 		
 	}
@@ -79,6 +83,7 @@ public class DefaultTestConfigurationGeneratorTest {
 		
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -97,6 +102,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 	
@@ -115,6 +121,7 @@ public class DefaultTestConfigurationGeneratorTest {
 		
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -133,6 +140,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -151,6 +159,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -169,6 +178,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -187,6 +197,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -205,14 +216,15 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
 	@Test
 	public void testYouTubeFullTestConfigurationGeneration() {
 
-		String specPath="src/main/resources/YouTube/swagger.yaml";
-		String confPath="src/main/resources/YouTube/testConf_test.yaml";
+		String specPath="src/test/resources/YouTube/swagger.yaml";
+		String confPath="src/test/resources/YouTube/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
 		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
@@ -243,6 +255,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -261,6 +274,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -279,6 +293,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -297,6 +312,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -315,6 +331,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -335,6 +352,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -353,6 +371,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -371,6 +390,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -389,6 +409,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -407,6 +428,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -425,6 +447,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -443,6 +466,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -461,6 +485,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -479,6 +504,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 
@@ -496,6 +522,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
 		deleteFile(confPath);
 	}
 

@@ -13,7 +13,7 @@ public class CreateTestConfTest {
         String[] args = {};
         CreateTestConf.main(args);
 
-        assertTrue(checkIfExists("src/test/resources/BigOven/testConf.yaml"));
+        assertTrue(checkIfExists("src/test/resources/Folder/testConf.yaml"));
     }
 
     @Test

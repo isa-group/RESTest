@@ -24,7 +24,7 @@ public class AllureAuthManagerTest {
 
     @BeforeClass
     public static void setUp() {
-        testOas = new OpenAPISpecification("src/main/resources/TestConfigurationMetamodel/openapi.yaml");
+        testOas = new OpenAPISpecification("src/test/resources/restest-test-resources/openapi.yaml");
 
         firstHtml = FileManager.readFile("src/test/resources/htmlData/htmlSample.html");
         secondHtml = FileManager.readFile("src/test/resources/htmlData/htmlSample1.html");
@@ -32,7 +32,7 @@ public class AllureAuthManagerTest {
 
     @Test
     public void shouldFindAuthProperties() {
-        List<String> properties = findAuthProperties(testOas, "src/main/resources/TestConfigurationMetamodel/configuration-model.yaml");
+        List<String> properties = findAuthProperties(testOas, "src/test/resources/restest-test-resources/configuration-model.yaml");
         MatcherAssert.assertThat(properties, contains("Parameter name"));
     }
 
