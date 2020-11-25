@@ -174,3 +174,8 @@ Then, run the JAR file passing as argument the path to the properties file, for 
 ```
 java -jar target/restest-full.jar src/test/resources/Bikewise/bikewise.properties
 ```
+
+## License
+RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
+
+RESTest also includes MiniZinc &copy; 2014-2020 Monash University and Data61, CSIRO. Its source code is available from [GitHub](https://github.com/MiniZinc/libminizinc) under the MPL 2.0 License, which can be obtained from https://www.mozilla.org/en-US/MPL/2.0.
