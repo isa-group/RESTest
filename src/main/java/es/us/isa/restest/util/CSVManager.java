@@ -96,25 +96,11 @@ public class CSVManager {
 	 * Create a new CSV file in the given path and with the given header.
 	 * @param path Path where to place the file. Parent folders must be already created
 	 * @param header Header to add to the first line. If null, no header will be added
-	 * @param delimiter Character used to separate row values
-	 */
-	public static void createCSVwithHeader(String path, String header, char delimiter) {
-		deleteFile(path); // delete file if it exists
-		createFileIfNotExists(path);
-		try {
-			new CSVPrinter(new FileWriter(path), CSVFormat.DEFAULT.withHeader(header).withDelimiter(delimiter));
-			writeCSVRow(path, header);
-		} catch (IOException e) {
-			logger.error("The CSV could not be created: {}", path);
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Call {@link #createCSVwithHeader(String path, String header, char delimiter)} with delimiter=','
 	 */
 	public static void createCSVwithHeader(String path, String header) {
-		createCSVwithHeader(path, header, ',');
+		deleteFile(path); // delete file if it exists
+		createFileIfNotExists(path);
+		writeCSVRow(path, header);
 	}
 
 	public static void writeCSVRow(String path, String row) {
