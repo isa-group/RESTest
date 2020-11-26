@@ -1,5 +1,0 @@
-id: return-index
-name: Return to index
-description: The aggregators allows the user to return to index.
-jsFiles:
-  - index.js
