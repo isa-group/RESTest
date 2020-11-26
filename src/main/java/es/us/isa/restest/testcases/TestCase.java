@@ -434,7 +434,6 @@ public class TestCase implements Serializable {
 
 	/**
 	 * Returns true if the test case is valid according to the specification, false otherwise.
-	 * @param tc
 	 * @param validator
 	 * @return
 	 */
