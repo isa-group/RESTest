@@ -3,10 +3,10 @@
   "name": "Chuffed",
   "description": "Chuffed FlatZinc executable",
   "version": "0.10.4",
-  "mznlib": "-Gchuffed",
+  "mznlib": "../chuffed",
   "executable": "../../../bin/fzn-chuffed",
   "tags": ["cp","lcg","int"],
-  "stdFlags": ["-a","-f","-n","-r","-s","-t","-v"],
+  "stdFlags": ["-a","-f","-n","-r","-s","-v","--cp-profiler"],
   "extraFlags": [
       ["--prop-fifo", "Use FIFO queues for propagation", "bool", "false"],
       ["--vsids", "Use activity-based search on the Boolean variables", "bool", "false"],
