@@ -3,6 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
+  apiKeysPath: Sample/apikeys.json
 testConfiguration:
     operations:
     - operationId: GET--version-incidents---format-

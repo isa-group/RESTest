@@ -101,6 +101,8 @@ paths:
           name: query
           required: false
           type: string
+      x-dependencies:
+        - IF proximity_square THEN proximity;
       responses:
         '200':
           description: No response was specified
