@@ -1,3 +1,5 @@
+include "bin_packing_load_fn.mzn";
+
 include "fzn_bin_packing_load.mzn";
 include "fzn_bin_packing_load_reif.mzn";
 
@@ -31,5 +33,3 @@ predicate bin_packing_load_reif(array[int] of var int: load,
         "bin_packing_load: the weights must be non-negative",
         fzn_bin_packing_load_reif(load, bin, w, b)
     ));
-
-%-----------------------------------------------------------------------------%

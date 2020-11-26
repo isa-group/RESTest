@@ -17,11 +17,15 @@ predicate cumulative(array[int] of var int: s,
                      array[int] of var int: r, var int: b) =
     assert(index_set(s) == index_set(d) /\ index_set(s) == index_set(r),
         "cumulative: the 3 array arguments must have identical index sets",
+    if length(s) >= 1 then
     assert(lb_array(d) >= 0 /\ lb_array(r) >= 0,
         "cumulative: durations and resource usages must be non-negative",
-    if is_fixed(b) /\
+    if  
+       %% the previous test will not work for resources usages like [2,3,3,4,4] with a bound of 4 since the 2 appears exactly once
+       let { int: mr = lb_array(r); 
+             int: mri = arg_min([ lb(r[i]) | i in index_set(r) ]) } in
        forall(i in index_set(r))
-             (is_fixed(r[i]) /\ fix(r[i]) + lb_array(r) > ub(b))
+             (is_fixed(r[i]) /\ (fix(r[i]) + mr > ub(b) \/ i = mri))
     then
          if forall(i in index_set(d))(is_fixed(d[i]) /\ fix(d[i]) == 1)
          then
@@ -32,4 +36,5 @@ predicate cumulative(array[int] of var int: s,
     else
        fzn_cumulative(s, d, r, b)
     endif
-    ));
+    )
+    endif);
