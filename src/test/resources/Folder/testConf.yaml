@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
-  apiKeysPath: Sample/apikeys.json
+  apiKeysPath: null
   headersPath: null
 testConfiguration:
   operations:
@@ -19,7 +19,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -37,7 +37,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -55,7 +55,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -73,7 +73,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -116,7 +116,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -149,7 +149,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -172,7 +172,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -190,7 +190,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -233,7 +233,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -261,7 +261,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -290,7 +290,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -308,7 +308,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -351,7 +351,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -379,7 +379,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:

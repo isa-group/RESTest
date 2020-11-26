@@ -299,7 +299,7 @@
 		<!-- IDL2MiniZincMapper local dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idl-2-minizinc-mapper</artifactId>
+			<artifactId>idl</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
