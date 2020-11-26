@@ -27,9 +27,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[t]{2}[0-9]{7}$"
           objectValues: null
     - name: s
       in: query

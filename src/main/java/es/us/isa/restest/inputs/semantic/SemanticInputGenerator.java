@@ -40,7 +40,7 @@ public class SemanticInputGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/amadeus_standard.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/amadeus_hotels.properties");
 
         System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
@@ -140,7 +140,7 @@ public class SemanticInputGenerator {
 
         Path path = Paths.get(confPath);
         Path dir = path.getParent();
-        Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
+        Path fn = path.getFileSystem().getPath("testConfSemanticRegex.yaml");       // Cambiar
         Path target = (dir == null) ? fn : dir.resolve(fn);
 
         semanticConfPath = target.toString();

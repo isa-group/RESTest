@@ -27,19 +27,19 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[0-9]{1,}$"
           objectValues: null
     - name: NO2
       in: query
       weight: null
       generator:
-        type: RandomEnglishWord
+        type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[0-9]{1,}$"
           objectValues: null
     - name: PM
       in: query
@@ -47,9 +47,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[0-9]{1,}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /CarbonFootprintFromCarTravel

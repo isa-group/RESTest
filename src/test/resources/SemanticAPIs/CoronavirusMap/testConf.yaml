@@ -42,9 +42,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]*$"
           objectValues: null
     - name: date
       in: query
@@ -87,9 +87,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]*$"
           objectValues: null
     expectedResponse: 200
   - testPath: /v1/spots/region?region=china
@@ -142,9 +142,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]*$"
           objectValues: null
     - name: date
       in: query
@@ -187,9 +187,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]*$"
           objectValues: null
     expectedResponse: 200
   - testPath: /v1/summary/latest
@@ -227,8 +227,8 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]*$"
           objectValues: null
     expectedResponse: 200

@@ -27,9 +27,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z0-9]{3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: "/airports/read/{icao_iata}"

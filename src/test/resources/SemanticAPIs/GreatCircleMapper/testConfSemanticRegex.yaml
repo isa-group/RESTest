@@ -1,0 +1,139 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/aircraft/read/{icao_iata}"
+    operationId: 53aa36c7e4b0f2c97546f2d5
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+    - name: icao_iata
+      in: query
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/53aa36c6e4b008bb2ef85602/53aa36c7e4b0f2c97546f2d5_icao_iata.csv
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/airports/read/{icao_iata}"
+    operationId: 53aa36c7e4b0f2c97546f2d6
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+    - name: icao_iata
+      in: query
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/53aa36c6e4b008bb2ef85602/53aa36c7e4b0f2c97546f2d6_icao_iata.csv
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/airports/route/{route}/{speed}"
+    operationId: 53aa36c7e4b008bb2ef85605
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+    - name: content-type
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: vary
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: speed
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: route
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/airports/search/{query}"
+    operationId: 53aa36c8e4b051a76d23f9a8
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+    - name: query
+      in: query
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/53aa36c6e4b008bb2ef85602/53aa36c8e4b051a76d23f9a8_query.csv
+          objectValues: null
+    expectedResponse: 200

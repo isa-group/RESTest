@@ -1,0 +1,99 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /Geocode
+    operationId: apiendpoint_530cb41f-763e-411b-bc52-eb71137b6430
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - trueway-geocoding.p.rapidapi.com
+          objectValues: null
+    - name: address
+      in: query
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/api_ed762aef-e305-4401-b2fe-b0f8c5f0f43d/apiendpoint_530cb41f-763e-411b-bc52-eb71137b6430_address.csv
+          objectValues: null
+    - name: language
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/api_ed762aef-e305-4401-b2fe-b0f8c5f0f43d/apiendpoint_530cb41f-763e-411b-bc52-eb71137b6430_language.csv
+          objectValues: null
+    - name: bounds
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: country
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/api_ed762aef-e305-4401-b2fe-b0f8c5f0f43d/apiendpoint_530cb41f-763e-411b-bc52-eb71137b6430_country.csv
+          objectValues: null
+    expectedResponse: 200
+  - testPath: /ReverseGeocode
+    operationId: apiendpoint_d2bc70db-66bc-4b9f-895b-518a1e4d91c4
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - trueway-geocoding.p.rapidapi.com
+          objectValues: null
+    - name: language
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: location
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200

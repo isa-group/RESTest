@@ -16,17 +16,32 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
+import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.Asos.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.CarbonFootprint.carbonFootprint_PM;
+import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coronavirusMap_region;
+import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.greatCircleMapper_aircraft_iataIcao;
+import static es.us.isa.restest.inputs.semantic.testing.api.MovieDatabase.movieDatabase_imdbId;
+import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_countryCode;
+import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
+import static es.us.isa.restest.inputs.semantic.testing.api.Skyscanner.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.TrueWayGeocoding.trueWayGeocoding_language;
+import static es.us.isa.restest.inputs.semantic.testing.api.UsRestaurantMenus.usRestaurantMenus_restaurantsState_state;
+import static es.us.isa.restest.inputs.semantic.testing.api.WeatherForecast14Days.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 
 public class MainTesting {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/chickenCoop.properties";
-    private static String operationPath = "/games";
-    private static String semanticParameterName = "title";
-    private static String baseUrl = "https://chicken-coop.p.rapidapi.com";
+    private static String propertiesPath = "/semantic/asos.properties";
+    private static String operationPath = "/categories/list";
+    private static String semanticParameterName = "country";
     private static Integer limit = Integer.MAX_VALUE;
+    private static String apiKey = "---";
 
     // Parámetros derivados
     private static OpenAPISpecification spec;
@@ -50,7 +65,8 @@ public class MainTesting {
         Collections.shuffle(semanticInputs);
 
         // Select 20 random values
-        List<String> randomSubList = semanticInputs.subList(0, maxCut);
+        List<String> randomSubList = semanticInputs.subList(0, Math.min(maxCut, semanticInputs.size()));
+
 
         // API Calls
         int i = 1;
@@ -59,37 +75,18 @@ public class MainTesting {
 
                 System.out.println(semanticInput);
 
-                String query = "?title="+ semanticInput;         // TODO: Modify
-                String url = baseUrl + operationPath + query;
-
-
-                System.out.println(url);
-
-                OkHttpClient client = new OkHttpClient();
-
-                Request request = new Request.Builder()
-                        .url(url)
-                        .get()
-//                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("x-rapidapi-key", "xxxx")  // TODO: Modify
-                        .build();
-
-                Response response = client.newCall(request).execute();
-
                 System.out.println("Iteración número " + i + "/" + maxCut);
 
-                System.out.println("RESPONSE CODE: " + response.code());
-                System.out.println(response.body().string());
-                System.out.println("--------------------------------------------------------------------------------------");
-
+                asos_categoriesList_country(semanticInput, apiKey, host);
 
                 i++;
+
+
             }catch (Exception e){
                 System.out.println(e);
             }
 
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(6);
 
         }
 

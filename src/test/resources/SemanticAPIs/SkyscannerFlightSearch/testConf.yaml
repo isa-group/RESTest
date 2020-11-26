@@ -37,9 +37,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: currency
       in: path
@@ -47,9 +47,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: locale
       in: path
@@ -57,9 +57,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     expectedResponse: 200
   - testPath: "/apiservices/browsedates/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}"
@@ -82,9 +82,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: currency
       in: path
@@ -92,9 +92,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: locale
       in: path
@@ -102,9 +102,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     - name: destinationplace
       in: path
@@ -167,9 +167,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     - name: country
       in: path
@@ -177,9 +177,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: currency
       in: path
@@ -187,9 +187,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: outboundpartialdate
       in: path
@@ -252,9 +252,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: currency
       in: path
@@ -262,9 +262,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: locale
       in: path
@@ -272,9 +272,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     - name: originplace
       in: path
@@ -337,9 +337,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: country
       in: path
@@ -347,9 +347,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: originplace
       in: path
@@ -367,9 +367,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     - name: destinationplace
       in: path
@@ -422,9 +422,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: currency
       in: path
@@ -432,9 +432,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: locale
       in: path
@@ -442,9 +442,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     - name: originplace
       in: path
@@ -507,9 +507,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: country
       in: path
@@ -517,9 +517,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: locale
       in: path
@@ -527,9 +527,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     - name: originplace
       in: path
@@ -592,9 +592,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /apiservices/reference/v1.0/currencies
@@ -632,9 +632,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: currency
       in: path
@@ -642,9 +642,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: locale
       in: path
@@ -652,9 +652,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
           objectValues: null
     - name: originplace
       in: path

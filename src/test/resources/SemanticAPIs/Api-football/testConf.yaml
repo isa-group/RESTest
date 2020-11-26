@@ -321,19 +321,11 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: RandomNumber
+        type: SemanticParameter
         genParameters:
-        - name: type
+        - name: regExp
           values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
+          - "^([0-9]{4})$|^([0-9]{4}-[0-9]{4})$"
           objectValues: null
     expectedResponse: 200
   - testPath: "/leagues/league/{league_id}"
@@ -1678,9 +1670,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: season
       in: path
@@ -1688,9 +1680,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: type
+        - name: regExp
           values:
-          - integer
+          - "^([0-9]{4})$|^([0-9]{4}-[0-9]{4})$"
           objectValues: null
     expectedResponse: 200
   - testPath: /v2/leagues/current/
@@ -1728,9 +1720,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: "/v2/leagues/league/{league_id}"
@@ -2047,9 +2039,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "[a-zA-Z]{2,3}"
           objectValues: null
     expectedResponse: 200
   - testPath: "/v2/leagues/type/{type}/{country}/{season}"
@@ -2072,9 +2064,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: type
       in: path
@@ -2092,9 +2084,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: type
+        - name: regExp
           values:
-          - integer
+          - "^([0-9]{4})$|^([0-9]{4}-[0-9]{4})$"
           objectValues: null
     expectedResponse: 200
   - testPath: "/v2/lineups/{fixture_id}"

@@ -27,9 +27,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: lang
       in: query
@@ -338,9 +338,9 @@ testConfiguration:
       generator:
         type: RandomEnglishWord
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: brand
       in: query
@@ -475,9 +475,9 @@ testConfiguration:
       generator:
         type: RandomEnglishWord
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: attribute_1047
       in: query
@@ -699,9 +699,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: sizeSchema
       in: query
@@ -737,9 +737,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: currency
       in: query
@@ -747,9 +747,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /products/v3/list-similarities
@@ -782,9 +782,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: id
       in: query
@@ -810,9 +810,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: sizeSchema
       in: query
@@ -845,9 +845,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: currency
       in: query
@@ -875,9 +875,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: lang
       in: query

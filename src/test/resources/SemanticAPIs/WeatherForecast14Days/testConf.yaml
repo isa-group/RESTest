@@ -35,7 +35,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -56,25 +56,25 @@ testConfiguration:
           values:
           - weather-forecast-14-days.p.rapidapi.com
           objectValues: null
-    - name: KEY
+    - name: LON
       in: query
       weight: null
       generator:
-        type: RandomEnglishWord
+        type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: type
           values:
-          - 1
+          - integer
           objectValues: null
-    - name: LANG
+    - name: LAT
       in: query
-      weight: 0.5
+      weight: null
       generator:
-        type: RandomEnglishWord
+        type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: type
           values:
-          - 1
+          - integer
           objectValues: null
     expectedResponse: 200
   - testPath: /api/getlocation
@@ -105,7 +105,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -115,7 +115,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:

@@ -27,9 +27,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: Year
       in: path
@@ -37,8 +37,8 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[12]{1}[1234567890]{3}$"
           objectValues: null
     expectedResponse: 200

@@ -48,16 +48,16 @@ paths:
         name: X-RapidAPI-Host
         required: true
         type: string
-      - description: key for city, key get from getcitykey
+      - description: Longitude
         in: query
-        name: KEY
+        name: LON
         required: true
-        type: string
-      - description: Language [en,de,nl,fr,pl,gr,it,cn,ru,cz,pt,es]
+        type: number
+      - description: Latitude
         in: query
-        name: LANG
-        required: false
-        type: string
+        name: LAT
+        required: true
+        type: number
       responses:
         '200':
           description: Ok

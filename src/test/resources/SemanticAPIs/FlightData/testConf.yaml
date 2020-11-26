@@ -132,9 +132,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: limit
       in: query
@@ -175,9 +175,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: currency
       in: query
@@ -185,9 +185,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /v1/prices/calendar
@@ -230,9 +230,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: currency
       in: query
@@ -240,9 +240,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: origin
       in: query
@@ -250,9 +250,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: length
       in: query
@@ -305,9 +305,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: currency
       in: query
@@ -315,9 +315,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: page
       in: query
@@ -345,9 +345,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /v1/prices/direct/
@@ -425,9 +425,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: origin
       in: query
@@ -435,9 +435,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: currency
       in: query
@@ -445,9 +445,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: length
       in: query
@@ -574,9 +574,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: one_way
       in: query
@@ -604,9 +604,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: currency
       in: query
@@ -614,9 +614,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: trip_duration
       in: query
@@ -685,9 +685,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: show_to_affiliates
       in: query
@@ -705,9 +705,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: origin
       in: query
@@ -715,9 +715,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /v2/prices/nearest-places-matrix
@@ -750,9 +750,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: show_to_affiliates
       in: query
@@ -770,9 +770,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: depart_date
       in: query
@@ -820,9 +820,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /v2/prices/special-offers
@@ -880,9 +880,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: return_date
       in: query
@@ -900,9 +900,9 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: destination
       in: query
@@ -910,8 +910,8 @@ testConfiguration:
       generator:
         type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     expectedResponse: 200
