@@ -171,7 +171,11 @@ Finally, test failures are collected and they can be easily spotted and analyzed
 ![Allure](docs/Allure.png)
 
 ## Running RESTest as a JAR
-You can also package RESTest as a JAR file and run it from command line. To do so, first create the JAR:
+Instead of from an IDE like IntelliJ IDEA, you can also run RESTest as a fat JAR. You have two options:
+
+### Option 1: Build RESTest from source
+
+To package RESTest as a fat JAR file, run the following command in the root directory:
 
 ```
 mvn clean install -DskipTests
@@ -183,9 +187,20 @@ Then, run the JAR file passing as argument the path to the properties file, for 
 java -jar target/restest-full.jar src/test/resources/Bikewise/bikewise.properties
 ```
 
+### Option 2: Download the latest release
+
+Go to the [releases page](https://github.com/isa-group/RESTest/releases) and download the latest one. RESTest releases consist of ZIP files which, once uncompressed, provide the directory structure and the necessary resources to run RESTest as a JAR. You can test the same example shown in the quickstart guide by running the following command:
+
+```
+java -jar restest.jar src/test/resources/Folder/api.properties
+```
+
 ## License
 RESTest is distributed under the [GNU General Public License v3.0](LICENSE).
 
 RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
 
 RESTest also includes MiniZinc &copy; 2014-2020 Monash University and Data61, CSIRO. Its source code is available from [GitHub](https://github.com/MiniZinc/libminizinc) under the MPL 2.0 License, which can be obtained from https://www.mozilla.org/en-US/MPL/2.0.
+
+### Icon credits
+This README and some pages of the Wiki use icons provided by [Freepik](https://www.flaticon.com/authors/freepik), available at [Flaticon](https://www.flaticon.com/).
