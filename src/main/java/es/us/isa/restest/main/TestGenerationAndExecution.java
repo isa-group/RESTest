@@ -42,6 +42,7 @@ public class TestGenerationAndExecution {
 	private static Boolean enableInputCoverage; 						// Set to 'true' if you want the input coverage report.
 	private static Boolean enableOutputCoverage; 						// Set to 'true' if you want the input coverage report.
 	private static Boolean enableCSVStats; 								// Set to 'true' if you want statistics in a CSV file.
+	private static Boolean deletePreviousResults; 						// Set to 'true' if you want previous CSVs and Allure reports.
 	private static Float faultyRatio; 									// Percentage of faulty test cases to generate. Defaults to 0.1
 	private static Integer totalNumTestCases; 							// Total number of test cases to be generated (-1 for infinite loop)
 	private static Integer timeDelay; 									// Delay between requests in seconds (-1 for no delay)
@@ -155,8 +156,10 @@ public class TestGenerationAndExecution {
 		String allureReportDir = readParameterValue("allure.report.dir") + "/" + experimentName;
 
 		// Delete previous results (if any)
-		deleteDir(allureResultsDir);
-		deleteDir(allureReportDir);
+		if (deletePreviousResults) {
+			deleteDir(allureResultsDir);
+			deleteDir(allureReportDir);
+		}
 
 		//Find auth property names (if any)
 		List<String> authProperties = AllureAuthManager.findAuthProperties(spec, confPath);
@@ -173,12 +176,14 @@ public class TestGenerationAndExecution {
 		String coverageDataDir = readParameterValue("data.coverage.dir") + "/" + experimentName;
 
 		// Delete previous results (if any)
-		deleteDir(testDataDir);
-		deleteDir(coverageDataDir);
+		if (deletePreviousResults) {
+			deleteDir(testDataDir);
+			deleteDir(coverageDataDir);
 
-		// Recreate directories
-		createDir(testDataDir);
-		createDir(coverageDataDir);
+			// Recreate directories
+			createDir(testDataDir);
+			createDir(coverageDataDir);
+		}
 
 		return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
 				enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
@@ -264,6 +269,10 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("stats.csv") != null)
 			enableCSVStats = Boolean.parseBoolean(readParameterValue("stats.csv"));
 		logger.info("CSV statistics: {}", enableCSVStats);
+
+		if (readParameterValue("deletepreviousresults") != null)
+			deletePreviousResults = Boolean.parseBoolean(readParameterValue("deletepreviousresults"));
+		logger.info("Delete previous results: {}", deletePreviousResults);
 
 		if (readParameterValue("faulty.ratio") != null)
 			faultyRatio = Float.parseFloat(readParameterValue("faulty.ratio"));
