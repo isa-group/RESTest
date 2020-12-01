@@ -84,6 +84,9 @@
 		<jackson.version>2.11.0</jackson.version>
 		<allure.version>2.13.3</allure.version>
 		<mockito.version>3.3.3</mockito.version>
+		<sonar.projectKey>isa-group_RESTest</sonar.projectKey>
+		<sonar.organization>isa-group</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <argLine></argLine>
 	</properties>
 
