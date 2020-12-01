@@ -1,10 +1,6 @@
 package es.us.isa.restest.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
 
 import static es.us.isa.restest.util.Timer.TestStep.*;
 import static es.us.isa.restest.util.Timer.exportToCSV;
@@ -50,6 +46,7 @@ public class TimerTest {
         assertTrue("The second TEST_SUITE_EXECUTION counter should have lasted 0ms at least", Timer.getCounters().get(TEST_SUITE_EXECUTION.getName()).get(1) >= 200);
 
         String timePath = PropertyManager.readProperty("data.tests.dir") + "/" + PropertyManager.readProperty("data.tests.time");
+        FileManager.createDir(PropertyManager.readProperty("data.tests.dir"));
         exportToCSV(timePath, 2);
         assertTrue("The time report should have been created in " + timePath, FileManager.checkIfExists(timePath));
 
