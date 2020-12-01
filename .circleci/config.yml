@@ -6,6 +6,5 @@ orbs:
 workflows:
   maven_test:
     jobs:
-      - maven/test
       - maven/test:
           command: verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar

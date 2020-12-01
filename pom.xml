@@ -280,27 +280,25 @@
 			<version>1.2</version>
 		</dependency>
 
-
-		<!-- LOCAL DEPENDENCIES -->
-		<!-- JSONmutator local dependency -->
+		<!-- JSONmutator dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
 			<artifactId>json-mutator</artifactId>
 			<version>0.0.1</version>
 		</dependency>
 
-		<!-- IDLreasoner local dependency -->
+		<!-- IDLreasoner dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
 			<artifactId>idl-reasoner</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.1</version>
 		</dependency>
 
-		<!-- IDL2MiniZincMapper local dependency -->
+		<!-- IDL dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
 			<artifactId>idl</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.0.1</version>
 		</dependency>
 
 	</dependencies>
