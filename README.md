@@ -27,7 +27,7 @@ The figure below shows how RESTest works:
 ![RESTest](docs/RESTest_v3.png)
 
 ## What can I do with RESTest?
-Check out the following demo video, where we discuss some of the things that you can do with RESTest, both from the user and the developer point of view. The showcase shown is the video is available at http://betty.us.es/restest-showcase-demo/.
+Check out the following demo video, where we discuss some of the things that you can do with RESTest, both from the user and the developer point of view. The showcase shown in the video is available at http://betty.us.es/restest-showcase-demo/.
 
 <a href="https://youtu.be/TnGkwMDBDt4"><img src="docs/play_video.png" alt="RESTest demo video" width="300" /></a>
 
