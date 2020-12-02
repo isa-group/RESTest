@@ -76,7 +76,7 @@ public class DefaultTestConfigurationGenerator {
 	 * Generate a default test configuration file for a given Open API specification
 	 * 
 	 * @param destination Path of the output test configuration file
-	 * @return
+	 * @return a test configuration object
 	 */
 	public TestConfigurationObject generate(String destination) {
 		TestConfigurationFilter filter = new TestConfigurationFilter();
@@ -91,7 +91,7 @@ public class DefaultTestConfigurationGenerator {
 	 * @param destination Path of the output test configuration file
 	 * @param filters     Set the paths and HTTP methods to be included in the test
 	 *                    configuration file, i.e. those that will be tested
-	 * @return
+	 * @return a test configuration object
 	 */
 	public TestConfigurationObject generate(String destination, Collection<TestConfigurationFilter> filters) {
 

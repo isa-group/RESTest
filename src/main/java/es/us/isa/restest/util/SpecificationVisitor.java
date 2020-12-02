@@ -32,6 +32,7 @@ public class SpecificationVisitor {
 	 * Returns the operation's parameter with name "paramName"
 	 * @param operation Operation
 	 * @param paramName Parameter's name
+	 * @param in Parameter's type (header, path, query, body or formData)
 	 * @return the operation's parameter
 	 */
 	public static ParameterFeatures findParameter(Operation operation, String paramName, String in) {
@@ -174,7 +175,7 @@ public class SpecificationVisitor {
 	 * </ol>
 	 * <b>NOTE: Body parameters are not considered.</b>
 	 * @param operation Operation in the specification
-	 * @return the parametres whose values can be changed for invalid ones
+	 * @return the parameters whose values can be changed for invalid ones
 	 */
 	public static List<ParameterFeatures> getParametersSubjectToInvalidValueChange(Operation operation) {
 		List<ParameterFeatures> result = new ArrayList<>();
