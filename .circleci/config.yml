@@ -7,4 +7,4 @@ workflows:
   maven_test:
     jobs:
       - maven/test:
-          command: verify -Dmaven.javadoc.skip=true org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          command: verify  org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dmaven.javadoc.skip=true -Dgpg.skip=true
