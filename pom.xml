@@ -5,11 +5,12 @@
 
 	<groupId>es.us.isa</groupId>
 	<artifactId>restest</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>RESTest</name>
-	<url>http://maven.apache.org</url>
+	<description>A framework for automated black-box testing of RESTful web APIs</description>
+	<url>https://github.com/isa-group/RESTest</url>
 
 	<licenses>
 		<license>
@@ -62,7 +63,6 @@
 			<id>jfdelarosa</id>
 			<name>José Ramón Fernández de la Rosa</name>
 			<email>jfdelarosa@us.es</email>
-<!--			<url>http://personal.us.es/sergiosegura/</url>-->
 			<organization>University of Seville</organization>
 			<organizationUrl>http://www.us.es</organizationUrl>
 			<roles>
@@ -70,6 +70,13 @@
 			</roles>
 		</developer>
 	</developers>
+
+	<scm>
+		<connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
+		<developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
+		<url>https://github.com/isa-group/RESTest/tree/master</url>
+	</scm>
+
 
 
 	<properties>
@@ -398,6 +405,68 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.8</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>3.0.0-M1</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>release</releaseProfiles>
+					<goals>deploy</goals>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
