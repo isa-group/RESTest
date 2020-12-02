@@ -31,6 +31,9 @@ public class TestConfigurationIO {
 
 	/**
 	 * Load test configuration file in YAML format
+	 * @param path The path where the test configuration file is located
+	 * @param spec The OpenAPI specification related to the test configuration file
+	 * @return the test configuration as an object
 	 */
 	public static TestConfigurationObject loadConfiguration(String path, OpenAPISpecification spec) {
 		YAMLMapper mapper = new YAMLMapper();
@@ -81,7 +84,10 @@ public class TestConfigurationIO {
 	}
 
 	/**
-	 *  Save a test configuration object in a YAML file 
+	 *  Save a test configuration object in a YAML file
+	 * @param conf The test configuration object
+	 * @param path The path where the test configuration file will be generated
+	 *
 	 */
 	public static void toFile(TestConfigurationObject conf, String path) {
 		ObjectMapper mapper = new ObjectMapper();

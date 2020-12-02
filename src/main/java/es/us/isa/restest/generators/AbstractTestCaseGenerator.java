@@ -136,7 +136,7 @@ public abstract class AbstractTestCaseGenerator {
 	 * Generate a set of test cases
 	 * @param filters Set the paths and HTTP methods to be tested
 	 * @return Generated test cases (duplicates are possible)
-	 * @throws RESTestException 
+	 * @throws RESTestException if the test case generated does not conform to the specification
 	 */
 	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) throws RESTestException {
 
@@ -161,7 +161,7 @@ public abstract class AbstractTestCaseGenerator {
 	/**
 	 * Generate a set of test cases for the whole configuration file (all paths, all operations)
 	 * @return Generated test cases (duplicates are possible)
-	 * @throws RESTestException 
+	 * @throws RESTestException if the test HTTP method is other than 'get', 'post', 'put' or 'delete'
 	 */
 	public Collection<TestCase> generate() throws RESTestException {
 		List<TestConfigurationFilter> filters = new ArrayList<>();

@@ -15,7 +15,6 @@ public class IDGenerator {
 	static Random rand = new Random();
 	
 	/**
-	 * @param rand Random generator
 	 * @return a short ID (13 characters)
 	 */
 	public static String generateId() {

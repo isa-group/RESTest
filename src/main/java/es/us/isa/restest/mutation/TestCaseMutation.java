@@ -32,6 +32,7 @@ public class TestCaseMutation {
      * @param testCase Original valid test case. NOTE: If the mutation is applied, the original
      *                        {@code nominalTestCase} object will not be preserved, it should be cloned
      *                        before calling this method.
+	 * @param specOperation OpenAPI operation related to the test case.
      * @return a string indicating the mutation operator applied, empty if none.
      */
 	public static String mutate(TestCase testCase, Operation specOperation) {

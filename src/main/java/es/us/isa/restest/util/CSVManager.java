@@ -20,8 +20,8 @@ public class CSVManager {
 	
 	/**
 	 * Returns a list with the values of the first column in the input CSV file
-	 * @param path
-	 * @return
+	 * @param path The path of the CSV file
+	 * @return the values of the first column of the CSV file
 	 */
 	public static List<String> readValues(String path) {
 		List<String> values = new ArrayList<String>();
@@ -45,9 +45,9 @@ public class CSVManager {
 	/**
 	 * Returns a list with the values of all rows (including header, if any)
 	 * of the input CSV file. Each row is a list of strings (one element per field)
-	 * @param path
-	 * @param delimiter
-	 * @return
+	 * @param path The path of the CSV file
+	 * @param delimiter The character that separates the values in each row
+	 * @return the values of all rows of the CSV file
 	 */
 	public static List<List<String>> readCSV(String path, char delimiter) {
 		List<List<String>> rows = new ArrayList<>();
@@ -73,10 +73,10 @@ public class CSVManager {
 	/**
 	 * Returns a list with the values of all rows of the input CSV file. Each row
 	 * is a list of strings (one element per field)
-	 * @param path
+	 * @param path The path of the CSV file
 	 * @param includeFirstRow Whether to include first row of the CSV in the result
 	 *                        or not. Useful for excluding header.
-	 * @return
+	 * @return the values of all rows of the CSV file
 	 */
 	public static List<List<String>> readCSV(String path, Boolean includeFirstRow) {
 		List<List<String>> rows = readCSV(path, ',');
@@ -87,6 +87,8 @@ public class CSVManager {
 
 	/**
 	 * Call {@link #readCSV(String path, char delimiter)} with delimiter=','
+	 * @param path The path of the CSV file
+	 * @return the values of all rows of the CSV file
 	 */
 	public static List<List<String>> readCSV(String path) {
 		return readCSV(path, ',');

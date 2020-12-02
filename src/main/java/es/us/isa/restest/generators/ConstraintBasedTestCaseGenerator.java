@@ -147,8 +147,8 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	 * Returns a valid or invalid test cases based on the faultyReason provided. 
 	 * @param testOperation API operation under test
 	 * @param faultyReason Faulty reason. Possible values: "none", "individual_parameter_constraint", and "inter_parameter_dependency"
-	 * @return
-	 * @throws RESTestException 
+	 * @return a valid or invalid test case
+	 * @throws RESTestException if the test case generated does not conform to the specification
 	 */
 	public TestCase generateNextTestCase(Operation testOperation, String faultyReason) throws RESTestException {
 		

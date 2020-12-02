@@ -16,9 +16,9 @@ import static java.lang.System.exit;
 /**
  * This class manages multiple API keys or auth headers for a single API. Given
  * a JSON file containing all API keys or auth headers, the AuthManager automatically
- * selects one of them randomly.<br/><br/>
+ * selects one of them randomly.<br><br>
  *
- * The format of the JSON file should be as follows:<br/>
+ * The format of the JSON file should be as follows:<br>
  * <pre>
  * {
  *     "APIKEY_PARAMETER_NAME_1": [
@@ -56,7 +56,7 @@ import static java.lang.System.exit;
  * }
  * </pre>
  * the AuthManager will use <pre>apikey_1 = abc, apikey_2 = ghi</pre> or
- * <pre>apikey_1 = def, apikey_2 = jkl</pre> as auth keys.<br/><br/>
+ * <pre>apikey_1 = def, apikey_2 = jkl</pre> as auth keys.<br><br>
  *
  * <b>EVERY ARRAY OF AUTH KEYS MUST HAVE THE SAME SIZE.</b> If not, you will
  * get an exception.
@@ -91,6 +91,7 @@ public class AuthManager {
     /**
      * Get auth key.
      * @param propertyName the name of the wanted auth key.
+     * @return an auth key
      */
     public String getAuthProperty(String propertyName) {
         itCounter = itCounter == authProperties.size()? 0 : itCounter;
@@ -107,6 +108,7 @@ public class AuthManager {
 
     /**
      * Get name of the parameters that represent the auth keys (e.g., "key", "apikey", etc.).
+     * @return the auth property names
      */
     public Collection<String> getAuthPropertyNames() {
         return  authProperties.keySet();

@@ -18,7 +18,7 @@ import es.us.isa.restest.testcases.writers.IWriter;
 import static es.us.isa.restest.util.Timer.TestStep.*;
 
 /**
- * This class implements a basic test workflow: test generation -> test writing -> class compilation and loading -> test execution -> test report generation -> test coverage report generation
+ * This class implements a basic test workflow: test generation -&gt; test writing -&gt; class compilation and loading -&gt; test execution -&gt; test report generation -&gt; test coverage report generation
  * @author Sergio Segura
  *
  */

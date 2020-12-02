@@ -434,8 +434,8 @@ public class TestCase implements Serializable {
 
 	/**
 	 * Returns true if the test case is valid according to the specification, false otherwise.
-	 * @param validator
-	 * @return
+	 * @param validator the OpenAPI validator
+	 * @return true if the test case is valid, false otherwise
 	 */
 	public Boolean isValid(OpenApiInteractionValidator validator) {
 		
@@ -444,9 +444,9 @@ public class TestCase implements Serializable {
 
 	/**
 	 * Returns true if the test case fulfills inter-parameter dependencies, false otherwise
-	 * @param tc
-	 * @param idlReasoner
-	 * @return
+	 * @param tc a test case
+	 * @param idlReasoner the IDLReasoner analyzer
+	 * @return true if the test case fulfills inter-parameter dependencies, false otherwise
 	 */
 	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
 		if (idlReasoner == null)

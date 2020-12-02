@@ -16,7 +16,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 /** This class defines a test writer for the REST Assured framework. It creates a Java class with JUnit test cases
  * ready to be executed.
  * 
- * @author Sergio Segura & Alberto Martin-Lopez
+ * @author Sergio Segura &amp; Alberto Martin-Lopez
  *
  */
 public class RESTAssuredWriter implements IWriter {

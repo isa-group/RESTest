@@ -22,7 +22,7 @@ public enum DataType {
 	}
 	/**
 	 * Return the GenerationType using the Open API string type.
-	 * @param type
+	 * @param type The OpenAPI string type
 	 * @return GenerationType
 	 */
 	public static DataType getDataType(String type) {

@@ -5,7 +5,7 @@ import java.util.List;
 
 import es.us.isa.restest.inputs.ITestDataGenerator;
 
-/** Sequential iterator on a list of input values of type <T>
+/** Sequential iterator on a list of input values of type &lt;T&gt;
  * 
  * @author Sergio Segura
  *

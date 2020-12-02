@@ -206,7 +206,7 @@ public class CoverageMeter {
      * Get coverage of a single criterion, identified by its type and rootPath
      *
      * @param type Type of criterion (e.g. PATH, STATUS_CODE, etc.)
-     * @param rootPath path that uniquely identifies the criterion (e.g. "/pet->getPetById->id")
+     * @param rootPath path that uniquely identifies the criterion (e.g. "/pet-&gt;getPetById-&gt;id")
      * @return Coverage percentage
      */
     public float getCriterionCoverage(CriterionType type, String rootPath) {
