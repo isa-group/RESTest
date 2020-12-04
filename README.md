@@ -1,7 +1,7 @@
 # RESTest
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest/badge.svg)](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Build Status](https://travis-ci.com/isa-group/RESTest.svg)](https://travis-ci.com/isa-group/RESTest)
+[![Build Status](https://circleci.com/gh/isa-group/RESTest.svg?style=shield)](https://circleci.com/gh/isa-group/RESTest)
 [![Test coverage](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=coverage)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Coverage)
 [![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=sqale_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Maintainability)
 [![Reliability](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=reliability_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Reliability)
