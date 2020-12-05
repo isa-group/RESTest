@@ -1,0 +1,10 @@
+version: 2.1
+
+orbs:
+  maven: circleci/maven@1.0.3
+
+workflows:
+  maven_test:
+    jobs:
+      - maven/test:
+          command: verify  org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dmaven.javadoc.skip=true -Dgpg.skip=true

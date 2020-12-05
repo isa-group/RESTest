@@ -74,9 +74,9 @@ public class TestConfigurationVisitor {
 	
 	/**
 	 * Returns the test configuration parameter with name=paramName of the operation with id=operationId
-	 * @param conf
-	 * @param operationId
-	 * @param paramName
+	 * @param conf General test configuration object
+	 * @param operationId Operation identifier of the operation's parameter being searched
+	 * @param paramName Name of the parameter being searched
 	 * @return Test configuration parameter
 	 */
 	public static TestParameter getTestParameter(TestConfigurationObject conf, String operationId, String paramName) {
@@ -113,7 +113,7 @@ public class TestConfigurationVisitor {
 	/** Search a generator's configuration parameter in a list of parameters (or null if it does not exist)
 	 * @param paramName Parameter's name
 	 * @param genParameters List of generator's parameters
-	 * @return
+	 * @return Generator's configuration parameter
 	 */
 	public static GenParameter searchGenParameter(String paramName, List<GenParameter> genParameters) {
 		GenParameter parameter = null;
@@ -136,7 +136,7 @@ public class TestConfigurationVisitor {
 	/** Search a test parameter in a list of parameters (or null if it does not exist)
 	 * @param paramName Parameter's name
 	 * @param testParameters List of test configuration parameters
-	 * @return
+	 * @return Test configuration parameter
 	 */
 	public static TestParameter searchTestParameter(String paramName, List<TestParameter> testParameters) {
 		TestParameter parameter = null;

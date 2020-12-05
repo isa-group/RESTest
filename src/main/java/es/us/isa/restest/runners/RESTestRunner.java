@@ -18,7 +18,7 @@ import es.us.isa.restest.testcases.writers.IWriter;
 import static es.us.isa.restest.util.Timer.TestStep.*;
 
 /**
- * This class implements a basic test workflow: test generation -> test writing -> class compilation and loading -> test execution -> test report generation -> test coverage report generation
+ * This class implements a basic test workflow: test generation -&gt; test writing -&gt; class compilation and loading -&gt; test execution -&gt; test report generation -&gt; test coverage report generation
  * @author Sergio Segura
  *
  */
@@ -26,6 +26,7 @@ public class RESTestRunner {
 
 	protected String targetDir;							// Directory where tests will be generated
 	protected String testClassName;						// Name of the class to be generated
+	private String testId;
 	private String packageName;							// Package name
 	private AbstractTestCaseGenerator generator;   		// Test case generator
 	protected IWriter writer;							// RESTAssured writer
@@ -44,7 +45,7 @@ public class RESTestRunner {
 		this.statsReportManager = statsReportManager;
 	}
 
-	public void run() {
+	public void run() throws RESTestException {
 
 		// Test generation and writing (RESTAssured)
 		testGeneration();
@@ -64,7 +65,7 @@ public class RESTestRunner {
 
 		// Generate coverage report
 		logger.info("Generating coverage report");
-		statsReportManager.generateReport();
+		statsReportManager.generateReport(testId);
 	}
 
 	protected Class<?> getTestClass() {
@@ -75,7 +76,7 @@ public class RESTestRunner {
 		return ClassLoader.loadClass(filePath, className);
 	}
 
-	private void testGeneration() {
+	private void testGeneration() throws RESTestException {
 	    
 		// Generate test cases
 		logger.info("Generating tests");
@@ -129,5 +130,9 @@ public class RESTestRunner {
 	
 	public void resetNumTestCases() {
 		this.numTestCases=0;
+	}
+
+	public void setTestId(String testId) {
+		this.testId = testId;
 	}
 }

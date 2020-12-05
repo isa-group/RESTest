@@ -1,7 +1,9 @@
 package es.us.isa.restest.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -14,18 +16,17 @@ public class PropertyManager {
 	static String propertyFilePath = "src/main/resources/config.properties";
 	static Properties properties = null;
 	static Properties experimentProperties = null;
+
+	private static Logger logger = LogManager.getLogger(PropertyManager.class.getName());
 	
 	static public String readProperty(String name) {
 	
 		if (properties==null) {
 			 properties = new Properties();
-			 try {
-				 properties.load(new FileInputStream(propertyFilePath));
-			 } catch (FileNotFoundException e) {
-				 System.err.println("Error reading property file: " + e.getMessage());
-				 e.printStackTrace();
+			 try(FileInputStream defaultProperties = new FileInputStream(propertyFilePath)) {
+				 properties.load(defaultProperties);
 			 } catch (IOException e) {
-				 System.err.println("Error reading property file: " + e.getMessage());
+				 logger.error("Error reading property file: {}", e.getMessage());
 				 e.printStackTrace();
 			 }
 		}
@@ -38,13 +39,10 @@ public class PropertyManager {
 
 		if (experimentProperties ==null) {
 			experimentProperties = new Properties();
-			try {
-				experimentProperties.load(new FileInputStream(evalPropertiesFilePath));
-			} catch (FileNotFoundException e) {
-				System.err.println("Error reading property file: " + e.getMessage());
-				e.printStackTrace();
+			try(FileInputStream experimentProperties = new FileInputStream(evalPropertiesFilePath)) {
+				PropertyManager.experimentProperties.load(experimentProperties);
 			} catch (IOException e) {
-				System.err.println("Error reading property file: " + e.getMessage());
+				logger.error("Error reading property file: {}", e.getMessage());
 				e.printStackTrace();
 			}
 		}

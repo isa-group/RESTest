@@ -49,7 +49,7 @@ public class RandomObjectGeneratorTest {
     public void testConstructorWithFileArguments() {
         GenParameter files = new GenParameter();
         files.setName("files");
-        files.setValues(Collections.singletonList("src/main/resources/TestConfigurationMetamodel/configuration-model.json"));
+        files.setValues(Collections.singletonList("src/test/resources/restest-test-resources/compare1.postman_collection.json"));
 
         generator.getGenParameters().add(files);
 

@@ -3,10 +3,7 @@ package es.us.isa.restest.testcases;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
@@ -116,6 +113,31 @@ public class TestCase implements Serializable {
 			case "formData":
 				addFormParameter(paramName, paramValue);
 				break;
+			default:
+				throw new IllegalArgumentException("Parameter type not supported: " + in);
+		}
+	}
+
+	public String getParameterValue(ParameterFeatures parameter) {
+		return getParameterValue(parameter.getIn(), parameter.getName());
+	}
+
+	public String getParameterValue(TestParameter parameter) {
+		return getParameterValue(parameter.getIn(), parameter.getName());
+	}
+
+	public String getParameterValue(String in, String paramName) {
+		switch (in) {
+			case "header":
+				return getHeaderParameters().get(paramName);
+			case "query":
+				return getQueryParameters().get(paramName);
+			case "path":
+				return getPathParameters().get(paramName);
+			case "body":
+				return getBodyParameter();
+			case "formData":
+				return getFormParameters().get(paramName);
 			default:
 				throw new IllegalArgumentException("Parameter type not supported: " + in);
 		}
@@ -309,11 +331,43 @@ public class TestCase implements Serializable {
 			inputFormat = "application/x-www-form-urlencoded";
 	}
 
+	public String getFlatRepresentation() {
+		StringBuilder tcRepresentation = new StringBuilder(300);
+
+		tcRepresentation.append(this.getMethod().toString()); // Method
+
+		String path = this.getPath(); // Path
+		for(String pathParameter : this.getPathParameters().keySet())
+			path=path.replace("{"+pathParameter+"}",this.getPathParameters().get(pathParameter));
+		tcRepresentation.append(path);
+
+		tcRepresentation.append(this.getInputFormat()); // Content type
+
+		List<String> queryParameters = new ArrayList<>(this.getQueryParameters().keySet());  // Query parameters
+		Collections.sort(queryParameters);
+		for(String queryParameter : queryParameters)
+			tcRepresentation.append(queryParameter).append(this.getQueryParameters().get(queryParameter));
+
+		List<String> headerParameters = new ArrayList<>(this.getHeaderParameters().keySet());  // Header parameters
+		Collections.sort(headerParameters);
+		for(String headerParameter : headerParameters)
+			tcRepresentation.append(headerParameter).append(this.getHeaderParameters().get(headerParameter));
+
+		List<String> formDataParameters = new ArrayList<>(this.getFormParameters().keySet());  // FormData parameters
+		Collections.sort(formDataParameters);
+		for(String formDataParameter : formDataParameters)
+			tcRepresentation.append(formDataParameter).append(this.getFormParameters().get(formDataParameter));
+
+		if (this.getBodyParameter() != null) // Body
+			tcRepresentation.append(this.getBodyParameter());
+
+		return tcRepresentation.toString();
+	}
 	
 	// Export the test case to CSV
 	public void exportToCSV(String filePath) {
 		if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
-			createFileWithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
+			createCSVwithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
 					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter");
 
 		// Generate row
@@ -342,26 +396,26 @@ public class TestCase implements Serializable {
 		}
 		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter);
 
-		writeRow(filePath, rowBeginning + rowEnding);
+		writeCSVRow(filePath, rowBeginning + rowEnding);
 	}
 	
 	
-
-	public static List<String> getFaultyReasons(TestCase tc, OpenApiInteractionValidator validator) {
-		String fullPath = tc.getPath();
-		for (Map.Entry<String, String> pathParam : tc.getPathParameters().entrySet())
+	
+	public List<String> getValidationErrors(OpenApiInteractionValidator validator) {
+		String fullPath = this.getPath();
+		for (Map.Entry<String, String> pathParam : this.getPathParameters().entrySet())
 			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
 
-		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(tc.getMethod().toString(), fullPath)
-				.withBody(tc.getBodyParameter())
-				.withContentType(tc.getInputFormat());
-		tc.getQueryParameters().forEach(requestBuilder::withQueryParam);
-		tc.getHeaderParameters().forEach(requestBuilder::withHeader);
+		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(this.getMethod().toString(), fullPath)
+				.withBody(this.getBodyParameter())
+				.withContentType(this.getInputFormat());
+		this.getQueryParameters().forEach(requestBuilder::withQueryParam);
+		this.getHeaderParameters().forEach(requestBuilder::withHeader);
 
-		if (tc.getFormParameters().size() > 0) {
+		if (this.getFormParameters().size() > 0) {
 			StringBuilder formDataBody = new StringBuilder();
 			try {
-				for (Map.Entry<String, String> formParam : tc.getFormParameters().entrySet()) {
+				for (Map.Entry<String, String> formParam : this.getFormParameters().entrySet()) {
 					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(formParam.getValue(), StandardCharsets.UTF_8.toString())).append("&");
 				}
 			} catch (UnsupportedEncodingException e) {
@@ -376,27 +430,28 @@ public class TestCase implements Serializable {
 				.filter(m -> m.getLevel() != ValidationReport.Level.IGNORE)
 				.map(m -> m.getKey() + ": " + m.getMessage()).collect(Collectors.toList());
 	}
+	
 
 	/**
-	 * Returns true if the test case is faulty, false otherwise
-	 * @param tc
-	 * @param validator
-	 * @return
+	 * Returns true if the test case is valid according to the specification, false otherwise.
+	 * @param validator the OpenAPI validator
+	 * @return true if the test case is valid, false otherwise
 	 */
-	public static Boolean checkFaulty(TestCase tc, OpenApiInteractionValidator validator) {
-		return !getFaultyReasons(tc, validator).isEmpty();
+	public Boolean isValid(OpenApiInteractionValidator validator) {
+		
+		return getValidationErrors(validator).isEmpty();
 	}
 
 	/**
 	 * Returns true if the test case fulfills inter-parameter dependencies, false otherwise
-	 * @param tc
-	 * @param idlReasoner
-	 * @return
+	 * @param tc a test case
+	 * @param idlReasoner the IDLReasoner analyzer
+	 * @return true if the test case fulfills inter-parameter dependencies, false otherwise
 	 */
 	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
 		if (idlReasoner == null)
 			return true;
-		return idlReasoner.isValidRequest(restest2idlTestCase(tc));
+		return idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
 	}
 
 	public String toString() {

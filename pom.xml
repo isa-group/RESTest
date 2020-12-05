@@ -1,15 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>es.us.isa</groupId>
 	<artifactId>restest</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>RESTest</name>
-	<url>http://maven.apache.org</url>
+	<description>A framework for automated black-box testing of RESTful web APIs</description>
+	<url>https://github.com/isa-group/RESTest</url>
 
 	<licenses>
 		<license>
@@ -62,7 +61,6 @@
 			<id>jfdelarosa</id>
 			<name>José Ramón Fernández de la Rosa</name>
 			<email>jfdelarosa@us.es</email>
-<!--			<url>http://personal.us.es/sergiosegura/</url>-->
 			<organization>University of Seville</organization>
 			<organizationUrl>http://www.us.es</organizationUrl>
 			<roles>
@@ -70,6 +68,14 @@
 			</roles>
 		</developer>
 	</developers>
+
+	<scm>
+		<connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
+		<developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
+		<url>https://github.com/isa-group/RESTest/tree/master</url>
+	  <tag>HEAD</tag>
+  </scm>
+
 
 
 	<properties>
@@ -84,7 +90,10 @@
 		<jackson.version>2.11.0</jackson.version>
 		<allure.version>2.13.3</allure.version>
 		<mockito.version>3.3.3</mockito.version>
-        <argLine></argLine>
+		<sonar.projectKey>isa-group_RESTest</sonar.projectKey>
+		<sonar.organization>isa-group</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <argLine />
 	</properties>
 
 	<dependencies>
@@ -177,7 +186,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>4.13.1</version>
 		</dependency>
 
 		<!-- Allure Junit 4 -->
@@ -280,94 +289,25 @@
 			<version>1.2</version>
 		</dependency>
 
-		<!-- Jena -->
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>apache-jena-libs</artifactId>
-			<version>3.16.0</version>
-			<type>pom</type>
-		</dependency>
-
-		<!-- Stanford NLP -->
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.0.0</version>
-			<classifier>models</classifier>
-		</dependency>
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.0.0</version>
-			<classifier>models-english</classifier>
-		</dependency>
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.0.0</version>
-			<classifier>models-english-kbp</classifier>
-		</dependency>
-
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-parser</artifactId>
-			<version>3.9.2</version>
-		</dependency>
-
-		<!-- PROVISIONAL DEPENDENCIES (REMOVE BEFORE MERGING) -->
-
-		<dependency>
-			<groupId>com.squareup.okhttp</groupId>
-			<artifactId>okhttp</artifactId>
-			<version>2.7.5</version>
-		</dependency>
-
-
-		<!-- END OF PROVISIONAL DEPENDENCIES -->
-
-
-		<!-- LOCAL DEPENDENCIES -->
-		<!-- JSONmutator local dependency -->
-		<dependency>
-			<groupId>JSONmutator</groupId>
-			<artifactId>JSONmutator</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/JSONmutator.jar</systemPath>
-		</dependency>
-
-		<!-- IDLreasoner local dependency -->
-		<dependency>
-			<groupId>IDLreasoner</groupId>
-			<artifactId>IDLreasoner</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/IDLreasoner.jar</systemPath>
-		</dependency>
-<!--		&lt;!&ndash; JSONmutator local dependency &ndash;&gt;-->
-<!--		<dependency>-->
-<!--			<groupId>es.us.isa</groupId>-->
-<!--			<artifactId>json-mutator</artifactId>-->
-<!--			<version>0.0.1-SNAPSHOT</version>-->
-<!--		</dependency>-->
-
-<!--		&lt;!&ndash; IDLreasoner local dependency &ndash;&gt;-->
-<!--		<dependency>-->
-<!--			<groupId>es.us.isa</groupId>-->
-<!--			<artifactId>idl-reasoner</artifactId>-->
-<!--			<version>0.0.1-SNAPSHOT</version>-->
-<!--		</dependency>-->
-
-		<!-- IDL2MiniZincMapper local dependency -->
+		<!-- JSONmutator dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idl-2-minizinc-mapper</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<artifactId>json-mutator</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+
+		<!-- IDLreasoner dependency -->
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idl-reasoner</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+
+		<!-- IDL dependency -->
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idl</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 
 	</dependencies>
@@ -385,6 +325,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.3.0</version>
 				<executions>
 					<execution>
 						<id>make-assembly</id>
@@ -400,7 +341,7 @@
 									<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 								</manifest>
 							</archive>
-							<finalName>restest</finalName>
+							<finalName>restest-full</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
@@ -463,6 +404,68 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<version>1.6.8</version>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.2.1</version>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.6</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>3.0.0-M1</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>release</releaseProfiles>
+					<goals>deploy</goals>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

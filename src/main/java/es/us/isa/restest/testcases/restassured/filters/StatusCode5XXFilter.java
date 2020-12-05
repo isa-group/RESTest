@@ -11,7 +11,7 @@ import io.restassured.specification.FilterableResponseSpecification;
  *
  * @author Alberto Martin-Lopez
  */
-public class StatusCode5XXFilter implements OrderedFilter {
+public class StatusCode5XXFilter extends OracleFilter implements OrderedFilter {
 
     public StatusCode5XXFilter() {
         super();
@@ -29,7 +29,7 @@ public class StatusCode5XXFilter implements OrderedFilter {
     // If 5XX status code is found, throw exception
     public void filterValidation(Response response) {
         if (response.getStatusCode() >= 500)
-            throw new RuntimeException("Received status 5XX. Server error found.");
+            saveTestResultAndThrowException(response, "Received status 5XX. Server error found.");
     }
 
     @Override

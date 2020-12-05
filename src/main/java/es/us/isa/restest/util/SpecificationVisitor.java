@@ -32,7 +32,8 @@ public class SpecificationVisitor {
 	 * Returns the operation's parameter with name "paramName"
 	 * @param operation Operation
 	 * @param paramName Parameter's name
-	 * @return
+	 * @param in Parameter's type (header, path, query, body or formData)
+	 * @return the operation's parameter
 	 */
 	public static ParameterFeatures findParameter(Operation operation, String paramName, String in) {
 		ParameterFeatures param;
@@ -111,7 +112,7 @@ public class SpecificationVisitor {
 	/**
 	 * Returns the parameters that are required for the operation.
 	 * @param operation Operation in the specification
-	 * @return
+	 * @return the required parameters
 	 */
 	public static List<ParameterFeatures> getRequiredParameters(Operation operation) {
 
@@ -149,9 +150,9 @@ public class SpecificationVisitor {
 	}
 
 	/**
-	 * Returns the parameters that are required for the operation and are not path parameters.
+	 * Returns the parameters that are required for the operation excepting the path ones.
 	 * @param operation Operation in the specification
-	 * @return
+	 * @return the required parameters
 	 */
 	public static List<ParameterFeatures> getRequiredNotPathParameters(Operation operation) {
 		return getRequiredParameters(operation).stream()
@@ -174,7 +175,7 @@ public class SpecificationVisitor {
 	 * </ol>
 	 * <b>NOTE: Body parameters are not considered.</b>
 	 * @param operation Operation in the specification
-	 * @return
+	 * @return the parameters whose values can be changed for invalid ones
 	 */
 	public static List<ParameterFeatures> getParametersSubjectToInvalidValueChange(Operation operation) {
 		List<ParameterFeatures> result = new ArrayList<>();

@@ -1,14 +1,13 @@
 package es.us.isa.restest.mutation;
 
-import es.us.isa.restest.mutation.operators.InvalidParameterValue;
 import es.us.isa.restest.mutation.operators.RemoveRequiredParameter;
+import es.us.isa.restest.mutation.operators.invalidvalue.InvalidParameterValue;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 
-import static es.us.isa.restest.mutation.TestCaseMutation.mutate;
 import static org.junit.Assert.*;
 
 public class TestCaseMutationTest {
@@ -21,7 +20,7 @@ public class TestCaseMutationTest {
         tc.addQueryParameter("limit", "2");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertTrue("The test case should be mutated", mutate(tc, spec.getSpecification().getPaths().get("/comments").getGet())!="");
+        assertNotEquals("The test case should be mutated", "", TestCaseMutation.mutate(tc, spec.getSpecification().getPaths().get("/comments").getGet()));
         assertNotEquals("The two test cases should be different", tc, oldTc);
     }
 
@@ -33,7 +32,7 @@ public class TestCaseMutationTest {
 
         TestCase oldTc = SerializationUtils.clone(tc);
 
-        assertTrue("The test case should NOT be mutated", mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet())=="");
+        assertEquals("The test case should NOT be mutated", "", TestCaseMutation.mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet()));
         assertEquals("Both test cases should be equal", tc, oldTc);
     }
 
@@ -44,7 +43,7 @@ public class TestCaseMutationTest {
         tc.setBodyParameter("{\"randomBody\": \"randomValue\"}");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertTrue("The test case should be mutated", RemoveRequiredParameter.mutate(tc, spec.getSpecification().getPaths().get("/comments").getPost()));
+        assertNotEquals("The test case should be mutated", "", RemoveRequiredParameter.mutate(tc, spec.getSpecification().getPaths().get("/comments").getPost()));
         assertNotEquals("The two test cases should be different", tc, oldTc);
     }
 
@@ -56,7 +55,7 @@ public class TestCaseMutationTest {
         tc.addQueryParameter("limit", "2");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertFalse("The test case should NOT be mutated", RemoveRequiredParameter.mutate(tc, spec.getSpecification().getPaths().get("/comments").getGet()));
+        assertEquals("The test case should NOT be mutated", "", RemoveRequiredParameter.mutate(tc, spec.getSpecification().getPaths().get("/comments").getGet()));
         assertEquals("Both test cases should be equal", tc, oldTc);
     }
 
@@ -67,7 +66,7 @@ public class TestCaseMutationTest {
         tc.addPathParameter("id", "c1");
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertTrue("The test case should be mutated", InvalidParameterValue.mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet()));
+        assertNotEquals("The test case should be mutated", "", InvalidParameterValue.mutate(tc, spec.getSpecification().getPaths().get("/comments/{id}").getGet()));
         assertTrue("The length of the mutated 'id' parameter should be greater than 4", tc.getPathParameters().get("id").length() > 4);
         assertNotEquals("The two test cases should be different", tc, oldTc);
     }
@@ -78,7 +77,7 @@ public class TestCaseMutationTest {
         TestCase tc = new TestCase("dfgsdfg", true, "putComment", "/comments", HttpMethod.PUT);
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        assertFalse("The test case should NOT be mutated", InvalidParameterValue.mutate(tc, spec.getSpecification().getPaths().get("/comments").getPut()));
+        assertEquals("The test case should NOT be mutated", "", InvalidParameterValue.mutate(tc, spec.getSpecification().getPaths().get("/comments").getPut()));
         assertEquals("Both test cases should be equal", tc, oldTc);
     }
 }

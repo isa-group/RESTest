@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.jsonmutator.JsonMutator;
 import es.us.isa.restest.inputs.ITestDataGenerator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
@@ -24,7 +25,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
     private JsonMutator jsonMutator;
     private ObjectMapper objectMapper;
     private Boolean singleOrder = true; // True if single order mutation, false otherwise
-    private static Logger logger = Logger.getLogger(ObjectPerturbator.class);
+    private static Logger logger = LogManager.getLogger(ObjectPerturbator.class.getName());
 
     public ObjectPerturbator() {
         this.objectMapper = new ObjectMapper();
@@ -54,10 +55,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
 
     @Override
     public JsonNode nextValue() {
-        JsonNode beforeMutating = originalObject.deepCopy();
-        JsonNode afterMutating = jsonMutator.mutateJson(originalObject, singleOrder);
-        originalObject = beforeMutating;
-        return afterMutating;
+        return jsonMutator.mutateJson(originalObject, singleOrder);
     }
 
     @Override

@@ -1,0 +1,91 @@
+{
+  "info": {
+    "_postman_id": "ff975aa1-4b5f-4555-a853-58a2a83822a6",
+    "name": "compare2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "test1",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/example1?offset=10",
+          "protocol": "http",
+          "host": [
+            "localhost:8080"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "example1"
+          ],
+          "query": [
+            {
+              "key": "offset",
+              "value": "10"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "test2",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer example"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:8080/api/v1/example2/example3?ok=true",
+          "protocol": "http",
+          "host": [
+            "localhost:8080"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "example2",
+            "example3"
+          ],
+          "query": [
+            {
+              "key": "ok",
+              "value": "true"
+            }
+          ]
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "urlparam1",
+              "value": "hey",
+              "type": "text"
+            },
+            {
+              "key": "urlparam2",
+              "value": "hoy",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -133,6 +133,18 @@ public class CoverageMeterTest {
     }
 
     @Test
+    public void coverageResultsCSVTest() {
+        deleteFile("src/test/resources/csvData/test-results-coverage.csv");
+
+        CoverageResults coverageResults = new CoverageResults(covMeter.getTotalCoverage(), covMeter.getInputCoverage(), covMeter.getOutputCoverage());
+        coverageResults.setCoverageOfCoverageCriteriaFromCoverageMeter(covMeter);
+        coverageResults.setCoverageOfCriterionTypeFromCoverageMeter(covMeter);
+
+        coverageResults.exportCoverageReportToCSV("src/test/resources/csvData/test-coverage.csv");
+        assertTrue(checkIfExists("src/test/resources/csvData/test-coverage.csv"));
+    }
+
+    @Test
     public void addTestSuiteTest() {
         float oldCoverage = covMeter.getTotalCoverage();
         List<TestCase> newTestSuite = new ArrayList<>();

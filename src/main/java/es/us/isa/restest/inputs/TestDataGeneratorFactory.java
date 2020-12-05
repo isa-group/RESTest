@@ -24,7 +24,7 @@ public class TestDataGeneratorFactory {
 
 	/**
 	 * Create a test data generator based on the data from the test configuration file in JSON
-	 * @param generator
+	 * @param generator the generator data from the test configuration file
 	 * @return a test data generator
 	 */
 	public static ITestDataGenerator createTestDataGenerator(Generator generator) {

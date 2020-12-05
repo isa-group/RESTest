@@ -1,28 +1,31 @@
 package es.us.isa.restest.generators;
 
-import com.atlassian.oai.validator.OpenApiInteractionValidator;
-import com.atlassian.oai.validator.whitelist.ValidationErrorsWhitelist;
-import com.atlassian.oai.validator.whitelist.rule.WhitelistRules;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import org.javatuples.Pair;
+
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationVisitor;
-import es.us.isa.restest.configuration.pojos.*;
+import es.us.isa.restest.configuration.pojos.Operation;
+import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
+import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.AuthManager;
-import es.us.isa.restest.util.CSVManager;
 import es.us.isa.restest.util.IDGenerator;
+import es.us.isa.restest.util.OASAPIValidator;
 import es.us.isa.restest.util.SpecificationVisitor;
+import es.us.isa.restest.util.RESTestException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
-import org.javatuples.Pair;
-
-import java.util.*;
-
-import static com.atlassian.oai.validator.whitelist.rule.WhitelistRules.*;
-import static es.us.isa.restest.util.CSVManager.createFileWithHeader;
-import static es.us.isa.restest.util.FileManager.checkIfExists;
 
 /**
  * Abstract class to be implemented by test case generators
@@ -36,20 +39,22 @@ public abstract class AbstractTestCaseGenerator {
 	protected OpenAPISpecification spec;
 	protected TestConfigurationObject conf;
 	protected Map<Pair<String, String>,ITestDataGenerator> generators;		// Test data generators Map<Pair<ParameterName,Type(query or path)>, Generator (random, boundaryValue, fixedlist...)>
-	protected OpenApiInteractionValidator validator;						// Validator used to know if a test case is valid or not
 	protected AuthManager authManager;										// For if multiple API keys are used for the API
-	protected Float faultyRatio = 0.1f;										// Ratio (0-1) of faulty test cases to be generated on each operation. Defaults to 0.1
+	protected Float faultyRatio = 0f;										// Ratio (0-1) of faulty test cases to be generated on each operation. Defaults to 0.1
 	protected int numberOfTests;											// Number of test cases to be generated for each operation
+	private int maxTriesPerTestCase=100;									// Maximum number of tries for generating a random test case conforming the input OAS schema.
 	
 	// Global counters
 	protected int nTotalTests;												// Number of test cases generated so far
 	protected int nTotalFaulty;												// Number of faulty test cases generated so far
 	protected int nTotalNominal;											// Number of nominal test cases generated so far
 	
-	// Local counters for each operations
+	// Local counters for each operation
 	protected int nTests;													// Number of test cases generated for the current operation
 	protected int nFaulty;													// Number of faulty test cases generated for the current operation
 	protected int nNominal;													// Number of nominal test cases generated for the current operation
+	
+	
 
 
 	public AbstractTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
@@ -65,19 +70,6 @@ public abstract class AbstractTestCaseGenerator {
 		if (authPath != null)
 			this.authManager = new AuthManager(authPath);
 
-		// Test case validator:
-		// Whitelist: Fix for swagger-validation library: formData parameters defined as string should not
-		// violate the schema when using numbers or booleans, since those are still strings.
-		ValidationErrorsWhitelist whitelist = ValidationErrorsWhitelist.create()
-				.withRule(
-						"Ignore non-strings for string-type formData parameters",
-						allOf(
-								headerContainsSubstring("Content-Type", "application/x-www-form-urlencoded"),
-								messageHasKey("validation.request.body.schema.type"),
-								messageContainsSubstring("does not match any allowed primitive type (allowed: [\"string\"])")
-						)
-				);
-		this.validator = OpenApiInteractionValidator.createFor(spec.getPath()).withWhitelist(whitelist).build();
 		
 		this.numberOfTests = nTests;
 		
@@ -102,7 +94,7 @@ public abstract class AbstractTestCaseGenerator {
 	}
 	
 	// Reset counters for the current operation
-	private void resetOperation() {
+	protected void resetOperation() {
 		this.nTests = 0;
 		this.nFaulty = 0;
 		this.nNominal = 0;
@@ -144,8 +136,9 @@ public abstract class AbstractTestCaseGenerator {
 	 * Generate a set of test cases
 	 * @param filters Set the paths and HTTP methods to be tested
 	 * @return Generated test cases (duplicates are possible)
+	 * @throws RESTestException if the test case generated does not conform to the specification
 	 */
-	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) {
+	public Collection<TestCase> generate(Collection<TestConfigurationFilter> filters) throws RESTestException {
 
 		List<TestCase> testCases = new ArrayList<>();
 		
@@ -168,8 +161,9 @@ public abstract class AbstractTestCaseGenerator {
 	/**
 	 * Generate a set of test cases for the whole configuration file (all paths, all operations)
 	 * @return Generated test cases (duplicates are possible)
+	 * @throws RESTestException if the test HTTP method is other than 'get', 'post', 'put' or 'delete'
 	 */
-	public Collection<TestCase> generate() {
+	public Collection<TestCase> generate() throws RESTestException {
 		List<TestConfigurationFilter> filters = new ArrayList<>();
 
 		// Create filters for all the operations in the API
@@ -198,7 +192,7 @@ public abstract class AbstractTestCaseGenerator {
 					filter.addDeleteMethod();
 					break;
 				default:
-					throw new IllegalArgumentException("Methods other than GET, POST, PUT and DELETE are not " +
+					throw new RESTestException("Methods other than GET, POST, PUT and DELETE are not " +
 							"allowed in the test configuration file");
 			}
 
@@ -215,18 +209,14 @@ public abstract class AbstractTestCaseGenerator {
 	
 	
 	/* Generate test cases for testOperation */
-	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation);
+	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation) throws RESTestException;
 	
 	// Generate the next test case and update the generation index. To be implemented on each subclass.
-	public abstract TestCase generateNextTestCase(Operation testOperation);
+	public abstract TestCase generateNextTestCase(Operation testOperation) throws RESTestException;
 
 	/* Generate test cases for the operation defined by path/method */
-	protected Collection<TestCase> generate(String path, HttpMethod method) {
+	protected Collection<TestCase> generate(String path, HttpMethod method) throws RESTestException {
 
-		
-		// Reset counters for the current operation
-		resetOperation();
-		
 		// Get test configuration object for the operation
 		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
 
@@ -236,21 +226,70 @@ public abstract class AbstractTestCaseGenerator {
 		return generateOperationTestCases(testOperation);
 	}
 
+
 	
-	// Select the parameters to be included in the test case based on their weight in the test configuration file.
-	protected void setTestCaseParameters(TestCase test, Operation testOperation) {
-		// Set parameters
+	/* Generate a basic valid random test case according to the test configuration file in two steps: 
+	* 	1) Select the parameters to be included in the test case based on their weight.
+	* 	2) Generate valid test values with the corresponding test data generators in the test configuration file. Input objects (if any) are not perturbated yet
+	* 	3) Try to perturbate input objects (if any). If no valid perturbation can be generated, set the parameter to the original object provided in the test configuration file 
+	*/
+	protected TestCase generateRandomTestCase(Operation testOperation) throws RESTestException {
+		
+		TestCase test = createTestCaseTemplate(testOperation);
+		boolean perturbation = false;
+		
+		// Set parameters and values. Objects (if any) are initially not perturbated
 		if(testOperation.getTestParameters() != null) {
 			for (TestParameter confParam : testOperation.getTestParameters()) {
 				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
 					ITestDataGenerator generator = generators.get(Pair.with(confParam.getName(), confParam.getIn()));
+					if (generator instanceof ObjectPerturbator) {
+						test.addParameter(confParam, ((ObjectPerturbator) generator).getOriginalStringObject());		// Objects are not perturbated yet
+						perturbation = true;
+					}
+					else
+						test.addParameter(confParam, generator.nextValueAsString());
+				}
+			}
+		}
+		
+		// Make sure the test case generate conforms to the specification. Otherwise, throw an exception and stop the execution
+		List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
+		if (!errors.isEmpty()) {
+			throw new RESTestException("The test case generated does not conform to the specification: " + errors);
+		}
+			
+		// If a perturbation generator is included in the test configuration file, try to generate a new (valid) test case by perturbating a valid input object
+		if (perturbation)
+			perturbate(test, testOperation);
+		
+		return test;
+	}
+	
+	
+	
+	/* Try to perturbate input objects using the ObjectPerturbator. If not possible, set the parameter to the original object provided in the test configuration file */
+	private void perturbate(TestCase test, Operation testOperation) {
+		
+		for (TestParameter confParam : testOperation.getTestParameters()) { 
+			ITestDataGenerator generator = generators.get(Pair.with(confParam.getName(), confParam.getIn()));
+			if (generator instanceof ObjectPerturbator) {
+				boolean valid = false;
+				for(int i=0;i<maxTriesPerTestCase && !valid; i++) {
 					test.addParameter(confParam, generator.nextValueAsString());
+					valid = test.isValid(OASAPIValidator.getValidator(spec));
+				}
+				
+				// No valid perturbations generated. Set original object
+				if (!valid) {
+					test.addParameter(confParam, ((ObjectPerturbator) generator).getOriginalStringObject());
+					System.err.println("Maximum number of tries reached when trying to perturbate the input object for the operation " + testOperation.getOpenApiOperation().getOperationId());
 				}
 			}
 		}
 	}
-	
-	
+
+
 	protected void updateContentType(TestCase test, io.swagger.v3.oas.models.Operation operation) {
 		if (operation.getRequestBody() != null && operation.getRequestBody().getContent().containsKey("application/x-www-form-urlencoded"))
 			test.setInputFormat("application/x-www-form-urlencoded");
@@ -284,7 +323,7 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	// Returns true if there are more test cases to be generated. To be implemented on each subclass.
-	protected abstract boolean hasNext();
+	protected abstract boolean hasNext() throws RESTestException;
 
 	// Create an empty test case with a random name.
 	protected TestCase createTestCaseTemplate(Operation testOperation) {
@@ -375,7 +414,13 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 
-	public OpenApiInteractionValidator getValidator() {
-		return validator;
+	public int getMaxTriesPerTestCase() {
+		return maxTriesPerTestCase;
 	}
+
+
+	public void setMaxTriesPerTestCase(int maxTriesPerTestCase) {
+		this.maxTriesPerTestCase = maxTriesPerTestCase;
+	}
+
 }

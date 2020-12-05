@@ -1,0 +1,59 @@
+---
+openapi: 3.0.1
+info:
+  title: TestConfigurationMetamodel
+  version: '1.0'
+paths:
+  "/path1":
+    get:
+      description: Get something
+      operationId: Operation ID
+      parameters:
+        - in: query
+          name: Test parameter name
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok
+    post:
+      description: Post something
+      operationId: Operation ID 2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Ok
+    put:
+      description: Put something
+      operationId: Operation ID 3
+      parameters:
+        - in: header
+          name: Test parameter name 3
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Ok
+    delete:
+      description: Delete something
+      operationId: Operation ID 4
+      parameters:
+        - in: query
+          name: Test parameter name 4
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ok

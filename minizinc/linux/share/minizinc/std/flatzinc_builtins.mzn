@@ -7,9 +7,11 @@
 %  solver globals library.
 %
 
+include "stdlib/stdlib_ann.mzn";
+
 /***
   @groupdef flatzinc FlatZinc builtins
-  
+
   These are the standard constraints that need to be supported by FlatZinc
   solvers (or redefined in the redefinitions.mzn file).
 */
@@ -64,6 +66,9 @@ predicate int_times(var int: a, var int: b, var int: c);
 /** @group flatzinc.int Constrains \a z = \(\a x ^ {\a y}\) */
 predicate int_pow(var int: x, var int: y, var int: z);
 
+/** @group flatzinc.int Constrains \a x \( \in \) \a S */
+predicate set_in(var int: x, set of int: S);
+
 /***
   @groupdef flatzinc.bool Bool FlatZinc builtins
 */
@@ -85,7 +90,7 @@ predicate bool_le(var bool: a, var bool: b);
 predicate bool_le_reif(var bool: a, var bool: b, var bool: r);
 /** @group flatzinc.bool Constrains \( \a c = \sum_i \a as[i]*\a bs[i] \) */
 predicate bool_lin_eq(array[int] of int: as, array[int] of var bool: bs, var int: c);
-/** @group flatzinc.bool Constrains \( \a c \leq \sum_i \a as[i]*\a bs[i] \) */
+/** @group flatzinc.bool Constrains \( \sum_i \a as[i]*\a bs[i] \leq \a c \) */
 predicate bool_lin_le(array[int] of int: as, array[int] of var bool: bs, int: c);
 /** @group flatzinc.bool Constrains \a a < \a b */
 predicate bool_lt(var bool: a, var bool: b);
@@ -105,8 +110,6 @@ predicate bool_xor(var bool: a, var bool: b);
 */
 
 /** @group flatzinc.set Constrains \a x \( \in \) \a S */
-predicate set_in(var int: x, set of int: S);
-/** @group flatzinc.set Constrains \a x \( \in \) \a S */
 predicate set_in(var int: x, var set of int: S);
 /** @group flatzinc.set Constrains \a x = |\a S| */
 predicate set_card(var set of int: S, var int: x);
@@ -120,6 +123,8 @@ predicate set_subset(var set of int: x, var set of int: y);
 predicate set_superset(var set of int: x, var set of int: y);
 /** @group flatzinc.set Constrains \( \a r \leftrightarrow (\a x \subseteq \a y) \) */
 predicate set_subset_reif(var set of int: x, var set of int: y, var bool: r);
+/** @group flatzinc.set Constrains \( \a r \leftrightarrow (\a x \subseteq \a y) \) */
+predicate set_superset_reif(var set of int: x, var set of int: y, var bool: r);
 /** @group flatzinc.set Constrains \a x ≤ \a y (lexicographic order of the sorted lists of elements) */
 predicate set_le(var set of int: x, var set of int: y);
 /** @group flatzinc.set Constrains \( \a r \leftrightarrow (\a x \leq \a y) \) (lexicographic order of the sorted lists of elements) */
@@ -217,13 +222,13 @@ predicate float_dom(var float: x, array[int] of float: as);
 predicate float_lin_eq(array[int] of float: as, array[int] of var float: bs, float: c);
 /** @group flatzinc.float Constrains \( \a r \leftrightarrow (\a c = \sum_i \a as[i]*\a bs[i]) \) */
 predicate float_lin_eq_reif(array[int] of float: as, array[int] of var float: bs, float: c, var bool: r);
-/** @group flatzinc.float Constrains \( \a c \leq \sum_i \a as[i]*\a bs[i] \) */
+/** @group flatzinc.float Constrains \( \sum_i \a as[i]*\a bs[i] \leq \a c \) */
 predicate float_lin_le(array[int] of float: as, array[int] of var float: bs, float: c);
-/** @group flatzinc.float Constrains \( \a r \leftrightarrow (\a c \leq \sum_i \a as[i]*\a bs[i]) \) */
+/** @group flatzinc.float Constrains \( \a r \leftrightarrow (\sum_i \a as[i]*\a bs[i] \leq \a c) \) */
 predicate float_lin_le_reif(array[int] of float: as, array[int] of var float: bs, float: c, var bool: r);
-/** @group flatzinc.float Constrains \( \a c < \sum_i \a as[i]*\a bs[i] \) */
+/** @group flatzinc.float Constrains \( \sum_i \a as[i]*\a bs[i] < \a c \) */
 predicate float_lin_lt(array[int] of float: as, array[int] of var float: bs, float: c);
-/** @group flatzinc.float Constrains \( \a r \leftrightarrow (\a c < \sum_i \a as[i]*\a bs[i]) \) */
+/** @group flatzinc.float Constrains \( \a r \leftrightarrow (\sum_i \a as[i]*\a bs[i] < \a c) \) */
 predicate float_lin_lt_reif(array[int] of float: as, array[int] of var float: bs, float: c, var bool: r);
 /** @group flatzinc.float Constrains \( \a c \neq \sum_i \a as[i]*\a bs[i] \) */
 predicate float_lin_ne(array[int] of float: as, array[int] of var float: bs, float: c);
@@ -281,3 +286,153 @@ predicate array_int_minimum(var int: m, array[int] of var int: x);
 /** @group flatzinc.float Constrains \a m to be the minimum value of the (non-empty)
   array \a x */
 predicate array_float_minimum(var int: m, array[int] of var int: x);
+
+
+/***
+  @groupdef flatzinc.two FlatZinc builtins added in MiniZinc 2.0.0.
+
+  These functions and predicates define built-in operations of the MiniZinc language
+  that have been added in MiniZinc 2.0.0. Solvers that support these natively need
+  to include a file called redefinitions-2.0.mzn in their solver library that
+  redefines these predicates as builtins.
+
+*/
+
+/** @group flatzinc.two Reified clause constraint.
+  Constrains \( \a b \leftrightarrow \bigvee_i \a as[i] \lor \bigvee_j \lnot \a bs[j] \)
+ */
+predicate bool_clause_reif(array[int] of var bool: as, array[int] of var bool: bs, var bool: b);
+/** @group flatzinc.two Constrains \a m to be the maximum value in array \a x. */
+predicate array_int_maximum(var int: m, array[int] of var int: x);
+/** @group flatzinc.two Constrains \a m to be the maximum value in array \a x. */
+predicate array_float_maximum(var float: m, array[int] of var float: x);
+/** @group flatzinc.two Constrains \a m to be the minimum value in array \a x. */
+predicate array_int_minimum(var int: m, array[int] of var int: x);
+/** @group flatzinc.two Constrains \a m to be the minimum value in array \a x. */
+predicate array_float_minimum(var float: m, array[int] of var float: x);
+
+
+/***
+  @groupdef flatzinc.twootwo FlatZinc builtins added in MiniZinc 2.0.2.
+
+  These functions and predicates define built-in operations of the MiniZinc language
+  that have been added in MiniZinc 2.0.2. Solvers that support these natively need
+  to include a file called redefinitions-2.0.2.mzn in their solver library that
+  redefines these predicates as builtins.
+
+*/
+
+/** @group flatzinc.twootwo Element constraint on array with MiniZinc index set, constrains \a x[\a idx] = \a c
+  This can be overridden in a solver that can perform the index calculation more efficiently than using
+  a MiniZinc decomposition.
+*/
+predicate array_var_bool_element_nonshifted(var int: idx, array[int] of var bool: x, var bool: c);
+/** @group flatzinc.twootwo Element constraint on array with MiniZinc index set, constrains \a x[\a idx] = \a c
+  This can be overridden in a solver that can perform the index calculation more efficiently than using
+  a MiniZinc decomposition.
+*/
+predicate array_var_int_element_nonshifted(var int: idx, array[int] of var int: x, var int: c);
+/** @group flatzinc.twootwo Element constraint on array with MiniZinc index set, constrains \a x[\a idx] = \a c
+  This can be overridden in a solver that can perform the index calculation more efficiently than using
+  a MiniZinc decomposition.
+*/
+predicate array_var_float_element_nonshifted(var int: idx, array[int] of var float: x, var float: c);
+/** @group flatzinc.twootwo Element constraint on array with MiniZinc index set, constrains \a x[\a idx] = \a c
+  This can be overridden in a solver that can perform the index calculation more efficiently than using
+  a MiniZinc decomposition.
+*/
+predicate array_var_set_element_nonshifted(var int: idx, array[int] of var set of int: x, var set of int: c);
+
+/***
+  @groupdef flatzinc.twoone FlatZinc builtins added in MiniZinc 2.1.0.
+
+  These functions and predicates define built-in operations of the MiniZinc language
+  that have been added in MiniZinc 2.1.0. Solvers that support these natively need
+  to include a file called redefinitions-2.1.0.mzn in their solver library that
+  redefines these predicates as builtins.
+
+*/
+
+/** @group flatzinc.twoone Constrains \a a ≤ \a x ≤ \a b */
+predicate float_in(var float: x, float: a, float: b);
+/** @group flatzinc.twoone Constrains \a x to take one of the values in \a as */
+predicate float_dom(var float: x, array[int] of float: as);
+
+/***
+  @groupdef flatzinc.twooneone FlatZinc builtins added in MiniZinc 2.1.1.
+
+  These functions and predicates define built-in operations of the MiniZinc language
+  that have been added in MiniZinc 2.1.1. Solvers that support these natively need
+  to include a file called redefinitions-2.1.1.mzn in their solver library that
+  redefines these predicates as builtins.
+
+*/
+
+/** @group flatzinc.twooneone Returns variable constrained to be equal to the minimum of the set \a s.
+  An alternative implementation can be found in the comments of the source code.
+*/
+function var $$E: min(var set of $$E: s);
+/** @group flatzinc.twooneone Returns variable constrained to be equal to the maximum of the set \a s.
+  An alternative implementation can be found in the comments of the source code.
+*/
+function var $$E: max(var set of $$E: s);
+
+/***
+  @groupdef flatzinc.twotwoone FlatZinc builtins added in MiniZinc 2.2.1.
+
+  These functions and predicates define built-in operations of the MiniZinc language
+  that have been added in MiniZinc 2.2.1. Solvers that support these natively need
+  to include a file called redefinitions-2.2.1.mzn in their solver library that
+  redefines these predicates as builtins.
+
+*/
+
+/** @group flatzinc.twotwoone Constrains \a z = \(\a x ^ {\a y}\) */
+predicate int_pow_fixed(var int: x, int: y, var int: z);
+
+/***
+  @groupdef flatzinc.twothreethree FlatZinc builtins added in MiniZinc 2.3.3.
+
+  These functions and predicates define built-in operations of the MiniZinc language
+  that have been added in MiniZinc 2.3.3. Solvers that support these natively need
+  to include a file called redefinitions-2.3.3.mzn in their solver library that
+  redefines these predicates as builtins.
+
+*/
+
+/** @group flatzinc.twothreethree Constrains \a x \( \in \) \a S */
+predicate float_set_in(var float: x, set of float: S);
+
+/***
+  @groupdef flatzinc.twofivetwo FlatZinc builtins added in MiniZinc 2.5.2.
+
+  These functions and predicates define built-in operations of the MiniZinc language
+  that have been added in MiniZinc 2.5.2. Solvers that support these natively need
+  to include a file called redefinitions-2.5.2.mzn in their solver library that
+  redefines these predicates as builtins.
+
+*/
+
+/** @group flatzinc.twofivetwo Element constraint on 2d array with MiniZinc index set, constrains \a x[\a idx1,idx2] = \a c
+  This can be overridden in a solver that can perform the index calculation more efficiently than using
+  a MiniZinc decomposition.
+*/
+predicate array_var_int_element2d_nonshifted(var int: idx1, var int: idx2, array[int,int] of var int: x, var int: c);
+
+/** @group flatzinc.twofivetwo Element constraint on 2d array with MiniZinc index set, constrains \a x[\a idx1,idx2] = \a c
+  This can be overridden in a solver that can perform the index calculation more efficiently than using
+  a MiniZinc decomposition.
+*/
+predicate array_var_bool_element2d_nonshifted(var int: idx1, var int: idx2, array[int,int] of var bool: x, var bool: c);
+
+/** @group flatzinc.twofivetwo Element constraint on 2d array with MiniZinc index set, constrains \a x[\a idx1,idx2] = \a c
+  This can be overridden in a solver that can perform the index calculation more efficiently than using
+  a MiniZinc decomposition.
+*/
+predicate array_var_float_element2d_nonshifted(var int: idx1, var int: idx2, array[int,int] of var float: x, var float: c);
+
+/** @group flatzinc.twofivetwo Element constraint on 2d array with MiniZinc index set, constrains \a x[\a idx1,idx2] = \a c
+  This can be overridden in a solver that can perform the index calculation more efficiently than using
+  a MiniZinc decomposition.
+*/
+predicate array_var_set_element2d_nonshifted(var int: idx1, var int: idx2, array[int,int] of var set of int: x, var set of int: c);

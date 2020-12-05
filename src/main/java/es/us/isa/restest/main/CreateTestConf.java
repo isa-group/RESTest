@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class CreateTestConf {
 
     private static final Logger log = LogManager.getLogger(CreateTestConf.class);
-    private static String openApiSpecPath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/swagger.yaml";			    // OAS file path
+    private static String openApiSpecPath = "src/test/resources/Folder/swagger.yaml";			// OAS file path
     private static String confPath;																// Test configuration path
 
     
@@ -98,6 +98,8 @@ public class CreateTestConf {
                         throw new IllegalArgumentException("HTTP method not supported: " + method);
                 }
             }
+
+            filters.add(filter);
         }
 
         return filters;

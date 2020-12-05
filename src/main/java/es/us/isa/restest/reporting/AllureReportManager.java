@@ -2,7 +2,10 @@ package es.us.isa.restest.reporting;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import es.us.isa.restest.util.AllureAuthManager;
 import org.apache.commons.io.FileUtils;
 
 import es.us.isa.restest.util.PropertyManager;
@@ -16,18 +19,20 @@ public class AllureReportManager {
 
 	private String resultsDirPath;
 	private String reportDirPath;
+	private List<String> authProperties;
 	private String allureCommand;
 	private Boolean historyTrend = false;					// If true, it show history information by copying the 'history' directory from previous report
 	private Boolean loadCategories = true;					// If true, it uses the custom categories defined in the properties file located in src/main/resources
 	
 	
 	public AllureReportManager() {
-		this(PropertyManager.readProperty("allure.results.dir"), PropertyManager.readProperty("allure.report.dir"));
+		this(PropertyManager.readProperty("allure.results.dir"), PropertyManager.readProperty("allure.report.dir"), new ArrayList<>());
 	}
 	
-	public AllureReportManager(String resultsDir, String reportDir) {
+	public AllureReportManager(String resultsDir, String reportDir, List<String> authProperties) {
 		this.resultsDirPath = resultsDir;
 		this.reportDirPath = reportDir;
+		this.authProperties = authProperties;
 
 		// Allure command
 		String os = System.getProperty("os.name");
@@ -43,7 +48,7 @@ public class AllureReportManager {
 		if (historyTrend)
 			copyHistoryDirectory();
 	
-		// If category loading is enabled, we must copy the file "categories.json" to the allure results directory.
+		// If category loading is enabled, we must copy the file "allure-categories.json" to the allure results directory.
 		if (loadCategories)
 			copyCategoryFile();
 		
@@ -52,6 +57,8 @@ public class AllureReportManager {
 		try {
 			Process proc = rt.exec(allureCommand + " generate -c " + resultsDirPath  + " -o " + reportDirPath);
 			proc.waitFor();
+			AllureAuthManager.confidentialityFilter(authProperties, resultsDirPath);
+			AllureAuthManager.confidentialityFilter(authProperties, reportDirPath + "/data/attachments");
 		} catch (IOException e) {
 			System.err.println("Error generating report: " + e.getMessage());
 			e.printStackTrace();
@@ -62,7 +69,7 @@ public class AllureReportManager {
 		}
 	}
 	
-	// Copy the files categories.json file from the resource directory to the allure results directory
+	// Copy the files allure-categories.json file from the resource directory to the allure results directory
 	private void copyCategoryFile() {
 		
 		File sourceFile = new File(PropertyManager.readProperty("allure.categories.path"));

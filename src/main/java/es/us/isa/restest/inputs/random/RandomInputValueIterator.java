@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-/** Random iterator for a list of input values of type <T>
+/** Random iterator for a list of input values of type &lt;T&gt;
  * 
  * @author Sergio Segura
  */

@@ -35,7 +35,7 @@ public class TestManager {
         List<List<String>> csvRows = readCSV(csvPath, false);
         List<TestResult> testResults = new ArrayList<>();
         for (List<String> csvRow: csvRows) {
-            TestResult tr = new TestResult(csvRow.get(0), csvRow.get(1), csvRow.get(2), csvRow.get(3));
+            TestResult tr = new TestResult(csvRow.get(0), csvRow.get(1), csvRow.get(2), csvRow.get(3), Boolean.parseBoolean(csvRow.get(4)), csvRow.get(5));
             testResults.add(tr);
         }
         return testResults;
@@ -56,7 +56,7 @@ public class TestManager {
 
         List<TestResult> testResults = new ArrayList<>();
         for (int i=start; i<stop; i++) {
-            TestResult tr = new TestResult(csvRows.get(i).get(0), csvRows.get(i).get(1), csvRows.get(i).get(2), csvRows.get(i).get(3));
+            TestResult tr = new TestResult(csvRows.get(i).get(0), csvRows.get(i).get(1), csvRows.get(i).get(2), csvRows.get(i).get(3), Boolean.parseBoolean(csvRows.get(i).get(4)), csvRows.get(i).get(5));
             testResults.add(tr);
         }
 

@@ -25,12 +25,46 @@ ann: MIP_cut = user_cut;         %% MIP_cut: make sure no feasible solutions are
                                  %% -- seems better on average but in CPLEX, wrong LB e.g. on carpet-cutting
 ann: MIP_lazy = lazy_constraint;
 
-%-----------------------------------------------------------------------------%
-opt bool: fIndConstr;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% "GENERAL" constraints %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+opt bool: fIndConstr;          %% User option, e.g., with -D
+                               %% Attention: as of MZN 2.4.3, you also need -DfMIPdomains=false
 bool: fMZN__UseIndicators =    %% Pass on indicator constraints
            if absent( fIndConstr ) then false
            else deopt( fIndConstr ) endif;
     %% CPLEX 12.6.2 Concert: reifs give wrong result on 2012/amaze, so using implications only
+    
+%% MAX/MIN
+opt bool: MinMaxGeneral;       %% User option, e.g., with -D
+                               %% pass on min/max to the backend as fzn_array_float_minimum
+bool: MZN__MinMaxGeneral = if absent(MinMaxGeneral) then false else deopt(MinMaxGeneral) endif;
+
+%% CUMULATIVE
+opt bool: CumulativeSolverConfig;               %% As set in share/minizinc/Preferences.json
+opt bool: Cumulative;          %% User option, e.g., with -D
+bool: MZN__Cumulative_Fixed_d_r = if occurs(Cumulative) then deopt(Cumulative)
+                      elseif occurs(CumulativeSolverConfig) then deopt(CumulativeSolverConfig)
+                      else false endif;
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Quadratic expressions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --------------------------------------------------------------------------------------- %
+%% Forward float_times as fzn_float_times
+opt bool: QuadrFloatSolverConfig;             %% As set in share/minizinc/Preferences.json
+opt bool: QuadrFloat;                         %% User option, e.g., with -D
+bool: MZN__QuadrFloat = if occurs(QuadrFloat) then deopt(QuadrFloat)
+                      elseif occurs(QuadrFloatSolverConfig) then deopt(QuadrFloatSolverConfig)
+                      else false endif;
+
+%% Forward int_times as fzn_int_times
+opt bool: QuadrIntSolverConfig;               %% As set in share/minizinc/Preferences.json
+opt bool: QuadrInt;                           %% User option, e.g., with -D
+bool: QuadrIntFinal = if occurs(QuadrInt) then deopt(QuadrInt)
+                      elseif occurs(QuadrIntSolverConfig) then deopt(QuadrIntSolverConfig)
+                      else false endif;
+opt int: QuadrIntCard;          %% Convert int_times to fzn_int_times if the minimum
+                                %% of x, y's domain cardinalities as at least QuadrIntCard
+int: MZN__QuadrIntCard = if occurs(QuadrIntCard) then deopt(QuadrIntCard)
+                         elseif QuadrIntFinal then 0 else infinity endif;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Subtour elimination in circuit %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % --------------------------------------------------------------------------------------- %

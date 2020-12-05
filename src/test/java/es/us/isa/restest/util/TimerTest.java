@@ -1,12 +1,9 @@
 package es.us.isa.restest.util;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-
 import static es.us.isa.restest.util.Timer.TestStep.*;
+import static es.us.isa.restest.util.Timer.exportToCSV;
 import static es.us.isa.restest.util.Timer.resetCounters;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -20,14 +17,11 @@ public class TimerTest {
         Timer.startCounting(ALL);
         Thread.sleep(500);
         Timer.startCounting(TEST_SUITE_GENERATION);
+        assertEquals("The TEST_SUITE_GENERATION timer should have 1 entry", 1, Timer.getCounters().get(TEST_SUITE_GENERATION.getName()).size());
         Thread.sleep(1000);
-        boolean throwsException = false;
-        try {
-            Timer.startCounting(TEST_SUITE_GENERATION);
-        } catch (IllegalStateException e) {
-            throwsException = true;
-        }
-        assertTrue(throwsException);
+        Timer.startCounting(TEST_SUITE_GENERATION);
+        assertEquals("The TEST_SUITE_GENERATION timer should still have 1 entry", 1, Timer.getCounters().get(TEST_SUITE_GENERATION.getName()).size());
+        Thread.sleep(100);
         Timer.stopCounting(TEST_SUITE_GENERATION);
         Thread.sleep(1500);
         Timer.startCounting(TEST_SUITE_EXECUTION);
@@ -46,17 +40,17 @@ public class TimerTest {
         assertEquals("The TEST_SUITE_GENERATION counter should have 2 entries", 2, Timer.getCounters().get(TEST_SUITE_GENERATION.getName()).size());
         assertEquals("The TEST_SUITE_EXECUTION counter should have 2 entries", 2, Timer.getCounters().get(TEST_SUITE_EXECUTION.getName()).size());
         assertTrue("The ALL counter should have lasted 3000ms at least", Timer.getCounters().get(ALL.getName()).get(0) >= 3400);
-        assertTrue("The first TEST_SUITE_GENERATION counter should have lasted 1000ms at least", Timer.getCounters().get(TEST_SUITE_GENERATION.getName()).get(0) >= 1000);
+        assertTrue("The first TEST_SUITE_GENERATION counter should have lasted 100ms at least", Timer.getCounters().get(TEST_SUITE_GENERATION.getName()).get(0) >= 100);
         assertTrue("The first TEST_SUITE_EXECUTION counter should have lasted 0ms at least", Timer.getCounters().get(TEST_SUITE_EXECUTION.getName()).get(0) >= 0);
         assertTrue("The second TEST_SUITE_GENERATION counter should have lasted 1000ms at least", Timer.getCounters().get(TEST_SUITE_GENERATION.getName()).get(1) >= 400);
         assertTrue("The second TEST_SUITE_EXECUTION counter should have lasted 0ms at least", Timer.getCounters().get(TEST_SUITE_EXECUTION.getName()).get(1) >= 200);
 
-        ObjectMapper mapper = new ObjectMapper();
         String timePath = PropertyManager.readProperty("data.tests.dir") + "/" + PropertyManager.readProperty("data.tests.time");
-        try {
-            mapper.writeValue(new File(timePath), Timer.getCounters());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileManager.createDir(PropertyManager.readProperty("data.tests.dir"));
+        exportToCSV(timePath, 2);
+        assertTrue("The time report should have been created in " + timePath, FileManager.checkIfExists(timePath));
+
     }
+
+
 }

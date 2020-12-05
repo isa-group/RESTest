@@ -112,6 +112,36 @@ predicate float_min(var float: x, var float: y, var float: z) =
 predicate float_max(var float: x, var float: y, var float: z) =
     array_float_maximum(z, [x, y]);
 
+predicate array_int_minimum_I(var int: m, array[int] of var int: x) =
+    let { int: n = length(x),
+          constraint assert(1 == min(index_set(x)), "  array_int_minimum_I: argument indexed not from 1??"),
+          int: iMinUB = arg_min([ub(x[i]) | i in 1..n]),
+          int: MinUB = ub(x[iMinUB]),
+          set of int: sLBLess = { i | i in 1..n where lb(x[i])<MinUB },
+          set of int: sUBEqual = { i | i in 1..n where ub(x[i])==MinUB },
+          set of int: sActive = if card(sLBLess intersect sUBEqual)>0 then sLBLess
+                                else sLBLess union { iMinUB } endif,
+    } in
+    if 1==card(sActive) then
+      m == x[min(sActive)]
+    elseif MZN__MinMaxGeneral then
+      fzn_array_float_minimum(m, x)                      %% Send to backend
+    else
+      let {
+          array[1..n] of var int: p = [
+            if i in sActive then let { var 0..1: pi } in pi else 0 endif | i in 1..n ],
+          constraint 1==sum(p),
+          constraint m >= lb_array(x),
+          constraint m <= MinUB,
+        } in
+      forall (i in index_set(x))
+        (
+          if i in sActive                               %% for at least 1 element
+          then
+              m<=x[i] /\ aux_int_ge_if_1(m, x[i], p[i])
+          endif )                                       %% -- exclude too big x[i]
+    endif;
+
 predicate array_float_minimum_I(var float: m, array[int] of var float: x) =
     let { int: n = length(x),
           constraint assert(1 == min(index_set(x)), "  array_float_minimum_I: argument indexed not from 1??"),
@@ -124,6 +154,8 @@ predicate array_float_minimum_I(var float: m, array[int] of var float: x) =
     } in
     if 1==card(sActive) then
       m == x[min(sActive)]
+    elseif MZN__MinMaxGeneral then
+      fzn_array_float_minimum(m, x)                      %% Send to backend
     else
       let {
           array[1..n] of var int: p = [
@@ -137,8 +169,7 @@ predicate array_float_minimum_I(var float: m, array[int] of var float: x) =
           if i in sActive                               %% for at least 1 element
           then 
               m<=x[i] /\ aux_float_ge_if_1(m, x[i], p[i])
-          else true endif )
-                                                        %% -- exclude too big x[i]
+          endif )                                       %% -- exclude too big x[i]
       /\
       if card(sActive)>1 /\ fMinimumCutsXZ then
         let {
@@ -162,8 +193,7 @@ predicate array_float_minimum_I(var float: m, array[int] of var float: x) =
       if card(sActive)>1 /\ fMinimumCutsXZB then
             array_var_float_element__XBZ_lb([ -x[i] | i in sActive ],  [  p[i] | i in sActive ], -m)  :: MIP_cut 
       else true endif
-    endif
-  ;
+    endif;
 
 %-----------------------------------------------------------------------------%
 % Multiplication and division
@@ -204,22 +234,25 @@ function array[int] of var int: aux_int_division_modulo_fn(var int: x, var int: 
 %% Can also have int_times(var float, var int) ......... TODO
 
 predicate int_times(var int: x, var int: y, var int: z) =
-if is_fixed(x) then
-  z==fix(x)*y             %%%%% Need to use fix() otherwise added to map & nothing happens
-elseif is_fixed(y) then
-  z==x*fix(y)
-  else
-  if 0..1==dom(x) /\ 0..1==dom(y) then bool_and__INT(x,y,z)
+  if is_fixed(x) then
+    z==fix(x)*y             %%%%% Need to use fix() otherwise added to CSE & nothing happens
+  elseif is_fixed(y) then
+    z==x*fix(y)
+  elseif is_same(x, y) then
+    z == pow(x, 2)
+  elseif 0..1==dom(x) /\ 0..1==dom(y) then bool_and__INT(x,y,z)
   elseif card(dom(x))==2 /\ card(dom(y))==2 /\ 0 in dom(x) /\ 0 in dom(y)
-    then let {
-      var 0..1: xn;
-      var 0..1: yn;
-      var 0..1: zn;
-      constraint x=xn*max(dom(x) diff {0});
-      constraint y=yn*max(dom(y) diff {0});
-      constraint z=zn*max(dom(x) diff {0})*max(dom(y) diff {0});
-    } in
-    bool_and__INT(xn,yn,zn)
+      then let {
+        var 0..1: xn;
+        var 0..1: yn;
+        var 0..1: zn;
+        constraint x=xn*max(dom(x) diff {0});
+        constraint y=yn*max(dom(y) diff {0});
+        constraint z=zn*max(dom(x) diff {0})*max(dom(y) diff {0});
+      } in
+      bool_and__INT(xn,yn,zn)
+  elseif min(card(dom(x)), card(dom(y))) >= MZN__QuadrIntCard then
+    fzn_int_times(x, y, z)
   elseif card(dom(x)) * card(dom(y)) > nMZN__UnarySizeMax_intTimes
     \/ ( fIntTimesBool /\ (
           %% Peter's idea for *bool. More optimal but worse values on carpet cutting.
@@ -242,8 +275,7 @@ elseif is_fixed(y) then
     endif
   else
     int_times_unary(x, { }, y, z)
-  endif
-endif;
+  endif;
 
 %% domx__ can be used to narrow domain... NOT IMPL.
 predicate int_times_unary(var int: x, set of int: domx__, var int: y, var int: z) =
@@ -284,8 +316,18 @@ predicate int_times_unary__NOFN(var int: x, set of int: domx__, var int: y, var 
           ( pY[valY[j]] == sum(i in index_set(valX))( pp[i, j] ) )
     endif;
 
-predicate float_times(var float: a, var float: b, var float: c) =
-    abort("Unable to create linear formulation for the `float_times` constraint. This model instance cannot be solved using a linear solver.");
+predicate float_times(var float: x, var float: y, var float: z) =
+  if is_fixed(x) then
+    z==fix(x)*y                 %%%%% Need to use fix() otherwise added to CSE & nothing happens
+  elseif is_fixed(y) then
+    z==x*fix(y)
+  elseif MZN__QuadrFloat then
+    fzn_float_times(x, y, z)
+  else
+    abort("Unable to create linear formulation for the `float_times(\(x), \(y), \(z))` constraint." ++
+      " Define QuadrFloat=true if your linear solver supports quadratic constraints," ++
+      " or use integer variables.")
+  endif;
 
 %%%Define int_pow
 predicate int_pow( var int: x, var int: y, var int: r ) =
@@ -327,28 +369,71 @@ predicate array_var_bool_element(var int: x, array[int] of var bool: a,
                                  var bool: z) =
     array_var_int_element(x, arrayXd(a, [bool2int(a[i]) | i in index_set(a)]), bool2int(z));
 
-predicate array_int_element(var int: x, array[int] of int: a, var int: z) =
+predicate array_int_element(var int: i00, array[int] of int: a, var int: z) =
     let {
-      constraint x in { i | i in index_set(a) where a[i] in dom(z) },
+      set of int: ix = index_set(a),
+      constraint i00 in { i | i in ix where a[i] in dom(z) },
+    } in         %%% Tighten domain of i00 before dMin/dMax
+    let {
+          int: dMin = min(i in dom(i00))(a[i]),
+          int: dMax = max(i in dom(i00))(a[i]),
     } in
-    array_float_element(x, arrayXd(a, [int2float(a[i]) | i in index_set(a)]), int2float(z));
+    if dMin==dMax then
+      z==dMin
+    else
+      z >= dMin /\
+      z <= dMax /\
+      let {
+        int: nUBi00 = max(dom(i00)),
+        int: nLBi00 = min(dom(i00)),
+        int: nMinDist = min(i in nLBi00 .. nUBi00-1)(a[i+1]-a[i]),
+        int: nMaxDist = max(i in nLBi00 .. nUBi00-1)(a[i+1]-a[i]),
+      } in
+      if nMinDist == nMaxDist then               %% The linear case
+        z == a[nLBi00] + nMinDist*(i00-nLBi00)
+      else
+        let {
+          array[int] of var int: p = eq_encode(i00)    %% this needs i00 in ix
+        }                         %% Faster flattening than (i==i00) @2a9df1f7
+        in
+          sum(i in dom(i00))( a[i] * p[i] ) == z
+      endif
+    endif;
 
-predicate array_var_int_element(var int: x, array[int] of var int: a,
+predicate array_var_int_element(var int: i00, array[int] of var int: a,
                                 var int: z) =
     let {
-      constraint x in { i | i in index_set(a) where 0 < card(dom(a[i]) intersect dom(z)) },
+      constraint i00 in { i | i in index_set(a) where
+        0 < card(dom(a[i]) intersect dom(z)) },
+    } in                            %% finish domain first
+    let {
+          int: minLB=min(i in dom(i00))(lb(a[i])),
+          int: maxUB=max(i in dom(i00))(ub(a[i]))
     } in
-   %%%% Relate to the float version:
-    array_var_float_element(x, arrayXd(a, [int2float(a[i]) | i in index_set(a)]), int2float(z));
-   %%%% Simplistic version:
-   %%%% Complete binarization: MEMORY FULL. Need exact domains & sparse encoding
-
+    if minLB==maxUB then
+      z==minLB
+    else
+      z >= minLB /\
+      z <= maxUB /\
+      if {0,1}==dom(i00) /*ub(i00)-lb(i00)==1*/ /*2==card( dom( i00 ) )*/ then
+        aux_int_eq_if_1(z, a[lb(i00)], (ub(i00)-i00)) /\
+        aux_int_eq_if_1(z, a[ub(i00)], (i00-lb(i00)))
+      else
+        let {
+          array[int] of var int: p = eq_encode(i00)    %% this needs i00 in ix
+        }                         %% Faster flattening than (i==i00) @2a9df1f7
+        in
+          forall (i in dom(i00))(
+            aux_int_eq_if_1(z, a[i], p[i])
+          )
+      endif
+    endif;
 
 predicate array_float_element(var int: i00, array[int] of float: a,
                               var float: z) =
     let { set of int: ix = index_set(a),
           constraint i00 in { i | i in ix where a[i]>=lb(z) /\ a[i]<=ub(z) },
-    } in         %%% Finish domain before dMin/dMax
+    } in         %%% Tighten domain of i00 before dMin/dMax
     let {
           float: dMin = min(i in dom(i00))(a[i]),
           float: dMax = max(i in dom(i00))(a[i]),
@@ -369,10 +454,9 @@ predicate array_float_element(var int: i00, array[int] of float: a,
       else
         let {
           array[int] of var int: p = eq_encode(i00)    %% this needs i00 in ix
-        }
+        }                         %% Faster flattening than (i==i00) @2a9df1f7
         in
-        assert(dom(i00) subset index_set(p), "", true) /\
-        sum(i in dom(i00))( a[i] * int2float(p[i]) ) == z        %% add more hull?
+          sum(i in dom(i00))( a[i] * p[i] ) == z
       endif
     endif;
 
@@ -396,20 +480,20 @@ predicate array_var_float_element(var int: i00, array[int] of var float: a,
         aux_float_eq_if_1(z, a[lb(i00)], (ub(i00)-i00)) /\
         aux_float_eq_if_1(z, a[ub(i00)], (i00-lb(i00)))
       else
-        let {
-          array[int] of var int: p = eq_encode(i00),
-        } in
-        assert(dom(i00) subset index_set(p), "", true) /\
   %%% The convexified bounds seem slow for ^2 and ^3 equations:
-  %    sum(i in dom(i01))( lb(a[i]) * int2float(p[i]) ) <= z /\    %% convexify lower bounds
-  %    sum(i in dom(i01))( ub(a[i]) * int2float(p[i]) ) >= z /\    %% convexify upper bounds
-        forall (i in dom(i00))(
-          aux_float_eq_if_1(z, a[i], p[i])
-        )
+  %    sum(i in dom(i01))( lb(a[i]) * (i==i00) ) <= z /\    %% convexify lower bounds
+  %    sum(i in dom(i01))( ub(a[i]) * (i==i00) ) >= z /\    %% convexify upper bounds
+        let {
+          array[int] of var int: p = eq_encode(i00)    %% this needs i00 in ix
+        }                         %% Faster flattening than (i==i00) @2a9df1f7
+        in
+          forall (i in dom(i00))(
+            aux_float_eq_if_1(z, a[i], p[i])
+          )
         %% Cuts:
         /\ 
         if fElementCutsXZ then
-          array_var_float_element__ROOF([  a[i] | i in dom(i00) ],  z)  :: MIP_cut   %% these 2 better as user cuts - too slow
+          array_var_float_element__ROOF([  a[i] | i in dom(i00) ],  z)  :: MIP_cut   %% these 2 as user cuts - too slow
           /\ array_var_float_element__ROOF([ -a[i] | i in dom(i00) ], -z)  :: MIP_cut   %% or even skip them
         else true endif
         /\
@@ -587,6 +671,10 @@ annotation bool_search(array[$X] of var bool: x, ann:a1, ann:a2, ann:a3) =
 
 annotation warm_start( array[int] of var bool: x, array[int] of bool: v ) =
    warm_start( [ bool2int(x[i]) | i in index_set(x) ], [ bool2int(v[i]) | i in index_set(v) ] );
+   
+   
+annotation sat_goal(var bool: b) = int_max_goal(b);
+annotation int_max_goal(var int: x);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DOMAIN POSTPROCESSING BUILT-INS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -618,3 +706,7 @@ predicate array_float_maximum__IND(var float: m, array[int] of var float: x);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% XBZ cut generator, currently CPLEX only %%%%%%%%%%%%%%%%%%%%%%%%%%
 predicate array_var_float_element__XBZ_lb__cutgen(array[int] of var float: x, array[int] of var int: b, var float: z);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Quadratic expressions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+predicate fzn_float_times(var float: a, var float: b, var float: c);
+predicate fzn_int_times(var int: a, var int: b, var int: c);
+predicate fzn_array_float_minimum(var float: m, array[int] of var float: x);

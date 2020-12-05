@@ -2,8 +2,6 @@ package es.us.isa.restest.util;
 
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static es.us.isa.restest.util.CSVManager.*;
@@ -19,8 +17,9 @@ public class CSVManagerTest {
         deleteFile(dirPath+file);
         createDir(dirPath);
         createFileIfNotExists(dirPath+file);
-        createFileWithHeader(dirPath+file, "criterionType,rootPath,element,isCovered");
+        createCSVwithHeader(dirPath+file, "criterionType,rootPath,element,isCovered");
         assertTrue("The file should exist", checkIfExists(dirPath+file));
+        assertFalse("The file should not be empty", readCSV("src/test/resources/csvData/csvManagerSample.csv").isEmpty());
     }
 
     @Test
@@ -46,7 +45,7 @@ public class CSVManagerTest {
         testCreateCSV();
         String path = "src/test/resources/csvData/csvManagerSample.csv";
         String row = "RESPONSE_BODY_PROPERTIES,pets->GET->200,name,true";
-        writeRow(path, row);
+        writeCSVRow(path, row);
         assertTrue("The file should exist", checkIfExists(path));
         String fileContent = readFile(path);
         assertNotNull("The content of the CSV should be readable", fileContent);

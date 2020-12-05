@@ -1,0 +1,271 @@
+---
+auth:
+  required: true
+  queryParams:
+  headerParams: []
+  apiKeysPath: Foursquare/apikeys.json
+testConfiguration:
+  testPaths:
+  - testPath: /venues/search
+    operations:
+    - operationId: searchVenues
+      method: get
+      testParameters:
+      - name: v
+        weight: null
+        generator:
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+              - 20200306
+      - name: ll
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - 37.42307,-122.08427
+                - 37.392191,-5.995193
+                - 35.681999,139.769254
+                - -33.924278,18.424572
+                - -37.812746,144.961832
+                - 39.925412, 32.834169
+                - 50.447273, 30.520903
+                - 39.904325, 116.405302
+                - 13.753789, 100.501572
+                - 19.430849, -99.135857
+              objectValues: null
+        #          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+#            objectValues: null
+      - name: near
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - NYC
+                - Seville, Spain
+                - Milan, Italy
+                - Melbourne
+                - Tokyo
+                - Egypt
+                - Juarez, Mexico
+                - Paris
+                - San Francisco
+                - Krakow
+      - name: name
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - McDonald's
+                - Burger King
+                - KFC
+                - Vips
+      - name: intent
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - checkin
+            - global
+            - browse
+            - match
+            objectValues: null
+      - name: radius
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100000
+            objectValues: null
+      - name: sw
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - 40.309162, -3.888093
+                - 40.297638, -3.864874
+                - 40.284098, -3.807502
+                - 40.297657, -3.837888
+                - 40.254710, -3.862130
+                - 40.334412, -3.833693
+              objectValues: null
+#          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+#            objectValues: null
+      - name: ne
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - 40.453084, -3.470426
+                - 40.479201, -3.548690
+                - 40.435893, -3.599699
+                - 40.426404, -3.604623
+                - 40.423249, -3.584061
+                - 40.382748, -3.597664
+              objectValues: null
+#          type: RandomRegExp
+#          genParameters:
+#          - name: regExp
+#            values:
+#            - ([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?),\s*[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?)
+#            objectValues: null
+      - name: query
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - food
+                - cinema
+                - open
+                - cheap
+                - public
+                - exciting
+                - cafe
+                - ok
+      - name: limit
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 50
+            objectValues: null
+      - name: categoryId
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - "src/main/resources/TestData/FoursquareCategoryIds-incomplete.csv"
+          - name: minValues
+            values:
+            - 1
+          - name: maxValues
+            values:
+            - 5
+            objectValues: null
+      - name: llAcc
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 10000
+            objectValues: null
+      - name: alt
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 2000
+            objectValues: null
+      - name: altAcc
+        weight: 0.5
+        generator:
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 10000
+            objectValues: null
+      - name: url
+        weight: 0.5
+        generator:
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - https://www.example1.com
+            - https://www.example2.com
+            - https://www.example3.com
+            objectValues: null
+      - name: providerId
+        weight: 0.5
+        generator:
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: linkedId
+        weight: 0.5
+        generator:
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - ([1-9])\d\d\d\d\d\d\d\d\d\d\d\d
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200

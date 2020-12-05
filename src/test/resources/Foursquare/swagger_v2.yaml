@@ -1,0 +1,272 @@
+swagger: "2.0"
+info:
+  description: "The Places API offers real-time access to Foursquare’s global database of rich venue data and user content to power your location-based experiences in your app or website."
+  version: "1.0.0"
+  title: "Places API Foursquare"
+host: "api.foursquare.com"
+basePath: "/v2"
+tags:
+  - name: "Venues"
+    description: "Foursquare Venues"
+schemes:
+  - "https"
+#  - "http"
+paths:
+  /venues/search:
+    get:
+      tags:
+        - "Venues"
+      summary: "Search for Venues"
+      description: "Returns a list of venues near the current location, optionally matching a search term. To ensure the best possible results, pay attention to the intent parameter below. Note that most of the fields returned inside a venue can be optional. The user may create a venue that has no address, city, or state (the venue is created instead at the lat/long specified). Your client should handle these conditions safely. For more robust venue information (photos/tips/etc.), please see our venue details endpoint."
+      operationId: "searchVenues"
+      produces:
+        - "application/json"
+      parameters:
+        - in: query
+          type: string
+          required: true
+          name: "v"
+          description: "date in YYYYMMDD format that represents the 'version' of the API for which you expect from Foursquare."
+        - in: query
+          type: string
+          name: "ll"
+          description: "Required unless near is provided. Latitude and longitude of the user’s location. Optional if using intent=global"
+          required: false
+        - in: query
+          type: string
+          required: false
+          name: "near"
+          description: "required unless ll is provided. A string naming a place in the world. If the near string is not geocodable, returns a failed_geocode error. Otherwise, searches within the bounds of the geocode and adds a geocode object to the response."
+        - in: query
+          type: string
+          name: "name"
+          required: false
+          description: "Name of the venue"
+        - in: query
+          type: string
+          required: false
+          default: checkin
+          enum:
+            - checkin
+            - global
+            - browse
+            - match
+          name: intent
+          description: "One of the values below, indicating your intent in performing the search. If no value is specified, defaults to checkin."
+        - in: query
+          type: integer
+          required: false
+          name: radius
+          maximum: 100000
+          description: "Limit results to venues within this many meters of the specified location. Defaults to a city-wide area. Only valid for requests with intent=browse, or requests with intent=checkin and categoryId or query. Does not apply to intent=match requests. The maximum supported radius is currently 100,000 meters."
+        - in: query
+          type: string
+          required: false
+          name: sw
+          description: "With ne, limits results to the bounding box defined by the latitude and longitude given by sw as its south-west corner, and ne as its north-east corner. The bounding box is only supported for intent=browse searches. Not valid with ll or radius. Bounding boxes with an area up to approximately 10,000 square kilometers are supported."
+        - in: query
+          type: string
+          required: false
+          name: ne
+          description: "See sw"
+        - in: query
+          type: string
+          required: false
+          name: query
+          description: "A search term to be applied against venue names."
+        - in: query
+          type: integer
+          required: false
+          name: limit
+          maximum: 50
+          description: Number of results to return, up to 50.
+        - in: query
+          type: array
+          items:
+            type: string
+          required: false
+          name: categoryId
+          description: "A comma separated list of categories to limit results to. If you specify categoryId. Specifying a radius may improve results. If specifying a top-level category, all sub-categories will also match the query. Does not apply to intent=match requests."
+        - in: query
+          type: number
+          required: false
+          name: llAcc
+          description: Accuracy of latitude and longitude, in meters.
+        - in: query
+          type: integer
+          required: false
+          name: alt
+          description: Altitude of the user’s location, in meters.
+        - in: query
+          type: number
+          required: false
+          name: altAcc
+          description: Accuracy of the user’s altitude, in meters.
+        - in: query
+          type: string
+          required: false
+          name: url
+          description: "A third-party URL which we will attempt to match against our map of venues to URLs."
+        - in: query
+          type: string
+          required: false
+          name: providerId
+          description: "Identifier for a known third party that is part of our map of venues to URLs, used in conjunction with linkedId."
+        - in: query
+          type: string
+          required: false
+          name: linkedId
+          description: "Identifier used by third party specified in providerId, which we will attempt to match against our map of venues to URLs."
+      x-dependencies:
+        - Or(ll, near);
+        - IF intent=='browse' THEN OnlyOne(ll AND radius, sw AND ne);
+        - IF intent=='match' THEN name AND ll;
+        - IF radius THEN intent=='browse' OR (intent=='checkin' AND (categoryId OR query));
+        - AllOrNone(sw, ne);
+        - IF sw OR ne THEN intent=='browse';
+        - IF sw OR ne THEN NOT (ll OR radius);
+        - AllOrNone(providerId, linkedId);
+        # Alternative version of dependencies
+#        - IF ZeroOrOne(providerId, linkedId) THEN Or(intent, ll, near);
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='global' THEN query;
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='match' THEN (name OR query) AND (ll OR near);
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='checkin' THEN ll OR near;
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='browse' THEN OnlyOne(sw AND ne, near OR (ll AND radius)) AND ZeroOrOne(sw AND ne, radius) AND AllOrNone(sw, ne);
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/VenueSearchResponse"
+        400:
+          description: "Bad request"
+#      security:
+#        - api_key: []
+#          api_secret: []
+#securityDefinitions:
+#  api_key:
+#    type: "apiKey"
+#    name: "client_id"
+#    in: query
+#  api_secret:
+#    type: "apiKey"
+#    name: "client_secret"
+#    in: query
+definitions:
+  Venue:
+    type: "object"
+    properties:
+      id:
+        type: string
+        description: A unique string identifier for this venue.
+      name:
+        type: string
+        description: The best known name for this venue.
+      location:
+        $ref: "#/definitions/Location"
+      categories:
+        type: array
+        items:
+          $ref: "#/definitions/Category"
+      venuePage:
+        type: object
+        properties:
+          id:
+            type: string
+  Location:
+    type: "object"
+    properties:
+      address:
+        type: string
+      crossStreet:
+        type: string
+      cc:
+        type: string
+      city:
+        type: string
+      state:
+        type: string
+      postalCode:
+        type: string
+      country:
+        type: string
+      lat:
+        type: number
+        format: double
+      lng:
+        type: number
+        format: double
+      labeledLatLngs:
+        type: array
+        items:
+          $ref: "#/definitions/LabeledLatLng"
+      distance:
+        type: integer
+        format: int32
+      formattedAddress:
+        type: array
+        items:
+          type: string
+  LabeledLatLng:
+    type: object
+    properties:
+      label:
+        type: string
+      lat:
+        type: number
+        format: double
+      lng:
+        type: number
+        format: double
+  Category:
+    type: "object"
+    properties:
+      id:
+        type: string
+        description: A unique identifier for this category.
+      name:
+        type: string
+        description: Name of the category.
+      pluralName:
+        type: string
+        description: Pluralized version of the category name.
+      shortName:
+        type: string
+        description: Shorter version of the category name.
+      icon:
+        $ref: "#/definitions/Icon"
+      primary:
+        type: boolean
+        description: If this is the primary category for parent venue object.
+  Icon:
+    type: "object"
+    properties:
+      prefix:
+        type: string
+        format: uri
+      suffix:
+        type: string
+  VenueSearchResponse:
+    type: "object"
+    properties:
+      meta:
+        $ref: "#/definitions/Meta"
+      response:
+        $ref: "#/definitions/Response"
+  Meta:
+    type: "object"
+    properties:
+      code:
+        type: integer
+        format: int32
+      requestId:
+        type: string
+  Response:
+    type: object
+    properties:
+      venues:
+        type: array
+        items:
+          $ref: "#/definitions/Venue"
+      geocode:
+        type: object
+        additionalProperties: true
