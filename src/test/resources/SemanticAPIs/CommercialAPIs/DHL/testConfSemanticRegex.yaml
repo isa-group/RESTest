@@ -1,0 +1,279 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /find-by-address
+    operationId: findByAddress
+    method: get
+    testParameters:
+    - name: countryCode
+      in: query
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/DHL Location Finder API/findByAddress_countryCode.csv
+          objectValues: null
+    - name: addressLocality
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/DHL Location Finder API/findByAddress_addressLocality.csv
+          objectValues: null
+    - name: postalCode
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/DHL Location Finder API/findByAddress_postalCode.csv
+          objectValues: null
+    - name: streetAddress
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/DHL Location Finder API/findByAddress_streetAddress.csv
+          objectValues: null
+    - name: locationType
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - servicepoint
+          - locker
+          - postoffice
+          - postbank
+          objectValues: null
+    - name: serviceType
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "parcel:pick-up"
+          - "parcel:drop-off"
+          - "express:pick-up"
+          - "express:drop-off"
+          - "parcel:pick-up-registered"
+          - "parcel:pick-up-unregistered"
+          - "parcel:drop-off-unregistered"
+          - letter-service
+          - postbank
+          - cash-on-delivery
+          - franking
+          - cash-service
+          - packaging-material
+          - postident
+          - age-verification
+          - handicapped-access
+          - parking
+          objectValues: null
+    - name: radius
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: limit
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+    expectedResponse: 200
+  - testPath: /find-by-geo
+    operationId: findByGeo
+    method: get
+    testParameters:
+    - name: latitude
+      in: query
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/DHL Location Finder API/findByGeo_latitude.csv
+          objectValues: null
+    - name: longitude
+      in: query
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/DHL Location Finder API/findByGeo_longitude.csv
+          objectValues: null
+    - name: locationType
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - servicepoint
+          - locker
+          - postoffice
+          - postbank
+          objectValues: null
+    - name: serviceType
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "parcel:pick-up"
+          - "parcel:drop-off"
+          - "express:pick-up"
+          - "express:drop-off"
+          - "parcel:pick-up-registered"
+          - "parcel:pick-up-unregistered"
+          - "parcel:drop-off-unregistered"
+          - letter-service
+          - postbank
+          - cash-on-delivery
+          - franking
+          - cash-service
+          - packaging-material
+          - postident
+          - age-verification
+          - handicapped-access
+          - parking
+          objectValues: null
+    - name: radius
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 15000
+          objectValues: null
+    - name: limit
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+    expectedResponse: 200
+  - testPath: /find-by-keyword-id
+    operationId: <SET OPERATION ID>
+    method: get
+    testParameters:
+    - name: keywordId
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: countryCode
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: postalCode
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/locations/{id}"
+    operationId: <SET OPERATION ID>
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200

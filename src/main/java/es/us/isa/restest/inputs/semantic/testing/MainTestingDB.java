@@ -19,14 +19,16 @@ import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfigurat
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 
-public class MainTestingAmadeusHotel {
+public class MainTestingDB {
 
     // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/amadeus_standard.properties";
-    private static String operationPath = "/airports/autocomplete";
-    private static String semanticParameterName = "country";
-    private static String baseUrl = "https://api.sandbox.amadeus.com/v1.2";
+    private static String propertiesPath = "/semantic/commercial/db.properties";
+    private static String operationPath = "/stations";
+    private static String semanticParameterName = "eva";
+    private static String baseUri = "https://api.deutschebahn.com/stada/v2";
     private static Integer limit = Integer.MAX_VALUE;
+    private static String apiKey = "Bearer --";
+
 
     // Parámetros derivados
     private static OpenAPISpecification spec;
@@ -49,7 +51,7 @@ public class MainTestingAmadeusHotel {
         Collections.shuffle(semanticInputs);
 
         // Select 20 random values
-        List<String> randomSubList = semanticInputs.subList(0, maxCut);
+        List<String> randomSubList = semanticInputs.subList(0, 25);
 
         // API Calls
         int i = 1;
@@ -58,41 +60,16 @@ public class MainTestingAmadeusHotel {
 
                 System.out.println(semanticInput);
 
-//                String query = "?cityCode="+ semanticInput + "&radius=300&radiusUnit=KM";         // TODO: Modify
-                String query = "";//"?term=a";
-                String url = baseUrl + operationPath + query;
-
-
-                System.out.println(url);
-
-                OkHttpClient client = new OkHttpClient();
-
-                client.setConnectTimeout(30, TimeUnit.SECONDS); // connect timeout
-                client.setReadTimeout(30, TimeUnit.SECONDS);    // socket timeout
-
-                Request request = new Request.Builder()
-                        .url(url)
-                        .get()
-//                        .addHeader("x-rapidapi-host", host)
-//                        .addHeader("x-rapidapi-host", host)
-                        .addHeader("Authorization", "Bearer xOvVJ12YPWYgGtUXCfdCwTKed55g")  // TODO: Modify
-                        .build();
-
-                Response response = client.newCall(request).execute();
-
                 System.out.println("Iteración número " + i + "/" + maxCut);
 
-                System.out.println("RESPONSE CODE: " + response.code());
-                System.out.println(response.body().string());
-                System.out.println("--------------------------------------------------------------------------------------");
-
+                db_stations_eva(semanticInput, apiKey);      // TODO: MODIFY
 
                 i++;
             }catch (Exception e){
                 System.out.println(e);
             }
 
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.SECONDS.sleep(1);
 
         }
 
@@ -107,7 +84,6 @@ public class MainTestingAmadeusHotel {
         conf = loadConfiguration(confPath, spec);
 
         operation = conf.getTestConfiguration().getOperations().stream().filter(x -> x.getTestPath().equals(operationPath)).findFirst().get();
-//        host = operation.getTestParameters().stream().filter(x-> x.getName().equals("X-RapidAPI-Host")).findFirst().get().getGenerator().getGenParameters().get(0).getValues().get(0);
 
     }
 
@@ -135,5 +111,54 @@ public class MainTestingAmadeusHotel {
         return res;
     }
 
+
+
+
+
+    //  ------------------------------------------- OPERATIONS -----------------------------------------------
+    // GET /stations
+    // federalstate
+    public static void db_stations_federalstate(String semanticInput, String apiKey) throws IOException {
+
+        String url = baseUri + "/stations?federalstate=" + semanticInput;
+
+        System.out.println(url);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+//        System.out.println(response.body().string());
+        System.out.println("--------------------------------------------------------------------------------------");
+    }
+
+    // eva
+    public static void db_stations_eva(String semanticInput, String apiKey) throws IOException {
+
+        String url = baseUri + "/stations?eva=" + semanticInput;
+
+        System.out.println(url);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println(response.body().string());
+        System.out.println("--------------------------------------------------------------------------------------");
+    }
 
 }

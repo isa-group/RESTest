@@ -40,7 +40,7 @@ public class SemanticInputGenerator {
 
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/commercial/yelp.properties");
+        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/commercial/dhl.properties");
 
         System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
@@ -101,7 +101,7 @@ public class SemanticInputGenerator {
                     .findFirst().getAsInt();
 
             for(TestParameter parameter: operation.getSemanticParameters().keySet()){
-                String fileName = "/" + operation.getOperationName() + "_" + parameter.getName() + ".csv";
+                String fileName = "/" + operation.getOperationName().replaceAll("<>","") + "_" + parameter.getName() + ".csv";
                 String path = csvPath + fileName;
                 deleteFile(path);
                 createFileIfNotExists(path);
@@ -140,7 +140,7 @@ public class SemanticInputGenerator {
 
         Path path = Paths.get(confPath);
         Path dir = path.getParent();
-        Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");       // Cambiar
+        Path fn = path.getFileSystem().getPath("testConfSemanticRegex.yaml");       // Cambiar
         Path target = (dir == null) ? fn : dir.resolve(fn);
 
         semanticConfPath = target.toString();
@@ -162,7 +162,6 @@ public class SemanticInputGenerator {
     }
 
     private static List<TestParameter> getSemanticParameters(Operation operation){
-
         List<TestParameter> res = operation.getTestParameters().stream()
                 .filter(x -> x.getGenerator().getType().equalsIgnoreCase(SEMANTIC_PARAMETER))
                 .collect(Collectors.toList());

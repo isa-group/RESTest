@@ -23,9 +23,7 @@ produces:
 securityDefinitions:
   oauth_2_0_accessCode:
     authorizationUrl: https://accounts.spotify.com/authorize
-    description: 'Spotify supports OAuth 2.0 for authenticating all API requests.
-
-'
+    description: 'Spotify supports OAuth 2.0 for authenticating all API requests.'
     flow: accessCode
     scopes:
       playlist-modify-private: ''
@@ -43,9 +41,7 @@ securityDefinitions:
     type: oauth2
   oauth_2_0_implicit:
     authorizationUrl: https://accounts.spotify.com/authorize
-    description: 'Spotify supports OAuth 2.0 for authenticating all API requests.
-
-'
+    description: 'Spotify supports OAuth 2.0 for authenticating all API requests.'
     flow: implicit
     scopes:
       playlist-modify-private: ''
@@ -63,6 +59,7 @@ securityDefinitions:
 paths:
   "/albums":
     get:
+      operationId: "GetAlbums"
       description: "[Get Several Albums](https://developer.spotify.com/web-api/get-several-albums/)\n"
       parameters:
         - description: A comma-separated list of IDs
@@ -87,6 +84,7 @@ paths:
             type: object
   "/albums/{id}":
     get:
+      operationId: "GetAlbum"
       description: "[Get an Album](https://developer.spotify.com/web-api/get-album/)\n"
       parameters:
         - description: The Spotify ID for the album
@@ -253,6 +251,7 @@ paths:
             type: object
   "/browse/categories":
     get:
+      operationId: "browseCategories"
       description: "[Get a List of Browse Categories](https://developer.spotify.com/web-api/get-list-categories/)\n"
       parameters:
         - default: 20
@@ -276,9 +275,7 @@ paths:
           type: string
         - description: 'The desired language, consisting of an ISO 639 language code
           and an ISO 3166-1 alpha-2 country code, joined by an underscore. For example:
-          es_MX, meaning "Spanish (Mexico)".
-
-'
+          es_MX, meaning "Spanish (Mexico)".'
           in: query
           name: locale
           required: false
@@ -299,6 +296,7 @@ paths:
 '
   "/browse/categories/{category_id}":
     get:
+      operationId: "browseCategoriesCategoryId"
       description: "[Get a Single Browse Category](https://developer.spotify.com/web-api/get-category/)\n"
       parameters:
         - description: The Spotify ID of the category you wish to fetch.
@@ -381,6 +379,7 @@ paths:
 '
   "/browse/featured-playlists":
     get:
+      operationId: "browseFeaturedPlaylists"
       description: "[Get a List of Featured Playlists](https://developer.spotify.com/web-api/get-list-featured-playlists/)\n"
       parameters:
         - default: 20
@@ -404,9 +403,7 @@ paths:
           type: string
         - description: 'The desired language, consisting of an ISO 639 language code
           and an ISO 3166-1 alpha-2 country code, joined by an underscore. For example:
-          es_MX, meaning "Spanish (Mexico)".
-
-'
+          es_MX, meaning "Spanish (Mexico)".'
           in: query
           name: locale
           required: false
@@ -414,9 +411,7 @@ paths:
         - description: 'A timestamp in ISO 8601 format (yyyy-MM-dd''T''HH:mm:ss) with
           the user''s local time to get results tailored to a specific date and time
           in the day. If not provided, it defaults to the current UTC time. Example:
-          "2014-10-23T09:00:00" for a user whose local time is 9AM.
-
-'
+          "2014-10-23T09:00:00" for a user whose local time is 9AM.'
           in: query
           name: timestamp
           required: false
@@ -432,9 +427,7 @@ paths:
             "$ref": "#/definitions/featured-playlists"
         '429':
           description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-            for details.
-
-'
+            for details.'
   "/browse/new-releases":
     get:
       description: "[Get a List of New Releases](https://developer.spotify.com/web-api/get-list-new-releases/)\n"
@@ -469,17 +462,8 @@ paths:
             "$ref": "#/definitions/album-simple-page"
         '429':
           description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-            for details.
+            for details.'
 
-'
-  "/me":
-    get:
-      description: "[Get Current User's Profile](https://developer.spotify.com/web-api/get-current-users-profile/)\n"
-      responses:
-        '200':
-          description: OK
-          schema:
-            "$ref": "#/definitions/current-user-profile"
   "/me/following":
     delete:
       description: "[Unfollow Artists or Users](https://developer.spotify.com/web-api/unfollow-artists-users/)\n"
@@ -501,6 +485,7 @@ paths:
         '204':
           description: No Content
     get:
+      operationId: "getFollowing"
       description: "[Get User's Followed Artists](https://developer.spotify.com/web-api/get-followed-artists/)\n"
       parameters:
         - description: The ID type, currently only artist is supported.

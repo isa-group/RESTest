@@ -7,51 +7,76 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-  - testPath: /businesses/search
-    operationId: getBusinesses
+  - testPath: "/v1/public/characters/{characterId}/comics"
+    operationId: getComicsCharacterCollection
     method: get
     testParameters:
-    - name: term
-      in: query
-      weight: 0.5
+    - name: characterId
+      in: path
+      weight: null
       generator:
-        type: SemanticParameter
+        type: RandomNumber
         genParameters:
-        - name: maxWords
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
           values:
           - 1
           objectValues: null
-    - name: location
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: format
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
           objectValues: null
-    - name: latitude
+    - name: formatType
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - comic
+          - collection
           objectValues: null
-    - name: longitude
+    - name: noVariants
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomBoolean
+        genParameters: []
+    - name: dateDescriptor
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - lastWeek
+          - thisWeek
+          - nextWeek
+          - thisMonth
           objectValues: null
-    - name: radius
+    - name: dateRange
       in: query
       weight: 0.5
       generator:
@@ -67,9 +92,19 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 40000
+          - 100
           objectValues: null
-    - name: categories
+    - name: title
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: titleStartsWith
       in: query
       weight: 0.5
       generator:
@@ -79,17 +114,127 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: locale
+    - name: startYear
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: issueNumber
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: diamondCode
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: digitalId
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: upc
       in: query
       weight: 0.5
       generator:
         type: SemanticParameter
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-z]{2,3}_[A-Z]{2}$"
+          - 1
           objectValues: null
-    - name: limit
+    - name: isbn
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: ean
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: issn
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: hasDigitalIssue
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomBoolean
+        genParameters: []
+    - name: modifiedSince
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+    - name: creators
       in: query
       weight: 0.5
       generator:
@@ -105,7 +250,125 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 50
+          - 100
+          objectValues: null
+    - name: series
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: events
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: stories
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: sharedAppearances
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: collaborators
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: orderBy
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: limit
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
           objectValues: null
     - name: offset
       in: query
@@ -115,7 +378,7 @@ testConfiguration:
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -124,276 +387,5 @@ testConfiguration:
         - name: max
           values:
           - 100
-          objectValues: null
-    - name: sort_by
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - best_match
-          - rating
-          - review_count
-          - distance
-          objectValues: null
-    - name: price
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: open_now
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomBoolean
-        genParameters: []
-    - name: open_at
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 2147483647
-          objectValues: null
-    - name: attributes
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    expectedResponse: 200
-  - testPath: "/transactions/{transaction_type}/search"
-    operationId: getTransactions
-    method: get
-    testParameters:
-    - name: transaction_type
-      in: path
-      weight: null
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: location
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: latitude
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: longitude
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    expectedResponse: 200
-  - testPath: /businesses/matches
-    operationId: getbusinessesMatches
-    method: get
-    testParameters:
-    - name: name
-      in: query
-      weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: address1
-      in: query
-      weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: address2
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: address3
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: city
-      in: query
-      weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: state
-      in: query
-      weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: country
-      in: query
-      weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: latitude
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    - name: longitude
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    - name: phone
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: zip_code
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: yelp_business_id
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: limit
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
-          objectValues: null
-    - name: match_threshold
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
           objectValues: null
     expectedResponse: 200

@@ -24,6 +24,7 @@ info:
 paths:
   /stations:
     get:
+      operationId: getStations
       description: |
         Get a QueryResult object containing station objects from the database applying to the parameters described below.
 
