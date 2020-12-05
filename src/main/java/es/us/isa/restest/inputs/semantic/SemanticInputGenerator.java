@@ -28,7 +28,8 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 
 public class SemanticInputGenerator {
 
-    private static final Logger log = LogManager.getLogger(SemanticInputGenerator.class);
+    // Properties file with configuration settings
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotel.properties";
     private static OpenAPISpecification spec;
     private static String OAISpecPath;
     private static String confPath;
@@ -38,9 +39,11 @@ public class SemanticInputGenerator {
     // DBPedia Endpoint
     public static final String szEndpoint = "http://dbpedia.org/sparql";
 
+    private static final Logger log = LogManager.getLogger(SemanticInputGenerator.class);
+
 
     public static void main(String[] args) throws IOException {
-        setEvaluationParameters(readProperty("evaluation.properties.dir") + "/semantic/commercial/dhl.properties");
+        setEvaluationParameters();
 
         System.out.println(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, spec);
@@ -112,8 +115,6 @@ public class SemanticInputGenerator {
                 String collect = Optional.ofNullable(operation.getSemanticParameters().get(parameter))
                         .map(Collection::stream).orElseGet(Stream::empty).collect(Collectors.joining("\n"));
 
-//                String collect = operation.getSemanticParameters().get(parameter)
-//                        .stream().collect(Collectors.joining("\n"));
 
                 writer.write(collect);
                 writer.close();
@@ -132,15 +133,17 @@ public class SemanticInputGenerator {
 
     }
 
-    private static void setEvaluationParameters(String evalPropertiesFilePath) {
-        OAISpecPath = readProperty(evalPropertiesFilePath, "oaispecpath");
-        confPath = readProperty(evalPropertiesFilePath, "confpath");
+
+    private static void setEvaluationParameters() {
+
+        OAISpecPath = readProperty(propertiesFilePath, "oas.path");
+        confPath = readProperty(propertiesFilePath, "conf.path");
         spec = new OpenAPISpecification(OAISpecPath);
         csvPath = csvPath + spec.getSpecification().getInfo().getTitle();
 
         Path path = Paths.get(confPath);
         Path dir = path.getParent();
-        Path fn = path.getFileSystem().getPath("testConfSemanticRegex.yaml");       // Cambiar
+        Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
         Path target = (dir == null) ? fn : dir.resolve(fn);
 
         semanticConfPath = target.toString();
