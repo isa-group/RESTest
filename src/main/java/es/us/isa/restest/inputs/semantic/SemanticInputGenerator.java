@@ -29,7 +29,7 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 public class SemanticInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotel.properties";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_semantic.properties";
     private static OpenAPISpecification spec;
     private static String OAISpecPath;
     private static String confPath;

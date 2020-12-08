@@ -163,92 +163,92 @@ paths:
             $ref: '#/definitions/BusinessesResult'
         400:
           description: bad request
-  /businesses/matches:
-    get:
-      operationId: getbusinessesMatches
-      summary: Get businesses matches
-      description: Get businesses matches
-      produces:
-        - application/json
-      parameters:
-        - name: name
-          in: query
-          type: string
-          required: true
-          description: "Required. The name of the business. Maximum length is 64; only digits, letters, spaces, and !#$%&+,./:?@'are allowed."
-        - name: address1
-          in: query
-          type: string
-          required: true
-          description: "  Required. The first line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed. The empty string '' is allowed; this will specifically match certain service businesses that have no street address."
-        - name: address2
-          in: query
-          type: string
-          required: false
-          description: "Optional. The second line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed."
-        - name: address3
-          in: query
-          type: string
-          required: false
-          description: "Optional. The third line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed."
-        - name: city
-          in: query
-          type: string
-          required: true
-          description: "Required. The city of the business. Maximum length is 64; only digits, letters, spaces, and ’.() are allowed."
-        - name: state
-          in: query
-          type: string
-          required: true
-          description: "Required. The ISO 3166-2 (with a few exceptions) state code of this business. Maximum length is 3."
-        - name: country
-          in: query
-          type: string
-          required: true
-          description: "Required. The ISO 3166-1 alpha-2 country code of this business. Maximum length is 2."
-        - name: latitude
-          in: query
-          type: number
-          required: false
-          description: "Optional. The WGS84 latitude of the business in decimal degrees. Must be between ­-90 and +90."
-        - name: longitude
-          in: query
-          type: number
-          required: false
-          description: "Optional. The WGS84 longitude of the business in decimal degrees. Must be between ­-180 and +180."
-        - name: phone
-          in: query
-          type: string
-          required: false
-          description: "Optional. The phone number of the business which can be submitted as (a) locally formatted with digits only (e.g., 016703080) or (b) internationally formatted with a leading + sign and digits only after (+35316703080). Maximum length is 32."
-        - name: zip_code
-          in: query
-          type: string
-          required: false
-          description: "Optional. The Zip code of this business."
-        - name: yelp_business_id
-          in: query
-          type: string
-          required: false
-          description: "Optional. Unique Yelp identifier of the business if available. Used as a hint when finding a matching business."
-        - name: limit
-          in: query
-          type: integer
-          required: false
-          description: "Optional. Maximum number of business results to return. By default, it will return 3. Minimum is 1, maximum is 10."
-        - name: match_threshold
-          in: query
-          type: string
-          required: false
-          description: "Optional. Specifies whether a match quality threshold should be applied to the matched businesses. Must be one of 'none', 'default' or 'strict'. none: Do not apply any match quality threshold; all potential business matches will be returned. default: Apply a match quality threshold such that only very closely matching businesses will be returned. strict: Apply a very strict match quality threshold."
-      x-dependencies:
-      responses:
-        200:
-          description: Returns all businesses
-          schema:
-            $ref: '#/definitions/BusinessesResult'
-        400:
-          description: bad request
+#  /businesses/matches:
+#    get:
+#      operationId: getbusinessesMatches
+#      summary: Get businesses matches
+#      description: Get businesses matches
+#      produces:
+#        - application/json
+#      parameters:
+#        - name: name
+#          in: query
+#          type: string
+#          required: true
+#          description: "Required. The name of the business. Maximum length is 64; only digits, letters, spaces, and !#$%&+,./:?@'are allowed."
+#        - name: address1
+#          in: query
+#          type: string
+#          required: true
+#          description: "  Required. The first line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed. The empty string '' is allowed; this will specifically match certain service businesses that have no street address."
+#        - name: address2
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. The second line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed."
+#        - name: address3
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. The third line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed."
+#        - name: city
+#          in: query
+#          type: string
+#          required: true
+#          description: "Required. The city of the business. Maximum length is 64; only digits, letters, spaces, and ’.() are allowed."
+#        - name: state
+#          in: query
+#          type: string
+#          required: true
+#          description: "Required. The ISO 3166-2 (with a few exceptions) state code of this business. Maximum length is 3."
+#        - name: country
+#          in: query
+#          type: string
+#          required: true
+#          description: "Required. The ISO 3166-1 alpha-2 country code of this business. Maximum length is 2."
+#        - name: latitude
+#          in: query
+#          type: number
+#          required: false
+#          description: "Optional. The WGS84 latitude of the business in decimal degrees. Must be between ­-90 and +90."
+#        - name: longitude
+#          in: query
+#          type: number
+#          required: false
+#          description: "Optional. The WGS84 longitude of the business in decimal degrees. Must be between ­-180 and +180."
+#        - name: phone
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. The phone number of the business which can be submitted as (a) locally formatted with digits only (e.g., 016703080) or (b) internationally formatted with a leading + sign and digits only after (+35316703080). Maximum length is 32."
+#        - name: zip_code
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. The Zip code of this business."
+#        - name: yelp_business_id
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. Unique Yelp identifier of the business if available. Used as a hint when finding a matching business."
+#        - name: limit
+#          in: query
+#          type: integer
+#          required: false
+#          description: "Optional. Maximum number of business results to return. By default, it will return 3. Minimum is 1, maximum is 10."
+#        - name: match_threshold
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. Specifies whether a match quality threshold should be applied to the matched businesses. Must be one of 'none', 'default' or 'strict'. none: Do not apply any match quality threshold; all potential business matches will be returned. default: Apply a match quality threshold such that only very closely matching businesses will be returned. strict: Apply a very strict match quality threshold."
+#      x-dependencies:
+#      responses:
+#        200:
+#          description: Returns all businesses
+#          schema:
+#            $ref: '#/definitions/BusinessesResult'
+#        400:
+#          description: bad request
 definitions:
   BusinessesResult:
     type: object
@@ -294,6 +294,8 @@ definitions:
               type: string
             alias:
               type: string
+            image_url:
+              type: string
             is_closed:
               type: boolean
             name:
@@ -328,10 +330,13 @@ definitions:
               properties:
                 address1:
                   type: string
+                  x-nullable: true
                 address2:
                   type: string
+                  x-nullable: true
                 address3:
                   type: string
+                  x-nullable: true
                 city:
                   type: string
                 country:

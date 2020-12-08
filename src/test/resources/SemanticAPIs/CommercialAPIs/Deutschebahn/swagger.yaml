@@ -255,7 +255,7 @@ definitions:
       name:
         description: full name of Aufgabentraeger
         type: string
-      shortname:
+      shortName:
         description: unique identifier
         type: string
     type: object
@@ -337,7 +337,7 @@ definitions:
     type: object
   RiL100Identifier:
     properties:
-      geographicCoordinate:
+      geographicCoordinates:
         $ref: '#/definitions/GeographicPoint'
       hasSteamPermission:
         description: permission for steam engines y/n
@@ -415,22 +415,23 @@ definitions:
   Schedule:
     description: a weekly schedule
     properties:
-      friday:
-        $ref: '#/definitions/OpeningHours'
-      holiday:
-        $ref: '#/definitions/OpeningHours'
-      monday:
-        $ref: '#/definitions/OpeningHours'
-      saturday:
-        $ref: '#/definitions/OpeningHours'
-      sunday:
-        $ref: '#/definitions/OpeningHours'
-      thursday:
-        $ref: '#/definitions/OpeningHours'
-      tuesday:
-        $ref: '#/definitions/OpeningHours'
-      wednesday:
-        $ref: '#/definitions/OpeningHours'
+      availability:
+        friday:
+          $ref: '#/definitions/OpeningHours'
+        holiday:
+          $ref: '#/definitions/OpeningHours'
+        monday:
+          $ref: '#/definitions/OpeningHours'
+        saturday:
+          $ref: '#/definitions/OpeningHours'
+        sunday:
+          $ref: '#/definitions/OpeningHours'
+        thursday:
+          $ref: '#/definitions/OpeningHours'
+        tuesday:
+          $ref: '#/definitions/OpeningHours'
+        wednesday:
+          $ref: '#/definitions/OpeningHours'
     type: object
   Station:
     properties:
@@ -497,7 +498,7 @@ definitions:
         type: boolean
       localServiceStaff:
         $ref: '#/definitions/Schedule'
-      mailingAdress:
+      mailingAddress:
         $ref: '#/definitions/Address'
         description: mailing address of the railway station
       name:
@@ -513,7 +514,7 @@ definitions:
         type: integer
       regionalbereich:
         $ref: '#/definitions/RegionalBereichRef'
-      riL100Identifiers:
+      ril100Identifiers:
         description: station related Ril100s
         items:
           $ref: '#/definitions/RiL100Identifier'
@@ -522,7 +523,7 @@ definitions:
         $ref: '#/definitions/StationManagementRef'
       szentrale:
         $ref: '#/definitions/SZentraleRef'
-      timetableOffice:
+      timeTableOffice:
         $ref: '#/definitions/TimetableOffice'
     type: object
   StationManagement:

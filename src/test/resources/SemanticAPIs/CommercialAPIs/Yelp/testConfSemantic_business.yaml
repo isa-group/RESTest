@@ -2,9 +2,10 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
   apiKeysPath: null
   headersPath: null
+  headerParams:
+    Authorization: "Bearer ---"
 testConfiguration:
   operations:
   - testPath: /businesses/search
@@ -15,41 +16,41 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_term.csv
           objectValues: null
     - name: location
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_location.csv
           objectValues: null
     - name: latitude
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_latitude.csv
           objectValues: null
     - name: longitude
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_longitude.csv
           objectValues: null
     - name: radius
       in: query
@@ -73,21 +74,26 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomEnglishWord
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
+          - name: csv
+            values:
+              - src/main/resources/TestData/yelp-categories.csv
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 5
     - name: locale
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_locale.csv
           objectValues: null
     - name: limit
       in: query
@@ -142,12 +148,20 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomEnglishWord
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
+          - name: values
+            values:
+              - 1
+              - 2
+              - 3
+              - 4
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 4
     - name: open_now
       in: query
       weight: 0.5
@@ -176,55 +190,68 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomEnglishWord
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
+          - name: values
+            values:
+              - hot_and_new
+              - request_a_quote
+              - reservation
+              - waitlist_reservation
+              - cashback
+              - deals
+              - gender_neutral_restrooms
+              - open_to_all
+              - wheelchair_accessible
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
     expectedResponse: 200
-  - testPath: "/transactions/{transaction_type}/search"
-    operationId: getTransactions
-    method: get
-    testParameters:
-    - name: transaction_type
-      in: path
-      weight: null
-      generator:
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: location
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: latitude
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-    - name: longitude
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-    expectedResponse: 200
+#  - testPath: "/transactions/{transaction_type}/search"
+#    operationId: getTransactions
+#    method: get
+#    testParameters:
+#    - name: transaction_type
+#      in: path
+#      weight: null
+#      generator:
+#        type: InputValue
+#        genParameters:
+#          - name: values
+#            values:
+#              - delivery
+#            objectValues: null
+#    - name: location
+#      in: query
+#      weight: 0.5
+#      generator:
+#        type: RandomInputValue
+#        genParameters:
+#        - name: csv
+#          values:
+#          - src/main/resources/TestData/Generated/Yelp API/getTransactions_location.csv
+#          objectValues: null
+#    - name: latitude
+#      in: query
+#      weight: 0.5
+#      generator:
+#        type: RandomInputValue
+#        genParameters:
+#        - name: csv
+#          values:
+#          - src/main/resources/TestData/Generated/Yelp API/getTransactions_latitude.csv
+#          objectValues: null
+#    - name: longitude
+#      in: query
+#      weight: 0.5
+#      generator:
+#        type: RandomInputValue
+#        genParameters:
+#        - name: csv
+#          values:
+#          - src/main/resources/TestData/Generated/Yelp API/getTransactions_longitude.csv
+#          objectValues: null
+#    expectedResponse: 200
