@@ -3,6 +3,7 @@ auth:
   required: true
   queryParams: {}
   apiKeysPath: null
+  headersPath: null
   headerParams:
     Authorization: "Bearer ---"
 testConfiguration:
@@ -61,24 +62,12 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: RandomEnglishWord
         genParameters:
-        - name: values
+        - name: maxWords
           values:
-            - "1"
-            - "2"
-            - "3"
-            - "4"
-            - "5"
-            - "6"
-            - "7"
+          - 1
           objectValues: null
-        - name: minValues
-          values:
-            - 1
-        - name: maxValues
-          values:
-            - 7
     - name: federalstate
       in: query
       weight: 0.5
@@ -123,14 +112,14 @@ testConfiguration:
       generator:
         type: RandomInputValue
         genParameters:
-          - name: values
-            values:
-              - "and"
-              - "or"
-          - name: minValues
-            values:
-              - 1
-          - name: maxValues
-            values:
-              - 1
+        - name: values
+          values:
+            - "and"
+            - "or"
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 1
     expectedResponse: 200

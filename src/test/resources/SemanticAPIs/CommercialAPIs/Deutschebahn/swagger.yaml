@@ -247,7 +247,7 @@ definitions:
       street:
         type: string
       zipcode:
-        type: integer
+        type: string
     type: object
   Aufgabentraeger:
     description: 'local public sector entity, responsible for short distance public transport in a specific area'
@@ -261,7 +261,7 @@ definitions:
     type: object
   EVANumber:
     properties:
-      geographicCoordinate:
+      geographicCoordinates:
         $ref: '#/definitions/GeographicPoint'
       isMain:
         description: station related EVA-Numbers
@@ -297,10 +297,10 @@ definitions:
     description: period of time from/to
     properties:
       fromTime:
-        format: date
+#        format: date
         type: string
       toTime:
-        format: date
+#        format: date
         type: string
     type: object
   Partial:
@@ -416,22 +416,23 @@ definitions:
     description: a weekly schedule
     properties:
       availability:
-        friday:
-          $ref: '#/definitions/OpeningHours'
-        holiday:
-          $ref: '#/definitions/OpeningHours'
-        monday:
-          $ref: '#/definitions/OpeningHours'
-        saturday:
-          $ref: '#/definitions/OpeningHours'
-        sunday:
-          $ref: '#/definitions/OpeningHours'
-        thursday:
-          $ref: '#/definitions/OpeningHours'
-        tuesday:
-          $ref: '#/definitions/OpeningHours'
-        wednesday:
-          $ref: '#/definitions/OpeningHours'
+        properties:
+          friday:
+            $ref: '#/definitions/OpeningHours'
+          holiday:
+            $ref: '#/definitions/OpeningHours'
+          monday:
+            $ref: '#/definitions/OpeningHours'
+          saturday:
+            $ref: '#/definitions/OpeningHours'
+          sunday:
+            $ref: '#/definitions/OpeningHours'
+          thursday:
+            $ref: '#/definitions/OpeningHours'
+          tuesday:
+            $ref: '#/definitions/OpeningHours'
+          wednesday:
+            $ref: '#/definitions/OpeningHours'
     type: object
   Station:
     properties:
