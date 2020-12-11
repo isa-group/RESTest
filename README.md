@@ -189,7 +189,7 @@ java -jar restest.jar src/test/resources/Folder/api.properties
 ```
 
 ## License
-RESTest is distributed under the [GNU General Public License v3.0](LICENSE).
+RESTest is distributed under the [GNU Lesser General Public License v3.0](LICENSE).
 
 RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
 
