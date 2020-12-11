@@ -5,7 +5,7 @@ auth:
   apiKeysPath: null
   headersPath: null
   headerParams:
-    Authorization: "Bearer ---"
+    Authorization: "Bearer -----"
 testConfiguration:
   operations:
   - testPath: /businesses/search
@@ -152,10 +152,10 @@ testConfiguration:
         genParameters:
           - name: values
             values:
-              - 1
-              - 2
-              - 3
-              - 4
+              - "1"
+              - "2"
+              - "3"
+              - "4"
           - name: minValues
             values:
               - 1

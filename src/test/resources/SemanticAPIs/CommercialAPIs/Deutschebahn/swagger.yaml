@@ -98,7 +98,7 @@ paths:
           in: query
           name: eva
           required: false
-          type: integer
+          type: string  #change to integer
         - description: Filter by Ril100-identifier. Wildcards are not allowed here.
           format: string
           in: query
@@ -118,18 +118,18 @@ paths:
           description: station data
           schema:
             $ref: '#/definitions/StationQuery'
-        '400':
-          description: bad request (illegal parameter or illegal parameter value)
-          schema:
-            $ref: '#/definitions/Error'
-        '404':
-          description: not found
-          schema:
-            $ref: '#/definitions/Error'
-        '500':
-          description: internal server error
-          schema:
-            $ref: '#/definitions/Error'
+#        '400':
+#          description: bad request (illegal parameter or illegal parameter value)
+#          schema:
+#            $ref: '#/definitions/Error'
+#        '404':
+#          description: not found
+#          schema:
+#            $ref: '#/definitions/Error'
+#        '500':
+#          description: internal server error
+#          schema:
+#            $ref: '#/definitions/Error'
       summary: This operation provides the master data for german railway stations.
       x-auth-type: Application & Application User
       x-throttling-tier: Unlimited
