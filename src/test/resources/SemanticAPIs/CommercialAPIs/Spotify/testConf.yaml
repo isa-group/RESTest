@@ -25,11 +25,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     expectedResponse: 200
   - testPath: "/albums/{id}"
@@ -50,11 +50,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     expectedResponse: 200
   - testPath: "/albums/{id}/tracks"
@@ -254,9 +254,9 @@ testConfiguration:
       generator:
         type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     expectedResponse: 200
   - testPath: /browse/categories
@@ -303,21 +303,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     - name: locale
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     - name: Accept
       in: header
@@ -348,21 +348,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     - name: locale
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     - name: Accept
       in: header
@@ -490,27 +490,27 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     - name: locale
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
     - name: timestamp
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:

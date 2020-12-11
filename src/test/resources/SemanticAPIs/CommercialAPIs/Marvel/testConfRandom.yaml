@@ -2,8 +2,8 @@
 auth:
   required: true
   queryParams:
-    apikey: '---'
-    hash: '--'
+    apikey: '----'
+    hash: '---'
     ts: '--'
   headerParams: {}
   apiKeysPath: null
@@ -83,7 +83,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -167,7 +167,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -177,7 +177,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -187,7 +187,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -197,7 +197,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:

@@ -289,11 +289,9 @@ paths:
           description: OK
           schema:
             "$ref": "#/definitions/category-page"
-        '429':
-          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-            for details.
-
-'
+#        '429':
+#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+#            for details.'
   "/browse/categories/{category_id}":
     get:
       operationId: "browseCategoriesCategoryId"
@@ -311,9 +309,7 @@ paths:
           type: string
         - description: 'The desired language, consisting of an ISO 639 language code
           and an ISO 3166-1 alpha-2 country code, joined by an underscore. For example:
-          es_MX, meaning "Spanish (Mexico)".
-
-'
+          es_MX, meaning "Spanish (Mexico)".'
           in: query
           name: locale
           required: false
@@ -327,11 +323,9 @@ paths:
           description: OK
           schema:
             "$ref": "#/definitions/category"
-        '429':
-          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-            for details.
-
-'
+#        '429':
+#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+#            for details.'
   "/browse/categories/{category_id}/playlists":
     get:
       description: "[Get a Category's playlists](https://developer.spotify.com/web-api/get-categorys-playlists/)\n"
@@ -372,11 +366,11 @@ paths:
               playlists:
                 "$ref": "#/definitions/playlist-simple-page"
             type: object
-        '429':
-          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-            for details.
-
-'
+#        '429':
+#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+#            for details.
+#
+#'
   "/browse/featured-playlists":
     get:
       operationId: "browseFeaturedPlaylists"
@@ -425,9 +419,9 @@ paths:
           description: OK
           schema:
             "$ref": "#/definitions/featured-playlists"
-        '429':
-          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-            for details.'
+#        '429':
+#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+#            for details.'
   "/browse/new-releases":
     get:
       description: "[Get a List of New Releases](https://developer.spotify.com/web-api/get-list-new-releases/)\n"
@@ -460,9 +454,9 @@ paths:
           description: OK
           schema:
             "$ref": "#/definitions/album-simple-page"
-        '429':
-          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-            for details.'
+#        '429':
+#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+#            for details.'
 
   "/me/following":
     delete:

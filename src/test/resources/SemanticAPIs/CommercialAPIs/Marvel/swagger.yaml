@@ -230,8 +230,8 @@ paths:
           description: No response was specified
           schema:
             "$ref": "#/definitions/ComicDataWrapper"
-        '409':
-          description: Limit greater than 100.
+#        '409':
+#          description: Limit greater than 100.
 definitions:
   ComicList:
     properties:
@@ -427,7 +427,7 @@ definitions:
         description: A description of the date (e.g. onsale date, FOC date).
       date:
         type: string
-        format: date
+#        format: date
         description: The date.
   CharacterDataContainer:
     properties:
@@ -977,11 +977,12 @@ definitions:
         description: If the issue is a variant (e.g. an alternate cover, second printing,
           or director’s cut), a text description of the variant.
       description:
+        nullable: true
         type: string
         description: The preferred description of the comic.
       modified:
         type: string
-        format: date
+#        format: date
         description: The date the resource was most recently modified.
       isbn:
         type: string

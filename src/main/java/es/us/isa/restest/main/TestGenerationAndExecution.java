@@ -30,7 +30,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_semantic_business.properties";
+	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Marvel/marvel_semantic.properties";
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
 	private static OpenAPISpecification spec; 							// OAS specification
