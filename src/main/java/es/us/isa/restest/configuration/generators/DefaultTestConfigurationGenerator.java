@@ -210,7 +210,9 @@ public class DefaultTestConfigurationGenerator {
 					setDefaultGenerator(gen);
 				}
 
-				testParam.setGenerator(gen);
+				List<Generator> gens = new ArrayList<>();
+				gens.add(gen);
+				testParam.setGenerators(gens);
 				testParameters.add(testParam);
 			}
 		}
@@ -244,7 +246,9 @@ public class DefaultTestConfigurationGenerator {
 				propertyGen.setGenParameters(new ArrayList<>());
 
 				generateGenerator(propertyGen, property.getValue());
-				propertyParam.setGenerator(propertyGen);
+				List<Generator> gens = new ArrayList<>();
+				gens.add(propertyGen);
+				propertyParam.setGenerators(gens);
 				propertyParams.add(propertyParam);
 			}
 		}
@@ -420,8 +424,9 @@ public class DefaultTestConfigurationGenerator {
 			Generator gen = new Generator();
 			gen.setGenParameters(new ArrayList<>());
 			generateBodyGenerator(gen, requestBody.getContent().get(MEDIA_TYPE_APPLICATION_JSON));
-
-			testParam.setGenerator(gen);
+			List<Generator> gens = new ArrayList<>();
+			gens.add(gen);
+			testParam.setGenerators(gens);
 			testParameters.add(testParam);
 
 		} else if (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED)
@@ -478,8 +483,9 @@ public class DefaultTestConfigurationGenerator {
 					Generator gen = new Generator();
 					gen.setGenParameters(new ArrayList<>());
 					generateGenerator(gen, parameterSchema);
-
-					testParam.setGenerator(gen);
+					List<Generator> gens = new ArrayList<>();
+					gens.add(gen);
+					testParam.setGenerators(gens);
 					testParameters.add(testParam);
 				}
 			}
