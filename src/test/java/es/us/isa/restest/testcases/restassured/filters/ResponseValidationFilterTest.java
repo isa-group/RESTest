@@ -40,7 +40,7 @@ public class ResponseValidationFilterTest {
         }
     }
 
-    @Test(expected= ResponseValidationFilter.OpenApiValidationException.class)
+    @Test(expected= RuntimeException.class)
     public void shouldNotValidateJSONResponse() {
         Response response = RestAssured
                 .given()

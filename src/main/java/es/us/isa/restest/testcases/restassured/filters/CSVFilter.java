@@ -1,17 +1,13 @@
 package es.us.isa.restest.testcases.restassured.filters;
 
 //import io.restassured.filter.Filter;
-import es.us.isa.restest.testcases.TestResult;
-import es.us.isa.restest.util.PropertyManager;
 import io.restassured.filter.FilterContext;
 import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
 
-import static es.us.isa.restest.coverage.CoverageMeter.exportCoverageOfTestResultToCSV;
-
-public class CSVFilter extends OracleFilter implements OrderedFilter {
+public class CSVFilter extends RESTestFilter implements OrderedFilter {
 
     public CSVFilter() {
         super();

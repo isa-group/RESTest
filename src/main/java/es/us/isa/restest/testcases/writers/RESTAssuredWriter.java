@@ -249,7 +249,8 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateFiltersInitialization(TestCase t) {
 		String content = "";
 
-		content += "\t\tnominalOrFaultyTestCaseFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n";
+		content += "\t\tnominalOrFaultyTestCaseFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n" +
+				"\t\tstatusCode5XXFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n";
 
 		if (enableStats || enableOutputCoverage)
 			content += "\t\tcsvFilter.setTestResultId(testResultId);\n" +
