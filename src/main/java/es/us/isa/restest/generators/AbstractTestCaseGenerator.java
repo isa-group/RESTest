@@ -277,8 +277,8 @@ public abstract class AbstractTestCaseGenerator {
 			return null;
 
 		// Get random parameter which will contain an invalid value
-		Pair<String, String>[] possibleFaultyParams = (Pair<String, String>[]) faultyGenerators.keySet().toArray();
-		Pair<String, String> faultyParam = possibleFaultyParams[rand.nextInt(possibleFaultyParams.length)];
+		Object[] possibleFaultyParams = faultyGenerators.keySet().toArray();
+		Pair<String, String> faultyParam = (Pair<String, String>)possibleFaultyParams[rand.nextInt(possibleFaultyParams.length)];
 		String faultyValue = null;
 
 		TestCase test = createTestCaseTemplate(testOperation);
@@ -311,21 +311,26 @@ public abstract class AbstractTestCaseGenerator {
 
 		TestCase test = null;
 
-		// With 50% prob., generate request with invalid generator
-		if (rand.nextFloat() < 0.5)
-			test = generateRandomInvalidTestCase(testOperation);
-		if (test != null)
-			return test;
+		List<String> generationAlternatives = Arrays.asList("invalid_generator", "mutation");
+		Collections.shuffle(generationAlternatives);
 
-		// Otherwise, generate valid request and mutate it
-		test = generateRandomValidTestCase(testOperation);
+		int i = 0;
+		while (i < generationAlternatives.size() && test == null) {
+			if (generationAlternatives.get(i).equals("invalid_generator")) // Request with invalid generator
+				test = generateRandomInvalidTestCase(testOperation);
+			else { // Valid request and mutate it
+				test = generateRandomValidTestCase(testOperation);
 
-		String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
-		if (!mutationDescription.equals("")) {		// A mutation has been applied
-			test.setFaulty(true);
-			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
-		} else
-			test = null;
+				String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
+				if (!mutationDescription.equals("")) { // A mutation has been applied
+					test.setFaulty(true);
+					test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
+				} else
+					test = null;
+			}
+
+			i++;
+		}
 
 		return test;
 	}

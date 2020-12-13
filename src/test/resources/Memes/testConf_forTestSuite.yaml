@@ -1,0 +1,101 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+testConfiguration:
+  operations:
+  - operationId: getAllMemes
+    testPath: /gallery
+    method: get
+    testParameters:
+      - name: reverse
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomBoolean
+            genParameters: [ ]
+      - name: upperlimit
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+      - name: lowerlimit
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+      - name: category
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Sport
+                  - Food
+                  - Social
+                  - Undefined
+                  - All
+                objectValues: null
+    expectedResponse: 200
+  - testPath: /gallery/{id}
+    operationId: getMemeById
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - 'srthdrythdryth'
+          - '-KkyVlBNZYQwslad5vnw'
+          - 'rtsjhdrthsrdth'
+          - 'stedhsrthrsdhyt'
+          - '-KkuizZDRVu2bmV8nOGO'
+          - 'ghdfsdtrfhwerthje'
+          - 'rfsdthdrthdrthy'
+          - 'srtjhdsryjrdshuj'
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - 'invalid_value'
+    expectedResponse: 200
