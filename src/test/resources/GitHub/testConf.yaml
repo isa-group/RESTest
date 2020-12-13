@@ -14,7 +14,8 @@ testConfiguration:
     - name: type
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -28,7 +29,8 @@ testConfiguration:
     - name: visibility
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -40,7 +42,8 @@ testConfiguration:
     - name: affiliation
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -57,7 +60,8 @@ testConfiguration:
     - name: sort
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -70,7 +74,8 @@ testConfiguration:
     - name: direction
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values

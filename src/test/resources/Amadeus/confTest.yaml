@@ -12,7 +12,8 @@ testConfiguration:
         testParameters:
           - name: location
             in: query
-            generator:
+            generators:
+            - valid: true
               type: RandomInputValue
               genParameters:
                 - name: csv
@@ -20,7 +21,8 @@ testConfiguration:
                     - src/main/resources/TestData/IATACodes.csv
           - name: check_in
             in: query
-            generator:
+            generators:
+            - valid: true
               type: RandomDate
               genParameters:
                 - name: format
@@ -34,7 +36,8 @@ testConfiguration:
                     - '30'
           - name: check_out
             in: query
-            generator:
+            generators:
+            - valid: true
               type: RandomDate
               genParameters:
                 - name: format
@@ -49,7 +52,8 @@ testConfiguration:
           - name: radius
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomNumber
               genParameters:
                 - name: type
@@ -64,7 +68,8 @@ testConfiguration:
           - name: lang
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomInputValue
               genParameters:
                 - name: values
@@ -84,7 +89,8 @@ testConfiguration:
           - name: currency
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomInputValue
               genParameters:
                 - name: values
@@ -137,7 +143,8 @@ testConfiguration:
           - name: chain
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomInputValue
               genParameters:
                 - name: csv
@@ -146,7 +153,8 @@ testConfiguration:
           - name: max_rate
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomNumber
               genParameters:
                 - name: type
@@ -161,7 +169,8 @@ testConfiguration:
           - name: number_of_results
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomNumber
               genParameters:
                 - name: type
@@ -176,7 +185,8 @@ testConfiguration:
           - name: all_rooms
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomInputValue
               genParameters:
                 - name: values
@@ -186,7 +196,8 @@ testConfiguration:
           - name: show_sold_out
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomInputValue
               genParameters:
                 - name: values
@@ -196,7 +207,8 @@ testConfiguration:
           - name: amenity
             in: query
             weight: 0.5
-            generator:
+            generators:
+            - valid: true
               type: RandomInputValue
               genParameters:
                 - name: csv

@@ -12,7 +12,8 @@ testConfiguration:
     - name: ids
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -22,7 +23,8 @@ testConfiguration:
     - name: market
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -37,7 +39,8 @@ testConfiguration:
     - name: limit
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -55,7 +58,8 @@ testConfiguration:
     - name: offset
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -73,7 +77,8 @@ testConfiguration:
     - name: q
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -83,7 +88,8 @@ testConfiguration:
     - name: type
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -93,7 +99,8 @@ testConfiguration:
     - name: market
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -108,7 +115,8 @@ testConfiguration:
     - name: ids
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords

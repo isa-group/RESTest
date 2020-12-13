@@ -14,7 +14,8 @@ testConfiguration:
     - name: text
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -28,7 +29,8 @@ testConfiguration:
     - name: data
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomRegExp
         genParameters:
         - name: regExp
@@ -38,7 +40,8 @@ testConfiguration:
     - name: language
       in: formData
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -48,7 +51,8 @@ testConfiguration:
     - name: altLanguages
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -63,7 +67,8 @@ testConfiguration:
     - name: motherTongue
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -73,7 +78,8 @@ testConfiguration:
     - name: preferredVariants
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -88,7 +94,8 @@ testConfiguration:
     - name: enabledRules
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -103,7 +110,8 @@ testConfiguration:
     - name: disabledRules
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -118,7 +126,8 @@ testConfiguration:
     - name: enabledCategories
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -133,7 +142,8 @@ testConfiguration:
     - name: disabledCategories
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -148,7 +158,8 @@ testConfiguration:
     - name: enabledOnly
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomBoolean
         genParameters: []
     expectedResponse: 200

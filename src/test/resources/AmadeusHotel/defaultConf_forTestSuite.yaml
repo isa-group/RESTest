@@ -14,7 +14,8 @@ testConfiguration:
       testParameters:
       - name: cityCode
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -32,7 +33,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: latitude
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomNumber
 #          genParameters:
 #            - name: type
@@ -46,7 +48,8 @@ testConfiguration:
 #                - 33.125898
 #      - name: longitude
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomNumber
 #          genParameters:
 #            - name: type
@@ -60,7 +63,8 @@ testConfiguration:
 #                - -79.958475
       - name: latitude
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -69,7 +73,8 @@ testConfiguration:
                 - 51.514081
       - name: longitude
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -78,7 +83,8 @@ testConfiguration:
                 - 7.463675
       - name: hotelIds
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -92,7 +98,8 @@ testConfiguration:
               - 5
       - name: checkInDate
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomDate
           genParameters:
           - name: fromToday
@@ -113,7 +120,8 @@ testConfiguration:
             objectValues: null
       - name: checkOutDate
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomDate
           genParameters:
             - name: fromToday
@@ -134,7 +142,8 @@ testConfiguration:
               objectValues: null
       - name: roomQuantity
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -151,7 +160,8 @@ testConfiguration:
             objectValues: null
       - name: adults
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -168,7 +178,8 @@ testConfiguration:
             objectValues: null
       - name: childAges
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -202,7 +213,8 @@ testConfiguration:
                 - 5
       - name: radius
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -219,7 +231,8 @@ testConfiguration:
             objectValues: null
       - name: radiusUnit
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -229,7 +242,8 @@ testConfiguration:
             objectValues: null
       - name: hotelName
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -243,7 +257,8 @@ testConfiguration:
             objectValues: null
       - name: chains
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -258,7 +273,8 @@ testConfiguration:
             - 5
       - name: rateCodes
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -285,7 +301,8 @@ testConfiguration:
               - 5
       - name: amenities
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -332,7 +349,8 @@ testConfiguration:
               - 3
       - name: ratings
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -350,7 +368,8 @@ testConfiguration:
                 - 4
       - name: priceRange
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp
@@ -359,7 +378,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -368,7 +388,8 @@ testConfiguration:
             objectValues: null
       - name: paymentPolicy
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -379,7 +400,8 @@ testConfiguration:
             objectValues: null
       - name: boardType
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -392,17 +414,20 @@ testConfiguration:
             objectValues: null
       - name: includeClosed
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: bestRateOnly
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: view
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -413,7 +438,8 @@ testConfiguration:
             objectValues: null
       - name: sort
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -424,7 +450,8 @@ testConfiguration:
             objectValues: null
       - name: page[limit]
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -441,7 +468,8 @@ testConfiguration:
             objectValues: null
       - name: page[offset]
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
             - name: type
@@ -458,7 +486,8 @@ testConfiguration:
               objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -474,7 +503,8 @@ testConfiguration:
 #      testParameters:
 #      - name: hotelId
 #        weight: null
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomInputValue
 #          genParameters:
 #          - name: csv
@@ -483,7 +513,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: checkInDate
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomDate
 #          genParameters:
 #          - name: fromToday
@@ -496,7 +527,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: checkOutDate
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomDate
 #          genParameters:
 #          - name: fromToday
@@ -509,7 +541,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: adults
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomNumber
 #          genParameters:
 #          - name: type
@@ -526,7 +559,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: childAges
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomNumber
 #          genParameters:
 #          - name: type
@@ -543,7 +577,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: rateCodes
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomInputValue
 #          genParameters:
 #          - name: values
@@ -564,7 +599,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: roomQuantity
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomNumber
 #          genParameters:
 #          - name: type
@@ -581,7 +617,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: currency
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomInputValue
 #          genParameters:
 #          - name: csv
@@ -590,7 +627,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: paymentPolicy
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomInputValue
 #          genParameters:
 #          - name: values
@@ -601,7 +639,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: boardType
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomInputValue
 #          genParameters:
 #          - name: values
@@ -614,7 +653,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: view
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomInputValue
 #          genParameters:
 #          - name: values
@@ -626,7 +666,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: lang
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomInputValue
 #          genParameters:
 #          - name: csv
@@ -642,7 +683,8 @@ testConfiguration:
 #      testParameters:
 #      - name: offerId
 #        weight: null
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomRegExp
 #          genParameters:
 #          - name: regExp
@@ -651,7 +693,8 @@ testConfiguration:
 #            objectValues: null
 #      - name: lang
 #        weight: 0.5
-#        generator:
+#        generators:
+#        - valid: true
 #          type: RandomInputValue
 #          genParameters:
 #          - name: csv

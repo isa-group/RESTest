@@ -15,7 +15,8 @@ testConfiguration:
       testParameters:
       - name: X-BingApis-SDK
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -24,7 +25,8 @@ testConfiguration:
             objectValues: null
       - name: Accept
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -33,7 +35,8 @@ testConfiguration:
             objectValues: null
       - name: Accept-Language
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -42,7 +45,8 @@ testConfiguration:
             objectValues: null
       - name: Pragma
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -52,7 +56,8 @@ testConfiguration:
             objectValues: null
       - name: User-Agent
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -66,7 +71,8 @@ testConfiguration:
             objectValues: null
       - name: X-Search-Location
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp
@@ -75,7 +81,8 @@ testConfiguration:
             objectValues: null
       - name: answerCount
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -92,7 +99,8 @@ testConfiguration:
             objectValues: null
       - name: cc
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -101,7 +109,8 @@ testConfiguration:
             objectValues: null
       - name: count
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -118,7 +127,8 @@ testConfiguration:
             objectValues: null
       - name: freshness
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -129,7 +139,8 @@ testConfiguration:
             objectValues: null
       - name: mkt
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -138,7 +149,8 @@ testConfiguration:
             objectValues: null
       - name: offset
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -155,7 +167,8 @@ testConfiguration:
             objectValues: null
       - name: promote
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -177,7 +190,8 @@ testConfiguration:
             objectValues: null
       - name: q
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -186,7 +200,8 @@ testConfiguration:
             objectValues: null
       - name: responseFilter
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -209,7 +224,8 @@ testConfiguration:
             objectValues: null
       - name: safeSearch
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -220,7 +236,8 @@ testConfiguration:
             objectValues: null
       - name: setLang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -229,12 +246,14 @@ testConfiguration:
             objectValues: null
       - name: textDecorations
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: textFormat
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values

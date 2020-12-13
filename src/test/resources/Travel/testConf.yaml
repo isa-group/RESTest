@@ -14,7 +14,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -32,7 +33,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -55,7 +57,8 @@ testConfiguration:
         - name: username
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -65,7 +68,8 @@ testConfiguration:
         - name: password
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -75,13 +79,15 @@ testConfiguration:
         - name: isAdmin
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomBoolean
             genParameters: []
         - name: maxPriceAirbnb
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -99,13 +105,15 @@ testConfiguration:
         - name: includeTripsWithUnsetAirbnbPrice
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomBoolean
             genParameters: []
         - name: sort
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -121,7 +129,8 @@ testConfiguration:
         - name: username
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -131,7 +140,8 @@ testConfiguration:
         - name: password
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -141,7 +151,8 @@ testConfiguration:
         - name: idTrip
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -164,7 +175,8 @@ testConfiguration:
         - name: id
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -187,7 +199,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: ObjectPerturbator
             genParameters:
               - name: stringObject
@@ -204,7 +217,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: ObjectPerturbator
             genParameters:
               - name: stringObject

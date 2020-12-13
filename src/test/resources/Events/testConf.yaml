@@ -12,7 +12,8 @@ testConfiguration:
       testParameters:
       - name: name
         weight: 0.1
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -21,7 +22,8 @@ testConfiguration:
             objectValues: null
       - name: creator
         weight: 0.1
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -38,7 +40,8 @@ testConfiguration:
             objectValues: null
       - name: area
         weight: 0.1
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp
@@ -47,7 +50,8 @@ testConfiguration:
             objectValues: null
       - name: tag
         weight: 0.1
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -59,7 +63,8 @@ testConfiguration:
             objectValues: null
       - name: day
         weight: 0.1
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -76,7 +81,8 @@ testConfiguration:
             objectValues: null
       - name: date_minimum
         weight: 0.1
-        generator:
+        generators:
+        - valid: true
           type: RandomDate
           genParameters:
           - name: startDate
@@ -92,7 +98,8 @@ testConfiguration:
               - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
       - name: type
         weight: 0.1
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -104,7 +111,8 @@ testConfiguration:
             objectValues: null
       - name: order
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -123,7 +131,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -140,7 +149,8 @@ testConfiguration:
             objectValues: null
       - name: event
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: ObjectPerturbator
           genParameters:
           - name: stringObject
@@ -155,7 +165,8 @@ testConfiguration:
       testParameters:
       - name: event
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: ObjectPerturbator
           genParameters:
           - name: stringObject
@@ -172,7 +183,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type

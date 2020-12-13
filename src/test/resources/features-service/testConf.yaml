@@ -19,7 +19,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -33,7 +34,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -47,7 +49,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -61,7 +64,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -70,7 +74,8 @@ testConfiguration:
     - name: constraintId
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -93,7 +98,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -102,7 +108,8 @@ testConfiguration:
     - name: sourceFeature
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -111,7 +118,8 @@ testConfiguration:
     - name: requiredFeature
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -125,7 +133,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -134,7 +143,8 @@ testConfiguration:
     - name: sourceFeature
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -143,7 +153,8 @@ testConfiguration:
     - name: excludedFeature
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -157,7 +168,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -166,7 +178,8 @@ testConfiguration:
     - name: configurationName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -180,7 +193,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -189,7 +203,8 @@ testConfiguration:
     - name: configurationName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -203,7 +218,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -212,7 +228,8 @@ testConfiguration:
     - name: configurationName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -226,7 +243,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -235,7 +253,8 @@ testConfiguration:
     - name: configurationName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -244,7 +263,8 @@ testConfiguration:
     - name: featureName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -258,7 +278,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -267,7 +288,8 @@ testConfiguration:
     - name: configurationName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -276,7 +298,8 @@ testConfiguration:
     - name: featureName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -290,7 +313,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -299,7 +323,8 @@ testConfiguration:
     - name: configurationName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -313,7 +338,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -327,7 +353,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -341,7 +368,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -350,7 +378,8 @@ testConfiguration:
     - name: featureName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -359,7 +388,8 @@ testConfiguration:
     - name: description
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomString
         genParameters: []
     expectedResponse: 200
@@ -370,7 +400,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -379,7 +410,8 @@ testConfiguration:
     - name: featureName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -388,7 +420,8 @@ testConfiguration:
     - name: description
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomString
         genParameters: []
     expectedResponse: 200
@@ -399,7 +432,8 @@ testConfiguration:
     - name: productName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv
@@ -408,7 +442,8 @@ testConfiguration:
     - name: featureName
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
           - name: csv

@@ -426,8 +426,10 @@ public abstract class AbstractTestCaseGenerator {
 					if(g.isValid()) nomGens.add(TestDataGeneratorFactory.createTestDataGenerator(g));
 					else faultyGens.add(TestDataGeneratorFactory.createTestDataGenerator(g));
 				}
-				nominalGenerators.put(Pair.with(param.getName(), param.getIn()), nomGens);
-				faultyGenerators.put(Pair.with(param.getName(), param.getIn()), faultyGens);
+				if (!nomGens.isEmpty())
+					nominalGenerators.put(Pair.with(param.getName(), param.getIn()), nomGens);
+				if (!faultyGens.isEmpty())
+					faultyGenerators.put(Pair.with(param.getName(), param.getIn()), faultyGens);
 			}
 		}
 	}

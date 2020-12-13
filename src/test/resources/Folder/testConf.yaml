@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
-  apiKeysPath: null
+  apiKeysPath: Sample/apikeys.json
   headersPath: null
 testConfiguration:
   operations:
@@ -14,12 +14,12 @@ testConfiguration:
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -29,15 +29,16 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: per_page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -47,15 +48,16 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: occurred_before
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -65,15 +67,16 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: occurred_after
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -83,11 +86,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: incident_type
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -98,25 +102,27 @@ testConfiguration:
           - infrastructure_issue
           - chop_shop
           objectValues: null
+        valid: true
     - name: proximity
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: proximity_square
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -126,16 +132,18 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: query
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/v2/incidents/{id}"
     operationId: GET--version-incidents--id---format-
@@ -144,12 +152,12 @@ testConfiguration:
     - name: id
       in: path
       weight: null
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -159,6 +167,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v2/locations
     operationId: GET--version-locations---format-
@@ -167,12 +176,12 @@ testConfiguration:
     - name: occurred_before
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -182,15 +191,16 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: occurred_after
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -200,11 +210,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: incident_type
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -215,25 +226,27 @@ testConfiguration:
           - infrastructure_issue
           - chop_shop
           objectValues: null
+        valid: true
     - name: proximity
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: proximity_square
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -243,25 +256,27 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: query
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -271,12 +286,14 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: all
       in: query
       weight: 0.5
-      generator:
-        type: RandomBoolean
+      generators:
+      - type: RandomBoolean
         genParameters: []
+        valid: true
     expectedResponse: 200
   - testPath: /v2/locations/markers
     operationId: GET--version-locations-markers---format-
@@ -285,12 +302,12 @@ testConfiguration:
     - name: occurred_before
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -300,15 +317,16 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: occurred_after
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -318,11 +336,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: incident_type
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -333,25 +352,27 @@ testConfiguration:
           - infrastructure_issue
           - chop_shop
           objectValues: null
+        valid: true
     - name: proximity
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: proximity_square
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -361,25 +382,27 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: query
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - int32
+          - integer
           objectValues: null
         - name: min
           values:
@@ -389,10 +412,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: all
       in: query
       weight: 0.5
-      generator:
-        type: RandomBoolean
+      generators:
+      - type: RandomBoolean
         genParameters: []
+        valid: true
     expectedResponse: 200

@@ -14,7 +14,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -32,7 +33,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -55,7 +57,8 @@ testConfiguration:
         - name: begins_with
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -65,7 +68,8 @@ testConfiguration:
         - name: contains
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -75,7 +79,8 @@ testConfiguration:
         - name: ends_with
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -90,7 +95,8 @@ testConfiguration:
         - name: job_title
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -100,7 +106,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -128,7 +135,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -138,7 +146,8 @@ testConfiguration:
         - name: fips
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -153,7 +162,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -168,7 +178,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -183,7 +194,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -201,7 +213,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -224,7 +237,8 @@ testConfiguration:
         - name: begins_with
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -234,7 +248,8 @@ testConfiguration:
         - name: contains
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -244,7 +259,8 @@ testConfiguration:
         - name: ends_with
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -259,7 +275,8 @@ testConfiguration:
         - name: skill_name
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -274,7 +291,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -289,7 +307,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -304,7 +323,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords

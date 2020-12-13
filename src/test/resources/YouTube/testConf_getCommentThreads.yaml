@@ -13,7 +13,8 @@ testConfiguration:
     - name: allThreadsRelatedToChannelId
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -31,7 +32,8 @@ testConfiguration:
     - name: channelId
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -49,7 +51,8 @@ testConfiguration:
     - name: id
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -67,7 +70,8 @@ testConfiguration:
     - name: maxResults
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -85,7 +89,8 @@ testConfiguration:
     - name: moderationStatus
       in: query
       weight: 0
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -97,7 +102,8 @@ testConfiguration:
     - name: order
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -108,7 +114,8 @@ testConfiguration:
     - name: pageToken
       in: query
       weight: 0
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -118,7 +125,8 @@ testConfiguration:
     - name: part
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: minValues
@@ -136,7 +144,8 @@ testConfiguration:
     - name: searchTerms
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -146,7 +155,8 @@ testConfiguration:
     - name: textFormat
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -157,7 +167,8 @@ testConfiguration:
     - name: videoId
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values

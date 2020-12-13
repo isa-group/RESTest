@@ -19,7 +19,8 @@ testConfiguration:
     - name: alphacode
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -34,7 +35,8 @@ testConfiguration:
     - name: codes
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -58,7 +60,8 @@ testConfiguration:
     - name: currency
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -73,7 +76,8 @@ testConfiguration:
     - name: name
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -83,7 +87,8 @@ testConfiguration:
     - name: fullText
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomBoolean
         genParameters: []
     expectedResponse: 200
@@ -94,7 +99,8 @@ testConfiguration:
     - name: callingcode
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -109,7 +115,8 @@ testConfiguration:
     - name: capital
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -124,7 +131,8 @@ testConfiguration:
     - name: region
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -139,7 +147,8 @@ testConfiguration:
     - name: subregion
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -154,7 +163,8 @@ testConfiguration:
     - name: lang
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -169,7 +179,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -193,7 +204,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -212,7 +224,8 @@ testConfiguration:
     - name: alphacode
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -227,7 +240,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -246,7 +260,8 @@ testConfiguration:
     - name: codes
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -270,7 +285,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -289,7 +305,8 @@ testConfiguration:
     - name: currency
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -304,7 +321,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -323,7 +341,8 @@ testConfiguration:
     - name: name
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -333,7 +352,8 @@ testConfiguration:
     - name: fullText
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomBoolean
         genParameters: []
     expectedResponse: 200
@@ -344,7 +364,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -363,7 +384,8 @@ testConfiguration:
     - name: callingcode
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -378,7 +400,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -397,7 +420,8 @@ testConfiguration:
     - name: capital
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -412,7 +436,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -431,7 +456,8 @@ testConfiguration:
     - name: region
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -446,7 +472,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -465,7 +492,8 @@ testConfiguration:
     - name: subregion
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -480,7 +508,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -499,7 +528,8 @@ testConfiguration:
     - name: lang
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -514,7 +544,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -533,7 +564,8 @@ testConfiguration:
     - name: demonym
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -548,7 +580,8 @@ testConfiguration:
     - name: fields
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -567,7 +600,8 @@ testConfiguration:
     - name: regionalbloc
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values

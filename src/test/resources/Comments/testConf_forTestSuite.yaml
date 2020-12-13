@@ -12,7 +12,8 @@ testConfiguration:
       testParameters:
       - name: contains
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -21,7 +22,8 @@ testConfiguration:
             objectValues: null
       - name: type
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -33,7 +35,8 @@ testConfiguration:
             objectValues: null
       - name: order
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -44,7 +47,8 @@ testConfiguration:
             objectValues: null
       - name: offset
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -61,7 +65,8 @@ testConfiguration:
             objectValues: null
       - name: limit
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -83,7 +88,8 @@ testConfiguration:
       testParameters:
       - name: comment
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: ObjectPerturbator
           genParameters:
           - name: stringObject
@@ -98,7 +104,8 @@ testConfiguration:
       testParameters:
       - name: comment
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: ObjectPerturbator
           genParameters:
           - name: stringObject
@@ -115,7 +122,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values

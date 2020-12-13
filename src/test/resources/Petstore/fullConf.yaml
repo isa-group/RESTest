@@ -14,7 +14,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -29,7 +30,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -44,7 +46,8 @@ testConfiguration:
         - name: status
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -61,7 +64,8 @@ testConfiguration:
         - name: tags
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -76,7 +80,8 @@ testConfiguration:
         - name: petId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -99,7 +104,8 @@ testConfiguration:
         - name: petId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -117,7 +123,8 @@ testConfiguration:
         - name: name
           in: formData
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -127,7 +134,8 @@ testConfiguration:
         - name: status
           in: formData
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -142,7 +150,8 @@ testConfiguration:
         - name: api_key
           in: header
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -152,7 +161,8 @@ testConfiguration:
         - name: petId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -175,7 +185,8 @@ testConfiguration:
         - name: petId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -193,7 +204,8 @@ testConfiguration:
         - name: additionalMetadata
           in: formData
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -203,7 +215,8 @@ testConfiguration:
         - name: file
           in: formData
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -223,7 +236,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -238,7 +252,8 @@ testConfiguration:
         - name: orderId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -261,7 +276,8 @@ testConfiguration:
         - name: orderId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -284,7 +300,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -299,7 +316,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -314,7 +332,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -329,7 +348,8 @@ testConfiguration:
         - name: username
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -339,7 +359,8 @@ testConfiguration:
         - name: password
           in: query
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -359,7 +380,8 @@ testConfiguration:
         - name: username
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -374,7 +396,8 @@ testConfiguration:
         - name: username
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -384,7 +407,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -399,7 +423,8 @@ testConfiguration:
         - name: username
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
