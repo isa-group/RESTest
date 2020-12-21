@@ -5,10 +5,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import es.us.isa.restest.inputs.random.RandomObjectGenerator;
 import es.us.isa.restest.util.AllureAuthManager;
 import org.apache.commons.io.FileUtils;
 
 import es.us.isa.restest.util.PropertyManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Class for managing the generation of test reports with Allure
@@ -23,7 +26,8 @@ public class AllureReportManager {
 	private String allureCommand;
 	private Boolean historyTrend = false;					// If true, it show history information by copying the 'history' directory from previous report
 	private Boolean loadCategories = true;					// If true, it uses the custom categories defined in the properties file located in src/main/resources
-	
+
+	private static final Logger logger = LogManager.getLogger(AllureReportManager.class.getName());
 	
 	public AllureReportManager() {
 		this(PropertyManager.readProperty("allure.results.dir"), PropertyManager.readProperty("allure.report.dir"), new ArrayList<>());
@@ -60,11 +64,11 @@ public class AllureReportManager {
 			AllureAuthManager.confidentialityFilter(authProperties, resultsDirPath);
 			AllureAuthManager.confidentialityFilter(authProperties, reportDirPath + "/data/attachments");
 		} catch (IOException e) {
-			System.err.println("Error generating report: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error generating report");
+			logger.error("Exception: ", e);
 		} catch (InterruptedException e) {
-			System.err.println("Error while generating test report: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error generating test report");
+			logger.error("Exception: ", e);
 			Thread.currentThread().interrupt();
 		}
 	}
@@ -78,8 +82,8 @@ public class AllureReportManager {
 		try {
 			FileUtils.copyFile(sourceFile, targetFile);
 		} catch (IOException e) {
-			System.err.println("Error copying Allure categories file:" + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error copying Allure categories file");
+			logger.error("Exception: ", e);
 		}
 		
 	}
@@ -91,8 +95,8 @@ public class AllureReportManager {
 		try {
 			FileUtils.copyFile(sourceFile, targetFile);
 		} catch (IOException e) {
-			System.err.println("Error copying Allure environment.properties file:" + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error copying Allure environment.properties file");
+			logger.error("Exception: ", e);
 		}
 		
 	}
@@ -113,8 +117,8 @@ public class AllureReportManager {
 		try {
 			FileUtils.copyDirectory(sourceDir, targetDir);
 		} catch (IOException e) {
-			System.err.println("Error copy history folder to allure results directory: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error copy history folder to allure results directory");
+			logger.error("Exception: ", e);
 		}
 	}
 

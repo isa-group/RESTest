@@ -83,7 +83,7 @@ public class AuthManager {
             authProperties = objectMapper.readValue(readFile(authPath), new TypeReference<Map<String, List<String>>>(){});
         } catch (IOException e) {
             logger.error("Error parsing authProperties file: {}", authPath);
-            logger.error(e.getMessage(), e);
+            logger.error("Exception: ", e);
             exit(1);
         }
     }

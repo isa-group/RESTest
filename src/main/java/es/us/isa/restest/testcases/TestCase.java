@@ -392,7 +392,7 @@ public class TestCase implements Serializable {
 		} catch (UnsupportedEncodingException e) {
 			rowEnding = new StringBuilder(",,,");
 			LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
-			e.printStackTrace();
+			LogManager.getLogger(TestCase.class.getName()).warn(e);
 		}
 		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter);
 
@@ -420,7 +420,7 @@ public class TestCase implements Serializable {
 				}
 			} catch (UnsupportedEncodingException e) {
 				LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
-				e.printStackTrace();
+				LogManager.getLogger(TestCase.class.getName()).warn(e);
 			}
 			requestBuilder.withBody(formDataBody.toString());
 			requestBuilder.withContentType("application/x-www-form-urlencoded");

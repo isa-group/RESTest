@@ -150,8 +150,8 @@ public class PostmanWriter implements IWriter {
         try {
             objectMapper.writeValue(new File(path + "/" + fileName + ".postman_collection.json"), content);
         } catch (IOException e) {
-            logger.error("Error exporting Postman test suite to JSON: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error exporting Postman test suite to JSON: {}", e.getMessage());
+            logger.error(e);
         }
     }
 

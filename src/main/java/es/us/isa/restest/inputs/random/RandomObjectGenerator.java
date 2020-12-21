@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Given a list of objects, the RandomObjectGenerator returns one of those randomly
@@ -12,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RandomObjectGenerator extends RandomGenerator {
 
     private List<Object> values;
+
+    private static final Logger logger = LogManager.getLogger(RandomObjectGenerator.class.getName());
 
     public RandomObjectGenerator() {
         super();
@@ -41,7 +45,7 @@ public class RandomObjectGenerator extends RandomGenerator {
         try {
             jsonValue = objectMapper.writeValueAsString(nextValue());
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error("Exception: ", e);
         }
         return jsonValue;
     }

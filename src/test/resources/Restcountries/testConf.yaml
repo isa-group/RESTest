@@ -27,6 +27,19 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/alphacodes.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - ABC
+            - DEF
+            - YZ
+            - NAR
+            - GHI
+            - JK
+            - LM
+            - NOP
     expectedResponse: 200
   - testPath: /v1/alpha
     operationId: v1Alphacodes
@@ -68,6 +81,19 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/currencies.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - ABC
+            - DEF
+            - YZA
+            - NAR
+            - GHI
+            - JKL
+            - MNO
+            - PQR
     expectedResponse: 200
   - testPath: "/v1/name/{name}"
     operationId: v1Name
@@ -84,6 +110,17 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/names.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - Gilead
+            - Lilliput
+            - Narnia
+            - Panem
+            - Pacific States of America
+            - Genovia
     - name: fullText
       in: query
       weight: 0.5
@@ -107,6 +144,19 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/callingcodes.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - 210
+            - 21
+            - 254
+            - 296
+            - 540
+            - 322
+            - 89
+            - 999
     expectedResponse: 200
   - testPath: "/v1/capital/{capital}"
     operationId: v1Capital
@@ -123,6 +173,21 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/capitals.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - Sevilla
+            - Lyon
+            - Los Angeles
+            - New York
+            - Teruel
+            - Vladivostok
+            - Faro
+            - Barcelona
+            - Milan
+            - Bonn
     expectedResponse: 200
   - testPath: "/v1/region/{region}"
     operationId: v1Region
@@ -139,6 +204,15 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/regions.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - Westeros
+            - Essos
+            - Middle-earth
+            - Atlantis
     expectedResponse: 200
   - testPath: "/v1/subregion/{subregion}"
     operationId: v1Subregion
@@ -155,6 +229,15 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/subregions.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - Westeros
+            - Essos
+            - Middle-earth
+            - Atlantis
     expectedResponse: 200
   - testPath: "/v1/lang/{lang}"
     operationId: v1Lang
@@ -171,6 +254,22 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/languages.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - ab
+            - cd
+            - ef
+            - gh
+            - ij
+            - lk
+            - nm
+            - op
+            - qr
+            - tv
+            - su
     expectedResponse: 200
   - testPath: /v2/all
     operationId: v2All
@@ -232,6 +331,19 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/alphacodes.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - ABC
+              - DEF
+              - YZ
+              - NAR
+              - GHI
+              - JK
+              - LM
+              - NOP
     expectedResponse: 200
   - testPath: /v2/alpha
     operationId: v2Alphacodes
@@ -313,6 +425,19 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/currencies.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - ABC
+              - DEF
+              - YZA
+              - NAR
+              - GHI
+              - JKL
+              - MNO
+              - PQR
     expectedResponse: 200
   - testPath: "/v2/name/{name}"
     operationId: v2Name
@@ -349,6 +474,17 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/names.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - Gilead
+              - Lilliput
+              - Narnia
+              - Panem
+              - Pacific States of America
+              - Genovia
     - name: fullText
       in: query
       weight: 0.5
@@ -392,6 +528,19 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/callingcodes.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - 210
+            - 21
+            - 254
+            - 296
+            - 540
+            - 322
+            - 89
+            - 999
     expectedResponse: 200
   - testPath: "/v2/capital/{capital}"
     operationId: v2Capital
@@ -428,6 +577,21 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/capitals.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - Sevilla
+            - Lyon
+            - Los Angeles
+            - New York
+            - Teruel
+            - Vladivostok
+            - Faro
+            - Barcelona
+            - Milan
+            - Bonn
     expectedResponse: 200
   - testPath: "/v2/region/{region}"
     operationId: v2Region
@@ -464,6 +628,15 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/regions.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - Westeros
+            - Essos
+            - Middle-earth
+            - Atlantis
     expectedResponse: 200
   - testPath: "/v2/subregion/{subregion}"
     operationId: v2Subregion
@@ -500,6 +673,15 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/subregions.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+            - Westeros
+            - Essos
+            - Middle-earth
+            - Atlantis
     expectedResponse: 200
   - testPath: "/v2/lang/{lang}"
     operationId: v2Lang
@@ -536,6 +718,22 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/languages.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - ab
+            - cd
+            - ef
+            - gh
+            - ij
+            - lk
+            - nm
+            - op
+            - qr
+            - tv
+            - su
     expectedResponse: 200
   - testPath: "/v2/demonym/{demonym}"
     operationId: v2Demonym
@@ -572,6 +770,21 @@ testConfiguration:
           values:
           - 'src/test/resources/Restcountries/demonyms.csv'
           objectValues: null
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - ofrainard
+              - uwhusiot
+              - spuosiaeno
+              - slosteinasque
+              - webroin
+              - gesluriote
+              - usnasqeno
+              - qasweasque
+              - skeianian
+              - smuyjian
     expectedResponse: 200
   - testPath: "/v2/regionalbloc/{regionalbloc}"
     operationId: v2Regionalbloc
@@ -620,4 +833,15 @@ testConfiguration:
           - NAFTA
           - SAARC
           objectValues: null
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - Galactic Empire
+            - Galactic Republic
+            - BENELUX
+            - ABC
+            - DEF
+            - GHIJK
     expectedResponse: 200

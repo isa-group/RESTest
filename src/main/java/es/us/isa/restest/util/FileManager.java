@@ -1,6 +1,8 @@
 package es.us.isa.restest.util;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,12 +11,14 @@ import java.nio.file.Paths;
 
 public class FileManager {
 
+    private static Logger logger = LogManager.getLogger(FileManager.class.getName());
+
     public static Boolean createFileIfNotExists(String path) {
         File file = new File(path);
         try {
             return file.createNewFile();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Exception: ", e);
         }
         return null;
     }
@@ -42,8 +46,8 @@ public class FileManager {
         try {
             FileUtils.deleteDirectory(file);
         } catch (IOException e) {
-            System.err.println("Error deleting dir");
-            e.printStackTrace();
+            logger.error("Error deleting dir ");
+            logger.error("Exception: ", e);
         }
     }
 
@@ -51,7 +55,7 @@ public class FileManager {
         try {
             return new String(Files.readAllBytes(Paths.get(path)));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Exception: ", e);
         }
         return null;
     }

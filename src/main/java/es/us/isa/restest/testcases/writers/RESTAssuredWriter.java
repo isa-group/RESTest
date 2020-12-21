@@ -5,10 +5,13 @@ import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Map.Entry;
 
+import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.testcases.TestCase;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import io.swagger.models.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
@@ -36,6 +39,8 @@ public class RESTAssuredWriter implements IWriter {
 	private String baseURI;							// API base URI
 
 	private String APIName;							// API name (necessary for folder name of exported data)
+
+	private static final Logger logger = LogManager.getLogger(RESTAssuredWriter.class.getName());
 	
 	public RESTAssuredWriter(String specPath, String testFilePath, String className, String packageName, String baseURI) {
 		this.specPath = specPath;
@@ -494,8 +499,8 @@ public class RESTAssuredWriter implements IWriter {
 			testClass.write(contentFile);
 			testClass.flush();
 		} catch(Exception ex) {
-			System.err.println("Error writing test file: " + ex.getMessage());
-			ex.printStackTrace();
+			logger.error("Error writing test file");
+			logger.error("Exception: ", ex);
 		} 
 	}
 

@@ -27,7 +27,7 @@ public class PropertyManager {
 				 properties.load(defaultProperties);
 			 } catch (IOException e) {
 				 logger.error("Error reading property file: {}", e.getMessage());
-				 e.printStackTrace();
+				 logger.error("Exception: ", e);
 			 }
 		}
 		
@@ -43,7 +43,7 @@ public class PropertyManager {
 				PropertyManager.experimentProperties.load(experimentProperties);
 			} catch (IOException e) {
 				logger.error("Error reading property file: {}", e.getMessage());
-				e.printStackTrace();
+				logger.error("Exception: ", e);
 			}
 		}
 

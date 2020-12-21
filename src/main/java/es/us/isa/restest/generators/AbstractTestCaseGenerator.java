@@ -4,6 +4,9 @@ import java.util.*;
 
 import es.us.isa.restest.configuration.pojos.Generator;
 import es.us.isa.restest.mutation.TestCaseMutation;
+import es.us.isa.restest.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javatuples.Pair;
 
 import es.us.isa.restest.configuration.TestConfigurationFilter;
@@ -17,11 +20,6 @@ import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.AuthManager;
-import es.us.isa.restest.util.IDGenerator;
-import es.us.isa.restest.util.OASAPIValidator;
-import es.us.isa.restest.util.SpecificationVisitor;
-import es.us.isa.restest.util.RESTestException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 /**
@@ -32,6 +30,7 @@ import io.swagger.v3.oas.models.PathItem.HttpMethod;
 public abstract class AbstractTestCaseGenerator {
 
 	public static final String INDIVIDUAL_PARAMETER_CONSTRAINT = "individual_parameter_constraint";
+	private static Logger logger = LogManager.getLogger(AbstractTestCaseGenerator.class.getName());
 
 	protected long seed = -1;												// Seed
 	protected Random rand;
@@ -352,7 +351,7 @@ public abstract class AbstractTestCaseGenerator {
 				// No valid perturbations generated. Set original object
 				if (!valid) {
 					test.addParameter(confParam, ((ObjectPerturbator) generator).getOriginalStringObject());
-					System.err.println("Maximum number of tries reached when trying to perturbate the input object for the operation " + testOperation.getOpenApiOperation().getOperationId());
+					logger.error("Maximum number of tries reached when trying to perturbate the input object for the operation {}", testOperation.getOpenApiOperation().getOperationId());
 				}
 			}
 		}

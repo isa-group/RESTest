@@ -4,6 +4,8 @@ import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.dictionary.Dictionary;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * @author Sergio Segura
@@ -18,6 +20,8 @@ public class RandomEnglishWordGenerator extends RandomGenerator {
 	private boolean generateCompounds=true;
 	private boolean ignoreLinkindWords=true;
 	private POS category=null; // Requested category:  NOUN, VERB, ADJECTIVE, ADVERB
+
+	private static final Logger logger = LogManager.getLogger(RandomEnglishWordGenerator.class.getName());
 	
     public RandomEnglishWordGenerator() {
     	super();
@@ -26,8 +30,8 @@ public class RandomEnglishWordGenerator extends RandomGenerator {
 			this.dictionary = Dictionary.getDefaultResourceInstance();
 			
 		} catch (JWNLException e) {
-			System.err.println("Error instantiating JWNL ditionary");
-			e.printStackTrace();
+    		logger.error("Error instantiating JWNL ditionary");
+			logger.error("Exception: ", e);
 		}
     }
     
@@ -72,8 +76,8 @@ public class RandomEnglishWordGenerator extends RandomGenerator {
 	            	}
 	         }
         } catch (JWNLException ex) {
-            System.err.println("Error generating random words: " + ex.getMessage());
-            ex.printStackTrace();
+			logger.error("Error generating random words");
+			logger.error("Exception: ", ex);
         }
         return generatedString.toString().trim();
 	}
