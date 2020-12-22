@@ -5,7 +5,7 @@ auth:
   apiKeysPath: null
   headersPath: null
   headerParams:
-    Authorization: "Bearer -----"
+    Authorization: "Bearer --"
 testConfiguration:
   operations:
   - testPath: /businesses/search

@@ -3,8 +3,8 @@ auth:
   required: true
   queryParams:
     apikey: -----
-    hash: 79e1624f179cd2de826e6224691a6be5
-    ts: 1607711229
+    hash: ----
+    ts: ---
   headerParams: {}
   apiKeysPath: null
   headersPath: null

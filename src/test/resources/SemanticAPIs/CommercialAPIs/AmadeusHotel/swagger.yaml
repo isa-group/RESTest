@@ -55,13 +55,20 @@ paths:
         - "$ref": "#/parameters/pageOffset"
         - "$ref": "#/parameters/lang"
         - "$ref": "#/parameters/cacheControl"
+      x-dependencies:
+        - OnlyOne(cityCode, latitude AND longitude, hotelIds);
+        - AllOrNone(latitude, longitude);
+        - IF priceRange THEN currency;
+        - IF includeClosed THEN NOT sort=='PRICE';
+#        - IF childAges THEN adults; # Unspecified dependency
+#        - IF hotelIds THEN NOT childAges; # Unspecified dependency
       responses:
         '200':
           "$ref": "#/responses/MultiHotelsOffers"
-        '400':
-          "$ref": "#/responses/Error400Response"
-        '500':
-          "$ref": "#/responses/Error500Response"
+#        '400':
+#          "$ref": "#/responses/Error400Response"
+#        '500':
+#          "$ref": "#/responses/Error500Response"
       security: []
   "/shopping/hotel-offers/by-hotel":
     get:
@@ -85,31 +92,31 @@ paths:
       responses:
         '200':
           "$ref": "#/responses/SingleHotelOffers"
-        '400':
-          "$ref": "#/responses/Error400Response"
-        '404':
-          "$ref": "#/responses/Error404Response"
-        '500':
-          "$ref": "#/responses/Error500Response"
-  "/shopping/hotel-offers/{offerId}":
-    get:
-      summary: VIEW ROOM DETAILS.
-      tags:
-        - shopping
-      description: ''
-      operationId: getOfferPricing
-      parameters:
-        - "$ref": "#/parameters/offerId"
-        - "$ref": "#/parameters/lang"
-      responses:
-        '200':
-          "$ref": "#/responses/SingleHotelOffers"
-        '400':
-          "$ref": "#/responses/Error400Response"
-        '404':
-          "$ref": "#/responses/Error404Response"
-        '500':
-          "$ref": "#/responses/Error500Response"
+#        '400':
+#          "$ref": "#/responses/Error400Response"
+#        '404':
+#          "$ref": "#/responses/Error404Response"
+#        '500':
+#          "$ref": "#/responses/Error500Response"
+#  "/shopping/hotel-offers/{offerId}":
+#    get:
+#      summary: VIEW ROOM DETAILS.
+#      tags:
+#        - shopping
+#      description: ''
+#      operationId: getOfferPricing
+#      parameters:
+#        - "$ref": "#/parameters/offerId"
+#        - "$ref": "#/parameters/lang"
+#      responses:
+#        '200':
+#          "$ref": "#/responses/SingleHotelOffers"
+#        '400':
+#          "$ref": "#/responses/Error400Response"
+#        '404':
+#          "$ref": "#/responses/Error404Response"
+#        '500':
+#          "$ref": "#/responses/Error500Response"
 tags:
   - name: shopping
     description: Search Available Hotels and Check their Price
@@ -132,10 +139,10 @@ parameters:
     name: latitude
     in: query
     required: false
-    type: number
-    format: double
-    minimum: -90
-    maximum: 90
+    type: string    # number
+#    format: double
+#    minimum: -90
+#    maximum: 90
     description: "search around a geographical point. The latitude is specified in
       decimal degrees    \n\nExample: 52.5238    \n\nShould be used together with
       `longitude`+`radius`+`radiusUnit`  (required)\n\n__Mandatory parameter for a
@@ -144,10 +151,10 @@ parameters:
     name: longitude
     in: query
     required: false
-    type: number
-    format: double
-    minimum: -180
-    maximum: 180
+    type: string # number
+#    format: double
+#    minimum: -180
+#    maximum: 180
     description: "search around a geographical point. The longitude is specified in
       decimal degrees    \n\nExample: 13.3835\n\nShould be used together with `latitude`+`radius`+`radiusUnit`
       \ (required)\n\n__Mandatory parameter for a search by geocodes__"
@@ -169,7 +176,7 @@ parameters:
     in: query
     required: true
     type: string
-    pattern: "^[A-Z0-9]{8}$"
+    pattern: "[A-Z0-9]{8}"
     x-example: BGMILBGB
     description: |
       Amadeus Property Code (8 chars)
@@ -352,7 +359,7 @@ parameters:
       language code (https://www.iso.org/iso-639-language-codes.html)\n"
     required: false
     type: string
-    pattern: "^[a-zA-Z0-9-]{2,5}$"
+    pattern: "[a-zA-Z0-9-]{2,5}"
   includeClosed:
     name: includeClosed
     in: query
@@ -398,7 +405,7 @@ parameters:
     maxItems: 8
     items:
       type: string
-      pattern: "^[A-Z0-9]{3}$"
+      pattern: "[A-Z0-9]{3}"
     collectionFormat: csv
     description: "Special Rate (comma separated list of Amadeus 3 chars Codes): Public
       Rate (PRO...), Qualified Rate (GOV...) or Corporate Rate (IBM...).\n\nWhen a
@@ -434,7 +441,7 @@ parameters:
     in: query
     required: false
     type: string
-    pattern: "^[A-Z]{3}$"
+    pattern: "[A-Z]{3}"
     description: |+
       use this parameter to request a specific currency. ISO currency code (http://www.iso.org/iso/home/standards/currency_codes.htm).
 
@@ -729,7 +736,6 @@ definitions:
     description: Contact Details
     required:
       - phone
-      - fax
     properties:
       phone:
         type: string
@@ -791,10 +797,10 @@ definitions:
         description: "check-out date of the stay (hotel local date). Format YYYY-MM-DD\n\nThe
           lowest accepted value is `checkInDate`+1. \n\n"
       roomQuantity:
-        type: integer
-        minimum: 1
-        maximum: 9
-        example: 1
+        type: string
+#        minimum: 1
+#        maximum: 9
+#        example: 1
         description: number of rooms (1-9)
       rateCode:
         type: string
@@ -896,12 +902,12 @@ definitions:
         description: Percentage of the commission paid to the travel seller. Value
           is between 0 and 100
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       amount:
         description: Amount of the commission paid to the travel seller. The amount
           is always linked to the currency code of the offer
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       description:
         "$ref": "#/definitions/TextWithLanguageType"
   RoomDetails:
@@ -1027,11 +1033,11 @@ definitions:
     properties:
       amount:
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
         description: Deposit-Prepay amount
       deadline:
         type: string
-        format: date-time
+#        format: date-time
         description: "The date and time of the deadline in ISO 8601[https://www.w3.org/TR/NOTE-datetime].
           \n Example: 2010-08-14T13:00:00\n Please note that this value is expressed
           in the hotels local time zone\n"
@@ -1045,7 +1051,7 @@ definitions:
     properties:
       deadline:
         type: string
-        format: date-time
+#        format: date-time
         description: "The date and time of the deadline in ISO 8601[https://www.w3.org/TR/NOTE-datetime].
           \n Example: 2010-08-14T13:00:00\n Please note that this value is expressed
           in the hotels local time zone\n"
@@ -1063,7 +1069,7 @@ definitions:
           * FULL_STAY: Non-Refundable after Deadline. Can be refundable before Deadline (if any)
       amount:
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
         description: Amount of the cancellation fee.
       numberOfNights:
         type: integer
@@ -1072,12 +1078,12 @@ definitions:
         description: Number of nights due as fee in case of cancellation.
       percentage:
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
         description: Percentage of the total stay amount to be paid in case of cancellation.
           Value is between 0 and 100.
       deadline:
         type: string
-        format: date-time
+#        format: date-time
         description: |
           Represents the deadline after which the penalty applies. DateTime is in ISO 8601 [https://www.w3.org/TR/NOTE-datetime].
           Example: 2010-08-14T12:00:00+01:00
@@ -1147,11 +1153,11 @@ definitions:
       base:
         description: Amount excluding taxes.
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       total:
         description: Amount including taxes.
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
   PriceVariation:
     title: Price variation
     description: Some prices may vary during a stay, thus here you can see the daily
@@ -1173,11 +1179,11 @@ definitions:
       base:
         description: Daily amount excluding tax
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       total:
         description: Daily amount including tax
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
     required:
       - startDate
       - endDate
@@ -1689,31 +1695,31 @@ responses:
                 currency: EUR
                 total: '912.00'
               self: https://test.api.amadeus.com/v2/shopping/hotel-offers/2E5650829E01B8BD88085B597266F15EF03E6E23BC8DB1A470A6D03F8E2BA1A8
-  Error400Response:
-    description: "code    | title \n------- | -------------------------------------
-      \ \n23      | PASSENGER TYPE NOT SUPPORTED\n61      | INVALID CURRENCY CODE\n137
-      \    | INVALID ADULTS OCCUPANCY REQUESTED\n145     | DURATION PERIOD OR DATES
-      INCORRECT\n195     | SERVICE RESTRICTION\n249     | INVALID RATE CODE\n367     |
-      INVALID FORMAT        \n377     | MAX STAY DURATION IS EXCEEDED\n381     | INVALID
-      CHECK-IN DATE\n382     | INVALID CHECK-OUT DATE\n383     | INVALID CITY CODE\n392
-      \    | INVALID HOTEL CODE\n397     | INVALID NUMBER OF ADULTS\n400     | INVALID
-      PROPERTY CODE\n402     | INVALID ROOM TYPE\n404     | CHECK_OUT DATE MUST BE
-      FURTHER IN THE FUTURE THAN CHECK-IN DATE\n424     | NO HOTELS FOUND WHICH MATCH
-      THIS INPUT\n431     | CHECK-OUT DATE IS TOO FAR IN THE FUTURE\n450     | INVALID
-      PROVIDER RESPONSE\n451     | INVALID CREDENTIALS\n562     | RESTRICTED ACCESS
-      FOR THE REQUESTED RATES AND CHAINS  \n784     | PROVIDER TIME OUT\n790     |
-      NO PROPERTIES FOUND WITHIN THIS RADIUS\n795     | NO SIMILAR NAME FOUND, PLEASE
-      ENLARGE YOUR SEARCH CRITERIA\n842     | RATE SECURITY NOT LOADED\n"
-    schema:
-      "$ref": "#/definitions/ErrorResponse"
-  Error404Response:
-    description: 'Hotel or offer not found
-
-      '
-    schema:
-      "$ref": "#/definitions/ErrorResponse"
-  Error500Response:
-    description: Internal server error.
-    schema:
-      "$ref": "#/definitions/ErrorResponse"
-x-generatedAt: '2020-11-13T14:15:50.928Z'
+#  Error400Response:
+#    description: "code    | title \n------- | -------------------------------------
+#      \ \n23      | PASSENGER TYPE NOT SUPPORTED\n61      | INVALID CURRENCY CODE\n137
+#      \    | INVALID ADULTS OCCUPANCY REQUESTED\n145     | DURATION PERIOD OR DATES
+#      INCORRECT\n195     | SERVICE RESTRICTION\n249     | INVALID RATE CODE\n367     |
+#      INVALID FORMAT        \n377     | MAX STAY DURATION IS EXCEEDED\n381     | INVALID
+#      CHECK-IN DATE\n382     | INVALID CHECK-OUT DATE\n383     | INVALID CITY CODE\n392
+#      \    | INVALID HOTEL CODE\n397     | INVALID NUMBER OF ADULTS\n400     | INVALID
+#      PROPERTY CODE\n402     | INVALID ROOM TYPE\n404     | CHECK_OUT DATE MUST BE
+#      FURTHER IN THE FUTURE THAN CHECK-IN DATE\n424     | NO HOTELS FOUND WHICH MATCH
+#      THIS INPUT\n431     | CHECK-OUT DATE IS TOO FAR IN THE FUTURE\n450     | INVALID
+#      PROVIDER RESPONSE\n451     | INVALID CREDENTIALS\n562     | RESTRICTED ACCESS
+#      FOR THE REQUESTED RATES AND CHAINS  \n784     | PROVIDER TIME OUT\n790     |
+#      NO PROPERTIES FOUND WITHIN THIS RADIUS\n795     | NO SIMILAR NAME FOUND, PLEASE
+#      ENLARGE YOUR SEARCH CRITERIA\n842     | RATE SECURITY NOT LOADED\n"
+#    schema:
+#      "$ref": "#/definitions/ErrorResponse"
+#  Error404Response:
+#    description: 'Hotel or offer not found
+#
+#      '
+#    schema:
+#      "$ref": "#/definitions/ErrorResponse"
+#  Error500Response:
+#    description: Internal server error.
+#    schema:
+#      "$ref": "#/definitions/ErrorResponse"
+#x-generatedAt: '2020-11-13T14:15:50.928Z'

@@ -289,9 +289,9 @@ paths:
           description: OK
           schema:
             "$ref": "#/definitions/category-page"
-#        '429':
-#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-#            for details.'
+  #        '429':
+  #          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+  #            for details.'
   "/browse/categories/{category_id}":
     get:
       operationId: "browseCategoriesCategoryId"
@@ -323,9 +323,9 @@ paths:
           description: OK
           schema:
             "$ref": "#/definitions/category"
-#        '429':
-#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-#            for details.'
+  #        '429':
+  #          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+  #            for details.'
   "/browse/categories/{category_id}/playlists":
     get:
       description: "[Get a Category's playlists](https://developer.spotify.com/web-api/get-categorys-playlists/)\n"
@@ -366,11 +366,11 @@ paths:
               playlists:
                 "$ref": "#/definitions/playlist-simple-page"
             type: object
-#        '429':
-#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-#            for details.
-#
-#'
+  #        '429':
+  #          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+  #            for details.
+  #
+  #'
   "/browse/featured-playlists":
     get:
       operationId: "browseFeaturedPlaylists"
@@ -419,9 +419,9 @@ paths:
           description: OK
           schema:
             "$ref": "#/definitions/featured-playlists"
-#        '429':
-#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-#            for details.'
+  #        '429':
+  #          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+  #            for details.'
   "/browse/new-releases":
     get:
       description: "[Get a List of New Releases](https://developer.spotify.com/web-api/get-list-new-releases/)\n"
@@ -454,9 +454,9 @@ paths:
           description: OK
           schema:
             "$ref": "#/definitions/album-simple-page"
-#        '429':
-#          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
-#            for details.'
+  #        '429':
+  #          description: 'API rate limit exceeded. See http://developer.spotify.com/web-api/user-guide/#rate-limiting
+  #            for details.'
 
   "/me/following":
     delete:
@@ -1301,12 +1301,14 @@ definitions:
       next:
         description: URL to the next page of items. (null if none)
         type: string
+        x-x-nullable: true
       offset:
         description: The offset of the items returned (as set in the query or by default).
         type: integer
       previous:
         description: URL to the previous page of items. (null if none)
         type: string
+        x-nullable: true
       total:
         description: The total number of items available to return.
         type: integer
@@ -1329,12 +1331,14 @@ definitions:
       next:
         description: URL to the next page of items. (null if none)
         type: string
+        x-nullable: true
       offset:
         description: The offset of the items returned (as set in the query or by default).
         type: integer
       previous:
         description: URL to the previous page of items. (null if none)
         type: string
+        x-nullable: true
       total:
         description: The total number of items available to return.
         type: integer
@@ -1424,31 +1428,36 @@ definitions:
     type: object
   category-page:
     properties:
-      href:
-        description: A link to the Web API endpoint returning the full result of the
-          request.
-        type: string
-      items:
-        description: The requested data.
-        items:
-          "$ref": "#/definitions/category"
-        type: array
-      limit:
-        description: The maximum number of items in the response (as set in the query
-          or by default).
-        type: integer
-      next:
-        description: URL to the next page of items. (null if none)
-        type: string
-      offset:
-        description: The offset of the items returned (as set in the query or by default).
-        type: integer
-      previous:
-        description: URL to the previous page of items. (null if none)
-        type: string
-      total:
-        description: The total number of items available to return.
-        type: integer
+      categories:
+        type: object
+        properties:
+          href:
+            description: A link to the Web API endpoint returning the full result of the
+              request.
+            type: string
+          items:
+            description: The requested data.
+            items:
+              "$ref": "#/definitions/category"
+            type: array
+          limit:
+            description: The maximum number of items in the response (as set in the query
+              or by default).
+            type: integer
+          next:
+            description: URL to the next page of items. (null if none)
+            type: string
+            x-nullable: true
+          offset:
+            description: The offset of the items returned (as set in the query or by default).
+            type: integer
+          previous:
+            description: URL to the previous page of items. (null if none)
+            type: string
+            x-nullable: true
+          total:
+            description: The total number of items available to return.
+            type: integer
     type: object
   current-user-profile:
     properties:
@@ -1520,12 +1529,14 @@ definitions:
       height:
         description: 'The image height in pixels. If unknown: null or not returned.'
         type: integer
+        x-nullable: true
       url:
         description: The source URL of the image.
         type: string
       width:
         description: 'The image width in pixels. If unknown: null or not returned.'
         type: integer
+        x-nullable: true
     type: object
   playlist:
     properties:
@@ -1594,6 +1605,11 @@ definitions:
       collaborative:
         description: True if the owner allows other users to modify the playlist.
         type: boolean
+      description:
+        type: string
+      primary_color:
+        type: string
+        x-nullable: true
       external_urls:
         additionalProperties:
           description: 'The type of the URL, for example: ''spotify'' - The Spotify
@@ -1623,6 +1639,7 @@ definitions:
           public, false the playlist is private, null the playlist status is not relevant.
           For more about public/private status, see Working with Playlists.'
         type: boolean
+        x-nullable: true
       snapshot_id:
         description: The version identifier for the current playlist. Can be supplied
           in other requests to target a specific playlist version
@@ -1662,12 +1679,14 @@ definitions:
       next:
         description: URL to the next page of items. (null if none)
         type: string
+        x-nullable: true
       offset:
         description: The offset of the items returned (as set in the query or by default).
         type: integer
       previous:
         description: URL to the previous page of items. (null if none)
         type: string
+        x-nullable: true
       total:
         description: The total number of items available to return.
         type: integer
@@ -1712,12 +1731,14 @@ definitions:
       next:
         description: URL to the next page of items. (null if none)
         type: string
+        x-nullable: true
       offset:
         description: The offset of the items returned (as set in the query or by default).
         type: integer
       previous:
         description: URL to the previous page of items. (null if none)
         type: string
+        x-nullable: true
       total:
         description: The total number of items available to return.
         type: integer
@@ -1749,12 +1770,14 @@ definitions:
       next:
         description: URL to the next page of items. (null if none)
         type: string
+        x-nullable: true
       offset:
         description: The offset of the items returned (as set in the query or by default).
         type: integer
       previous:
         description: URL to the previous page of items. (null if none)
         type: string
+        x-nullable: true
       total:
         description: The total number of items available to return.
         type: integer
@@ -1780,6 +1803,7 @@ definitions:
           next:
             description: URL to the next page of items. (null if none)
             type: string
+            x-nullable: true
           offset:
             description: The offset of the items returned (as set in the query or
               by default).
@@ -1787,6 +1811,7 @@ definitions:
           previous:
             description: URL to the previous page of items. (null if none)
             type: string
+            x-nullable: true
           total:
             description: The total number of items available to return.
             type: integer
@@ -1810,6 +1835,7 @@ definitions:
           next:
             description: URL to the next page of items. (null if none)
             type: string
+            x-nullable: true
           offset:
             description: The offset of the items returned (as set in the query or
               by default).
@@ -1817,6 +1843,7 @@ definitions:
           previous:
             description: URL to the previous page of items. (null if none)
             type: string
+            x-nullable: true
           total:
             description: The total number of items available to return.
             type: integer
@@ -1840,6 +1867,7 @@ definitions:
           next:
             description: URL to the next page of items. (null if none)
             type: string
+            x-nullable: true
           offset:
             description: The offset of the items returned (as set in the query or
               by default).
@@ -1847,6 +1875,7 @@ definitions:
           previous:
             description: URL to the previous page of items. (null if none)
             type: string
+            x-nullable: true
           total:
             description: The total number of items available to return.
             type: integer
@@ -1937,6 +1966,7 @@ definitions:
       preview_url:
         description: A URL to a 30 second preview (MP3 format) of the track.
         type: string
+        x-nullable: true
       track_number:
         description: The number of the track. If an album has several discs, the track
           number is the number on the specified disc.
@@ -1962,6 +1992,11 @@ definitions:
         items:
           type: string
         type: array
+      restrictions:
+        type: object
+        properties:
+          reason:
+            type: string
       disc_number:
         description: The disc number (usually 1 unless the album consists of more
           than one disc).
@@ -2026,6 +2061,7 @@ definitions:
       preview_url:
         description: A URL to a 30 second preview (MP3 format) of the track.
         type: string
+        x-nullable: true
       track_number:
         description: The number of the track. If an album has several discs, the track
           number is the number on the specified disc.
@@ -2055,12 +2091,14 @@ definitions:
       next:
         description: URL to the next page of items. (null if none)
         type: string
+        x-nullable: true
       offset:
         description: The offset of the items returned (as set in the query or by default).
         type: integer
       previous:
         description: URL to the previous page of items. (null if none)
         type: string
+        x-nullable: true
       total:
         description: The total number of items available to return.
         type: integer
@@ -2093,6 +2131,7 @@ definitions:
           next:
             description: URL to the next page of items. (null if none)
             type: string
+            x-nullable: true
           total:
             description: The total number of items available to return.
             type: integer
@@ -2100,7 +2139,7 @@ definitions:
     type: object
   user-profile:
     properties:
-      displayName:
+      display_name:   # Antes era displayName
         description: The name displayed on the user's profile.
         type: string
       external_urls:
