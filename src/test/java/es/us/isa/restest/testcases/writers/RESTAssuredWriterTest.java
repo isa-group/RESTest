@@ -29,7 +29,7 @@ public class RESTAssuredWriterTest {
 		testCases.add(tc);
 		
 		// Write test case
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "Petstore", "restassured", "http://petstore.swagger.io");
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "Petstore", "restassured", "http://petstore.swagger.io", true);
 		writer.setOAIValidation(true);
 		writer.write(testCases);
 		

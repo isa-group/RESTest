@@ -89,7 +89,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PetstoreTest",
-				"restassured", basePath.toLowerCase());
+				"restassured", basePath.toLowerCase(), true);
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		writer.write(testCases);
@@ -224,7 +224,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest",
-				"restassured", basePath.toLowerCase());
+				"restassured", basePath.toLowerCase(), false);
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		writer.write(testCases);
@@ -400,7 +400,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
-				"AmadeusHotelTest", "restassured", basePath.toLowerCase());
+				"AmadeusHotelTest", "restassured", basePath.toLowerCase(), true);
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		writer.write(testCases);
@@ -492,7 +492,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
-				"SpotifyGetAlbumTest", "restassured", basePath.toLowerCase());
+				"SpotifyGetAlbumTest", "restassured", basePath.toLowerCase(), false);
 		writer.setOAIValidation(true);
 		writer.write(testCases);
 
@@ -675,7 +675,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
-				"DataAtWorkTest", "restassured", basePath.toLowerCase());
+				"DataAtWorkTest", "restassured", basePath.toLowerCase(), true);
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		writer.write(testCases);
@@ -716,7 +716,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
-				"FoursquareTest", "restassured", basePath.toLowerCase());
+				"FoursquareTest", "restassured", basePath.toLowerCase(), false);
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		writer.write(testCases);
@@ -758,7 +758,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "MarvelTest",
-				"restassured", basePath.toLowerCase());
+				"restassured", basePath.toLowerCase(), true);
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		writer.write(testCases);
@@ -800,7 +800,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "PlaylistTest",
-				"restassured", basePath.toLowerCase());
+				"restassured", basePath.toLowerCase(), false);
 		writer.setOAIValidation(true);
 		writer.write(testCases);
 	}
@@ -840,7 +840,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured",
-				"SimpleAPITest", "restassured", basePath.toLowerCase());
+				"SimpleAPITest", "restassured", basePath.toLowerCase(), true);
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		writer.write(testCases);
@@ -883,7 +883,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write RESTAssured test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "TumblrTest",
-				"restassured", basePath.toLowerCase());
+				"restassured", basePath.toLowerCase(), false);
 		writer.setOAIValidation(true);
 		writer.setLogging(true);
 		writer.write(testCases);
@@ -936,7 +936,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest",
-				"restassured", basePath);
+				"restassured", basePath, true);
 		writer.setOAIValidation(true);
 		writer.write(testCases);
 	}
@@ -1041,7 +1041,7 @@ public class RandomTestCaseGeneratorTest {
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "TravelTest",
-				"restassured", basePath);
+				"restassured", basePath, false);
 		writer.setOAIValidation(true);
 		writer.write(testCases);
 	}

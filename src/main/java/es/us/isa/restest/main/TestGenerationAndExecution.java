@@ -15,7 +15,9 @@ import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -47,13 +49,14 @@ public class TestGenerationAndExecution {
 	private static Integer totalNumTestCases; 							// Total number of test cases to be generated (-1 for infinite loop)
 	private static Integer timeDelay; 									// Delay between requests in seconds (-1 for no delay)
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
+	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 
 	// For Constraint-based testing only:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
 	private static Integer reloadInputDataEvery; 						// Number of requests using the same randomly generated input data
 	private static Integer inputDataMaxValues; 							// Number of values used for each parameter when reloading input data
 
-	private static final Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
+	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
 	public static void main(String[] args) throws RESTestException {
 		Timer.startCounting(ALL);
@@ -62,7 +65,7 @@ public class TestGenerationAndExecution {
 		// for the generation
 		if (args.length > 0)
 			propertiesFilePath = args[0];
-		
+
 		// Read parameter values from .properties file
 		readParameterValues();
 
@@ -105,7 +108,6 @@ public class TestGenerationAndExecution {
 		generateTimeReport(iteration-1);
 	}
 
-
 	// Create a test case generator
 	private static AbstractTestCaseGenerator createGenerator() {
 		// Load specification
@@ -141,7 +143,7 @@ public class TestGenerationAndExecution {
 	private static IWriter createWriter() {
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName,
-				basePath);
+				basePath, logToFile);
 		writer.setLogging(true);
 		writer.setAllureReport(true);
 		writer.setEnableStats(enableCSVStats);
@@ -216,6 +218,11 @@ public class TestGenerationAndExecution {
 
 	// Read the parameter values from the .properties file. If the value is not found, the system looks for it in the global .properties file (config.properties)
 	private static void readParameterValues() {
+
+		logToFile = Boolean.parseBoolean(readParameterValue("logToFile"));
+		if(logToFile) {
+			setUpLogger();
+		}
 
 		logger.info("Loading configuration parameter values");
 		
@@ -296,5 +303,15 @@ public class TestGenerationAndExecution {
 			value = PropertyManager.readProperty(propertyName);
 
 		return value;
+	}
+
+	private static void setUpLogger() {
+		String logPath = readParameterValue("log.path");
+
+		System.setProperty("logFilename", logPath);
+		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		File file = new File("src/main/resources/log4j2-logToFile.properties");
+		ctx.setConfigLocation(file.toURI());
+		ctx.reconfigure();
 	}
 }
