@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,7 +29,7 @@ public class ObjectPerturbator implements ITestDataGenerator {
     private JsonMutator jsonMutator;
     private ObjectMapper objectMapper;
     private Boolean singleOrder = true; // True if single order mutation, false otherwise
-    private Random random = new Random();
+    private Random random = new SecureRandom();
 
     private static final String LOGGER_ERROR_MSG = "An error occurred when deserializing JSON:";
     private static Logger logger = LogManager.getLogger(ObjectPerturbator.class.getName());
