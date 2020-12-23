@@ -15,10 +15,7 @@ import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfiguration;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
-import es.us.isa.restest.inputs.ITestDataGenerator;
-import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,7 +47,7 @@ public class DefaultTestConfigurationGenerator {
 	public static final String OBJECT_PERTURBATOR = "ObjectPerturbator";
 
 	public static final String GEN_PARAM_VALUES = "values";
-	public static final String GEN_PARAM_STRING_OBJECT = "stringObject";
+	public static final String GEN_PARAM_STRING_OBJECTS = "stringObjects";
 	public static final String GEN_PARAM_REG_EXP = "regExp";
 	public static final String GEN_PARAM_MAX_WORDS = "maxWords";
 	public static final String GEN_PARAM_FORMAT = "format";
@@ -533,7 +530,7 @@ public class DefaultTestConfigurationGenerator {
 
 		if (bodyParam != null && !bodyParam.equals("null")) {
 			gen.setType(OBJECT_PERTURBATOR);
-			stringObject.setName(GEN_PARAM_STRING_OBJECT);
+			stringObject.setName(GEN_PARAM_STRING_OBJECTS);
 			stringObject.setValues(Collections.singletonList(bodyParam));
 			gen.getGenParameters().add(stringObject);
 		} else {

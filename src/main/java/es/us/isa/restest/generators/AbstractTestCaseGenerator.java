@@ -244,7 +244,7 @@ public abstract class AbstractTestCaseGenerator {
 				if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
 					ITestDataGenerator generator = getRandomGenerator(nominalGenerators.get(Pair.with(confParam.getName(), confParam.getIn())));
 					if (generator instanceof ObjectPerturbator) {
-						test.addParameter(confParam, ((ObjectPerturbator) generator).getOriginalStringObject());		// Objects are not perturbated yet
+						test.addParameter(confParam, ((ObjectPerturbator) generator).getRandomOriginalStringObject());		// Objects are not perturbated yet
 						perturbation = true;
 					}
 					else
@@ -350,7 +350,7 @@ public abstract class AbstractTestCaseGenerator {
 				
 				// No valid perturbations generated. Set original object
 				if (!valid) {
-					test.addParameter(confParam, ((ObjectPerturbator) generator).getOriginalStringObject());
+					test.addParameter(confParam, ((ObjectPerturbator) generator).getRandomOriginalStringObject());
 					logger.error("Maximum number of tries reached when trying to perturbate the input object for the operation {}", testOperation.getOpenApiOperation().getOperationId());
 				}
 			}
