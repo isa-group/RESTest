@@ -1,0 +1,1714 @@
+{
+    "examples": [
+        {
+            "string": "NZL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "FRO",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "PS",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "NAU",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "BRU",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ZAM",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "PW",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "+52",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "hu",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "230",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "MHL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "CUB",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "GUA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "GDR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "92",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ]
+        },
+        {
+            "string": "GBR2",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 4
+                }
+            ]
+        },
+        {
+            "string": "RSA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "AE",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "GUY",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "AL",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "POL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "KUW",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "NCA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "1",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 1
+                }
+            ]
+        },
+        {
+            "string": "OMN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "POR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "PS, IL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 6
+                }
+            ]
+        },
+        {
+            "string": "NKR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "KEN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "GER",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ARG",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "AX",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "UZB",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ZW",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "SEN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "MAR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "RS",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "IRI",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "IRL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "QAT",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "bg",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "BDI",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "NLD",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "TPE",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "IRQ",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "BLR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "SVN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "THA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "PHI",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "V",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 1
+                }
+            ]
+        },
+        {
+            "string": "URS",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "BZ",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "BUL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "List of Internet TLDs",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 21
+                }
+            ]
+        },
+        {
+            "string": "URU",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "List of FIFA country codes",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 26
+                }
+            ]
+        },
+        {
+            "string": "USSR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 4
+                }
+            ]
+        },
+        {
+            "string": "so",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "ISK",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "SWE",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ISO 3166-1 alpha-3",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 18
+                }
+            ]
+        },
+        {
+            "string": "ISO 3166-1 alpha-2",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 18
+                }
+            ]
+        },
+        {
+            "string": "USA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ESP",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ISL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "SY",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "EST",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "BEL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ISR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "NED",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "CO",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "BER",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "KOR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "RUS",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "w",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 1
+                }
+            ]
+        },
+        {
+            "string": "ITA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ETH",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "NER",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "PAK",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ALG",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "UKR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "VEN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "KGZ",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "GHA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "TV",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "CHI",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "lr",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "CHN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "CPV",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "TRI",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "MLI",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "MTQ",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ly",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "EUA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "MLT",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "DZ",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "PRY",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "679",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "LBR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "AUS",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "EUN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "AUT",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "58",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ]
+        },
+        {
+            "string": "HKG",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "MR",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "NGA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "GAB",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "YUG",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "JOR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "CZE",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "NOR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "CAN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ROM",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "CIV",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "TCD",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "TKM",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "NGR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "TCH",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ROU",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ISO-3166 MP",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 11
+                }
+            ]
+        },
+        {
+            "string": "60",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ]
+        },
+        {
+            "string": "CAY",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ANG",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "GRE",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "INA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "IND",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "ENG",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "YEM",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "GRL",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "MEX",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "AFG",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "SRB",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "KAZ",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "SAU",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "PLE",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "JPN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "292",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "SRI",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "NZ",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "BHR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "WF",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "ES-P",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 4
+                }
+            ]
+        },
+        {
+            "string": "GBR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "974",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "+216",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 4
+                }
+            ]
+        },
+        {
+            "string": "HUN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "GG",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "GH",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        },
+        {
+            "string": "FIJ",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "AS, ASM",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 7
+                }
+            ]
+        },
+        {
+            "string": "BAH",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "FIN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "TUN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "DEN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "LUX",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "UGA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "BRA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "TUR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "BAR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "VIE",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "FRA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "LVA",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "EGY",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "NIR",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "JAM",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "502",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "503",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "VIN",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "FRG",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "LES",
+            "match": [],
+            "unmatch": [
+                {
+                    "start": 0,
+                    "end": 3
+                }
+            ]
+        },
+        {
+            "string": "PE",
+            "match": [
+                {
+                    "start": 0,
+                    "end": 2
+                }
+            ],
+            "unmatch": []
+        }
+    ]
+}
