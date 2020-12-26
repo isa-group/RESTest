@@ -1,6 +1,7 @@
 package es.us.isa.restest.runners;
 
 import java.util.Collection;
+import java.util.List;
 
 import es.us.isa.restest.util.*;
 import es.us.isa.restest.util.ClassLoader;
@@ -15,6 +16,7 @@ import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 
+import static es.us.isa.restest.util.CSVManager.readCSV;
 import static es.us.isa.restest.util.Timer.TestStep.*;
 
 /**
@@ -56,6 +58,10 @@ public class RESTestRunner {
 		testExecution(getTestClass());
 
 		generateReports();
+
+//		statsReportManager.learn(testId);
+
+
 	}
 
 	protected void generateReports() {

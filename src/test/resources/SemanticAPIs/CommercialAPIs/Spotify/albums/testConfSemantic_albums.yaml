@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: 'Bearer ----'
+    Authorization: 'Bearer BQDtS74n0PFI8DdnQh3VF69JVXrXSf0NZzLMovH54Pp-zOhVu2y1mRnkOd7M4Nz2VXqMU0iuQz81FUWsV8hWBAt9FXxMZXIGA6NnXlhDpH5a_Qoo1XW7ZwvzDgPmfneAlBFMC7ukPIgt3UOnUc4HcYVnzY7w44hinDQoMtKb9_vKdeYzJ_nHT2OgBD3Q0U1zqdhtZXXjbV1ONVv55rmHxDLujPqcjJULRUhWM59ojsd3FEFLsFvxZ-zJXnKatE6tun5moIOhLFnWX_7PakZXpoosGxeonyktk7Y'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -42,7 +42,7 @@ testConfiguration:
           - 6NnxUxgj1FlneEPzSaRflN
     - name: market
       in: query
-      weight: 0.5
+      weight: 1.0
       generator:
         type: RandomInputValue
         genParameters:
