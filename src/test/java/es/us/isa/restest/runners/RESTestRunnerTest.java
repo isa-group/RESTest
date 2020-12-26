@@ -30,7 +30,7 @@ public class RESTestRunnerTest {
         createDir("src/generation/java/runnerTest");
 
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter("src/test/resources/YouTube/swagger_betty.yaml", "src/generation/java/runnerTest", "RunnerTest", "runnerTest", basePath);
+        RESTAssuredWriter writer = new RESTAssuredWriter("src/test/resources/YouTube/swagger_betty.yaml", "src/generation/java/runnerTest", "RunnerTest", "runnerTest", basePath, false);
         writer.setLogging(true);
         writer.setAllureReport(true);
         writer.setEnableStats(true);

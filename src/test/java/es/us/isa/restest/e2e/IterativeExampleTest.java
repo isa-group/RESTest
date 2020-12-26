@@ -22,6 +22,6 @@ public class IterativeExampleTest {
         assertTrue(checkIfExists("target/test-data/bikewise/time.csv"));
         assertTrue(checkIfExists("target/coverage-data/bikewise"));
         assertTrue(checkIfExists("target/test-data/bikewise"));
-
+        assertTrue(checkIfExists("log/bikewise.log"));
     }
 }

@@ -52,7 +52,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -383,7 +383,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -439,7 +439,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -491,7 +491,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest", "restassured", basePath);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest", "restassured", basePath, true);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}
@@ -541,7 +541,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath, true);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}
@@ -603,7 +603,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath, false);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}

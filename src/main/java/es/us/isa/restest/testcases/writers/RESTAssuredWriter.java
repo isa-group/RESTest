@@ -1,15 +1,11 @@
 package es.us.isa.restest.testcases.writers;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Map.Entry;
 
-import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.testcases.TestCase;
-import io.qameta.allure.restassured.AllureRestAssured;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
-import io.swagger.models.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,17 +33,19 @@ public class RESTAssuredWriter implements IWriter {
 	private String testId;							// Test suite ID
 	private String packageName;						// Package name
 	private String baseURI;							// API base URI
+	private boolean logToFile;						// If 'true', REST-Assured requests and responses will be logged into external files
 
 	private String APIName;							// API name (necessary for folder name of exported data)
 
 	private static final Logger logger = LogManager.getLogger(RESTAssuredWriter.class.getName());
 	
-	public RESTAssuredWriter(String specPath, String testFilePath, String className, String packageName, String baseURI) {
+	public RESTAssuredWriter(String specPath, String testFilePath, String className, String packageName, String baseURI, Boolean logToFile) {
 		this.specPath = specPath;
 		this.testFilePath = testFilePath;
 		this.className = className;
 		this.packageName = packageName;
 		this.baseURI = baseURI;
+		this.logToFile = logToFile;
 	}
 	
 	/* (non-Javadoc)
@@ -95,8 +93,6 @@ public class RESTAssuredWriter implements IWriter {
 			content += "package " + packageName + ";\n\n";
 				
 		content += "import org.junit.*;\n"
-				+  "import org.apache.logging.log4j.LogManager;\n"
-				+  "import org.apache.logging.log4j.Logger;\n"
 				+  "import io.restassured.RestAssured;\n"
 				+  "import io.restassured.response.Response;\n"
 				+  "import com.fasterxml.jackson.databind.JsonNode;\n"
@@ -122,6 +118,15 @@ public class RESTAssuredWriter implements IWriter {
 		// Coverage filter (optional)
 		if (enableStats || enableOutputCoverage)
 			content += 	"import es.us.isa.restest.testcases.restassured.filters.CSVFilter;\n";
+
+		if (logToFile) {
+			content +=  "import org.apache.logging.log4j.LogManager;\n"
+					+   "import org.apache.logging.log4j.Logger;\n"
+					+   "import org.apache.logging.log4j.io.IoBuilder;\n"
+					+   "import io.restassured.filter.log.RequestLoggingFilter;\n"
+					+   "import io.restassured.filter.log.ResponseLoggingFilter;\n"
+					+   "import java.io.PrintStream;\n";
+		}
 		
 		content +="\n";
 		
@@ -141,6 +146,13 @@ public class RESTAssuredWriter implements IWriter {
 				+  "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
 				+  "\tprivate static final NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter();\n"
 				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
+
+		if (logToFile) {
+			content +=  "\tprivate static RequestLoggingFilter requestLoggingFilter;\n"
+					+   "\tprivate static ResponseLoggingFilter responseLoggingFilter;\n"
+					+   "\tprivate static Logger logger;\n";
+		}
+
 
 		if (allureReport)
 			content += "\tprivate static final AllureRestAssured allureFilter = new AllureRestAssured();\n";
@@ -162,6 +174,14 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\t@BeforeClass\n "
 				+  "\tpublic static void setUp() {\n"
 			  	+  "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n";
+
+		if (logToFile) {
+			content +=  "\t\tSystem.setProperty(\"logFilename\", \"" + System.getProperty("logFilename") + "\");"
+					+   "\t\tlogger = LogManager.getLogger(" + className + ".class.getName());\n"
+					+   "\t\tPrintStream logStream = IoBuilder.forLogger(logger).buildPrintStream();\n"
+					+   "\t\trequestLoggingFilter = RequestLoggingFilter.logRequestTo(logStream);\n"
+					+   "\t\tresponseLoggingFilter = new ResponseLoggingFilter(logStream);\n";
+		}
 
 		if (enableStats || enableOutputCoverage) {
 			content += "\t\tstatusCode5XXFilter.setAPIName(APIName);\n"
@@ -368,6 +388,11 @@ public class RESTAssuredWriter implements IWriter {
 
 	private String generateFilters(TestCase t) {
 		String content = "";
+
+		if(logToFile) {
+			content += "\t\t\t\t.filter(requestLoggingFilter)\n"
+					+  "\t\t\t\t.filter(responseLoggingFilter)\n";
+		}
 
 //		if (enableOutputCoverage) // Coverage filter
 //			content += "\t\t\t\t.filter(new CoverageFilter(testResultId, APIName))\n";
