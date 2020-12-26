@@ -1,5 +1,6 @@
 package es.us.isa.restest.inputs.semantic.regexGenerator;
 
+import es.us.isa.restest.util.RESTestException;
 import it.units.inginf.male.configuration.Configuration;
 import it.units.inginf.male.inputs.DataSet;
 import it.units.inginf.male.outputs.FinalSolution;
@@ -14,7 +15,7 @@ import java.util.Set;
 
 public class ConsoleRegexTurtle {
 
-    public static FinalSolution learnRegex(String name, Set<String> matches, Set<String> unmatches, Boolean print) throws Exception {
+    public static FinalSolution learnRegex(String name, Set<String> matches, Set<String> unmatches, Boolean print) {
         // Configuration
         SimpleConfig simpleConfiguration = new SimpleConfig();
 
@@ -40,11 +41,14 @@ public class ConsoleRegexTurtle {
 
         long startTime = System.currentTimeMillis();
         ExecutionStrategy strategy = config.getStrategy();
+
+
         try {
             strategy.execute(config, consolelistener);
-        } catch (Exception ex) {
-            throw new Exception("Unexpected error while generating regex");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
 
         if (config.getPostProcessor() != null) {
             startTime = System.currentTimeMillis() - startTime;
@@ -52,11 +56,12 @@ public class ConsoleRegexTurtle {
         }
 
         FinalSolution finalSolution = results.getBestSolution();
-        if (finalSolution != null){
-            return finalSolution;
-        }else{
-            throw new Exception("Unexpected exception");
-        }
+        return finalSolution;
+//        if (finalSolution != null){
+//            return finalSolution;
+//        }else{
+//            throw new Exception("Unexpected exception");
+//        }
 
     }
 

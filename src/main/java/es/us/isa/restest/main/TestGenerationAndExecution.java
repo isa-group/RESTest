@@ -13,6 +13,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
+import net.sf.extjwnl.data.Exc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -298,7 +299,7 @@ public class TestGenerationAndExecution {
 		return value;
 	}
 
-//	public static TestConfigurationObject getTestConfigurationObject(){
-//		return loadConfiguration(confPath, spec);
-//	}
+	public static TestConfigurationObject getTestConfigurationObject(){
+		return loadConfiguration(confPath, spec);
+	}
 }

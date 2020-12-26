@@ -5,6 +5,7 @@ import java.util.List;
 
 import es.us.isa.restest.util.*;
 import es.us.isa.restest.util.ClassLoader;
+import org.apache.jena.base.Sys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
@@ -59,7 +60,8 @@ public class RESTestRunner {
 
 		generateReports();
 
-//		statsReportManager.learn(testId);
+
+		statsReportManager.learn(testId);
 
 
 	}

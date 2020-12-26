@@ -61,7 +61,10 @@ public class RESTestRunnerTest {
 
         RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", generator, writer, arm, statsReportManager);
 
+
         runner.run();
+
+
 
         assertTrue(checkIfExists("src/generation/java/runnerTest"));
 
