@@ -17,14 +17,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.ConsoleRegexTurtle.learnRegex;
 //import static es.us.isa.restest.main.TestGenerationAndExecution.getTestConfigurationObject;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getTestConfigurationObject;
 import static es.us.isa.restest.util.CSVManager.readCSV;
+import static es.us.isa.restest.util.CSVManager.readValues;
+import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
+import static es.us.isa.restest.util.FileManager.deleteFile;
 
 /**
  *
@@ -186,23 +193,61 @@ public class StatsReportManager {
 
         // Learn
         for(Pair<String, TestParameter> key: successfulValues.keySet()){
-            String name = key.getKey() + "_" + key.getValue();          // OperationName_parameterId
+            String name = key.getKey() + "_" + key.getValue().getName();          // OperationName_parameterId
             Set<String> successfulSet = successfulValues.get(key);
             Set<String> failedSet = failedValues.get(key);
 
+            // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
             if(failedSet.size() > 5 && successfulSet.size() > 5){
 
+                // Generate regex
                 logger.info("Generating regex...");
                 FinalSolution solution = learnRegex(name, successfulSet, failedSet,false);
+                String regex = solution.getSolution();
+                Pattern pattern = Pattern.compile(regex);
+                logger.info("Regex learned: " + regex);
 
-                logger.info("Regex learned: " + solution.getSolution());
+                // Filter csv
+                if(solution.getValidationPerformances().get("match f-measure")  > 0.9){
+                    // TODO: FILTER CSV
+                    // Obtain csv paths of test parameter
+                    List<String> csvPaths = key.getValue()
+                            .getGenerator().getGenParameters()
+                            .stream().filter(x->x.getName().equals("csv"))
+                            .flatMap(x-> x.getValues().stream())
+                            .collect(Collectors.toList());
+
+
+                    // Filter by regex
+                    for(String csvPath: csvPaths){
+                        // Read csv as list
+                        List<String> csvValues = readValues(csvPath);
+
+                        // Filter list by regex
+                        List<String> matches = csvValues.stream()
+                                .filter(pattern.asPredicate())
+                                .collect(Collectors.toList());
+
+                        // Rewrite csv
+                        deleteFile(csvPath);
+                        createFileIfNotExists(csvPath);
+
+                        // Write the Set of values as a csv file
+                        try {
+                            FileWriter writer = new FileWriter(csvPath);
+                            String matchesString = matches.stream().collect(Collectors.joining("\n"));
+                            writer.write(matchesString);
+                            writer.close();
+                            logger.info("CSV file updated");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
             }
 
-
-
-
         }
-
 
     }
 
