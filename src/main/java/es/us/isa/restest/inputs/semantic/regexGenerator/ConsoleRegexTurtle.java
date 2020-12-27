@@ -57,39 +57,34 @@ public class ConsoleRegexTurtle {
 
         FinalSolution finalSolution = results.getBestSolution();
         return finalSolution;
-//        if (finalSolution != null){
-//            return finalSolution;
-//        }else{
-//            throw new Exception("Unexpected exception");
-//        }
 
     }
 
 
-    public static void main(String[] args) throws Exception {
-
-        // -------------------------------------------------------- CREATING DATASET --------------------------------------------------------
-        String name = "getAlbums_locale";
-
-        Set<String> matches = new HashSet<>();
-        matches.add("en_Us");
-        matches.add("es_esp");
-        matches.add("po_iuy");
-        matches.add("lk_hgf");
-        matches.add("mn_bvc");
-
-        Set<String> unmatches = new HashSet<>();
-        unmatches.add("qwe");
-        unmatches.add("rty");
-        unmatches.add("uio");
-        unmatches.add("pas");
-        unmatches.add("dfg");
-        // ----------------------------------------------------------------------------------------------------------------------------------
-
-
-        FinalSolution solution = learnRegex(name, matches, unmatches, false);
-        System.out.println("-----------------------SOLUTION: " + solution.getSolution());
-    }
+//    public static void main(String[] args) throws Exception {
+//
+//        // -------------------------------------------------------- CREATING DATASET --------------------------------------------------------
+//        String name = "getAlbums_locale";
+//
+//        Set<String> matches = new HashSet<>();
+//        matches.add("en_Us");
+//        matches.add("es_esp");
+//        matches.add("po_iuy");
+//        matches.add("lk_hgf");
+//        matches.add("mn_bvc");
+//
+//        Set<String> unmatches = new HashSet<>();
+//        unmatches.add("qwe");
+//        unmatches.add("rty");
+//        unmatches.add("uio");
+//        unmatches.add("pas");
+//        unmatches.add("dfg");
+//        // ----------------------------------------------------------------------------------------------------------------------------------
+//
+//
+//        FinalSolution solution = learnRegex(name, matches, unmatches, false);
+//        System.out.println("-----------------------SOLUTION: " + solution.getSolution());
+//    }
 
 
 

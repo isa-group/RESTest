@@ -17,7 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -95,6 +94,7 @@ public class StatsReportManager {
                         if(genParameter.getName().equals("csv")){
                             // Adding the pair <OperationId, parameterName> to the maps
                             Pair<String, TestParameter> operationAndParameter = new Pair(operation.getOperationId(), testParameter);
+
                             successfulValues.put(operationAndParameter, new HashSet<>());
                             failedValues.put(operationAndParameter, new HashSet<>());
                         }
@@ -192,11 +192,10 @@ public class StatsReportManager {
 
             if(failedSet.size() > 5 && successfulSet.size() > 5){
 
+                logger.info("Generating regex...");
                 FinalSolution solution = learnRegex(name, successfulSet, failedSet,false);
 
-                System.out.println("Regex aprendida = " + solution.getSolution());
-
-
+                logger.info("Regex learned: " + solution.getSolution());
             }
 
 
