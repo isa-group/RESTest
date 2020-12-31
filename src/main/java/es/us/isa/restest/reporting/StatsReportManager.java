@@ -6,29 +6,21 @@ import es.us.isa.restest.coverage.CoverageResults;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
 import es.us.isa.restest.util.PropertyManager;
-import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.util.TestManager;
 
 import it.units.inginf.male.outputs.FinalSolution;
 import javafx.util.Pair;
-import org.apache.jena.tdb.store.Hash;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
-import static es.us.isa.restest.inputs.semantic.regexGenerator.ConsoleRegexTurtle.learnRegex;
-//import static es.us.isa.restest.main.TestGenerationAndExecution.getTestConfigurationObject;
+import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getTestConfigurationObject;
-import static es.us.isa.restest.util.CSVManager.readCSV;
 import static es.us.isa.restest.util.CSVManager.readValues;
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
 import static es.us.isa.restest.util.FileManager.deleteFile;
@@ -82,103 +74,82 @@ public class StatsReportManager {
 
     }
 
-    public void learn(String testId) {
 
-        // Store the values of the parameters of successful and unsuccessful operations
-        Map<Pair<String, TestParameter>, Set<String>> successfulValues = new HashMap<>();
-        Map<Pair<String, TestParameter>, Set<String>> failedValues = new HashMap<>();
+
+    public void learn(String testId) {
 
         TestConfigurationObject testConf = getTestConfigurationObject();
         List<Operation> operations = testConf.getTestConfiguration().getOperations();
 
-        for(Operation operation: operations){
-            // Adding parameters that use a csv to the maps
-            for(TestParameter testParameter: operation.getTestParameters()){
-                Generator generator = testParameter.getGenerator();
-                if(generator.getType().equals(RANDOM_INPUT_VALUE)){
-                    for(GenParameter genParameter: generator.getGenParameters()){
-
-                        if(genParameter.getName().equals("csv")){
-                            // Adding the pair <OperationId, parameterName> to the maps
-                            Pair<String, TestParameter> operationAndParameter = new Pair(operation.getOperationId(), testParameter);
-
-                            successfulValues.put(operationAndParameter, new HashSet<>());
-                            failedValues.put(operationAndParameter, new HashSet<>());
-                        }
-                    }
-                }
-            }
-        }
+        // Store the values of the parameters of successful and unsuccessful operations
+        Map<Pair<String, TestParameter>, Set<String>> successfulValues = getMapOfSemanticParameters(operations);
+        Map<Pair<String, TestParameter>, Set<String>> failedValues = getMapOfSemanticParameters(operations);
 
         // TODO: 2XX or 4XX
         // TODO: 2XX list (map) may be empty
-        // TODO: Add support to multiple operations (pairs as keys)
-        // TODO: BY OPERATION ID or method and path?
-        // TODO: Multiple CSVs?
+        // TODO: Multiple csvs
 
         String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
         List<TestResult> trs = TestManager.getTestResults(csvTrPath);
 
 
-        for(TestCase testCase: testCases){
+        // Iterate the test cases of an operation
+        for(TestCase testCase: testCases) {
             String operationId = testCase.getOperationId();
 
-            // TODO: Check faulty and ¿fulfills Dependencies?
+            // The results are only considered if the testCase is not faulty
+            if (!testCase.getFaulty()) {
 
-            String responseCode = trs.stream().filter(tr -> tr.getId().equals(testCase.getId()))
-                    .findFirst()
-                    .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
-
-
-            // Iterate semantic parameters
-            // Filter by operationId
-            Set<TestParameter> parametersOfOperation = successfulValues.keySet().stream()
-                    .filter(x->x.getKey().equals(operationId)).map(x->x.getValue())
-                    .collect(Collectors.toSet());
-
-            for(TestParameter parameter: parametersOfOperation){
-                Pair<String, TestParameter> pair = new Pair<>(operationId, parameter);
-
-                // Search parameter value in corresponding map
-                String value = "";
-                switch (parameter.getIn()){
-                    case "header":
-                        value = testCase.getHeaderParameters().get(parameter.getName());
-                        break;
-                    case "path":
-                        value = testCase.getPathParameters().get(parameter.getName());
-                        break;
-                    case "form":
-                        value = testCase.getFormParameters().get(parameter.getName());
-                        break;
-                    default:        // query
-                        value = testCase.getQueryParameters().get(parameter.getName());
-                        break;
-                }
+                // Obtain response code of the given testCase
+                String responseCode = trs.stream().filter(tr -> tr.getId().equals(testCase.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
 
-                // Add parameter value to a map depending on the response code
-                switch (responseCode.charAt(0)){
-                    case '2':
-                        successfulValues.get(pair).add(value);
-                        break;
-                    case '4':
-                        failedValues.get(pair).add(value);
-                        break;
+                // Iterate semantic parameters
+                // Filter by operationId
+                Set<TestParameter> parametersOfOperation = successfulValues.keySet().stream()
+                        .filter(x -> x.getKey().equals(operationId)).map(x -> x.getValue())
+                        .collect(Collectors.toSet());
+
+                for (TestParameter parameter : parametersOfOperation) {
+                    Pair<String, TestParameter> pair = new Pair<>(operationId, parameter);
+
+                    // Search parameter value in corresponding map
+                    String value = "";
+                    switch (parameter.getIn()) {
+                        case "header":
+                            value = testCase.getHeaderParameters().get(parameter.getName());
+                            break;
+                        case "path":
+                            value = testCase.getPathParameters().get(parameter.getName());
+                            break;
+                        case "form":
+                            value = testCase.getFormParameters().get(parameter.getName());
+                            break;
+                        default:        // query
+                            value = testCase.getQueryParameters().get(parameter.getName());
+                            break;
+                    }
+
+
+                    // Add parameter value to a map depending on the response code
+                    // 5XX codes are not taken into consideration
+                    switch (responseCode.charAt(0)) {
+                        case '2':
+                            successfulValues.get(pair).add(value);
+                            break;
+                        case '4':
+                            failedValues.get(pair).add(value);
+                            break;
+                    }
+
                 }
 
             }
-
-//            System.out.println("Id: " + testCase.getId());
-//            testCase.getOperationId();
-//            System.out.println("Header: " + testCase.getHeaderParameters());
-//            System.out.println("Path: " + testCase.getPathParameters());
-//            System.out.println("Query: " + testCase.getQueryParameters().get("market"));
-//            System.out.println("Form: " + testCase.getFormParameters());
-//            System.out.println("Response Code: " + responseCode);
-
         }
 
+        // PROVISIONAL: DELETE IN THE FUTURE
         System.out.println("---------------------------------------------------------------------------");
         System.out.println("---------------------------------------------------------------------------");
         System.out.println(successfulValues);
@@ -191,14 +162,14 @@ public class StatsReportManager {
         // TODO: Update csv
         // TODO: Check F1, recall and precision
 
-        // Learn
+        // Learn regular expression
         for(Pair<String, TestParameter> key: successfulValues.keySet()){
             String name = key.getKey() + "_" + key.getValue().getName();          // OperationName_parameterId
             Set<String> successfulSet = successfulValues.get(key);
             Set<String> failedSet = failedValues.get(key);
 
             // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
-            if(failedSet.size() > 5 && successfulSet.size() > 5){
+            if(failedSet.size() >= 5 && successfulSet.size() >= 5){
 
                 // Generate regex
                 logger.info("Generating regex...");
@@ -207,43 +178,9 @@ public class StatsReportManager {
                 Pattern pattern = Pattern.compile(regex);
                 logger.info("Regex learned: " + regex);
 
-                // Filter csv
+                // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
                 if(solution.getValidationPerformances().get("match f-measure")  > 0.9){
-                    // TODO: FILTER CSV
-                    // Obtain csv paths of test parameter
-                    List<String> csvPaths = key.getValue()
-                            .getGenerator().getGenParameters()
-                            .stream().filter(x->x.getName().equals("csv"))
-                            .flatMap(x-> x.getValues().stream())
-                            .collect(Collectors.toList());
-
-
-                    // Filter by regex
-                    for(String csvPath: csvPaths){
-                        // Read csv as list
-                        List<String> csvValues = readValues(csvPath);
-
-                        // Filter list by regex
-                        List<String> matches = csvValues.stream()
-                                .filter(pattern.asPredicate())
-                                .collect(Collectors.toList());
-
-                        // Rewrite csv
-                        deleteFile(csvPath);
-                        createFileIfNotExists(csvPath);
-
-                        // Write the Set of values as a csv file
-                        try {
-                            FileWriter writer = new FileWriter(csvPath);
-                            String matchesString = matches.stream().collect(Collectors.joining("\n"));
-                            writer.write(matchesString);
-                            writer.close();
-                            logger.info("CSV file updated");
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
+                    updateCsvWithRegex(key, pattern);
                 }
             }
 

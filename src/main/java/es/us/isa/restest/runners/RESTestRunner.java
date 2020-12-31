@@ -37,8 +37,9 @@ public class RESTestRunner {
 	protected StatsReportManager statsReportManager;	// Stats report manager
 	private int numTestCases = 0;						// Number of test cases generated so far
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
+	private static Boolean learnRegex;
 
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, Boolean learnRegex, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
@@ -46,8 +47,9 @@ public class RESTestRunner {
 		this.writer = writer;
 		this.allureReportManager = reportManager;
 		this.statsReportManager = statsReportManager;
+		this.learnRegex = learnRegex;
 	}
-
+	  
 	public void run() throws RESTestException {
 
 		// Test generation and writing (RESTAssured)
@@ -60,10 +62,9 @@ public class RESTestRunner {
 
 		generateReports();
 
-
-		statsReportManager.learn(testId);
-
-
+		if(learnRegex){
+			statsReportManager.learn(testId);
+		}
 	}
 
 	protected void generateReports() {

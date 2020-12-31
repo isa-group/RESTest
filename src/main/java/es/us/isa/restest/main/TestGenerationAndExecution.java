@@ -48,6 +48,7 @@ public class TestGenerationAndExecution {
 	private static Integer totalNumTestCases; 							// Total number of test cases to be generated (-1 for infinite loop)
 	private static Integer timeDelay; 									// Delay between requests in seconds (-1 for no delay)
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
+	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
 
 	// For Constraint-based testing only:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
@@ -75,7 +76,7 @@ public class TestGenerationAndExecution {
 		IWriter writer = createWriter(); // Test case writer
 		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
 		StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer,
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, learnRegex, generator, writer,
 				reportManager, statsReportManager);
 
 		// Main loop
@@ -282,7 +283,10 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("faulty.dependency.ratio") != null)
 			faultyDependencyRatio = Float.parseFloat(readParameterValue("faulty.dependency.ratio"));
 		logger.info("Faulty dependency ratio: {}", faultyDependencyRatio);
-		
+
+		if (readParameterValue("learnRegex") != null)
+			learnRegex = Boolean.parseBoolean(readParameterValue("learnRegex"));
+		logger.info("Learn Regular expressions: {}", learnRegex);
 	
 	}
 
