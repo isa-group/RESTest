@@ -133,9 +133,6 @@ public class StatsReportManager {
                             break;
                     }
 
-                    // TODO: Check intersections in lists
-                    // TODO: Mantener maps de valores (successful y failed) entre iteraciones (csv?)
-
                     // Add parameter value to a map depending on the response code
                     // 5XX codes are not taken into consideration
                     switch (responseCode.charAt(0)) {
@@ -154,8 +151,6 @@ public class StatsReportManager {
 
         // TODO: Convert this for loop into a function
         // Write csv of valid (directory)
-//        Map<Pair<String(operationId), TestParameter>, Set<String>> validValues
-        // Recorrer keySet (de esta forma reescribimos valid e invalid)
         for(Pair<String, TestParameter> key: validValues.keySet()){
             // TODO: Avoid repeated values
             // operationId/parameterName/valid.csv
@@ -189,32 +184,38 @@ public class StatsReportManager {
                 e.printStackTrace();
             }
 
+            // PROVISIONAL: DELETE IN THE FUTURE
+            System.out.println("---------------------------------------------------------------------------");
+            System.out.println("---------------------------------------------------------------------------");
+            System.out.println(allValidValues);
+            System.out.println(allInvalidValues);
+            System.out.println("---------------------------------------------------------------------------");
+            System.out.println("---------------------------------------------------------------------------");
+
         }
 
-        
 
-        // PROVISIONAL: DELETE IN THE FUTURE
-        System.out.println("---------------------------------------------------------------------------");
-        System.out.println("---------------------------------------------------------------------------");
-        System.out.println(validValues);
-        System.out.println(invalidValues);
-        System.out.println("---------------------------------------------------------------------------");
-        System.out.println("---------------------------------------------------------------------------");
+
+
 
 
         // Learn regular expression
         for(Pair<String, TestParameter> key: validValues.keySet()){
             String name = key.getKey() + "_" + key.getValue().getName();          // OperationName_parameterId
-            // TODO: CHANGE (PREVIOUS OPERATIONS, READ FROM CSV)
-            Set<String> successfulSet = validValues.get(key);
-            Set<String> failedSet = invalidValues.get(key);
+            // Read valid and invalid values from previous and current iteration
+            String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + getExperimentName() + "/validAndInvalidValues/" + key.getKey() + "/" + key.getValue().getName() + "/";
+            String validPath = csvPath + "valid.csv";
+            String invalidPath = csvPath + "invalid.csv";
+
+            Set<String> validSet = new HashSet<>(readValues(validPath));
+            Set<String> invalidSet = new HashSet<>(readValues(invalidPath));
 
             // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
-            if(failedSet.size() >= 5 && successfulSet.size() >= 5){
+            if(invalidSet.size() >= 5 && validSet.size() >= 5){
 
                 // Generate regex
                 logger.info("Generating regex...");
-                FinalSolution solution = learnRegex(name, successfulSet, failedSet,false);
+                FinalSolution solution = learnRegex(name, validSet, invalidSet,false);
                 String regex = solution.getSolution();
                 Pattern pattern = Pattern.compile(regex);
                 logger.info("Regex learned: " + regex);
@@ -222,7 +223,10 @@ public class StatsReportManager {
                 // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
                 if(solution.getValidationPerformances().get("match f-measure")  > 0.9){
                     updateCsvWithRegex(key, pattern);
-                    // TODO: Delete CSV of successful and failed values of previous iterations after the update with regex
+
+                    // Delete CSV of successful and failed values of previous iterations after the update with regex
+                    deleteFile(validPath);
+                    deleteFile(invalidPath);
                 }
             }
 
