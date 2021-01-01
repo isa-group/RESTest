@@ -152,7 +152,7 @@ public class StatsReportManager {
             }
         }
 
-        // TODO: Update CSV of test-data with the generated maps
+        // TODO: Convert this for loop into a function
         // Write csv of valid (directory)
 //        Map<Pair<String(operationId), TestParameter>, Set<String>> validValues
         // Recorrer keySet (de esta forma reescribimos valid e invalid)
@@ -171,12 +171,14 @@ public class StatsReportManager {
             Set<String> allValidValues = new HashSet<>(readValues(validPath));
             Set<String> allInvalidValues = new HashSet<>(readValues(invalidPath));
 
-            // TODO: Merge both lists (previous iterations and current iteration)
+            // Merge both lists (previous iterations and current iteration)
             allValidValues.addAll(validValues.get(key));
             allInvalidValues.addAll(invalidValues.get(key));
 
-            // TODO: Check for duplicates (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" list)
-
+            // Check for duplicates (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" list)
+            Set<String> intersection = new HashSet<>(allValidValues);
+            intersection.retainAll(allInvalidValues);
+            allInvalidValues.removeAll(intersection);
 
 
             // Write the Set of values as CSV files
@@ -189,11 +191,7 @@ public class StatsReportManager {
 
         }
 
-
-
-
-
-        // TODO: Add values from CSV to map (ie. learn from previous and current iterations)
+        
 
         // PROVISIONAL: DELETE IN THE FUTURE
         System.out.println("---------------------------------------------------------------------------");
@@ -207,6 +205,7 @@ public class StatsReportManager {
         // Learn regular expression
         for(Pair<String, TestParameter> key: validValues.keySet()){
             String name = key.getKey() + "_" + key.getValue().getName();          // OperationName_parameterId
+            // TODO: CHANGE (PREVIOUS OPERATIONS, READ FROM CSV)
             Set<String> successfulSet = validValues.get(key);
             Set<String> failedSet = invalidValues.get(key);
 
