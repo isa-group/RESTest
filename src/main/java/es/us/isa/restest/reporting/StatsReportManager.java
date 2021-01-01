@@ -18,12 +18,13 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
+import static es.us.isa.restest.main.TestGenerationAndExecution.getExperimentName;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getTestConfigurationObject;
-import static es.us.isa.restest.util.CSVManager.readValues;
-import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
-import static es.us.isa.restest.util.FileManager.deleteFile;
+import static es.us.isa.restest.util.CSVManager.*;
+import static es.us.isa.restest.util.FileManager.*;
 
 /**
  *
@@ -82,8 +83,8 @@ public class StatsReportManager {
         List<Operation> operations = testConf.getTestConfiguration().getOperations();
 
         // Store the values of the parameters of successful and unsuccessful operations
-        Map<Pair<String, TestParameter>, Set<String>> successfulValues = getMapOfSemanticParameters(operations);
-        Map<Pair<String, TestParameter>, Set<String>> failedValues = getMapOfSemanticParameters(operations);
+        Map<Pair<String, TestParameter>, Set<String>> validValues = getMapOfSemanticParameters(operations);
+        Map<Pair<String, TestParameter>, Set<String>> invalidValues = getMapOfSemanticParameters(operations);
 
         // TODO: 2XX or 4XX
         // TODO: 2XX list (map) may be empty
@@ -105,10 +106,10 @@ public class StatsReportManager {
                         .findFirst()
                         .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
-
+                // TODO: Advanced classification
                 // Iterate semantic parameters
                 // Filter by operationId
-                Set<TestParameter> parametersOfOperation = successfulValues.keySet().stream()
+                Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
                         .filter(x -> x.getKey().equals(operationId)).map(x -> x.getValue())
                         .collect(Collectors.toSet());
 
@@ -132,15 +133,17 @@ public class StatsReportManager {
                             break;
                     }
 
+                    // TODO: Check intersections in lists
+                    // TODO: Mantener maps de valores (successful y failed) entre iteraciones (csv?)
 
                     // Add parameter value to a map depending on the response code
                     // 5XX codes are not taken into consideration
                     switch (responseCode.charAt(0)) {
                         case '2':
-                            successfulValues.get(pair).add(value);
+                            validValues.get(pair).add(value);
                             break;
                         case '4':
-                            failedValues.get(pair).add(value);
+                            invalidValues.get(pair).add(value);
                             break;
                     }
 
@@ -149,24 +152,63 @@ public class StatsReportManager {
             }
         }
 
+        // TODO: Update CSV of test-data with the generated maps
+        // Write csv of valid (directory)
+//        Map<Pair<String(operationId), TestParameter>, Set<String>> validValues
+        // Recorrer keySet (de esta forma reescribimos valid e invalid)
+        for(Pair<String, TestParameter> key: validValues.keySet()){
+            // TODO: Avoid repeated values
+            // operationId/parameterName/valid.csv
+            String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + getExperimentName() + "/validAndInvalidValues/" + key.getKey() + "/" + key.getValue().getName() + "/";
+            createDir(csvPath);
+
+            String validPath = csvPath + "valid.csv";
+            String invalidPath = csvPath + "invalid.csv";
+            createFileIfNotExists(validPath);
+            createFileIfNotExists(invalidPath);
+
+            // Read valid and invalid values from previous iterations
+            Set<String> allValidValues = new HashSet<>(readValues(validPath));
+            Set<String> allInvalidValues = new HashSet<>(readValues(invalidPath));
+
+            // TODO: Merge both lists (previous iterations and current iteration)
+            allValidValues.addAll(validValues.get(key));
+            allInvalidValues.addAll(invalidValues.get(key));
+
+            // TODO: Check for duplicates (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" list)
+
+
+
+            // Write the Set of values as CSV files
+            try {
+                collectionToCSV(validPath, allValidValues);
+                collectionToCSV(invalidPath, allInvalidValues);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+
+
+
+        // TODO: Add values from CSV to map (ie. learn from previous and current iterations)
+
         // PROVISIONAL: DELETE IN THE FUTURE
         System.out.println("---------------------------------------------------------------------------");
         System.out.println("---------------------------------------------------------------------------");
-        System.out.println(successfulValues);
-        System.out.println(failedValues);
+        System.out.println(validValues);
+        System.out.println(invalidValues);
         System.out.println("---------------------------------------------------------------------------");
         System.out.println("---------------------------------------------------------------------------");
 
-        // TODO: Check size of both lists
-        // TODO: Learn
-        // TODO: Update csv
-        // TODO: Check F1, recall and precision
 
         // Learn regular expression
-        for(Pair<String, TestParameter> key: successfulValues.keySet()){
+        for(Pair<String, TestParameter> key: validValues.keySet()){
             String name = key.getKey() + "_" + key.getValue().getName();          // OperationName_parameterId
-            Set<String> successfulSet = successfulValues.get(key);
-            Set<String> failedSet = failedValues.get(key);
+            Set<String> successfulSet = validValues.get(key);
+            Set<String> failedSet = invalidValues.get(key);
 
             // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
             if(failedSet.size() >= 5 && successfulSet.size() >= 5){
@@ -181,6 +223,7 @@ public class StatsReportManager {
                 // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
                 if(solution.getValidationPerformances().get("match f-measure")  > 0.9){
                     updateCsvWithRegex(key, pattern);
+                    // TODO: Delete CSV of successful and failed values of previous iterations after the update with regex
                 }
             }
 

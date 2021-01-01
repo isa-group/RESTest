@@ -2,7 +2,9 @@ package es.us.isa.restest.util;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import es.us.isa.restest.runners.RESTestRunner;
 import org.apache.commons.csv.CSVFormat;
@@ -115,5 +117,13 @@ public class CSVManager {
 			e.printStackTrace();
 		}
 
+	}
+
+	public static void collectionToCSV(String path, Collection<String> collection) throws IOException {
+		FileWriter writer = new FileWriter(path);
+		String collect = collection.stream().collect(Collectors.joining("\n"));
+		writer.write(collect);
+		writer.close();
+		
 	}
 }

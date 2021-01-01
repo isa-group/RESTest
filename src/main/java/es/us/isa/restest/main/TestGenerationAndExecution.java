@@ -306,4 +306,7 @@ public class TestGenerationAndExecution {
 	public static TestConfigurationObject getTestConfigurationObject(){
 		return loadConfiguration(confPath, spec);
 	}
+
+	public static String getExperimentName(){return experimentName; }
+
 }

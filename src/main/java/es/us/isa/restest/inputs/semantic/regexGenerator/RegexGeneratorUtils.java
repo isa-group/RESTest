@@ -4,8 +4,6 @@ import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Generator;
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestParameter;
-import es.us.isa.restest.reporting.StatsReportManager;
-import es.us.isa.restest.util.RESTestException;
 import it.units.inginf.male.configuration.Configuration;
 import it.units.inginf.male.inputs.DataSet;
 import it.units.inginf.male.outputs.FinalSolution;
