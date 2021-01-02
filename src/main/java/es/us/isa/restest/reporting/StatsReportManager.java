@@ -82,39 +82,21 @@ public class StatsReportManager {
         TestConfigurationObject testConf = getTestConfigurationObject();
         List<Operation> operations = testConf.getTestConfiguration().getOperations();
 
-        // Store the values of the parameters of successful and unsuccessful operations
+        // Store the values of the parameters of successful and unsuccessful operations (current iteration)
         Map<Pair<String, TestParameter>, Set<String>> validValues = getMapOfSemanticParameters(operations);
         Map<Pair<String, TestParameter>, Set<String>> invalidValues = getMapOfSemanticParameters(operations);
 
+        String experimentName = getExperimentName();
         // Read the valid and invalid values of previous iterations
-        // Key format: <operationId, parameterName>
-        Map<Pair<String, String>, Set<String>> previousValidValues = new HashMap<>();
-        Map<Pair<String, String>, Set<String>> previousInvalidValues = new HashMap<>();
-
+        Set<ParameterValues> valuesFromPreviousIterations = new HashSet<>();
         for(Pair<String, TestParameter> key: validValues.keySet()){
-            String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + getExperimentName() + "/validAndInvalidValues/" + key.getKey() + "/" + key.getValue().getName() + "/";
-            createDir(csvPath); // This dir is created if it does not exist
-
-            String validPath = csvPath + "valid.csv";
-            String invalidPath = csvPath + "invalid.csv";
-            createFileIfNotExists(validPath);
-            createFileIfNotExists(invalidPath);
-
-            // Read valid and invalid values from previous iterations
-            // TODO: Convert into a get from map
-            Set<String> readValidValues = new HashSet<>(readValues(validPath));
-            Set<String> readInvalidValues = new HashSet<>(readValues(invalidPath));
-
-            Pair<String, String> operationParameterName = new Pair<>(key.getKey(), key.getValue().getName());
-
-            previousValidValues.put(operationParameterName, readValidValues);
-            previousInvalidValues.put(operationParameterName, readInvalidValues);
-
+            // Create new parameterValues (experimentName, operationId, testParameter)
+            ParameterValues parameterValues = new ParameterValues(experimentName, key.getKey(), key.getValue());
+            // Add new parameterValues to valuesFromPreviousIterations
+            valuesFromPreviousIterations.add(parameterValues);
         }
 
-
-        // --------------------------------------------------------------------------------------
-
+        // Get TestResults
         String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
         List<TestResult> trs = TestManager.getTestResults(csvTrPath);
 
@@ -184,21 +166,17 @@ public class StatsReportManager {
         // TODO: Convert this for loop into a function
         // Write csv of valid (directory)
         for(Pair<String, TestParameter> key: validValues.keySet()){
-            // TODO: Avoid repeated values
             // operationId/parameterName/valid.csv
             // TODO: Convert to function
-            String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + getExperimentName() + "/validAndInvalidValues/" + key.getKey() + "/" + key.getValue().getName() + "/";
-            createDir(csvPath);
-
-            String validPath = csvPath + "valid.csv";
-            String invalidPath = csvPath + "invalid.csv";
-            createFileIfNotExists(validPath);
-            createFileIfNotExists(invalidPath);
+            ParameterValues parameterValues = valuesFromPreviousIterations.stream()
+                    .filter(x-> x.getOperationId().equals(key.getKey()) && x.getTestParameter().equals(key.getValue()))
+                    .findFirst()
+                    .orElseThrow(() -> new NullPointerException("Associated ParameterValues not found"));
 
             // Read valid and invalid values from previous iterations
             // TODO: Convert into a get from map
-            Set<String> allValidValues = new HashSet<>(readValues(validPath));
-            Set<String> allInvalidValues = new HashSet<>(readValues(invalidPath));
+            Set<String> allValidValues = new HashSet<>(parameterValues.getValidValues());
+            Set<String> allInvalidValues = new HashSet<>(parameterValues.getInvalidValues());
 
             // Merge both sets (previous iterations and current iteration)
             allValidValues.addAll(validValues.get(key));
@@ -212,8 +190,8 @@ public class StatsReportManager {
 
             // Write the Set of values as CSV files
             try {
-                collectionToCSV(validPath, allValidValues);
-                collectionToCSV(invalidPath, allInvalidValues);
+                collectionToCSV(parameterValues.getValidCSVPath(), allValidValues);
+                collectionToCSV(parameterValues.getInvalidCSVPath(), allInvalidValues);
             } catch (IOException e) {
                 e.printStackTrace();
             }
