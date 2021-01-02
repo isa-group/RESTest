@@ -2,9 +2,11 @@ package es.us.isa.restest.configuration.pojos;
 
 import es.us.isa.restest.util.PropertyManager;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static es.us.isa.restest.util.CSVManager.readValues;
 import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
@@ -33,6 +35,27 @@ public class ParameterValues {
 
         this.validValues = new HashSet<>(readValues(validPath));
         this.invalidValues = new HashSet<>(readValues(invalidPath));
+
+    }
+
+    public void updateValidAndInvalidValues(Set<String> newValidValues, Set<String> newInvalidValues){
+        // Add values to both sets
+        this.validValues.addAll(newValidValues);
+        this.invalidValues.addAll(newInvalidValues);
+
+        // Delete intersection (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" set)
+        Set<String> intersection = new HashSet<>(this.validValues);
+        intersection.retainAll(this.invalidValues);
+        this.invalidValues.removeAll(intersection);
+
+        // Update CSVs files
+        // Write the Set of values as CSV files
+        try {
+            collectionToCSV(this.getValidCSVPath(), this.validValues);
+            collectionToCSV(this.getInvalidCSVPath(), this.invalidValues);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

@@ -1,9 +1,6 @@
 package es.us.isa.restest.inputs.semantic.regexGenerator;
 
-import es.us.isa.restest.configuration.pojos.GenParameter;
-import es.us.isa.restest.configuration.pojos.Generator;
-import es.us.isa.restest.configuration.pojos.Operation;
-import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.configuration.pojos.*;
 import it.units.inginf.male.configuration.Configuration;
 import it.units.inginf.male.inputs.DataSet;
 import it.units.inginf.male.outputs.FinalSolution;
@@ -102,9 +99,9 @@ public class RegexGeneratorUtils {
         return res;
     }
 
-    public static void updateCsvWithRegex(Pair<String, TestParameter> key, Pattern pattern){
+    public static void updateCsvWithRegex(ParameterValues parameterValues, Pattern pattern){
         // Obtain csv paths of test parameter (a test parameter can have more than one csv file)
-        List<String> csvPaths = key.getValue()
+        List<String> csvPaths = parameterValues.getTestParameter()
                 .getGenerator().getGenParameters()
                 .stream().filter(x->x.getName().equals("csv"))
                 .flatMap(x-> x.getValues().stream())

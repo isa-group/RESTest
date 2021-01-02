@@ -174,57 +174,32 @@ public class StatsReportManager {
                     .orElseThrow(() -> new NullPointerException("Associated ParameterValues not found"));
 
             // Read valid and invalid values from previous iterations
-            // TODO: Convert into a get from map
-            Set<String> allValidValues = new HashSet<>(parameterValues.getValidValues());
-            Set<String> allInvalidValues = new HashSet<>(parameterValues.getInvalidValues());
-
             // Merge both sets (previous iterations and current iteration)
-            allValidValues.addAll(validValues.get(key));
-            allInvalidValues.addAll(invalidValues.get(key));
-
             // Check for duplicates (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" set)
-            Set<String> intersection = new HashSet<>(allValidValues);
-            intersection.retainAll(allInvalidValues);
-            allInvalidValues.removeAll(intersection);
-
-
-            // Write the Set of values as CSV files
-            try {
-                collectionToCSV(parameterValues.getValidCSVPath(), allValidValues);
-                collectionToCSV(parameterValues.getInvalidCSVPath(), allInvalidValues);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            parameterValues.updateValidAndInvalidValues(validValues.get(key), invalidValues.get(key));
 
             // PROVISIONAL: DELETE IN THE FUTURE
             System.out.println("---------------------------------------------------------------------------");
             System.out.println("---------------------------------------------------------------------------");
-            System.out.println(allValidValues);
-            System.out.println(allInvalidValues);
+            System.out.println(parameterValues.getValidValues());
+            System.out.println(parameterValues.getInvalidValues());
             System.out.println("---------------------------------------------------------------------------");
             System.out.println("---------------------------------------------------------------------------");
 
         }
 
-
-
-
-
-
         // Learn regular expression
-        for(Pair<String, TestParameter> key: validValues.keySet()){
-            String name = key.getKey() + "_" + key.getValue().getName();          // OperationName_parameterId
-            // Read valid and invalid values from previous and current iteration
-            // TODO: Convert to function
-            String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + getExperimentName() + "/validAndInvalidValues/" + key.getKey() + "/" + key.getValue().getName() + "/";
-            String validPath = csvPath + "valid.csv";
-            String invalidPath = csvPath + "invalid.csv";
+        // valuesFromPreviousIterations has been updated, containing PREVIOUS AND CURRENT values
+        for(ParameterValues parameterValues: valuesFromPreviousIterations){
 
-            Set<String> validSet = new HashSet<>(readValues(validPath));
-            Set<String> invalidSet = new HashSet<>(readValues(invalidPath));
+            Set<String> validSet = parameterValues.getValidValues();
+            Set<String> invalidSet = parameterValues.getInvalidValues();
 
             // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
             if(invalidSet.size() >= 5 && validSet.size() >= 5){
+
+                // OperationName_parameterId
+                String name = parameterValues.getOperationId() + "_" + parameterValues.getTestParameter().getName();
 
                 // Generate regex
                 logger.info("Generating regex...");
@@ -232,15 +207,18 @@ public class StatsReportManager {
                 String regex = solution.getSolution();
                 Pattern pattern = Pattern.compile(regex);
                 logger.info("Regex learned: " + regex);
+                logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
 
                 // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
                 if(solution.getValidationPerformances().get("match f-measure")  > 0.9){
-                    updateCsvWithRegex(key, pattern);
+                    // Filter all the CSVs of the associated testParameter
+                    updateCsvWithRegex(parameterValues, pattern);
 
                     // Delete CSV of successful and failed values of previous iterations after the update with regex
-                    deleteFile(validPath);
-                    deleteFile(invalidPath);
+                    deleteFile(parameterValues.getValidCSVPath());
+                    deleteFile(parameterValues.getInvalidCSVPath());
                 }
+
             }
 
         }
