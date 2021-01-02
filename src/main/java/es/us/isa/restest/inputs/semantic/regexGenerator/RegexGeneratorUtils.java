@@ -103,7 +103,6 @@ public class RegexGeneratorUtils {
     }
 
     public static void updateCsvWithRegex(Pair<String, TestParameter> key, Pattern pattern){
-        // TODO: FILTER CSV
         // Obtain csv paths of test parameter (a test parameter can have more than one csv file)
         List<String> csvPaths = key.getValue()
                 .getGenerator().getGenParameters()
@@ -138,6 +137,13 @@ public class RegexGeneratorUtils {
             }
         }
 
+    }
+
+    public static Boolean isTestValueInvalid(){
+        // Las intersecciones con valid se compararían más adelante (¿hacer aquí también?)
+        // Si no está acompañado por otros parámetros semánticos, añadir
+        // Si no está en la lista de válidos, añadir -- Si está en la lista de válidos, NO añadir
+        return true;
     }
 
 

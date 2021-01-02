@@ -86,9 +86,34 @@ public class StatsReportManager {
         Map<Pair<String, TestParameter>, Set<String>> validValues = getMapOfSemanticParameters(operations);
         Map<Pair<String, TestParameter>, Set<String>> invalidValues = getMapOfSemanticParameters(operations);
 
-        // TODO: 2XX or 4XX
-        // TODO: 2XX list (map) may be empty
-        // TODO: Multiple csvs
+        // Read the valid and invalid values of previous iterations
+        // Key format: <operationId, parameterName>
+        Map<Pair<String, String>, Set<String>> previousValidValues = new HashMap<>();
+        Map<Pair<String, String>, Set<String>> previousInvalidValues = new HashMap<>();
+
+        for(Pair<String, TestParameter> key: validValues.keySet()){
+            String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + getExperimentName() + "/validAndInvalidValues/" + key.getKey() + "/" + key.getValue().getName() + "/";
+            createDir(csvPath); // This dir is created if it does not exist
+
+            String validPath = csvPath + "valid.csv";
+            String invalidPath = csvPath + "invalid.csv";
+            createFileIfNotExists(validPath);
+            createFileIfNotExists(invalidPath);
+
+            // Read valid and invalid values from previous iterations
+            // TODO: Convert into a get from map
+            Set<String> readValidValues = new HashSet<>(readValues(validPath));
+            Set<String> readInvalidValues = new HashSet<>(readValues(invalidPath));
+
+            Pair<String, String> operationParameterName = new Pair<>(key.getKey(), key.getValue().getName());
+
+            previousValidValues.put(operationParameterName, readValidValues);
+            previousInvalidValues.put(operationParameterName, readInvalidValues);
+
+        }
+
+
+        // --------------------------------------------------------------------------------------
 
         String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
         List<TestResult> trs = TestManager.getTestResults(csvTrPath);
@@ -140,7 +165,14 @@ public class StatsReportManager {
                             validValues.get(pair).add(value);
                             break;
                         case '4':
-                            invalidValues.get(pair).add(value);
+//                            parametersOfOperation (no hace falta, solo el operationId)
+                            // validValues.get(pair)
+                            // previousValidValues
+                            // Falta conocer el resto de parámetros semánticos del testCase en cuestión
+                            if(isTestValueInvalid()){
+                                // TODO: Añadir solamente si está en máximo grado de aislamiento o el resto de parámetros (semánticos) son válidos
+                                invalidValues.get(pair).add(value);
+                            }
                             break;
                     }
 
@@ -154,6 +186,7 @@ public class StatsReportManager {
         for(Pair<String, TestParameter> key: validValues.keySet()){
             // TODO: Avoid repeated values
             // operationId/parameterName/valid.csv
+            // TODO: Convert to function
             String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + getExperimentName() + "/validAndInvalidValues/" + key.getKey() + "/" + key.getValue().getName() + "/";
             createDir(csvPath);
 
@@ -163,14 +196,15 @@ public class StatsReportManager {
             createFileIfNotExists(invalidPath);
 
             // Read valid and invalid values from previous iterations
+            // TODO: Convert into a get from map
             Set<String> allValidValues = new HashSet<>(readValues(validPath));
             Set<String> allInvalidValues = new HashSet<>(readValues(invalidPath));
 
-            // Merge both lists (previous iterations and current iteration)
+            // Merge both sets (previous iterations and current iteration)
             allValidValues.addAll(validValues.get(key));
             allInvalidValues.addAll(invalidValues.get(key));
 
-            // Check for duplicates (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" list)
+            // Check for duplicates (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" set)
             Set<String> intersection = new HashSet<>(allValidValues);
             intersection.retainAll(allInvalidValues);
             allInvalidValues.removeAll(intersection);
@@ -203,6 +237,7 @@ public class StatsReportManager {
         for(Pair<String, TestParameter> key: validValues.keySet()){
             String name = key.getKey() + "_" + key.getValue().getName();          // OperationName_parameterId
             // Read valid and invalid values from previous and current iteration
+            // TODO: Convert to function
             String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + getExperimentName() + "/validAndInvalidValues/" + key.getKey() + "/" + key.getValue().getName() + "/";
             String validPath = csvPath + "valid.csv";
             String invalidPath = csvPath + "invalid.csv";
