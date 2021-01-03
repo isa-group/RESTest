@@ -13,17 +13,14 @@ import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getExperimentName;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getTestConfigurationObject;
-import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
 
 /**
@@ -78,7 +75,7 @@ public class StatsReportManager {
 
 
     public void learn(String testId) {
-
+        // TODO: Add x-example from OAS to valid values
         TestConfigurationObject testConf = getTestConfigurationObject();
         List<Operation> operations = testConf.getTestConfiguration().getOperations();
 
@@ -113,9 +110,8 @@ public class StatsReportManager {
                         .findFirst()
                         .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
-                // TODO: Advanced classification
-                // Iterate semantic parameters
-                // Filter by operationId
+
+                // Iterate semantic parameters (Filter by operationId)
                 Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
                         .filter(x -> x.getKey().equals(operationId)).map(x -> x.getValue())
                         .collect(Collectors.toSet());
@@ -124,21 +120,7 @@ public class StatsReportManager {
                     Pair<String, TestParameter> pair = new Pair<>(operationId, parameter);
 
                     // Search parameter value in corresponding map
-                    String value = "";
-                    switch (parameter.getIn()) {
-                        case "header":
-                            value = testCase.getHeaderParameters().get(parameter.getName());
-                            break;
-                        case "path":
-                            value = testCase.getPathParameters().get(parameter.getName());
-                            break;
-                        case "form":
-                            value = testCase.getFormParameters().get(parameter.getName());
-                            break;
-                        default:        // query
-                            value = testCase.getQueryParameters().get(parameter.getName());
-                            break;
-                    }
+                    String value = testCase.getParameterValue(parameter.getIn(), parameter.getName());
 
                     // Add parameter value to a map depending on the response code
                     // 5XX codes are not taken into consideration
@@ -147,12 +129,8 @@ public class StatsReportManager {
                             validValues.get(pair).add(value);
                             break;
                         case '4':
-//                            parametersOfOperation (no hace falta, solo el operationId)
-                            // validValues.get(pair)
-                            // previousValidValues
-                            // Falta conocer el resto de parámetros semánticos del testCase en cuestión
-                            if(isTestValueInvalid()){
-                                // TODO: Añadir solamente si está en máximo grado de aislamiento o el resto de parámetros (semánticos) son válidos
+                            if(isTestValueInvalid(testCase, parameter, valuesFromPreviousIterations, validValues)){
+                                // Add only if the rest of the parameter values are considered valid (from previous or current iterations)
                                 invalidValues.get(pair).add(value);
                             }
                             break;

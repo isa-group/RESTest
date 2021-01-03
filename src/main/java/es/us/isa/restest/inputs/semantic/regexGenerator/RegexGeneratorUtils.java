@@ -1,6 +1,7 @@
 package es.us.isa.restest.inputs.semantic.regexGenerator;
 
 import es.us.isa.restest.configuration.pojos.*;
+import es.us.isa.restest.testcases.TestCase;
 import it.units.inginf.male.configuration.Configuration;
 import it.units.inginf.male.inputs.DataSet;
 import it.units.inginf.male.outputs.FinalSolution;
@@ -12,14 +13,17 @@ import it.units.inginf.male.strategy.impl.CoolTextualExecutionListener;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Test;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
+import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static es.us.isa.restest.util.CSVManager.readValues;
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
 import static es.us.isa.restest.util.FileManager.deleteFile;
@@ -124,10 +128,7 @@ public class RegexGeneratorUtils {
 
             // Write the Set of values as a csv file
             try {
-                FileWriter writer = new FileWriter(csvPath);
-                String matchesString = matches.stream().collect(Collectors.joining("\n"));
-                writer.write(matchesString);
-                writer.close();
+                collectionToCSV(csvPath, matches);
                 logger.info("CSV file updated");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -136,10 +137,38 @@ public class RegexGeneratorUtils {
 
     }
 
-    public static Boolean isTestValueInvalid(){
-        // Las intersecciones con valid se compararían más adelante (¿hacer aquí también?)
-        // Si no está acompañado por otros parámetros semánticos, añadir
-        // Si no está en la lista de válidos, añadir -- Si está en la lista de válidos, NO añadir
+    public static Boolean isTestValueInvalid
+            (TestCase testCase,
+             TestParameter parameterToDiscard,
+             Set<ParameterValues> valuesFromPreviousIterations,
+             Map<Pair<String, TestParameter>, Set<String>> validValues
+            ){
+
+        String operationId = testCase.getOperationId();
+
+        // Get values of current iteration and remove parameterToDiscard
+        Map<Pair<String, TestParameter>, Set<String>> validValuesOfOperation =
+                validValues
+                        .keySet().stream()
+                        .filter(x->x.getKey().equals(operationId) && !x.getValue().getName().equals(parameterToDiscard.getName()))
+                        .filter(validValues::containsKey).collect(Collectors.toMap(Function.identity(), validValues::get));
+
+        Set<ParameterValues> valuesFromPreviousIterationsOfOperation = valuesFromPreviousIterations.stream()
+                .filter(x->x.getOperationId().equals(operationId) && !x.getTestParameter().getName().equals(parameterToDiscard.getName()))
+                .collect(Collectors.toSet());
+
+        // Iterate test parameters, if the rest of parameter values are valid at some point, add the parameterToDiscard to the invalid set (return true)
+        for(ParameterValues parameterValues: valuesFromPreviousIterationsOfOperation){
+            TestParameter testParameter = parameterValues.getTestParameter();
+
+            String value = testCase.getParameterValue(testParameter.getIn(), testParameter.getName());
+            Pair<String, TestParameter> operationParameter = new Pair<>(operationId, testParameter);
+
+            if(!parameterValues.getValidValues().contains(value) && !validValuesOfOperation.get(operationParameter).contains(value)){
+                return false;
+            }
+        }
+
         return true;
     }
 
