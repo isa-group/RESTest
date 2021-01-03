@@ -1,6 +1,8 @@
 package es.us.isa.restest.configuration.pojos;
 
 import es.us.isa.restest.util.PropertyManager;
+import javafx.util.Pair;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -74,6 +76,20 @@ public class ParameterValues {
         String csvPath = this.getCSVPath();
         String invalidCSVPath = csvPath + "invalid.csv";
         return  invalidCSVPath;
+    }
+
+    // Read the valid and invalid values of previous iterations
+    public static Set<ParameterValues> getValuesFromPreviousIterations(String experimentName, Set<Pair<String, TestParameter>> operationParameters){
+        Set<ParameterValues> valuesFromPreviousIterations = new HashSet<>();
+
+        for(Pair<String, TestParameter> i: operationParameters){
+            // Create new parameterValues (experimentName, operationId, testParameter)
+            ParameterValues parameterValues = new ParameterValues(experimentName, i.getKey(), i.getValue());
+            // Add new parameterValues to valuesFromPreviousIterations
+            valuesFromPreviousIterations.add(parameterValues);
+        }
+
+        return valuesFromPreviousIterations;
     }
 
     public String getExperimentName() {

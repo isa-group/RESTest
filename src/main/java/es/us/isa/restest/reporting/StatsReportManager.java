@@ -18,6 +18,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static es.us.isa.restest.configuration.pojos.ParameterValues.getValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getExperimentName;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getTestConfigurationObject;
@@ -76,22 +77,14 @@ public class StatsReportManager {
 
     public void learn(String testId) {
         // TODO: Add x-example from OAS to valid values
-        TestConfigurationObject testConf = getTestConfigurationObject();
-        List<Operation> operations = testConf.getTestConfiguration().getOperations();
+        List<Operation> operations = getTestConfigurationObject().getTestConfiguration().getOperations();
 
         // Store the values of the parameters of successful and unsuccessful operations (current iteration)
         Map<Pair<String, TestParameter>, Set<String>> validValues = getMapOfSemanticParameters(operations);
         Map<Pair<String, TestParameter>, Set<String>> invalidValues = getMapOfSemanticParameters(operations);
 
-        String experimentName = getExperimentName();
         // Read the valid and invalid values of previous iterations
-        Set<ParameterValues> valuesFromPreviousIterations = new HashSet<>();
-        for(Pair<String, TestParameter> key: validValues.keySet()){
-            // Create new parameterValues (experimentName, operationId, testParameter)
-            ParameterValues parameterValues = new ParameterValues(experimentName, key.getKey(), key.getValue());
-            // Add new parameterValues to valuesFromPreviousIterations
-            valuesFromPreviousIterations.add(parameterValues);
-        }
+        Set<ParameterValues> valuesFromPreviousIterations = getValuesFromPreviousIterations(getExperimentName(), validValues.keySet());
 
         // Get TestResults
         String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
