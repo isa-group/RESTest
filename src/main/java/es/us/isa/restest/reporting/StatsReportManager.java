@@ -12,6 +12,7 @@ import it.units.inginf.male.outputs.FinalSolution;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Test;
 
 import java.util.*;
 import java.util.function.Function;
@@ -74,7 +75,6 @@ public class StatsReportManager {
     }
 
 
-
     public void learn(String testId) {
         // TODO: Add x-example from OAS to valid values
         List<Operation> operations = getTestConfigurationObject().getTestConfiguration().getOperations();
@@ -90,73 +90,24 @@ public class StatsReportManager {
         String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
         List<TestResult> trs = TestManager.getTestResults(csvTrPath);
 
-
         // Iterate the test cases of an operation
         for(TestCase testCase: testCases) {
-            String operationId = testCase.getOperationId();
-
             // The results are only considered if the testCase is not faulty
             if (!testCase.getFaulty()) {
-
                 // Obtain response code of the given testCase
                 String responseCode = trs.stream().filter(tr -> tr.getId().equals(testCase.getId()))
                         .findFirst()
                         .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
-
-                // Iterate semantic parameters (Filter by operationId)
-                Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
-                        .filter(x -> x.getKey().equals(operationId)).map(x -> x.getValue())
-                        .collect(Collectors.toSet());
-
-                for (TestParameter parameter : parametersOfOperation) {
-                    Pair<String, TestParameter> pair = new Pair<>(operationId, parameter);
-
-                    // Search parameter value in corresponding map
-                    String value = testCase.getParameterValue(parameter.getIn(), parameter.getName());
-
-                    // Add parameter value to a map depending on the response code
-                    // 5XX codes are not taken into consideration
-                    switch (responseCode.charAt(0)) {
-                        case '2':
-                            validValues.get(pair).add(value);
-                            break;
-                        case '4':
-                            if(isTestValueInvalid(testCase, parameter, valuesFromPreviousIterations, validValues)){
-                                // Add only if the rest of the parameter values are considered valid (from previous or current iterations)
-                                invalidValues.get(pair).add(value);
-                            }
-                            break;
-                    }
-
-                }
-
+                // Add parameter value to a map depending on the response code
+                updateValidAndInvalidValues(testCase, validValues, invalidValues, valuesFromPreviousIterations, responseCode);
             }
         }
 
-        // TODO: Convert this for loop into a function
         // Write csv of valid (directory)
-        for(Pair<String, TestParameter> key: validValues.keySet()){
-            // operationId/parameterName/valid.csv
-            // TODO: Convert to function
-            ParameterValues parameterValues = valuesFromPreviousIterations.stream()
-                    .filter(x-> x.getOperationId().equals(key.getKey()) && x.getTestParameter().equals(key.getValue()))
-                    .findFirst()
-                    .orElseThrow(() -> new NullPointerException("Associated ParameterValues not found"));
-
-            // Read valid and invalid values from previous iterations
-            // Merge both sets (previous iterations and current iteration)
-            // Check for duplicates (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" set)
+        for(ParameterValues parameterValues: valuesFromPreviousIterations){
+            Pair<String, TestParameter> key = new Pair<>(parameterValues.getOperationId(), parameterValues.getTestParameter());
             parameterValues.updateValidAndInvalidValues(validValues.get(key), invalidValues.get(key));
-
-            // PROVISIONAL: DELETE IN THE FUTURE
-            System.out.println("---------------------------------------------------------------------------");
-            System.out.println("---------------------------------------------------------------------------");
-            System.out.println(parameterValues.getValidValues());
-            System.out.println(parameterValues.getInvalidValues());
-            System.out.println("---------------------------------------------------------------------------");
-            System.out.println("---------------------------------------------------------------------------");
-
         }
 
         // Learn regular expression

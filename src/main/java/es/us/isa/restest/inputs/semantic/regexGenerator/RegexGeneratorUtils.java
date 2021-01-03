@@ -172,6 +172,43 @@ public class RegexGeneratorUtils {
         return true;
     }
 
+    public static void updateValidAndInvalidValues(
+            TestCase testCase,
+            Map<Pair<String, TestParameter>, Set<String>> validValues,
+            Map<Pair<String, TestParameter>, Set<String>> invalidValues,
+            Set<ParameterValues> valuesFromPreviousIterations,
+            String responseCode){
+
+        String operationId = testCase.getOperationId();
+
+        // Iterate semantic parameters (Filter by operationId)
+        Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
+                .filter(x -> x.getKey().equals(operationId)).map(x -> x.getValue())
+                .collect(Collectors.toSet());
+
+        for (TestParameter parameter : parametersOfOperation) {
+            Pair<String, TestParameter> pair = new Pair<>(operationId, parameter);
+
+            // Search parameter value in corresponding map
+            String value = testCase.getParameterValue(parameter.getIn(), parameter.getName());
+
+            // Add parameter value to a map depending on the response code
+            // 5XX codes are not taken into consideration
+            switch (responseCode.charAt(0)) {
+                case '2':
+                    validValues.get(pair).add(value);
+                    break;
+                case '4':
+                    if(isTestValueInvalid(testCase, parameter, valuesFromPreviousIterations, validValues)){
+                        // Add only if the rest of the parameter values are considered valid (from previous or current iterations)
+                        invalidValues.get(pair).add(value);
+                    }
+                    break;
+            }
+
+        }
+    }
+
 
 
 
