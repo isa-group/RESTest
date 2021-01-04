@@ -60,6 +60,7 @@ public class RESTestRunnerTest {
         statsReportManager.setCoverageMeter(new CoverageMeter(new CoverageGatherer(spec)));
 
         RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", generator, writer, arm, statsReportManager);
+        runner.setExecuteTestCases(true);
 
         runner.run();
 
