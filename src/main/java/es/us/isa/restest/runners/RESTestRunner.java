@@ -32,10 +32,12 @@ public class RESTestRunner {
 	protected IWriter writer;							// RESTAssured writer
 	protected AllureReportManager allureReportManager;	// Allure report manager
 	protected StatsReportManager statsReportManager;	// Stats report manager
+	private boolean executeTestCases;
 	private int numTestCases = 0;						// Number of test cases generated so far
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer,
+						 AllureReportManager reportManager, StatsReportManager statsReportManager) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
@@ -50,22 +52,26 @@ public class RESTestRunner {
 		// Test generation and writing (RESTAssured)
 		testGeneration();
 
-		// Test execution
-		logger.info("Running tests");
-		System.setProperty("allure.results.directory", allureReportManager.getResultsDirPath());
-		testExecution(getTestClass());
+		if(executeTestCases) {
+			// Test execution
+			logger.info("Running tests");
+			System.setProperty("allure.results.directory", allureReportManager.getResultsDirPath());
+			testExecution(getTestClass());
+		}
 
 		generateReports();
 	}
 
 	protected void generateReports() {
-		// Generate test report
-		logger.info("Generating test report");
-		allureReportManager.generateReport();
+		if(executeTestCases) {
+			// Generate test report
+			logger.info("Generating test report");
+			allureReportManager.generateReport();
+		}
 
 		// Generate coverage report
 		logger.info("Generating coverage report");
-		statsReportManager.generateReport(testId);
+		statsReportManager.generateReport(testId, executeTestCases);
 	}
 
 	protected Class<?> getTestClass() {
@@ -134,5 +140,9 @@ public class RESTestRunner {
 
 	public void setTestId(String testId) {
 		this.testId = testId;
+	}
+
+	public void setExecuteTestCases(Boolean executeTestCases) {
+		this.executeTestCases = executeTestCases;
 	}
 }

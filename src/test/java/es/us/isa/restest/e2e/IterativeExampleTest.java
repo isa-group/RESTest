@@ -6,6 +6,7 @@ import es.us.isa.restest.util.RESTestException;
 import org.junit.Test;
 
 import static es.us.isa.restest.util.FileManager.checkIfExists;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class IterativeExampleTest {
@@ -23,5 +24,20 @@ public class IterativeExampleTest {
         assertTrue(checkIfExists("target/coverage-data/bikewise"));
         assertTrue(checkIfExists("target/test-data/bikewise"));
         assertTrue(checkIfExists("log/bikewise.log"));
+    }
+
+    @Test
+    public void testIterativeExampleWithoutExecution() throws RESTestException {
+        String[] args = {"src/test/resources/AnApiOfIceAndFire/iceandfire.properties"};
+        TestGenerationAndExecution.main(args);
+
+        assertTrue(checkIfExists("src/generation/java/anApiOfIceAndFire"));
+
+        assertFalse(checkIfExists("target/allure-results/anApiOfIceAndFire"));
+        assertFalse(checkIfExists("target/allure-reports/anApiOfIceAndFire"));
+        assertTrue(checkIfExists("target/test-data/anApiOfIceAndFire/time.csv"));
+        assertTrue(checkIfExists("target/coverage-data/anApiOfIceAndFire"));
+        assertTrue(checkIfExists("target/test-data/anApiOfIceAndFire"));
+        assertTrue(checkIfExists("log/anApiOfIceAndFire.log"));
     }
 }
