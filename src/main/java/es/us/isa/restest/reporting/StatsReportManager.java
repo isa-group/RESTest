@@ -12,12 +12,8 @@ import it.units.inginf.male.outputs.FinalSolution;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
 
 import java.util.*;
-import java.util.function.Function;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static es.us.isa.restest.configuration.pojos.ParameterValues.getValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
@@ -107,7 +103,7 @@ public class StatsReportManager {
         // Write csv of valid (directory)
         for(ParameterValues parameterValues: valuesFromPreviousIterations){
             Pair<String, TestParameter> key = new Pair<>(parameterValues.getOperationId(), parameterValues.getTestParameter());
-            parameterValues.updateValidAndInvalidValues(validValues.get(key), invalidValues.get(key));
+            parameterValues.updateValidAndInvalidValuesCSV(validValues.get(key), invalidValues.get(key));
         }
 
         // Learn regular expression
@@ -127,18 +123,23 @@ public class StatsReportManager {
                 logger.info("Generating regex...");
                 FinalSolution solution = learnRegex(name, validSet, invalidSet,false);
                 String regex = solution.getSolution();
-                Pattern pattern = Pattern.compile(regex);
-                logger.info("Regex learned: " + regex);
+                logger.info("Regex learned for parameter " + parameterValues.getTestParameter().getName() + ": " + regex);
                 logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
 
                 // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
                 if(solution.getValidationPerformances().get("match f-measure")  > 0.9){
                     // Filter all the CSVs of the associated testParameter
-                    updateCsvWithRegex(parameterValues, pattern);
+                    updateCsvWithRegex(parameterValues, regex);
 
                     // Delete CSV of successful and failed values of previous iterations after the update with regex
                     deleteFile(parameterValues.getValidCSVPath());
                     deleteFile(parameterValues.getInvalidCSVPath());
+
+                    // TODO: REMOVE THIS FOR LOOP
+                    // Delete the invalid files from the other parameters
+                    for(ParameterValues otherParameterValues: valuesFromPreviousIterations){
+                        deleteFile(otherParameterValues.getInvalidCSVPath());
+                    }
                 }
 
             }

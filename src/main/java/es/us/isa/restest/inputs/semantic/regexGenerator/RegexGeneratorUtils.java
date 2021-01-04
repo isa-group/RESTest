@@ -103,7 +103,8 @@ public class RegexGeneratorUtils {
         return res;
     }
 
-    public static void updateCsvWithRegex(ParameterValues parameterValues, Pattern pattern){
+    public static void updateCsvWithRegex(ParameterValues parameterValues, String regex){
+        Pattern pattern = Pattern.compile(regex);
         // Obtain csv paths of test parameter (a test parameter can have more than one csv file)
         List<String> csvPaths = parameterValues.getTestParameter()
                 .getGenerator().getGenParameters()
@@ -137,6 +138,44 @@ public class RegexGeneratorUtils {
 
     }
 
+    public static void updateValidAndInvalidValues(
+            TestCase testCase,
+            Map<Pair<String, TestParameter>, Set<String>> validValues,
+            Map<Pair<String, TestParameter>, Set<String>> invalidValues,
+            Set<ParameterValues> valuesFromPreviousIterations,
+            String responseCode){
+
+        String operationId = testCase.getOperationId();
+
+        // Iterate semantic parameters (Filter by operationId)
+        Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
+                .filter(x -> x.getKey().equals(operationId)).map(x -> x.getValue())
+                .collect(Collectors.toSet());
+
+        for (TestParameter parameter : parametersOfOperation) {
+            Pair<String, TestParameter> pair = new Pair<>(operationId, parameter);
+
+            // Search parameter value in corresponding map
+            String value = testCase.getParameterValue(parameter.getIn(), parameter.getName());
+
+            // Add parameter value to a map depending on the response code
+            // 5XX codes are not taken into consideration
+            if(value != null){
+                switch (responseCode.charAt(0)) {
+                    case '2':
+                        validValues.get(pair).add(value);
+                        break;
+                    case '4':
+//                        if(isTestValueInvalid(testCase, parameter, valuesFromPreviousIterations, validValues)){
+                            // Add only if the rest of the parameter values are considered valid (from previous or current iterations)
+                            invalidValues.get(pair).add(value);
+//                        }
+                        break;
+                }
+            }
+        }
+    }
+
     public static Boolean isTestValueInvalid
             (TestCase testCase,
              TestParameter parameterToDiscard,
@@ -164,49 +203,16 @@ public class RegexGeneratorUtils {
             String value = testCase.getParameterValue(testParameter.getIn(), testParameter.getName());
             Pair<String, TestParameter> operationParameter = new Pair<>(operationId, testParameter);
 
-            if(!parameterValues.getValidValues().contains(value) && !validValuesOfOperation.get(operationParameter).contains(value)){
+            if(
+                    value!=null &&
+                    !parameterValues.getValidValues().contains(value) &&
+                    !validValuesOfOperation.get(operationParameter).contains(value)
+            ){
                 return false;
             }
         }
 
         return true;
-    }
-
-    public static void updateValidAndInvalidValues(
-            TestCase testCase,
-            Map<Pair<String, TestParameter>, Set<String>> validValues,
-            Map<Pair<String, TestParameter>, Set<String>> invalidValues,
-            Set<ParameterValues> valuesFromPreviousIterations,
-            String responseCode){
-
-        String operationId = testCase.getOperationId();
-
-        // Iterate semantic parameters (Filter by operationId)
-        Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
-                .filter(x -> x.getKey().equals(operationId)).map(x -> x.getValue())
-                .collect(Collectors.toSet());
-
-        for (TestParameter parameter : parametersOfOperation) {
-            Pair<String, TestParameter> pair = new Pair<>(operationId, parameter);
-
-            // Search parameter value in corresponding map
-            String value = testCase.getParameterValue(parameter.getIn(), parameter.getName());
-
-            // Add parameter value to a map depending on the response code
-            // 5XX codes are not taken into consideration
-            switch (responseCode.charAt(0)) {
-                case '2':
-                    validValues.get(pair).add(value);
-                    break;
-                case '4':
-                    if(isTestValueInvalid(testCase, parameter, valuesFromPreviousIterations, validValues)){
-                        // Add only if the rest of the parameter values are considered valid (from previous or current iterations)
-                        invalidValues.get(pair).add(value);
-                    }
-                    break;
-            }
-
-        }
     }
 
 

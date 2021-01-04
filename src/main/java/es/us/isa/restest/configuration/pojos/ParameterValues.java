@@ -43,7 +43,7 @@ public class ParameterValues {
     // Read valid and invalid values from previous iterations
     // Merge both sets (previous iterations and current iteration)
     // Check for duplicates (if a value was considered invalid but appeared in a valid operation, it is deleted from the "invalid" set)
-    public void updateValidAndInvalidValues(Set<String> newValidValues, Set<String> newInvalidValues){
+    public void updateValidAndInvalidValuesCSV(Set<String> newValidValues, Set<String> newInvalidValues){
         // Add values to both sets
         this.validValues.addAll(newValidValues);
         this.invalidValues.addAll(newInvalidValues);
