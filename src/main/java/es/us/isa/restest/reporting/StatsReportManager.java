@@ -127,7 +127,7 @@ public class StatsReportManager {
                 logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
 
                 // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
-                if(solution.getValidationPerformances().get("match f-measure")  > 0.9){
+                if(solution.getValidationPerformances().get("match f-measure")  >= 0.9){
                     // Filter all the CSVs of the associated testParameter
                     updateCsvWithRegex(parameterValues, regex);
 
