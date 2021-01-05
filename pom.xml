@@ -3,7 +3,7 @@
 
 	<groupId>es.us.isa</groupId>
 	<artifactId>restest</artifactId>
-	<version>0.1.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>RESTest</name>
@@ -75,6 +75,17 @@
 		<url>https://github.com/isa-group/RESTest/tree/master</url>
 	  <tag>HEAD</tag>
   </scm>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 
 
 
