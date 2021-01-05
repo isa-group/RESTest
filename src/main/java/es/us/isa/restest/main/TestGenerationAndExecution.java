@@ -32,7 +32,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
+	private static String propertiesFilePath = "src/test/resources/Bikewise/bikewise.properties";
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
 	private static OpenAPISpecification spec; 							// OAS specification
@@ -50,6 +50,7 @@ public class TestGenerationAndExecution {
 	private static Integer timeDelay; 									// Delay between requests in seconds (-1 for no delay)
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
+	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 
 	// For Constraint-based testing only:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
@@ -75,10 +76,12 @@ public class TestGenerationAndExecution {
 		// RESTest runner
 		AbstractTestCaseGenerator generator = createGenerator(); // Test case generator
 		IWriter writer = createWriter(); // Test case writer
-		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
 		StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
+		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
 		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer,
-				reportManager, statsReportManager);
+					reportManager, statsReportManager);
+		runner.setExecuteTestCases(executeTestCases);
+
 
 		// Main loop
 		int iteration = 1;
@@ -154,21 +157,24 @@ public class TestGenerationAndExecution {
 
 	// Create an Allure report manager
 	private static AllureReportManager createAllureReportManager() {
-		String allureResultsDir = readParameterValue("allure.results.dir") + "/" + experimentName;
-		String allureReportDir = readParameterValue("allure.report.dir") + "/" + experimentName;
+		AllureReportManager arm = null;
+		if(executeTestCases) {
+			String allureResultsDir = readParameterValue("allure.results.dir") + "/" + experimentName;
+			String allureReportDir = readParameterValue("allure.report.dir") + "/" + experimentName;
 
-		// Delete previous results (if any)
-		if (deletePreviousResults) {
-			deleteDir(allureResultsDir);
-			deleteDir(allureReportDir);
+			// Delete previous results (if any)
+			if (deletePreviousResults) {
+				deleteDir(allureResultsDir);
+				deleteDir(allureReportDir);
+			}
+
+			//Find auth property names (if any)
+			List<String> authProperties = AllureAuthManager.findAuthProperties(spec, confPath);
+
+			arm = new AllureReportManager(allureResultsDir, allureReportDir, authProperties);
+			arm.setEnvironmentProperties(propertiesFilePath);
+			arm.setHistoryTrend(true);
 		}
-
-		//Find auth property names (if any)
-		List<String> authProperties = AllureAuthManager.findAuthProperties(spec, confPath);
-
-		AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir, authProperties);
-		arm.setEnvironmentProperties(propertiesFilePath);
-		arm.setHistoryTrend(true);
 		return arm;
 	}
 
@@ -241,6 +247,11 @@ public class TestGenerationAndExecution {
 		experimentName = readParameterValue("experiment.name");
 		logger.info("Experiment name: {}", experimentName);
 		packageName = experimentName;
+
+		if (readParameterValue("experiment.execute") != null) {
+			executeTestCases = Boolean.parseBoolean(readParameterValue("experiment.execute"));
+		}
+		logger.info("Experiment execution: {}", executeTestCases);
 		
 		testClassName = readParameterValue("testclass.name");
 		logger.info("Test class name: {}", testClassName);

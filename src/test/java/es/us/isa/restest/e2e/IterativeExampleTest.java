@@ -3,9 +3,11 @@ package es.us.isa.restest.e2e;
 import es.us.isa.restest.main.TestGenerationAndExecution;
 import es.us.isa.restest.util.RESTestException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static es.us.isa.restest.util.FileManager.checkIfExists;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class IterativeExampleTest {
