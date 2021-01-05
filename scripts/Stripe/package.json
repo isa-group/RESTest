@@ -1,0 +1,15 @@
+{
+  "name": "delete-stripe",
+  "version": "1.0.0",
+  "description": "",
+  "main": "delete-stripe.js",
+  "dependencies": {
+    "axios": "^0.21.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
