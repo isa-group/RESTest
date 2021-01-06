@@ -1,5 +1,7 @@
 package es.us.isa.restest.inputs.semantic;
 
+import es.us.isa.restest.configuration.pojos.SemanticOperation;
+import es.us.isa.restest.configuration.pojos.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -26,14 +28,14 @@ public class Predicates {
     private static final Integer minSupport = 20;
     private static final Logger log = LogManager.getLogger(Predicates.class);
 
-    public static Map<TestParameter, List<String>> getPredicates(SemanticOperation semanticOperation, OpenAPISpecification spec){
-        Set<TestParameter> parameters = semanticOperation.getSemanticParameters().keySet();
+    public static void setPredicates(SemanticOperation semanticOperation, OpenAPISpecification spec){
+        Set<SemanticParameter> semanticParameters = semanticOperation.getSemanticParameters();
 
-        Map<TestParameter, List<String>> res = new HashMap<>();
+//        Map<TestParameter, List<String>> res = new HashMap<>();
 
-        for(TestParameter p: parameters){
+        for(SemanticParameter p: semanticParameters){
 
-            String parameterName = p.getName();
+            String parameterName = p.getTestParameter().getName();
             log.info("Obtaining predicates of parameter {}", parameterName);
 
             // Get description
@@ -42,7 +44,7 @@ public class Predicates {
 
             // If the paramater name is only a character, compare with description
             if(parameterName.length() == 1 && parameterDescription!=null){
-                List<String> possibleNames = posTagging(parameterDescription, p.getName());
+                List<String> possibleNames = posTagging(parameterDescription, parameterName);
                 if(possibleNames.size()>0){
                     parameterName = possibleNames.get(0);
                 }
@@ -57,20 +59,19 @@ public class Predicates {
             }
 
             // Compute support ordered by priority, if one of the candidates surpasses the threshold, it is used as predicate
-            String predicateDescription = getPredicatesFromDescription(descriptionCandidates, p);
+            String predicateDescription = getPredicatesFromDescription(descriptionCandidates, p.getTestParameter());
 
             if(predicateDescription != null){
-                res.put(p, Collections.singletonList(predicateDescription));
+                p.setPredicates(Collections.singleton(predicateDescription));
             }else{
                 // PARAMETER NAME
-                List<String> predicates = getPredicatesOfSingleParameter(parameterName, p);
+                Set<String> predicates = getPredicatesOfSingleParameter(parameterName, p.getTestParameter());
                 if(predicates.size()>0){
-                    res.put(p, predicates);
+                    p.setPredicates(predicates);
                 }
             }
         }
 
-        return res;
     }
 
     public static String getPredicatesFromDescription(Map<Double, Set<String>> descriptionCandidates, TestParameter testParameter){
@@ -94,7 +95,7 @@ public class Predicates {
     }
 
 
-    public static List<String> getPredicatesOfSingleParameter(String parameterName, TestParameter testParameter){
+    public static Set<String> getPredicatesOfSingleParameter(String parameterName, TestParameter testParameter){
 
         // PARAMETER NAME
         // Query creation
@@ -113,7 +114,7 @@ public class Predicates {
 
                 if(predicate == null) {
                     // Execute one query for each word in snake_case
-                    List<String> predicates = new ArrayList<>();
+                    Set<String> predicates = new HashSet<>();
                     for(String word: words){
 
                         String query = generatePredicateQuery(word);
@@ -133,7 +134,7 @@ public class Predicates {
             // If camelCase
             String[] wordsCamel = parameterName.split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
             if(predicate==null && wordsCamel.length >1){
-                List<String> predicates = new ArrayList<>();
+                Set<String> predicates = new HashSet<>();
                 // Execute one query for each word in camelCase
                 for(String word: wordsCamel){
                     String query = generatePredicateQuery(word);
@@ -150,9 +151,9 @@ public class Predicates {
         }
 
         if(predicate != null){
-            return Collections.singletonList(predicate);
+            return Collections.singleton(predicate);
         }else{
-            return new ArrayList<>();
+            return new HashSet<>();
         }
     }
 
@@ -207,12 +208,11 @@ public class Predicates {
     }
 
     public static Integer computeSupportOfPredicate(String predicate, TestParameter testParameter){
-
         // Generate query
-        Map<TestParameter, List<String>> parameterWithPredicate = new HashMap<>();
-        parameterWithPredicate.put(testParameter, Collections.singletonList(predicate));
+        SemanticParameter semanticParameter = new SemanticParameter(testParameter);
+        semanticParameter.setPredicates(Collections.singleton(predicate));
 
-        String queryString = generateQuery(parameterWithPredicate, true);
+        String queryString = generateQuery(Collections.singleton(semanticParameter), true);
 
         // Execute query
         Integer supportOfPredicate = executeSPARQLQueryCount(queryString, szEndpoint);

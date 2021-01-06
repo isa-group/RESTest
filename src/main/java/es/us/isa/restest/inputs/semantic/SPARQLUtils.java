@@ -1,6 +1,6 @@
 package es.us.isa.restest.inputs.semantic;
 
-import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.configuration.pojos.SemanticParameter;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
@@ -23,13 +23,13 @@ public class SPARQLUtils {
 
 
 
-    public static Map<String, Set<String>> getParameterValues(Map<TestParameter, List<String>> parametersWithPredicates) throws Exception {
+    public static Map<String, Set<String>> getParameterValues(Set<SemanticParameter> semanticParameters) throws Exception {
 
         Map<String, Set<String>> result = new HashMap<>();
 
-        if(parametersWithPredicates.keySet().size()>0) {
+        if(semanticParameters.size()>0) {
 
-            String queryString = generateQuery(parametersWithPredicates, false);
+            String queryString = generateQuery(semanticParameters, false);
             System.out.println(queryString);
 
             result = executeSPARQLQuery(queryString, szEndpoint);
@@ -48,24 +48,22 @@ public class SPARQLUtils {
                     log.info("Insufficient inputs for all parameters, looking for connected component with greatest support");
 
                     Integer maxSupport = 0;
-                    Map<TestParameter, List<String>> subGraphParametersWithPredicates = new HashMap<>();
+                    Set<SemanticParameter> subGraphParameters = new HashSet<>();
                     String isolatedParameterName = "";
 
-                    // For para recorrer cada uno de los parámetros
+                    // Iterate parameters
                     for (String subGraphParameterName : subGraphParameterNames) {
-
-                        Map<TestParameter, List<String>> currentSubGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
-                                .filter(x -> !x.getKey().getName().equals(subGraphParameterName))
-                                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                        Set<SemanticParameter> currentSubGraphParameters = semanticParameters.stream()
+                                .filter(x-> !x.getTestParameter().getName().equals(subGraphParameterName)).collect(Collectors.toSet());
 
                         // Compute support
-                        String queryCount = generateQuery(currentSubGraphParametersWithPredicates, true);
+                        String queryCount = generateQuery(currentSubGraphParameters, true);
                         Integer currentSupport = executeSPARQLQueryCount(queryCount, szEndpoint);
 
                         // Compare size with accumulator
                         if (currentSupport >= maxSupport) {
                             maxSupport = currentSupport;
-                            subGraphParametersWithPredicates = currentSubGraphParametersWithPredicates;
+                            subGraphParameters = currentSubGraphParameters;
                             isolatedParameterName = subGraphParameterName;
                         }
 
@@ -74,16 +72,16 @@ public class SPARQLUtils {
                     log.info("Isolating parameter {} to increase support", isolatedParameterName);
                     // Call the isolated parameter and add to result
                     String finalIsolatedParameterName = isolatedParameterName;
-                    Map<TestParameter, List<String>> isolatedParameter = parametersWithPredicates.entrySet().stream()
-                            .filter(x -> x.getKey().getName().equals(finalIsolatedParameterName))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    Set<SemanticParameter> isolatedParameter = semanticParameters.stream()
+                            .filter(x-> x.getTestParameter().getName().equals(finalIsolatedParameterName))
+                            .collect(Collectors.toSet());
 
                     Map<String, Set<String>> subResultIsolated = getParameterValues(isolatedParameter);
                     result.get(isolatedParameterName).addAll(subResultIsolated.get(isolatedParameterName));
 
 
                     // Add the subgraph to results
-                    Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
+                    Map<String, Set<String>> subResult = getParameterValues(subGraphParameters);
                     for (String parameterName : subResult.keySet()) {
                         result.get(parameterName).addAll(subResult.get(parameterName));
                     }
@@ -92,12 +90,12 @@ public class SPARQLUtils {
                 } else if ((subGraphParameterNames.size() > 0) && (subGraphParameterNames.size() < parameterNames.size())) {  // Smaller Set case
                     log.info("Insufficient inputs for a group of parameters, querying DBPedia with a subset of parameters");
 
-                    Map<TestParameter, List<String>> subGraphParametersWithPredicates = parametersWithPredicates.entrySet().stream()
-                            .filter(x -> subGraphParameterNames.contains(x.getKey().getName()))
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                    Set<SemanticParameter> subGraphParameters = semanticParameters.stream()
+                            .filter(x-> subGraphParameterNames.contains(x.getTestParameter().getName()))
+                            .collect(Collectors.toSet());
 
                     // Create SubResult
-                    Map<String, Set<String>> subResult = getParameterValues(subGraphParametersWithPredicates);
+                    Map<String, Set<String>> subResult = getParameterValues(subGraphParameters);
 
                     // Add the results of the recursive call to result
                     for (String parameterName : subResult.keySet()) {
@@ -180,18 +178,14 @@ public class SPARQLUtils {
         return res;
     }
 
-    public static String generateQuery(Map<TestParameter, List<String>> parametersWithPredicates, Boolean count) {
+    public static String generateQuery(Set<SemanticParameter> semanticParameters, Boolean count) {
         String queryString = "";
         String filters = "";
 
-        // Add prefixes
-//        queryString = queryString + "PREFIX dbo: <http://dbpedia.org/ontology/> \n";
-//        queryString = queryString + "PREFIX dbp: <http://dbpedia.org/property/> \n";
-//        queryString = queryString + "PREFIX dbr: <http://dbpedia.org/resource/> \n";
+        List<SemanticParameter> allParameters = new ArrayList<>(semanticParameters);
 
-        List<TestParameter> allParameters = new ArrayList<>(parametersWithPredicates.keySet());
         List<String> allParametersName = allParameters.stream()
-                .map(x-> x.getName())
+                .map(x-> x.getTestParameter().getName())
                 .collect(Collectors.toList());
 
 
@@ -212,30 +206,32 @@ public class SPARQLUtils {
 
             queryString = queryString + "?" + randomString;
 
+
             for (int i = 0; i <= (requiredSize - 2); i++) {
                 // Add required parameter to query
-                TestParameter currentParameter = allParameters.get(i);
-                String currentParameterName = currentParameter.getName();
+                SemanticParameter currentParameter = allParameters.get(i);
+                String currentParameterName = currentParameter.getTestParameter().getName();
 
                 // Predicates
-                List<String> predicates = parametersWithPredicates.get(currentParameter);
+                Set<String> predicates = currentParameter.getPredicates();
+                // Exception if size=0 or null
                 String predicatesString = getPredicatesString(predicates);
 
                 queryString = queryString + "\t" + predicatesString + " ?" + currentParameterName + " ; \n";
 
-                filters = filters + generateSPARQLFilters(currentParameter);
+                filters = filters + generateSPARQLFilters(currentParameter.getTestParameter());
             }
-            TestParameter lastParameter = allParameters.get(requiredSize - 1);
-            String lastParameterName = lastParameter.getName();
+            SemanticParameter lastParameter = allParameters.get(requiredSize - 1);
+            String lastParameterName = lastParameter.getTestParameter().getName();
 
             // Predicates
-            List<String> predicates = parametersWithPredicates.get(lastParameter);
+            Set<String> predicates = lastParameter.getPredicates();
             String predicatesString = getPredicatesString(predicates);
 
             queryString = queryString + "\t" + predicatesString + " ?" + lastParameterName + " . \n\n";
 
 
-            filters = filters + generateSPARQLFilters(lastParameter);
+            filters = filters + generateSPARQLFilters(lastParameter.getTestParameter());
         }
 
         // Add filters
@@ -307,11 +303,18 @@ public class SPARQLUtils {
         return res;
     }
 
-    private static  String getPredicatesString(List<String> predicates){
-        String res = "<" + predicates.get(0) + ">";
+    private static  String getPredicatesString(Set<String> predicates){
 
-        for(int i = 1; i<predicates.size(); i++){
-            res = res + "|<" + predicates.get(i) + ">";
+        if(predicates==null || predicates.size()==0){
+            throw new NullPointerException("A semantic parameter must contain at least one predicate");
+        }
+
+        String res = "";
+        Iterator<String> predicatesIterator = predicates.iterator();
+        res = res + "<" + predicatesIterator.next() + ">";
+
+        while (predicatesIterator.hasNext()){
+            res = res + "|<" + predicatesIterator.next() + ">";
         }
 
         return res;

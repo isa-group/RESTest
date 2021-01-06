@@ -35,44 +35,44 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-#        - name: regExp
-#          values:
-#          - "^[a-zA-Z]{2}$"
-#          objectValues: null
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5a9c9edde4b084deb4ea6195_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/ontology/country"
+          objectValues: null
     - name: currency
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-#        - name: regExp
-#          values:
-#          - "^[a-zA-Z]{2,3}$"
-#          objectValues: null
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5a9c9edde4b084deb4ea6195_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/ontology/currency"
+          objectValues: null
     - name: locale
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-#        - name: regExp
-#          values:
-#          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
-#          objectValues: null
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5a9c9edde4b084deb4ea6195_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
     expectedResponse: 200
   - testPath: "/apiservices/browsedates/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}"
     operationId: 5aa1edd5e4b06ec3937b23f0
@@ -92,31 +92,42 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1edd5e4b06ec3937b23f0_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
           objectValues: null
     - name: currency
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1edd5e4b06ec3937b23f0_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyIso"
           objectValues: null
     - name: locale
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1edd5e4b06ec3937b23f0_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
     - name: destinationplace
       in: path
@@ -177,31 +188,42 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a323e4b079c3de8a3778_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
     - name: country
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a323e4b079c3de8a3778_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
           objectValues: null
     - name: currency
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a323e4b079c3de8a3778_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyIso"
           objectValues: null
     - name: outboundpartialdate
       in: path
@@ -262,31 +284,42 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1eab3e4b00687d3574279_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
           objectValues: null
     - name: currency
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1eab3e4b00687d3574279_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyIso"
           objectValues: null
     - name: locale
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1eab3e4b00687d3574279_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
     - name: originplace
       in: path
@@ -347,21 +380,29 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a381e4b079c3de8a377a_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyIso"
           objectValues: null
     - name: country
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a381e4b079c3de8a377a_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
           objectValues: null
     - name: originplace
       in: path
@@ -377,11 +418,14 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a381e4b079c3de8a377a_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
     - name: destinationplace
       in: path
@@ -432,31 +476,42 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1eca4e4b00687d357427e_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
           objectValues: null
     - name: currency
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1eca4e4b00687d357427e_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyIso"
           objectValues: null
     - name: locale
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5aa1eca4e4b00687d357427e_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
     - name: originplace
       in: path
@@ -517,31 +572,42 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a3c8e4b08cf00f3fc318_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyIso"
           objectValues: null
     - name: country
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a3c8e4b08cf00f3fc318_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
           objectValues: null
     - name: locale
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5c50a3c8e4b08cf00f3fc318_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
     - name: originplace
       in: path
@@ -602,11 +668,14 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5a9ca8d2e4b084deb4ea61a9_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
     expectedResponse: 200
   - testPath: /apiservices/reference/v1.0/currencies
@@ -642,31 +711,42 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5b1b0535e4b05b36a9cbe592_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
           objectValues: null
     - name: currency
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5b1b0535e4b05b36a9cbe592_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyIso"
           objectValues: null
     - name: locale
       in: path
       weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: csv
           values:
-          - "^[a-zA-Z]{2}-[a-zA-Z]{2}$"
+          - src/main/resources/TestData/Generated/5a9b565ae4b04378c0c99666/5b1b0535e4b05b36a9cbe592_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
     - name: originplace
       in: path

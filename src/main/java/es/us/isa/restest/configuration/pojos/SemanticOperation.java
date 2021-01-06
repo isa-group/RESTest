@@ -1,27 +1,28 @@
-package es.us.isa.restest.inputs.semantic;
+package es.us.isa.restest.configuration.pojos;
 
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 
 import java.util.*;
 
+import static es.us.isa.restest.configuration.pojos.SemanticParameter.generateSemanticParameters;
+
 public class SemanticOperation {
     private String operationName = null;
     private String operationPath = null;
     private String operationMethod = null;
     private String operationId = null;
-    private Map<TestParameter, Set<String>> semanticParameters = null;
+    private Set<SemanticParameter> semanticParameters = null;
 
 
-    public SemanticOperation(Operation operation, List<TestParameter> semanticParameters){
-        Map<TestParameter, Set<String>> map = new HashMap<>();
-        semanticParameters.stream().forEach(x -> map.put(x, new HashSet<>()));
+
+    public SemanticOperation(Operation operation, Set<TestParameter> testParameters){
 
         this.operationName = operation.getOperationId();
         this.operationPath = operation.getTestPath();
         this.operationMethod = operation.getMethod();
         this.operationId = operation.getOperationId();
-        this.semanticParameters = map;
+        this.semanticParameters = generateSemanticParameters(testParameters);
 
     }
 
@@ -38,12 +39,21 @@ public class SemanticOperation {
         return operationMethod;
     }
 
-    public Map<TestParameter, Set<String>> getSemanticParameters() {
+    public Set<SemanticParameter> getSemanticParameters() {
         return semanticParameters;
     }
 
-    public void setSemanticParameters(Map<TestParameter, Set<String>> semanticParameters) {
+    public void setSemanticParameters(Set<SemanticParameter> semanticParameters) {
         this.semanticParameters = semanticParameters;
+    }
+
+    public void updateSemanticParametersValues(Map<String, Set<String>> result){
+        for(SemanticParameter semanticParameter: this.semanticParameters){
+            Set<String> values = result.get(semanticParameter.getTestParameter().getName());
+            if(values!=null) {
+                semanticParameter.addValues(values);
+            }
+        }
     }
 
 }

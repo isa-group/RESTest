@@ -7,21 +7,18 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
+import static es.us.isa.restest.inputs.semantic.Predicates.setPredicates;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.*;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConf;
+import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
@@ -29,14 +26,14 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 public class SemanticInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Spotify/spotify.properties";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/SkyscannerFlightSearch/skyscanner.properties";
     private static OpenAPISpecification spec;
     private static String OAISpecPath;
     private static String confPath;
     private static String semanticConfPath;
-    private static String csvPath = "src/main/resources/TestData/Generated/";
+    private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
     public static final Integer THRESHOLD = 100;
-    // DBPedia Endpoint
+    // DBPedia Endpoint     http://dbpedia.org/sparql       https://query.wikidata.org/sparql
     public static final String szEndpoint = "http://dbpedia.org/sparql";
 
     private static final Logger log = LogManager.getLogger(SemanticInputGenerator.class);
@@ -50,39 +47,28 @@ public class SemanticInputGenerator {
 
         // Key: OperationName       Value: Parameters
         log.info("Obtaining semantic operations");
-        List<SemanticOperation> semanticOperations = getSemanticOperations(conf);
+        Set<SemanticOperation> semanticOperations = getSemanticOperations(conf);
 
 
 
         for(SemanticOperation semanticOperation: semanticOperations){
 
             log.info("Obtaining predicates of operation {}", semanticOperation.getOperationId());
-            Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(semanticOperation, spec);
-
+//            Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(semanticOperation, spec); TODO: DELETE
+            setPredicates(semanticOperation, spec);
 
             Map<String, Set<String>> result = new HashMap<>();
             try{
                 // Query DBPedia
                 log.info("Querying DBPedia for operation {}...", semanticOperation.getOperationId());
-                result = getParameterValues(parametersWithPredicates);
+                // Values are generated only if the size of Set<predicates> is greater than 0
+                result = getParameterValues(semanticOperation.getSemanticParameters().stream().filter(x->x.getPredicates().size()>0).collect(Collectors.toSet()));
             }catch(Exception ex){
                 System.err.println(ex);
             }
 
-            for(TestParameter testParameter: semanticOperation.getSemanticParameters().keySet()){
-                Map<TestParameter, Set<String>> map = semanticOperation.getSemanticParameters();
+            semanticOperation.updateSemanticParametersValues(result);
 
-                Set<String> values = result.get(testParameter.getName());
-
-                if(values == null){
-                    map.put(testParameter, new HashSet<>());
-                }else{
-                    map.put(testParameter, values);
-                }
-
-                map.put(testParameter, result.get(testParameter.getName()));
-                semanticOperation.setSemanticParameters(map);
-            }
         }
 
         if(semanticOperations.size() == 0){
@@ -97,30 +83,23 @@ public class SemanticInputGenerator {
         // File name = OperationName_ParameterName
         // Delete file if it exists
         TestConfigurationObject newConf = conf;
-        for(SemanticOperation operation: semanticOperations){
+        for(SemanticOperation semanticOperation: semanticOperations){
 
             Integer opIndex = IntStream.range(0, newConf.getTestConfiguration().getOperations().size())
-                    .filter(i -> operation.getOperationId().equals(newConf.getTestConfiguration().getOperations().get(i).getOperationId()))
+                    .filter(i -> semanticOperation.getOperationId().equals(newConf.getTestConfiguration().getOperations().get(i).getOperationId()))
                     .findFirst().getAsInt();
 
-            for(TestParameter parameter: operation.getSemanticParameters().keySet()){
-                String fileName = "/" + operation.getOperationName().replaceAll("<>","") + "_" + parameter.getName() + ".csv";
+            for(SemanticParameter semanticParameter: semanticOperation.getSemanticParameters()){
+                String fileName = "/" + semanticOperation.getOperationName().replaceAll("<>","") + "_" + semanticParameter.getTestParameter().getName() + ".csv";
                 String path = csvPath + fileName;
                 deleteFile(path);
                 createFileIfNotExists(path);
 
                 // Write the Set of values as a csv file
-                FileWriter writer = new FileWriter(path);
-
-                String collect = Optional.ofNullable(operation.getSemanticParameters().get(parameter))
-                        .map(Collection::stream).orElseGet(Stream::empty).collect(Collectors.joining("\n"));
-
-
-                writer.write(collect);
-                writer.close();
+                collectionToCSV(path, semanticParameter.getValues());
 
                 // Update TestConfFile
-                updateTestConf(newConf, parameter, path, opIndex);
+                updateTestConf(newConf, semanticParameter, path, opIndex);
 
                 log.info("Csv file generated in {}", path);
 
@@ -143,18 +122,18 @@ public class SemanticInputGenerator {
 
         Path path = Paths.get(confPath);
         Path dir = path.getParent();
-        Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
+        Path fn = path.getFileSystem().getPath("testConfSemantic_wikidata.yaml");
         Path target = (dir == null) ? fn : dir.resolve(fn);
 
         semanticConfPath = target.toString();
 
     }
 
-    public static List<SemanticOperation> getSemanticOperations(TestConfigurationObject testConfigurationObject){
-        List<SemanticOperation> semanticOperations = new ArrayList<>();
+    public static Set<SemanticOperation> getSemanticOperations(TestConfigurationObject testConfigurationObject){
+        Set<SemanticOperation> semanticOperations = new HashSet<>();
 
         for(Operation operation: testConfigurationObject.getTestConfiguration().getOperations()){
-            List<TestParameter> semanticParameters = getSemanticParameters(operation);
+            Set<TestParameter> semanticParameters = getSemanticParameters(operation);
             if(semanticParameters.size() > 0){
                 log.info("Semantic operation {} added to list of semantic operations", operation.getOperationId());
                 semanticOperations.add(new SemanticOperation(operation, semanticParameters));
@@ -164,10 +143,10 @@ public class SemanticInputGenerator {
         return semanticOperations;
     }
 
-    private static List<TestParameter> getSemanticParameters(Operation operation){
-        List<TestParameter> res = operation.getTestParameters().stream()
+    private static Set<TestParameter> getSemanticParameters(Operation operation){
+        Set<TestParameter> res = operation.getTestParameters().stream()
                 .filter(x -> x.getGenerator().getType().equalsIgnoreCase(SEMANTIC_PARAMETER))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
         return res;
     }
