@@ -12,13 +12,13 @@ import it.units.inginf.male.outputs.FinalSolution;
 import javafx.util.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 
 import java.util.*;
 
 import static es.us.isa.restest.configuration.pojos.ParameterValues.getValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
-import static es.us.isa.restest.main.TestGenerationAndExecution.getExperimentName;
-import static es.us.isa.restest.main.TestGenerationAndExecution.getTestConfigurationObject;
+import static es.us.isa.restest.main.TestGenerationAndExecution.*;
 import static es.us.isa.restest.util.FileManager.*;
 
 /**
@@ -134,6 +134,13 @@ public class StatsReportManager {
                     // Delete CSV of successful and failed values of previous iterations after the update with regex
                     deleteFile(parameterValues.getValidCSVPath());
                     deleteFile(parameterValues.getInvalidCSVPath());
+
+                    // Second predicate search using the generated regex
+                    if(secondPredicateSearch){
+                        System.out.println(regex);
+                        System.out.println(parameterValues.getTestParameter());
+                        System.out.println(parameterValues.getOperationId());
+                    }
 
                     // TODO: REMOVE THIS FOR LOOP
                     // Delete the invalid files from the other parameters

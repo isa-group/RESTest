@@ -2,7 +2,6 @@ package es.us.isa.restest.configuration.pojos;
 
 import es.us.isa.restest.util.PropertyManager;
 import javafx.util.Pair;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashSet;

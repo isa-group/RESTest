@@ -49,6 +49,7 @@ public class TestGenerationAndExecution {
 	private static Integer timeDelay; 									// Delay between requests in seconds (-1 for no delay)
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
 	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
+	public static Boolean secondPredicateSearch;
 
 	// For Constraint-based testing only:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
