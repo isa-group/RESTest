@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: 'Bearer ----'
+    Authorization: 'Bearer BQAM3kE7mAb2bqmVB9HlrPQn_szmwh42rO3XtyBgwg5Pn8ocBE8WVvim9b3VSQSVpDMizO0iop4_oCZ9JygFpoUzARU1WBv04vT2UhmRsVhYK9FAEK1ks49d0ql_DeSLbGgWK8sSl76NMStHmC6aTKhhiAzwkkjuzsd6_1nU4H-7pexi5fug9rSgZ069Rd-036bahcjSfy-o1_d4m5k9FvgukXZWLjylypcKa3JiwFJZtOEX7ShPx82sFW5ecoeET4FXSnzCCehDhxA8TQG6obERdOCUblEmsDk'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -536,7 +536,7 @@ testConfiguration:
           objectValues: null
     - name: locale
       in: query
-      weight: 0.5
+      weight: 0
       generator:
         type: RandomInputValue
         genParameters:

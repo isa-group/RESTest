@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: 'Bearer BQAaa3L6vhObzamF8idOvRJ95Jol9pH41Hj8owxsVr5VFdcKFO6q8yHWWtxW_R52b_IWOpIlYRrhzyZj8viwFJnAJz3PgDGT7OeZ21R_k1KnezBsQ9kr7LvtVChSH9i2Fn8cD7J1ntpTnQXJmwsa00qtpmAiKNYznMUZJxXRVxZv6THamfkbS43mE6f__Jr4UoBnAVilLDQuMT5CMNzB7LdXEAdtVy3TeVL1cEw8nfUa2NHVc61SOmST8qPeF0FduNpBVAerP39Kr_sEZTOdtqbN3GWvMrGYkYw'
+    Authorization: 'Bearer BQAajpEL1uIDpY0XNust0RGdBNk0WkdBhillq4wEsIqrIU1iV8us_M2tBEC2RDyklis_ITy1JzobpQubfQ8ReDUhG7_XBi5kiO3mV6lAo8iaLgmiRThk7Y0EDiy1x4QQuM8ZW_RBlPxLwZ62OXH2a3eGG4daZZHdIirWDR_C5_uQSiYRqqQ8mfzGTqsILfhZvyq3XFxxLoirEYF3vHQuWGBQnTOkJzyqdRLSvZ5N4u1IcfeFbqHLsuFDPBgxnEtR9gu6FzQMhH7v7FxCODgdMJRek20eGE9K4NA'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -50,6 +50,10 @@ testConfiguration:
           values:
           - src/main/resources/TestData/Generated/Spotify/GetAlbums_market.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
     expectedResponse: 200
 #  - testPath: "/albums/{id}"
 #    operationId: GetAlbum
@@ -74,6 +78,10 @@ testConfiguration:
 #        - name: csv
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/GetAlbum_market.csv
+#          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
 #          objectValues: null
 #    expectedResponse: 200
 #  - testPath: "/albums/{id}/tracks"
@@ -328,6 +336,10 @@ testConfiguration:
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseCategories_country.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
 #    - name: locale
 #      in: query
 #      weight: 0.5
@@ -337,6 +349,10 @@ testConfiguration:
 #        - name: csv
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseCategories_locale.csv
+#          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
 #          objectValues: null
 #    - name: Accept
 #      in: header
@@ -373,6 +389,10 @@ testConfiguration:
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseCategoriesCategoryId_country.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
 #    - name: locale
 #      in: query
 #      weight: 0.5
@@ -382,6 +402,10 @@ testConfiguration:
 #        - name: csv
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseCategoriesCategoryId_locale.csv
+#          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
 #          objectValues: null
 #    - name: Accept
 #      in: header
@@ -515,6 +539,10 @@ testConfiguration:
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_country.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
 #    - name: locale
 #      in: query
 #      weight: 0.5
@@ -525,6 +553,10 @@ testConfiguration:
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_locale.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
 #    - name: timestamp
 #      in: query
 #      weight: 0.5
@@ -534,6 +566,10 @@ testConfiguration:
 #        - name: csv
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_timestamp.csv
+#          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/timestamp"
 #          objectValues: null
 #    - name: Accept
 #      in: header

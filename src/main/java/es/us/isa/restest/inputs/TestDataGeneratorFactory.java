@@ -159,6 +159,8 @@ public class TestDataGeneratorFactory {
 			case "separator":
 				gen.setSeparator(param.getValues().get(0));
 				break;
+			case "predicates":
+				break;
 			default:
 				throw new IllegalArgumentException("Unexpected parameter for generator RandomInputValue: " + param.getName());
 			}	

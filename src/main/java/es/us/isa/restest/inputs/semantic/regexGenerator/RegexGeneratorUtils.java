@@ -89,7 +89,7 @@ public class RegexGeneratorUtils {
                 if(generator.getType().equals(RANDOM_INPUT_VALUE)){
                     for(GenParameter genParameter: generator.getGenParameters()){
 
-                        if(genParameter.getName().equals("csv")){
+                        if(genParameter.getName().equals("predicates")){
                             // Adding the pair <OperationId, parameterName> to the map
                             Pair<String, TestParameter> operationAndParameter = new Pair(operation.getOperationId(), testParameter);
 

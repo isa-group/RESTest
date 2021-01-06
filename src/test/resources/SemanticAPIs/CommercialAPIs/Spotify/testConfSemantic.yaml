@@ -2,7 +2,8 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
+  headerParams:
+    Authorization: 'Bearer BQAaa3L6vhObzamF8idOvRJ95Jol9pH41Hj8owxsVr5VFdcKFO6q8yHWWtxW_R52b_IWOpIlYRrhzyZj8viwFJnAJz3PgDGT7OeZ21R_k1KnezBsQ9kr7LvtVChSH9i2Fn8cD7J1ntpTnQXJmwsa00qtpmAiKNYznMUZJxXRVxZv6THamfkbS43mE6f__Jr4UoBnAVilLDQuMT5CMNzB7LdXEAdtVy3TeVL1cEw8nfUa2NHVc61SOmST8qPeF0FduNpBVAerP39Kr_sEZTOdtqbN3GWvMrGYkYw'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -15,21 +16,43 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomEnglishWord
+        type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
-          objectValues: null
+          - 382ObEPsp2rxGrnsizN5TX
+          - 1A2GTWGtFfWp7KSQTwWOyo
+          - 2noRn2Aes5aoNVsU6iWThc
+          - 4PgleR09JVnm3zY1fW3XBA
+          - 58ufpQsJ1DS5kq4hhzQDiI
+          - 6J84szYCnMfzEcvIcfWMFL
+          - 4YzNjecIvmLFEby13NOBmj
+          - 21GSy4UKShEpEfrojAEK9U
+          - 0swM8EuQkgYV2knrZ8rFl2
+          - 2B4G3D8pCGzk3ryWVPD6ga
+          - 2AW6HCRfGox94vO7GMQSLD
+          - 5FVNWYM95qgM8Wkzksnszy
+          - 3yaQNz5hglJrlaVJTLcUCb
+          - 6ajdXlPMknejXW5TxqTMr0
+          - 5XWqGM9qDxw3KjQCBgewAV
+          - 4s096NcPZeqXsj8gQ1R1aT
+          - 0T3RVlrWzids265ebYOkDq
+          - 6ixZvq546olo2LumeG66UW
+          - 3qrqWaQBRtiDvKnVgi2Jhk
+          - 6NnxUxgj1FlneEPzSaRflN
     - name: market
       in: query
-      weight: 0.5
+      weight: 1.0
       generator:
         type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Spotify/GetAlbums_market.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
     expectedResponse: 200
   - testPath: "/albums/{id}"
@@ -55,6 +78,10 @@ testConfiguration:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Spotify/GetAlbum_market.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
     expectedResponse: 200
   - testPath: "/albums/{id}/tracks"
@@ -309,6 +336,10 @@ testConfiguration:
           values:
           - src/main/resources/TestData/Generated/Spotify/browseCategories_country.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
     - name: locale
       in: query
       weight: 0.5
@@ -318,6 +349,10 @@ testConfiguration:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Spotify/browseCategories_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
     - name: Accept
       in: header
@@ -354,6 +389,10 @@ testConfiguration:
           values:
           - src/main/resources/TestData/Generated/Spotify/browseCategoriesCategoryId_country.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
     - name: locale
       in: query
       weight: 0.5
@@ -363,6 +402,10 @@ testConfiguration:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Spotify/browseCategoriesCategoryId_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
     - name: Accept
       in: header
@@ -496,6 +539,10 @@ testConfiguration:
           values:
           - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_country.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
     - name: locale
       in: query
       weight: 0.5
@@ -506,6 +553,10 @@ testConfiguration:
           values:
           - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_locale.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
     - name: timestamp
       in: query
       weight: 0.5
@@ -515,6 +566,10 @@ testConfiguration:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_timestamp.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/timestamp"
           objectValues: null
     - name: Accept
       in: header

@@ -26,7 +26,7 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 public class SemanticInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/SkyscannerFlightSearch/skyscanner.properties";
+    private static String propertiesFilePath = "-----";
     private static OpenAPISpecification spec;
     private static String OAISpecPath;
     private static String confPath;
@@ -122,7 +122,7 @@ public class SemanticInputGenerator {
 
         Path path = Paths.get(confPath);
         Path dir = path.getParent();
-        Path fn = path.getFileSystem().getPath("testConfSemantic_wikidata.yaml");
+        Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
         Path target = (dir == null) ? fn : dir.resolve(fn);
 
         semanticConfPath = target.toString();
