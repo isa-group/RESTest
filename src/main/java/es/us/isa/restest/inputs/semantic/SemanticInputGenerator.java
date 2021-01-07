@@ -145,8 +145,12 @@ public class SemanticInputGenerator {
 
     private static Set<TestParameter> getSemanticParameters(Operation operation){
         Set<TestParameter> res = operation.getTestParameters().stream()
-                .filter(x -> x.getGenerator().getType().equalsIgnoreCase(SEMANTIC_PARAMETER))
+                .filter(x-> x.getGenerators().stream().anyMatch(y-> y.getType().equalsIgnoreCase(SEMANTIC_PARAMETER)))
                 .collect(Collectors.toSet());
+
+//        Set<TestParameter> res = operation.getTestParameters().stream()
+//                .filter(x -> x.getGenerator().getType().equalsIgnoreCase(SEMANTIC_PARAMETER))
+//                .collect(Collectors.toSet());     TODO: Delete
 
         return res;
     }

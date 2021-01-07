@@ -12,7 +12,7 @@ public class GenerateSPARQLFilters {
 
     public static String generateSPARQLFilters(TestParameter parameter){
         String res = "";
-        Generator generator = parameter.getGenerator();
+        Generator generator = parameter.getGenerators().stream().filter(x-> x.getType().equals(SEMANTIC_PARAMETER)).findFirst().get();
         List<GenParameter> genParameters = generator.getGenParameters();
 
         for(GenParameter genParameter: genParameters){

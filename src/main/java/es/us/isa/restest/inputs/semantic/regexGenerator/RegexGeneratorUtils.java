@@ -82,18 +82,18 @@ public class RegexGeneratorUtils {
         Map<Pair<String, TestParameter>, Set<String>> res = new HashMap<>();
 
         for(Operation operation: operations){
-            // TODO: Modify (search for parameters with the "predicate" property instead of csv)
             // Adding parameters that use a csv to the maps
             for(TestParameter testParameter: operation.getTestParameters()){
-                Generator generator = testParameter.getGenerator();
-                if(generator.getType().equals(RANDOM_INPUT_VALUE)){
-                    for(GenParameter genParameter: generator.getGenParameters()){
+                List<Generator> generatorList = testParameter.getGenerators();
+                for(Generator generator: generatorList){
+                    if(generator.getType().equals(RANDOM_INPUT_VALUE)){
+                        for(GenParameter genParameter: generator.getGenParameters()){
 
-                        if(genParameter.getName().equals("predicates")){
-                            // Adding the pair <OperationId, parameterName> to the map
-                            Pair<String, TestParameter> operationAndParameter = new Pair(operation.getOperationId(), testParameter);
-
-                            res.put(operationAndParameter, new HashSet<>());
+                            if(genParameter.getName().equals("predicates")){
+                                // Adding the pair <OperationId, parameterName> to the map
+                                Pair<String, TestParameter> operationAndParameter = new Pair(operation.getOperationId(), testParameter);
+                                res.put(operationAndParameter, new HashSet<>());
+                            }
                         }
                     }
                 }
@@ -103,15 +103,22 @@ public class RegexGeneratorUtils {
         return res;
     }
 
+    public static List<String> getCsvPaths(TestParameter testParameter){
+        List<String> res = new ArrayList<>();
+
+        for(Generator generator: testParameter.getGenerators()){
+            if(generator.getType().equals(RANDOM_INPUT_VALUE) && generator.getGenParameters().stream().anyMatch(x->x.getName().equals("predicates"))){
+                res = generator.getGenParameters().stream().filter(x->x.getName().equals("csv"))
+                        .flatMap(x->x.getValues().stream()).collect(Collectors.toList());
+            }
+        }
+
+        return res;
+    }
+
     public static void updateCsvWithRegex(ParameterValues parameterValues, String regex){
         Pattern pattern = Pattern.compile(regex);
-        // Obtain csv paths of test parameter (a test parameter can have more than one csv file)
-        List<String> csvPaths = parameterValues.getTestParameter()
-                .getGenerator().getGenParameters()
-                .stream().filter(x->x.getName().equals("csv"))
-                .flatMap(x-> x.getValues().stream())
-                .collect(Collectors.toList());
-
+        List<String> csvPaths = getCsvPaths(parameterValues.getTestParameter());
 
         // Filter CSVs by regex
         for(String csvPath: csvPaths){

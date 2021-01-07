@@ -1,12 +1,14 @@
 package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.*;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
 
 public class TestConfUpdate {
 
@@ -31,13 +33,20 @@ public class TestConfUpdate {
         // GENERATOR
         Generator newGenerator = new Generator();
         newGenerator.setGenParameters(genParameterList);
+        newGenerator.setValid(true);
         newGenerator.setType(RANDOM_INPUT_VALUE);
 
-        newConf.getTestConfiguration().getOperations()
+        TestParameter testParameter = newConf.getTestConfiguration().getOperations()
                 .get(opIndex)
                 .getTestParameters().stream()
-                .filter(x ->x.equals(semanticParameter.getTestParameter())).findFirst().get()
-                .setGenerator(newGenerator);
+                .filter(x ->x.equals(semanticParameter.getTestParameter()))
+                .findFirst().get();
+        List<Generator> generators = testParameter.getGenerators();
+
+        generators.removeIf(x->x.getType().equalsIgnoreCase(SEMANTIC_PARAMETER));
+        generators.add(newGenerator);
+
+        testParameter.setGenerators(generators);
 
     }
 }
