@@ -5,8 +5,8 @@ axios.defaults.baseURL = 'https://api.stripe.com'
 axios.defaults.headers.common['Authorization'] = JSON.parse(fs.readFileSync('../../src/test/resources/auth/Stripe/headers.json')).Authorization[0]
 
 const timer = 35
-const limit = 200
-const service = 'products'
+const limit = 10
+const service = 'coupons'
 
 for (let i=0; i<limit; i++) {
     setTimeout(
@@ -29,6 +29,6 @@ for (let i=0; i<limit; i++) {
                 });
             })
         },
-        timer*limit*i
+        timer*i*100*2
     )
 }
