@@ -2,12 +2,14 @@
 package es.us.isa.restest.configuration.pojos;
 
 
+import java.util.List;
+
 public class TestParameter {
 
     private String name;
     private String in;
     private Float weight;
-    private Generator generator;
+    private List<Generator> generators;
 
     public String getName() {
         return name;
@@ -33,12 +35,12 @@ public class TestParameter {
         this.weight = weight;
     }
 
-    public Generator getGenerator() {
-        return generator;
+    public List<Generator> getGenerators() {
+        return generators;
     }
 
-    public void setGenerator(Generator generator) {
-        this.generator = generator;
+    public void setGenerators(List<Generator> generators) {
+        this.generators = generators;
     }
 
 }

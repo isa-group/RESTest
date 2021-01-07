@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Generator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,7 +33,7 @@ public class ObjectPerturbatorTest {
     @Test
     public void testConstructorWithoutArguments() {
         ObjectPerturbator objectPerturbator = (ObjectPerturbator) TestDataGeneratorFactory.createTestDataGenerator(generator);
-        assertNull("The originalObject should be null", objectPerturbator.getOriginalObject());
+        MatcherAssert.assertThat(objectPerturbator.getOriginalObjects(), Matchers.empty());
     }
 
     @Test
@@ -40,8 +42,8 @@ public class ObjectPerturbatorTest {
 
         ObjectPerturbator objectPerturbator = new ObjectPerturbator(originalObject);
 
-        assertNotNull("The originalObject should not be null", objectPerturbator.getOriginalObject());
-        assertEquals("The original object should be '{}'", "{}", objectPerturbator.getOriginalStringObject());
+        assertNotNull("The originalObjects list should not be null", objectPerturbator.getOriginalObjects());
+        assertEquals("The original object should be '{}'", "{}", objectPerturbator.getOriginalStringObjects().get(0));
     }
 
     @Test
@@ -60,8 +62,8 @@ public class ObjectPerturbatorTest {
 
         ObjectPerturbator objectPerturbator = (ObjectPerturbator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 
-        assertNotNull("The originalObject should not be null", objectPerturbator.getOriginalObject());
-        assertEquals("The original object should be '{}'", "{}", objectPerturbator.getOriginalStringObject());
+        assertNotNull("The originalObjects list should not be null", objectPerturbator.getOriginalObjects());
+        assertEquals("The original object should be '{}'", "{}", objectPerturbator.getOriginalStringObjects().get(0));
     }
 
     @Test
@@ -70,8 +72,19 @@ public class ObjectPerturbatorTest {
 
         ObjectPerturbator objectPerturbator = new ObjectPerturbator(originalObject);
 
-        assertNotNull("The originalObject should not be null", objectPerturbator.getOriginalObject());
-        assertEquals("The original object should be '{}'", "{}", objectPerturbator.getOriginalStringObject());
+        assertNotNull("The originalObjects list should not be null", objectPerturbator.getOriginalObjects());
+        assertEquals("The original object should be '{}'", "{}", objectPerturbator.getOriginalStringObjects().get(0));
+    }
+
+    @Test
+    public void testConstructorWithMultipleArguments() {
+        String[] originalObjects = {"{}", "[]", "{\"prop1\": \"val1\", \"prop2\": [1, true, {}]}"};
+        ObjectPerturbator objectPerturbator = new ObjectPerturbator(Arrays.asList(originalObjects));
+        assertNotNull("The originalObjects list should not be null", objectPerturbator.getOriginalObjects());
+        for(String object : objectPerturbator.getOriginalStringObjects()) {
+            boolean b = object.equals("{}") || object.equals("[]") || object.equals("{\"prop1\":\"val1\",\"prop2\":[1,true,{}]}");
+            assertTrue("The original objects should be '{}', '[]' and '{\"prop1\": \"val1\", \"prop2\": [1, true, {}]}'", b);
+        }
     }
 
     @Test
@@ -85,8 +98,8 @@ public class ObjectPerturbatorTest {
         generator.getGenParameters().add(stringObject);
 
         ObjectPerturbator objectPerturbator = (ObjectPerturbator) TestDataGeneratorFactory.createTestDataGenerator(generator);
-        assertNotNull("The originalObject should not be null", objectPerturbator.getOriginalObject());
-        assertEquals("The original object should be '{}'", "{}", objectPerturbator.getOriginalStringObject());
+        assertNotNull("The originalObjects list should not be null", objectPerturbator.getOriginalObjects());
+        assertEquals("The original object should be '{}'", "{}", objectPerturbator.getOriginalStringObjects().get(0));
     }
 
     @Test
@@ -103,8 +116,8 @@ public class ObjectPerturbatorTest {
         generator.getGenParameters().add(stringObject);
 
         ObjectPerturbator objectPerturbator = (ObjectPerturbator) TestDataGeneratorFactory.createTestDataGenerator(generator);
-        assertNotNull("The originalObject should not be null", objectPerturbator.getOriginalObject());
-        assertEquals("The original object should be '" + jsonObject.toString() + "'", jsonObject.toString(), objectPerturbator.getOriginalStringObject());
+        assertNotNull("The originalObjects list should not be null", objectPerturbator.getOriginalObjects());
+        assertEquals("The original object should be '" + jsonObject.toString() + "'", jsonObject.toString(), objectPerturbator.getOriginalStringObjects().get(0));
     }
 
 
@@ -121,36 +134,36 @@ public class ObjectPerturbatorTest {
 
         ObjectPerturbator objectPerturbator = (ObjectPerturbator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
-        assertNotEquals(objectPerturbator.getOriginalObject(), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
+        assertNotEquals(objectPerturbator.getOriginalObjects().get(0), objectPerturbator.nextValue());
     }
 
     @Test
@@ -165,35 +178,35 @@ public class ObjectPerturbatorTest {
 
         ObjectPerturbator objectPerturbator = (ObjectPerturbator) TestDataGeneratorFactory.createTestDataGenerator(generator);
 
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
-        assertNotEquals(objectPerturbator.getOriginalStringObject(), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
+        assertNotEquals(objectPerturbator.getOriginalStringObjects().get(0), objectPerturbator.nextValueAsString());
     }
 }

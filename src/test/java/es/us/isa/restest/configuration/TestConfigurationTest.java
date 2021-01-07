@@ -19,7 +19,7 @@ public class TestConfigurationTest {
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 		String path = "src/test/resources/Folder/";
 		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(path + "fullConf.yaml", spec);
-		assertEquals("Wrong deseralization", 3, conf.getTestConfiguration().getOperations().get(0).getTestParameters().get(0).getGenerator().getGenParameters().size());
+		assertEquals("Wrong deseralization", 3, conf.getTestConfiguration().getOperations().get(0).getTestParameters().get(0).getGenerators().get(0).getGenParameters().size());
 		//System.out.println(TestConfigurationIO.toString(conf)); // Print to String
 		TestConfigurationIO.toFile(conf, path + "testConf.yaml");
 		assertTrue(checkIfExists("src/test/resources/Folder/testConf.yaml"));

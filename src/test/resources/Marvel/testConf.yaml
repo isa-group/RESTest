@@ -14,7 +14,8 @@ testConfiguration:
         - name: name
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -24,7 +25,8 @@ testConfiguration:
         - name: nameStartsWith
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomString
             genParameters:
               - name: maxLength
@@ -34,7 +36,8 @@ testConfiguration:
         - name: modifiedSince
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomDate
             genParameters:
               - name: startDate
@@ -52,7 +55,8 @@ testConfiguration:
         - name: comics
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -69,7 +73,8 @@ testConfiguration:
         - name: series
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -86,7 +91,8 @@ testConfiguration:
         - name: events
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -103,7 +109,8 @@ testConfiguration:
         - name: stories
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -120,7 +127,8 @@ testConfiguration:
         - name: orderBy
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -141,7 +149,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -159,7 +168,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -182,7 +192,8 @@ testConfiguration:
         - name: characterId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -196,7 +207,8 @@ testConfiguration:
         - name: characterId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -205,7 +217,8 @@ testConfiguration:
         - name: format
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -222,7 +235,8 @@ testConfiguration:
         - name: formatType
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -233,13 +247,15 @@ testConfiguration:
         - name: noVariants
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomBoolean
             genParameters: []
         - name: dateDescriptor
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -252,7 +268,8 @@ testConfiguration:
         - name: dateRange
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomRegExp
             genParameters:
               - name: regExp
@@ -261,7 +278,8 @@ testConfiguration:
         - name: title
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -271,7 +289,8 @@ testConfiguration:
         - name: titleStartsWith
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomString
             genParameters:
               - name: maxLength
@@ -281,7 +300,8 @@ testConfiguration:
         - name: startYear
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -299,7 +319,8 @@ testConfiguration:
         - name: issueNumber
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -317,7 +338,8 @@ testConfiguration:
         - name: diamondCode
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomString
             genParameters:
               - name: minLength
@@ -335,7 +357,8 @@ testConfiguration:
         - name: digitalId
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomRegExp
             genParameters:
               - name: regExp
@@ -344,7 +367,8 @@ testConfiguration:
         - name: upc
           in: query
           weight: 0.05
-          generator:
+          generators:
+          - valid: true
             type: RandomRegExp
             genParameters:
               - name: regExp
@@ -354,7 +378,8 @@ testConfiguration:
         - name: isbn
           in: query
           weight: 0.05
-          generator:
+          generators:
+          - valid: true
             type: RandomRegExp
             genParameters:
               - name: regExp
@@ -364,7 +389,8 @@ testConfiguration:
         - name: ean
           in: query
           weight: 0.05
-          generator:
+          generators:
+          - valid: true
             type: RandomRegExp
             genParameters:
               - name: regExp
@@ -374,7 +400,8 @@ testConfiguration:
         - name: issn
           in: query
           weight: 0.05
-          generator:
+          generators:
+          - valid: true
             type: RandomRegExp
             genParameters:
               - name: regExp
@@ -384,13 +411,15 @@ testConfiguration:
         - name: hasDigitalIssue
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomBoolean
             genParameters: []
         - name: modifiedSince
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomDate
             genParameters:
               - name: startDate
@@ -408,7 +437,8 @@ testConfiguration:
         - name: creators
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -425,7 +455,8 @@ testConfiguration:
         - name: series
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -442,7 +473,8 @@ testConfiguration:
         - name: events
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -459,7 +491,8 @@ testConfiguration:
         - name: stories
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -476,7 +509,8 @@ testConfiguration:
         - name: sharedAppearances
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -494,7 +528,8 @@ testConfiguration:
         - name: collaborators
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -511,7 +546,8 @@ testConfiguration:
         - name: orderBy
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -530,7 +566,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -548,7 +585,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -571,7 +609,8 @@ testConfiguration:
         - name: characterId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -580,7 +619,8 @@ testConfiguration:
         - name: name
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -590,7 +630,8 @@ testConfiguration:
         - name: nameStartsWith
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomString
             genParameters:
               - name: maxLength
@@ -600,7 +641,8 @@ testConfiguration:
         - name: modifiedSince
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomDate
             genParameters:
               - name: startDate
@@ -618,7 +660,8 @@ testConfiguration:
         - name: creators
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -635,7 +678,8 @@ testConfiguration:
         - name: series
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -652,7 +696,8 @@ testConfiguration:
         - name: comics
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -669,7 +714,8 @@ testConfiguration:
         - name: stories
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -686,7 +732,8 @@ testConfiguration:
         - name: orderBy
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -709,7 +756,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -727,7 +775,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -750,7 +799,8 @@ testConfiguration:
         - name: characterId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -759,7 +809,8 @@ testConfiguration:
         - name: title
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -769,7 +820,8 @@ testConfiguration:
         - name: titleStartsWith
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomString
             genParameters:
               - name: maxLength
@@ -779,7 +831,8 @@ testConfiguration:
         - name: startYear
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -797,7 +850,8 @@ testConfiguration:
         - name: modifiedSince
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomDate
             genParameters:
               - name: startDate
@@ -815,7 +869,8 @@ testConfiguration:
         - name: comics
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -832,7 +887,8 @@ testConfiguration:
         - name: stories
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -849,7 +905,8 @@ testConfiguration:
         - name: events
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -866,7 +923,8 @@ testConfiguration:
         - name: creators
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -883,7 +941,8 @@ testConfiguration:
         - name: seriesType
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -896,7 +955,8 @@ testConfiguration:
         - name: contains
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -913,7 +973,8 @@ testConfiguration:
         - name: orderBy
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -936,7 +997,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -954,7 +1016,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -977,7 +1040,8 @@ testConfiguration:
         - name: characterId
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -986,7 +1050,8 @@ testConfiguration:
         - name: modifiedSince
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomDate
             genParameters:
               - name: startDate
@@ -1004,7 +1069,8 @@ testConfiguration:
         - name: comics
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -1021,7 +1087,8 @@ testConfiguration:
         - name: series
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -1038,7 +1105,8 @@ testConfiguration:
         - name: events
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -1055,7 +1123,8 @@ testConfiguration:
         - name: creators
           in: query
           weight: 0.1
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -1072,7 +1141,8 @@ testConfiguration:
         - name: orderBy
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -1085,7 +1155,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -1103,7 +1174,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type

@@ -14,7 +14,8 @@ testConfiguration:
       - name: channelId
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -33,7 +34,8 @@ testConfiguration:
       - name: channelType
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -44,7 +46,8 @@ testConfiguration:
       - name: eventType
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -56,25 +59,29 @@ testConfiguration:
       - name: forContentOwner
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: forDeveloper
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: forMine
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: location
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -93,7 +100,8 @@ testConfiguration:
       - name: locationRadius
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp
@@ -103,7 +111,8 @@ testConfiguration:
       - name: maxResults
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -121,7 +130,8 @@ testConfiguration:
       - name: onBehalfOfContentOwner
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -140,7 +150,8 @@ testConfiguration:
       - name: order
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -155,7 +166,8 @@ testConfiguration:
       - name: pageToken
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -165,7 +177,8 @@ testConfiguration:
       - name: part
         in: query
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -175,7 +188,8 @@ testConfiguration:
       - name: publishedAfter
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomDate
           genParameters:
           - name: startDate
@@ -192,7 +206,8 @@ testConfiguration:
       - name: publishedBefore
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomDate
           genParameters:
           - name: startDate
@@ -209,7 +224,8 @@ testConfiguration:
       - name: q
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -219,7 +235,8 @@ testConfiguration:
       - name: regionCode
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -236,7 +253,8 @@ testConfiguration:
       - name: relatedToVideoId
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -255,7 +273,8 @@ testConfiguration:
       - name: relevanceLanguage
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -272,7 +291,8 @@ testConfiguration:
       - name: safeSearch
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -284,7 +304,8 @@ testConfiguration:
       - name: topicId
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -294,7 +315,8 @@ testConfiguration:
       - name: type
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -310,7 +332,8 @@ testConfiguration:
       - name: videoCaption
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -322,7 +345,8 @@ testConfiguration:
       - name: videoCategoryId
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -331,7 +355,8 @@ testConfiguration:
       - name: videoDefinition
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -343,7 +368,8 @@ testConfiguration:
       - name: videoDimension
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -355,7 +381,8 @@ testConfiguration:
       - name: videoDuration
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -368,7 +395,8 @@ testConfiguration:
       - name: videoEmbeddable
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -379,7 +407,8 @@ testConfiguration:
       - name: videoLicense
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -391,7 +420,8 @@ testConfiguration:
       - name: videoSyndicated
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -402,7 +432,8 @@ testConfiguration:
       - name: videoType
         in: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values

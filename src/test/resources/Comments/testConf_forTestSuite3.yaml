@@ -13,7 +13,8 @@ testConfiguration:
     - name: body
       in: body
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: ObjectPerturbator
         genParameters:
         - name: stringObject
@@ -28,7 +29,8 @@ testConfiguration:
     - name: body
       in: body
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: ObjectPerturbator
         genParameters:
         - name: object
@@ -47,7 +49,8 @@ testConfiguration:
     - name: body
       in: body
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: ObjectPerturbator
         genParameters:
         - name: file

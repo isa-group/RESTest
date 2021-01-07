@@ -13,7 +13,8 @@ testConfiguration:
     - name: chart
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -23,7 +24,8 @@ testConfiguration:
     - name: hl
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -37,7 +39,8 @@ testConfiguration:
     - name: id
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -56,7 +59,8 @@ testConfiguration:
     - name: maxHeight
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -74,7 +78,8 @@ testConfiguration:
     - name: maxResults
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -92,7 +97,8 @@ testConfiguration:
     - name: maxWidth
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -110,7 +116,8 @@ testConfiguration:
     - name: myRating
       in: query
       weight: 0
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -121,7 +128,8 @@ testConfiguration:
     - name: onBehalfOfContentOwner
       in: query
       weight: 0
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -131,7 +139,8 @@ testConfiguration:
     - name: pageToken
       in: query
       weight: 0
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -141,7 +150,8 @@ testConfiguration:
     - name: part
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: minValues
@@ -169,7 +179,8 @@ testConfiguration:
     - name: regionCode
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -186,7 +197,8 @@ testConfiguration:
     - name: videoCategoryId
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values

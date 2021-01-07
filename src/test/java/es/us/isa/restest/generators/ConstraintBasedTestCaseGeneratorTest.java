@@ -46,13 +46,13 @@ public class ConstraintBasedTestCaseGeneratorTest {
         assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
         
 		// Valid test cases
-		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfTestCases, generator.getnNominal());
 		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
 		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -89,15 +89,203 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
 		
 		// Valid test cases
-		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
 		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
 		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
 		
 		// Invalid test cases
-		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
 		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
 		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
     }
+
+	@Test
+	public void memesTestCaseGeneratorWithInvalidGeneratorWithoutFaults() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Memes/swagger_forTestSuite.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Memes/testConf_forTestSuite.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 5;
+
+		// Faulty ratio
+		float faultyRatio = 0f;
+
+		// Create generator and filter
+		ConstraintBasedTestCaseGenerator generator = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+
+
+		// Expected results
+		int expectedNumberOfTestCases = 10;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+	}
+
+	@Test
+	public void memesTestCaseGeneratorWithInvalidGeneratorWithFaultsParameters() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Memes/swagger_forTestSuite.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Memes/testConf_forTestSuite.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 5;
+
+		// Faulty ratio
+		float faultyRatio = 1f;
+		float faultyDependencyRatio = 0f;
+
+		// Create generator and filter
+		ConstraintBasedTestCaseGenerator generator = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+		generator.setFaultyDependencyRatio(faultyDependencyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+
+
+		// Expected results
+		int expectedNumberOfTestCases = 10;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+
+		for (TestCase tc: testCases)
+			if (tc.getPath().equals("/gallery/{id}"))
+				assertEquals("Incorrect parameter value", "invalid_value", tc.getPathParameters().get("id"));
+	}
+
+	@Test
+	public void memesTestCaseGeneratorWithInvalidGeneratorWithFaultsDependencies() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Memes/swagger_forTestSuite.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Memes/testConf_forTestSuite.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 5;
+
+		// Faulty ratio
+		float faultyRatio = 1f;
+		float faultyDependencyRatio = 1f;
+
+		// Create generator and filter
+		ConstraintBasedTestCaseGenerator generator = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+		generator.setFaultyDependencyRatio(faultyDependencyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+
+
+		// Expected results
+		int expectedNumberOfTestCases = 10;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec)); // According to OAS, all valid
+
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", 0, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+
+		for (TestCase tc: testCases)
+			if (tc.getPath().equals("/gallery/{id}"))
+				assertEquals("Incorrect parameter value", "invalid_value", tc.getPathParameters().get("id"));
+	}
+
+	@Test
+	public void memesTestCaseGeneratorWithInvalidGeneratorWithSomeFaultsParametersDependencies() throws RESTestException {
+		// Load specification
+		String OAISpecPath = "src/test/resources/Memes/swagger_forTestSuite.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO
+				.loadConfiguration("src/test/resources/Memes/testConf_forTestSuite.yaml", spec);
+
+		// Set number of test cases to be generated on each path, on each operation
+		// (HTTP method)
+		int numTestCases = 5;
+
+		// Faulty ratio
+		float faultyRatio = 0.8f;
+		float faultyDependencyRatio = 0.5f;
+
+		// Create generator and filter
+		ConstraintBasedTestCaseGenerator generator = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+		generator.setFaultyDependencyRatio(faultyDependencyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+
+
+		// Expected results
+		int expectedNumberOfTestCases = 10;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", 8, GeneratorTestHelper.numberOfValidTestCases(testCases, spec)); // 2 valid, 4 with invalid data gen, and 2 violating deps
+
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", 2, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+
+		for (TestCase tc: testCases)
+			if (tc.getPath().equals("/gallery/{id}") && tc.getFaulty())
+				assertEquals("Incorrect parameter value", "invalid_value", tc.getPathParameters().get("id"));
+	}
     
     
     // SPOTIFY
@@ -141,12 +329,12 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
 		
 		// Valid test cases
-		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
 		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
 		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
 		
 		// Invalid test cases
-		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
 		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
 		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
 
@@ -191,11 +379,11 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
 		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
-		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfTestCases, generator.getnNominal());
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -240,18 +428,18 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
 		
 		// Valid test cases
-		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
 		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
 		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCasesAccordingToValidator, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
 		
 		// Invalid test cases
-		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
 		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
 		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases - expectedNumberOfInvalidTestCasesDueToDependencies, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase());
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -292,18 +480,18 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
 		
 		// Valid test cases
-		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
 		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
 		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
 		
 		// Invalid test cases
-		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
 		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
 		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest", "restassured", basePath);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest", "restassured", basePath, true);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}
@@ -341,19 +529,19 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
 		
 		// Valid test cases
-		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
 		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
 		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
 		
 		// Invalid test cases
-		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
 		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
 		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
 
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath, true);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}
@@ -402,12 +590,12 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
 		
 		// Valid test cases
-		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", generator.getnNominal(),testCases.stream().filter(c -> !c.getFaulty()).count());
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
 		assertEquals("Incorrect number of valid test cases (according to the attribute faulty)", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
 		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
 		
 		// Invalid test cases
-		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", generator.getnFaulty(),testCases.stream().filter(TestCase::getFaulty).count());
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
 		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
 		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
 		assertEquals("Incorrect number of faulty test cases generated due to dependency violations", expectedNumberOfInvalidTestCasesDueToDependencies, generator.getnFaultyTestDueToDependencyViolations());
@@ -415,7 +603,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath, false);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}

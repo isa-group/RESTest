@@ -13,7 +13,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -30,7 +31,8 @@ testConfiguration:
             objectValues: null
       - name: trim_user
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       paramDependencies: null
@@ -42,32 +44,38 @@ testConfiguration:
       testParameters:
       - name: trim_user
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: include_my_retweet
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: include_entities
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: include_ext_alt_text
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: include_card_uri
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -91,7 +99,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -108,27 +117,32 @@ testConfiguration:
             objectValues: null
       - name: include_entities
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: trim_user
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: map
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: include_ext_alt_text
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: include_card_uri
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       paramDependencies: null
@@ -140,7 +154,8 @@ testConfiguration:
       testParameters:
       - name: status
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -149,7 +164,8 @@ testConfiguration:
             objectValues: null
       - name: in_reply_to_status_id
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -166,12 +182,14 @@ testConfiguration:
             objectValues: null
       - name: auto_populate_reply_metadata
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: exclude_reply_user_ids
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -188,7 +206,8 @@ testConfiguration:
             objectValues: null
       - name: attachment_url
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp
@@ -197,7 +216,8 @@ testConfiguration:
             objectValues: null
       - name: media_ids
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -214,12 +234,14 @@ testConfiguration:
             objectValues: null
       - name: possibly_sensitive
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: lat
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -236,7 +258,8 @@ testConfiguration:
             objectValues: null
       - name: long
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -253,7 +276,8 @@ testConfiguration:
             objectValues: null
       - name: place_id
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: regExp
@@ -262,7 +286,8 @@ testConfiguration:
             objectValues: null
       - name: display_coordinates
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -273,22 +298,26 @@ testConfiguration:
             objectValues: null
       - name: trim_user
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: enable_dmcommands
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: fail_dmcommands
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: card_uri
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp

@@ -14,13 +14,14 @@ testConfiguration:
     - name: term
       in: path
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/article/{term}"
     operationId: Article_Put
@@ -29,24 +30,26 @@ testConfiguration:
     - name: term
       in: path
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: body
       in: body
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - value 1
           - value 2
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/grocerylist/item/{guid}"
     operationId: GroceryList_DeleteItemByGuid
@@ -55,13 +58,14 @@ testConfiguration:
     - name: guid
       in: path
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/recipe/review/{reviewId}/replies"
     operationId: Review_GetReplies
@@ -70,18 +74,19 @@ testConfiguration:
     - name: reviewId
       in: path
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: pg
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -95,11 +100,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: rpp
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -113,6 +119,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/recipe/review/{reviewId}/replies"
     operationId: Review_PostReply
@@ -121,22 +128,24 @@ testConfiguration:
     - name: reviewId
       in: path
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: body
       in: body
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - value 1
           - value 2
           objectValues: null
+        valid: true
     expectedResponse: 200

@@ -14,13 +14,15 @@ testConfiguration:
     - name: active
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomBoolean
         genParameters: []
     - name: attributes[]
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomString
         genParameters:
           - name: minLength
@@ -35,7 +37,8 @@ testConfiguration:
     - name: caption
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -45,7 +48,8 @@ testConfiguration:
     - name: deactivate_on[]
       in: formData
       weight: 0
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -55,7 +59,8 @@ testConfiguration:
     - name: description
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -65,7 +70,8 @@ testConfiguration:
     - name: expand[]
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -75,7 +81,8 @@ testConfiguration:
     - name: id
       in: formData
       weight: 0
-      generator:
+      generators:
+      - valid: true
         type: RandomString
         genParameters:
         - name: minLength
@@ -90,7 +97,8 @@ testConfiguration:
     - name: images[]
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -100,7 +108,8 @@ testConfiguration:
     - name: name
       in: formData
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -110,7 +119,8 @@ testConfiguration:
     - name: package_dimensions[height]
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomRegExp
         genParameters:
           - name: regExp
@@ -119,7 +129,8 @@ testConfiguration:
     - name: package_dimensions[length]
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomRegExp
         genParameters:
           - name: regExp
@@ -128,7 +139,8 @@ testConfiguration:
     - name: package_dimensions[weight]
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomRegExp
         genParameters:
           - name: regExp
@@ -137,7 +149,8 @@ testConfiguration:
     - name: package_dimensions[width]
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomRegExp
         genParameters:
           - name: regExp
@@ -146,13 +159,15 @@ testConfiguration:
     - name: shippable
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomBoolean
         genParameters: []
     - name: statement_descriptor
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomString
         genParameters:
           - name: minLength
@@ -167,7 +182,8 @@ testConfiguration:
     - name: type
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -178,7 +194,8 @@ testConfiguration:
     - name: unit_label
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomString
         genParameters:
         - name: minLength
@@ -196,7 +213,8 @@ testConfiguration:
     - name: url
       in: formData
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords

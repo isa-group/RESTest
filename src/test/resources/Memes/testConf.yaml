@@ -13,12 +13,14 @@ testConfiguration:
       testParameters:
       - name: reverse
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: upperlimit
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -35,7 +37,8 @@ testConfiguration:
             objectValues: null
       - name: lowerlimit
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -52,7 +55,8 @@ testConfiguration:
             objectValues: null
       - name: category
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -70,7 +74,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomString
           genParameters:
           - name: minLength
@@ -84,7 +89,8 @@ testConfiguration:
             - true
       - name: rarity
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -106,7 +112,8 @@ testConfiguration:
       testParameters:
       - name: urlString
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp
@@ -127,7 +134,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -147,7 +155,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -169,7 +178,8 @@ testConfiguration:
       testParameters:
       - name: urlString
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp

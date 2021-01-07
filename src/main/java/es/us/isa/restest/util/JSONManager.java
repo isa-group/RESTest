@@ -8,10 +8,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.FileManager.readFile;
 
 public class JSONManager {
+
+    private static final Logger logger = LogManager.getLogger(JSONManager.class.getName());
 
     public static List<Object> readMultipleJSONs(List<String> jsonPaths) {
         List<Object> values = new ArrayList<Object>();
@@ -34,8 +38,8 @@ public class JSONManager {
             ObjectMapper objectMapper = new ObjectMapper();
             jsonData = objectMapper.readTree(content);
         } catch (IOException ex) {
-            System.err.println("Error parsing JSON file: " + jsonPath + ". Message: " + ex.getMessage());
-            ex.printStackTrace();
+            logger.error("Error parsing JSON file: {}", jsonPath);
+            logger.error("Exception: ", ex);
         }
         return jsonData;
     }

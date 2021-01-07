@@ -1,5 +1,8 @@
 package es.us.isa.restest.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -18,7 +21,8 @@ import javax.tools.ToolProvider;
  */
 public class ClassLoader {
 
-	
+	private static final Logger logger = LogManager.getLogger(ClassLoader.class.getName());
+
 	public static Class<?> loadClass(String filePath, String className) {
 		File sourceFile = new File(filePath);
 		Class<?> loadedClass= null;
@@ -37,11 +41,11 @@ public class ClassLoader {
 		 loadedClass = loadClass(parentDirectory, className);
 
 		} catch (IOException e) {
-			System.err.println("Error loading class: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error loading class");
+			logger.error("Exception: ", e);
 		} catch (NullPointerException e) {
-			System.err.println("Error loading class. Make sure JDK is used: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error loading class. Make sure JDK is used");
+			logger.error("Exception: ", e);
 		}
 		
 		return loadedClass;
@@ -52,11 +56,11 @@ public class ClassLoader {
 		try(URLClassLoader classLoader = URLClassLoader.newInstance(new URL[] { parentDirectory.toURI().toURL() })) {
 			loadedClass = classLoader.loadClass(className);
 		} catch (IOException e) {
-			System.err.println("Error loading class: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error loading class");
+			logger.error("Exception: ", e);
 		} catch (ClassNotFoundException e) {
-			System.err.println("Class not found: " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Class not found");
+			logger.error("Exception: ", e);
 		}
 
 		return loadedClass;

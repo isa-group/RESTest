@@ -14,7 +14,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -29,7 +30,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -49,7 +51,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -65,7 +68,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -81,7 +85,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -96,7 +101,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -116,7 +122,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -133,7 +140,8 @@ testConfiguration:
         - name: body
           in: body
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values

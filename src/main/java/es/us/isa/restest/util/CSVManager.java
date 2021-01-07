@@ -35,8 +35,8 @@ public class CSVManager {
 			    values.add(record.get(0));
 
 		}catch (IOException ex) {
-			System.err.println("Error parsing CSV file: " + path + ". Message: " + ex.getMessage());
-			ex.printStackTrace();
+			logger.error("Error parsing CSV file: {}", path);
+			logger.error("Exception: ", ex);
 		}
 		
 		return values;
@@ -63,8 +63,8 @@ public class CSVManager {
 				rows.add(currentRow);
 			}
 		} catch (IOException ex) {
-			System.err.println("Error parsing CSV file: " + path + ". Message: " + ex.getMessage());
-			ex.printStackTrace();
+			logger.error("Error parsing CSV file: {}", path);
+			logger.error("Exception: ", ex);
 		}
 
 		return rows;
@@ -112,7 +112,7 @@ public class CSVManager {
 			oCsvFile.write(row.getBytes());
 		} catch (IOException e) {
 			logger.error("The line could not be written to the CSV: {}", path);
-			e.printStackTrace();
+			logger.error("Exception: ", e);
 		}
 
 	}

@@ -30,7 +30,7 @@ public class RESTestRunnerTest {
         createDir("src/generation/java/runnerTest");
 
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter("src/test/resources/YouTube/swagger_betty.yaml", "src/generation/java/runnerTest", "RunnerTest", "runnerTest", basePath);
+        RESTAssuredWriter writer = new RESTAssuredWriter("src/test/resources/YouTube/swagger_betty.yaml", "src/generation/java/runnerTest", "RunnerTest", "runnerTest", basePath, false);
         writer.setLogging(true);
         writer.setAllureReport(true);
         writer.setEnableStats(true);
@@ -59,7 +59,9 @@ public class RESTestRunnerTest {
         StatsReportManager statsReportManager = new StatsReportManager(testDataDir, coverageDataDir);
         statsReportManager.setCoverageMeter(new CoverageMeter(new CoverageGatherer(spec)));
 
-        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest",false, generator, writer, arm, statsReportManager);
+
+        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", generator, writer, arm, statsReportManager);
+        runner.setExecuteTestCases(true);
 
 
         runner.run();

@@ -12,7 +12,8 @@ testConfiguration:
       testParameters:
       - name: offset
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -29,7 +30,8 @@ testConfiguration:
             objectValues: null
       - name: limit
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -53,7 +55,8 @@ testConfiguration:
       testParameters:
       - name: begins_with
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -62,7 +65,8 @@ testConfiguration:
             objectValues: null
       - name: contains
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -71,7 +75,8 @@ testConfiguration:
             objectValues: null
       - name: ends_with
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -87,7 +92,8 @@ testConfiguration:
       testParameters:
       - name: job_title
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -96,7 +102,8 @@ testConfiguration:
             objectValues: null
       - name: limit
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -127,7 +134,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -136,7 +144,8 @@ testConfiguration:
             objectValues: null
       - name: fips
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -152,7 +161,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -168,7 +178,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -184,7 +195,8 @@ testConfiguration:
       testParameters:
       - name: offset
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -201,7 +213,8 @@ testConfiguration:
             objectValues: null
       - name: limit
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -225,7 +238,8 @@ testConfiguration:
       testParameters:
       - name: begins_with
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -234,7 +248,8 @@ testConfiguration:
             objectValues: null
       - name: contains
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -243,7 +258,8 @@ testConfiguration:
             objectValues: null
       - name: ends_with
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -259,7 +275,8 @@ testConfiguration:
       testParameters:
       - name: skill_name
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -275,7 +292,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -291,7 +309,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -307,7 +326,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords

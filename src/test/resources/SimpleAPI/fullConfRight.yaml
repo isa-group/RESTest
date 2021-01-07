@@ -10,7 +10,8 @@ testConfiguration:
     - name: query
       in: query
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters:
         - name: maxWords
@@ -19,7 +20,8 @@ testConfiguration:
     - name: type
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -32,7 +34,8 @@ testConfiguration:
     - name: market
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -46,7 +49,8 @@ testConfiguration:
     - name: artistId
       in: path
       weight: null
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -66,7 +70,8 @@ testConfiguration:
     - name: name
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -78,13 +83,15 @@ testConfiguration:
     - name: isAlive
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomBoolean
         genParameters: []
     - name: nationality
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: csv
@@ -93,7 +100,8 @@ testConfiguration:
     - name: ageUnder
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -108,7 +116,8 @@ testConfiguration:
     - name: ageOver
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type

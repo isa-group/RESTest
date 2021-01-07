@@ -14,7 +14,8 @@ testConfiguration:
         - name: page
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -32,7 +33,8 @@ testConfiguration:
         - name: per_page
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -50,7 +52,8 @@ testConfiguration:
         - name: occurred_before
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -68,7 +71,8 @@ testConfiguration:
         - name: occurred_after
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -86,7 +90,8 @@ testConfiguration:
         - name: incident_type
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -101,7 +106,8 @@ testConfiguration:
         - name: proximity
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -111,7 +117,8 @@ testConfiguration:
         - name: proximity_square
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -129,7 +136,8 @@ testConfiguration:
         - name: query
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -144,7 +152,8 @@ testConfiguration:
         - name: id
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -167,7 +176,8 @@ testConfiguration:
         - name: occurred_before
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -185,7 +195,8 @@ testConfiguration:
         - name: occurred_after
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -203,7 +214,8 @@ testConfiguration:
         - name: incident_type
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -218,7 +230,8 @@ testConfiguration:
         - name: proximity
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -228,7 +241,8 @@ testConfiguration:
         - name: proximity_square
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -246,7 +260,8 @@ testConfiguration:
         - name: query
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -256,7 +271,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -274,7 +290,8 @@ testConfiguration:
         - name: all
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomBoolean
             genParameters: []
       expectedResponse: 200
@@ -285,7 +302,8 @@ testConfiguration:
         - name: occurred_before
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -303,7 +321,8 @@ testConfiguration:
         - name: occurred_after
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -321,7 +340,8 @@ testConfiguration:
         - name: incident_type
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -336,7 +356,8 @@ testConfiguration:
         - name: proximity
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -346,7 +367,8 @@ testConfiguration:
         - name: proximity_square
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -364,7 +386,8 @@ testConfiguration:
         - name: query
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomEnglishWord
             genParameters:
               - name: maxWords
@@ -374,7 +397,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -392,7 +416,8 @@ testConfiguration:
         - name: all
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomBoolean
             genParameters: []
       expectedResponse: 200

@@ -5,9 +5,9 @@
     "description": "Check texts for style and grammar issues with LanguageTool. See <a href='http://wiki.languagetool.org/public-http-api'>our wiki</a> for access limitations.",
     "version": "1.0.2"
   },
-  "host": "localhost:8081",
+  "host": "api.languagetoolplus.com",
   "schemes": [
-      "http"
+      "https"
   ],
   "basePath": "/v2",
   "produces": [
@@ -93,6 +93,12 @@
             "type": "boolean",
             "default": false,
             "description": "If true, only the rules and categories whose IDs are specified with `enabledRules` or `enabledCategories` are enabled."
+          },
+          {
+            "name": "level",
+            "in": "formData",
+            "type": "string",
+            "description": "If set to picky, additional rules will be activated, i.e. rules that you might only find useful when checking formal text."
           }
         ],
         "x-dependencies": [

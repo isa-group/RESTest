@@ -14,7 +14,8 @@ testConfiguration:
         - name: Test parameter name
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: Generator type
             genParameters:
               - name: Parameter name
@@ -31,7 +32,8 @@ testConfiguration:
         - name: body
           in: body
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: Generator type
             genParameters:
               - name: Parameter name
@@ -48,7 +50,8 @@ testConfiguration:
         - name: Test parameter name 3
           in: header
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: Generator type
             genParameters:
               - name: Parameter name
@@ -60,7 +63,8 @@ testConfiguration:
         - name: body
           in: body
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: Generator type
             genParameters:
               - name: Parameter name
@@ -77,7 +81,8 @@ testConfiguration:
         - name: Test parameter name 4
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: Generator type
             genParameters:
               - name: Parameter name

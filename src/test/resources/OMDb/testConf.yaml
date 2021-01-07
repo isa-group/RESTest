@@ -13,7 +13,8 @@ testConfiguration:
       testParameters:
       - name: t
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -22,7 +23,8 @@ testConfiguration:
             objectValues: null
       - name: i
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp
@@ -31,7 +33,8 @@ testConfiguration:
             objectValues: null
       - name: s
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -40,7 +43,8 @@ testConfiguration:
             objectValues: null
       - name: page
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -57,7 +61,8 @@ testConfiguration:
             objectValues: null
       - name: y
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -74,7 +79,8 @@ testConfiguration:
             objectValues: null
       - name: type
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -85,7 +91,8 @@ testConfiguration:
             objectValues: null
       - name: plot
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -95,7 +102,8 @@ testConfiguration:
             objectValues: null
       - name: r
         weight: 0
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -105,7 +113,8 @@ testConfiguration:
             objectValues: null
       - name: callback
         weight: 0
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords

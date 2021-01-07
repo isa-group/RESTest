@@ -13,7 +13,8 @@ testConfiguration:
       testParameters:
       - name: v
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -21,7 +22,8 @@ testConfiguration:
               - 20200306
       - name: ll
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -45,7 +47,8 @@ testConfiguration:
 #            objectValues: null
       - name: near
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -62,7 +65,8 @@ testConfiguration:
                 - Krakow
       - name: name
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -73,7 +77,8 @@ testConfiguration:
                 - Vips
       - name: intent
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -85,7 +90,8 @@ testConfiguration:
             objectValues: null
       - name: radius
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -102,7 +108,8 @@ testConfiguration:
             objectValues: null
       - name: sw
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -122,7 +129,8 @@ testConfiguration:
 #            objectValues: null
       - name: ne
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -142,7 +150,8 @@ testConfiguration:
 #            objectValues: null
       - name: query
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
             - name: values
@@ -157,7 +166,8 @@ testConfiguration:
                 - ok
       - name: limit
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -174,7 +184,8 @@ testConfiguration:
             objectValues: null
       - name: categoryId
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: csv
@@ -189,7 +200,8 @@ testConfiguration:
             objectValues: null
       - name: llAcc
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -206,7 +218,8 @@ testConfiguration:
             objectValues: null
       - name: alt
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -223,7 +236,8 @@ testConfiguration:
             objectValues: null
       - name: altAcc
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -240,7 +254,8 @@ testConfiguration:
             objectValues: null
       - name: url
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -251,7 +266,8 @@ testConfiguration:
             objectValues: null
       - name: providerId
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -260,7 +276,8 @@ testConfiguration:
             objectValues: null
       - name: linkedId
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomRegExp
           genParameters:
           - name: regExp

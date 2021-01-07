@@ -12,7 +12,8 @@ testConfiguration:
       testParameters:
       - name: any_kw
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -21,7 +22,8 @@ testConfiguration:
             objectValues: null
       - name: folder
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -30,7 +32,8 @@ testConfiguration:
             objectValues: null
       - name: coll
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -47,7 +50,8 @@ testConfiguration:
             objectValues: null
       - name: filter
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -56,7 +60,8 @@ testConfiguration:
             objectValues: null
       - name: title_kw
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -65,7 +70,8 @@ testConfiguration:
             objectValues: null
       - name: userId
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -82,7 +88,8 @@ testConfiguration:
             objectValues: null
       - name: username
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -91,7 +98,8 @@ testConfiguration:
             objectValues: null
       - name: token
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -100,17 +108,20 @@ testConfiguration:
             objectValues: null
       - name: photos
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: boostmine
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: include_cat
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -119,7 +130,8 @@ testConfiguration:
             objectValues: null
       - name: exclude_cat
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -128,7 +140,8 @@ testConfiguration:
             objectValues: null
       - name: include_primarycat
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -137,7 +150,8 @@ testConfiguration:
             objectValues: null
       - name: exclude_primarycat
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -146,7 +160,8 @@ testConfiguration:
             objectValues: null
       - name: include_ing
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -155,7 +170,8 @@ testConfiguration:
             objectValues: null
       - name: exclude_ing
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -164,7 +180,8 @@ testConfiguration:
             objectValues: null
       - name: cuisine
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -173,7 +190,8 @@ testConfiguration:
             objectValues: null
       - name: db
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -182,7 +200,8 @@ testConfiguration:
             objectValues: null
       - name: userset
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -191,7 +210,8 @@ testConfiguration:
             objectValues: null
       - name: servingsMin
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -208,7 +228,8 @@ testConfiguration:
             objectValues: null
       - name: totalMins
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -225,7 +246,8 @@ testConfiguration:
             objectValues: null
       - name: maxIngredients
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -242,7 +264,8 @@ testConfiguration:
             objectValues: null
       - name: minIngredients
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -259,7 +282,8 @@ testConfiguration:
             objectValues: null
       - name: rpp
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -276,7 +300,8 @@ testConfiguration:
             objectValues: null
       - name: pg
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -293,7 +318,8 @@ testConfiguration:
             objectValues: null
       - name: vtn
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -310,7 +336,8 @@ testConfiguration:
             objectValues: null
       - name: vgn
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -327,7 +354,8 @@ testConfiguration:
             objectValues: null
       - name: chs
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -344,7 +372,8 @@ testConfiguration:
             objectValues: null
       - name: glf
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -361,7 +390,8 @@ testConfiguration:
             objectValues: null
       - name: ntf
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -378,7 +408,8 @@ testConfiguration:
             objectValues: null
       - name: dyf
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -395,7 +426,8 @@ testConfiguration:
             objectValues: null
       - name: sff
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -412,7 +444,8 @@ testConfiguration:
             objectValues: null
       - name: slf
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -429,7 +462,8 @@ testConfiguration:
             objectValues: null
       - name: tnf
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -446,7 +480,8 @@ testConfiguration:
             objectValues: null
       - name: wmf
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -463,7 +498,8 @@ testConfiguration:
             objectValues: null
       - name: rmf
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -480,7 +516,8 @@ testConfiguration:
             objectValues: null
       - name: cps
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -497,7 +534,8 @@ testConfiguration:
             objectValues: null
       - name: champion
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -514,7 +552,8 @@ testConfiguration:
             objectValues: null
       - name: synonyms
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       paramDependencies: null

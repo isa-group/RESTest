@@ -3,6 +3,9 @@ package es.us.isa.restest.inputs.random;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joda.time.DateTime;
 
 /** 
@@ -16,8 +19,10 @@ public class RandomDateGenerator extends RandomGenerator {
     private int startDays;				// Set the min date as a number of days from today
     private int endDays;				// Set the max date as a number of days from today
     private boolean fromToday=false; 	// Set true to generate dates from today on
-    
+
     private String format;				// SimpleDateFormat
+
+	private static final Logger logger = LogManager.getLogger(RandomDateGenerator.class.getName());
 	
     public RandomDateGenerator() {
     	super();
@@ -55,8 +60,8 @@ public class RandomDateGenerator extends RandomGenerator {
 		try {
 			this.startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
 		} catch (ParseException e) {
-			System.err.println("Error parsing date " + startDate + " : " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error parsing date: {} ", startDate);
+			logger.error("Exception: ", e);
 		}
 	}
 
@@ -68,8 +73,8 @@ public class RandomDateGenerator extends RandomGenerator {
 		try {
 			this.endDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
 		} catch (ParseException e) {
-			System.err.println("Error parsing date " + startDate + " : " + e.getMessage());
-			e.printStackTrace();
+			logger.error("Error parsing date: {} ", endDate);
+			logger.error("Exception: ", e);;
 		}
 	}
 

@@ -12,7 +12,8 @@ testConfiguration:
       testParameters:
       - name: term
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -21,7 +22,8 @@ testConfiguration:
             objectValues: null
       - name: country
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -30,7 +32,8 @@ testConfiguration:
             objectValues: null
       - name: all_airports
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       paramDependencies: null
@@ -42,7 +45,8 @@ testConfiguration:
       testParameters:
       - name: latitude
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -51,7 +55,8 @@ testConfiguration:
             objectValues: null
       - name: longitude
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -67,7 +72,8 @@ testConfiguration:
       testParameters:
       - name: location
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -76,7 +82,8 @@ testConfiguration:
             objectValues: null
       - name: pick_up
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -85,7 +92,8 @@ testConfiguration:
             objectValues: null
       - name: drop_off
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -94,7 +102,8 @@ testConfiguration:
             objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -103,7 +112,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -112,7 +122,8 @@ testConfiguration:
             objectValues: null
       - name: provider
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -121,7 +132,8 @@ testConfiguration:
             objectValues: null
       - name: rate_class
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -130,7 +142,8 @@ testConfiguration:
             objectValues: null
       - name: rate_plan
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -139,7 +152,8 @@ testConfiguration:
             objectValues: null
       - name: rate_filter
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -150,7 +164,8 @@ testConfiguration:
             objectValues: null
       - name: vehicle
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -166,7 +181,8 @@ testConfiguration:
       testParameters:
       - name: latitude
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -183,7 +199,8 @@ testConfiguration:
             objectValues: null
       - name: longitude
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -200,7 +217,8 @@ testConfiguration:
             objectValues: null
       - name: radius
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -217,7 +235,8 @@ testConfiguration:
             objectValues: null
       - name: pick_up
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -226,7 +245,8 @@ testConfiguration:
             objectValues: null
       - name: drop_off
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -235,7 +255,8 @@ testConfiguration:
             objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -244,7 +265,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -253,7 +275,8 @@ testConfiguration:
             objectValues: null
       - name: provider
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -262,7 +285,8 @@ testConfiguration:
             objectValues: null
       - name: rate_class
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -271,7 +295,8 @@ testConfiguration:
             objectValues: null
       - name: rate_plan
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -280,7 +305,8 @@ testConfiguration:
             objectValues: null
       - name: rate_filter
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -291,7 +317,8 @@ testConfiguration:
             objectValues: null
       - name: vehicle
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -307,7 +334,8 @@ testConfiguration:
       testParameters:
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -316,7 +344,8 @@ testConfiguration:
             objectValues: null
       - name: destination
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -325,7 +354,8 @@ testConfiguration:
             objectValues: null
       - name: departure_date
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -334,7 +364,8 @@ testConfiguration:
             objectValues: null
       - name: return_date
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -343,7 +374,8 @@ testConfiguration:
             objectValues: null
       - name: adults
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -360,7 +392,8 @@ testConfiguration:
             objectValues: null
       - name: children
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -377,7 +410,8 @@ testConfiguration:
             objectValues: null
       - name: infants
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -394,7 +428,8 @@ testConfiguration:
             objectValues: null
       - name: include_merchants
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -403,7 +438,8 @@ testConfiguration:
             objectValues: null
       - name: exclude_merchants
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -412,7 +448,8 @@ testConfiguration:
             objectValues: null
       - name: max_price
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -429,7 +466,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -438,7 +476,8 @@ testConfiguration:
             objectValues: null
       - name: mobile
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       paramDependencies: null
@@ -450,7 +489,8 @@ testConfiguration:
       testParameters:
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -459,7 +499,8 @@ testConfiguration:
             objectValues: null
       - name: destination
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -468,7 +509,8 @@ testConfiguration:
             objectValues: null
       - name: departure_date
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -477,12 +519,14 @@ testConfiguration:
             objectValues: null
       - name: one-way
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: duration
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -491,12 +535,14 @@ testConfiguration:
             objectValues: null
       - name: direct
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: max_price
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -505,7 +551,8 @@ testConfiguration:
             objectValues: null
       - name: aggregation_mode
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -521,7 +568,8 @@ testConfiguration:
       testParameters:
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -530,7 +578,8 @@ testConfiguration:
             objectValues: null
       - name: destination
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -539,7 +588,8 @@ testConfiguration:
             objectValues: null
       - name: departure_date
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -548,12 +598,14 @@ testConfiguration:
             objectValues: null
       - name: one-way
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: duration
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -562,12 +614,14 @@ testConfiguration:
             objectValues: null
       - name: direct
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: max_price
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -576,7 +630,8 @@ testConfiguration:
             objectValues: null
       - name: aggregation_mode
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -592,7 +647,8 @@ testConfiguration:
       testParameters:
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -601,7 +657,8 @@ testConfiguration:
             objectValues: null
       - name: destination
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -610,7 +667,8 @@ testConfiguration:
             objectValues: null
       - name: departure_date
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -619,7 +677,8 @@ testConfiguration:
             objectValues: null
       - name: return_date
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -628,7 +687,8 @@ testConfiguration:
             objectValues: null
       - name: arrive_by
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -637,7 +697,8 @@ testConfiguration:
             objectValues: null
       - name: return_by
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -646,7 +707,8 @@ testConfiguration:
             objectValues: null
       - name: adults
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -663,7 +725,8 @@ testConfiguration:
             objectValues: null
       - name: children
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -680,7 +743,8 @@ testConfiguration:
             objectValues: null
       - name: infants
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -697,7 +761,8 @@ testConfiguration:
             objectValues: null
       - name: include_airlines
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -706,7 +771,8 @@ testConfiguration:
             objectValues: null
       - name: exclude_airlines
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -715,12 +781,14 @@ testConfiguration:
             objectValues: null
       - name: nonstop
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: max_price
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -737,7 +805,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -746,7 +815,8 @@ testConfiguration:
             objectValues: null
       - name: travel_class
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -755,7 +825,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -779,7 +850,8 @@ testConfiguration:
       testParameters:
       - name: location
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -788,7 +860,8 @@ testConfiguration:
             objectValues: null
       - name: check_in
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -797,7 +870,8 @@ testConfiguration:
             objectValues: null
       - name: check_out
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -806,7 +880,8 @@ testConfiguration:
             objectValues: null
       - name: radius
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -823,7 +898,8 @@ testConfiguration:
             objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -832,7 +908,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -841,7 +918,8 @@ testConfiguration:
             objectValues: null
       - name: chain
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -850,7 +928,8 @@ testConfiguration:
             objectValues: null
       - name: max_rate
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -867,7 +946,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -884,17 +964,20 @@ testConfiguration:
             objectValues: null
       - name: all_rooms
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: show_sold_out
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: amenity
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -910,7 +993,8 @@ testConfiguration:
       testParameters:
       - name: south_west_corner
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -919,7 +1003,8 @@ testConfiguration:
             objectValues: null
       - name: north_east_corner
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -928,7 +1013,8 @@ testConfiguration:
             objectValues: null
       - name: check_in
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -937,7 +1023,8 @@ testConfiguration:
             objectValues: null
       - name: check_out
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -946,7 +1033,8 @@ testConfiguration:
             objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -955,7 +1043,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -964,7 +1053,8 @@ testConfiguration:
             objectValues: null
       - name: chain
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -973,7 +1063,8 @@ testConfiguration:
             objectValues: null
       - name: max_rate
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -990,7 +1081,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1007,17 +1099,20 @@ testConfiguration:
             objectValues: null
       - name: all_rooms
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: show_sold_out
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: amenity
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1033,7 +1128,8 @@ testConfiguration:
       testParameters:
       - name: latitude
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1050,7 +1146,8 @@ testConfiguration:
             objectValues: null
       - name: longitude
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1067,7 +1164,8 @@ testConfiguration:
             objectValues: null
       - name: radius
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1084,7 +1182,8 @@ testConfiguration:
             objectValues: null
       - name: check_in
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1093,7 +1192,8 @@ testConfiguration:
             objectValues: null
       - name: check_out
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1102,7 +1202,8 @@ testConfiguration:
             objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1111,7 +1212,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1120,7 +1222,8 @@ testConfiguration:
             objectValues: null
       - name: chain
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1129,7 +1232,8 @@ testConfiguration:
             objectValues: null
       - name: max_rate
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1146,7 +1250,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1163,17 +1268,20 @@ testConfiguration:
             objectValues: null
       - name: all_rooms
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: show_sold_out
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: amenity
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1189,7 +1297,8 @@ testConfiguration:
       testParameters:
       - name: property_code
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1198,7 +1307,8 @@ testConfiguration:
             objectValues: null
       - name: check_in
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1207,7 +1317,8 @@ testConfiguration:
             objectValues: null
       - name: check_out
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1216,7 +1327,8 @@ testConfiguration:
             objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1225,7 +1337,8 @@ testConfiguration:
             objectValues: null
       - name: currency
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1234,12 +1347,14 @@ testConfiguration:
             objectValues: null
       - name: all_rooms
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: show_sold_out
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       paramDependencies: null
@@ -1251,7 +1366,8 @@ testConfiguration:
       testParameters:
       - name: code
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1267,7 +1383,8 @@ testConfiguration:
       testParameters:
       - name: latitude
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1284,7 +1401,8 @@ testConfiguration:
             objectValues: null
       - name: longitude
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1301,7 +1419,8 @@ testConfiguration:
             objectValues: null
       - name: radius
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1318,7 +1437,8 @@ testConfiguration:
             objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -1338,7 +1458,8 @@ testConfiguration:
             objectValues: null
       - name: category
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1347,22 +1468,26 @@ testConfiguration:
             objectValues: null
       - name: geonames
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: vibes
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: social_media
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: image_size
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -1374,7 +1499,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_images
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1391,7 +1517,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1415,7 +1542,8 @@ testConfiguration:
       testParameters:
       - name: city_name
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1424,7 +1552,8 @@ testConfiguration:
             objectValues: null
       - name: lang
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -1444,7 +1573,8 @@ testConfiguration:
             objectValues: null
       - name: category
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1453,22 +1583,26 @@ testConfiguration:
             objectValues: null
       - name: geonames
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: vibes
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: social_media
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: image_size
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -1480,7 +1614,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_images
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1497,7 +1632,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1521,7 +1657,8 @@ testConfiguration:
       testParameters:
       - name: id
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1537,7 +1674,8 @@ testConfiguration:
       testParameters:
       - name: term
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1553,7 +1691,8 @@ testConfiguration:
       testParameters:
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1562,7 +1701,8 @@ testConfiguration:
             objectValues: null
       - name: destination
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1571,7 +1711,8 @@ testConfiguration:
             objectValues: null
       - name: departure_date
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1587,7 +1728,8 @@ testConfiguration:
       testParameters:
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1596,7 +1738,8 @@ testConfiguration:
             objectValues: null
       - name: departure_date
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1612,7 +1755,8 @@ testConfiguration:
       testParameters:
       - name: period
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1621,7 +1765,8 @@ testConfiguration:
             objectValues: null
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1630,7 +1775,8 @@ testConfiguration:
             objectValues: null
       - name: destination
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1639,7 +1785,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results_per_period
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1663,7 +1810,8 @@ testConfiguration:
       testParameters:
       - name: period
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1672,7 +1820,8 @@ testConfiguration:
             objectValues: null
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1681,7 +1830,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1705,7 +1855,8 @@ testConfiguration:
       testParameters:
       - name: period
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1714,7 +1865,8 @@ testConfiguration:
             objectValues: null
       - name: origin
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1723,7 +1875,8 @@ testConfiguration:
             objectValues: null
       - name: destination
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1732,7 +1885,8 @@ testConfiguration:
             objectValues: null
       - name: country
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1741,7 +1895,8 @@ testConfiguration:
             objectValues: null
       - name: number_of_results
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -1765,7 +1920,8 @@ testConfiguration:
       testParameters:
       - name: record_locator
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1774,7 +1930,8 @@ testConfiguration:
             objectValues: null
       - name: last_name
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -1783,7 +1940,8 @@ testConfiguration:
             objectValues: null
       - name: env
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords

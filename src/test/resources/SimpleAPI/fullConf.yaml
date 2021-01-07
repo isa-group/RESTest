@@ -12,7 +12,8 @@ testConfiguration:
       testParameters:
       - name: query
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -21,7 +22,8 @@ testConfiguration:
             objectValues: null
       - name: type
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomInputValue
           genParameters:
           - name: values
@@ -34,7 +36,8 @@ testConfiguration:
             objectValues: null
       - name: market
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -50,7 +53,8 @@ testConfiguration:
       testParameters:
       - name: artistId
         weight: null
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -74,7 +78,8 @@ testConfiguration:
       testParameters:
       - name: name
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -83,12 +88,14 @@ testConfiguration:
             objectValues: null
       - name: isAlive
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomBoolean
           genParameters: []
       - name: nationality
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomEnglishWord
           genParameters:
           - name: maxWords
@@ -97,7 +104,8 @@ testConfiguration:
             objectValues: null
       - name: age
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -114,7 +122,8 @@ testConfiguration:
             objectValues: null
       - name: ageUnder
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type
@@ -131,7 +140,8 @@ testConfiguration:
             objectValues: null
       - name: ageOver
         weight: 0.5
-        generator:
+        generators:
+        - valid: true
           type: RandomNumber
           genParameters:
           - name: type

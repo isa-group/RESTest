@@ -1,70 +1,57 @@
 [
 	{
-		"name": "Ignored tests",
-		"matchedStatuses": [
-			"skipped"
-		]
-	},
-	{
-		"name": "Status 5XX",
-		"messageRegex": ".*status 5XX.*",
-		"matchedStatuses": [
-			"failed"
-		]
-	},
-    {
-        "name": "Faulty test cases failures",
-        "messageRegex": ".*faulty test case.*",
-        "matchedStatuses": [
-            "failed"
-        ]
-    },
-	{
-		"name": "Faulty test case failed (individual_parameter_constraint)",
-		"messageRegex": ".*individual_parameter_constraint.*",
+		"name": "SEVERITY 3: Status 5XX with valid request",
+		"messageRegex": "Status code 5XX with valid request.",
 		"matchedStatuses": [
 			"failed"
 		]
 	},
 	{
-		"name": "Faulty test case failed (invalid_request_body)",
-		"messageRegex": ".*invalid_request_body.*",
+		"name": "SEVERITY 2: Status 5XX with invalid request",
+		"messageRegex": "Status code 5XX with invalid request.*",
 		"matchedStatuses": [
 			"failed"
 		]
 	},
 	{
-		"name": "Faulty test case failed (inter_parameter_dependency)",
+		"name": "SEVERITY 2: Status 5XX",
+		"messageRegex": "Status code 5XX.",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "SEVERITY 2: Status 400 with valid request",
+		"messageRegex": "This test case's input was correct.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "SEVERITY 1: Status 2XX with invalid request (inter-parameter dependency violated)",
 		"messageRegex": ".*inter_parameter_dependency.*",
 		"matchedStatuses": [
 			"failed"
 		]
 	},
 	{
-		"name": "Valid test cases failures",
-		"messageRegex": ".*input was correct.*",
+		"name": "SEVERITY 1: Status 2XX with invalid request (invalid parameter)",
+		"messageRegex": ".*(individual_parameter_constraint|invalid_request_body).*",
 		"matchedStatuses": [
 			"failed"
 		]
 	},
 	{
-		"name": "Conformance errors",
-		"messageRegex": ".*Conformance error.*",
+		"name": "SEVERITY 1: Disconformity with OAS",
+		"messageRegex": "OAS disconformity.*",
 		"matchedStatuses": [
 			"failed"
 		]
 	},
 	{
-		"name": "Validation failures",
-		"traceRegex": ".*\"key\" : \"validation.response.*",
+		"name": "Ignored tests",
 		"matchedStatuses": [
-			"failed"
-		]
-	},
-	{
-		"name": "Failures",
-		"matchedStatuses": [
-			"failed"
+			"skipped"
 		]
 	},
 	{

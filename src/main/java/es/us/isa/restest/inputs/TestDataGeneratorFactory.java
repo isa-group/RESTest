@@ -410,13 +410,16 @@ public class TestDataGeneratorFactory {
 		for (GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
 				case "object":
-					gen.setOriginalObject(param.getObjectValues().get(0));
+					gen.addOriginalObject(param.getObjectValues().get(0));
+					break;
+				case "stringObjects":
+					gen.setOriginalObjects(param.getValues());
 					break;
 				case "stringObject":
-					gen.setOriginalObject(param.getValues().get(0));
+					gen.addOriginalObject(param.getValues().get(0));
 					break;
 				case "file":
-					gen.setOriginalObject(JSONManager.readJSON(param.getValues().get(0)));
+					gen.addOriginalObject(JSONManager.readJSON(param.getValues().get(0)));
 					break;
 				case "singleOrder":
 					gen.setSingleOrder(Boolean.parseBoolean(param.getValues().get(0)));

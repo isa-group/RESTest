@@ -16,7 +16,9 @@ import es.us.isa.restest.util.*;
 import net.sf.extjwnl.data.Exc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 
+import java.io.File;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -32,6 +34,7 @@ public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
 	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Spotify/albums/spotifySemantic_albums.properties";
+
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
 	private static OpenAPISpecification spec; 							// OAS specification
@@ -50,13 +53,15 @@ public class TestGenerationAndExecution {
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
 	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
 	public static Boolean secondPredicateSearch;
+	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
+	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 
 	// For Constraint-based testing only:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
 	private static Integer reloadInputDataEvery; 						// Number of requests using the same randomly generated input data
 	private static Integer inputDataMaxValues; 							// Number of values used for each parameter when reloading input data
 
-	private static final Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
+	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
 	public static void main(String[] args) throws RESTestException {
 		Timer.startCounting(ALL);
@@ -65,7 +70,7 @@ public class TestGenerationAndExecution {
 		// for the generation
 		if (args.length > 0)
 			propertiesFilePath = args[0];
-		
+
 		// Read parameter values from .properties file
 		readParameterValues();
 
@@ -75,10 +80,15 @@ public class TestGenerationAndExecution {
 		// RESTest runner
 		AbstractTestCaseGenerator generator = createGenerator(); // Test case generator
 		IWriter writer = createWriter(); // Test case writer
-		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
 		StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
+		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
+
 		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, learnRegex, generator, writer,
 				reportManager, statsReportManager);
+
+		runner.setExecuteTestCases(executeTestCases);
+
+
 
 		// Main loop
 		int iteration = 1;
@@ -107,7 +117,6 @@ public class TestGenerationAndExecution {
 
 		generateTimeReport(iteration-1);
 	}
-
 
 	// Create a test case generator
 	private static AbstractTestCaseGenerator createGenerator() {
@@ -144,7 +153,7 @@ public class TestGenerationAndExecution {
 	private static IWriter createWriter() {
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName,
-				basePath);
+				basePath, logToFile);
 		writer.setLogging(true);
 		writer.setAllureReport(true);
 		writer.setEnableStats(enableCSVStats);
@@ -155,21 +164,24 @@ public class TestGenerationAndExecution {
 
 	// Create an Allure report manager
 	private static AllureReportManager createAllureReportManager() {
-		String allureResultsDir = readParameterValue("allure.results.dir") + "/" + experimentName;
-		String allureReportDir = readParameterValue("allure.report.dir") + "/" + experimentName;
+		AllureReportManager arm = null;
+		if(executeTestCases) {
+			String allureResultsDir = readParameterValue("allure.results.dir") + "/" + experimentName;
+			String allureReportDir = readParameterValue("allure.report.dir") + "/" + experimentName;
 
-		// Delete previous results (if any)
-		if (deletePreviousResults) {
-			deleteDir(allureResultsDir);
-			deleteDir(allureReportDir);
+			// Delete previous results (if any)
+			if (deletePreviousResults) {
+				deleteDir(allureResultsDir);
+				deleteDir(allureReportDir);
+			}
+
+			//Find auth property names (if any)
+			List<String> authProperties = AllureAuthManager.findAuthProperties(spec, confPath);
+
+			arm = new AllureReportManager(allureResultsDir, allureReportDir, authProperties);
+			arm.setEnvironmentProperties(propertiesFilePath);
+			arm.setHistoryTrend(true);
 		}
-
-		//Find auth property names (if any)
-		List<String> authProperties = AllureAuthManager.findAuthProperties(spec, confPath);
-
-		AllureReportManager arm = new AllureReportManager(allureResultsDir, allureReportDir, authProperties);
-		arm.setEnvironmentProperties(propertiesFilePath);
-		arm.setHistoryTrend(true);
 		return arm;
 	}
 
@@ -220,6 +232,11 @@ public class TestGenerationAndExecution {
 	// Read the parameter values from the .properties file. If the value is not found, the system looks for it in the global .properties file (config.properties)
 	private static void readParameterValues() {
 
+		logToFile = Boolean.parseBoolean(readParameterValue("logToFile"));
+		if(logToFile) {
+			setUpLogger();
+		}
+
 		logger.info("Loading configuration parameter values");
 		
 		generator = readParameterValue("generator");
@@ -237,6 +254,11 @@ public class TestGenerationAndExecution {
 		experimentName = readParameterValue("experiment.name");
 		logger.info("Experiment name: {}", experimentName);
 		packageName = experimentName;
+
+		if (readParameterValue("experiment.execute") != null) {
+			executeTestCases = Boolean.parseBoolean(readParameterValue("experiment.execute"));
+		}
+		logger.info("Experiment execution: {}", executeTestCases);
 		
 		testClassName = readParameterValue("testclass.name");
 		logger.info("Test class name: {}", testClassName);
@@ -304,10 +326,22 @@ public class TestGenerationAndExecution {
 		return value;
 	}
 
+
 	public static TestConfigurationObject getTestConfigurationObject(){
 		return loadConfiguration(confPath, spec);
 	}
 
 	public static String getExperimentName(){return experimentName; }
+
+
+	private static void setUpLogger() {
+		String logPath = readParameterValue("log.path");
+
+		System.setProperty("logFilename", logPath);
+		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		File file = new File("src/main/resources/log4j2-logToFile.properties");
+		ctx.setConfigLocation(file.toURI());
+		ctx.reconfigure();
+	}
 
 }

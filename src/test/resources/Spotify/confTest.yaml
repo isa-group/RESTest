@@ -11,7 +11,8 @@ testConfiguration:
     testParameters:
     - name: ids
       in: query
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -26,7 +27,8 @@ testConfiguration:
     - name: market
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -96,7 +98,8 @@ testConfiguration:
     - name: limit
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -111,7 +114,8 @@ testConfiguration:
     - name: offset
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomNumber
         genParameters:
         - name: type
@@ -125,12 +129,14 @@ testConfiguration:
           - '5'
     - name: q
       in: query
-      generator:
+      generators:
+      - valid: true
         type: RandomEnglishWord
         genParameters: []
     - name: type
       in: query
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values
@@ -147,7 +153,8 @@ testConfiguration:
     - name: market
       in: query
       weight: 0.5
-      generator:
+      generators:
+      - valid: true
         type: RandomInputValue
         genParameters:
         - name: values

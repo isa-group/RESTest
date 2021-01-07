@@ -14,7 +14,8 @@ testConfiguration:
         - name: blog-identifier
           in: path
           weight: null
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -24,7 +25,8 @@ testConfiguration:
         - name: limit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -42,7 +44,8 @@ testConfiguration:
         - name: offset
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -60,7 +63,8 @@ testConfiguration:
         - name: before
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -78,7 +82,8 @@ testConfiguration:
         - name: after
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type

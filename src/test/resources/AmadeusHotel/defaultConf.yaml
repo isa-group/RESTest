@@ -14,7 +14,8 @@ testConfiguration:
         - name: cityCode
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -29,7 +30,8 @@ testConfiguration:
         - name: latitude
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -39,7 +41,8 @@ testConfiguration:
         - name: longitude
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -49,7 +52,8 @@ testConfiguration:
         - name: hotelIds
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -64,7 +68,8 @@ testConfiguration:
         - name: checkInDate
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomDate
             genParameters:
               - name: fromToday
@@ -86,7 +91,8 @@ testConfiguration:
         - name: checkOutDate
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomDate
             genParameters:
               - name: fromToday
@@ -108,7 +114,8 @@ testConfiguration:
         - name: roomQuantity
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -126,7 +133,8 @@ testConfiguration:
         - name: adults
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -144,7 +152,8 @@ testConfiguration:
         - name: childAges
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -179,7 +188,8 @@ testConfiguration:
         - name: radius
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -197,7 +207,8 @@ testConfiguration:
         - name: radiusUnit
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -208,7 +219,8 @@ testConfiguration:
         - name: hotelName
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -223,7 +235,8 @@ testConfiguration:
         - name: chains
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -239,7 +252,8 @@ testConfiguration:
         - name: rateCodes
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -267,7 +281,8 @@ testConfiguration:
         - name: amenities
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -315,7 +330,8 @@ testConfiguration:
         - name: ratings
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -334,7 +350,8 @@ testConfiguration:
         - name: priceRange
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomRegExp
             genParameters:
               - name: regExp
@@ -344,7 +361,8 @@ testConfiguration:
         - name: currency
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
@@ -354,7 +372,8 @@ testConfiguration:
         - name: paymentPolicy
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -366,7 +385,8 @@ testConfiguration:
         - name: boardType
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -380,19 +400,22 @@ testConfiguration:
         - name: includeClosed
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomBoolean
             genParameters: []
         - name: bestRateOnly
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomBoolean
             genParameters: []
         - name: view
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -404,7 +427,8 @@ testConfiguration:
         - name: sort
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: values
@@ -416,7 +440,8 @@ testConfiguration:
         - name: "page[limit]"
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -434,7 +459,8 @@ testConfiguration:
         - name: "page[offset]"
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomNumber
             genParameters:
               - name: type
@@ -452,7 +478,8 @@ testConfiguration:
         - name: lang
           in: query
           weight: 0.5
-          generator:
+          generators:
+          - valid: true
             type: RandomInputValue
             genParameters:
               - name: csv
