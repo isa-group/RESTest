@@ -310,6 +310,10 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("learnRegex") != null)
 			learnRegex = Boolean.parseBoolean(readParameterValue("learnRegex"));
 		logger.info("Learn Regular expressions: {}", learnRegex);
+
+		if (readParameterValue("secondPredicateSearch") != null)
+			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("secondPredicateSearch"));
+		logger.info("Second Predicate Search: {}", secondPredicateSearch);
 	
 	}
 
