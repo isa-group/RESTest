@@ -20,6 +20,7 @@ import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 import java.util.*;
 
 import static es.us.isa.restest.configuration.pojos.ParameterValues.getValuesFromPreviousIterations;
+import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.*;
 import static es.us.isa.restest.util.FileManager.*;
@@ -144,7 +145,7 @@ public class StatsReportManager {
                     // Second predicate search using the generated regex
                     if(secondPredicateSearch){
 
-                        Set<String> predicates = get;
+                        Set<String> predicates = getPredicates(parameterValues, regex);
 
                         // TODO: La lista completa de parameter values contiene todos los parámetros semánticos, además de los predicados a evitar, falta por añadir el csvPaths
                         System.out.println(regex);

@@ -11,6 +11,7 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 public class GenerateSPARQLFilters {
 
     public static String generateSPARQLFilters(TestParameter parameter){
+        // TODO: Important refactorization required (semantic parameter and Random_input_value)
         String res = "";
         Generator generator = parameter.getGenerators().stream().filter(x-> x.getType().equals(SEMANTIC_PARAMETER)).findFirst().get();
         List<GenParameter> genParameters = generator.getGenParameters();
