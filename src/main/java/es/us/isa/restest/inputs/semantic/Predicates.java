@@ -31,6 +31,8 @@ public class Predicates {
 
     public static Set<String> getPredicates(ParameterValues parameterValues, String regex){
 
+        Set<String> predicates = new HashSet<>();
+
         // TODO: The found predicates must not be part of parameterValues.getPredicates (done)
         // TODO: Add regular expression to query
         OpenAPISpecification spec = getOpenAPISpecification();
