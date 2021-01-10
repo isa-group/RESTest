@@ -145,6 +145,32 @@ public class RegexGeneratorUtils {
 
     }
 
+    public static void addResultsToCSV(ParameterValues parameterValues, Set<String> results){
+        List<String> csvPaths = getCsvPaths(parameterValues.getTestParameter());
+
+        // TODO: Consider creating a separated CSV file
+        String csvPath = csvPaths.get(0);
+
+        // Update the first CSV file with new data
+        List<String> csvValues = readValues(csvPath);
+
+        // add new values
+        csvValues.addAll(results);
+
+        // Rewrite csv
+        deleteFile(csvPath);
+        createFileIfNotExists(csvPath);
+
+        // Write the Set of values as a csv file
+        try {
+            collectionToCSV(csvPath, csvValues);
+            logger.info("CSV file updated");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public static void updateValidAndInvalidValues(
             TestCase testCase,
             Map<Pair<Operation, TestParameter>, Set<String>> validValues,

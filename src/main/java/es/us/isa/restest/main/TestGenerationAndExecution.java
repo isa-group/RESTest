@@ -339,6 +339,8 @@ public class TestGenerationAndExecution {
 
 	public static OpenAPISpecification getOpenAPISpecification(){ return spec; }
 
+	public static String getConfPath(){ return confPath; }
+
 
 	private static void setUpLogger() {
 		String logPath = readParameterValue("log.path");

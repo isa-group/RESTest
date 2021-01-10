@@ -1,6 +1,8 @@
 package es.us.isa.restest.inputs.semantic;
 
+import es.us.isa.restest.configuration.pojos.ParameterValues;
 import es.us.isa.restest.configuration.pojos.SemanticParameter;
+import es.us.isa.restest.configuration.pojos.TestParameter;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
@@ -318,6 +320,26 @@ public class SPARQLUtils {
         }
 
         return res;
+    }
+
+    public static Set<String> getNewValues(ParameterValues parameterValues,
+                                           Set<String> predicates, String regex){
+        Map<String, Set<String>> result = new HashMap<>();
+        // TODO: Check if the regular expression has been added in the previous step (getPredicates)
+
+        SemanticParameter semanticParameter = new SemanticParameter(parameterValues.getTestParameter());
+        semanticParameter.setPredicates(predicates);
+
+        String queryString = generateQuery(Collections.singleton(semanticParameter), false);
+
+        try {
+            result = executeSPARQLQuery(queryString, szEndpoint);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result.get(parameterValues.getTestParameter().getName());
+
     }
 
 }

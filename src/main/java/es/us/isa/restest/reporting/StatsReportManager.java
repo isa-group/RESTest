@@ -19,8 +19,11 @@ import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 
 import java.util.*;
 
+import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.configuration.pojos.ParameterValues.getValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
+import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
+import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithNewPredicates;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.*;
 import static es.us.isa.restest.util.FileManager.*;
@@ -145,13 +148,24 @@ public class StatsReportManager {
                     // Second predicate search using the generated regex
                     if(secondPredicateSearch){
 
+                        // Get new predicates for parameter
                         Set<String> predicates = getPredicates(parameterValues, regex);
 
-                        // TODO: La lista completa de parameter values contiene todos los parámetros semánticos, además de los predicados a evitar, falta por añadir el csvPaths
-                        System.out.println(regex);
+                        // TODO: Check that the regex is applied
+                        if(predicates.size() > 0) {
+                            // Get new values
+                            Set<String> results = getNewValues(parameterValues, predicates, regex);
 
-                        System.out.println(parameterValues.getTestParameter());
-                        System.out.println(parameterValues.getOperation());
+                            // Add results to the corresponding CSV Path
+                            addResultsToCSV(parameterValues, results);
+
+                            // Add predicate to TestParameter and update testConf file
+                            TestConfigurationObject conf = getTestConfigurationObject();
+                            updateTestConfWithNewPredicates(conf, parameterValues, predicates);
+
+
+                        }
+                        // TODO: La lista completa de parameter values contiene todos los parámetros semánticos, además de los predicados a evitar, falta por añadir el csvPaths
                     }
 
                     // TODO: REMOVE THIS FOR LOOP

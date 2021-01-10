@@ -33,4 +33,8 @@ public class Generator {
         this.valid = valid;
     }
 
+    public void addGenParameter(GenParameter genParameter){
+        this.genParameters.add(genParameter);
+    }
+
 }

@@ -13,7 +13,11 @@ public class GenerateSPARQLFilters {
     public static String generateSPARQLFilters(TestParameter parameter){
         // TODO: Important refactorization required (semantic parameter and Random_input_value)
         String res = "";
-        Generator generator = parameter.getGenerators().stream().filter(x-> x.getType().equals(SEMANTIC_PARAMETER)).findFirst().get();
+//        Generator generator = parameter.getGenerators().stream().filter(x-> x.getType().equals(SEMANTIC_PARAMETER)).findFirst().get(); OLD
+        Generator generator = parameter.getGenerators().stream()
+                .filter(x-> x.getType().equals(SEMANTIC_PARAMETER) || (  x.getType().equals(RANDOM_INPUT_VALUE) && x.isValid()==true  ))
+                .findFirst().get();
+
         List<GenParameter> genParameters = generator.getGenParameters();
 
         for(GenParameter genParameter: genParameters){
