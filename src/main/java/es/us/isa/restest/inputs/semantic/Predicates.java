@@ -1,7 +1,6 @@
 package es.us.isa.restest.inputs.semantic;
 
-import es.us.isa.restest.configuration.pojos.SemanticOperation;
-import es.us.isa.restest.configuration.pojos.SemanticParameter;
+import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -13,20 +12,70 @@ import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import es.us.isa.restest.configuration.pojos.TestParameter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Test;
 
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.extractPredicateCandidatesFromDescription;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.executeSPARQLQueryCount;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.generateQuery;
 import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.szEndpoint;
+import static es.us.isa.restest.main.TestGenerationAndExecution.getOpenAPISpecification;
 
 public class Predicates {
 
     private static final Integer minSupport = 20;
     private static final Logger log = LogManager.getLogger(Predicates.class);
+
+    public static Set<String> getPredicates(ParameterValues parameterValues, String regex){
+
+        // TODO: The found predicates must not be part of parameterValues.getPredicates (done)
+        // TODO: Add regular expression to query
+        OpenAPISpecification spec = getOpenAPISpecification();
+
+        TestParameter testParameter = parameterValues.getTestParameter();
+        String parameterName = testParameter.getName();
+
+        // Get predicates of testParameter (List<String> predicatesToIgnore)
+        List<String> predicatesToIgnore = getPredicatesToIgnore(testParameter);
+
+        PathItem pathItem = spec.getSpecification().getPaths().get(parameterValues.getOperation().getTestPath());
+        String parameterDescription = getParameterDescription(pathItem, parameterName, parameterValues.getOperation().getMethod());
+
+        // If the paramater name is only a character, compare with description
+        if(parameterName.length() == 1 && parameterDescription!=null){
+            List<String> possibleNames = posTagging(parameterDescription, parameterName);
+            if(possibleNames.size()>0){
+                parameterName = possibleNames.get(0);
+            }
+        }
+
+        // DESCRIPTION
+        Map<Double, Set<String>> descriptionCandidates = new HashMap<>();
+
+        if(parameterDescription != null){
+            // Extract candidates from description
+            descriptionCandidates = extractPredicateCandidatesFromDescription(parameterName, parameterDescription);
+        }
+
+        // Compute support ordered by priority, if one of the candidates surpasses the threshold, it is used as predicate
+        String predicateDescription = getPredicatesFromDescription(descriptionCandidates, testParameter, predicatesToIgnore);
+
+        if(predicateDescription != null){
+            return Collections.singleton(predicateDescription);
+        }else{
+            // PARAMETER NAME
+            predicates = getPredicatesOfSingleParameter(parameterName, testParameter, predicatesToIgnore);
+            if(predicates.size()>0){
+                return predicates;
+            }
+        }
+
+        return predicates;
+
+    }
 
     public static void setPredicates(SemanticOperation semanticOperation, OpenAPISpecification spec){
         Set<SemanticParameter> semanticParameters = semanticOperation.getSemanticParameters();
@@ -59,13 +108,13 @@ public class Predicates {
             }
 
             // Compute support ordered by priority, if one of the candidates surpasses the threshold, it is used as predicate
-            String predicateDescription = getPredicatesFromDescription(descriptionCandidates, p.getTestParameter());
+            String predicateDescription = getPredicatesFromDescription(descriptionCandidates, p.getTestParameter(), new ArrayList<>());
 
             if(predicateDescription != null){
                 p.setPredicates(Collections.singleton(predicateDescription));
             }else{
                 // PARAMETER NAME
-                Set<String> predicates = getPredicatesOfSingleParameter(parameterName, p.getTestParameter());
+                Set<String> predicates = getPredicatesOfSingleParameter(parameterName, p.getTestParameter(), new ArrayList<>());
                 if(predicates.size()>0){
                     p.setPredicates(predicates);
                 }
@@ -74,7 +123,7 @@ public class Predicates {
 
     }
 
-    public static String getPredicatesFromDescription(Map<Double, Set<String>> descriptionCandidates, TestParameter testParameter){
+    public static String getPredicatesFromDescription(Map<Double, Set<String>> descriptionCandidates, TestParameter testParameter, List<String> predicatesToIgnore){
 
         List<Double> orderedKeySet = descriptionCandidates.keySet().stream().sorted(Collections.reverseOrder()).collect(Collectors.toList());
 
@@ -82,7 +131,7 @@ public class Predicates {
             for(String match: descriptionCandidates.get(key)){
 
                 String queryString = generatePredicateQuery(match);
-                String predicate = executePredicateSPARQLQuery(queryString, testParameter);
+                String predicate = executePredicateSPARQLQuery(queryString, testParameter, predicatesToIgnore);
 
                 if(predicate != null){
                     log.info("Candidate {} selected with predicate: {}", match, predicate);
@@ -95,14 +144,14 @@ public class Predicates {
     }
 
 
-    public static Set<String> getPredicatesOfSingleParameter(String parameterName, TestParameter testParameter){
+    public static Set<String> getPredicatesOfSingleParameter(String parameterName, TestParameter testParameter, List<String> predicatesToIgnore){
 
         // PARAMETER NAME
         // Query creation
         String queryString = generatePredicateQuery(parameterName);
 
         // Query execution
-        String predicate = executePredicateSPARQLQuery(queryString, testParameter);
+        String predicate = executePredicateSPARQLQuery(queryString, testParameter, predicatesToIgnore);
 
         if(predicate == null){
             String[] words = parameterName.split("_");
@@ -110,7 +159,7 @@ public class Predicates {
             if(words.length > 1){
                 // Join words (convert to camel case)
                 String newQuery = generatePredicateQuery(String.join("", words));
-                predicate = executePredicateSPARQLQuery(newQuery, testParameter);
+                predicate = executePredicateSPARQLQuery(newQuery, testParameter, predicatesToIgnore);
 
                 if(predicate == null) {
                     // Execute one query for each word in snake_case
@@ -118,7 +167,7 @@ public class Predicates {
                     for(String word: words){
 
                         String query = generatePredicateQuery(word);
-                        String wordPredicate = executePredicateSPARQLQuery(query, testParameter);
+                        String wordPredicate = executePredicateSPARQLQuery(query, testParameter, predicatesToIgnore);
                         if(wordPredicate!=null){
                             predicates.add(wordPredicate);
                         }
@@ -138,7 +187,7 @@ public class Predicates {
                 // Execute one query for each word in camelCase
                 for(String word: wordsCamel){
                     String query = generatePredicateQuery(word);
-                    String wordPredicate = executePredicateSPARQLQuery(query, testParameter);
+                    String wordPredicate = executePredicateSPARQLQuery(query, testParameter, predicatesToIgnore);
                     if(wordPredicate!=null){
                         predicates.add(wordPredicate);
                     }
@@ -176,7 +225,7 @@ public class Predicates {
     }
 
 
-    public static String executePredicateSPARQLQuery(String queryString, TestParameter testParameter){
+    public static String executePredicateSPARQLQuery(String queryString, TestParameter testParameter, List<String> predicatesToIgnore){
 
         Query query = QueryFactory.create(queryString);
         QueryExecution qexec = QueryExecutionFactory.sparqlService(szEndpoint, query);
@@ -197,7 +246,7 @@ public class Predicates {
 
                 Integer support = computeSupportOfPredicate(szVal, testParameter);
 
-                if(support >= minSupport){
+                if(support >= minSupport && !predicatesToIgnore.contains(szVal)){
                     return szVal;
                 }
             }
@@ -206,6 +255,37 @@ public class Predicates {
 
         return null;
     }
+
+//    public static String executePredicateSPARQLQuery(String queryString, TestParameter testParameter){
+//
+//        Query query = QueryFactory.create(queryString);
+//        QueryExecution qexec = QueryExecutionFactory.sparqlService(szEndpoint, query);
+//        ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
+//
+//        // Execute query
+//        int iCount = 0;
+//        ResultSet rs = qexec.execSelect();
+//        while (rs.hasNext() && iCount<5) {
+//            iCount++;
+//
+//            QuerySolution qs = rs.next();
+//            Iterator<String> itVars = qs.varNames();
+//
+//            while(itVars.hasNext()){
+//                String sVar = itVars.next();
+//                String szVal = qs.get(sVar).toString();
+//
+//                Integer support = computeSupportOfPredicate(szVal, testParameter);
+//
+//                if(support >= minSupport){
+//                    return szVal;
+//                }
+//            }
+//
+//        }
+//
+//        return null;
+//    }
 
     public static Integer computeSupportOfPredicate(String predicate, TestParameter testParameter){
         // Generate query
@@ -261,6 +341,23 @@ public class Predicates {
         }
 
         return parameterName;
+    }
+
+    private static List<String> getPredicatesToIgnore(TestParameter testParameter){
+        List<Generator> generators = testParameter.getGenerators();
+
+        for(Generator generator: generators){
+            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
+                for(GenParameter genParameter: generator.getGenParameters()){
+                    if(genParameter.getName().equals("predicates")){
+                        return genParameter.getValues();
+                    }
+                }
+
+            }
+        }
+
+        throw new NullPointerException("The provided TestParameter does not contain a list of predicates");
     }
 
 }

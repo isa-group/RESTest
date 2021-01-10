@@ -82,8 +82,8 @@ public class StatsReportManager {
         List<Operation> operations = getTestConfigurationObject().getTestConfiguration().getOperations();
 
         // Store the values of the parameters of successful and unsuccessful operations (current iteration)
-        Map<Pair<String, TestParameter>, Set<String>> validValues = getMapOfSemanticParameters(operations);
-        Map<Pair<String, TestParameter>, Set<String>> invalidValues = getMapOfSemanticParameters(operations);
+        Map<Pair<Operation, TestParameter>, Set<String>> validValues = getMapOfSemanticParameters(operations);
+        Map<Pair<Operation, TestParameter>, Set<String>> invalidValues = getMapOfSemanticParameters(operations);
 
         // Read the valid and invalid values of previous iterations
         Set<ParameterValues> valuesFromPreviousIterations = getValuesFromPreviousIterations(getExperimentName(), validValues.keySet());
@@ -108,7 +108,7 @@ public class StatsReportManager {
 
         // Write csv of valid (directory)
         for(ParameterValues parameterValues: valuesFromPreviousIterations){
-            Pair<String, TestParameter> key = new Pair<>(parameterValues.getOperationId(), parameterValues.getTestParameter());
+            Pair<Operation, TestParameter> key = new Pair<>(parameterValues.getOperation(), parameterValues.getTestParameter());
             parameterValues.updateValidAndInvalidValuesCSV(validValues.get(key), invalidValues.get(key));
         }
 
@@ -123,7 +123,7 @@ public class StatsReportManager {
             if(invalidSet.size() >= 5 && validSet.size() >= 5){
 
                 // OperationName_parameterId
-                String name = parameterValues.getOperationId() + "_" + parameterValues.getTestParameter().getName();
+                String name = parameterValues.getOperation().getOperationId() + "_" + parameterValues.getTestParameter().getName();
 
                 // Generate regex
                 logger.info("Generating regex...");
@@ -143,9 +143,14 @@ public class StatsReportManager {
 
                     // Second predicate search using the generated regex
                     if(secondPredicateSearch){
+
+                        Set<String> predicates = get;
+
+                        // TODO: La lista completa de parameter values contiene todos los parámetros semánticos, además de los predicados a evitar, falta por añadir el csvPaths
                         System.out.println(regex);
+
                         System.out.println(parameterValues.getTestParameter());
-                        System.out.println(parameterValues.getOperationId());
+                        System.out.println(parameterValues.getOperation());
                     }
 
                     // TODO: REMOVE THIS FOR LOOP

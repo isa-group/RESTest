@@ -15,14 +15,14 @@ import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
 public class ParameterValues {
 
     private String experimentName;
-    private String operationId;
+    private Operation operation;
     private TestParameter testParameter;
     private Set<String> validValues;
     private Set<String> invalidValues;
 
-    public ParameterValues(String experimentName, String operationId, TestParameter testParameter){
+    public ParameterValues(String experimentName, Operation operation, TestParameter testParameter){
         this.experimentName = experimentName;
-        this.operationId = operationId;
+        this.operation = operation;
         this.testParameter = testParameter;
 
         // Read from csv (if exists)
@@ -71,7 +71,7 @@ public class ParameterValues {
     }
 
     public String getCSVPath(){
-        String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + this.experimentName + "/validAndInvalidValues/" + this.operationId + "/" + this.testParameter.getName() + "/";
+        String csvPath = PropertyManager.readProperty("data.tests.dir") + "/" + this.experimentName + "/validAndInvalidValues/" + this.operation.getOperationId() + "/" + this.testParameter.getName() + "/";
         return  csvPath;
     }
 
@@ -88,10 +88,10 @@ public class ParameterValues {
     }
 
     // Read the valid and invalid values of previous iterations
-    public static Set<ParameterValues> getValuesFromPreviousIterations(String experimentName, Set<Pair<String, TestParameter>> operationParameters){
+    public static Set<ParameterValues> getValuesFromPreviousIterations(String experimentName, Set<Pair<Operation, TestParameter>> operationParameters){
         Set<ParameterValues> valuesFromPreviousIterations = new HashSet<>();
 
-        for(Pair<String, TestParameter> i: operationParameters){
+        for(Pair<Operation, TestParameter> i: operationParameters){
             // Create new parameterValues (experimentName, operationId, testParameter)
             ParameterValues parameterValues = new ParameterValues(experimentName, i.getKey(), i.getValue());
             // Add new parameterValues to valuesFromPreviousIterations
@@ -105,8 +105,8 @@ public class ParameterValues {
         return experimentName;
     }
 
-    public String getOperationId() {
-        return operationId;
+    public Operation getOperation() {
+        return operation;
     }
 
     public TestParameter getTestParameter() {

@@ -27,7 +27,7 @@ public class SemanticInputGenerator {
 
     // Properties file with configuration settings
     private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Spotify/spotify.properties";
-    private static OpenAPISpecification spec;
+    private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
     private static String semanticConfPath;
@@ -43,7 +43,7 @@ public class SemanticInputGenerator {
         setEvaluationParameters();
 
         System.out.println(confPath);
-        TestConfigurationObject conf = loadConfiguration(confPath, spec);
+        TestConfigurationObject conf = loadConfiguration(confPath, specification);
 
         // Key: OperationName       Value: Parameters
         log.info("Obtaining semantic operations");
@@ -55,7 +55,7 @@ public class SemanticInputGenerator {
 
             log.info("Obtaining predicates of operation {}", semanticOperation.getOperationId());
 //            Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(semanticOperation, spec); TODO: DELETE
-            setPredicates(semanticOperation, spec);
+            setPredicates(semanticOperation, specification);
 
             Map<String, Set<String>> result = new HashMap<>();
             try{
@@ -117,8 +117,8 @@ public class SemanticInputGenerator {
 
         OAISpecPath = readProperty(propertiesFilePath, "oas.path");
         confPath = readProperty(propertiesFilePath, "conf.path");
-        spec = new OpenAPISpecification(OAISpecPath);
-        csvPath = csvPath + spec.getSpecification().getInfo().getTitle();
+        specification = new OpenAPISpecification(OAISpecPath);
+        csvPath = csvPath + specification.getSpecification().getInfo().getTitle();
 
         Path path = Paths.get(confPath);
         Path dir = path.getParent();
@@ -147,10 +147,6 @@ public class SemanticInputGenerator {
         Set<TestParameter> res = operation.getTestParameters().stream()
                 .filter(x-> x.getGenerators().stream().anyMatch(y-> y.getType().equalsIgnoreCase(SEMANTIC_PARAMETER)))
                 .collect(Collectors.toSet());
-
-//        Set<TestParameter> res = operation.getTestParameters().stream()
-//                .filter(x -> x.getGenerator().getType().equalsIgnoreCase(SEMANTIC_PARAMETER))
-//                .collect(Collectors.toSet());     TODO: Delete
 
         return res;
     }

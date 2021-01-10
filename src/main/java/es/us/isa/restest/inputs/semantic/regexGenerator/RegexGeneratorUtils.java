@@ -78,8 +78,8 @@ public class RegexGeneratorUtils {
     }
 
     // This method returns all the Semantic parameters of a given testConf file
-    public static Map<Pair<String, TestParameter>, Set<String>> getMapOfSemanticParameters(List<Operation> operations){
-        Map<Pair<String, TestParameter>, Set<String>> res = new HashMap<>();
+    public static Map<Pair<Operation, TestParameter>, Set<String>> getMapOfSemanticParameters(List<Operation> operations){
+        Map<Pair<Operation, TestParameter>, Set<String>> res = new HashMap<>();
 
         for(Operation operation: operations){
             // Adding parameters that use a csv to the maps
@@ -91,7 +91,7 @@ public class RegexGeneratorUtils {
 
                             if(genParameter.getName().equals("predicates")){
                                 // Adding the pair <OperationId, parameterName> to the map
-                                Pair<String, TestParameter> operationAndParameter = new Pair(operation.getOperationId(), testParameter);
+                                Pair<Operation, TestParameter> operationAndParameter = new Pair(operation, testParameter);
                                 res.put(operationAndParameter, new HashSet<>());
                             }
                         }
@@ -147,8 +147,8 @@ public class RegexGeneratorUtils {
 
     public static void updateValidAndInvalidValues(
             TestCase testCase,
-            Map<Pair<String, TestParameter>, Set<String>> validValues,
-            Map<Pair<String, TestParameter>, Set<String>> invalidValues,
+            Map<Pair<Operation, TestParameter>, Set<String>> validValues,
+            Map<Pair<Operation, TestParameter>, Set<String>> invalidValues,
             Set<ParameterValues> valuesFromPreviousIterations,
             String responseCode){
 
@@ -189,6 +189,7 @@ public class RegexGeneratorUtils {
              Set<ParameterValues> valuesFromPreviousIterations,
              Map<Pair<String, TestParameter>, Set<String>> validValues
             ){
+        // TODO: Check if this method is uncommented (remember refactorization)
 
         String operationId = testCase.getOperationId();
 
@@ -200,7 +201,7 @@ public class RegexGeneratorUtils {
                         .filter(validValues::containsKey).collect(Collectors.toMap(Function.identity(), validValues::get));
 
         Set<ParameterValues> valuesFromPreviousIterationsOfOperation = valuesFromPreviousIterations.stream()
-                .filter(x->x.getOperationId().equals(operationId) && !x.getTestParameter().getName().equals(parameterToDiscard.getName()))
+                .filter(x->x.getOperation().getOperationId().equals(operationId) && !x.getTestParameter().getName().equals(parameterToDiscard.getName()))
                 .collect(Collectors.toSet());
 
         // Iterate test parameters, if the rest of parameter values are valid at some point, add the parameterToDiscard to the invalid set (return true)

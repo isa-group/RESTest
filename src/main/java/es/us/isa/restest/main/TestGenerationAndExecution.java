@@ -335,7 +335,9 @@ public class TestGenerationAndExecution {
 		return loadConfiguration(confPath, spec);
 	}
 
-	public static String getExperimentName(){return experimentName; }
+	public static String getExperimentName(){ return experimentName; }
+
+	public static OpenAPISpecification getOpenAPISpecification(){ return spec; }
 
 
 	private static void setUpLogger() {
