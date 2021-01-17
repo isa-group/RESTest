@@ -1,10 +1,9 @@
 NZL
-FRO
 PS
 NAU
 BRU
-ZAM
 PW
+ZAM
 +52
 hu
 230
@@ -20,6 +19,7 @@ GUY
 AL
 POL
 KUW
+http://dbpedia.org/resource/List_of_FIFA_country_codes
 NCA
 1
 OMN
@@ -37,10 +37,9 @@ MAR
 RS
 IRI
 IRL
-QAT
 bg
+QAT
 BDI
-NLD
 TPE
 IRQ
 BLR
@@ -51,28 +50,28 @@ V
 URS
 BZ
 BUL
-List of Internet TLDs
 URU
-List of FIFA country codes
 USSR
+http://dbpedia.org/resource/DEN
 so
 ISK
 SWE
-ISO 3166-1 alpha-3
-ISO 3166-1 alpha-2
 USA
-ESP
 ISL
+ESP
 SY
 EST
 BEL
 ISR
-NED
+http://dbpedia.org/resource/ISO_3166-2:RS
+http://dbpedia.org/resource/ISO_3166-1_alpha-2
 CO
+NED
 BER
 KOR
 RUS
 w
+http://dbpedia.org/resource/GRL
 ITA
 ETH
 NER
@@ -93,6 +92,7 @@ MTQ
 ly
 EUA
 MLT
+http://dbpedia.org/resource/ISO_3166-1_alpha-3
 DZ
 PRY
 679
@@ -110,12 +110,13 @@ JOR
 CZE
 NOR
 CAN
-ROM
+http://dbpedia.org/resource/FRO
 CIV
+ROM
 TCD
 TKM
-NGR
 TCH
+NGR
 ROU
 ISO-3166 MP
 60
@@ -126,7 +127,6 @@ INA
 IND
 ENG
 YEM
-GRL
 MEX
 AFG
 SRB
@@ -139,33 +139,34 @@ SRI
 NZ
 BHR
 WF
+http://dbpedia.org/resource/List_of_Internet_TLDs
 ES-P
 GBR
 974
 +216
-HUN
 GG
+HUN
 GH
 FIJ
 AS, ASM
 BAH
 FIN
 TUN
-DEN
 LUX
 UGA
-BRA
 TUR
+BRA
+http://dbpedia.org/resource/NLD
 BAR
 VIE
 FRA
 LVA
-EGY
 NIR
+EGY
 JAM
 502
 503
-VIN
 FRG
+VIN
 LES
 PER

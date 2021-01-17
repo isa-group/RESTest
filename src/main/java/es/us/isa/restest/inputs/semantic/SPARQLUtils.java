@@ -197,7 +197,11 @@ public class SPARQLUtils {
 
         // First line
         if(count){
-            queryString = queryString + "Select distinct count(*)  where { \n\n";
+            if(allParametersName.size() == 1){
+                queryString = queryString + "Select count(distinct " + parametersString + ")" + " where { \n\n";
+            }else{
+                queryString = queryString + "Select distinct count(*)  where { \n\n";
+            }
         }else {
             queryString = queryString + "Select distinct " + parametersString + "  where { \n\n";
         }

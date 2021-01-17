@@ -64,6 +64,10 @@ public class TestGenerationAndExecution {
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
 	public static void main(String[] args) throws RESTestException {
+
+		// TODO: DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
+		System.setProperty("http.maxConnections", "100");
+
 		Timer.startCounting(ALL);
 
 		// Read .properties file path. This file contains the configuration parameter

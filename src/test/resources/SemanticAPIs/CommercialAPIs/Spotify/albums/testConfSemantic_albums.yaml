@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: "Bearer BQC8K7XUWBmfWH0xPuvbUUcgXKk9W5yhUUbofUMZOHgpFA4KKhnkAoB8tuntxpLag0Z09uXcdF-3tB0HlFke-Tx9fJTvmZrRqU0McvNYmvaqO8vP11Bgfh9ILvw0k2qOgdmLGxb5lT6rjGvGXNLTERwDewt05-lY_MoQm_Olu3B7lASjuTsJHruLERVcY2ToOPc0TVId2VsZJ-QeDfXvvuKs26rKBP4HcQdHMNxwSA466YSECx-Z3AUGxlCw_dsfIUmLPxLigJ3T53S0Pw1lD2O2xF4SWU71O18"
+    Authorization: Bearer BQAaa3L6vhObzamF8idOvRJ95Jol9pH41Hj8owxsVr5VFdcKFO6q8yHWWtxW_R52b_IWOpIlYRrhzyZj8viwFJnAJz3PgDGT7OeZ21R_k1KnezBsQ9kr7LvtVChSH9i2Fn8cD7J1ntpTnQXJmwsa00qtpmAiKNYznMUZJxXRVxZv6THamfkbS43mE6f__Jr4UoBnAVilLDQuMT5CMNzB7LdXEAdtVy3TeVL1cEw8nfUa2NHVc61SOmST8qPeF0FduNpBVAerP39Kr_sEZTOdtqbN3GWvMrGYkYw
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -44,7 +44,7 @@ testConfiguration:
         valid: true
     - name: market
       in: query
-      weight: 1.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:
@@ -66,11 +66,31 @@ testConfiguration:
 #      in: path
 #      weight: null
 #      generators:
-#      - type: RandomEnglishWord
+#      - type: RandomInputValue
 #        genParameters:
-#        - name: maxWords
+#        - name: values
 #          values:
 #          - 1
+#          - 382ObEPsp2rxGrnsizN5TX
+#          - 1A2GTWGtFfWp7KSQTwWOyo
+#          - 2noRn2Aes5aoNVsU6iWThc
+#          - 4PgleR09JVnm3zY1fW3XBA
+#          - 58ufpQsJ1DS5kq4hhzQDiI
+#          - 6J84szYCnMfzEcvIcfWMFL
+#          - 4YzNjecIvmLFEby13NOBmj
+#          - 21GSy4UKShEpEfrojAEK9U
+#          - 0swM8EuQkgYV2knrZ8rFl2
+#          - 2B4G3D8pCGzk3ryWVPD6ga
+#          - 2AW6HCRfGox94vO7GMQSLD
+#          - 5FVNWYM95qgM8Wkzksnszy
+#          - 3yaQNz5hglJrlaVJTLcUCb
+#          - 6ajdXlPMknejXW5TxqTMr0
+#          - 5XWqGM9qDxw3KjQCBgewAV
+#          - 4s096NcPZeqXsj8gQ1R1aT
+#          - 0T3RVlrWzids265ebYOkDq
+#          - 6ixZvq546olo2LumeG66UW
+#          - 3qrqWaQBRtiDvKnVgi2Jhk
+#          - 6NnxUxgj1FlneEPzSaRflN
 #          objectValues: null
 #        valid: true
 #    - name: market
@@ -379,7 +399,7 @@ testConfiguration:
 #        valid: true
 #    - name: Accept
 #      in: header
-#      weight: 0.5
+#      weight: 0.0
 #      generators:
 #      - type: RandomEnglishWord
 #        genParameters:
@@ -397,11 +417,28 @@ testConfiguration:
 #      in: path
 #      weight: null
 #      generators:
-#      - type: RandomEnglishWord
+#      - type: RandomInputValue
 #        genParameters:
-#        - name: maxWords
+#        - name: values
 #          values:
-#          - 1
+#          - toplists
+#          - 2020
+#          - hiphop
+#          - dinner
+#          - pop
+#          - mood
+#          - rock
+#          - edm_dance
+#          - chill
+#          - party
+#          - latin
+#          - rnb
+#          - workout
+#          - at_home
+#          - classical
+#          - sleep
+#          - decades
+#          - jazz
 #          objectValues: null
 #        valid: true
 #    - name: country
@@ -436,7 +473,7 @@ testConfiguration:
 #        valid: true
 #    - name: Accept
 #      in: header
-#      weight: 0.5
+#      weight: 0.0
 #      generators:
 #      - type: RandomEnglishWord
 #        genParameters:
@@ -611,7 +648,7 @@ testConfiguration:
 #        valid: true
 #    - name: Accept
 #      in: header
-#      weight: 0.5
+#      weight: 0.0
 #      generators:
 #      - type: RandomEnglishWord
 #        genParameters:

@@ -33,13 +33,17 @@ public class SemanticInputGenerator {
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
     public static final Integer THRESHOLD = 100;
-    // DBPedia Endpoint     http://dbpedia.org/sparql       https://query.wikidata.org/sparql
-    public static final String szEndpoint = "http://dbpedia.org/sparql";
+    // DBPedia Endpoint     http://dbpedia.org/sparql       https://query.wikidata.org/sparql       http://localhost:8890/sparql
+    public static final String szEndpoint = "http://localhost:8890/sparql";
 
     private static final Logger log = LogManager.getLogger(SemanticInputGenerator.class);
 
 
     public static void main(String[] args) throws IOException {
+        
+        // TODO: DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
+        System.setProperty("http.maxConnections", "100");
+
         setEvaluationParameters();
 
         System.out.println(confPath);
@@ -122,7 +126,7 @@ public class SemanticInputGenerator {
 
         Path path = Paths.get(confPath);
         Path dir = path.getParent();
-        Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
+        Path fn = path.getFileSystem().getPath("testConfSemantic_localhost.yaml");
         Path target = (dir == null) ? fn : dir.resolve(fn);
 
         semanticConfPath = target.toString();

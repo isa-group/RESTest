@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: 'Bearer -----'
+    Authorization: Bearer BQAaa3L6vhObzamF8idOvRJ95Jol9pH41Hj8owxsVr5VFdcKFO6q8yHWWtxW_R52b_IWOpIlYRrhzyZj8viwFJnAJz3PgDGT7OeZ21R_k1KnezBsQ9kr7LvtVChSH9i2Fn8cD7J1ntpTnQXJmwsa00qtpmAiKNYznMUZJxXRVxZv6THamfkbS43mE6f__Jr4UoBnAVilLDQuMT5CMNzB7LdXEAdtVy3TeVL1cEw8nfUa2NHVc61SOmST8qPeF0FduNpBVAerP39Kr_sEZTOdtqbN3GWvMrGYkYw
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -15,8 +15,8 @@ testConfiguration:
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
@@ -40,16 +40,23 @@ testConfiguration:
 #          - 6ixZvq546olo2LumeG66UW
 #          - 3qrqWaQBRtiDvKnVgi2Jhk
 #          - 6NnxUxgj1FlneEPzSaRflN
+#          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: csv
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/GetAlbums_market.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/albums/{id}"
 #    operationId: GetAlbum
@@ -58,11 +65,12 @@ testConfiguration:
 #    - name: id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
+#          - 1
 #          - 382ObEPsp2rxGrnsizN5TX
 #          - 1A2GTWGtFfWp7KSQTwWOyo
 #          - 2noRn2Aes5aoNVsU6iWThc
@@ -84,16 +92,22 @@ testConfiguration:
 #          - 3qrqWaQBRtiDvKnVgi2Jhk
 #          - 6NnxUxgj1FlneEPzSaRflN
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: csv
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/GetAlbum_market.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/albums/{id}/tracks"
 #    operationId: <SET OPERATION ID>
@@ -102,18 +116,19 @@ testConfiguration:
 #    - name: id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -127,11 +142,12 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -145,16 +161,18 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /artists
 #    operationId: <SET OPERATION ID>
@@ -163,13 +181,14 @@ testConfiguration:
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/artists/{id}"
 #    operationId: <SET OPERATION ID>
@@ -178,13 +197,14 @@ testConfiguration:
 #    - name: id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/artists/{id}/albums"
 #    operationId: <SET OPERATION ID>
@@ -193,18 +213,19 @@ testConfiguration:
 #    - name: id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -218,11 +239,12 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -236,26 +258,29 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: album_type
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/artists/{id}/related-artists"
 #    operationId: <SET OPERATION ID>
@@ -264,13 +289,14 @@ testConfiguration:
 #    - name: id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/artists/{id}/top-tracks"
 #    operationId: <SET OPERATION ID>
@@ -279,23 +305,25 @@ testConfiguration:
 #    - name: id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: country
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /browse/categories
 #    operationId: browseCategories
@@ -304,8 +332,8 @@ testConfiguration:
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -313,17 +341,18 @@ testConfiguration:
 #          objectValues: null
 #        - name: min
 #          values:
-#          - 1
+#          - 0
 #          objectValues: null
 #        - name: max
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -337,36 +366,48 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: country
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: csv
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseCategories_country.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
+#        valid: true
 #    - name: locale
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: csv
 #          values:
 #          - src/main/resources/TestData/Generated/Spotify/browseCategories_locale.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
-#      weight: 0
-#      generator:
-#        type: RandomEnglishWord
+#      weight: 0.0
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
   - testPath: "/browse/categories/{category_id}"
     operationId: browseCategoriesCategoryId
@@ -375,8 +416,8 @@ testConfiguration:
     - name: category_id
       in: path
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -399,36 +440,48 @@ testConfiguration:
           - decades
           - jazz
           objectValues: null
+        valid: true
     - name: country
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
-          - 'src/main/resources/TestData/Generated/Spotify/browseCategoriesCategoryId_country.csv'
+          - src/main/resources/TestData/Generated/Spotify/browseCategoriesCategoryId_country.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
     - name: locale
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
-          - 'src/main/resources/TestData/Generated/Spotify/browseCategoriesCategoryId_locale.csv'
+          - src/main/resources/TestData/Generated/Spotify/browseCategoriesCategoryId_locale.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
     - name: Accept
       in: header
-      weight: 0
-      generator:
-        type: RandomEnglishWord
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
 #  - testPath: "/browse/categories/{category_id}/playlists"
 #    operationId: <SET OPERATION ID>
@@ -437,18 +490,19 @@ testConfiguration:
 #    - name: category_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -462,11 +516,12 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -480,26 +535,29 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: country
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /browse/featured-playlists
 #    operationId: browseFeaturedPlaylists
@@ -508,8 +566,8 @@ testConfiguration:
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -517,17 +575,18 @@ testConfiguration:
 #          objectValues: null
 #        - name: min
 #          values:
-#          - 1
+#          - 0
 #          objectValues: null
 #        - name: max
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -541,46 +600,63 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: country
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: csv
 #          values:
-#          - 'src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_country.csv'
+#          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_country.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
+#        valid: true
 #    - name: locale
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: csv
 #          values:
-#          - 'src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_locale.csv'
+#          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_locale.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/countryCode"
+#          objectValues: null
+#        valid: true
 #    - name: timestamp
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: csv
 #          values:
-#          - 'src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_timestamp.csv'
+#          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_timestamp.csv
 #          objectValues: null
+#        - name: predicates
+#          values:
+#          - "http://dbpedia.org/property/timestamp"
+#          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
-#      weight: 0
-#      generator:
-#        type: RandomEnglishWord
+#      weight: 0.0
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /browse/new-releases
 #    operationId: <SET OPERATION ID>
@@ -589,8 +665,8 @@ testConfiguration:
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -604,11 +680,12 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -622,26 +699,29 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: country
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /me/following
 #    operationId: getFollowing
@@ -650,18 +730,19 @@ testConfiguration:
 #    - name: type
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - artist
 #          objectValues: null
+#        valid: true
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -675,16 +756,18 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: after
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /me/following
 #    operationId: <SET OPERATION ID>
@@ -693,24 +776,26 @@ testConfiguration:
 #    - name: type
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - artist
 #          - user
 #          objectValues: null
+#        valid: true
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /me/following
 #    operationId: <SET OPERATION ID>
@@ -719,24 +804,26 @@ testConfiguration:
 #    - name: type
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - artist
 #          - user
 #          objectValues: null
+#        valid: true
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /me/following/contains
 #    operationId: <SET OPERATION ID>
@@ -745,24 +832,26 @@ testConfiguration:
 #    - name: type
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - artist
 #          - user
 #          objectValues: null
+#        valid: true
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /me/tracks
 #    operationId: <SET OPERATION ID>
@@ -771,8 +860,8 @@ testConfiguration:
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -786,11 +875,12 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -804,26 +894,29 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /me/tracks
 #    operationId: <SET OPERATION ID>
@@ -832,23 +925,25 @@ testConfiguration:
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /me/tracks
 #    operationId: <SET OPERATION ID>
@@ -857,23 +952,25 @@ testConfiguration:
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /me/tracks/contains
 #    operationId: <SET OPERATION ID>
@@ -882,13 +979,14 @@ testConfiguration:
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /search
 #    operationId: <SET OPERATION ID>
@@ -897,8 +995,8 @@ testConfiguration:
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -912,11 +1010,12 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -930,36 +1029,40 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: q
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: type
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: /tracks
 #    operationId: <SET OPERATION ID>
@@ -968,23 +1071,25 @@ testConfiguration:
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/tracks/{id}"
 #    operationId: <SET OPERATION ID>
@@ -993,23 +1098,25 @@ testConfiguration:
 #    - name: id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}"
 #    operationId: <SET OPERATION ID>
@@ -1018,13 +1125,14 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists"
 #    operationId: <SET OPERATION ID>
@@ -1033,18 +1141,19 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -1058,11 +1167,12 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -1076,16 +1186,18 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists"
 #    operationId: <SET OPERATION ID>
@@ -1094,34 +1206,37 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: body
 #      in: body
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - value 1
 #          - value 2
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}"
 #    operationId: <SET OPERATION ID>
@@ -1130,53 +1245,58 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: fields
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}"
 #    operationId: <SET OPERATION ID>
@@ -1185,44 +1305,48 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: body
 #      in: body
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - value 1
 #          - value 2
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}/followers"
 #    operationId: <SET OPERATION ID>
@@ -1231,34 +1355,37 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: body
 #      in: body
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - value 1
 #          - value 2
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}/followers"
 #    operationId: <SET OPERATION ID>
@@ -1267,23 +1394,25 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}/followers/contains"
 #    operationId: <SET OPERATION ID>
@@ -1292,33 +1421,36 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: ids
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}/tracks"
 #    operationId: <SET OPERATION ID>
@@ -1327,28 +1459,30 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: limit
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -1362,11 +1496,12 @@ testConfiguration:
 #          values:
 #          - 50
 #          objectValues: null
+#        valid: true
 #    - name: offset
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -1380,36 +1515,40 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: fields
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: market
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}/tracks"
 #    operationId: <SET OPERATION ID>
@@ -1418,44 +1557,48 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: body
 #      in: body
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - value 1
 #          - value 2
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}/tracks"
 #    operationId: <SET OPERATION ID>
@@ -1464,28 +1607,30 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: position
 #      in: query
 #      weight: 0.5
-#      generator:
-#        type: RandomNumber
+#      generators:
+#      - type: RandomNumber
 #        genParameters:
 #        - name: type
 #          values:
@@ -1499,26 +1644,29 @@ testConfiguration:
 #          values:
 #          - 100
 #          objectValues: null
+#        valid: true
 #    - name: uris
 #      in: query
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
 #  - testPath: "/users/{user_id}/playlists/{playlist_id}/tracks"
 #    operationId: <SET OPERATION ID>
@@ -1527,42 +1675,46 @@ testConfiguration:
 #    - name: user_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: playlist_id
 #      in: path
 #      weight: null
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: Accept
 #      in: header
 #      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
+#      generators:
+#      - type: RandomEnglishWord
 #        genParameters:
 #        - name: maxWords
 #          values:
 #          - 1
 #          objectValues: null
+#        valid: true
 #    - name: body
 #      in: body
 #      weight: null
-#      generator:
-#        type: RandomInputValue
+#      generators:
+#      - type: RandomInputValue
 #        genParameters:
 #        - name: values
 #          values:
 #          - value 1
 #          - value 2
 #          objectValues: null
+#        valid: true
 #    expectedResponse: 200
