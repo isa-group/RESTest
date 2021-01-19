@@ -149,6 +149,7 @@ public class TestGenerationAndExecution {
 			((ARTestCaseGenerator) gen).setDiversity(similarityMetric);
 			((ARTestCaseGenerator) gen).setNumberOfCandidates(numberCandidates);
 			gen.setFaultyRatio(faultyRatio);
+			break;
 		default:
 		}
 

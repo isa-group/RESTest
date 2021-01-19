@@ -145,7 +145,7 @@ public class ARTestCaseGeneratorTest {
     // AMADEUS HOTEL
 
     @Test
-    public void amadeusHotelFullTestCaseGeneratorWithFaults() throws RESTestException {
+    public void amadeusHotelARTestCaseGeneratorWithFaults() throws RESTestException {
         // Load specification
         String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);

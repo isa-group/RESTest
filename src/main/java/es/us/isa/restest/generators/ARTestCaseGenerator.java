@@ -12,6 +12,11 @@ import org.javatuples.Pair;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *
+ * @author José Ramón Fernández
+ */
+
 public class ARTestCaseGenerator extends ConstraintBasedTestCaseGenerator {
 
     private Diversity diversity;
@@ -24,6 +29,7 @@ public class ARTestCaseGenerator extends ConstraintBasedTestCaseGenerator {
         testCases = new ArrayList<>();
     }
 
+    @Override
     public TestCase generateNextTestCase(Operation testOperation, String faultyReason) throws RESTestException {
         TestCase test;
 

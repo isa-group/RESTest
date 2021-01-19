@@ -26,4 +26,6 @@ public class IterativeExampleTest {
         assertTrue(checkIfExists("target/test-data/bikewise"));
         assertTrue(checkIfExists("log/bikewise.log"));
     }
+
+    //TODO: Test with ART
 }
