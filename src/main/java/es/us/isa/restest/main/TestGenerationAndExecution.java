@@ -53,10 +53,14 @@ public class TestGenerationAndExecution {
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 
-	// For Constraint-based testing only:
+	// For Constraint-based testing and AR Testing:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
 	private static Integer reloadInputDataEvery; 						// Number of requests using the same randomly generated input data
 	private static Integer inputDataMaxValues; 							// Number of values used for each parameter when reloading input data
+
+	// For AR Testing only:
+	private static String similarityMetric;								// The algorithm to measure the similarity between test cases
+	private static Integer numberCandidates;							// Number of candidate test cases per AR iteration
 
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
@@ -138,13 +142,12 @@ public class TestGenerationAndExecution {
 			gen.setFaultyRatio(faultyRatio);
 			break;
 		case "ART":
-			//TODO: Set parameters
 			gen = new ARTestCaseGenerator(spec, conf, numTestCases);
 			((ARTestCaseGenerator) gen).setFaultyDependencyRatio(faultyDependencyRatio);
 			((ARTestCaseGenerator) gen).setInputDataMaxValues(inputDataMaxValues);
 			((ARTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
-			((ARTestCaseGenerator) gen).setSimilarityMeter(null);
-			((ARTestCaseGenerator) gen).setTestsPerIteration(null);
+			((ARTestCaseGenerator) gen).setDiversity(similarityMetric);
+			((ARTestCaseGenerator) gen).setNumberOfCandidates(numberCandidates);
 			gen.setFaultyRatio(faultyRatio);
 		default:
 		}
@@ -301,6 +304,14 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("deletepreviousresults") != null)
 			deletePreviousResults = Boolean.parseBoolean(readParameterValue("deletepreviousresults"));
 		logger.info("Delete previous results: {}", deletePreviousResults);
+
+		if (readParameterValue("similarity.metric") != null)
+			similarityMetric = readParameterValue("similarity.metric");
+		logger.info("Similarity metric: {}", similarityMetric);
+
+		if (readParameterValue("number.candidates") != null)
+			numberCandidates = Integer.parseInt(readParameterValue("number.candidates"));
+		logger.info("Number of candidates: {}", numberCandidates);
 
 		if (readParameterValue("faulty.ratio") != null)
 			faultyRatio = Float.parseFloat(readParameterValue("faulty.ratio"));
