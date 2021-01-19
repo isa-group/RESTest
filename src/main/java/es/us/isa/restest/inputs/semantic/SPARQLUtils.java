@@ -156,7 +156,8 @@ public class SPARQLUtils {
                     URI uri = new URI(szValString);
                     String host = uri.getHost();
 
-                    if(host!=null && szEndpoint.contains(uri.getHost())){
+                    // TODO (REFACTORIZATION): REPLACE "http://dbpedia.org/sparql" with szEndpoint
+                    if(host!=null && "http://dbpedia.org/sparql".contains(uri.getHost())){
                         szValString = szVal.asResource().getLocalName().replace("_", " ").trim();
                     }
                 }else{
@@ -264,10 +265,12 @@ public class SPARQLUtils {
         ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
 
         // Execute Query
+        Integer res = 0;
         ResultSet rs = qexec.execSelect();
-
-        QuerySolution qs = rs.next();
-        Integer res = qs.get("?callret-0").asLiteral().getInt();
+        if(rs.hasNext()){
+            QuerySolution qs = rs.next();
+            res = qs.get("?callret-0").asLiteral().getInt();
+        }
         return res;
     }
 

@@ -116,31 +116,35 @@ public class RegexGeneratorUtils {
         return res;
     }
 
-    public static void updateCsvWithRegex(ParameterValues parameterValues, String regex){
+    public static void updateCsvWithRegex(String csvPath, String regex){
         Pattern pattern = Pattern.compile(regex);
+
+        // Read CSV as list
+        List<String> csvValues = readValues(csvPath);
+
+        // Filter list by regex
+        List<String> matches = csvValues.stream().filter(pattern.asPredicate()).collect(Collectors.toList());
+
+        // Rewrite csv
+        deleteFile(csvPath);
+        createFileIfNotExists(csvPath);
+
+        // Write the Set of values as a csv file
+        try {
+            collectionToCSV(csvPath, matches);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void updateCsvWithRegex(ParameterValues parameterValues, String regex){
         List<String> csvPaths = getCsvPaths(parameterValues.getTestParameter());
 
         // Filter CSVs by regex
         for(String csvPath: csvPaths){
-            // Read csv as list
-            List<String> csvValues = readValues(csvPath);
-
-            // Filter list by regex
-            List<String> matches = csvValues.stream()
-                    .filter(pattern.asPredicate())
-                    .collect(Collectors.toList());
-
-            // Rewrite csv
-            deleteFile(csvPath);
-            createFileIfNotExists(csvPath);
-
-            // Write the Set of values as a csv file
-            try {
-                collectionToCSV(csvPath, matches);
-                logger.info("CSV file updated");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            updateCsvWithRegex(csvPath, regex);
+            logger.info("CSV file updated");
         }
 
     }
@@ -171,22 +175,25 @@ public class RegexGeneratorUtils {
 
     }
 
+    // TODO (REFACTOR): Operation and testCase (contains operationId) are redundant
     public static void updateValidAndInvalidValues(
             TestCase testCase,
             Map<Pair<Operation, TestParameter>, Set<String>> validValues,
             Map<Pair<Operation, TestParameter>, Set<String>> invalidValues,
             Set<ParameterValues> valuesFromPreviousIterations,
-            String responseCode){
+            String responseCode,
+            List<Operation> operations){
 
         String operationId = testCase.getOperationId();
 
         // Iterate semantic parameters (Filter by operationId)
         Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
-                .filter(x -> x.getKey().equals(operationId)).map(x -> x.getValue())
+                .filter(x -> x.getKey().getOperationId().equals(operationId)).map(x -> x.getValue())
                 .collect(Collectors.toSet());
 
         for (TestParameter parameter : parametersOfOperation) {
-            Pair<String, TestParameter> pair = new Pair<>(operationId, parameter);
+            Operation operation = operations.stream().filter(x->x.getOperationId().equals(operationId)).findFirst().get();
+            Pair<Operation, TestParameter> pair = new Pair<>(operation, parameter);
 
             // Search parameter value in corresponding map
             String value = testCase.getParameterValue(parameter.getIn(), parameter.getName());
@@ -199,10 +206,10 @@ public class RegexGeneratorUtils {
                         validValues.get(pair).add(value);
                         break;
                     case '4':
-//                        if(isTestValueInvalid(testCase, parameter, valuesFromPreviousIterations, validValues)){
+                        if(isTestValueInvalid(testCase, parameter, valuesFromPreviousIterations, validValues, operation)){
                             // Add only if the rest of the parameter values are considered valid (from previous or current iterations)
                             invalidValues.get(pair).add(value);
-//                        }
+                        }
                         break;
                 }
             }
@@ -213,21 +220,22 @@ public class RegexGeneratorUtils {
             (TestCase testCase,
              TestParameter parameterToDiscard,
              Set<ParameterValues> valuesFromPreviousIterations,
-             Map<Pair<String, TestParameter>, Set<String>> validValues
+             Map<Pair<Operation, TestParameter>, Set<String>> validValues,
+             Operation operation
             ){
         // TODO: Check if this method is uncommented (remember refactorization)
 
-        String operationId = testCase.getOperationId();
+//        String operationId = testCase.getOperationId();
 
         // Get values of current iteration and remove parameterToDiscard
-        Map<Pair<String, TestParameter>, Set<String>> validValuesOfOperation =
+        Map<Pair<Operation, TestParameter>, Set<String>> validValuesOfOperation =
                 validValues
                         .keySet().stream()
-                        .filter(x->x.getKey().equals(operationId) && !x.getValue().getName().equals(parameterToDiscard.getName()))
+                        .filter(x->x.getKey().equals(operation) && !x.getValue().getName().equals(parameterToDiscard.getName()))
                         .filter(validValues::containsKey).collect(Collectors.toMap(Function.identity(), validValues::get));
 
         Set<ParameterValues> valuesFromPreviousIterationsOfOperation = valuesFromPreviousIterations.stream()
-                .filter(x->x.getOperation().getOperationId().equals(operationId) && !x.getTestParameter().getName().equals(parameterToDiscard.getName()))
+                .filter(x->x.getOperation().getOperationId().equals(operation.getOperationId()) && !x.getTestParameter().getName().equals(parameterToDiscard.getName()))
                 .collect(Collectors.toSet());
 
         // Iterate test parameters, if the rest of parameter values are valid at some point, add the parameterToDiscard to the invalid set (return true)
@@ -235,7 +243,7 @@ public class RegexGeneratorUtils {
             TestParameter testParameter = parameterValues.getTestParameter();
 
             String value = testCase.getParameterValue(testParameter.getIn(), testParameter.getName());
-            Pair<String, TestParameter> operationParameter = new Pair<>(operationId, testParameter);
+            Pair<Operation, TestParameter> operationParameter = new Pair<>(operation, testParameter);
 
             if(
                     value!=null &&

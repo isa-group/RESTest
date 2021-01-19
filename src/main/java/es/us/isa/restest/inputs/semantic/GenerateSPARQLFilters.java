@@ -38,7 +38,9 @@ public class GenerateSPARQLFilters {
     }
 
     private static String generateSPARQLFilterRegExp(String parameterName, String regexp){
-        String res = "\tFILTER regex(str(?" + parameterName + "), " + " \"" + regexp + "\")\n";
+        String modifiedRegex = regexp.replace("\\", "\\\\");
+        String res = "\tFILTER regex(str(?" + parameterName + "), " + " \"" + modifiedRegex + "\")\n";
+        System.out.println(res);
 
         return res;
     }

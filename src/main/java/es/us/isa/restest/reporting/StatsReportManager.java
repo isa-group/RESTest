@@ -106,7 +106,8 @@ public class StatsReportManager {
                         .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
                 // Add parameter value to a map depending on the response code
-                updateValidAndInvalidValues(testCase, validValues, invalidValues, valuesFromPreviousIterations, responseCode);
+                // TODO (REFACTOR): operations is redundant
+                updateValidAndInvalidValues(testCase, validValues, invalidValues, valuesFromPreviousIterations, responseCode, operations);
             }
         }
 
@@ -134,16 +135,25 @@ public class StatsReportManager {
                 FinalSolution solution = learnRegex(name, validSet, invalidSet,false);
                 String regex = solution.getSolution();
                 logger.info("Regex learned for parameter " + parameterValues.getTestParameter().getName() + ": " + regex);
+                logger.info("Accuracy: " + solution.getValidationPerformances().get("character accuracy"));
+                logger.info("Precision: " + solution.getValidationPerformances().get("match precision"));
+                logger.info("Recall: " + solution.getValidationPerformances().get("match recall"));
                 logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
+//                "match precision": 1.0,
+//                        "character accuracy": 1.0,
+//                        "character precision": 1.0,
+//                        "match recall": 1.0,
+//                        "character recall": 1.0,
+//                        "match f-measure": 1.0
 
                 // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
-                if(solution.getValidationPerformances().get("match f-measure")  >= 0.9){
+                if(solution.getValidationPerformances().get("match recall")  >= 0.9){
                     // Filter all the CSVs of the associated testParameter
                     updateCsvWithRegex(parameterValues, regex);
 
-                    // Delete CSV of successful and failed values of previous iterations after the update with regex
-                    deleteFile(parameterValues.getValidCSVPath());
-                    deleteFile(parameterValues.getInvalidCSVPath());
+                    // Update CSVs of valid and invalid values according to the generated regex
+                    updateCsvWithRegex(parameterValues.getValidCSVPath(), regex);
+                    updateCsvWithRegex(parameterValues.getInvalidCSVPath(), regex);
 
                     // Second predicate search using the generated regex
                     if(secondPredicateSearch){
@@ -168,11 +178,11 @@ public class StatsReportManager {
                         // TODO: La lista completa de parameter values contiene todos los parámetros semánticos, además de los predicados a evitar, falta por añadir el csvPaths
                     }
 
-                    // TODO: REMOVE THIS FOR LOOP
+                    // TODO: REMOVE THIS FOR LOOP (IT IS PART OF THE GREEDY APPROACH)
                     // Delete the invalid files from the other parameters
-                    for(ParameterValues otherParameterValues: valuesFromPreviousIterations){
-                        deleteFile(otherParameterValues.getInvalidCSVPath());
-                    }
+//                    for(ParameterValues otherParameterValues: valuesFromPreviousIterations){
+//                        deleteFile(otherParameterValues.getInvalidCSVPath());
+//                    }
                 }
 
             }

@@ -234,9 +234,6 @@ public class Predicates {
         QueryExecution qexec = QueryExecutionFactory.sparqlService(szEndpoint, query);
         ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
 
-        // TODO: Delete
-//        System.out.println(queryString);
-
         // Execute query
         int iCount = 0;
         ResultSet rs = qexec.execSelect();

@@ -64,8 +64,9 @@ public class ParameterValues {
         // PROVISIONAL: DELETE IN THE FUTURE
         System.out.println("---------------------------------------------------------------------------");
         System.out.println("---------------------------------------------------------------------------");
-        System.out.println(this.getValidValues());
-        System.out.println(this.getInvalidValues());
+        System.out.println("Parameter: " + testParameter.getName());
+        System.out.println("Valid values: " + this.getValidValues());
+        System.out.println("Invalid values: " + this.getInvalidValues());
         System.out.println("---------------------------------------------------------------------------");
         System.out.println("---------------------------------------------------------------------------");
     }

@@ -14,48 +14,52 @@ testConfiguration:
     - name: countryCode
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: addressLocality
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: postalCode
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: streetAddress
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: locationType
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -64,11 +68,12 @@ testConfiguration:
           - postoffice
           - postbank
           objectValues: null
+        valid: true
     - name: serviceType
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -89,12 +94,16 @@ testConfiguration:
           - age-verification
           - handicapped-access
           - parking
+          - "express:drop-off-easy"
+          - "express:drop-off-prelabeled"
+          - "express:drop-off-account"
           objectValues: null
+        valid: true
     - name: radius
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -108,11 +117,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -126,6 +136,7 @@ testConfiguration:
           values:
           - 50
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /find-by-geo
     operationId: findByGeo
@@ -134,28 +145,30 @@ testConfiguration:
     - name: latitude
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: longitude
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: locationType
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -164,11 +177,12 @@ testConfiguration:
           - postoffice
           - postbank
           objectValues: null
+        valid: true
     - name: serviceType
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -189,12 +203,16 @@ testConfiguration:
           - age-verification
           - handicapped-access
           - parking
+          - "express:drop-off-easy"
+          - "express:drop-off-prelabeled"
+          - "express:drop-off-account"
           objectValues: null
+        valid: true
     - name: radius
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -208,11 +226,12 @@ testConfiguration:
           values:
           - 25000
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -226,4 +245,5 @@ testConfiguration:
           values:
           - 50
           objectValues: null
+        valid: true
     expectedResponse: 200
