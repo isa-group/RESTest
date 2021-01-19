@@ -3,6 +3,7 @@ package es.us.isa.restest.main;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
+import es.us.isa.restest.generators.ARTestCaseGenerator;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
@@ -136,6 +137,15 @@ public class TestGenerationAndExecution {
 			((ConstraintBasedTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
 			gen.setFaultyRatio(faultyRatio);
 			break;
+		case "ART":
+			//TODO: Set parameters
+			gen = new ARTestCaseGenerator(spec, conf, numTestCases);
+			((ARTestCaseGenerator) gen).setFaultyDependencyRatio(faultyDependencyRatio);
+			((ARTestCaseGenerator) gen).setInputDataMaxValues(inputDataMaxValues);
+			((ARTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
+			((ARTestCaseGenerator) gen).setSimilarityMeter(null);
+			((ARTestCaseGenerator) gen).setTestsPerIteration(null);
+			gen.setFaultyRatio(faultyRatio);
 		default:
 		}
 
