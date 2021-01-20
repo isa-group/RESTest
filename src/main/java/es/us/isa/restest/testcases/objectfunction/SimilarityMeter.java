@@ -35,7 +35,7 @@ public class SimilarityMeter {
                 return jaccardMeter.apply(left, right);
             case JARO_WINKLER:
                 return jaroWinklerMeter.apply(left, right);
-            case LEVENSHTEIN: // Computed as: 1 - (distance / average_string_length)
+            case LEVENSHTEIN: // Computed as: 1 - (distance / maxlength(left, right))
                 double maxStringLength = Math.max(left.length(), right.length());
                 if (maxStringLength != 0)
                     return 1 - (double)levenshteinMeter.apply(left, right) / maxStringLength;
