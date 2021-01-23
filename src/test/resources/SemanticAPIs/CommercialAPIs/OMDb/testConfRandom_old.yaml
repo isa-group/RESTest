@@ -2,7 +2,7 @@
 auth:
   required: true
   queryParams:
-    apikey: 8af2893e
+    apikey: '---'
   headerParams: {}
   apiKeysPath: null
   headersPath: null
@@ -15,41 +15,38 @@ testConfiguration:
     - name: t
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: i
       in: query
       weight: 0.5
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/main/resources/TestData/imdbId.csv
-          objectValues: null
-        valid: true
-    - name: s
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
+    - name: s
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
     - name: page
       in: query
       weight: 0.5
-      generators:
-      - type: RandomNumber
+      generator:
+        type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -63,12 +60,11 @@ testConfiguration:
           values:
           - 100
           objectValues: null
-        valid: true
     - name: "y"
       in: query
       weight: 0.5
-      generators:
-      - type: RandomNumber
+      generator:
+        type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -80,14 +76,13 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 2021
+          - 100
           objectValues: null
-        valid: true
     - name: type
       in: query
-      weight: 0.2
-      generators:
-      - type: RandomInputValue
+      weight: 0.5
+      generator:
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -95,40 +90,36 @@ testConfiguration:
           - series
           - episode
           objectValues: null
-        valid: true
     - name: plot
       in: query
       weight: 0.5
-      generators:
-      - type: RandomInputValue
+      generator:
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - short
           - full
           objectValues: null
-        valid: true
     - name: r
       in: query
       weight: 0.5
-      generators:
-      - type: RandomInputValue
+      generator:
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - json
 #          - xml
           objectValues: null
-        valid: true
     - name: callback
       in: query
-      weight: 0.0
-      generators:
-      - type: RandomEnglishWord
+      weight: 0
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     expectedResponse: 200

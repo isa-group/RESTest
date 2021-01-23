@@ -2,7 +2,8 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
+  headerParams:
+    Authorization: "Bearer OsGpCXNx_prU0J5BOKYLzGINQt0RkxCv6_rnDrKaIT4mUSXhMfXbbhA574RcP1ITbNRAmGXMkVAS-fqlIZs2ZvCQBu9-c57UqajsaBGDrInJrUuEhIg8c1BtuBjFX3Yx"
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -15,44 +16,60 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_term.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/term"
           objectValues: null
         valid: true
     - name: location
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_location.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/location"
           objectValues: null
         valid: true
     - name: latitude
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_latitude.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/latitude"
           objectValues: null
         valid: true
     - name: longitude
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_longitude.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/longitude"
           objectValues: null
         valid: true
     - name: radius
@@ -78,22 +95,31 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
+          - name: csv
+            values:
+              - src/main/resources/TestData/yelp-categories.csv
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 5
         valid: true
     - name: locale
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Yelp API/getBusinesses_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
           objectValues: null
         valid: true
     - name: limit
@@ -152,12 +178,20 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
-          objectValues: null
+            - "1"
+            - "2"
+            - "3"
+            - "4"
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 4
         valid: true
     - name: open_now
       in: query
@@ -168,7 +202,7 @@ testConfiguration:
         valid: true
     - name: open_at
       in: query
-      weight: 0
+      weight: 0.0
       generators:
       - type: RandomNumber
         genParameters:
@@ -189,60 +223,24 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
-          objectValues: null
+            - hot_and_new
+            - request_a_quote
+            - reservation
+            - waitlist_reservation
+            - cashback
+            - deals
+            - gender_neutral_restrooms
+            - open_to_all
+            - wheelchair_accessible
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 3
         valid: true
     expectedResponse: 200
-#  - testPath: "/transactions/{transaction_type}/search"
-#    operationId: getTransactions
-#    method: get
-#    testParameters:
-#    - name: transaction_type
-#      in: path
-#      weight: null
-#      generators:
-#      - type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#        valid: true
-#    - name: location
-#      in: query
-#      weight: 0.5
-#      generators:
-#      - type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#        valid: true
-#    - name: latitude
-#      in: query
-#      weight: 0.5
-#      generators:
-#      - type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#        valid: true
-#    - name: longitude
-#      in: query
-#      weight: 0.5
-#      generators:
-#      - type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#        valid: true
-#    expectedResponse: 200

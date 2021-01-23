@@ -2,10 +2,9 @@
 auth:
   required: true
   queryParams: {}
-  headerParams:
-    DHL-API-Key: 90enEs5ns92m0FAiGT1AXNzD9vWjIJbA
+  headerParams: {}
   apiKeysPath: null
-  headersPath: null
+  headersPath: /DHL/apikeys.json
 testConfiguration:
   operations:
   - testPath: /find-by-address
@@ -27,11 +26,13 @@ testConfiguration:
           - "http://dbpedia.org/property/countryCode"
           - "http://dbpedia.org/property/country"
           - "http://dbpedia.org/property/code"
+          - "http://dbpedia.org/property/codes"
+          - "http://dbpedia.org/property/goCode"
           objectValues: null
         valid: true
     - name: addressLocality
       in: query
-      weight: 1.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:
@@ -47,7 +48,7 @@ testConfiguration:
         valid: true
     - name: postalCode
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:
@@ -62,7 +63,7 @@ testConfiguration:
         valid: true
     - name: streetAddress
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:

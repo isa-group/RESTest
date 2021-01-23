@@ -1,11 +1,10 @@
 ---
 auth:
   required: true
-  queryParams: { }
+  queryParams: {}
+  headerParams: {}
   apiKeysPath: null
   headersPath: null
-  headerParams:
-    Authorization: "Bearer ---"
 testConfiguration:
   operations:
   - testPath: /businesses/search
@@ -16,7 +15,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomEnglishWord
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -26,7 +25,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomEnglishWord
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -36,37 +35,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomNumber
+        type: SemanticParameter
         genParameters:
         - name: type
           values:
           - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
           objectValues: null
     - name: longitude
       in: query
       weight: 0.5
       generator:
-        type: RandomNumber
+        type: SemanticParameter
         genParameters:
         - name: type
           values:
           - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
           objectValues: null
     - name: radius
       in: query
@@ -90,22 +73,17 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: RandomEnglishWord
         genParameters:
-          - name: csv
-            values:
-              - src/main/resources/TestData/yelp-categories.csv
-          - name: minValues
-            values:
-              - 1
-          - name: maxValues
-            values:
-              - 5
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
     - name: locale
       in: query
-      weight: 0
+      weight: 0.5
       generator:
-        type: RandomEnglishWord
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -164,20 +142,12 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: RandomEnglishWord
         genParameters:
-          - name: values
-            values:
-              - 1
-              - 2
-              - 3
-              - 4
-          - name: minValues
-            values:
-              - 1
-          - name: maxValues
-            values:
-              - 4
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
     - name: open_now
       in: query
       weight: 0.5
@@ -206,84 +176,55 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: RandomEnglishWord
         genParameters:
-          - name: values
-            values:
-              - hot_and_new
-              - request_a_quote
-              - reservation
-              - waitlist_reservation
-              - cashback
-              - deals
-              - gender_neutral_restrooms
-              - open_to_all
-              - wheelchair_accessible
-          - name: minValues
-            values:
-              - 1
-          - name: maxValues
-            values:
-              - 3
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
     expectedResponse: 200
-#  - testPath: "/transactions/{transaction_type}/search"
-#    operationId: getTransactions
-#    method: get
-#    testParameters:
-#    - name: transaction_type
-#      in: path
-#      weight: null
-#      generator:
-#        type: InputValue
-#        genParameters:
-#        - name: values
-#          values:
-#            - delivery
-#          objectValues: null
-#    - name: location
-#      in: query
-#      weight: 0.5
-#      generator:
-#        type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#    - name: latitude
-#      in: query
-#      weight: 0.5
-#      generator:
-#        type: RandomNumber
-#        genParameters:
-#        - name: type
-#          values:
-#          - integer
-#          objectValues: null
-#        - name: min
-#          values:
-#          - 1
-#          objectValues: null
-#        - name: max
-#          values:
-#          - 100
-#          objectValues: null
-#    - name: longitude
-#      in: query
-#      weight: 0.5
-#      generator:
-#        type: RandomNumber
-#        genParameters:
-#        - name: type
-#          values:
-#          - integer
-#          objectValues: null
-#        - name: min
-#          values:
-#          - 1
-#          objectValues: null
-#        - name: max
-#          values:
-#          - 100
-#          objectValues: null
-#    expectedResponse: 200
+  - testPath: "/transactions/{transaction_type}/search"
+    operationId: getTransactions
+    method: get
+    testParameters:
+    - name: transaction_type
+      in: path
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: location
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: latitude
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+    - name: longitude
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+    expectedResponse: 200

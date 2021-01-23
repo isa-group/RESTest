@@ -78,7 +78,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 
 		
 		List<TestCase> testCases = new ArrayList<>();
-		
+
 		setUpIDLReasoner(testOperation);
 
 		// Reset counters for the current operation

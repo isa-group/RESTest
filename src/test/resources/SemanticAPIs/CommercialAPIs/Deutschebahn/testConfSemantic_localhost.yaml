@@ -53,11 +53,14 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Stationsdatenbereitstellung/getStations_searchstring.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: category
@@ -68,52 +71,64 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - "1"
-          - "2"
-          - "3"
-          - "4"
-          - "5"
-          - "6"
-          - "7"
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
           objectValues: null
         - name: minValues
           values:
-            - 1
+          - 1
+          objectValues: null
         - name: maxValues
           values:
-            - 7
+          - 7
+          objectValues: null
         valid: true
     - name: federalstate
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Stationsdatenbereitstellung/getStations_federalstate.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: eva
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Stationsdatenbereitstellung/getStations_eva.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/eva"
           objectValues: null
         valid: true
     - name: ril
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/Stationsdatenbereitstellung/getStations_ril.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: logicaloperator
@@ -124,14 +139,16 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - "and"
-          - "or"
+          - and
+          - or
           objectValues: null
         - name: minValues
           values:
-            - 1
+          - 1
+          objectValues: null
         - name: maxValues
           values:
-            - 1
+          - 1
+          objectValues: null
         valid: true
     expectedResponse: 200

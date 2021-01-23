@@ -8,22 +8,26 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-  - testPath: /
+  - testPath: '/'
     operationId: search
     method: get
     testParameters:
-    - name: t
+    - name: "t"
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/OMDb API/search_t.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/title"
           objectValues: null
         valid: true
-    - name: i
+    - name: "i"
       in: query
       weight: 0.5
       generators:
@@ -34,15 +38,19 @@ testConfiguration:
           - src/main/resources/TestData/imdbId.csv
           objectValues: null
         valid: true
-    - name: s
+    - name: "s"
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/OMDb API/search_s.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/series"
           objectValues: null
         valid: true
     - name: page
@@ -68,19 +76,15 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomNumber
+      - type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/Generated/OMDb API/search_y.csv
           objectValues: null
-        - name: min
+        - name: predicates
           values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 2021
+          - "http://dbpedia.org/property/year"
           objectValues: null
         valid: true
     - name: type
@@ -117,7 +121,6 @@ testConfiguration:
         - name: values
           values:
           - json
-#          - xml
           objectValues: null
         valid: true
     - name: callback

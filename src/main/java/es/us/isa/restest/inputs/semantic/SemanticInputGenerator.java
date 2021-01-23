@@ -26,7 +26,7 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 public class SemanticInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/dhl_random_address.properties";
+    private static String propertiesFilePath = "-----";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
@@ -42,7 +42,7 @@ public class SemanticInputGenerator {
     public static void main(String[] args) throws IOException {
         
         // TODO: DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
-        System.setProperty("http.maxConnections", "100");
+        System.setProperty("http.maxConnections", "10000");
 
         setEvaluationParameters();
 
