@@ -245,8 +245,6 @@ public class TestGenerationAndExecution {
 		}
 
 		logger.info("Loading configuration parameter values");
-
-		logger.error("Properties file path: {}", propertiesFilePath);
 		
 		generator = readParameterValue("generator");
 		logger.info("Generator: {}", generator);
