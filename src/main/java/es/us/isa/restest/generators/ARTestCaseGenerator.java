@@ -36,25 +36,26 @@ public class ARTestCaseGenerator extends ConstraintBasedTestCaseGenerator {
         switch (faultyReason) {
             case "none":
                 test = generateARValidTestCase(testOperation);
+                testCases.add(test);
                 break;
 
             case INTER_PARAMETER_DEPENDENCY:
                 test = generateARFaultyTestCaseDueToViolatedDependencies(testOperation);
-                if (test.getFaulty())
+                if (test.getFaulty()) {
                     nFaultyTestDueToDependencyViolations++;
+                    testCases.add(test);
+                }
                 break;
 
             case INDIVIDUAL_PARAMETER_CONSTRAINT:
                 test = generateARFaultyTestCaseDueToIndividualConstraints(testOperation);
-                if (test != null)
+                if (test != null) {
                     nFaultyTestsDueToIndividualConstraint++;
+                    testCases.add(test);
+                }
                 break;
             default:
                 throw new IllegalArgumentException("The faulty reason '" + faultyReason + "' is not supported.");
-        }
-
-        if(test != null) {
-            testCases.add(test);
         }
 
         return test;
