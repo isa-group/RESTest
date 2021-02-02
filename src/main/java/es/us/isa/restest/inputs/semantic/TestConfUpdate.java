@@ -56,6 +56,9 @@ public class TestConfUpdate {
         generators.add(newGenerator);
 
         testParameter.setGenerators(generators);
+        if(semanticParameter.getValues().size() == 0){
+            testParameter.setWeight(0.0f);
+        }
 
     }
 

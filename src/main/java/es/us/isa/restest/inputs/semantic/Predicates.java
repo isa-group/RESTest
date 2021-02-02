@@ -30,7 +30,7 @@ public class Predicates {
     private static final Integer minSupport = 20;
     private static final Logger log = LogManager.getLogger(Predicates.class);
 
-    public static Set<String> getPredicates(ParameterValues parameterValues, String regex){
+    public static Set<String> getPredicates(ParameterValues parameterValues, String regex, List<String> predicatesToIgnore){
 
         Set<String> predicates = new HashSet<>();
 
@@ -41,8 +41,8 @@ public class Predicates {
         TestParameter testParameter = parameterValues.getTestParameter();
         String parameterName = testParameter.getName();
 
-        // Get predicates of testParameter (List<String> predicatesToIgnore)
-        List<String> predicatesToIgnore = getPredicatesToIgnoreAndAddRegex(testParameter, regex);
+        // Add regex to semanticParameter
+        addRegexToSemanticParameter(testParameter, regex);
 
         PathItem pathItem = spec.getSpecification().getPaths().get(parameterValues.getOperation().getTestPath());
         String parameterDescription = getParameterDescription(pathItem, parameterName, parameterValues.getOperation().getMethod());
@@ -346,7 +346,24 @@ public class Predicates {
         return parameterName;
     }
 
-    private static List<String> getPredicatesToIgnoreAndAddRegex(TestParameter testParameter, String regex){
+    public  static List<String> getPredicatesToIgnore(TestParameter testParameter){
+        List<Generator> generators = testParameter.getGenerators();
+        for(Generator generator: generators){
+            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
+                for(GenParameter genParameter: generator.getGenParameters()){
+                    if(genParameter.getName().equals("predicates")){
+                        return genParameter.getValues();
+                    }
+                }
+
+            }
+        }
+        throw new NullPointerException("The provided TestParameter does not contain a list of predicates");
+    }
+
+
+
+    public static void addRegexToSemanticParameter(TestParameter testParameter, String regex){
         List<Generator> generators = testParameter.getGenerators();
 
         for(Generator generator: generators){
@@ -360,7 +377,7 @@ public class Predicates {
 
                         generator.addGenParameter(regexGenParameter);
 
-                        return genParameter.getValues();
+//                        return genParameter.getValues();
                     }
                 }
 

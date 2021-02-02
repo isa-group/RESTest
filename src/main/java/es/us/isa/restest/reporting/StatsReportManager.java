@@ -21,7 +21,7 @@ import java.util.*;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.configuration.pojos.ParameterValues.getValuesFromPreviousIterations;
-import static es.us.isa.restest.inputs.semantic.Predicates.getPredicates;
+import static es.us.isa.restest.inputs.semantic.Predicates.*;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithNewPredicates;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
@@ -45,6 +45,8 @@ public class StatsReportManager {
     private boolean enableOutputCoverage = true;
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
+    private int maxNumberOfPredicates = 2;
+    private String metricToUse = "match recall";
 
 
     private static final Logger logger = LogManager.getLogger(StatsReportManager.class.getName());
@@ -106,7 +108,7 @@ public class StatsReportManager {
                         .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
                 // Add parameter value to a map depending on the response code
-                // TODO (REFACTOR): operations is redundant
+                // TODO (REFACTOR): operation is redundant
                 updateValidAndInvalidValues(testCase, validValues, invalidValues, valuesFromPreviousIterations, responseCode, operations);
             }
         }
@@ -124,8 +126,11 @@ public class StatsReportManager {
             Set<String> validSet = parameterValues.getValidValues();
             Set<String> invalidSet = parameterValues.getInvalidValues();
 
+            List<String> predicatesToIgnore = getPredicatesToIgnore(parameterValues.getTestParameter());
+
             // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
-            if(invalidSet.size() >= 5 && validSet.size() >= 5){
+            if(invalidSet.size() >= 5 && validSet.size() >= 5 & predicatesToIgnore.size() < maxNumberOfPredicates){
+                // TODO: PREDICATES TO IGNORE SIZE
 
                 // OperationName_parameterId
                 String name = parameterValues.getOperation().getOperationId() + "_" + parameterValues.getTestParameter().getName();
@@ -147,7 +152,7 @@ public class StatsReportManager {
 //                        "match f-measure": 1.0
 
                 // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
-                if(solution.getValidationPerformances().get("match recall")  >= 0.9){
+                if(solution.getValidationPerformances().get(metricToUse)  >= 0.9){
                     // Filter all the CSVs of the associated testParameter
                     updateCsvWithRegex(parameterValues, regex);
 
@@ -159,7 +164,7 @@ public class StatsReportManager {
                     if(secondPredicateSearch){
 
                         // Get new predicates for parameter
-                        Set<String> predicates = getPredicates(parameterValues, regex);
+                        Set<String> predicates = getPredicates(parameterValues, regex, predicatesToIgnore);
 
                         // TODO: Check that the regex is applied
                         if(predicates.size() > 0) {
