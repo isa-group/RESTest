@@ -13,14 +13,15 @@ import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.FileManager;
 import es.us.isa.restest.util.SpecificationVisitor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javatuples.Pair;
 
 import java.util.*;
 
-import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
-
 /**
- * This class implements a generator of fuzzing test cases
+ * This class implements a generator of fuzzing test cases. It uses a customizable dictionary to obtain
+ * fuzzing parameters. Those parameters are classified by type (string, integer, number, boolean).
  * @author José Ramón Fernández
  */
 
@@ -28,10 +29,16 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
 
     private Map<String, List<String>> fuzzingMap;
 
-    public FuzzingTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) throws JsonProcessingException {
+    private static Logger logger = LogManager.getLogger(FuzzingTestCaseGenerator.class.getName());
+
+    public FuzzingTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
         super(spec, conf, nTests);
         TypeReference<HashMap<String, List<String>>> typeRef = new TypeReference<HashMap<String, List<String>>>() {};
-        this.fuzzingMap = new ObjectMapper().readValue(FileManager.readFile("src/main/resources/fuzzing-dictionary.json"), typeRef);
+        try {
+            this.fuzzingMap = new ObjectMapper().readValue(FileManager.readFile("src/main/resources/fuzzing-dictionary.json"), typeRef);
+        } catch (JsonProcessingException e) {
+            logger.error("Error processing JSON fuzzing dictionary", e);
+        }
     }
 
     @Override
@@ -41,11 +48,10 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
 
         resetOperation();
 
-        boolean fulfillsDependencies = !hasDependencies(testOperation.getOpenApiOperation());
-
         while (hasNext()) {
             TestCase test = generateNextTestCase(testOperation);
-            test.setFulfillsDependencies(fulfillsDependencies);
+            test.setFulfillsDependencies(false);
+            test.setFaulty(false);
 
             authenticateTestCase(test);
             testCases.add(test);
@@ -62,16 +68,16 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
         if(testOperation.getTestParameters() != null) {
             for(TestParameter testParam : testOperation.getTestParameters()) {
                 if(!testParam.getIn().equals("body")) {
-                    generateFuzzyParameter(tc, testParam, testOperation);
+                    generateFuzzingParameter(tc, testParam, testOperation);
                 } else {
-                    generateFuzzyBody(tc, testParam);
+                    generateFuzzingBody(tc, testParam);
                 }
             }
         }
         return tc;
     }
 
-    private void generateFuzzyParameter(TestCase tc, TestParameter testParam, Operation testOperation) {
+    private void generateFuzzingParameter(TestCase tc, TestParameter testParam, Operation testOperation) {
         //TODO: Different fuzzing lists for string formats (URL, email, binary files) and number formats (float, double, int32, int64)
         if(testParam.getWeight() == null || rand.nextFloat() <= testParam.getWeight()) {
             ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
@@ -80,7 +86,7 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
         }
     }
 
-    private void generateFuzzyBody(TestCase tc, TestParameter testParam) {
+    private void generateFuzzingBody(TestCase tc, TestParameter testParam) {
         //TODO: Generate fuzzing bodies
         ITestDataGenerator generator = getRandomGenerator(nominalGenerators.get(Pair.with(testParam.getName(), testParam.getIn())));
         if (generator instanceof ObjectPerturbator) {

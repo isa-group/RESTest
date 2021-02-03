@@ -5,6 +5,7 @@ import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
+import es.us.isa.restest.generators.FuzzingTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
@@ -32,7 +33,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Bikewise/bikewise.properties";
+	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
 	private static OpenAPISpecification spec; 							// OAS specification
@@ -119,12 +120,27 @@ public class TestGenerationAndExecution {
 		}
 
 		// Load configuration
-		TestConfigurationObject conf = loadConfiguration(confPath, spec);
+		TestConfigurationObject conf;
+
+		if(generator.equals("FT") && confPath == null) {
+			logger.info("No testConf specified. Generating one");
+			String[] args = {OAISpecPath};
+			CreateTestConf.main(args);
+
+			String specDir = OAISpecPath.substring(0, OAISpecPath.lastIndexOf('/'));
+			confPath = specDir + "/testConf.yaml";
+			logger.info("Created testConf in '{}'", confPath);
+		}
+
+		conf = loadConfiguration(confPath, spec);
 
 		// Create generator
 		AbstractTestCaseGenerator gen = null;
 
 		switch (generator) {
+		case "FT":
+			gen = new FuzzingTestCaseGenerator(spec, conf, numTestCases);
+			break;
 		case "RT":
 			gen = new RandomTestCaseGenerator(spec, conf, numTestCases);
 			((RandomTestCaseGenerator) gen).setFaultyRatio(faultyRatio);
