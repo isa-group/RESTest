@@ -14,7 +14,6 @@ import java.util.stream.IntStream;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
-import static es.us.isa.restest.main.TestGenerationAndExecution.getConfPath;
 
 
 public class TestConfUpdate {
@@ -62,7 +61,7 @@ public class TestConfUpdate {
 
     }
 
-    public static void updateTestConfWithNewPredicates(TestConfigurationObject conf, ParameterValues parameterValues, Set<String>  newPredicates){
+    public static void updateTestConfWithNewPredicates(TestConfigurationObject conf, String confPath, ParameterValues parameterValues, Set<String>  newPredicates){
         Integer opIndex = IntStream.range(0, conf.getTestConfiguration().getOperations().size())
                 .filter(i -> parameterValues.getOperation().getOperationId().equals(conf.getTestConfiguration().getOperations().get(i).getOperationId()))
                 .findFirst().getAsInt();
@@ -85,7 +84,7 @@ public class TestConfUpdate {
         genParameter.setValues(oldPredicates);
 
         // Write new test configuration to file
-        TestConfigurationIO.toFile(conf, getConfPath());
+        TestConfigurationIO.toFile(conf, confPath);
         log.info("Test configuration file updated");
 
     }

@@ -15,6 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -120,7 +122,7 @@ public class RegexGeneratorUtils {
         Pattern pattern = Pattern.compile(regex);
 
         // Read CSV as list
-        List<String> csvValues = readValues(csvPath);
+        List<String> csvValues = readCsv(csvPath);
 
         // Filter list by regex
         List<String> matches = csvValues.stream().filter(pattern.asPredicate()).collect(Collectors.toList());
@@ -136,6 +138,22 @@ public class RegexGeneratorUtils {
             e.printStackTrace();
         }
 
+    }
+
+    private static List<String> readCsv(String csvFile) {
+
+        List<String> res = new ArrayList<>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(csvFile));
+            String line = "";
+            while((line = br.readLine()) != null) {
+                res.add(line);
+            }
+            br.close();
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
+        }
+        return res;
     }
 
     public static void updateCsvWithRegex(ParameterValues parameterValues, String regex){

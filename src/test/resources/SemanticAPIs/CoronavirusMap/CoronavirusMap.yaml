@@ -5,7 +5,7 @@ info:
     API and COVID-19 update source. Programmatically access live corona virus updates
     for statistics with historical data, maps, charts, graphs. COVID-19 API and corona
     virus live updates.
-  title: api_60755bd3-98c1-445d-a06b-84e57ee3977b
+  title: coronavirusMap
   version: apiversion_338682cf-e4fd-4367-9026-1d812717881b
 schemes:
 - https

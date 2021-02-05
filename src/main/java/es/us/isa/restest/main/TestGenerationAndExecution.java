@@ -33,7 +33,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotelRandom_hotelOffer.properties";
+	private static String propertiesFilePath = "----";
 
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
@@ -52,7 +52,7 @@ public class TestGenerationAndExecution {
 	private static Integer timeDelay; 									// Delay between requests in seconds (-1 for no delay)
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
 	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
-	public static Boolean secondPredicateSearch;
+	private static boolean secondPredicateSearch;
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 
@@ -87,7 +87,8 @@ public class TestGenerationAndExecution {
 		StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
 		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
 
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, learnRegex, generator, writer,
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, learnRegex,
+				secondPredicateSearch, spec, confPath, generator, writer,
 				reportManager, statsReportManager);
 
 		runner.setExecuteTestCases(executeTestCases);
@@ -341,9 +342,7 @@ public class TestGenerationAndExecution {
 
 	public static String getExperimentName(){ return experimentName; }
 
-	public static OpenAPISpecification getOpenAPISpecification(){ return spec; }
-
-	public static String getConfPath(){ return confPath; }
+//	public static String getConfPath(){ return confPath; }
 
 
 	private static void setUpLogger() {

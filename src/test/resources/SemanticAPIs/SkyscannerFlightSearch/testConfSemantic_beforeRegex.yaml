@@ -1,0 +1,874 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/apiservices/autosuggest/v1.0/{country}/{currency}/{locale}/"
+    operationId: 5a9c9edde4b084deb4ea6195
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: query
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: country
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5a9c9edde4b084deb4ea6195_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5a9c9edde4b084deb4ea6195_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5a9c9edde4b084deb4ea6195_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/apiservices/browsedates/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}"
+    operationId: 5aa1edd5e4b06ec3937b23f0
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: country
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1edd5e4b06ec3937b23f0_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1edd5e4b06ec3937b23f0_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1edd5e4b06ec3937b23f0_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    - name: destinationplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: originplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: outboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: inboundpartialdate
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/apiservices/browsedates/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}"
+    operationId: 5c50a323e4b079c3de8a3778
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a323e4b079c3de8a3778_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    - name: country
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a323e4b079c3de8a3778_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a323e4b079c3de8a3778_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: outboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: destinationplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: originplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: inboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/apiservices/browsequotes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}"
+    operationId: 5aa1eab3e4b00687d3574279
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: country
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1eab3e4b00687d3574279_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1eab3e4b00687d3574279_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1eab3e4b00687d3574279_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    - name: originplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: destinationplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: outboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: inboundpartialdate
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/apiservices/browsequotes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}"
+    operationId: 5c50a381e4b079c3de8a377a
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a381e4b079c3de8a377a_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: country
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a381e4b079c3de8a377a_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
+          objectValues: null
+        valid: true
+    - name: originplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a381e4b079c3de8a377a_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    - name: destinationplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: inboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: outboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}"
+    operationId: 5aa1eca4e4b00687d357427e
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: country
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1eca4e4b00687d357427e_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1eca4e4b00687d357427e_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5aa1eca4e4b00687d357427e_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    - name: originplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: destinationplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: outboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: inboundpartialdate
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}"
+    operationId: 5c50a3c8e4b08cf00f3fc318
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a3c8e4b08cf00f3fc318_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: country
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a3c8e4b08cf00f3fc318_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5c50a3c8e4b08cf00f3fc318_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    - name: originplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: outboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: inboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: destinationplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/apiservices/reference/v1.0/countries/{locale}"
+    operationId: 5a9ca8d2e4b084deb4ea61a9
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5a9ca8d2e4b084deb4ea61a9_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /apiservices/reference/v1.0/currencies
+    operationId: 5b074035e4b09d99505e1e3e
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/apiservices/referral/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}"
+    operationId: 5b1b0535e4b05b36a9cbe592
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - skyscanner-skyscanner-flight-search-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: country
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5b1b0535e4b05b36a9cbe592_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/country"
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5b1b0535e4b05b36a9cbe592_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: locale
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/skyscanner/5b1b0535e4b05b36a9cbe592_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
+    - name: originplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: inboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: destinationplace
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: outboundpartialdate
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: shortapikey
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

@@ -14,13 +14,14 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /data/en-GB/airlines.json
     operationId: 57f1ff38e4b0036abc9166f5
@@ -29,13 +30,14 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /data/en-GB/airports.json
     operationId: 57f1ff38e4b0c681e4af2434
@@ -44,13 +46,14 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /data/en-GB/cities.json
     operationId: 57f1ff38e4b02b08e6ad9fbb
@@ -59,13 +62,14 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /data/en-GB/countries.json
     operationId: 57f1ff38e4b0faf779aebae6
@@ -74,13 +78,14 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /data/planes.json
     operationId: 57f1ff38e4b0597e1dbb6c87
@@ -89,13 +94,14 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /data/routes.json
     operationId: apiendpoint_f8159a1f-4030-4bb7-9317-8ef69f7a9e68
@@ -104,13 +110,14 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v1/airline-directions
     operationId: 57f1ff38e4b0615fc0760549
@@ -119,28 +126,30 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: airline_code
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -154,6 +163,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v1/city-directions
     operationId: 57f1ff38e4b005ac6f42bce6
@@ -162,33 +172,36 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: origin
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: SemanticParameter
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: currency
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: SemanticParameter
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v1/prices/calendar
     operationId: 57f1ff38e4b0597e1dbb6c86
@@ -197,83 +210,91 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: return_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomRegExp
+      generators:
+      - type: RandomRegExp
         genParameters:
         - name: regExp
           values:
           - date
           objectValues: null
+        valid: true
     - name: calendar_type
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: destination
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: regExp
-          values:
-          - "^[a-zA-Z]{2,3}$"
-          objectValues: null
-    - name: currency
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: regExp
-          values:
-          - "^[a-zA-Z]{2,3}$"
-          objectValues: null
-    - name: origin
-      in: query
-      weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: regExp
-          values:
-          - "^[a-zA-Z]{2,3}$"
-          objectValues: null
-    - name: length
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
+    - name: currency
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: origin
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: length
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
     - name: depart_date
       in: query
       weight: null
-      generator:
-        type: RandomRegExp
+      generators:
+      - type: RandomRegExp
         genParameters:
         - name: regExp
           values:
           - date
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v1/prices/cheap
     operationId: 57f1ff38e4b0faf779aebae7
@@ -282,73 +303,80 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: depart_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: origin
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: currency
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: return_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: destination
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v1/prices/direct/
     operationId: 57f1ff38e4b005ac6f42bce5
@@ -357,53 +385,58 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: destination
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: return_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: origin
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: depart_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v1/prices/monthly
     operationId: apiendpoint_b6baced0-1ea6-4633-8483-13e2d11b0f86
@@ -412,73 +445,80 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: destination
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: origin
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: currency
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: length
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: depart_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: return_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v2/prices/latest
     operationId: 57f1ff38e4b071c9cf1acb52
@@ -487,18 +527,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: trip_class
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -512,11 +553,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -530,21 +572,23 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: period_type
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: show_to_affiliates
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -558,71 +602,78 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: sorting
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: origin
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: one_way
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: beginning_of_period
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: destination
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: currency
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: trip_duration
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -636,11 +687,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -654,6 +706,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v2/prices/month-matrix
     operationId: 57f1ff38e4b02b08e6ad9fba
@@ -662,63 +715,69 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: month
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: destination
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: regExp
-          values:
-          - "^[a-zA-Z]{2,3}$"
-          objectValues: null
-    - name: show_to_affiliates
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
+    - name: show_to_affiliates
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
     - name: currency
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: origin
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v2/prices/nearest-places-matrix
     operationId: 57f1ff38e4b0036abc9166f4
@@ -727,103 +786,113 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: flexibility
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: destination
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: show_to_affiliates
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: currency
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: depart_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: distance
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: return_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: origin
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v2/prices/special-offers
     operationId: 57f1ff38e4b071c9cf1acb51
@@ -832,13 +901,14 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /v2/prices/week-matrix
     operationId: 57f1ff38e4b0c681e4af2435
@@ -847,71 +917,78 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: depart_date
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: show_to_affiliates
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: currency
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: regExp
-          values:
-          - "^[a-zA-Z]{2,3}$"
-          objectValues: null
-    - name: return_date
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
+    - name: return_date
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
     - name: origin
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     - name: destination
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2,3}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200

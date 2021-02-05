@@ -35,7 +35,7 @@ public class ApiFootball {
 
     }
 
-    public static void apiFootball_leaguesCountryCountryNameSeason_season(String semanticInput, String apiKey, String host) throws IOException {
+    public static String apiFootball_leaguesCountryCountryNameSeason_season(String semanticInput, String apiKey, String host) throws IOException {
 
         String url = baseUri + "/v2/leagues/country/england/" + semanticInput;
 
@@ -53,9 +53,10 @@ public class ApiFootball {
         Response response = client.newCall(request).execute();
 
         System.out.println("RESPONSE CODE: " + response.code());
-        System.out.println(response.body().string());
-        System.out.println("--------------------------------------------------------------------------------------");
+//        System.out.println(response.body().string());
+//        System.out.println("--------------------------------------------------------------------------------------");
 
+        return response.body().string();
 
     }
 

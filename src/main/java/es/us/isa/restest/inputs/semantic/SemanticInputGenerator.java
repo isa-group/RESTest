@@ -126,7 +126,7 @@ public class SemanticInputGenerator {
 
         Path path = Paths.get(confPath);
         Path dir = path.getParent();
-        Path fn = path.getFileSystem().getPath("testConfSemantic_localhost.yaml");
+        Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
         Path target = (dir == null) ? fn : dir.resolve(fn);
 
         semanticConfPath = target.toString();

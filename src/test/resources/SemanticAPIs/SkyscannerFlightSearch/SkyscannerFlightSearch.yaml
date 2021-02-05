@@ -4,7 +4,7 @@ info:
   description: The Skyscanner API lets you search for flights & get flight prices
     from Skyscanner's database of prices, as well as get live quotes directly from
     ticketing agencies.
-  title: 5a9b565ae4b04378c0c99666
+  title: skyscanner
   version: 5a9b565ae4b00687d357311e
 schemes:
   - https

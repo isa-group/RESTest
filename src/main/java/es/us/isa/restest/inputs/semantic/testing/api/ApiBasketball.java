@@ -2,6 +2,9 @@ package es.us.isa.restest.inputs.semantic.testing.api;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import com.squareup.okhttp.Response;
 
 import java.io.IOException;
@@ -11,7 +14,7 @@ public class ApiBasketball {
     private static final String baseUri = "https://api-basketball.p.rapidapi.com";
 
     // GET /standings
-    public static void apiBasketball_standings_season(String semanticInput, String apiKey, String host) throws IOException {
+    public static String apiBasketball_standings_season(String semanticInput, String apiKey, String host) throws IOException, JSONException {
 
         String url = baseUri + "/standings?league=12&season=" + semanticInput;
 
@@ -29,10 +32,13 @@ public class ApiBasketball {
         Response response = client.newCall(request).execute();
 
         System.out.println("RESPONSE CODE: " + response.code());
-        System.out.println(response.body().string());
-        System.out.println("--------------------------------------------------------------------------------------");
+//        System.out.println(response.body().string());
 
+//        JSONObject Jobject = new JSONObject(response.body().string());
+//        JSONArray Jarray = Jobject.getJSONArray("errors");
+//        System.out.println("--------------------------------------------------------------------------------------");
 
+        return response.body().string();
     }
 
     // GET /standings/groups

@@ -9,7 +9,7 @@ import java.io.IOException;
 public class FlightData {
 
     private static final String baseUrl = "https://travelpayouts-travelpayouts-flight-data-v1.p.rapidapi.com";
-    private static final String apikeyFlightData = "xxxxxxx";
+    private static final String apikeyFlightData = "5b3ef0bdeca04643188c6610c30056f5";
     private static final String operationPath = "/v2/prices/week-matrix";
 
     // GET /v1/city-directions
@@ -38,7 +38,7 @@ public class FlightData {
 
     }
 
-    public static void flightData_cityDirections_currency(String semanticInput, String apiKey, String host) throws IOException {
+    public static Response flightData_cityDirections_currency(String semanticInput, String apiKey, String host) throws IOException {
 
         String url = baseUrl + "/v1/city-directions" + "?origin=MOW&currency=" + semanticInput;
 
@@ -58,8 +58,9 @@ public class FlightData {
 
         System.out.println("RESPONSE CODE: " + response.code());
         System.out.println(response.body().string());
-        System.out.println("--------------------------------------------------------------------------------------");
+//        System.out.println("--------------------------------------------------------------------------------------");
 
+        return response;
 
     }
 

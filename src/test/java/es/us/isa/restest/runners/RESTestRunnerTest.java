@@ -24,8 +24,9 @@ public class RESTestRunnerTest {
 
     @Test
     public void testRunner() throws RESTestException {
+        String confPath = "src/test/resources/YouTube/testConf_betty.yaml";
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/YouTube/swagger_betty.yaml");
-        TestConfigurationObject conf = loadConfiguration("src/test/resources/YouTube/testConf_betty.yaml", spec);
+        TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
         createDir("src/generation/java/runnerTest");
 
@@ -60,7 +61,7 @@ public class RESTestRunnerTest {
         statsReportManager.setCoverageMeter(new CoverageMeter(new CoverageGatherer(spec)));
 
 
-        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", false, generator, writer, arm, statsReportManager);
+        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", false, false, spec, confPath, generator, writer, arm, statsReportManager);
         runner.setExecuteTestCases(true);
 
 

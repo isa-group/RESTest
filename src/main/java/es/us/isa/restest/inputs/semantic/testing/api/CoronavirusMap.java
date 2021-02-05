@@ -9,9 +9,9 @@ import java.io.IOException;
 public class CoronavirusMap {
 
     private static final String baseUri = "https://coronavirus-map.p.rapidapi.com";
-    private static final String operationPath = "/v1/spots/year";
+    private static final String operationPath = "/v1/summary/region";
 
-    public static void coronavirusMap_region(String semanticInput, String apiKey, String host) throws IOException {
+    public static Response coronavirusMap_region(String semanticInput, String apiKey, String host) throws IOException {
 
         String url = baseUri + operationPath + "?region=" + semanticInput;
 
@@ -30,7 +30,9 @@ public class CoronavirusMap {
 
         System.out.println("RESPONSE CODE: " + response.code());
         System.out.println(response.body().string());
-        System.out.println("--------------------------------------------------------------------------------------");
+//        System.out.println("--------------------------------------------------------------------------------------");
+
+        return response;
 
 
     }

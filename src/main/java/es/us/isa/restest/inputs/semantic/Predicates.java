@@ -16,35 +16,33 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.GEN_PARAM_REG_EXP;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.extractPredicateCandidatesFromDescription;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.executeSPARQLQueryCount;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.generateQuery;
 import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.szEndpoint;
-import static es.us.isa.restest.main.TestGenerationAndExecution.getOpenAPISpecification;
 
 public class Predicates {
 
     private static final Integer minSupport = 20;
     private static final Logger log = LogManager.getLogger(Predicates.class);
 
-    public static Set<String> getPredicates(ParameterValues parameterValues, String regex, List<String> predicatesToIgnore){
+    public static Set<String> getPredicates(ParameterValues parameterValues, String regex, List<String> predicatesToIgnore, OpenAPISpecification specification){
 
         Set<String> predicates = new HashSet<>();
 
         // TODO: The found predicates must not be part of parameterValues.getPredicates (done)
         // TODO: Add regular expression to query (done)
-        OpenAPISpecification spec = getOpenAPISpecification();
+//        OpenAPISpecification spec = getOpenAPISpecification();
 
         TestParameter testParameter = parameterValues.getTestParameter();
         String parameterName = testParameter.getName();
 
         // Add regex to semanticParameter
-        addRegexToSemanticParameter(testParameter, regex);
+        testParameter.addRegexToSemanticParameter(regex);
 
-        PathItem pathItem = spec.getSpecification().getPaths().get(parameterValues.getOperation().getTestPath());
+        PathItem pathItem = specification.getSpecification().getPaths().get(parameterValues.getOperation().getTestPath());
         String parameterDescription = getParameterDescription(pathItem, parameterName, parameterValues.getOperation().getMethod());
 
         // If the paramater name is only a character, compare with description
@@ -363,28 +361,28 @@ public class Predicates {
 
 
 
-    public static void addRegexToSemanticParameter(TestParameter testParameter, String regex){
-        List<Generator> generators = testParameter.getGenerators();
-
-        for(Generator generator: generators){
-            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
-                for(GenParameter genParameter: generator.getGenParameters()){
-                    if(genParameter.getName().equals("predicates")){
-
-                        GenParameter regexGenParameter = new GenParameter();
-                        regexGenParameter.setName(GEN_PARAM_REG_EXP);
-                        regexGenParameter.setValues(Collections.singletonList(regex));
-
-                        generator.addGenParameter(regexGenParameter);
-
-//                        return genParameter.getValues();
-                    }
-                }
-
-            }
-        }
-
-        throw new NullPointerException("The provided TestParameter does not contain a list of predicates");
-    }
+//    public static void addRegexToSemanticParameter(TestParameter testParameter, String regex){
+//        List<Generator> generators = testParameter.getGenerators();
+//
+//        for(Generator generator: generators){
+//            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
+//                for(GenParameter genParameter: generator.getGenParameters()){
+//                    if(genParameter.getName().equals("predicates")){
+//
+//                        GenParameter regexGenParameter = new GenParameter();
+//                        regexGenParameter.setName(GEN_PARAM_REG_EXP);
+//                        regexGenParameter.setValues(Collections.singletonList(regex));
+//
+//                        generator.addGenParameter(regexGenParameter);
+//
+////                        return genParameter.getValues();
+//                    }
+//                }
+//
+//            }
+//        }
+//
+//        throw new NullPointerException("The provided TestParameter does not contain a list of predicates");
+//    }
 
 }

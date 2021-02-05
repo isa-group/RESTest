@@ -3,6 +3,7 @@ package es.us.isa.restest.reporting;
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.coverage.CoverageResults;
+import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
 import es.us.isa.restest.util.PropertyManager;
@@ -45,8 +46,8 @@ public class StatsReportManager {
     private boolean enableOutputCoverage = true;
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
-    private int maxNumberOfPredicates = 2;
-    private String metricToUse = "match recall";
+    private final int maxNumberOfPredicates = 2;
+    private final String metricToUse = "match recall";
 
 
     private static final Logger logger = LogManager.getLogger(StatsReportManager.class.getName());
@@ -83,7 +84,7 @@ public class StatsReportManager {
     }
 
 
-    public void learn(String testId) {
+    public void learn(String testId, Boolean secondPredicateSearch, OpenAPISpecification spec, String confPath) {
         // TODO: Add x-example from OAS to valid values
         List<Operation> operations = getTestConfigurationObject().getTestConfiguration().getOperations();
 
@@ -129,8 +130,7 @@ public class StatsReportManager {
             List<String> predicatesToIgnore = getPredicatesToIgnore(parameterValues.getTestParameter());
 
             // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
-            if(invalidSet.size() >= 5 && validSet.size() >= 5 & predicatesToIgnore.size() < maxNumberOfPredicates){
-                // TODO: PREDICATES TO IGNORE SIZE
+            if(invalidSet.size() >= 5 && validSet.size() >= 5){
 
                 // OperationName_parameterId
                 String name = parameterValues.getOperation().getOperationId() + "_" + parameterValues.getTestParameter().getName();
@@ -161,10 +161,10 @@ public class StatsReportManager {
                     updateCsvWithRegex(parameterValues.getInvalidCSVPath(), regex);
 
                     // Second predicate search using the generated regex
-                    if(secondPredicateSearch){
+                    if(secondPredicateSearch && predicatesToIgnore.size() < maxNumberOfPredicates){
 
                         // Get new predicates for parameter
-                        Set<String> predicates = getPredicates(parameterValues, regex, predicatesToIgnore);
+                        Set<String> predicates = getPredicates(parameterValues, regex, predicatesToIgnore, spec);
 
                         // TODO: Check that the regex is applied
                         if(predicates.size() > 0) {
@@ -176,7 +176,7 @@ public class StatsReportManager {
 
                             // Add predicate to TestParameter and update testConf file
                             TestConfigurationObject conf = getTestConfigurationObject();
-                            updateTestConfWithNewPredicates(conf, parameterValues, predicates);
+                            updateTestConfWithNewPredicates(conf, confPath, parameterValues, predicates);
 
 
                         }
