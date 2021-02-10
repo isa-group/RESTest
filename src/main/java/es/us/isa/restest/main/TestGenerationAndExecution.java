@@ -6,6 +6,7 @@ import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.generators.StatefulTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.runners.RESTestRunner;
@@ -32,7 +33,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Bikewise/bikewise.properties";
+	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
 	private static OpenAPISpecification spec; 							// OAS specification
@@ -136,6 +137,9 @@ public class TestGenerationAndExecution {
 			((ConstraintBasedTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
 			gen.setFaultyRatio(faultyRatio);
 			break;
+		case "ST":
+			gen = new StatefulTestCaseGenerator(spec, conf, numTestCases);
+			gen.setFaultyRatio(faultyRatio);
 		default:
 		}
 
@@ -152,6 +156,9 @@ public class TestGenerationAndExecution {
 		writer.setEnableStats(enableCSVStats);
 		writer.setEnableOutputCoverage(enableOutputCoverage);
 		writer.setAPIName(experimentName);
+		if(generator.equals("ST")) {
+			writer.setStoreGetResponseBodies(true);
+		}
 		return writer;
 	}
 

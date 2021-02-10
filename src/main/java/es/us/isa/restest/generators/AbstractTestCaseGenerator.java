@@ -337,7 +337,7 @@ public abstract class AbstractTestCaseGenerator {
 	
 	
 	/* Try to perturbate input objects using the ObjectPerturbator. If not possible, set the parameter to the original object provided in the test configuration file */
-	private void perturbate(TestCase test, Operation testOperation) {
+	protected void perturbate(TestCase test, Operation testOperation) {
 		
 		for (TestParameter confParam : testOperation.getTestParameters()) {
 			ITestDataGenerator generator = getRandomGenerator(nominalGenerators.get(Pair.with(confParam.getName(), confParam.getIn())));
