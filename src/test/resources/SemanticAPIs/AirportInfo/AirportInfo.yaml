@@ -3,7 +3,7 @@ host: rapidapi.p.rapidapi.com
 info:
   description: 'Fastest and most complete database of airport codes and data, including
     address, phone number, website and more. '
-  title: api_0de4a286-91f3-4060-8fa7-7415c8a65ca8
+  title: airportInfo
   version: apiversion_0dede419-a738-4de7-a7c4-5a2febd4c628
 schemes:
 - https

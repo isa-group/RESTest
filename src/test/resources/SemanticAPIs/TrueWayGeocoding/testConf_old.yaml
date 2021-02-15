@@ -25,21 +25,21 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/api_ed762aef-e305-4401-b2fe-b0f8c5f0f43d/apiendpoint_530cb41f-763e-411b-bc52-eb71137b6430_address.csv
+          - 1
           objectValues: null
     - name: language
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_ed762aef-e305-4401-b2fe-b0f8c5f0f43d/apiendpoint_530cb41f-763e-411b-bc52-eb71137b6430_language.csv
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: bounds
       in: query
@@ -55,11 +55,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/api_ed762aef-e305-4401-b2fe-b0f8c5f0f43d/apiendpoint_530cb41f-763e-411b-bc52-eb71137b6430_country.csv
+          - 1
           objectValues: null
     expectedResponse: 200
   - testPath: /ReverseGeocode

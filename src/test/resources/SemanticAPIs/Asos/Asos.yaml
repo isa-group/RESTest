@@ -3,7 +3,7 @@ host: rapidapi.p.rapidapi.com
 info:
   description: Asos API helps to query for all information about categories, products,
     etc... as on official websites
-  title: api_7256fb69-e0dc-45cf-9f55-dc5343d92be6
+  title: asos
   version: apiversion_3f6c2b1d-7efc-4ad8-aa3a-456887cfea43
 schemes:
 - https

@@ -3,7 +3,7 @@ host: rapidapi.p.rapidapi.com
 info:
   description: +700 football leagues & cups. Livescore (15s), odds, events, line-ups,
     coachs, players, top scorers, standings, statistics, transfers, predictions.
-  title: 5b3e61a1e4b0d23f1ee78ad5
+  title: apiFootball
   version: 5b3e61a1e4b0a5b0626e8bec
 schemes:
   - https

@@ -76,11 +76,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: type
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_2e4dc899-a9dc-49fd-92de-c8d9619b07bc_lat.csv
+          - integer
           objectValues: null
     - name: page
       in: query
@@ -114,11 +114,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: type
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_2e4dc899-a9dc-49fd-92de-c8d9619b07bc_lon.csv
+          - integer
           objectValues: null
     expectedResponse: 200
   - testPath: /menuitems/search/fields
@@ -200,11 +200,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: type
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_51916c60-f111-40cd-8bb3-32136a0149e0_lon.csv
+          - integer
           objectValues: null
     - name: q
       in: query
@@ -220,11 +220,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: type
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_51916c60-f111-40cd-8bb3-32136a0149e0_lat.csv
+          - integer
           objectValues: null
     - name: distance
       in: query
@@ -365,11 +365,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: type
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_5588b3e1-b33e-4b02-bcc0-ce8f1fd1edf5_lat.csv
+          - integer
           objectValues: null
     - name: page
       in: query
@@ -393,11 +393,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: type
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_5588b3e1-b33e-4b02-bcc0-ce8f1fd1edf5_lon.csv
+          - integer
           objectValues: null
     - name: q
       in: query
@@ -489,21 +489,21 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: type
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_0bd5ae02-6490-4768-ad9d-0bba35c81555_lon.csv
+          - integer
           objectValues: null
     - name: lat
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: type
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_0bd5ae02-6490-4768-ad9d-0bba35c81555_lat.csv
+          - integer
           objectValues: null
     - name: distance
       in: query
@@ -657,11 +657,11 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_fab1e820-aeae-4679-8413-3679c3abdcbc_state.csv
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     expectedResponse: 200
   - testPath: "/restaurants/zip_code/{zip_code}"
@@ -682,11 +682,11 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/api_ec1a990e-c21b-4f6b-8fa8-a33c6bb54e99/apiendpoint_eca4002d-ea26-4257-9e62-835d1496648b_zip_code.csv
+          - 1
           objectValues: null
     - name: page
       in: query

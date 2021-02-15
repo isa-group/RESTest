@@ -14,18 +14,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: id
       in: path
       weight: null
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -39,6 +40,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /menuitems/search
     operationId: apiendpoint_2e4dc899-a9dc-49fd-92de-c8d9619b07bc
@@ -47,18 +49,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: distance
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -72,21 +75,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: lat
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-    - name: page
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -100,26 +94,56 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
+    - name: page
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
     - name: q
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: lon
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
           - integer
           objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /menuitems/search/fields
     operationId: apiendpoint_a7b86e99-d4c1-4d61-b1bb-af304a0df869
@@ -128,28 +152,30 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: fields
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -163,6 +189,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /menuitems/search/geo
     operationId: apiendpoint_51916c60-f111-40cd-8bb3-32136a0149e0
@@ -171,18 +198,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -196,41 +224,42 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: lon
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
           - integer
           objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
     - name: q
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: lat
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-    - name: distance
-      in: query
-      weight: null
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -244,6 +273,26 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
+    - name: distance
+      in: query
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/restaurant/{id}"
     operationId: apiendpoint_97e4bb5f-c9f2-405a-a9ce-7f58feabf278
@@ -252,18 +301,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: id
       in: path
       weight: null
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -277,6 +327,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/restaurant/{id}/menuitems"
     operationId: apiendpoint_eeba3c1b-799c-4924-be98-dfb67b584be3
@@ -285,18 +336,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -310,11 +362,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: id
       in: path
       weight: null
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -328,6 +381,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /restaurants/search
     operationId: apiendpoint_5588b3e1-b33e-4b02-bcc0-ce8f1fd1edf5
@@ -336,18 +390,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: distance
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -361,21 +416,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: lat
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-    - name: page
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -389,26 +435,56 @@ testConfiguration:
           values:
           - 100
           objectValues: null
-    - name: lon
+        valid: true
+    - name: page
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
           - integer
           objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: lon
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
     - name: q
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /restaurants/search/fields
     operationId: apiendpoint_1a3a66d7-82b0-4e76-aa71-a61b44466703
@@ -417,28 +493,30 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: fields
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -452,6 +530,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /restaurants/search/geo
     operationId: apiendpoint_0bd5ae02-6490-4768-ad9d-0bba35c81555
@@ -460,18 +539,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -485,31 +565,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: lon
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-    - name: lat
-      in: query
-      weight: null
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-    - name: distance
-      in: query
-      weight: null
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -523,6 +584,45 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
+    - name: lat
+      in: query
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: distance
+      in: query
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /restaurants/search/ids
     operationId: apiendpoint_e4f26b07-240c-461c-960c-8e57c8df05d1
@@ -531,18 +631,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: distance
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -556,11 +657,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -574,21 +676,23 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: q
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: lat
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -602,11 +706,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: lon
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -620,6 +725,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/restaurants/state/{state}"
     operationId: apiendpoint_fab1e820-aeae-4679-8413-3679c3abdcbc
@@ -628,18 +734,19 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -653,16 +760,18 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: state
       in: path
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/restaurants/zip_code/{zip_code}"
     operationId: apiendpoint_eca4002d-ea26-4257-9e62-835d1496648b
@@ -671,28 +780,30 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-restaurant-menus.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: zip_code
       in: path
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -706,4 +817,5 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200

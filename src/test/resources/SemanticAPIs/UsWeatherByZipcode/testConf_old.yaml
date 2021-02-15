@@ -14,23 +14,21 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generators:
-      - type: RandomInputValue
+      generator:
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - us-weather-by-zip-code.p.rapidapi.com
           objectValues: null
-        valid: true
     - name: zip
       in: query
       weight: null
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     expectedResponse: 200

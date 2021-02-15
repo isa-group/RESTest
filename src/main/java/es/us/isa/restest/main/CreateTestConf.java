@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class CreateTestConf {
 
     private static final Logger log = LogManager.getLogger(CreateTestConf.class);
-    private static String openApiSpecPath = "----";			// OAS file path
+    private static String openApiSpecPath = "---";			// OAS file path
     private static String confPath;																// Test configuration path
 
     

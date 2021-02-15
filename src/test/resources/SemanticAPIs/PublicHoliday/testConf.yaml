@@ -14,31 +14,34 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - public-holiday.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: CountryCode
       in: path
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
+        valid: true
     - name: Year
       in: path
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[12]{1}[1234567890]{3}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200

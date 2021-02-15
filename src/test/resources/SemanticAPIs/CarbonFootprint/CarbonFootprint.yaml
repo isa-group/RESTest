@@ -3,7 +3,7 @@ host: rapidapi.p.rapidapi.com
 info:
   description: Calculate the carbon footprint in various situations, such as travel
     and hydro usage.
-  title: api_9c36e148-a3d5-45ec-9754-19fc2523f1a6
+  title: carbonFootprint
   version: apiversion_238e7cf5-531d-48f3-9169-e37f63c11a14
 schemes:
 - https

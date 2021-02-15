@@ -4,7 +4,7 @@ info:
   description: "Travelpayouts Data API \u2013 the way to get travel insights for your\
     \ site or blog. Get flight price trends and find popular destinations for your\
     \ customers."
-  title: 57f1ff38e4b0036abc9166f2
+  title: flightData
   version: 57f1ff38e4b0036abc9166f3
 schemes:
 - https

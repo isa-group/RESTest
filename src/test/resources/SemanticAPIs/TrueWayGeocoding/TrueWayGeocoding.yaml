@@ -2,7 +2,7 @@ basePath: /
 host: rapidapi.p.rapidapi.com
 info:
   description: Forward and Reverse Geocoding
-  title: api_ed762aef-e305-4401-b2fe-b0f8c5f0f43d
+  title: trueWayGeocoding
   version: apiversion_2c65308d-bd17-4252-8715-4e899eddfacf
 schemes:
 - https

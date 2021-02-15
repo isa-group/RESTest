@@ -25,31 +25,31 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_9c36e148-a3d5-45ec-9754-19fc2523f1a6/apiendpoint_4d744a03-3e2f-4094-b785-7b5431a3c93a_O3.csv
+          - "^[0-9]{1,}$"
           objectValues: null
     - name: NO2
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_9c36e148-a3d5-45ec-9754-19fc2523f1a6/apiendpoint_4d744a03-3e2f-4094-b785-7b5431a3c93a_NO2.csv
+          - "^[0-9]{1,}$"
           objectValues: null
     - name: PM
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_9c36e148-a3d5-45ec-9754-19fc2523f1a6/apiendpoint_4d744a03-3e2f-4094-b785-7b5431a3c93a_PM.csv
+          - "^[0-9]{1,}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /CarbonFootprintFromCarTravel

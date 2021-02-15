@@ -14,25 +14,23 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generators:
-      - type: RandomInputValue
+      generator:
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - similarweb2.p.rapidapi.com
           objectValues: null
-        valid: true
     - name: website
       in: query
       weight: null
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     expectedResponse: 200
   - testPath: /trafficoverview
     operationId: apiendpoint_855fcf33-1b5a-4e58-aeb2-8c10b9537951
@@ -41,23 +39,21 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generators:
-      - type: RandomInputValue
+      generator:
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - similarweb2.p.rapidapi.com
           objectValues: null
-        valid: true
     - name: website
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     expectedResponse: 200

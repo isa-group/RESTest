@@ -4,7 +4,7 @@ info:
   description: Access movie and TV information similar to that of IMDB. Get Title,
     Year, Metascore Rating, IMDB rating, Release date, Runtime, Genre, Directors,
     Writers, Actors, Plot, Awards, Posters & tons of other data for each title.
-  title: api_fab85a39-b3fa-4fe7-9929-5f1964110c32
+  title: movieDatabaseSearch
   version: apiversion_7ec20910-0464-4483-86f1-a8e7080749db
 schemes:
   - https

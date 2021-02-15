@@ -7,115 +7,56 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-  - testPath: /shopping/hotel-offers
-    operationId: getMultiHotelOffers
+  - testPath: /climate/month
+    operationId: apiendpoint_dd92e578-3e54-4562-9687-0e22d673fffe
     method: get
     testParameters:
-    - name: cityCode
-      in: query
-      weight: 0.5
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
         genParameters:
-        - name: regExp
+        - name: values
           values:
-          - "^[A-Za-z]{3}$"
+          - community-open-weather-map.p.rapidapi.com
           objectValues: null
-        - name: minLength
-          values:
-          - 3
-          objectValues: null
-        - name: maxLength
-          values:
-          - 3
-          objectValues: null
-    - name: latitude
+    - name: q
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-    - name: longitude
-      in: query
-      weight: 0.5
+    expectedResponse: 200
+  - testPath: /find
+    operationId: 53aa6043e4b0a705fcc32c1d
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
       generator:
-        type: SemanticParameter
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - community-open-weather-map.p.rapidapi.com
+          objectValues: null
+    - name: q
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-    - name: hotelIds
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-    - name: checkInDate
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomDate
-        genParameters:
-        - name: format
-          values:
-          - yyyy-MM-dd
-          objectValues: null
-    - name: checkOutDate
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomDate
-        genParameters:
-        - name: format
-          values:
-          - yyyy-MM-dd
-          objectValues: null
-    - name: roomQuantity
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 9
-          objectValues: null
-    - name: adults
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 9
-          objectValues: null
-    - name: childAges
+    - name: cnt
       in: query
       weight: 0.5
       generator:
@@ -133,36 +74,102 @@ testConfiguration:
           values:
           - 100
           objectValues: null
-    - name: radius
+    - name: mode
       in: query
       weight: 0.5
       generator:
-        type: RandomNumber
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: lon
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
         genParameters:
         - name: type
           values:
           - integer
           objectValues: null
-        - name: min
+    - name: type
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
           values:
           - 1
           objectValues: null
-        - name: max
-          values:
-          - 200
-          objectValues: null
-    - name: radiusUnit
+    - name: lat
       in: query
       weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+    - name: units
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: /forecast
+    operationId: apiendpoint_f719676c-072b-4a2d-ad2e-78f8375ea9c8
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
       generator:
         type: RandomInputValue
         genParameters:
         - name: values
           values:
-          - KM
-          - MILE
+          - community-open-weather-map.p.rapidapi.com
           objectValues: null
-    - name: hotelName
+    - name: q
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: units
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: mode
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: lat
       in: query
       weight: 0.5
       generator:
@@ -172,7 +179,17 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: chains
+    - name: lon
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: lang
       in: query
       weight: 0.5
       generator:
@@ -182,7 +199,7 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: rateCodes
+    - name: cnt
       in: query
       weight: 0.5
       generator:
@@ -192,7 +209,7 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: amenities
+    - name: id
       in: query
       weight: 0.5
       generator:
@@ -202,7 +219,62 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: ratings
+    - name: zip
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - testPath: /forecast/daily
+    operationId: 53aa6042e4b051a76d241b79
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - community-open-weather-map.p.rapidapi.com
+          objectValues: null
+    - name: q
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: lat
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+    - name: lon
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+    - name: cnt
       in: query
       weight: 0.5
       generator:
@@ -220,7 +292,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
-    - name: priceRange
+    - name: units
       in: query
       weight: 0.5
       generator:
@@ -230,97 +302,17 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: currency
+    - name: mode
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
-          values:
-          - "^[A-Z]{3}$"
-          objectValues: null
-    - name: paymentPolicy
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - GUARANTEE
-          - DEPOSIT
-          - NONE
-          objectValues: null
-    - name: boardType
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - ROOM_ONLY
-          - BREAKFAST
-          - HALF_BOARD
-          - FULL_BOARD
-          - ALL_INCLUSIVE
-          objectValues: null
-    - name: includeClosed
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomBoolean
-        genParameters: []
-    - name: bestRateOnly
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomBoolean
-        genParameters: []
-    - name: view
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - FULL
-          - LIGHT
-          - NONE
-          objectValues: null
-    - name: sort
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - NONE
-          - DISTANCE
-          - PRICE
-          objectValues: null
-    - name: "page[limit]"
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomNumber
-        genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
+        - name: maxWords
           values:
           - 1
           objectValues: null
-        - name: max
-          values:
-          - 96
-          objectValues: null
-    - name: "page[offset]"
+    - name: id
       in: query
       weight: 0.5
       generator:
@@ -334,66 +326,123 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z0-9-]{2,5}$"
+          - 1
+          objectValues: null
+    - name: zip
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
           objectValues: null
     expectedResponse: 200
-  - testPath: /shopping/hotel-offers/by-hotel
-    operationId: getSingleHotelOffers
+  - testPath: /onecall/timemachine
+    operationId: apiendpoint_9efd93b5-a454-4619-9ff8-bd3465aeebe1
     method: get
     testParameters:
-    - name: hotelId
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - community-open-weather-map.p.rapidapi.com
+          objectValues: null
+    - name: lat
       in: query
       weight: null
       generator:
         type: SemanticParameter
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[A-Z0-9]{8}$"
+          - 1
           objectValues: null
-    - name: checkInDate
+    - name: lon
       in: query
-      weight: 0.5
+      weight: null
       generator:
-        type: RandomDate
+        type: SemanticParameter
         genParameters:
-        - name: format
+        - name: maxWords
           values:
-          - yyyy-MM-dd
+          - 1
           objectValues: null
-    - name: checkOutDate
+    - name: dt
       in: query
-      weight: 0.5
+      weight: null
       generator:
-        type: RandomDate
+        type: RandomEnglishWord
         genParameters:
-        - name: format
+        - name: maxWords
           values:
-          - yyyy-MM-dd
+          - 1
           objectValues: null
-    - name: adults
+    expectedResponse: 200
+  - testPath: /weather
+    operationId: 53aa6041e4b00287471a2b62
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generator:
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - community-open-weather-map.p.rapidapi.com
+          objectValues: null
+    - name: q
+      in: query
+      weight: null
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: lat
       in: query
       weight: 0.5
       generator:
-        type: RandomNumber
+        type: SemanticParameter
         genParameters:
         - name: type
           values:
           - integer
           objectValues: null
-        - name: min
+    - name: lon
+      in: query
+      weight: 0.5
+      generator:
+        type: SemanticParameter
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+    - name: callback
+      in: query
+      weight: 0.5
+      generator:
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
           values:
           - 1
           objectValues: null
-        - name: max
-          values:
-          - 9
-          objectValues: null
-    - name: childAges
+    - name: id
       in: query
       weight: 0.5
       generator:
@@ -411,7 +460,7 @@ testConfiguration:
           values:
           - 100
           objectValues: null
-    - name: rateCodes
+    - name: lang
       in: query
       weight: 0.5
       generator:
@@ -421,106 +470,24 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: roomQuantity
+    - name: units
       in: query
       weight: 0.5
       generator:
-        type: RandomNumber
+        type: RandomEnglishWord
         genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
+        - name: maxWords
           values:
           - 1
           objectValues: null
-        - name: max
-          values:
-          - 9
-          objectValues: null
-    - name: currency
+    - name: mode
       in: query
       weight: 0.5
       generator:
-        type: SemanticParameter
+        type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[A-Z]{3}$"
-          objectValues: null
-    - name: paymentPolicy
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - GUARANTEE
-          - DEPOSIT
-          - NONE
-          objectValues: null
-    - name: boardType
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - ROOM_ONLY
-          - BREAKFAST
-          - HALF_BOARD
-          - FULL_BOARD
-          - ALL_INCLUSIVE
-          objectValues: null
-    - name: view
-      in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - FULL_ALL_IMAGES
-          - FULL
-          - LIGHT
-          - NONE
-          objectValues: null
-    - name: lang
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: regExp
-          values:
-          - "^[a-zA-Z0-9-]{2,5}$"
-          objectValues: null
-    expectedResponse: 200
-  - testPath: "/shopping/hotel-offers/{offerId}"
-    operationId: getOfferPricing
-    method: get
-    testParameters:
-    - name: offerId
-      in: path
-      weight: null
-      generator:
-        type: RandomRegExp
-        genParameters:
-        - name: regExp
-          values:
-          - "^[A-Z0-9]*$"
-          objectValues: null
-    - name: lang
-      in: query
-      weight: 0.5
-      generator:
-        type: SemanticParameter
-        genParameters:
-        - name: regExp
-          values:
-          - "^[a-zA-Z0-9-]{2,5}$"
+          - 1
           objectValues: null
     expectedResponse: 200

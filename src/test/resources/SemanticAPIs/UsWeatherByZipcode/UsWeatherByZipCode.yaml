@@ -2,7 +2,7 @@ basePath: /
 host: rapidapi.p.rapidapi.com
 info:
   description: Provides current weather information for US cities by zip code
-  title: api_7ab34636-d556-42b4-ad3a-6c8b325e7673
+  title: usWeatherByZipcode
   version: apiversion_e0f94ec2-ea87-4c9f-bc5b-19f4de7cc6dd
 schemes:
 - https

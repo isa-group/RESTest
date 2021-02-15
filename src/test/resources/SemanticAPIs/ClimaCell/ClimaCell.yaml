@@ -4,7 +4,7 @@ info:
   description: "MicroWeather API \u2013 An all-in-one weather API: Get the most accurate\
     \ information, generate invaluable insights, and drive actions \u2013 in just\
     \ a few lines of code."
-  title: 5b801ddee4b0b497acc1c2d3
+  title: climaCell
   version: 5b801ddee4b0b497acc1c2d4
 schemes:
   - https

@@ -14,31 +14,34 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - airport-info.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: iata
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: icao
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200

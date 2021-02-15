@@ -14,23 +14,25 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - greatcirclemapper.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: icao_iata
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z0-9]{3}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/airports/read/{icao_iata}"
     operationId: 53aa36c7e4b0f2c97546f2d6
@@ -39,23 +41,25 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - greatcirclemapper.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: icao_iata
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/airports/route/{route}/{speed}"
     operationId: 53aa36c7e4b008bb2ef85605
@@ -64,53 +68,58 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - greatcirclemapper.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: content-type
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: vary
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: speed
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: route
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/airports/search/{query}"
     operationId: 53aa36c8e4b051a76d23f9a8
@@ -119,21 +128,23 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - greatcirclemapper.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: query
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200

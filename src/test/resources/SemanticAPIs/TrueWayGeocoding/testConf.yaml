@@ -14,53 +14,58 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - trueway-geocoding.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: address
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: language
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[a-zA-Z]{2}$"
+          - 1
           objectValues: null
+        valid: true
     - name: bounds
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: country
       in: query
       weight: 0.5
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /ReverseGeocode
     operationId: apiendpoint_d2bc70db-66bc-4b9f-895b-518a1e4d91c4
@@ -69,31 +74,34 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - trueway-geocoding.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: language
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: location
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200

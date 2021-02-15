@@ -2,7 +2,7 @@ basePath: /
 host: rapidapi.p.rapidapi.com
 info:
   description: Get weather and weather forecasts for multiple cities.
-  title: 53aa6041e4b00287471a2b5d
+  title: openWeatherMap
   version: 53aa6041e4b07e1f4ebec8b4
 schemes:
 - https

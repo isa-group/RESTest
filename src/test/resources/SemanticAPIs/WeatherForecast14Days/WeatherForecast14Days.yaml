@@ -2,7 +2,7 @@ basePath: /
 host: rapidapi.p.rapidapi.com
 info:
   description: weather forecast world wide  14 days 6hourly
-  title: api_ca0c659c-6088-421e-a8f9-0124c8517257
+  title: weatherForecast14Days
   version: apiversion_c624933c-825e-416d-8390-bd71bc434ade
 schemes:
 - https

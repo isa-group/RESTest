@@ -2,7 +2,7 @@ basePath: /
 host: rapidapi.p.rapidapi.com
 info:
   description: 115 Basketball Leagues & Cups with Livescore, Odds, Bookmakers, Statistics...
-  title: api_ed8496b9-674d-4c82-b02d-f620d3b79cae
+  title: apiBasketball
   version: apiversion_c43b5e9b-e4fc-41be-a579-236146ebc45a
 schemes:
   - https

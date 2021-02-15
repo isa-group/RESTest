@@ -14,78 +14,71 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generators:
-      - type: RandomInputValue
+      generator:
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - movie-database-imdb-alternative.p.rapidapi.com
           objectValues: null
-        valid: true
     - name: callback
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: i
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: SemanticParameter
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - "^[t]{2}[0-9]{7}$"
           objectValues: null
-        valid: true
     - name: type
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: r
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: plot
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: "y"
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     expectedResponse: 200

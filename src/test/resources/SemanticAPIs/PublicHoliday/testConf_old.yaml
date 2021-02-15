@@ -25,20 +25,20 @@ testConfiguration:
       in: path
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_bbb20b4a-d588-4c4c-86ac-15fbef582aaa/apiendpoint_6c49df0a-e381-48f5-8719-9d5a95520b1a_CountryCode.csv
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: Year
       in: path
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_bbb20b4a-d588-4c4c-86ac-15fbef582aaa/apiendpoint_6c49df0a-e381-48f5-8719-9d5a95520b1a_Year.csv
+          - "^[12]{1}[1234567890]{3}$"
           objectValues: null
     expectedResponse: 200

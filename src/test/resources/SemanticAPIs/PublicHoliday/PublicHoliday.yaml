@@ -2,7 +2,7 @@ basePath: /
 host: rapidapi.p.rapidapi.com
 info:
   description: An API for Public Holidays & Bank Holidays
-  title: api_bbb20b4a-d588-4c4c-86ac-15fbef582aaa
+  title: publicHoliday
   version: apiversion_d8cf1e0d-a704-499c-b725-1b1f28748301
 schemes:
 - https

@@ -3,7 +3,7 @@ host: rapidapi.p.rapidapi.com
 info:
   description: Use Great Circle Mapper to calculate the air distance and flight time
     between all airports worldwide.
-  title: 53aa36c6e4b008bb2ef85602
+  title: greatCircleMapper
   version: 53aa36c6e4b0b60946a2e56e
 schemes:
 - https

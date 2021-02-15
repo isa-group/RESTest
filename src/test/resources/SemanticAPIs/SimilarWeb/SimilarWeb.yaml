@@ -3,7 +3,7 @@ host: rapidapi.p.rapidapi.com
 info:
   description: SimilarWeb API helps to query for websites traffic information as they
     appear on the official site.
-  title: api_f3967e19-1e7f-4658-86e7-905a18f731f1
+  title: similarWeb
   version: apiversion_42b7f28a-e2d5-437b-879f-c7cc3c959c94
 schemes:
 - https

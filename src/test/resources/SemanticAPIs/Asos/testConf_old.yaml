@@ -25,21 +25,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_af6aca7a-5916-4a83-9df4-ab17ba799021_country.csv
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: lang
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_af6aca7a-5916-4a83-9df4-ab17ba799021_lang.csv
+          - 1
           objectValues: null
     expectedResponse: 200
   - testPath: /countries/list
@@ -60,11 +60,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_674e1be9-ec80-41c8-ad88-6827b32b0cbc_lang.csv
+          - 1
           objectValues: null
     expectedResponse: 200
   - testPath: /products/detail
@@ -697,11 +697,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_9b326d70-567d-47a9-b5cc-f1b58990e004_store.csv
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: sizeSchema
       in: query
@@ -735,21 +735,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_9b326d70-567d-47a9-b5cc-f1b58990e004_lang.csv
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: currency
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_9b326d70-567d-47a9-b5cc-f1b58990e004_currency.csv
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: /products/v3/list-similarities
@@ -770,21 +770,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_64c830ef-8e57-4a9a-be30-b29c81290b08_lang.csv
+          - 1
           objectValues: null
     - name: currency
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_64c830ef-8e57-4a9a-be30-b29c81290b08_currency.csv
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: id
       in: query
@@ -808,11 +808,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_64c830ef-8e57-4a9a-be30-b29c81290b08_store.csv
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: sizeSchema
       in: query
@@ -843,21 +843,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_3aea55d6-65c3-4169-a7c7-f4a3ce810163_country.csv
+          - "^[a-zA-Z]{2}$"
           objectValues: null
     - name: currency
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_3aea55d6-65c3-4169-a7c7-f4a3ce810163_currency.csv
+          - 1
           objectValues: null
     - name: sizeSchema
       in: query
@@ -873,21 +873,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_3aea55d6-65c3-4169-a7c7-f4a3ce810163_store.csv
+          - "^[a-zA-Z]{2,3}$"
           objectValues: null
     - name: lang
       in: query
       weight: 0.5
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/api_7256fb69-e0dc-45cf-9f55-dc5343d92be6/apiendpoint_3aea55d6-65c3-4169-a7c7-f4a3ce810163_lang.csv
+          - 1
           objectValues: null
     - name: q
       in: query

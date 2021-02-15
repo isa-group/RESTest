@@ -25,11 +25,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/53aa36c6e4b008bb2ef85602/53aa36c7e4b0f2c97546f2d5_icao_iata.csv
+          - "^[a-zA-Z0-9]{3}$"
           objectValues: null
     expectedResponse: 200
   - testPath: "/airports/read/{icao_iata}"
@@ -50,11 +50,11 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/53aa36c6e4b008bb2ef85602/53aa36c7e4b0f2c97546f2d6_icao_iata.csv
+          - 1
           objectValues: null
     expectedResponse: 200
   - testPath: "/airports/route/{route}/{speed}"
@@ -130,10 +130,10 @@ testConfiguration:
       in: query
       weight: null
       generator:
-        type: RandomInputValue
+        type: SemanticParameter
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/53aa36c6e4b008bb2ef85602/53aa36c8e4b051a76d23f9a8_query.csv
+          - 1
           objectValues: null
     expectedResponse: 200

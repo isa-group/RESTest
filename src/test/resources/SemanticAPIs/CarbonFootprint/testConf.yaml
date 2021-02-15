@@ -14,43 +14,47 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: O3
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[0-9]{1,}$"
+          - 1
           objectValues: null
+        valid: true
     - name: NO2
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[0-9]{1,}$"
+          - 1
           objectValues: null
+        valid: true
     - name: PM
       in: query
       weight: null
-      generator:
-        type: SemanticParameter
+      generators:
+      - type: RandomEnglishWord
         genParameters:
-        - name: regExp
+        - name: maxWords
           values:
-          - "^[0-9]{1,}$"
+          - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /CarbonFootprintFromCarTravel
     operationId: apiendpoint_9a9f6bbd-b54a-467c-bc62-af4f749880e8
@@ -59,33 +63,36 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: distance
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: vehicle
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /CarbonFootprintFromFlight
     operationId: apiendpoint_0114dcb5-b108-4803-99ed-77d8e8592bf6
@@ -94,33 +101,36 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: distance
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: type
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /CarbonFootprintFromMotorBike
     operationId: apiendpoint_a7d0c6a4-2a4c-4799-896d-c0b4145ecea5
@@ -129,33 +139,36 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: distance
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: type
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /CarbonFootprintFromPublicTransit
     operationId: apiendpoint_76e22969-11c0-4b11-8846-5aa6ee7e0d03
@@ -164,33 +177,36 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: distance
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: type
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /CleanHydroToCarbonFootprint
     operationId: apiendpoint_a573e71d-cc17-41be-84de-02c6684cce04
@@ -199,33 +215,36 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: energy
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: consumption
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /FuelToCO2e
     operationId: apiendpoint_ba91a87e-c7d2-4870-bacb-14b255754d07
@@ -234,33 +253,36 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: type
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: litres
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /TraditionalHydroToCarbonFootprint
     operationId: apiendpoint_a531c806-a763-4020-ba8f-e2954af419e5
@@ -269,33 +291,36 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: consumption
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: location
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: /TreeEquivalent
     operationId: apiendpoint_2333eede-0301-4f1e-9e61-93301aa8e59c
@@ -304,31 +329,34 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - carbonfootprint1.p.rapidapi.com
           objectValues: null
+        valid: true
     - name: weight
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: unit
       in: query
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200

@@ -2,7 +2,7 @@ basePath: /
 host: rapidapi.p.rapidapi.com
 info:
   description: Provides geo location and information about countries and cities
-  title: api_a4a5877c-a8e0-4719-8d27-5d3f3d1fc476
+  title: countriesCities
   version: apiversion_0e35a32b-adc0-4fc7-9d23-04f542db73cb
 schemes:
   - https

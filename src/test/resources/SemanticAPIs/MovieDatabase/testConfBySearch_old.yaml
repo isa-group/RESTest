@@ -14,78 +14,61 @@ testConfiguration:
     - name: X-RapidAPI-Host
       in: header
       weight: null
-      generators:
-      - type: RandomInputValue
+      generator:
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - movie-database-imdb-alternative.p.rapidapi.com
           objectValues: null
-        valid: true
-    - name: callback
+    - name: s
       in: query
-      weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      weight: null
+      generator:
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
-    - name: i
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
-        valid: true
     - name: type
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: r
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
-    - name: plot
+    - name: page
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: "y"
       in: query
       weight: 0.5
-      generators:
-      - type: RandomEnglishWord
+      generator:
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     expectedResponse: 200
