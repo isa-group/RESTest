@@ -56,6 +56,11 @@ public class TestParameter {
                 for(GenParameter genParameter: generator.getGenParameters()){
                     if(genParameter.getName().equals("predicates")){
 
+                        GenParameter oldGenParameter = generator.getGenParameters().stream().filter(x-> x.getName().equals("regExp")).findFirst().orElse(null);
+                        if(oldGenParameter != null){
+                            generator.removeGenParameter(oldGenParameter);
+                        }
+
                         GenParameter regexGenParameter = new GenParameter();
                         regexGenParameter.setName(GEN_PARAM_REG_EXP);
                         regexGenParameter.setValues(Collections.singletonList(regex));

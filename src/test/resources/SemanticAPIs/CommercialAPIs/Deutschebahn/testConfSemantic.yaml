@@ -2,8 +2,7 @@
 auth:
   required: true
   queryParams: {}
-  headerParams:
-    Authorization: Bearer ----
+  headerParams: {}
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -15,8 +14,8 @@ testConfiguration:
     - name: offset
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -30,11 +29,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -48,31 +48,36 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: searchstring
       in: query
-      weight: 0
-      generator:
-        type: RandomInputValue
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Stationsdatenbereitstellung/getStations_searchstring.csv
           objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
     - name: category
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
-          - "1"
-          - "2"
-          - "3"
-          - "4"
-          - "5"
-          - "6"
-          - "7"
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
           objectValues: null
         - name: minValues
           values:
@@ -82,41 +87,56 @@ testConfiguration:
           values:
           - 7
           objectValues: null
+        valid: true
     - name: federalstate
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Stationsdatenbereitstellung/getStations_federalstate.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/ontology/federalState"
+          objectValues: null
+        valid: true
     - name: eva
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Stationsdatenbereitstellung/getStations_eva.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/eva"
+          objectValues: null
+        valid: true
     - name: ril
       in: query
-      weight: 0
-      generator:
-        type: RandomInputValue
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Stationsdatenbereitstellung/getStations_ril.csv
           objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
     - name: logicaloperator
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: values
           values:
@@ -131,4 +151,5 @@ testConfiguration:
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200

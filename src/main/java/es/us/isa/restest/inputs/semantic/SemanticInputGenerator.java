@@ -26,14 +26,14 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 public class SemanticInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "-----";
+    private static String propertiesFilePath = "----";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
     public static final Integer THRESHOLD = 100;
-    // DBPedia Endpoint     http://dbpedia.org/sparql       https://query.wikidata.org/sparql       http://localhost:8890/sparql
+    // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
     public static final String szEndpoint = "http://localhost:8890/sparql";
 
     private static final Logger log = LogManager.getLogger(SemanticInputGenerator.class);
@@ -41,7 +41,7 @@ public class SemanticInputGenerator {
 
     public static void main(String[] args) throws IOException {
         
-        // TODO: DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
+        // ONLY FOR LOCAL COPY OF DBPEDIA
         System.setProperty("http.maxConnections", "10000");
 
         setEvaluationParameters();
@@ -58,7 +58,6 @@ public class SemanticInputGenerator {
         for(SemanticOperation semanticOperation: semanticOperations){
 
             log.info("Obtaining predicates of operation {}", semanticOperation.getOperationId());
-//            Map<TestParameter, List<String>> parametersWithPredicates = getPredicates(semanticOperation, spec); TODO: DELETE
             setPredicates(semanticOperation, specification);
 
             Map<String, Set<String>> result = new HashMap<>();

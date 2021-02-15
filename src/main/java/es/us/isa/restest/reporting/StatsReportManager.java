@@ -46,7 +46,7 @@ public class StatsReportManager {
     private boolean enableOutputCoverage = true;
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
-    private final int maxNumberOfPredicates = 2;
+    private final int maxNumberOfPredicates = 3;
     private final String metricToUse = "match recall";
 
 
@@ -166,7 +166,7 @@ public class StatsReportManager {
                         // Get new predicates for parameter
                         Set<String> predicates = getPredicates(parameterValues, regex, predicatesToIgnore, spec);
 
-                        // TODO: Check that the regex is applied
+
                         if(predicates.size() > 0) {
                             // Get new values
                             Set<String> results = getNewValues(parameterValues, predicates, regex);
@@ -180,14 +180,9 @@ public class StatsReportManager {
 
 
                         }
-                        // TODO: La lista completa de parameter values contiene todos los parámetros semánticos, además de los predicados a evitar, falta por añadir el csvPaths
                     }
 
-                    // TODO: REMOVE THIS FOR LOOP (IT IS PART OF THE GREEDY APPROACH)
-                    // Delete the invalid files from the other parameters
-//                    for(ParameterValues otherParameterValues: valuesFromPreviousIterations){
-//                        deleteFile(otherParameterValues.getInvalidCSVPath());
-//                    }
+
                 }
 
             }
