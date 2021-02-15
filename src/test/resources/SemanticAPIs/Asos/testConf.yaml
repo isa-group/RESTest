@@ -26,7 +26,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -37,7 +37,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -64,7 +64,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -792,7 +792,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -803,7 +803,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -830,7 +830,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -841,7 +841,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -909,7 +909,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -920,7 +920,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -953,7 +953,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:

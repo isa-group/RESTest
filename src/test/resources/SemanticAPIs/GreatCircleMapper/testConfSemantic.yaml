@@ -1,0 +1,163 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/aircraft/read/{icao_iata}"
+    operationId: 53aa36c7e4b0f2c97546f2d5
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: icao_iata
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/greatCircleMapper/53aa36c7e4b0f2c97546f2d5_icao_iata.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/iata"
+          - "http://dbpedia.org/property/icao"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airports/read/{icao_iata}"
+    operationId: 53aa36c7e4b0f2c97546f2d6
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: icao_iata
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/greatCircleMapper/53aa36c7e4b0f2c97546f2d6_icao_iata.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/iata"
+          - "http://dbpedia.org/property/icao"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airports/route/{route}/{speed}"
+    operationId: 53aa36c7e4b008bb2ef85605
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: content-type
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: vary
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: speed
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: route
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airports/search/{query}"
+    operationId: 53aa36c8e4b051a76d23f9a8
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - greatcirclemapper.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: query
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/greatCircleMapper/53aa36c8e4b051a76d23f9a8_query.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200

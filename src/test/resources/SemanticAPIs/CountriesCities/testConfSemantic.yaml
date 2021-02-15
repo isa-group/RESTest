@@ -1,0 +1,333 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /location/city/nearby
+    operationId: apiendpoint_1a43874d-0862-4624-8ce6-fdd8cfede713
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - countries-cities.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: longitude
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/countriesCities/apiendpoint_1a43874d-0862-4624-8ce6-fdd8cfede713_longitude.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/longitude"
+          objectValues: null
+        valid: true
+    - name: min_population
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: format
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - json
+          - xml
+          objectValues: null
+        valid: true
+    - name: radius
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: latitude
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/countriesCities/apiendpoint_1a43874d-0862-4624-8ce6-fdd8cfede713_latitude.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/latitude"
+          objectValues: null
+        valid: true
+    - name: max_population
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /location/country/list
+    operationId: apiendpoint_75f5f566-ab7e-41d1-b3fb-bc202edc6364
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - countries-cities.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: format
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - json
+          - xml
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/location/country/{code}"
+    operationId: apiendpoint_3d9d1d60-8bda-47d4-a003-2d46c7277b09
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - countries-cities.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: code
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/countriesCities/apiendpoint_3d9d1d60-8bda-47d4-a003-2d46c7277b09_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: format
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - json
+          - xml
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/location/country/{code}/city/list"
+    operationId: apiendpoint_e82200f0-e00e-4353-a0da-a97132c93ea1
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - countries-cities.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: page
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: per_page
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: format
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - json
+          - xml
+          objectValues: null
+        valid: true
+    - name: code
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/countriesCities/apiendpoint_e82200f0-e00e-4353-a0da-a97132c93ea1_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: population
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/countriesCities/apiendpoint_e82200f0-e00e-4353-a0da-a97132c93ea1_population.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/population"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/location/country/{code}/geojson"
+    operationId: apiendpoint_34fc8f1a-3a9d-4153-bcaf-4c8b703a4c70
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - countries-cities.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: code
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/countriesCities/apiendpoint_34fc8f1a-3a9d-4153-bcaf-4c8b703a4c70_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: format
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - json
+          objectValues: null
+        valid: true
+    expectedResponse: 200
