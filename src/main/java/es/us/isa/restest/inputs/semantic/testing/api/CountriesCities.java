@@ -6,82 +6,50 @@ import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 
+import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printResponse;
+
 public class CountriesCities {
 
     private static final String baseUri = "https://countries-cities.p.rapidapi.com";
 
+     // GET /location/city/nearby
+    // latitude
+    public static void countriesCities_locationCityNearby_latitude(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/location/city/nearby?latitude=" + semanticInput + "&longitude=-74.0697";
+        printResponse(url);
+    }
+
+    // longitude
+    // https://countries-cities.p.rapidapi.com/location/city/nearby?latitude=49.6848&longitude=-66.3292
+    public static void countriesCities_locationCityNearby_longitude(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/location/city/nearby?latitude=49.6848&longitude=" + semanticInput;
+        printResponse(url);
+    }
+
     // GET /location/country/{code}/geojson
     public static void countriesCities_locationCountryCodeGeojson_code(String semanticInput, String apiKey, String host) throws IOException {
-
         String url = baseUri + "/location/country/"+semanticInput+"/geojson";
-
-        System.out.println(url);
-
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .addHeader("x-rapidapi-host", host)
-                .addHeader("x-rapidapi-key", apiKey)
-                .build();
-
-        Response response = client.newCall(request).execute();
-
-        System.out.println("RESPONSE CODE: " + response.code());
-        System.out.println(response.body().string());
-        System.out.println("--------------------------------------------------------------------------------------");
-
-
+        printResponse(url);
     }
 
     // GET /location/country/{code}
     public static void countriesCities_locationCountryCode_code(String semanticInput, String apiKey, String host) throws IOException {
-
         String url = baseUri + "/location/country/" + semanticInput;
-
-        System.out.println(url);
-
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .addHeader("x-rapidapi-host", host)
-                .addHeader("x-rapidapi-key", apiKey)
-                .build();
-
-        Response response = client.newCall(request).execute();
-
-        System.out.println("RESPONSE CODE: " + response.code());
-        System.out.println(response.body().string());
-        System.out.println("--------------------------------------------------------------------------------------");
-
+        printResponse(url);
 
     }
 
     // GET /location/country/{code}/city/list
+    // code
     public static void countriesCities_locationCountryCodeCityList_code(String semanticInput, String apiKey, String host) throws IOException {
-
         String url = baseUri + "/location/country/" + semanticInput + "/city/list";
+        printResponse(url);
 
-        System.out.println(url);
+    }
 
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .addHeader("x-rapidapi-host", host)
-                .addHeader("x-rapidapi-key", apiKey)
-                .build();
-
-        Response response = client.newCall(request).execute();
-
-        System.out.println("RESPONSE CODE: " + response.code());
-        System.out.println(response.body().string());
-        System.out.println("--------------------------------------------------------------------------------------");
-
-
+    // population
+    public static void countriesCities_locationCountryCodeCityList_population(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/location/country/US/city/list?population=" + semanticInput;
+        printResponse(url);
     }
 }
