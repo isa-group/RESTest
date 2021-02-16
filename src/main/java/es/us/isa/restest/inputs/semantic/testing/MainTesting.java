@@ -25,6 +25,7 @@ import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coron
 import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.greatCircleMapper_aircraft_iataIcao;
+import static es.us.isa.restest.inputs.semantic.testing.api.OpenWeatherMap.openWeatherMap_forecast_zip;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_countryCode;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
 import static es.us.isa.restest.inputs.semantic.testing.api.Skyscanner.*;
@@ -37,11 +38,11 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTesting {
 
     // Parameters to change
-    private static final String propertiesPath = "---";
-    private static final String operationPath = "/categories/list";
-    private static final String semanticParameterName = "country";
+    private static final String propertiesPath = "src/test/resources/SemanticAPIs/OpenWeatherMap/openWeatherMap.properties";
+    private static final String operationPath = "/forecast";
+    private static final String semanticParameterName = "zip";
     private static final Integer limit = Integer.MAX_VALUE;
-    private static final String apiKey = "---";
+    private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -52,7 +53,7 @@ public class MainTesting {
     private static TestConfigurationObject conf;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        setParameters(readProperty("evaluation.properties.dir") + propertiesPath);
+        setParameters(propertiesPath);
 
         String csvPath = getCsvPath();
         List<String> semanticInputs = readCsv(csvPath);
@@ -77,7 +78,8 @@ public class MainTesting {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                asos_categoriesList_country(semanticInput, apiKey, host);
+//                asos_categoriesList_country(semanticInput, apiKey, host);
+                openWeatherMap_forecast_zip(semanticInput, apiKey, host);
 
                 i++;
 

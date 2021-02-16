@@ -39,7 +39,7 @@ public class MainTestingDHL {
     private static TestConfigurationObject conf;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        setParameters(readProperty("evaluation.properties.dir") + propertiesPath);
+        setParameters(propertiesPath);
 
         String csvPath = getCsvPath();
         List<String> semanticInputs = readCsv(csvPath);
