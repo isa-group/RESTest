@@ -31,5 +31,5 @@ public class OpenWeatherMap {
         String url = baseUrl + operationPath + "??lat=40.3513&lon=" + semanticInput;
         printResponse(url);
     }
-    
+
 }
