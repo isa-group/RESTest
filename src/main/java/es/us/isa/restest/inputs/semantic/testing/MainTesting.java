@@ -23,6 +23,7 @@ import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Asos.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.CarbonFootprint.carbonFootprint_PM;
+import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.climacell_lat;
 import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coronavirusMap_region;
 import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
@@ -36,14 +37,17 @@ import static es.us.isa.restest.inputs.semantic.testing.api.TrueWayGeocoding.tru
 import static es.us.isa.restest.inputs.semantic.testing.api.UsRestaurantMenus.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.WeatherForecast14Days.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 
 
 public class MainTesting {
 
     // Parameters to change
-    private static final String propertiesPath = "src/test/resources/SemanticAPIs/AirportInfo/airportInfo.properties";
-    private static final String operationPath = "/airport";
-    private static final String semanticParameterName = "icao";
+    private static final String propertiesPath = "src/test/resources/SemanticAPIs/ClimaCell/climacell.properties";
+    private static final String operationPath = "/weather/nowcast";
+    private static final String semanticParameterName = "lat";
     private static final Integer limit = Integer.MAX_VALUE;
     private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
@@ -81,7 +85,7 @@ public class MainTesting {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                airportInfo_icao(semanticInput, apiKey, host);        // REPLACE
+                climacell_lat(semanticInput, apiKey, host);        // REPLACE
 
                 i++;
 
@@ -136,6 +140,27 @@ public class MainTesting {
             ioe.printStackTrace();
         }
         return res;
+    }
+
+    public static void printResponse(String uri) throws IOException {
+        System.out.println(uri);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(uri)
+                .get()
+                .addHeader("x-rapidapi-host", host)
+                .addHeader("x-rapidapi-key", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println(response.body().string());
+        System.out.println("--------------------------------------------------------------------------------------");
+
+
     }
 
 
