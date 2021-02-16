@@ -25,7 +25,6 @@ import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coron
 import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.greatCircleMapper_aircraft_iataIcao;
-import static es.us.isa.restest.inputs.semantic.testing.api.MovieDatabase.movieDatabase_imdbId;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_countryCode;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
 import static es.us.isa.restest.inputs.semantic.testing.api.Skyscanner.*;
@@ -61,7 +60,7 @@ public class MainTesting {
 
         System.out.println("Number of inputs " + semanticInputs.size());
 
-        int maxCut = (limit < 20) ? limit : 20;
+        int maxCut = (limit < 10) ? limit : 10;
 
         Collections.shuffle(semanticInputs);
 

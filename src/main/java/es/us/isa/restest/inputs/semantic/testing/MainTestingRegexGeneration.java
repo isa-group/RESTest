@@ -83,7 +83,7 @@ public class MainTestingRegexGeneration {
                 System.out.println("###########");
                 System.out.println(response);
 
-                // ApiFootball
+                // VALIDATION in  ApiFootball (the errors are shown in a parameter)
 //                JSONObject Jobject = new JSONObject(response);
 //                JSONObject api = Jobject.getJSONObject("api");
 //
@@ -101,7 +101,7 @@ public class MainTestingRegexGeneration {
 //                }
 
 
-                // ApiBasketball
+                // VALIDATION in ApiBasketball (the errors are shown in a parameter)
                 JSONObject Jobject = new JSONObject(response);
                 Object errors = Jobject.get("errors");
 
@@ -126,7 +126,7 @@ public class MainTestingRegexGeneration {
 
 
 
-                // Skyscanner and flightData
+                // VALIDATION IN Skyscanner and flightData (errors with 400 code)
 //                if(response.code() == 200){
 //                    validSet.add(semanticInput);
 //                    System.out.println(semanticInput + " added to valid");

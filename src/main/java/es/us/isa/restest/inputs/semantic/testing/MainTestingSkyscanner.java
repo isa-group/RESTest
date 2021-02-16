@@ -47,7 +47,7 @@ public class MainTestingSkyscanner {
 
         System.out.println("Number of inputs " + semanticInputs.size());
 
-        Integer maxCut = (limit < 20) ? limit : 20;
+        Integer maxCut = (limit < 10) ? limit : 10;
 
         Collections.shuffle(semanticInputs);
 
@@ -61,7 +61,7 @@ public class MainTestingSkyscanner {
 
                 System.out.println(semanticInput);
 
-//                String query = "?latitude=49.6848&longitude=" + semanticInput;         // TODO: Modify
+//                String query = "?latitude=49.6848&longitude=" + semanticInput;
 //                String url = baseUrl + operationPath + query;
                 String url = baseUrl + "/apiservices/browseroutes/v1.0/US/USD/"+semanticInput+"/SFO-sky/JFK-sky/anytime/anytime";
 //                                      /apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}
@@ -102,7 +102,7 @@ public class MainTestingSkyscanner {
 
                 Response response = client.newCall(request).execute();
 
-                System.out.println("Iteración número " + i + "/" + maxCut);
+                System.out.println("Iteration number " + i + "/" + maxCut);
 
                 System.out.println("RESPONSE CODE: " + response.code());
                 System.out.println(response.body().string());
