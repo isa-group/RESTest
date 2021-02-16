@@ -13,7 +13,7 @@ public class ApiFootball {
     // GET /v2/leagues/country/{country_name}/{season}
     public static void apiFootball_leaguesCountryCountryNameSeason_countryName(String semanticInput, String apiKey, String host) throws IOException {
 
-        String url = baseUri + "/v2/leagues/country/"+semanticInput;
+        String url = baseUri + "/v2/leagues/country/" + semanticInput + "/2019";
 
         System.out.println(url);
 
@@ -155,8 +155,31 @@ public class ApiFootball {
         System.out.println("RESPONSE CODE: " + response.code());
         System.out.println(response.body().string());
         System.out.println("--------------------------------------------------------------------------------------");
-
-
     }
+
+    // GET /v2/players/search/{name}
+    // https://api-football-v1.p.rapidapi.com/v2/players/search/Joseph Brennan (Irish politician)
+    public static void apiFootball_playersSearch_name(String semanticInput, String apiKey, String host) throws IOException {
+
+        String url = baseUri + "/v2/players/search/" + semanticInput;
+
+        System.out.println(url);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("x-rapidapi-host", host)
+                .addHeader("x-rapidapi-key", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println(response.body().string());
+        System.out.println("--------------------------------------------------------------------------------------");
+    }
+
 
 }
