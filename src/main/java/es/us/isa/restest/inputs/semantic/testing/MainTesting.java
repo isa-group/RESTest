@@ -30,7 +30,7 @@ import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.public
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
 import static es.us.isa.restest.inputs.semantic.testing.api.Skyscanner.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.TrueWayGeocoding.trueWayGeocoding_language;
-import static es.us.isa.restest.inputs.semantic.testing.api.UsRestaurantMenus.usRestaurantMenus_restaurantsState_state;
+import static es.us.isa.restest.inputs.semantic.testing.api.UsRestaurantMenus.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.WeatherForecast14Days.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 
@@ -38,9 +38,9 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTesting {
 
     // Parameters to change
-    private static final String propertiesPath = "src/test/resources/SemanticAPIs/OpenWeatherMap/openWeatherMap.properties";
-    private static final String operationPath = "/forecast";
-    private static final String semanticParameterName = "zip";
+    private static final String propertiesPath = "src/test/resources/SemanticAPIs/UsRestaurantMenus/usRestaurantMenus.properties";
+    private static final String operationPath = "/menuitems/search";
+    private static final String semanticParameterName = "lon";
     private static final Integer limit = Integer.MAX_VALUE;
     private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
@@ -78,8 +78,7 @@ public class MainTesting {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-//                asos_categoriesList_country(semanticInput, apiKey, host);
-                openWeatherMap_forecast_zip(semanticInput, apiKey, host);
+                usRestaurantMenus_longitude(semanticInput, apiKey, host);        // REPLACE
 
                 i++;
 
