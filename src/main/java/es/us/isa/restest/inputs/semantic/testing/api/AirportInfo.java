@@ -6,36 +6,13 @@ import com.squareup.okhttp.Response;
 
 import java.io.IOException;
 
-public class TrueWayGeocoding {
+public class AirportInfo {
 
-    private static final String baseUrl = "https://trueway-geocoding.p.rapidapi.com";
+    private static final String baseUri = "https://airport-info.p.rapidapi.com";
 
-    public static void trueWayGeocoding_language(String semanticInput, String apiKey, String host) throws IOException {
+    public static void airportInfo_iata(String semanticInput, String apiKey, String host) throws IOException {
 
-        String url = baseUrl + "/Geocode?address=505 Howard St, San Francisco&language=" + semanticInput;
-
-        System.out.println(url);
-
-        OkHttpClient client = new OkHttpClient();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .get()
-                .addHeader("x-rapidapi-host", host)
-                .addHeader("x-rapidapi-key", apiKey)
-                .build();
-
-        Response response = client.newCall(request).execute();
-
-        System.out.println("RESPONSE CODE: " + response.code());
-        System.out.println(response.body().string());
-        System.out.println("--------------------------------------------------------------------------------------");
-
-
-    }
-
-    public static void trueWayGeocoding_location(String semanticInput, String apiKey, String host) throws IOException {
-        String url = baseUrl + "/ReverseGeocode?location=" + semanticInput;
+        String url = baseUri + "/airport?iata=" + semanticInput;
 
         System.out.println(url);
 
@@ -54,6 +31,29 @@ public class TrueWayGeocoding {
         System.out.println(response.body().string());
         System.out.println("--------------------------------------------------------------------------------------");
 
+    }
+
+    public static void airportInfo_icao(String semanticInput, String apiKey, String host) throws IOException {
+
+        String url = baseUri + "/airport?icao=" + semanticInput;
+
+        System.out.println(url);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("x-rapidapi-host", host)
+                .addHeader("x-rapidapi-key", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println(response.body().string());
+        System.out.println("--------------------------------------------------------------------------------------");
 
     }
+
 }
