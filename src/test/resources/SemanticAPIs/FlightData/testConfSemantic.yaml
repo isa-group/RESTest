@@ -138,11 +138,15 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0615fc0760549_airline_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/ontology/iataAirlineCode"
           objectValues: null
         valid: true
     - name: limit
@@ -188,7 +192,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/Generated/57f1ff38e4b0036abc9166f2/57f1ff38e4b005ac6f42bce6_origin.csv
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b005ac6f42bce6_origin.csv
           objectValues: null
         - name: predicates
           values:
@@ -203,16 +207,11 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/Generated/57f1ff38e4b0036abc9166f2/57f1ff38e4b005ac6f42bce6_currency.csv
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b005ac6f42bce6_currency.csv
           objectValues: null
         - name: predicates
           values:
           - "http://dbpedia.org/property/currency"
-          - "http://dbpedia.org/property/currencyIso"
-          objectValues: null
-        - name: regExp
-          values:
-          - ^\w\w\w$
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -257,33 +256,45 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0597e1dbb6c86_destination.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/destination"
           objectValues: null
         valid: true
     - name: currency
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0597e1dbb6c86_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
           objectValues: null
         valid: true
     - name: origin
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0597e1dbb6c86_origin.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/origin"
           objectValues: null
         valid: true
     - name: length
@@ -339,22 +350,30 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0faf779aebae7_origin.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/origin"
           objectValues: null
         valid: true
     - name: currency
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0faf779aebae7_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
           objectValues: null
         valid: true
     - name: page
@@ -383,11 +402,15 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0faf779aebae7_destination.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/destination"
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -470,33 +493,45 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/apiendpoint_b6baced0-1ea6-4633-8483-13e2d11b0f86_destination.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/destination"
           objectValues: null
         valid: true
     - name: origin
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/apiendpoint_b6baced0-1ea6-4633-8483-13e2d11b0f86_origin.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/origin"
           objectValues: null
         valid: true
     - name: currency
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/apiendpoint_b6baced0-1ea6-4633-8483-13e2d11b0f86_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
           objectValues: null
         valid: true
     - name: length
@@ -631,11 +666,15 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b071c9cf1acb52_origin.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
         valid: true
     - name: one_way
@@ -664,22 +703,30 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b071c9cf1acb52_destination.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
         valid: true
     - name: currency
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b071c9cf1acb52_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
           objectValues: null
         valid: true
     - name: trip_duration
@@ -751,11 +798,15 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b02b08e6ad9fba_destination.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
         valid: true
     - name: show_to_affiliates
@@ -773,22 +824,30 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b02b08e6ad9fba_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
           objectValues: null
         valid: true
     - name: origin
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b02b08e6ad9fba_origin.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -822,11 +881,15 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0036abc9166f4_destination.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
         valid: true
     - name: show_to_affiliates
@@ -844,11 +907,15 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0036abc9166f4_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
           objectValues: null
         valid: true
     - name: depart_date
@@ -899,11 +966,15 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0036abc9166f4_origin.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -964,12 +1035,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0c681e4af2435_currency.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          - "http://dbpedia.org/property/currencyIso"
+          objectValues: null
+        - name: regExp
+          values:
+            - ^\w\w\w$
+            objectValues: null
         valid: true
     - name: return_date
       in: query
@@ -986,22 +1066,30 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0c681e4af2435_origin.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
         valid: true
     - name: destination
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/Generated/flightData/57f1ff38e4b0c681e4af2435_destination.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
           objectValues: null
         valid: true
     expectedResponse: 200

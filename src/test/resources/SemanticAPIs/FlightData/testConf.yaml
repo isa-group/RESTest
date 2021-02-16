@@ -397,7 +397,7 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: SemanticParameter
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
@@ -419,7 +419,7 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: SemanticParameter
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
