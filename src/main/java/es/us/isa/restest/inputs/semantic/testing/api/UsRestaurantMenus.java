@@ -30,7 +30,7 @@ public class UsRestaurantMenus {
         String url = baseUri + operationPath + "?lon=-73.992378&lat=40.68919&distance=" + semanticInput;
         printResponse(url);
     }
-    
+
     // GET /restaurants/zip_code/{zip_code}
     public static void usRestaurantMenus_restaurantsZipcode_zipCode(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + "/restaurants/zip_code/" + semanticInput;
