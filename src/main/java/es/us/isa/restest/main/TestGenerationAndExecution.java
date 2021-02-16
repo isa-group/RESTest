@@ -6,7 +6,6 @@ import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
-import es.us.isa.restest.generators.StatefulTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.runners.RESTestRunner;
@@ -137,9 +136,6 @@ public class TestGenerationAndExecution {
 			((ConstraintBasedTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
 			gen.setFaultyRatio(faultyRatio);
 			break;
-		case "ST":
-			gen = new StatefulTestCaseGenerator(spec, conf, numTestCases);
-			gen.setFaultyRatio(faultyRatio);
 		default:
 		}
 
@@ -156,9 +152,6 @@ public class TestGenerationAndExecution {
 		writer.setEnableStats(enableCSVStats);
 		writer.setEnableOutputCoverage(enableOutputCoverage);
 		writer.setAPIName(experimentName);
-		if(generator.equals("ST")) {
-			writer.setStoreGetResponseBodies(true);
-		}
 		return writer;
 	}
 

@@ -96,13 +96,21 @@ testConfiguration:
           in: body
           weight: null
           generators:
+#          - valid: true
+#            type: ObjectPerturbator
+#            genParameters:
+#              - name: stringObject
+#                values:
+#                  - "{\"id\":\"c1\",\"userName\":\"josedelpino\",\"text\":\"I love Spotify\"\
+#            ,\"date\":\"2013-04-16T20:44:53.950\",\"type\":\"Review\"}"
+#                objectValues: null
           - valid: true
-            type: ObjectPerturbator
+            type: StatefulBodyGenerator
             genParameters:
-              - name: stringObject
+              - name: defaultValue
                 values:
                   - "{\"id\":\"c1\",\"userName\":\"josedelpino\",\"text\":\"I love Spotify\"\
-            ,\"date\":\"2013-04-16T20:44:53.950\",\"type\":\"Review\"}"
+                    ,\"date\":\"2013-04-16T20:44:53.950\",\"type\":\"Review\"}"
                 objectValues: null
       expectedResponse: 200
     - testPath: /comments
@@ -113,13 +121,21 @@ testConfiguration:
           in: body
           weight: null
           generators:
+#          - valid: true
+#            type: ObjectPerturbator
+#            genParameters:
+#              - name: stringObject
+#                values:
+#                  - "{\"id\":\"c1\",\"userName\":\"josedelpino\",\"text\":\"I love Spotify\"\
+#            ,\"date\":\"2013-04-16T20:44:53.950\",\"type\":\"Review\"}"
+#                objectValues: null
           - valid: true
-            type: ObjectPerturbator
+            type: StatefulBodyGenerator
             genParameters:
-              - name: stringObject
+              - name: defaultValue
                 values:
                   - "{\"id\":\"c1\",\"userName\":\"josedelpino\",\"text\":\"I love Spotify\"\
-            ,\"date\":\"2013-04-16T20:44:53.950\",\"type\":\"Review\"}"
+                    ,\"date\":\"2013-04-16T20:44:53.950\",\"type\":\"Review\"}"
                 objectValues: null
       expectedResponse: 200
     - testPath: "/comments/{id}"

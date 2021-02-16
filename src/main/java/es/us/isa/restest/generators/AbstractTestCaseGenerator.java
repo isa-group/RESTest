@@ -3,6 +3,8 @@ package es.us.isa.restest.generators;
 import java.util.*;
 
 import es.us.isa.restest.configuration.pojos.Generator;
+import es.us.isa.restest.inputs.stateful.StatefulBodyGenerator;
+import es.us.isa.restest.inputs.stateful.StatefulParameterGenerator;
 import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.util.*;
 import org.apache.logging.log4j.LogManager;
@@ -247,22 +249,27 @@ public abstract class AbstractTestCaseGenerator {
 						test.addParameter(confParam, ((ObjectPerturbator) generator).getRandomOriginalStringObject());		// Objects are not perturbated yet
 						perturbation = true;
 					}
+					else if (generator instanceof StatefulBodyGenerator) {
+						test.addParameter(confParam, ((StatefulBodyGenerator) generator).nextValueAsString(testOperation.getOpenApiOperation(), testOperation.getTestPath()));
+					} else if (generator instanceof StatefulParameterGenerator) {
+						test.addParameter(confParam, ((StatefulParameterGenerator) generator).nextValueAsString(testOperation.getOpenApiOperation(), testOperation.getTestPath()));
+					}
 					else
 						test.addParameter(confParam, generator.nextValueAsString());
 				}
 			}
 		}
-		
+
 		// Make sure the test case generated conforms to the specification. Otherwise, throw an exception and stop the execution
 		List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
 		if (!errors.isEmpty()) {
 			throw new RESTestException("The test case generated does not conform to the specification: " + errors);
 		}
-			
+
 		// If a perturbation generator is included in the test configuration file, try to generate a new (valid) test case by perturbating a valid input object
 		if (perturbation)
 			perturbate(test, testOperation);
-		
+
 		return test;
 	}
 
@@ -319,13 +326,15 @@ public abstract class AbstractTestCaseGenerator {
 				test = generateRandomInvalidTestCase(testOperation);
 			else { // Valid request and mutate it
 				test = generateRandomValidTestCase(testOperation);
-
-				String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
-				if (!mutationDescription.equals("")) { // A mutation has been applied
-					test.setFaulty(true);
-					test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
-				} else
-					test = null;
+				if(test != null) {
+					String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
+					if (!mutationDescription.equals("")) { // A mutation has been applied
+						test.setFaulty(true);
+						test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
+					} else {
+						test = null;
+					}
+				}
 			}
 
 			i++;
@@ -427,8 +436,20 @@ public abstract class AbstractTestCaseGenerator {
 				List<ITestDataGenerator> nomGens = new ArrayList<>();
 				List<ITestDataGenerator> faultyGens = new ArrayList<>();
 				for(Generator g : param.getGenerators()) {
-					if(g.isValid()) nomGens.add(TestDataGeneratorFactory.createTestDataGenerator(g));
-					else faultyGens.add(TestDataGeneratorFactory.createTestDataGenerator(g));
+					ITestDataGenerator gen = TestDataGeneratorFactory.createTestDataGenerator(g);
+
+					if (gen instanceof StatefulBodyGenerator) {
+						((StatefulBodyGenerator) gen).setDataDirPath(spec.getPath().substring(0, spec.getPath().lastIndexOf('/')));
+						((StatefulBodyGenerator) gen).setSpec(spec);
+					}
+					if (gen instanceof StatefulParameterGenerator) {
+						((StatefulParameterGenerator) gen).setDataDirPath(spec.getPath().substring(0, spec.getPath().lastIndexOf('/')));
+						((StatefulParameterGenerator) gen).setSpec(spec);
+						((StatefulParameterGenerator) gen).setParameterName(param.getName());
+					}
+
+					if(g.isValid()) nomGens.add(gen);
+					else faultyGens.add(gen);
 				}
 				if (!nomGens.isEmpty())
 					nominalGenerators.put(Pair.with(param.getName(), param.getIn()), nomGens);

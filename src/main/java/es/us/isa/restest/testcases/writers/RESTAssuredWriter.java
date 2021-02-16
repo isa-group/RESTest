@@ -26,7 +26,7 @@ public class RESTAssuredWriter implements IWriter {
 	private boolean allureReport = false;			// Generate request and response attachment for allure reports
 	private boolean enableStats = false;			// If true, export test results data to CSV
 	private boolean enableOutputCoverage = false;	// If true, export output coverage data to CSV
-	private boolean storeGetResponseBodies = false; // If true, export GET response bodies to JSON file
+	private boolean storeGetResponseBodies = true; // If true, export GET response bodies to JSON file
 
 	private String specPath;						// Path to OAS specification file
 	private String testFilePath;					// Path to test configuration file
@@ -106,6 +106,7 @@ public class RESTAssuredWriter implements IWriter {
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.testcases.restassured.filters.StatusCode5XXFilter;\n"
 				+  "import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFilter;\n"
+				+  "import es.us.isa.restest.testcases.restassured.filters.JSONFilter;\n"
 				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
@@ -152,7 +153,8 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
 				+  "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
 				+  "\tprivate static final NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter();\n"
-				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
+				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n"
+				+  "\tprivate static final JSONFilter jsonFilter = new JSONFilter(\"" + specPath.substring(0, specPath.lastIndexOf('/')) + "\");\n";
 
 		if (logToFile) {
 			content +=  "\tprivate static RequestLoggingFilter requestLoggingFilter;\n"
@@ -294,6 +296,10 @@ public class RESTAssuredWriter implements IWriter {
 					"\t\tnominalOrFaultyTestCaseFilter.setTestResultId(testResultId);\n" +
 					"\t\tvalidationFilter.setTestResultId(testResultId);\n";
 
+		if (t.getMethod().equals(HttpMethod.GET)) {
+			content += "\t\tjsonFilter.setOperationId(\"" + t.getOperationId() + "\");\n";
+		}
+
 		content += "\n";
 
 		return content;
@@ -417,6 +423,9 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\t\t\t\t.filter(validationFilter)\n";
 		if (enableStats || enableOutputCoverage) // CSV filter
 			content += "\t\t\t\t.filter(csvFilter)\n";
+		if (t.getMethod().equals(HttpMethod.GET)) {
+			content += "\t\t\t\t.filter(jsonFilter)\n";
+		}
 
 		return content;
 	}
@@ -431,32 +440,14 @@ public class RESTAssuredWriter implements IWriter {
 //			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
 //			         + "\n\t\t\tresponse.then().log().ifError();\n";
 //		}
-		if (t.getMethod().equals(HttpMethod.GET) && storeGetResponseBodies) {
-			String specDirPath = specPath.substring(0, specPath.lastIndexOf('/'));
 
-			content += "\n\t\t\tbyte[] responseByteArray = response.then()";
+		content += "\n\t\t\tresponse.then()";
 
-			if (logging) {
-				content += ".log().all()";
-			}
-
-			content += ".extract().asByteArray();\n";
-			content += "\t\t\tArrayNode originalNode = objectMapper.createArrayNode();\n";
-			content += "\t\t\tif(Files.exists(Paths.get(\"" + specDirPath + '/' + t.getOperationId() + "_data.json\"))) {\n";
-			content += "\t\t\t\tbyte[] fileData = Files.readAllBytes(Paths.get(\"" + specDirPath + '/' + t.getOperationId() + "_data.json\"));\n";
-			content += "\t\t\t\toriginalNode = (ArrayNode) objectMapper.reader().readTree(fileData);\n";
-			content += "\t\t\t}\n";
-			content += "\t\t\tJsonNode newNode = objectMapper.reader().readTree(responseByteArray);\n";
-			content += "\t\t\tif(newNode.isArray()) {\n";
-			content += "\t\t\t\toriginalNode.addAll((ArrayNode)newNode);\n";
-			content += "\t\t\t} else {\n";
-			content += "\t\t\t\toriginalNode.add(newNode);\n";
-			content += "\t\t\t}\n";
-			content += "\t\t\tbyte[] newFileData = objectMapper.writer().writeValueAsBytes(originalNode);\n";
-			content += "\t\t\tFiles.write(Paths.get(\"" + specDirPath + '/' + t.getOperationId() + "_data.json\"), newFileData);\n";
-		} else if (logging) {
-			content += "\n\t\t\tresponse.then().log().all();\n";
+		if (logging) {
+			content += ".log().all()";
 		}
+
+		content += ";\n";
 
 		
 //		if (OAIValidation)
@@ -538,7 +529,7 @@ public class RESTAssuredWriter implements IWriter {
 		
 		String content = "\t\t\tSystem.out.println(\"Test passed.\");\n";
 
-		if (t.getBodyParameter() != null || storeGetResponseBodies) {
+		if (t.getBodyParameter() != null) {
 			content += "\t\t} catch (IOException e) {\n"
 					+  "\t\t\te.printStackTrace();\n";
 		}
