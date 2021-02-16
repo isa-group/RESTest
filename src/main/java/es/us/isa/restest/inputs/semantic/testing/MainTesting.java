@@ -27,7 +27,7 @@ import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.climacell_
 import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coronavirusMap_region;
 import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.greatCircleMapper_aircraft_iataIcao;
+import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.greatCircleMapper_iataIcao;
 import static es.us.isa.restest.inputs.semantic.testing.api.OpenWeatherMap.openWeatherMap_forecast_zip;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_countryCode;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
