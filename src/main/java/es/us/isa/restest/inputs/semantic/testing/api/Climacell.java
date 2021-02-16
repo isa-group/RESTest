@@ -15,18 +15,13 @@ public class Climacell {
 
     // Latitude
     public static void climacell_lat(String semanticInput, String apiKey, String host) throws IOException {
-
         String uri = baseUrl + operationPath + "?lat=" + semanticInput + "&lon=-74.0578";
-
         printResponse(uri);
-
     }
 
     // Longitude
     public static void climacell_lon(String semanticInput, String apiKey, String host) throws IOException {
-
         String uri = baseUrl + operationPath + "?lat=52.412&lon=" + semanticInput;
-
         printResponse(uri);
 
     }
