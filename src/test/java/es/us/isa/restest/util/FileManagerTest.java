@@ -2,8 +2,6 @@ package es.us.isa.restest.util;
 
 import org.junit.Test;
 
-import java.io.File;
-
 import static org.junit.Assert.*;
 
 import static es.us.isa.restest.util.FileManager.*;
@@ -32,12 +30,12 @@ public class FileManagerTest {
         String path = "src/test/resources/file-manager/test/test.txt";
         String text = "prueba";
 
-        writeFile(path, text);
-
+        createFileIfNotExists("src/test/resources/file-manager/test/test.txt");
         assertTrue(checkIfExists(path));
 
-        String content = readFile(path).trim();
+        writeFile(path, text);
 
+        String content = readFile(path).trim();
         assertEquals(text, content);
 
         deleteFile(path);
