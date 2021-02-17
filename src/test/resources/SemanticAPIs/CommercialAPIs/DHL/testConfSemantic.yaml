@@ -28,7 +28,7 @@ testConfiguration:
         valid: true
     - name: addressLocality
       in: query
-      weight: 1.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:
@@ -44,7 +44,7 @@ testConfiguration:
         valid: true
     - name: postalCode
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:

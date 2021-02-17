@@ -65,6 +65,10 @@ testConfiguration:
           - "http://dbpedia.org/property/countryCode"
           - "http://dbpedia.org/property/country"
           objectValues: null
+        - name: regExp
+          values:
+          - ^\w[^\d]$
+          objectValues: null
         valid: true
     - name: locale
       in: query
