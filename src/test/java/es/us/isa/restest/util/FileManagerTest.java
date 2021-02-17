@@ -16,14 +16,30 @@ public class FileManagerTest {
         String path = "src/test/resources/file-manager/test/directory";
         deleteDir(parentPath);
 
-        assertFalse(new File(parentPath).exists());
+        assertFalse(checkIfExists(parentPath));
 
         createDir(path);
 
-        assertTrue(new File(path).exists());
+        assertTrue(checkIfExists(path));
 
         deleteFile(path);
 
-        assertFalse(new File(path).exists());
+        assertFalse(checkIfExists(path));
+    }
+
+    @Test
+    public void writeReadFileTest() {
+        String path = "src/test/resources/file-manager/test/test.txt";
+        String text = "prueba";
+
+        writeFile(path, text);
+
+        assertTrue(checkIfExists(path));
+
+        String content = readFile(path).trim();
+
+        assertEquals(text, content);
+
+        deleteFile(path);
     }
 }

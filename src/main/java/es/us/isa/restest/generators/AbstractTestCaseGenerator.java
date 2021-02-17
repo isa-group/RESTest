@@ -252,7 +252,7 @@ public abstract class AbstractTestCaseGenerator {
 					else if (generator instanceof StatefulBodyGenerator) {
 						test.addParameter(confParam, ((StatefulBodyGenerator) generator).nextValueAsString(testOperation.getOpenApiOperation(), testOperation.getTestPath()));
 					} else if (generator instanceof StatefulParameterGenerator) {
-						test.addParameter(confParam, ((StatefulParameterGenerator) generator).nextValueAsString(testOperation.getOpenApiOperation(), testOperation.getTestPath()));
+						test.addParameter(confParam, ((StatefulParameterGenerator) generator).nextValueAsString(testOperation.getTestPath()));
 					}
 					else
 						test.addParameter(confParam, generator.nextValueAsString());
@@ -346,7 +346,7 @@ public abstract class AbstractTestCaseGenerator {
 	
 	
 	/* Try to perturbate input objects using the ObjectPerturbator. If not possible, set the parameter to the original object provided in the test configuration file */
-	protected void perturbate(TestCase test, Operation testOperation) {
+	private void perturbate(TestCase test, Operation testOperation) {
 		
 		for (TestParameter confParam : testOperation.getTestParameters()) {
 			ITestDataGenerator generator = getRandomGenerator(nominalGenerators.get(Pair.with(confParam.getName(), confParam.getIn())));

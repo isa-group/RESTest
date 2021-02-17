@@ -114,9 +114,7 @@ public class TestGenerationAndExecution {
 	// Create a test case generator
 	private static AbstractTestCaseGenerator createGenerator() {
 		// Load specification
-		if (spec == null) {
-			spec = new OpenAPISpecification(OAISpecPath);
-		}
+		spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
 		TestConfigurationObject conf = loadConfiguration(confPath, spec);

@@ -106,7 +106,7 @@ public class RESTAssuredWriter implements IWriter {
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.testcases.restassured.filters.StatusCode5XXFilter;\n"
 				+  "import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFilter;\n"
-				+  "import es.us.isa.restest.testcases.restassured.filters.JSONFilter;\n"
+				+  "import es.us.isa.restest.testcases.restassured.filters.StatefulFilter;\n"
 				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
@@ -154,7 +154,7 @@ public class RESTAssuredWriter implements IWriter {
 				+  "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
 				+  "\tprivate static final NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter();\n"
 				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n"
-				+  "\tprivate static final JSONFilter jsonFilter = new JSONFilter(\"" + specPath.substring(0, specPath.lastIndexOf('/')) + "\");\n";
+				+  "\tprivate static final StatefulFilter statefulFilter = new StatefulFilter(\"" + specPath.substring(0, specPath.lastIndexOf('/')) + "\");\n";
 
 		if (logToFile) {
 			content +=  "\tprivate static RequestLoggingFilter requestLoggingFilter;\n"
@@ -297,7 +297,7 @@ public class RESTAssuredWriter implements IWriter {
 					"\t\tvalidationFilter.setTestResultId(testResultId);\n";
 
 		if (t.getMethod().equals(HttpMethod.GET)) {
-			content += "\t\tjsonFilter.setOperationId(\"" + t.getOperationId() + "\");\n";
+			content += "\t\tstatefulFilter.setOperationId(\"" + t.getOperationId() + "\");\n";
 		}
 
 		content += "\n";
@@ -424,7 +424,7 @@ public class RESTAssuredWriter implements IWriter {
 		if (enableStats || enableOutputCoverage) // CSV filter
 			content += "\t\t\t\t.filter(csvFilter)\n";
 		if (t.getMethod().equals(HttpMethod.GET)) {
-			content += "\t\t\t\t.filter(jsonFilter)\n";
+			content += "\t\t\t\t.filter(statefulFilter)\n";
 		}
 
 		return content;

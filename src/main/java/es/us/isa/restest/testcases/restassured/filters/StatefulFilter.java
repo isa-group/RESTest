@@ -13,13 +13,13 @@ import io.restassured.specification.FilterableResponseSpecification;
 
 import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;
 
-public class JSONFilter extends RESTestFilter implements OrderedFilter {
+public class StatefulFilter extends RESTestFilter implements OrderedFilter {
 
     private String specDirPath;
     private String operationId;
     private ObjectMapper objectMapper;
 
-    public JSONFilter(String specDirPath) {
+    public StatefulFilter(String specDirPath) {
         requireNonEmpty(specDirPath, "The specification directory path is required");
 
         this.specDirPath = specDirPath;
