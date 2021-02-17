@@ -1,10 +1,7 @@
 ---
 auth:
   required: true
-  queryParams:
-    apikey: '----'
-    hash: '---'
-    ts: '--'
+  queryParams: {}
   headerParams: {}
   apiKeysPath: null
   headersPath: null
@@ -17,17 +14,19 @@ testConfiguration:
     - name: characterId
       in: path
       weight: null
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/MarvelCharacterIDs.csv
+          objectValues: null
+        valid: true
     - name: format
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -40,28 +39,31 @@ testConfiguration:
           - digital comic
           - infinite comic
           objectValues: null
+        valid: true
     - name: formatType
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - comic
           - collection
           objectValues: null
+        valid: true
     - name: noVariants
       in: query
       weight: 0.5
-      generator:
-        type: RandomBoolean
+      generators:
+      - type: RandomBoolean
         genParameters: []
+        valid: true
     - name: dateDescriptor
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -70,44 +72,49 @@ testConfiguration:
           - nextWeek
           - thisMonth
           objectValues: null
+        valid: true
     - name: dateRange
       in: query
       weight: 0.1
-      generator:
-        type: RandomRegExp
+      generators:
+      - type: RandomRegExp
         genParameters:
         - name: regExp
           values:
           - ((19\d\d)|(20[01]\d)),((20[01]\d)|2020)
+          objectValues: null
+        valid: true
     - name: title
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord   # SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: titleStartsWith
       in: query
-      weight: 0
-      generator:
-        type: RandomEnglishWord
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: startYear
       in: query
       weight: 0.1
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -117,15 +124,16 @@ testConfiguration:
           values:
           - 2020
           objectValues: null
+        valid: true
     - name: issueNumber
       in: query
       weight: 0.1
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
-          - integer
+          - int32
           objectValues: null
         - name: min
           values:
@@ -135,21 +143,23 @@ testConfiguration:
           values:
           - 500
           objectValues: null
+        valid: true
     - name: diamondCode
       in: query
-      weight: 0
-      generator:
-        type: RandomEnglishWord
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: digitalId
       in: query
-      weight: 0
-      generator:
-        type: RandomNumber
+      weight: 0.0
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -163,75 +173,82 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: upc
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord # SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: isbn
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord # SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: ean
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord # SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: issn
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord # SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: hasDigitalIssue
       in: query
       weight: 0.1
-      generator:
-        type: RandomBoolean
+      generators:
+      - type: RandomBoolean
         genParameters: []
+        valid: true
     - name: modifiedSince
       in: query
       weight: 0.1
-      generator:
-        type: RandomDate
+      generators:
+      - type: RandomDate
         genParameters:
-          - name: startDate
-            values:
-              - 1970-01-01
-            objectValues: null
-          - name: endDate
-            values:
-              - 2020-01-01
-            objectValues: null
-          - name: format
-            values:
-              - yyyy-MM-dd
-            objectValues: null
+        - name: startDate
+          values:
+          - 1970-01-01
+          objectValues: null
+        - name: endDate
+          values:
+          - 2020-01-01
+          objectValues: null
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
     - name: creators
       in: query
       weight: 0.1
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
@@ -245,11 +262,12 @@ testConfiguration:
           values:
           - 5
           objectValues: null
+        valid: true
     - name: series
       in: query
       weight: 0.1
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
@@ -263,11 +281,12 @@ testConfiguration:
           values:
           - 5
           objectValues: null
+        valid: true
     - name: events
       in: query
       weight: 0.1
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
@@ -281,11 +300,12 @@ testConfiguration:
           values:
           - 5
           objectValues: null
+        valid: true
     - name: stories
       in: query
       weight: 0.1
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
@@ -299,11 +319,12 @@ testConfiguration:
           values:
           - 5
           objectValues: null
+        valid: true
     - name: sharedAppearances
       in: query
       weight: 0.1
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
@@ -317,11 +338,12 @@ testConfiguration:
           values:
           - 5
           objectValues: null
+        valid: true
     - name: collaborators
       in: query
       weight: 0.1
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
@@ -335,30 +357,32 @@ testConfiguration:
           values:
           - 5
           objectValues: null
+        valid: true
     - name: orderBy
       in: query
       weight: 0.1
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
-            - focDate
-            - onsaleDate
-            - title
-            - issueNumber
-            - modified
-            - focDate
-            - onsaleDate
-            - title
-            - issueNumber
-            - modified
+          - focDate
+          - onsaleDate
+          - title
+          - issueNumber
+          - modified
+          - focDate
+          - onsaleDate
+          - title
+          - issueNumber
+          - modified
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.1
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -372,11 +396,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: offset
       in: query
       weight: 0.1
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -390,4 +415,5 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     expectedResponse: 200

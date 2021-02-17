@@ -14,48 +14,68 @@ testConfiguration:
     - name: term
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Yelp API/getBusinesses_term.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/term"
+          objectValues: null
+        valid: true
     - name: location
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Yelp API/getBusinesses_location.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/ontology/location"
+          objectValues: null
+        valid: true
     - name: latitude
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Yelp API/getBusinesses_latitude.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/latitude"
+          objectValues: null
+        valid: true
     - name: longitude
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Yelp API/getBusinesses_longitude.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/longitude"
+          objectValues: null
+        valid: true
     - name: radius
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -69,31 +89,46 @@ testConfiguration:
           values:
           - 40000
           objectValues: null
+        valid: true
     - name: categories
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
+          values:
+          - src/main/resources/TestData/yelp-categories.csv
+          objectValues: null
+        - name: minValues
           values:
           - 1
           objectValues: null
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
     - name: locale
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Yelp API/getBusinesses_locale.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/locale"
+          objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -107,11 +142,12 @@ testConfiguration:
           values:
           - 50
           objectValues: null
+        valid: true
     - name: offset
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -125,11 +161,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: sort_by
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -138,27 +175,41 @@ testConfiguration:
           - review_count
           - distance
           objectValues: null
+        valid: true
     - name: price
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
+          values:
+          - 1
+          - 2
+          - 3
+          - 4
+          objectValues: null
+        - name: minValues
           values:
           - 1
           objectValues: null
+        - name: maxValues
+          values:
+          - 4
+          objectValues: null
+        valid: true
     - name: open_now
       in: query
       weight: 0.5
-      generator:
-        type: RandomBoolean
+      generators:
+      - type: RandomBoolean
         genParameters: []
+        valid: true
     - name: open_at
       in: query
-      weight: 0
-      generator:
-        type: RandomNumber
+      weight: 0.0
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -172,16 +223,34 @@ testConfiguration:
           values:
           - 2147483647
           objectValues: null
+        valid: true
     - name: attributes
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
+          values:
+          - hot_and_new
+          - request_a_quote
+          - reservation
+          - waitlist_reservation
+          - cashback
+          - deals
+          - gender_neutral_restrooms
+          - open_to_all
+          - wheelchair_accessible
+          objectValues: null
+        - name: minValues
           values:
           - 1
           objectValues: null
+        - name: maxValues
+          values:
+          - 3
+          objectValues: null
+        valid: true
     expectedResponse: 200
   - testPath: "/transactions/{transaction_type}/search"
     operationId: getTransactions
@@ -190,41 +259,57 @@ testConfiguration:
     - name: transaction_type
       in: path
       weight: null
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: InputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - delivery
           objectValues: null
+        valid: true
     - name: location
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Yelp API/getTransactions_location.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/ontology/location"
+          objectValues: null
+        valid: true
     - name: latitude
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Yelp API/getTransactions_latitude.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/latitude"
+          objectValues: null
+        valid: true
     - name: longitude
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/Yelp API/getTransactions_longitude.csv
           objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/longitude"
+          objectValues: null
+        valid: true
     expectedResponse: 200

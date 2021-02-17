@@ -15,7 +15,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: SemanticParameter # SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -26,7 +26,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: SemanticParameter # SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -37,7 +37,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: SemanticParameter # SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -48,7 +48,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: SemanticParameter # SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -78,18 +78,24 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/yelp-categories.csv
           objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
         valid: true
     - name: locale
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: SemanticParameter  # SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -152,12 +158,21 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
           - 1
+          - 2
+          - 3
+          - 4
           objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 4
         valid: true
     - name: open_now
       in: query
@@ -189,7 +204,70 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - hot_and_new
+          - request_a_quote
+          - reservation
+          - waitlist_reservation
+          - cashback
+          - deals
+          - gender_neutral_restrooms
+          - open_to_all
+          - wheelchair_accessible
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 3
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/transactions/{transaction_type}/search"
+    operationId: getTransactions
+    method: get
+    testParameters:
+    - name: transaction_type
+      in: path
+      weight: null
+      generators:
+      - type: InputValue
+        genParameters:
+        - name: values
+          values:
+          - delivery
+          objectValues: null
+        valid: true
+    - name: location
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter # SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: latitude
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter # SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: longitude
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter # SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -197,52 +275,3 @@ testConfiguration:
           objectValues: null
         valid: true
     expectedResponse: 200
-#  - testPath: "/transactions/{transaction_type}/search"
-#    operationId: getTransactions
-#    method: get
-#    testParameters:
-#    - name: transaction_type
-#      in: path
-#      weight: null
-#      generators:
-#      - type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#        valid: true
-#    - name: location
-#      in: query
-#      weight: 0.5
-#      generators:
-#      - type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#        valid: true
-#    - name: latitude
-#      in: query
-#      weight: 0.5
-#      generators:
-#      - type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#        valid: true
-#    - name: longitude
-#      in: query
-#      weight: 0.5
-#      generators:
-#      - type: RandomEnglishWord
-#        genParameters:
-#        - name: maxWords
-#          values:
-#          - 1
-#          objectValues: null
-#        valid: true
-#    expectedResponse: 200

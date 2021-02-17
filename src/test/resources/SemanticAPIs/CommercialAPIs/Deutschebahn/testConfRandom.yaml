@@ -2,9 +2,9 @@
 auth:
   required: true
   queryParams: {}
+  headerParams: {}
   apiKeysPath: null
-  headerParams:
-    Authorization: "Bearer ---"
+  headersPath: null
 testConfiguration:
   operations:
   - testPath: /stations
@@ -14,8 +14,8 @@ testConfiguration:
     - name: offset
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -29,11 +29,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: limit
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -47,31 +48,33 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: searchstring
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: category
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
-            - "1"
-            - "2"
-            - "3"
-            - "4"
-            - "5"
-            - "6"
-            - "7"
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+          - "6"
+          - "7"
           objectValues: null
         - name: minValues
           values:
@@ -79,21 +82,23 @@ testConfiguration:
         - name: maxValues
           values:
             - 7
+        valid: true
     - name: federalstate
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: eva
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -107,30 +112,34 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: ril
       in: query
       weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     - name: logicaloperator
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
-          - name: values
-            values:
-              - "and"
-              - "or"
-          - name: minValues
-            values:
-              - 1
-          - name: maxValues
-            values:
-              - 1
+        - name: values
+          values:
+          - "and"
+          - "or"
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 1
+        valid: true
     expectedResponse: 200

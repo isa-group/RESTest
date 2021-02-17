@@ -26,11 +26,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/imdbId.csv
           objectValues: null
         valid: true
     - name: s
@@ -108,7 +108,7 @@ testConfiguration:
         - name: values
           values:
           - json
-#          - xml
+          # - xml
           objectValues: null
         valid: true
     - name: callback

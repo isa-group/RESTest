@@ -168,7 +168,7 @@ testConfiguration:
         valid: true
     - name: chains
       in: query
-      weight: 0.1
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:

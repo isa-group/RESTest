@@ -26,7 +26,7 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 public class SemanticInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "---";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_random_business.properties";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
