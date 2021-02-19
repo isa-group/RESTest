@@ -2,10 +2,9 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
   apiKeysPath: null
-  headersPath:
-    Authorization: "Bearer ----"
+  headerParams:
+    Authorization: 'Bearer ----'
 testConfiguration:
   operations:
   - testPath: /businesses/search

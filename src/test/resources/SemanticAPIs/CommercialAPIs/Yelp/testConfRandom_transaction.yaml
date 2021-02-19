@@ -2,9 +2,8 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
   apiKeysPath: null
-  headersPath:
+  headerParams:
     Authorization: "Bearer ----"
 testConfiguration:
   operations:
