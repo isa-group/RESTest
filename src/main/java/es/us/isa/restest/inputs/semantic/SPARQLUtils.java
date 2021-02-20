@@ -156,7 +156,7 @@ public class SPARQLUtils {
                     URI uri = new URI(szValString);
                     String host = uri.getHost();
 
-                    // TODO (REFACTORIZATION): REPLACE "http://dbpedia.org/sparql" with szEndpoint
+
                     if(host!=null && "http://dbpedia.org/sparql".contains(uri.getHost())){
                         szValString = szVal.asResource().getLocalName().replace("_", " ").trim();
                     }
@@ -172,6 +172,7 @@ public class SPARQLUtils {
                     }
                 }
 
+                szValString = szValString.replace("\"", "'");
                 res.get(szVar).add(szValString);
 
             }

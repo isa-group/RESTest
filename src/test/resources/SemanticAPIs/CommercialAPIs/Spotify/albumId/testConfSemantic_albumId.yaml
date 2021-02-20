@@ -106,10 +106,6 @@ testConfiguration:
           values:
           - "http://dbpedia.org/property/countryCode"
           objectValues: null
-        - name: regExp
-          values:
-          - ^\w[^\d]$
-          objectValues: null
         valid: true
     expectedResponse: 200
 #  - testPath: "/albums/{id}/tracks"

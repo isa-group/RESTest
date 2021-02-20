@@ -27,10 +27,6 @@ testConfiguration:
           - "http://dbpedia.org/property/country"
           - "http://dbpedia.org/property/code"
           objectValues: null
-        - name: regExp
-          values:
-          - ^\w[^\d]$
-          objectValues: null
         valid: true
     - name: addressLocality
       in: query
