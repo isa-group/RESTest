@@ -164,7 +164,6 @@ public class StatsReportManager {
 
                         // Get new predicates for parameter
                         Set<String> predicates = new HashSet<>();
-
                         predicates = getPredicates(parameterValues, regex, predicatesToIgnore, spec);
 
 

@@ -380,6 +380,23 @@
 <!--			<version>2.8.6</version>-->
 <!--		</dependency>-->
 
+		<!-- RG++ -->
+		<dependency>
+			<groupId>MaleRegexTree</groupId>
+			<artifactId>MaleRegexTree</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${project.basedir}/lib/MaleRegexTree.jar</systemPath>
+		</dependency>
+
+		<dependency>
+			<groupId>RandomRegexTurtle</groupId>
+			<artifactId>RandomRegexTurtle</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${project.basedir}/lib/Random Regex Turtle.jar</systemPath>
+		</dependency>
+
 
 		<!-- OKHTTP (REMOVE) -->
 		<dependency>
