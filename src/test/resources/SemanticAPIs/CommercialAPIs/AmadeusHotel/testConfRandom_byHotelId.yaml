@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer ----
+    Authorization: 'Bearer fAYeG6bGAXT0sYMNF5YkvnMqnbIQ'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -20,7 +20,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/HotelCodes.csv
+          - 'src/main/resources/TestData/HotelCodes.csv'
           objectValues: null
         valid: true
     - name: checkInDate
@@ -88,11 +88,11 @@ testConfiguration:
           objectValues: null
         - name: minValues
           values:
-          - 1
+            - 1
           objectValues: null
         - name: maxValues
           values:
-          - 5
+            - 5
           objectValues: null
         valid: true
     - name: roomQuantity
@@ -118,17 +118,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomInputValue
+      - type: RandomRegExp
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/Hotel Shopping API/getSingleHotelOffers_currency.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - "http://dbpedia.org/property/currencyCode"
-          - "http://dbpedia.org/property/currencyIso"
-          - "http://dbpedia.org/property/currency"
+          - "[A-Z]{3}"
           objectValues: null
         valid: true
     - name: paymentPolicy
@@ -177,17 +171,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomInputValue
+      - type: RandomRegExp
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/Hotel Shopping API/getSingleHotelOffers_lang.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - "http://dbpedia.org/property/langcode"
-          - "http://dbpedia.org/property/origLangCode"
-          - "http://dbpedia.org/property/lang"
+          - "[a-zA-Z0-9-]{2,5}"
           objectValues: null
         valid: true
     expectedResponse: 200

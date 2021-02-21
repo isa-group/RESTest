@@ -11,7 +11,6 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 public class GenerateSPARQLFilters {
 
     public static String generateSPARQLFilters(TestParameter parameter){
-        // TODO: Important refactorization required (semantic parameter and Random_input_value)
         String res = "";
 //        Generator generator = parameter.getGenerators().stream().filter(x-> x.getType().equals(SEMANTIC_PARAMETER)).findFirst().get(); OLD
         Generator generator = parameter.getGenerators().stream()
@@ -39,6 +38,8 @@ public class GenerateSPARQLFilters {
 
     private static String generateSPARQLFilterRegExp(String parameterName, String regexp){
         String modifiedRegex = regexp.replace("\\", "\\\\");
+        modifiedRegex = modifiedRegex.replace("\"", "\\\"");
+
         String res = "\tFILTER regex(str(?" + parameterName + "), " + " \"" + modifiedRegex + "\")\n";
 
         return res;

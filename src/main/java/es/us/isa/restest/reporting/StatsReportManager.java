@@ -109,7 +109,6 @@ public class StatsReportManager {
                         .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
                 // Add parameter value to a map depending on the response code
-                // TODO (REFACTOR): operation is redundant
                 updateValidAndInvalidValues(testCase, validValues, invalidValues, valuesFromPreviousIterations, responseCode, operations);
             }
         }
@@ -164,7 +163,9 @@ public class StatsReportManager {
                     if(secondPredicateSearch && predicatesToIgnore.size() < maxNumberOfPredicates){
 
                         // Get new predicates for parameter
-                        Set<String> predicates = getPredicates(parameterValues, regex, predicatesToIgnore, spec);
+                        Set<String> predicates = new HashSet<>();
+
+                        predicates = getPredicates(parameterValues, regex, predicatesToIgnore, spec);
 
 
                         if(predicates.size() > 0) {

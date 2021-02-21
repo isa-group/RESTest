@@ -33,7 +33,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotelSemantic_byHotelId.properties";
+	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotelSemantic_hotelOffers.properties";
 
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
@@ -66,7 +66,7 @@ public class TestGenerationAndExecution {
 	public static void main(String[] args) throws RESTestException {
 
 		// TODO: DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
-		System.setProperty("http.maxConnections", "10000");
+		System.setProperty("http.maxConnections", "100000");
 
 		Timer.startCounting(ALL);
 
