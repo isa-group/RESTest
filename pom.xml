@@ -23,40 +23,40 @@
 		<url>https://github.com/isa-group/RESTest/issues</url>
 	</issueManagement>
 
-    <developers>
-        <developer>
-            <id>Martin-Lopez</id>
-            <name>Alberto Martin-Lopez</name>
-            <email>amarlop@us.es</email>
-            <url>http://personal.us.es/amarlop/</url>
-            <organization>University of Seville</organization>
-            <organizationUrl>http://www.us.es</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>segura</id>
-            <name>Sergio Segura</name>
-            <email>sergiosegura@us.es</email>
-            <url>http://personal.us.es/sergiosegura/</url>
-            <organization>University of Seville</organization>
-            <organizationUrl>http://www.us.es</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>japarejo</id>
-            <name>José Antonio Parejo</name>
-            <email>japarejo@us.es</email>
-            <url>https://www.isa.us.es/3.0/members/jose-a-parejo/</url>
-            <organization>University of Seville</organization>
-            <organizationUrl>http://www.us.es</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-        </developer>
+	<developers>
+		<developer>
+			<id>Martin-Lopez</id>
+			<name>Alberto Martin-Lopez</name>
+			<email>amarlop@us.es</email>
+			<url>http://personal.us.es/amarlop/</url>
+			<organization>University of Seville</organization>
+			<organizationUrl>http://www.us.es</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>segura</id>
+			<name>Sergio Segura</name>
+			<email>sergiosegura@us.es</email>
+			<url>http://personal.us.es/sergiosegura/</url>
+			<organization>University of Seville</organization>
+			<organizationUrl>http://www.us.es</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>japarejo</id>
+			<name>José Antonio Parejo</name>
+			<email>japarejo@us.es</email>
+			<url>https://www.isa.us.es/3.0/members/jose-a-parejo/</url>
+			<organization>University of Seville</organization>
+			<organizationUrl>http://www.us.es</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
 		<developer>
 			<id>jfdelarosa</id>
 			<name>José Ramón Fernández de la Rosa</name>
@@ -73,8 +73,8 @@
 		<connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
 		<developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
 		<url>https://github.com/isa-group/RESTest/tree/master</url>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -100,11 +100,11 @@
 		<restassured.version>4.2.0</restassured.version>
 		<jackson.version>2.11.0</jackson.version>
 		<allure.version>2.13.3</allure.version>
-		<mockito.version>3.3.3</mockito.version>
+		<mockito.version>3.7.7</mockito.version>
 		<sonar.projectKey>isa-group_RESTest</sonar.projectKey>
 		<sonar.organization>isa-group</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <argLine />
+		<argLine />
 	</properties>
 
 	<dependencies>
@@ -165,34 +165,34 @@
 		</dependency>
 
 
-        <!-- JMETAL DEPENDENCIES -->
-        <!-- JMetal multi-objective optimization framework  -->
-        <dependency>
-            <groupId>org.uma.jmetal</groupId>
-            <artifactId>jmetal-core</artifactId>
-            <version>${jmetal.version}</version>
-        </dependency>
+		<!-- JMETAL DEPENDENCIES -->
+		<!-- JMetal multi-objective optimization framework  -->
+		<dependency>
+			<groupId>org.uma.jmetal</groupId>
+			<artifactId>jmetal-core</artifactId>
+			<version>${jmetal.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>org.uma.jmetal</groupId>
-            <artifactId>jmetal-problem</artifactId>
-            <version>${jmetal.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>org.uma.jmetal</groupId>
+			<artifactId>jmetal-problem</artifactId>
+			<version>${jmetal.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>org.uma.jmetal</groupId>
-            <artifactId>jmetal-algorithm</artifactId>
-            <version>${jmetal.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>org.uma.jmetal</groupId>
+			<artifactId>jmetal-algorithm</artifactId>
+			<version>${jmetal.version}</version>
+		</dependency>
 
-        <dependency>
-            <groupId>org.uma.jmetal</groupId>
-            <artifactId>jmetal-exec</artifactId>
-            <version>${jmetal.version}</version>
-        </dependency>
+		<dependency>
+			<groupId>org.uma.jmetal</groupId>
+			<artifactId>jmetal-exec</artifactId>
+			<version>${jmetal.version}</version>
+		</dependency>
 
 
-        <!-- TEST DEPENDENCIES -->
+		<!-- TEST DEPENDENCIES -->
 		<!-- JUnit 4 -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -215,9 +215,15 @@
 		</dependency>
 		<!-- Mockito -->
 		<dependency>
-  			<groupId>org.mockito</groupId>
-  			<artifactId>mockito-core</artifactId>
-  			<version>${mockito.version}</version>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-inline</artifactId>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 

@@ -78,4 +78,38 @@ public class FuzzingTestCaseGeneratorTest {
 
 
     }
+
+    @Test
+    public void travelFuzzingTestCaseGenerator() throws RESTestException {
+        // Load specification
+        String OAISpecPath = "src/test/resources/Travel/swagger_betty_test.yaml";
+        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+        // Load configuration
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Travel/testConf_betty_test.yaml", spec);
+
+        // Set number of test cases to be generated on each path
+        int numTestCases = 5;
+
+        FuzzingTestCaseGenerator gen = new FuzzingTestCaseGenerator(spec, conf, numTestCases);
+
+        Collection<TestCase> testCases = gen.generate();
+
+        int expectedNumberOfTestCases = 30;
+        int expectedNumberOfInvalidTestCases = 0;
+        int expectedNumberOfValidTestCases = 30;
+
+        // Total number of test cases
+        assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+
+        // Valid test cases
+        assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, gen.getnNominal());
+        assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+
+        // Invalid test cases
+        assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, gen.getnFaulty());
+        assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+
+
+    }
 }
