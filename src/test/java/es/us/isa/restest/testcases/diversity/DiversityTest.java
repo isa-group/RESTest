@@ -1,14 +1,14 @@
-package es.us.isa.restest.testcases.objectfunction;
+package es.us.isa.restest.testcases.diversity;
 
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.TestManager;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class DiversityTest {
 
@@ -26,22 +26,22 @@ public class DiversityTest {
         List<TestCase> t1 = new ArrayList<>(tcs.subList(0, 2));
         Double d1 = diversity.evaluate(t1);
 
-        MatcherAssert.assertThat(d1, Matchers.closeTo(0.15, 0.01));
+        assertEquals(0.15,  d1, 0.01);
 
         t1.add(0, tcs.get(2));
         Double d2 = diversity.evaluate(t1);
 
-        MatcherAssert.assertThat(d2, Matchers.closeTo(0.71, 0.01));
+        assertEquals(0.71,  d2, 0.01);
 
         t1.add(0, tcs.get(3));
         Double d3 = diversity.evaluate(t1);
 
-        MatcherAssert.assertThat(d3, Matchers.closeTo(0.69, 0.01));
+        assertEquals(0.69,  d3, 0.01);
 
         List<TestCase> t2 = tcs.subList(1, 3);
         Double d4 = diversity.evaluate(t2);
 
-        MatcherAssert.assertThat(d4, Matchers.is(1.));
+        assertEquals(1., d4, 0.);
     }
 
     @Test
@@ -51,22 +51,22 @@ public class DiversityTest {
         List<TestCase> t1 = new ArrayList<>(tcs.subList(0, 2));
         Double d1 = diversity.evaluate(t1);
 
-        MatcherAssert.assertThat(d1, Matchers.closeTo(0.15, 0.01));
+        assertEquals(0.15,  d1, 0.01);
 
         t1.add(0, tcs.get(2));
         Double d2 = diversity.evaluate(t1);
 
-        MatcherAssert.assertThat(d2, Matchers.closeTo(2.15, 0.01));
+        assertEquals(2.15,  d2, 0.01);
 
         t1.add(0, tcs.get(3));
         Double d3 = diversity.evaluate(t1);
 
-        MatcherAssert.assertThat(d3, Matchers.closeTo(4.19, 0.01));
+        assertEquals(4.19,  d3, 0.01);
 
         List<TestCase> t2 = tcs.subList(1, 3);
         Double d4 = diversity.evaluate(t2);
 
-        MatcherAssert.assertThat(d4, Matchers.is(1.));
+        assertEquals(1., d4, 0.);
 
 
     }

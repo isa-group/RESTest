@@ -119,9 +119,7 @@ public class TestGenerationAndExecution {
 	// Create a test case generator
 	private static AbstractTestCaseGenerator createGenerator() {
 		// Load specification
-		if (spec == null) {
-			spec = new OpenAPISpecification(OAISpecPath);
-		}
+		spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
 		TestConfigurationObject conf = loadConfiguration(confPath, spec);
@@ -310,8 +308,8 @@ public class TestGenerationAndExecution {
 			similarityMetric = readParameterValue("similarity.metric");
 		logger.info("Similarity metric: {}", similarityMetric);
 
-		if (readParameterValue("number.candidates") != null)
-			numberCandidates = Integer.parseInt(readParameterValue("number.candidates"));
+		if (readParameterValue("art.number.candidates") != null)
+			numberCandidates = Integer.parseInt(readParameterValue("art.number.candidates"));
 		logger.info("Number of candidates: {}", numberCandidates);
 
 		if (readParameterValue("faulty.ratio") != null)

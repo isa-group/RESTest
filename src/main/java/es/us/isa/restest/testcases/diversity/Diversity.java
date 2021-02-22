@@ -1,4 +1,4 @@
-package es.us.isa.restest.testcases.objectfunction;
+package es.us.isa.restest.testcases.diversity;
 
 import es.us.isa.restest.testcases.TestCase;
 
@@ -43,12 +43,6 @@ public class Diversity {
             globalDiversity /= ((double) (testCases.size() * (testCases.size() - 1)) / 2);
 
         return globalDiversity;
-    }
-
-    public String toString() {
-        return getClass().getSimpleName() + " - "
-                + similarityMeter.getSimilarityMetric() + ", "
-                + normalize;
     }
 
 }

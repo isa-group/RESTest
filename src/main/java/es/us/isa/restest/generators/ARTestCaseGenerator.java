@@ -4,8 +4,8 @@ import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.objectfunction.Diversity;
-import es.us.isa.restest.testcases.objectfunction.SimilarityMeter;
+import es.us.isa.restest.testcases.diversity.Diversity;
+import es.us.isa.restest.testcases.diversity.SimilarityMeter;
 import es.us.isa.restest.util.RESTestException;
 import org.javatuples.Pair;
 
@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * @author José Ramón Fernández
  */
 
@@ -31,28 +30,50 @@ public class ARTestCaseGenerator extends ConstraintBasedTestCaseGenerator {
 
     @Override
     public TestCase generateNextTestCase(Operation testOperation, String faultyReason) throws RESTestException {
-        TestCase test;
+        Pair<TestCase, Double> bestResult = Pair.with(null, 0.);
 
+        if (testCases.isEmpty()) {
+            bestResult = bestResult.setAt0(generateTestCase(testOperation, faultyReason));
+        } else {
+            for (int i = 0; i < numberOfCandidates; i++) {
+                List<TestCase> tcs = new ArrayList<>(testCases);
+                TestCase tc = generateTestCase(testOperation, faultyReason);
+                if (tc != null) {
+                    tcs.add(0, tc);
+                    Double globalDiversity = diversity.evaluate(tcs);
+
+                    if (globalDiversity > bestResult.getValue1()) {
+                        bestResult = Pair.with(tc, globalDiversity);
+                    }
+                }
+            }
+        }
+
+        TestCase test = bestResult.getValue0();
+
+        if (test != null) {
+            testCases.add(test);
+            if (test.getFaulty() && faultyReason.equals(INTER_PARAMETER_DEPENDENCY)) {
+                nFaultyTestDueToDependencyViolations++;
+            } else if (test.getFaulty() && faultyReason.equals(INDIVIDUAL_PARAMETER_CONSTRAINT)) {
+                nFaultyTestsDueToIndividualConstraint++;
+            }
+        }
+
+        return test;
+    }
+
+    private TestCase generateTestCase(Operation testOperation, String faultyReason) throws RESTestException {
+        TestCase test;
         switch (faultyReason) {
             case "none":
-                test = generateARValidTestCase(testOperation);
-                testCases.add(test);
+                test = generateValidTestCase(testOperation);
                 break;
-
             case INTER_PARAMETER_DEPENDENCY:
-                test = generateARFaultyTestCaseDueToViolatedDependencies(testOperation);
-                if (test.getFaulty()) {
-                    nFaultyTestDueToDependencyViolations++;
-                    testCases.add(test);
-                }
+                test = generateFaultyTestCaseDueToViolatedDependencies(testOperation);
                 break;
-
             case INDIVIDUAL_PARAMETER_CONSTRAINT:
-                test = generateARFaultyTestCaseDueToIndividualConstraints(testOperation);
-                if (test != null) {
-                    nFaultyTestsDueToIndividualConstraint++;
-                    testCases.add(test);
-                }
+                test = generateFaultyTestCaseDueToIndividualConstraints(testOperation);
                 break;
             default:
                 throw new IllegalArgumentException("The faulty reason '" + faultyReason + "' is not supported.");
@@ -61,79 +82,9 @@ public class ARTestCaseGenerator extends ConstraintBasedTestCaseGenerator {
         return test;
     }
 
-    private TestCase generateARValidTestCase(Operation testOperation) throws RESTestException {
-        Pair<TestCase, Double> bestResult = Pair.with(null, 0.);
-
-        if(testCases.isEmpty()) {
-            bestResult = bestResult.setAt0(generateValidTestCase(testOperation));
-        } else {
-            for(int i = 0; i < getNumberOfCandidates(); i++) {
-                List<TestCase> tcs = new ArrayList<>(testCases);
-                TestCase tc = generateValidTestCase(testOperation);
-                tcs.add(0, tc);
-                Double globalDiversity = getDiversity().evaluate(tcs);
-
-                if(globalDiversity > bestResult.getValue1()) {
-                    bestResult = Pair.with(tc, globalDiversity);
-                }
-            }
-        }
-        return bestResult.getValue0();
-    }
-
-    private TestCase generateARFaultyTestCaseDueToViolatedDependencies(Operation testOperation) throws RESTestException {
-        Pair<TestCase, Double> bestResult = Pair.with(null, 0.);
-
-        if(testCases.isEmpty()) {
-            bestResult = bestResult.setAt0(generateFaultyTestCaseDueToViolatedDependencies(testOperation));
-        } else {
-            for(int i = 0; i < getNumberOfCandidates(); i++) {
-                List<TestCase> tcs = new ArrayList<>(testCases);
-                TestCase tc = generateFaultyTestCaseDueToViolatedDependencies(testOperation);
-                tcs.add(0, tc);
-                Double globalDiversity = getDiversity().evaluate(tcs);
-
-                if(globalDiversity > bestResult.getValue1()) {
-                    bestResult = Pair.with(tc, globalDiversity);
-                }
-            }
-        }
-        return bestResult.getValue0();
-    }
-
-    private TestCase generateARFaultyTestCaseDueToIndividualConstraints(Operation testOperation) throws RESTestException {
-        Pair<TestCase, Double> bestResult = Pair.with(null, 0.);
-
-        if(testCases.isEmpty()) {
-            bestResult = bestResult.setAt0(generateFaultyTestCaseDueToIndividualConstraints(testOperation));
-        } else {
-            for(int i = 0; i < getNumberOfCandidates(); i++) {
-                List<TestCase> tcs = new ArrayList<>(testCases);
-                TestCase tc = generateFaultyTestCaseDueToIndividualConstraints(testOperation);
-                if(tc != null) {
-                    tcs.add(0, tc);
-                    Double globalDiversity = getDiversity().evaluate(tcs);
-
-                    if(globalDiversity > bestResult.getValue1()) {
-                        bestResult = Pair.with(tc, globalDiversity);
-                    }
-                }
-            }
-        }
-        return bestResult.getValue0();
-    }
-
-    public Diversity getDiversity() {
-        return diversity;
-    }
-
     public void setDiversity(String similarityMetric) {
         SimilarityMeter.METRIC metric = SimilarityMeter.METRIC.valueOf(similarityMetric);
         this.diversity = new Diversity(metric, true);
-    }
-
-    public Integer getNumberOfCandidates() {
-        return numberOfCandidates;
     }
 
     public void setNumberOfCandidates(Integer numberOfCandidates) {

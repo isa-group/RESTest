@@ -1,4 +1,4 @@
-package es.us.isa.restest.testcases.objectfunction;
+package es.us.isa.restest.testcases.diversity;
 
 import org.apache.commons.text.similarity.JaccardSimilarity;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;

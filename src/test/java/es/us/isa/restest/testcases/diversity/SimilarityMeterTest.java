@@ -1,8 +1,8 @@
-package es.us.isa.restest.testcases.objectfunction;
+package es.us.isa.restest.testcases.diversity;
 
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class SimilarityMeterTest {
 
@@ -10,38 +10,38 @@ public class SimilarityMeterTest {
     public void jaccardSimilarityTest() {
         SimilarityMeter meter = new SimilarityMeter(SimilarityMeter.METRIC.JACCARD);
         Double sim1 = meter.apply("abcdef", "abcdef");
-        MatcherAssert.assertThat(sim1, Matchers.is(1.));
+        assertEquals(1., sim1, 0.);
 
         Double sim2 = meter.apply("abcdef", "ghijkl");
-        MatcherAssert.assertThat(sim2, Matchers.is(0.));
+        assertEquals(0., sim2, 0.);
 
         Double sim3 = meter.apply("trato", "trazo");
-        MatcherAssert.assertThat(sim3, Matchers.is(.8));
+        assertEquals(.8, sim3, 0.);
     }
 
     @Test
     public void jaroWinklerSimilarityTest() {
         SimilarityMeter meter = new SimilarityMeter(SimilarityMeter.METRIC.JARO_WINKLER);
         Double sim1 = meter.apply("abcdef", "abcdef");
-        MatcherAssert.assertThat(sim1, Matchers.is(1.));
+        assertEquals(1., sim1, 0.);
 
         Double sim2 = meter.apply("casa", "monte");
-        MatcherAssert.assertThat(sim2, Matchers.is(0.));
+        assertEquals(0., sim2, 0.);
 
         Double sim3 = meter.apply("trato", "trazo");
-        MatcherAssert.assertThat(sim3, Matchers.is(0.9066666666666667));
+        assertEquals(0.9066666666666667, sim3, 0.);
     }
 
     @Test
     public void levenshteinDistanceTest() {
         SimilarityMeter meter = new SimilarityMeter(SimilarityMeter.METRIC.LEVENSHTEIN);
         Double sim1 = meter.apply("abcdef", "abcdef");
-        MatcherAssert.assertThat(sim1, Matchers.is(1.));
+        assertEquals(1., sim1, 0.);
 
         Double sim2 = meter.apply("montejude", "casa");
-        MatcherAssert.assertThat(sim2, Matchers.is(0.));
+        assertEquals(0., sim2, 0.);
 
         Double sim3 = meter.apply("torta", "trato");
-        MatcherAssert.assertThat(sim3, Matchers.is(.4));
+        assertEquals(0.4, sim3, 0.);
     }
 }
