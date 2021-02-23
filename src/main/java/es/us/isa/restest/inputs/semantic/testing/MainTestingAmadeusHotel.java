@@ -22,6 +22,11 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingAmadeusHotel {
 
+    /*
+    ARTE has generated a regular expression for the parameter hotelName of this API and has generated new input values. In order to properly recreate
+    Experiment 1, change the path to the csv files in the testConfSemantic file to hotelName_beforeRegex or generate the input values again (Demo ARTE.mp4)
+     */
+
     // Parameters to change
     private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotelSemantic_hotelOffers.properties";
     private static String operationPath = "/shopping/hotel-offers";

@@ -22,6 +22,11 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingDHL {
 
+    /*
+    ARTE has generated a regular expression for the parameter countryCode of this API and has generated new input values. In order to properly recreate
+    Experiment 1, change the path to the csv files in the testConfSemantic file to countryCode_beforeRegex or generate the input values again (Demo ARTE.mp4)
+     */
+
     // Parameters to change
     private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/dhl_semantic_address.properties";
     private static String operationPath = "/find-by-address";

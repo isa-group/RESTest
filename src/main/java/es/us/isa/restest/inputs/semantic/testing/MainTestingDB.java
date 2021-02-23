@@ -22,6 +22,11 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingDB {
 
+    /*
+    ARTE has generated a regular expression for the parameters federalstate and eva of this API, but it did not generate new values for neither of these parameters.
+    In order to properly recreate Experiment 1, change the path to the csv files in the testConfSemantic file to federalstate_beforeRegex and eva_beforeRegex or generate the input values again (Demo ARTE.mp4)
+     */
+
     // Parameters to change
     private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Deutschebahn/db_semantic.properties";
     private static String operationPath = "/stations";

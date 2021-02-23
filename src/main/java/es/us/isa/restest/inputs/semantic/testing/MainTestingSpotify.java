@@ -22,6 +22,11 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingSpotify {
 
+    /*
+    ARTE has generated a regular expression for the parameters country and market of this API and has generated new input values. In order to properly recreate
+    Experiment 1, change the path to the csv files in the testConfSemantic file to market_beforeRegex and country_beforeRegex or generate the input values again (Demo ARTE.mp4)
+     */
+
     // Parameters to change
     private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Spotify/albums/spotifySemantic_albums.properties";
     private static String operationPath = "/albums";
