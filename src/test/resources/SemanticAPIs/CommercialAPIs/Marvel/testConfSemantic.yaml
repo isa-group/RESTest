@@ -1,7 +1,10 @@
 ---
 auth:
   required: true
-  queryParams: {}
+  queryParams:
+    apikey: ---
+    hash: ---
+    ts: ---
   headerParams: {}
   apiKeysPath: null
   headersPath: null

@@ -4,7 +4,7 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: null
-  headersPath: null
+  headersPath: /DHL/apikeys.json
 testConfiguration:
   operations:
   - testPath: /find-by-address
