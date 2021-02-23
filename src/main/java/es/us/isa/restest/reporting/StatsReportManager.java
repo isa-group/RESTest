@@ -46,8 +46,10 @@ public class StatsReportManager {
     private boolean enableOutputCoverage = true;
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
-    private final int maxNumberOfPredicates = 3;
+    private final int maxNumberOfPredicates = 3;                // MaxNumberOfPredicates = AdditionalPredicates + 1
+    private final int minimumValidAndInvalidValues = 5;
     private final String metricToUse = "match recall";
+    private final Double minimumValueOfMetric = 0.9;
 
 
     private static final Logger logger = LogManager.getLogger(StatsReportManager.class.getName());
@@ -128,7 +130,7 @@ public class StatsReportManager {
             List<String> predicatesToIgnore = getPredicatesToIgnore(parameterValues.getTestParameter());
 
             // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
-            if(invalidSet.size() >= 5 && validSet.size() >= 5){
+            if(invalidSet.size() >= minimumValidAndInvalidValues && validSet.size() >= minimumValidAndInvalidValues){
 
                 // OperationName_parameterId
                 String name = parameterValues.getOperation().getOperationId() + "_" + parameterValues.getTestParameter().getName();
@@ -150,7 +152,7 @@ public class StatsReportManager {
 //                        "match f-measure": 1.0
 
                 // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
-                if(solution.getValidationPerformances().get(metricToUse)  >= 0.9){
+                if(solution.getValidationPerformances().get(metricToUse)  >= minimumValueOfMetric){
                     // Filter all the CSVs of the associated testParameter
                     updateCsvWithRegex(parameterValues, regex);
 

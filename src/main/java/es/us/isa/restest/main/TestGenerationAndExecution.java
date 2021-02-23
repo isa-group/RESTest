@@ -33,6 +33,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
+	// The values of the parameters minimumRecall, minimumValidAndInvalidValues and totalPredicates can be set in  reporting/StatsReportManager.java
 	private static String propertiesFilePath = "----";
 
 	private static Integer numTestCases; 								// Number of test cases per operation

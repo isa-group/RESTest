@@ -32,6 +32,9 @@ public class SemanticInputGenerator {
     private static String confPath;
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
+
+    // Parameter minimum threshold of unique parameter values to obtain
+    // The value of the minimum support parameter can be changed in the Predicates.java class of this same package
     public static final Integer THRESHOLD = 100;
     // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
     public static final String szEndpoint = "http://localhost:8890/sparql";
