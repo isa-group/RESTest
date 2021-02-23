@@ -23,12 +23,16 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingMarvel {
 
     // Parameters to change
-    private static String propertiesPath = "----";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Marvel/marvel_semantic.properties";
     private static String operationPath = "/v1/public/characters/{characterId}/comics";
-    private static String semanticParameterName = "ean";
+    private static String semanticParameterName = "isbn";
     private static String baseUri = "https://gateway.marvel.com";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apiKey = "---";
+    private static String apiKey = "----";
+    private static String hash = "----";
+    private static String ts = "----";
+
+    // &hash=1fe81640f1dc09272438d40e70867298&ts=1606780800&isbn=
 
 
     // Derived parameters
@@ -63,7 +67,7 @@ public class MainTestingMarvel {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                marvel_characterComics_ean(semanticInput, apiKey);      // MODIFY
+                marvel_characterComics_isbn(semanticInput, apiKey, hash, ts);      // MODIFY
 
                 i++;
             }catch (Exception e){
@@ -78,8 +82,8 @@ public class MainTestingMarvel {
     }
 
     private static void setParameters(String propertyPath){
-        OAISpecPath = readProperty(propertyPath, "oaispecpath");
-        confPath = readProperty(propertyPath, "confpath");
+        OAISpecPath = readProperty(propertyPath, "oas.path");
+        confPath = readProperty(propertyPath, "conf.path");
         spec = new OpenAPISpecification(OAISpecPath);
 
         conf = loadConfiguration(confPath, spec);
@@ -120,9 +124,9 @@ public class MainTestingMarvel {
     //  ------------------------------------------- OPERATIONS -----------------------------------------------
     // GET /v1/public/characters/{characterId}/comics
     // isbn
-    public static void marvel_characterComics_isbn(String semanticInput, String apiKey) throws IOException {
+    public static void marvel_characterComics_isbn(String semanticInput, String apiKey, String hash, String ts) throws IOException {
 
-        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=1fe81640f1dc09272438d40e70867298&ts=1606780800&isbn="+ semanticInput;
+        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=" + hash + "&ts=" + ts + "&isbn="+ semanticInput;
 
         System.out.println(uri);
 
@@ -142,9 +146,9 @@ public class MainTestingMarvel {
     }
 
     // issn
-    public static void marvel_characterComics_issn(String semanticInput, String apiKey) throws IOException {
+    public static void marvel_characterComics_issn(String semanticInput, String apiKey, String hash, String ts) throws IOException {
 
-        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=1fe81640f1dc09272438d40e70867298&ts=1606780800&issn="+ semanticInput;
+        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=" + hash + "&ts=" + ts + "&issn="+ semanticInput;
 
         System.out.println(uri);
 
@@ -164,9 +168,9 @@ public class MainTestingMarvel {
     }
 
     // title
-    public static void marvel_characterComics_title(String semanticInput, String apiKey) throws IOException {
+    public static void marvel_characterComics_title(String semanticInput, String apiKey, String hash, String ts) throws IOException {
 
-        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=1fe81640f1dc09272438d40e70867298&ts=1606780800&title="+ semanticInput;
+        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=" + hash + "&ts=" + ts + "&title="+ semanticInput;
 
         System.out.println(uri);
 
@@ -186,9 +190,9 @@ public class MainTestingMarvel {
     }
 
     // upc
-    public static void marvel_characterComics_upc(String semanticInput, String apiKey) throws IOException {
+    public static void marvel_characterComics_upc(String semanticInput, String apiKey, String hash, String ts) throws IOException {
 
-        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=1fe81640f1dc09272438d40e70867298&ts=1606780800&upc="+ semanticInput;
+        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=" + hash + "&ts=" + ts + "&upc="+ semanticInput;
 
         System.out.println(uri);
 
@@ -208,9 +212,9 @@ public class MainTestingMarvel {
     }
 
     // ean
-    public static void marvel_characterComics_ean(String semanticInput, String apiKey) throws IOException {
+    public static void marvel_characterComics_ean(String semanticInput, String apiKey, String hash, String ts) throws IOException {
 
-        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=1fe81640f1dc09272438d40e70867298&ts=1606780800&ean="+ semanticInput;
+        String uri = baseUri + "/v1/public/characters/1011031/comics?apikey="+apiKey+"&hash=" + hash + "&ts=" + ts + "&ean="+ semanticInput;
 
         System.out.println(uri);
 

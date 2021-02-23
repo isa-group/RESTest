@@ -23,10 +23,11 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingOMDB {
 
     // Parameters to change
-    private static String propertiesPath = "/omdb.properties";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/OMDb/omdb_semantic.properties";
     private static String operationPath = "/";
     private static String semanticParameterName = "t";
     private static Integer limit = Integer.MAX_VALUE;
+    private static String apikey = "---";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -58,8 +59,11 @@ public class MainTestingOMDB {
 
                 OkHttpClient client = new OkHttpClient();
 
+                // CHANGE PARAMETER NAME HERE
+                String uri = "http://www.omdbapi.com/?apikey=" + apikey + "&t=" + semanticInput;
+
                 Request request = new Request.Builder()
-                        .url("http://www.omdbapi.com/?apikey=bef62484&t=" + semanticInput)
+                        .url(uri)
                         .get()
                         .build();
 
@@ -67,6 +71,7 @@ public class MainTestingOMDB {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
+                System.out.println("REQUEST: " + uri);
                 System.out.println("RESPONSE CODE: " + response.code());
                 System.out.println(response.body().string());
                 System.out.println("--------------------------------------------------------------------------------------");
@@ -85,8 +90,8 @@ public class MainTestingOMDB {
     }
 
     private static void setParameters(String propertyPath){
-        OAISpecPath = readProperty(propertyPath, "oaispecpath");
-        confPath = readProperty(propertyPath, "confpath");
+        OAISpecPath = readProperty(propertyPath, "oas.path");
+        confPath = readProperty(propertyPath, "conf.path");
         spec = new OpenAPISpecification(OAISpecPath);
 
         conf = loadConfiguration(confPath, spec);

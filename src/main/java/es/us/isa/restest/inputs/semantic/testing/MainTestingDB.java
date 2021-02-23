@@ -23,12 +23,12 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingDB {
 
     // Parameters to change
-    private static String propertiesPath = "----";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Deutschebahn/db_semantic.properties";
     private static String operationPath = "/stations";
-    private static String semanticParameterName = "eva";
+    private static String semanticParameterName = "federalstate";
     private static String baseUri = "https://api.deutschebahn.com/stada/v2";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apiKey = "Bearer --";
+    private static String apiKey = "Bearer ----";
 
 
     // Derived parameters
@@ -52,7 +52,7 @@ public class MainTestingDB {
         Collections.shuffle(semanticInputs);
 
         // Select 10 random values
-        List<String> randomSubList = semanticInputs.subList(0, 25);
+        List<String> randomSubList = semanticInputs.subList(0, maxCut);
 
         // API Calls
         int i = 1;
@@ -63,7 +63,7 @@ public class MainTestingDB {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                db_stations_eva(semanticInput, apiKey);      // MODIFY
+                db_stations_federalstate(semanticInput, apiKey);      // MODIFY
 
                 i++;
             }catch (Exception e){
@@ -78,8 +78,8 @@ public class MainTestingDB {
     }
 
     private static void setParameters(String propertyPath){
-        OAISpecPath = readProperty(propertyPath, "oaispecpath");
-        confPath = readProperty(propertyPath, "confpath");
+        OAISpecPath = readProperty(propertyPath, "oas.path");
+        confPath = readProperty(propertyPath, "conf.path");
         spec = new OpenAPISpecification(OAISpecPath);
 
         conf = loadConfiguration(confPath, spec);

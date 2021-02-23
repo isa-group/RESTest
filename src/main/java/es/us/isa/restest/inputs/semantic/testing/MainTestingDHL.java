@@ -23,7 +23,7 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingDHL {
 
     // Parameters to change
-    private static String propertiesPath = "----";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/dhl_semantic_address.properties";
     private static String operationPath = "/find-by-address";
     private static String semanticParameterName = "countryCode";
     private static String baseUri = "https://api.dhl.com/location-finder/v1";
@@ -78,8 +78,8 @@ public class MainTestingDHL {
     }
 
     private static void setParameters(String propertyPath){
-        OAISpecPath = readProperty(propertyPath, "oaispecpath");
-        confPath = readProperty(propertyPath, "confpath");
+        OAISpecPath = readProperty(propertyPath, "oas.path");
+        confPath = readProperty(propertyPath, "conf.path");
         spec = new OpenAPISpecification(OAISpecPath);
 
         conf = loadConfiguration(confPath, spec);

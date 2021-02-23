@@ -23,11 +23,12 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingAmadeusHotel {
 
     // Parameters to change
-    private static String propertiesPath = "---";
-    private static String operationPath = "/airports/autocomplete";
-    private static String semanticParameterName = "country";
-    private static String baseUrl = "https://api.sandbox.amadeus.com/v1.2";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotelSemantic_hotelOffers.properties";
+    private static String operationPath = "/shopping/hotel-offers";
+    private static String semanticParameterName = "cityCode";
+    private static String baseUrl = "https://test.api.amadeus.com/v2";
     private static Integer limit = Integer.MAX_VALUE;
+    private static String bearer = "----";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -59,8 +60,8 @@ public class MainTestingAmadeusHotel {
 
                 System.out.println(semanticInput);
 
-//                String query = "?cityCode="+ semanticInput + "&radius=300&radiusUnit=KM";
-                String query = "";//"?term=a";
+                String query = "?cityCode="+ semanticInput + "&radius=300&radiusUnit=KM";
+//                String query = "";//"?term=a";
                 String url = baseUrl + operationPath + query;
 
 
@@ -74,7 +75,7 @@ public class MainTestingAmadeusHotel {
                 Request request = new Request.Builder()
                         .url(url)
                         .get()
-                        .addHeader("Authorization", "Bearer xOvVJ12YPWYgGtUXCfdCwTKed55g")
+                        .addHeader("Authorization", "Bearer " + bearer)
                         .build();
 
                 Response response = client.newCall(request).execute();
@@ -99,8 +100,8 @@ public class MainTestingAmadeusHotel {
     }
 
     private static void setParameters(String propertyPath){
-        OAISpecPath = readProperty(propertyPath, "oaispecpath");
-        confPath = readProperty(propertyPath, "confpath");
+        OAISpecPath = readProperty(propertyPath, "oas.path");
+        confPath = readProperty(propertyPath, "conf.path");
         spec = new OpenAPISpecification(OAISpecPath);
 
         conf = loadConfiguration(confPath, spec);

@@ -23,12 +23,12 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingSpotify {
 
     // Parameters to change
-    private static String propertiesPath = "----";
-    private static String operationPath = "/browse/featured-playlists";
-    private static String semanticParameterName = "country";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Spotify/albums/spotifySemantic_albums.properties";
+    private static String operationPath = "/albums";
+    private static String semanticParameterName = "market";
     private static String baseUri = "https://api.spotify.com/v1";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apiKey = "Bearer -----";
+    private static String apiKey = "Bearer ----";
 
 
     // Derived parameters
@@ -63,7 +63,7 @@ public class MainTestingSpotify {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                spotify_browseFeaturedPlaylists_country(semanticInput, apiKey);      // MODIFY
+                spotify_albums_market(semanticInput, apiKey);      // MODIFY
 
                 i++;
             }catch (Exception e){
@@ -78,8 +78,8 @@ public class MainTestingSpotify {
     }
 
     private static void setParameters(String propertyPath){
-        OAISpecPath = readProperty(propertyPath, "oaispecpath");
-        confPath = readProperty(propertyPath, "confpath");
+        OAISpecPath = readProperty(propertyPath, "oas.path");
+        confPath = readProperty(propertyPath, "conf.path");
         spec = new OpenAPISpecification(OAISpecPath);
 
         conf = loadConfiguration(confPath, spec);
@@ -137,7 +137,7 @@ public class MainTestingSpotify {
         Response response = client.newCall(request).execute();
 
         System.out.println("RESPONSE CODE: " + response.code());
-//        System.out.println(response.body().string());
+        System.out.println(response.body().string());
         System.out.println("--------------------------------------------------------------------------------------");
     }
 

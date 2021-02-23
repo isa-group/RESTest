@@ -24,9 +24,9 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingYelp {
 
     // Parameters to change
-    private static String propertiesPath = "/semantic/commercial/yelp.properties";
-    private static String operationPath = "/businesses/matches";
-    private static String semanticParameterName = "name";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_semantic_business.properties";
+    private static String operationPath = "/businesses/search";
+    private static String semanticParameterName = "longitude";
     private static String baseUri = "https://api.yelp.com/v3";
     private static Integer limit = Integer.MAX_VALUE;
     private static String apiKey = "Bearer ----";
@@ -63,7 +63,7 @@ public class MainTestingYelp {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                yelp_transactionsSearch_longitude(semanticInput, apiKey);      // MODIFY
+                yelp_businessesSearch_longitude(semanticInput, apiKey);      // MODIFY
 
 
                 i++;
@@ -79,8 +79,8 @@ public class MainTestingYelp {
     }
 
     private static void setParameters(String propertyPath){
-        OAISpecPath = readProperty(propertyPath, "oaispecpath");
-        confPath = readProperty(propertyPath, "confpath");
+        OAISpecPath = readProperty(propertyPath, "oas.path");
+        confPath = readProperty(propertyPath, "conf.path");
         spec = new OpenAPISpecification(OAISpecPath);
 
         conf = loadConfiguration(confPath, spec);

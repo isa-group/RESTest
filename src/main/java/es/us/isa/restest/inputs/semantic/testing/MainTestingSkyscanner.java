@@ -23,11 +23,12 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingSkyscanner {
 
     // Parameters to change
-    private static String propertiesPath = "----";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/SkyscannerFlightSearch/skyscanner.properties";
     private static String operationPath = "/apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}";
     private static String semanticParameterName = "locale";
     private static String baseUrl = "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com";
     private static Integer limit = Integer.MAX_VALUE;
+    private static String apikey = "-----";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -96,7 +97,7 @@ public class MainTestingSkyscanner {
                 Request request = new Request.Builder()
                         .url(url)
                         .get()
-                        .addHeader("x-rapidapi-key", "xxx")
+                        .addHeader("x-rapidapi-key", apikey)
                         .addHeader("x-rapidapi-host", "skyscanner-skyscanner-flight-search-v1.p.rapidapi.com")
                         .build();
 
