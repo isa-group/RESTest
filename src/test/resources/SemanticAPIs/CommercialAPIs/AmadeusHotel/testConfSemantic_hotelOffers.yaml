@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer LDzaVJe5kTFnN06RlScynbGZ1Y5h
+    Authorization: Bearer -----
   apiKeysPath: null
   headersPath: null
 testConfiguration:

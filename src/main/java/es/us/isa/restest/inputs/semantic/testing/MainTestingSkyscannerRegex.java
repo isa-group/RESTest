@@ -34,7 +34,7 @@ public class MainTestingSkyscannerRegex {
     private static String operationPath = "/apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}";
     private static String semanticParameterName = "country";   // "currency";
     private static String baseUrl = "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com";
-    private static String apiKey = "d454a0676cmsh8d81aec23493533p1a62d4jsn5e01cf167053";
+    private static String apiKey = "-----";
 
     // Parámetros derivados
     private static OpenAPISpecification spec;

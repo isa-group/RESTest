@@ -4,7 +4,7 @@ auth:
   queryParams: {}
   apiKeysPath: null
   headerParams:
-    Authorization: 'Bearer OsGpCXNx_prU0J5BOKYLzGINQt0RkxCv6_rnDrKaIT4mUSXhMfXbbhA574RcP1ITbNRAmGXMkVAS-fqlIZs2ZvCQBu9-c57UqajsaBGDrInJrUuEhIg8c1BtuBjFX3Yx'
+    Authorization: 'Bearer ----'
 testConfiguration:
   operations:
   - testPath: /businesses/search
