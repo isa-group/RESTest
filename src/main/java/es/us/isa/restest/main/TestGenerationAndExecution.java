@@ -33,7 +33,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Deutschebahn/db_random.properties";
+	private static String propertiesFilePath = "----";
 
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
@@ -65,7 +65,7 @@ public class TestGenerationAndExecution {
 
 	public static void main(String[] args) throws RESTestException {
 
-		// TODO: DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
+		// ONLY FOR LOCAL COPY OF DBPEDIA
 		System.setProperty("http.maxConnections", "100000");
 
 		Timer.startCounting(ALL);

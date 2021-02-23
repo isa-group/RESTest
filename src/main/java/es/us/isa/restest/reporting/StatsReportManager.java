@@ -85,7 +85,6 @@ public class StatsReportManager {
 
 
     public void learn(String testId, Boolean secondPredicateSearch, OpenAPISpecification spec, String confPath) {
-        // TODO: Add x-example from OAS to valid values
         List<Operation> operations = getTestConfigurationObject().getTestConfiguration().getOperations();
 
         // Store the values of the parameters of successful and unsuccessful operations (current iteration)
@@ -143,7 +142,7 @@ public class StatsReportManager {
                 logger.info("Precision: " + solution.getValidationPerformances().get("match precision"));
                 logger.info("Recall: " + solution.getValidationPerformances().get("match recall"));
                 logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
-//                "match precision": 1.0,
+//                "match precision"
 //                        "character accuracy": 1.0,
 //                        "character precision": 1.0,
 //                        "match recall": 1.0,

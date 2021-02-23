@@ -333,7 +333,6 @@ public class SPARQLUtils {
     public static Set<String> getNewValues(ParameterValues parameterValues,
                                            Set<String> predicates, String regex){
         Map<String, Set<String>> result = new HashMap<>();
-        // TODO: Check if the regular expression has been added in the previous step (getPredicates)
 
         SemanticParameter semanticParameter = new SemanticParameter(parameterValues.getTestParameter());
         semanticParameter.setPredicates(predicates);

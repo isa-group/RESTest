@@ -52,7 +52,7 @@ testConfiguration:
         valid: true
     - name: searchstring
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -116,7 +116,7 @@ testConfiguration:
         valid: true
     - name: ril
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomEnglishWord
         genParameters:
