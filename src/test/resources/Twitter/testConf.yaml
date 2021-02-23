@@ -1,0 +1,328 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+  apiKeysPath: null
+testConfiguration:
+  testPaths:
+  - testPath: /statuses/destroy/{id}.json
+    operations:
+    - operationId: statuses.destroy
+      method: post
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: trim_user
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /statuses/show/{id}.json
+    operations:
+    - operationId: statuses.show
+      method: get
+      testParameters:
+      - name: trim_user
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: include_my_retweet
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: include_entities
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: include_ext_alt_text
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: include_card_uri
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /statuses/lookup.json
+    operations:
+    - operationId: statuses.lookup
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100000
+            objectValues: null
+      - name: include_entities
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: trim_user
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: map
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: include_ext_alt_text
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: include_card_uri
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /statuses/update.json
+    operations:
+    - operationId: statuses.update
+      method: post
+      testParameters:
+      - name: status
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 240
+            objectValues: null
+      - name: in_reply_to_status_id
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: auto_populate_reply_metadata
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: exclude_reply_user_ids
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: attachment_url
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - https:\/\/twitter.com\/[a-zA-Z0-9]{1,15}\/status\/[0-9]{1,15}
+            objectValues: null
+      - name: media_ids
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 10000
+            objectValues: null
+      - name: possibly_sensitive
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: lat
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - double
+            objectValues: null
+          - name: min
+            values:
+              - -90.0
+            objectValues: null
+          - name: max
+            values:
+              - 90.0
+            objectValues: null
+      - name: long
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+              - -180.0
+            objectValues: null
+          - name: max
+            values:
+              - 180.0
+            objectValues: null
+      - name: place_id
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: regExp
+            values:
+            - [a-zA-Z0-9-]`{10,40}
+            objectValues: null
+      - name: display_coordinates
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - "false"
+            - "true"
+            -
+            objectValues: null
+      - name: trim_user
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: enable_dmcommands
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: fail_dmcommands
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: card_uri
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - card:\/\/[0-9]{19}
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200

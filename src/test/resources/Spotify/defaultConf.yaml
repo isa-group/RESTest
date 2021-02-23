@@ -1,0 +1,126 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+testConfiguration:
+  operations:
+  - operationId: <SET OPERATION ID>
+    testPath: /albums
+    method: get
+    testParameters:
+    - name: ids
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - operationId: <SET OPERATION ID>
+    testPath: /search
+    method: get
+    testParameters:
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: q
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: type
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200
+  - operationId: <SET OPERATION ID>
+    testPath: /artists
+    method: get
+    testParameters:
+    - name: ids
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200

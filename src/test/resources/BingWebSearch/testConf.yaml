@@ -1,0 +1,265 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams:
+    - name: Ocp-Apim-Subscription-Key
+      value:
+  apiKeysPath: null
+testConfiguration:
+  testPaths:
+  - testPath: /search
+    operations:
+    - operationId: Web_Search
+      method: get
+      testParameters:
+      - name: X-BingApis-SDK
+        weight: null
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - "true"
+            objectValues: null
+      - name: Accept
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - application/json
+            objectValues: null
+      - name: Accept-Language
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - "src/main/resources/TestData/ISO-639-LangCodes.csv"
+            objectValues: null
+      - name: Pragma
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - ""
+            - no-cache
+            objectValues: null
+      - name: User-Agent
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36
+            - Mozilla/5.0 (compatible; MSIE 10.0; Windows Phone 8.0; Trident/6.0; IEMobile/10.0; ARM; Touch; NOKIA; Lumia 822)
+            - Mozilla/5.0 (Linux; U; Android 2.3.5; en-us; SCH-I500 Build/GINGERBREAD) AppleWebKit/533.1 (KHTML; like Gecko) Version/4.0 Mobile Safari/533.1
+            - Mozilla/5.0 (iPhone; CPU iPhone OS 6_1 like Mac OS X) AppleWebKit/536.26 (KHTML; like Gecko) Mobile/10B142 iPhone4;1 BingWeb/3.03.1428.20120423
+            - Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; Touch; rv:11.0) like Gecko
+            - Mozilla/5.0 (iPad; CPU OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53
+            objectValues: null
+      - name: X-Search-Location
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - lat:([-+])?([1-8]?\d(\.\d+)?|90(\.0+)?);long:[-+]?(180(\.0+)?|((1[0-7]\d)|([1-9]?\d))(\.\d+)?);re:((18)?\d?\d?\d)(;ts:1\d\d\d\d\d\d\d\d\d)?((;head:([12]?\d?\d|3[0-5]\d|360))?;sp:[1-9]([0-9])?)?(;alt:[1-5]?[0-9]{1,3}(;are:[0-9]{1,4})?)?
+            objectValues: null
+      - name: answerCount
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 8
+            objectValues: null
+      - name: cc
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+            objectValues: null
+      - name: count
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 50
+            objectValues: null
+      - name: freshness
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - Day
+            - Week
+            - Month
+            objectValues: null
+      - name: mkt
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/BingMarketCodes-incomplete.csv
+            objectValues: null
+      - name: offset
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 0
+            objectValues: null
+          - name: max
+            values:
+            - 5
+            objectValues: null
+      - name: promote
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - Computation
+            - Images
+            - News
+            - RelatedSearches
+            - SpellSuggestions
+            - TimeZone
+            - Videos
+            - Webpages
+          - name: minValues
+            values:
+            - 1
+          - name: maxValues
+            values:
+            - 3
+            objectValues: null
+      - name: q
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: responseFilter
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - Computation
+            - Entities
+            - Images
+            - News
+            - RelatedSearches
+            - SpellSuggestions
+            - TimeZone
+            - Videos
+            - Webpages
+          - name: minValues
+            values:
+            - 1
+          - name: maxValues
+            values:
+            - 9
+            objectValues: null
+      - name: safeSearch
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - Off
+            - Moderate
+            - Strict
+            objectValues: null
+      - name: setLang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/BingSupportedLanguages.csv
+            objectValues: null
+      - name: textDecorations
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: textFormat
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - Raw
+            - Html
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
