@@ -22,8 +22,8 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingMarvel {
 
-    // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/commercial/marvel.properties";
+    // Parameters to change
+    private static String propertiesPath = "----";
     private static String operationPath = "/v1/public/characters/{characterId}/comics";
     private static String semanticParameterName = "ean";
     private static String baseUri = "https://gateway.marvel.com";
@@ -31,7 +31,7 @@ public class MainTestingMarvel {
     private static String apiKey = "---";
 
 
-    // Parámetros derivados
+    // Derived parameters
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
@@ -51,7 +51,7 @@ public class MainTestingMarvel {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, maxCut);
 
         // API Calls

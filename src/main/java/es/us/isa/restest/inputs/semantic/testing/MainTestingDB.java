@@ -22,8 +22,8 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingDB {
 
-    // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/commercial/db.properties";
+    // Parameters to change
+    private static String propertiesPath = "----";
     private static String operationPath = "/stations";
     private static String semanticParameterName = "eva";
     private static String baseUri = "https://api.deutschebahn.com/stada/v2";
@@ -31,7 +31,7 @@ public class MainTestingDB {
     private static String apiKey = "Bearer --";
 
 
-    // Parámetros derivados
+    // Derived parameters
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
@@ -51,7 +51,7 @@ public class MainTestingDB {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, 25);
 
         // API Calls

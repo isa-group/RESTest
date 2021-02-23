@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer ----
+    Authorization: Bearer d4564ca07ca242f39efbd3c691e32da8
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -52,7 +52,7 @@ testConfiguration:
         valid: true
     - name: searchstring
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -116,7 +116,7 @@ testConfiguration:
         valid: true
     - name: ril
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:

@@ -72,7 +72,7 @@ public class MainTesting {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, Math.min(maxCut, semanticInputs.size()));
 
 
@@ -85,6 +85,9 @@ public class MainTesting {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
+                // RapidAPI operation to test
+                // In some cases it is required to change an attribute of the API class (e.g., operationPath in api/Climacell.java)
+                // Note that there is a different file for the Skyscanner API
                 climacell_lat(semanticInput, apiKey, host);        // REPLACE
 
                 i++;

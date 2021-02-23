@@ -51,7 +51,7 @@ public class MainTestingSkyscannerRegex {
         Set<String> validSet = new HashSet<>();
         Set<String> invalidSet = new HashSet<>();
 
-        // TODO: DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
+        // DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
         System.setProperty("http.maxConnections", "10000000");
 
         setParameters();

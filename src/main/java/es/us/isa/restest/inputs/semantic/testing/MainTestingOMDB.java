@@ -22,13 +22,13 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingOMDB {
 
-    // Parámetros a cambiar
+    // Parameters to change
     private static String propertiesPath = "/omdb.properties";
     private static String operationPath = "/";
     private static String semanticParameterName = "t";
     private static Integer limit = Integer.MAX_VALUE;
 
-    // Parámetros derivados
+    // Derived parameters
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
@@ -46,7 +46,7 @@ public class MainTestingOMDB {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, maxCut);
 
         // API Calls

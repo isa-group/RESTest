@@ -23,7 +23,7 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingYelp {
 
-    // Parámetros a cambiar
+    // Parameters to change
     private static String propertiesPath = "/semantic/commercial/yelp.properties";
     private static String operationPath = "/businesses/matches";
     private static String semanticParameterName = "name";
@@ -31,7 +31,7 @@ public class MainTestingYelp {
     private static Integer limit = Integer.MAX_VALUE;
     private static String apiKey = "Bearer ----";
 
-    // Parámetros derivados
+    // Derived parameters
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
@@ -51,7 +51,7 @@ public class MainTestingYelp {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, maxCut);
 
         // API Calls
@@ -63,7 +63,7 @@ public class MainTestingYelp {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                yelp_transactionsSearch_longitude(semanticInput, apiKey);      // TODO: MODIFY
+                yelp_transactionsSearch_longitude(semanticInput, apiKey);      // MODIFY
 
 
                 i++;

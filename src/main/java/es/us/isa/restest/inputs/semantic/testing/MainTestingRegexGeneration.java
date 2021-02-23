@@ -55,7 +55,13 @@ public class MainTestingRegexGeneration {
 
     public static void main(String[] args) {
 
-        // TODO: DELETE (ONLY FOR LOCAL COPY OF DBPEDIA)
+        // This class is used to test the automatic generation of regular expressions for the RapidAPI dataset. (Experiment 1 part 2)
+        // This experiment consists on creating API calls until obtaining 5 valid values and 5 invalid values of a given parameter
+        // If a regex that achieves a performance over 90% of recall, the data will be filtered
+        // The APIs for which results are obtained are Flight data (parameter country), API basketball (parameter season) and API football (parameter season)
+        // There is a different file for testing Skyscanner API (MainTestingSkyscannerRegex)
+
+        // (ONLY FOR LOCAL COPY OF DBPEDIA)
         System.setProperty("http.maxConnections", "10000000");
 
         setParameters();
@@ -67,7 +73,7 @@ public class MainTestingRegexGeneration {
         List<String> semanticInputs = readCsv(csvPath);
         System.out.println("Number of inputs " + semanticInputs.size());
 
-//        Collections.shuffle(semanticInputs);
+        Collections.shuffle(semanticInputs);
 
         ParameterValues parameterValues = new ParameterValues("flightData", operation, testParameter);
 

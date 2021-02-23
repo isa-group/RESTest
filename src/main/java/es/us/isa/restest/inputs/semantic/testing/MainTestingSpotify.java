@@ -22,8 +22,8 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingSpotify {
 
-    // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/commercial/spotify.properties";
+    // Parameters to change
+    private static String propertiesPath = "----";
     private static String operationPath = "/browse/featured-playlists";
     private static String semanticParameterName = "country";
     private static String baseUri = "https://api.spotify.com/v1";
@@ -31,7 +31,7 @@ public class MainTestingSpotify {
     private static String apiKey = "Bearer -----";
 
 
-    // Parámetros derivados
+    // Derived parameters
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
@@ -51,7 +51,7 @@ public class MainTestingSpotify {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, maxCut);
 
         // API Calls

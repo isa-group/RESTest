@@ -22,14 +22,14 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingSkyscanner {
 
-    // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/skyscanner.properties";
+    // Parameters to change
+    private static String propertiesPath = "----";
     private static String operationPath = "/apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}";
     private static String semanticParameterName = "locale";
     private static String baseUrl = "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com";
     private static Integer limit = Integer.MAX_VALUE;
 
-    // Parámetros derivados
+    // Derived parameters
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
@@ -51,7 +51,7 @@ public class MainTestingSkyscanner {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, maxCut);
 
         // API Calls

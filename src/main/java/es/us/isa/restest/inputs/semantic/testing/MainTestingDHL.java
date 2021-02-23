@@ -22,8 +22,8 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingDHL {
 
-    // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/commercial/dhl.properties";
+    // Parameters to change
+    private static String propertiesPath = "----";
     private static String operationPath = "/find-by-address";
     private static String semanticParameterName = "countryCode";
     private static String baseUri = "https://api.dhl.com/location-finder/v1";
@@ -31,7 +31,7 @@ public class MainTestingDHL {
     private static String apiKey = "----";
 
 
-    // Parámetros derivados
+    // Derived parameters
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
@@ -51,7 +51,7 @@ public class MainTestingDHL {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, maxCut);
 
         // API Calls

@@ -22,14 +22,14 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingAmadeusHotel {
 
-    // Parámetros a cambiar
-    private static String propertiesPath = "/semantic/amadeus_standard.properties";
+    // Parameters to change
+    private static String propertiesPath = "---";
     private static String operationPath = "/airports/autocomplete";
     private static String semanticParameterName = "country";
     private static String baseUrl = "https://api.sandbox.amadeus.com/v1.2";
     private static Integer limit = Integer.MAX_VALUE;
 
-    // Parámetros derivados
+    // Derived parameters
     private static OpenAPISpecification spec;
     private static String confPath;
     private static String OAISpecPath;
@@ -49,7 +49,7 @@ public class MainTestingAmadeusHotel {
 
         Collections.shuffle(semanticInputs);
 
-        // Select 20 random values
+        // Select 10 random values
         List<String> randomSubList = semanticInputs.subList(0, maxCut);
 
         // API Calls
