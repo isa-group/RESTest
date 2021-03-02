@@ -3,12 +3,15 @@ package es.us.isa.restest.inputs.stateful;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.FileManager;
 import es.us.isa.restest.util.JSONManager;
+import es.us.isa.restest.util.RESTestException;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.logging.log4j.LogManager;
@@ -44,14 +47,18 @@ public class StatefulBodyGenerator implements ITestDataGenerator {
         String jsonPath = this.dataDirPath + '/' + this.operationId + "_data.json";
 
         if (operationId != null && FileManager.checkIfExists(jsonPath)) {
-            JsonNode jsonNode = (JsonNode) JSONManager.readJSON(jsonPath);
+            ObjectNode dictNode = (ObjectNode) JSONManager.readJSON(jsonPath);
             MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
 
-            if (requestBody != null && !jsonNode.isEmpty()) {
+            if (requestBody != null && !dictNode.isEmpty()) {
                 ObjectNode rootNode = objectMapper.createObjectNode();
-                JsonNode bodyNode = jsonNode.get(this.random.nextInt(jsonNode.size()));
-                generateStatefulObjectNode(bodyNode, requestBody.getSchema(), objectMapper, rootNode);
-                if (!rootNode.isEmpty()) {
+                try {
+                    generateStatefulObjectNode(dictNode, requestBody.getSchema(), rootNode, "");
+                } catch (RESTestException e) {
+                    logger.warn("There isn't enough data to generate a valid request body for {} operation.", this.operationId);
+                    logger.warn("RESTest will use the default request body specified in the testConf.");
+                }
+                if (rootNode != null && !rootNode.isEmpty()) {
                     body = rootNode;
                 }
             }
@@ -69,32 +76,47 @@ public class StatefulBodyGenerator implements ITestDataGenerator {
         return body;
     }
 
-    private void generateStatefulObjectNode(JsonNode jsonNode, Schema schema, ObjectMapper mapper, ObjectNode rootNode) {
+    private void generateStatefulObjectNode(ObjectNode dictNode, Schema<?> schema, JsonNode rootNode, String prefix) throws RESTestException {
         if (schema.get$ref() != null) {
             schema = spec.getSpecification().getComponents().getSchemas().get(schema.get$ref().substring(schema.get$ref().lastIndexOf('/') + 1));
         }
-        for (Object o : schema.getProperties().entrySet()) {
-            Map.Entry<String, Schema> entry = (Map.Entry<String, Schema>) o;
-            JsonNode childNode;
-            if (entry.getValue().getType().equals("object")) {
-                childNode = mapper.createObjectNode();
-                generateStatefulObjectNode(jsonNode, entry.getValue(), mapper, (ObjectNode) childNode);
-            } else {
-                childNode = jsonNode.findParent(entry.getKey());
-                if (childNode != null && childNode.isObject()) {
-                    childNode = childNode.get(entry.getKey());
-                } else {
-                    childNode = null;
-                }
+
+        JsonNode childNode = null;
+        if (schema.getType().equals("object")) {
+            childNode = "".equals(prefix)? rootNode : objectMapper.createObjectNode();
+
+            for (Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
+                String newPrefix = "".equals(prefix)? prefix + entry.getKey() : prefix + '.' + entry.getKey();
+                generateStatefulObjectNode(dictNode, entry.getValue(), childNode, newPrefix);
             }
 
-            if (childNode == null || childNode.isNull() || childNode.isMissingNode()) {
-                rootNode.removeAll();
-                break;
-            } else {
-                rootNode.set(entry.getKey(), childNode);
+        } else if (schema.getType().equals("array")) {
+            childNode = objectMapper.createArrayNode();
+            generateStatefulObjectNode(dictNode, ((ArraySchema)schema).getItems(), childNode, prefix);
+        } else {
+            ArrayNode valueArray = (ArrayNode) dictNode.get(prefix);
+
+            if(valueArray != null) {
+                childNode = valueArray.get(random.nextInt(valueArray.size()));
+            } else if (schema.getExample() != null) {
+                childNode = createNodeFromExample(schema);
             }
         }
+
+        if (!"".equals(prefix)) {
+            if (childNode == null || childNode.isNull() || childNode.isMissingNode()) {
+                throw new RESTestException();
+            } else if (rootNode.isObject()) {
+                ((ObjectNode) rootNode).set(prefix.substring(prefix.lastIndexOf('.') + 1), childNode);
+            } else {
+                ((ArrayNode) rootNode).add(childNode);
+            }
+        }
+
+    }
+
+    private JsonNode createNodeFromExample(Schema<?> schema) {
+        return objectMapper.getNodeFactory().nullNode();
     }
 
     @Override

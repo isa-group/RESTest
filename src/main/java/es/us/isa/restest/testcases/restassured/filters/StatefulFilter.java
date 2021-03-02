@@ -3,6 +3,7 @@ package es.us.isa.restest.testcases.restassured.filters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import es.us.isa.restest.util.FileManager;
 import es.us.isa.restest.util.JSONManager;
 import io.restassured.filter.FilterContext;
@@ -10,6 +11,9 @@ import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
+
+import java.util.Iterator;
+import java.util.Map;
 
 import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;
 
@@ -31,24 +35,39 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
         Response response = ctx.next(requestSpec, responseSpec);
         if (response.getStatusCode() < 400) {
             String body = response.getBody().prettyPrint();
-            ArrayNode originalNode = objectMapper.createArrayNode();
+            ObjectNode originalNode = objectMapper.createObjectNode();
 
             if (FileManager.checkIfExists(this.specDirPath + '/' + this.operationId + "_data.json")) {
-                originalNode = (ArrayNode) JSONManager.readJSON(this.specDirPath + '/' + this.operationId + "_data.json");
+                originalNode = (ObjectNode) JSONManager.readJSON(this.specDirPath + '/' + this.operationId + "_data.json");
             }
-            
-            JsonNode newNode = (JsonNode) JSONManager.readJSONFromString(body);
 
-            if (newNode.isArray()) {
-                originalNode.addAll((ArrayNode) newNode);
-            } else {
-                originalNode.add(newNode);
-            }
+            JsonNode bodyNode = (JsonNode) JSONManager.readJSONFromString(body);
+            addResponseBodyValues(originalNode, bodyNode, "");
 
             String newFileData = JSONManager.getStringFromJSON(originalNode);
             FileManager.writeFile(this.specDirPath + '/' + this.operationId + "_data.json", newFileData);
         }
         return response;
+    }
+
+    private void addResponseBodyValues(ObjectNode originalNode, JsonNode bodyNode, String prefix) {
+        if (bodyNode.isObject()) {
+            for (Iterator<Map.Entry<String, JsonNode>> it = bodyNode.fields(); it.hasNext(); ) {
+                Map.Entry<String, JsonNode> entry = it.next();
+                String newPrefix = "".equals(prefix)? entry.getKey() : prefix + '.' + entry.getKey();
+                addResponseBodyValues(originalNode, entry.getValue(), newPrefix);
+            }
+        } else if (bodyNode.isArray()) {
+            for (Iterator<JsonNode> it = bodyNode.elements(); it.hasNext(); ) {
+                addResponseBodyValues(originalNode, it.next(), prefix);
+            }
+        } else if (bodyNode.isValueNode() && originalNode.has(prefix)) {
+            ((ArrayNode) originalNode.get(prefix)).add(bodyNode);
+        } else {
+            ArrayNode arrayNode = objectMapper.createArrayNode().add(bodyNode);
+            originalNode.set(prefix, arrayNode);
+        }
+
     }
 
     public void setOperationId(String operationId) {
@@ -57,6 +76,6 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
 
     @Override
     public int getOrder() {
-        return Integer.MAX_VALUE-5; // Sixth lowest priority of all filters, so it runs sixth-to-last before sending the request and sixth after sending it
+        return Integer.MAX_VALUE - 5; // Sixth lowest priority of all filters, so it runs sixth-to-last before sending the request and sixth after sending it
     }
 }
