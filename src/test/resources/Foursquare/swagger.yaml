@@ -31,6 +31,26 @@ paths:
           schema:
             type: string
         - in: query
+          required: false
+          name: locale
+          description: locale
+          schema:
+            type: string
+            enum:
+              - en
+              - es
+              - fr
+              - de
+              - it
+              - ja
+              - th
+              - tr
+              - ko
+              - ru
+              - pt
+              - id
+            default: en
+        - in: query
           name: ll
           description: Required unless near is provided. Latitude and longitude of the
             user’s location. Optional if using intent=global
@@ -46,25 +66,25 @@ paths:
             geocode and adds a geocode object to the response.
           schema:
             type: string
-        - in: query
-          name: name
-          required: false
-          description: Name of the venue
-          schema:
-            type: string
-        - in: query
-          required: false
-          name: intent
-          description: One of the values below, indicating your intent in performing the
-            search. If no value is specified, defaults to checkin.
-          schema:
-            type: string
-            enum:
-              - checkin
-              - global
-              - browse
-              - match
-            default: checkin
+#        - in: query
+#          name: name
+#          required: false
+#          description: Name of the venue
+#          schema:
+#            type: string
+#        - in: query
+#          required: false
+#          name: intent
+#          description: One of the values below, indicating your intent in performing the
+#            search. If no value is specified, defaults to checkin.
+#          schema:
+#            type: string
+#            enum:
+#              - checkin
+#              - global
+#              - browse
+#              - match
+#            default: checkin
         - in: query
           required: false
           name: radius
@@ -76,23 +96,23 @@ paths:
           schema:
             type: integer
             maximum: 100000
-        - in: query
-          required: false
-          name: sw
-          description: With ne, limits results to the bounding box defined by the latitude
-            and longitude given by sw as its south-west corner, and ne as its
-            north-east corner. The bounding box is only supported for
-            intent=browse searches. Not valid with ll or radius. Bounding boxes
-            with an area up to approximately 10,000 square kilometers are
-            supported.
-          schema:
-            type: string
-        - in: query
-          required: false
-          name: ne
-          description: See sw
-          schema:
-            type: string
+#        - in: query
+#          required: false
+#          name: sw
+#          description: With ne, limits results to the bounding box defined by the latitude
+#            and longitude given by sw as its south-west corner, and ne as its
+#            north-east corner. The bounding box is only supported for
+#            intent=browse searches. Not valid with ll or radius. Bounding boxes
+#            with an area up to approximately 10,000 square kilometers are
+#            supported.
+#          schema:
+#            type: string
+#        - in: query
+#          required: false
+#          name: ne
+#          description: See sw
+#          schema:
+#            type: string
         - in: query
           required: false
           name: query
@@ -158,12 +178,7 @@ paths:
             type: string
       x-dependencies:
         - Or(ll, near);
-        - IF intent=='browse' THEN OnlyOne(ll AND radius, sw AND ne);
-        - IF intent=='match' THEN name AND ll;
-        - IF radius THEN intent=='browse' OR (intent=='checkin' AND (categoryId OR query));
-        - AllOrNone(sw, ne);
-        - IF sw OR ne THEN intent=='browse';
-        - IF sw OR ne THEN NOT (ll OR radius);
+        - IF radius THEN categoryId OR query;
         - AllOrNone(providerId, linkedId);
         # Alternative version of dependencies
 #        - IF ZeroOrOne(providerId, linkedId) THEN Or(intent, ll, near);
@@ -171,6 +186,15 @@ paths:
 #        - IF ZeroOrOne(providerId, linkedId) AND intent=='match' THEN (name OR query) AND (ll OR near);
 #        - IF ZeroOrOne(providerId, linkedId) AND intent=='checkin' THEN ll OR near;
 #        - IF ZeroOrOne(providerId, linkedId) AND intent=='browse' THEN OnlyOne(sw AND ne, near OR (ll AND radius)) AND ZeroOrOne(sw AND ne, radius) AND AllOrNone(sw, ne);
+        # Old dependencies
+#        - Or(ll, near);
+#        - IF intent=='browse' THEN OnlyOne(ll AND radius, sw AND ne);
+#        - IF intent=='match' THEN name AND ll;
+#        - IF radius THEN intent=='browse' OR (intent=='checkin' AND (categoryId OR query));
+#        - AllOrNone(sw, ne);
+#        - IF sw OR ne THEN intent=='browse';
+#        - IF sw OR ne THEN NOT (ll OR radius);
+#        - AllOrNone(providerId, linkedId);
       responses:
         "200":
           description: OK
@@ -227,6 +251,8 @@ components:
         lng:
           type: number
           format: double
+        isFuzzed:
+          type: boolean
         labeledLatLngs:
           type: array
           items:
@@ -274,7 +300,6 @@ components:
       properties:
         prefix:
           type: string
-          format: uri
         suffix:
           type: string
     VenueSearchResponse:
@@ -299,6 +324,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Venue"
-        geocode:
-          type: object
-          additionalProperties: true
+#        geocode:
+#          type: object
+#          additionalProperties: true

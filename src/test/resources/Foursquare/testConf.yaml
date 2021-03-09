@@ -20,7 +20,7 @@ testConfiguration:
             genParameters:
               - name: values
                 values:
-                  - 20200306
+                  - 20210309
         - name: ll
           in: query
           weight: 0.5
@@ -40,6 +40,8 @@ testConfiguration:
                   - 39.904325, 116.405302
                   - 13.753789, 100.501572
                   - 19.430849, -99.135857
+                  - 47.020917, 28.860922
+                  - 23.999919, 90.418527
                 objectValues: null
         - name: near
           in: query
@@ -60,6 +62,7 @@ testConfiguration:
                   - Paris
                   - San Francisco
                   - Krakow
+                  - Daca, Bangladesh
         - name: name
           in: query
           weight: 0.5
