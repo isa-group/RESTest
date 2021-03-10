@@ -212,10 +212,8 @@ public class CoverageGatherer {
 
                 // this criterion only applies for header, query and path parameters
                 if (currentParameter.getIn().equals("query") || currentParameter.getIn().equals("header") || currentParameter.getIn().equals("path")) {
-                    String paramType = currentParameter.getSchema().getType();
-                    List<String> paramEnumValues = currentParameter.getSchema().getEnum();
-                    if (paramType.equals(BOOLEAN_TYPE) || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
-                        List<String> parameterValuesList = getParameterValues(paramType, paramEnumValues);
+                    List<String> parameterValuesList = getSchemaValues(currentParameter.getSchema());
+                    if (!parameterValuesList.isEmpty()) { // only if the parameter has enum values or is a boolean
                         criteria.add(createCriterion(parameterValuesList, PARAMETER_VALUE,
                                 currentPathEntry.getKey() + "->" +
                                         currentOperationEntry.getKey().toString() + "->" +
@@ -232,6 +230,32 @@ public class CoverageGatherer {
         }
     }
 
+    private List<String> getSchemaValues(Schema schema) {
+        List<String> paramValues = new ArrayList<>(getIndividualSchemaValues(schema));
+
+        if (schema instanceof ComposedSchema) {
+            ComposedSchema paramSchema = (ComposedSchema)schema;
+            List<Schema> paramSchemas = paramSchema.getAnyOf() != null ? paramSchema.getAnyOf() : paramSchema.getOneOf();
+            if (paramSchemas != null)
+                paramSchemas.forEach(ps -> paramValues.addAll(getSchemaValues(ps)));
+        }
+
+        return paramValues;
+    }
+
+    private List<String> getIndividualSchemaValues(Schema schema) {
+        String paramType = schema.getType();
+        List<String> paramEnumValues = schema.getEnum();
+
+        if (BOOLEAN_TYPE.equals(paramType))
+            return Arrays.asList("true", "false");
+        else if (paramEnumValues != null)
+            return paramEnumValues;
+
+        return new ArrayList<>();
+
+    }
+
     private void getFormDataParameterValues(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry, RequestBody requestBody) {
         MediaType mediaType = requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
                 requestBody.getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
@@ -239,10 +263,8 @@ public class CoverageGatherer {
 
         for (Object entry : mediaType.getSchema().getProperties().entrySet()) {
             Schema parameterSchema = ((Entry<String, Schema>) entry).getValue();
-            String paramType = parameterSchema.getType();
-            List<String> paramEnumValues = parameterSchema.getEnum();
-            if (paramType.equals(BOOLEAN_TYPE) || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
-                List<String> parameterValuesList = getParameterValues(paramType, paramEnumValues);
+            List<String> parameterValuesList = getSchemaValues(parameterSchema);
+            if (!parameterValuesList.isEmpty()) { // only if the parameter has enum values or is a boolean
                 criteria.add(createCriterion(parameterValuesList, PARAMETER_VALUE,
                         currentPathEntry.getKey() + "->" +
                                 currentOperationEntry.getKey().toString() + "->" +
@@ -250,16 +272,6 @@ public class CoverageGatherer {
                 ));
             }
         }
-    }
-
-    private List<String> getParameterValues(String paramType, List<String> paramEnumValues) {
-        List<String> parameterValuesList = new ArrayList<>(); // list of parameter values per criterion
-        if (paramType.equals(BOOLEAN_TYPE)) {
-            parameterValuesList.addAll(Arrays.asList("true", "false")); // add both boolean values to test
-        } else {
-            parameterValuesList.addAll(paramEnumValues); // add all enum values to test
-        }
-        return parameterValuesList;
     }
 
     private void getInputContentTypeCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry) {
