@@ -1,7 +1,9 @@
-package es.us.isa.restest.inputs.stateful;
+package es.us.isa.restest.inputs.fuzzing;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.FileManager;
@@ -11,7 +13,7 @@ import java.security.SecureRandom;
 import java.util.Random;
 
 
-public class StatefulParameterGenerator implements ITestDataGenerator {
+public class ParameterGenerator implements ITestDataGenerator {
 
     private  String operationId;
     private String parameterName;
@@ -22,7 +24,7 @@ public class StatefulParameterGenerator implements ITestDataGenerator {
 
     private Random random;
 
-    public StatefulParameterGenerator() {
+    public ParameterGenerator() {
         this.random = new SecureRandom();
     }
 
@@ -32,11 +34,10 @@ public class StatefulParameterGenerator implements ITestDataGenerator {
         String jsonPath = this.dataDirPath + '/' + this.operationId + "_data.json";
 
         if (operationId != null && FileManager.checkIfExists(jsonPath)) {
-            JsonNode jsonNode = (JsonNode) JSONManager.readJSON(jsonPath);
-            JsonNode bodyNode = jsonNode.get(this.random.nextInt(jsonNode.size()));
-
-            if(bodyNode.hasNonNull(parameterName)) {
-                valueNode = bodyNode.get(parameterName);
+            ObjectNode dictNode = (ObjectNode) JSONManager.readJSON(jsonPath);
+            ArrayNode arrayNode = ((ArrayNode)dictNode.get(parameterName));
+            if (arrayNode != null) {
+                valueNode = arrayNode.get(this.random.nextInt(arrayNode.size()));
             }
         }
 

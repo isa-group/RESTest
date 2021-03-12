@@ -1,8 +1,12 @@
 package es.us.isa.restest.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,5 +82,29 @@ public class SchemaManager {
 
         copy.setItems(itemsCopy);
         return copy;
+    }
+
+    public static JsonNode createValueNode(Object value, ObjectMapper mapper) {
+        JsonNode node = null;
+
+        if (value instanceof Number) {
+            Number n = (Number) value;
+
+            if (n instanceof Integer || n instanceof Long) {
+                node = mapper.getNodeFactory().numberNode(n.longValue());
+            } else if (n instanceof BigInteger) {
+                node = mapper.getNodeFactory().numberNode((BigInteger) n);
+            } else if (n instanceof Double || n instanceof Float) {
+                node = mapper.getNodeFactory().numberNode(n.doubleValue());
+            } else if (n instanceof BigDecimal) {
+                node = mapper.getNodeFactory().numberNode((BigDecimal) n);
+            }
+        } else if (value instanceof Boolean) {
+            node = mapper.getNodeFactory().booleanNode((Boolean) value);
+        } else {
+            node = mapper.getNodeFactory().textNode((String) value);
+        }
+
+        return node;
     }
 }

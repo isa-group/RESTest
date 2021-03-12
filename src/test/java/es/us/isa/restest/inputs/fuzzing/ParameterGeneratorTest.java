@@ -1,4 +1,4 @@
-package es.us.isa.restest.inputs.stateful;
+package es.us.isa.restest.inputs.fuzzing;
 
 import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Generator;
@@ -13,7 +13,7 @@ import java.util.Collections;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class StatefulParameterGeneratorTest {
+public class ParameterGeneratorTest {
 
     Generator generator;
 
@@ -36,7 +36,7 @@ public class StatefulParameterGeneratorTest {
 
         generator.getGenParameters().add(defaultValue);
 
-        StatefulParameterGenerator gen = (StatefulParameterGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+        ParameterGenerator gen = (ParameterGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
         gen.setSpec(spec);
         gen.setDataDirPath(dataDirPath);
         gen.setParameterName(parameter);

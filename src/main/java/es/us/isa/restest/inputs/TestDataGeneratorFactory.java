@@ -8,8 +8,8 @@ import es.us.isa.restest.inputs.boundary.BoundaryStringConfigurator;
 import es.us.isa.restest.inputs.fixed.InputValueIterator;
 import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
 import es.us.isa.restest.inputs.random.*;
-import es.us.isa.restest.inputs.stateful.StatefulBodyGenerator;
-import es.us.isa.restest.inputs.stateful.StatefulParameterGenerator;
+import es.us.isa.restest.inputs.fuzzing.BodyGenerator;
+import es.us.isa.restest.inputs.fuzzing.ParameterGenerator;
 import es.us.isa.restest.util.CSVManager;
 import es.us.isa.restest.util.DataType;
 import es.us.isa.restest.util.JSONManager;
@@ -554,7 +554,7 @@ public class TestDataGeneratorFactory {
 	}
 
 	private static ITestDataGenerator createStatefulBodyGenerator(Generator generator) {
-		StatefulBodyGenerator gen = new StatefulBodyGenerator();
+		BodyGenerator gen = new BodyGenerator();
 		// Set parameters
 		for(GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
@@ -570,7 +570,7 @@ public class TestDataGeneratorFactory {
 	}
 
 	private static ITestDataGenerator createStatefulParameterGenerator(Generator generator) {
-		StatefulParameterGenerator gen = new StatefulParameterGenerator();
+		ParameterGenerator gen = new ParameterGenerator();
 		// Set parameters
 		for(GenParameter param: generator.getGenParameters()) {
 			switch (param.getName()) {
