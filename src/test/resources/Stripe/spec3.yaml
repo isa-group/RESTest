@@ -11748,29 +11748,30 @@ components:
     #   - order
     #   - refund
     #   x-resourceId: order_return
-    # package_dimensions:
-    #   description: ''
-    #   properties:
-    #     height:
-    #       description: Height, in inches.
-    #       type: number
-    #     length:
-    #       description: Length, in inches.
-    #       type: number
-    #     weight:
-    #       description: Weight, in ounces.
-    #       type: number
-    #     width:
-    #       description: Width, in inches.
-    #       type: number
-    #   required:
-    #   - height
-    #   - length
-    #   - weight
-    #   - width
-    #   title: PackageDimensions
-    #   type: object
-    #   x-expandableFields: []
+    package_dimensions:
+      description: ''
+      properties:
+        height:
+          description: Height, in inches.
+          type: number
+        length:
+          description: Length, in inches.
+          type: number
+        weight:
+          description: Weight, in ounces.
+          type: number
+        width:
+          description: Width, in inches.
+          type: number
+      required:
+      - height
+      - length
+      - weight
+      - width
+      title: PackageDimensions
+      type: object
+      nullable: true
+      x-expandableFields: []
     # payment_flows_private_payment_methods_alipay:
     #   description: ''
     #   properties: {}
@@ -15921,12 +15922,7 @@ components:
           - product
           type: string
         package_dimensions:
-          anyOf:
-          - "$ref": "#/components/schemas/package_dimensions"
-          description: The dimensions of this product for shipping purposes. A SKU
-            associated with this product can override this value by having its own
-            `package_dimensions`. Only applicable to products of `type=good`.
-          nullable: true
+          "$ref": "#/components/schemas/package_dimensions"
         shippable:
           description: Whether this product is a shipped good. Only applicable to
             products of `type=good`.
