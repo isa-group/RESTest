@@ -36,6 +36,9 @@ testConfiguration:
           - it
           - de
           - pt
+          - no
+          - fi
+          - ja
     - name: id
       in: query
       weight: 0.5
@@ -47,11 +50,11 @@ testConfiguration:
           values:
           - zZa8PFYtWr4
           - TUJWx7vo44c
-          - usO_6-RuCrg
+          - eVIozKR9p50
           - 7m-NPuXPBqM
           - yDgLFOxnQ8Y
-          - LGR-Qfeb88c
-          - YHD77LIL7s0
+          - 9bZkp7q19f0
+          - yuD34tEpRFw
           - n8I-YVuaSR0
           - t22flliJLTQ
           - 5kUu97Vkwj4
@@ -191,6 +194,9 @@ testConfiguration:
           - FR
           - IT
           - PT
+          - FI
+          - NO
+          - JP
 #          - name: csv
 #            values:
 #            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
