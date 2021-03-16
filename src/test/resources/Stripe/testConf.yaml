@@ -67,17 +67,6 @@ testConfiguration:
           values:
           - 1
           objectValues: null
-    - name: expand[]
-      in: formData
-      weight: 0.5
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - package_dimensions
-          objectValues: null
     - name: id
       in: formData
       weight: 0

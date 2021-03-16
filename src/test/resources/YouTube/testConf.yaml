@@ -7,7 +7,7 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-    - testPath: /search
+    - testPath: /youtube/v3/search
       operationId: youtube.search.list
       method: get
       testParameters:
@@ -96,6 +96,8 @@ testConfiguration:
             - 39.904325, 116.405302
             - 13.753789, 100.501572
             - 19.430849, -99.135857
+            - 23.999919, 90.418527
+            - -33.301720, -66.335946
             objectValues: null
       - name: locationRadius
         in: query
@@ -207,7 +209,7 @@ testConfiguration:
             objectValues: null
           - name: endDate
             values:
-            - 2020-12-31
+            - 2022-12-31
             objectValues: null
           - name: format
             values:
@@ -223,6 +225,12 @@ testConfiguration:
             values:
             - 1
             objectValues: null
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - ((time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will)\|){0,4}(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will)( -(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will)){0,4}
       - name: regionCode
         in: query
         weight: 0.5
@@ -238,6 +246,9 @@ testConfiguration:
             - FR
             - IT
             - PT
+            - FI
+            - NO
+            - JP
 #          - name: csv
 #            values:
 #            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
@@ -252,11 +263,11 @@ testConfiguration:
             values:
             - zZa8PFYtWr4
             - TUJWx7vo44c
-            - usO_6-RuCrg
+            - eVIozKR9p50
             - 7m-NPuXPBqM
             - yDgLFOxnQ8Y
             - 9bZkp7q19f0
-            - YHD77LIL7s0
+            - yuD34tEpRFw
             - n8I-YVuaSR0
             - t22flliJLTQ
             - 5kUu97Vkwj4
@@ -276,6 +287,9 @@ testConfiguration:
             - FR
             - IT
             - PT
+            - FI
+            - NO
+            - JA
 #          - name: csv
 #            values:
 #            - src/main/resources/TestData/ISO-639-LangCodes.csv
@@ -312,13 +326,15 @@ testConfiguration:
           genParameters:
           - name: values
             values:
-            - video,channel,playlist
-            - channel,playlist
-            - video,playlist
-            - video,channel
             - video
             - channel
             - playlist
+          - name: minValues
+            values:
+            - 1
+          - name: maxValues
+            values:
+            - 3
             objectValues: null
       - name: videoCaption
         in: query
