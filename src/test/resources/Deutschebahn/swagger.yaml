@@ -105,7 +105,7 @@ paths:
             searchstring=hamburg*,berlin*).
           required: false
           type: string
-          format: string
+#          format: string
         - name: category
           in: query
           description: >-
@@ -115,7 +115,7 @@ paths:
             returned.
           required: false
           type: string
-          format: string
+#          format: string
         - name: federalstate
           in: query
           description: >-
@@ -124,7 +124,7 @@ paths:
             allowed here.
           required: false
           type: string
-          format: string
+#          format: string
         - name: eva
           in: query
           description: Filter by EVA number. Wildcards are not allowed here.
@@ -136,7 +136,7 @@ paths:
           description: Filter by Ril100-identifier. Wildcards are not allowed here.
           required: false
           type: string
-          format: string
+#          format: string
         - name: logicaloperator
           in: query
           description: >-
@@ -144,7 +144,7 @@ paths:
             above for further details.  Allowed values: or, and
           required: false
           type: string
-          format: string
+#          format: string
       responses:
         '200':
           description: station data
