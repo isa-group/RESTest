@@ -89,7 +89,11 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
     private void generateFuzzingParameter(TestCase tc, TestParameter testParam, Operation testOperation) {
         if (testParam.getWeight() == null || rand.nextFloat() <= testParam.getWeight()) {
             ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
-            List<String> fuzzingList = fuzzingMap.get(param.getType());
+            List<String> fuzzingList = fuzzingMap.get("common");
+            fuzzingList.addAll(fuzzingMap.get(param.getType()));
+            if (param.getEnumValues() != null) {
+                fuzzingList.addAll(param.getEnumValues());
+            }
             tc.addParameter(testParam, fuzzingList.get(rand.nextInt(fuzzingList.size())));
         }
     }
@@ -125,16 +129,20 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
                 childNode = mapper.createObjectNode();
                 generateFuzzingBody(entry.getValue(), mapper, (ObjectNode) childNode);
             } else {
-                childNode = createValueNode(entry.getValue().getType(), mapper);
+                childNode = createValueNode(entry.getValue(), mapper);
             }
 
             rootNode.set(entry.getKey(), childNode);
         }
     }
 
-    private JsonNode createValueNode(String type, ObjectMapper mapper) {
+    private JsonNode createValueNode(Schema schema, ObjectMapper mapper) {
         JsonNode node = null;
-        List<String> fuzzingList = fuzzingMap.get(type);
+        List<String> fuzzingList = fuzzingMap.get("common");
+        fuzzingList.addAll(fuzzingMap.get(schema.getType()));
+        if (schema.getEnum() != null) {
+            fuzzingList.addAll(schema.getEnum());
+        }
         String value = fuzzingList.get(rand.nextInt(fuzzingList.size()));
         if (NumberUtils.isCreatable(value)) {
             Number n = NumberUtils.createNumber(value);
@@ -147,6 +155,8 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
             } else if (n instanceof BigDecimal) {
                 node = mapper.getNodeFactory().numberNode((BigDecimal) n);
             }
+        } else if("true".equals(value) || "false".equals(value)) {
+            node = mapper.getNodeFactory().booleanNode(Boolean.parseBoolean(value));
         }
 
         if (node == null) {
