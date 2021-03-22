@@ -15,30 +15,44 @@ testConfiguration:
           in: query
           weight: null
           generators:
-            - type: RandomInputValue
+            - valid: true
+              type: RandomNumber
               genParameters:
-                - name: csv
+                - name: type
                   values:
-                    - src/main/resources/TestData/Generated/DHL Location Finder API/findByGeo_latitude.csv
-                  objectValues: null
-                - name: predicates
+                    - float
+                - name: max
                   values:
-                    - "http://dbpedia.org/property/latitude"
-                  objectValues: null
-              valid: true
+                    - 47.392337
+                - name: min
+                  values:
+                    - 33.125898
         - name: longitude
           in: query
           weight: null
           generators:
+            - valid: true
+              type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - float
+                - name: min
+                  values:
+                    - -119.205793
+                - name: max
+                  values:
+                    - -79.958475
+        - name: providerType
+          in: query
+          weight: 0.5
+          generators:
             - type: RandomInputValue
               genParameters:
-                - name: csv
+                - name: values
                   values:
-                    - src/main/resources/TestData/Generated/DHL Location Finder API/findByGeo_longitude.csv
-                  objectValues: null
-                - name: predicates
-                  values:
-                    - "http://dbpedia.org/property/longitude"
+                    - express
+                    - parcel
                   objectValues: null
               valid: true
         - name: locationType
@@ -80,9 +94,6 @@ testConfiguration:
                     - age-verification
                     - handicapped-access
                     - parking
-                    - "express:drop-off-easy"
-                    - "express:drop-off-prelabeled"
-                    - "express:drop-off-account"
                   objectValues: null
               valid: true
         - name: radius
