@@ -17,11 +17,7 @@ public abstract class PathRule {
     protected PathRule() {}
 
     public void apply(Schema<?> schema) {
-        if (schema.get$ref() != null) {
-            schema = spec.getSpecification().getComponents().getSchemas().get(schema.get$ref().substring(schema.get$ref().lastIndexOf('/') + 1));
-        }
-
-        List<Map.Entry<String, Schema>> objectNodes = new ArrayList<>();
+       List<Map.Entry<String, Schema>> objectNodes = new ArrayList<>();
 
         for(Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
             if (entry.getValue().getType().equals("object")) {

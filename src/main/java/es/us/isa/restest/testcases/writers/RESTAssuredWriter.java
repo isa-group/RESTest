@@ -96,10 +96,8 @@ public class RESTAssuredWriter implements IWriter {
 		content += "import org.junit.*;\n"
 				+  "import io.restassured.RestAssured;\n"
 				+  "import io.restassured.response.Response;\n"
-				+  "import java.io.IOException;\n"
 				+  "import org.junit.FixMethodOrder;\n"
 				+  "import static org.junit.Assert.fail;\n"
-				+  "import com.fasterxml.jackson.databind.JsonNode;\n"
 				+  "import com.fasterxml.jackson.databind.ObjectMapper;\n"
 				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
@@ -224,9 +222,6 @@ public class RESTAssuredWriter implements IWriter {
 
 		// Generate the start of the try block
 		content += generateTryBlockStart();
-
-		// Generate all stuff needed before the RESTAssured request
-		content += generatePreRequest(t);
 		
 		// Generate RESTAssured object pointing to the right path
 		content += generateRESTAssuredObject(t);
@@ -309,28 +304,6 @@ public class RESTAssuredWriter implements IWriter {
 		return "\t\ttry {\n";
 	}
 
-	private String generatePreRequest(TestCase t) {
-		String content = "";
-
-		if (t.getBodyParameter() != null) {
-			content += generateJSONtoObjectConversion(t);
-		}
-
-		return content;
-	}
-
-	private String generateJSONtoObjectConversion(TestCase t) {
-		String content = "";
-		String bodyParameter = escapeJava(t.getBodyParameter());
-
-		content += "\t\t\tObjectMapper objectMapper = new ObjectMapper();\n"
-				+  "\t\t\tJsonNode jsonBody =  objectMapper.readTree(\""
-				+  bodyParameter
-				+  "\");\n\n";
-
-		return content;
-	}
-
 	private String generateRESTAssuredObject(TestCase t) {
 		String content = "";
 			
@@ -390,14 +363,14 @@ public class RESTAssuredWriter implements IWriter {
 
 	private String generateBodyParameter(TestCase t) {
 		String content = "";
-
+		String bodyParameter = escapeJava(t.getBodyParameter());
 		if ((t.getFormParameters() == null || t.getFormParameters().size() == 0) &&
 				t.getBodyParameter() != null &&
 				(t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
 				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE)))
 			content += "\t\t\t\t.contentType(\"application/json\")\n";
 		if (t.getBodyParameter() != null) {
-			content += "\t\t\t\t.body(jsonBody)\n";
+			content += "\t\t\t\t.body(\"" + bodyParameter + "\")\n";
 		}
 
 		return content;
@@ -526,15 +499,7 @@ public class RESTAssuredWriter implements IWriter {
 //	}
 
 	private String generatePostResponseValidation(TestCase t) {
-		
-		String content = "\t\t\tSystem.out.println(\"Test passed.\");\n";
-
-		if (t.getBodyParameter() != null) {
-			content += "\t\t} catch (IOException e) {\n"
-					+  "\t\t\te.printStackTrace();\n";
-		}
-
-		return content;
+		return "\t\t\tSystem.out.println(\"Test passed.\");\n";
 	}
 
 	private String generateTryBlockEnd() {

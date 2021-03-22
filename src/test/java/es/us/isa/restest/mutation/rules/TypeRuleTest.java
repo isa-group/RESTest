@@ -4,12 +4,14 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.SchemaManager;
 import io.swagger.v3.oas.models.media.Schema;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
 
 public class TypeRuleTest {
 
@@ -38,12 +40,15 @@ public class TypeRuleTest {
     private int getMutationsApplied(Schema originalSchema, Schema mutatedSchema) {
         int mutationsApplied = 0;
 
-        for (Object o : mutatedSchema.getProperties().entrySet()) {
-            Map.Entry<String, Schema> entry = (Map.Entry<String, Schema>) o;
-            if (!entry.getValue().getType().equals(((Schema) originalSchema.getProperties().get(entry.getKey())).getType())) {
-                mutationsApplied++;
-            } else if (entry.getValue().getType().equals("object")) {
+        if (!mutatedSchema.getType().equals(originalSchema.getType())) {
+            mutationsApplied++;
+        }
+
+        if (mutatedSchema.getType().equals("object") && originalSchema.getType().equals("object")) {
+            for (Object o : mutatedSchema.getProperties().entrySet()) {
+                Map.Entry<String, Schema> entry = (Map.Entry<String, Schema>) o;
                 mutationsApplied += getMutationsApplied((Schema) originalSchema.getProperties().get(entry.getKey()), entry.getValue());
+
             }
         }
 

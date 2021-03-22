@@ -142,10 +142,11 @@ public class BodyGenerator implements ITestDataGenerator {
 
                 while (i < prefixSplit.length) {
                     if (exampleNode.get(prefixSplit[i]) != null) {
-                        candidate = exampleNode.get(prefixSplit[i]);
+                        candidate = exampleNode.get(prefixSplit[i]).isArray()? exampleNode.get(prefixSplit[i]).get(0) : exampleNode.get(prefixSplit[i]);
+                        exampleNode = exampleNode.get(prefixSplit[i]);
                         i++;
-                    } else if (exampleNode.size() == 1 && exampleNode.get(0).isArray()) {
-                        candidate = exampleNode.get(0);
+                    } else if (exampleNode.size() == 1 && exampleNode.get(exampleNode.fieldNames().next()).isArray()) {
+                        candidate = exampleNode.get(exampleNode.fieldNames().next());
                     } else {
                         candidate = null;
                         break;
