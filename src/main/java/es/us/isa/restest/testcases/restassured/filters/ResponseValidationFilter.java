@@ -2,7 +2,6 @@ package es.us.isa.restest.testcases.restassured.filters;
 
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.Request;
-import com.atlassian.oai.validator.report.JsonValidationReportFormat;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.atlassian.oai.validator.restassured.RestAssuredRequest;
 import com.atlassian.oai.validator.restassured.RestAssuredResponse;
@@ -49,10 +48,19 @@ public class ResponseValidationFilter extends RESTestFilter implements OrderedFi
     public void filterValidation(Response response, String path, String method) {
         final ValidationReport validationReport = validator.validateResponse(path, Request.Method.valueOf(method), RestAssuredResponse.of(response));
         if (validationReport.hasErrors()) {
+            String errors = "OAS disconformity: " + getMessagesSummary(validationReport);
             if (APIName != null && testResultId != null)
-                exportTestResultToCSV(response, false, "OAS disconformity");
-            throw new RuntimeException("OAS disconformity: " + validationReport.getMessages().stream().map(ValidationReport.Message::getMessage).collect(Collectors.joining("; ")));
+                exportTestResultToCSV(response, false, errors);
+            throw new RuntimeException(errors);
         }
+    }
+
+    private String getMessagesSummary(ValidationReport validationReport) {
+        return validationReport.getMessages().stream()
+                .map(m -> m.getMessage().replaceAll("/\\d+(/|')", "/[item]$1"))
+                .distinct()
+                .sorted()
+                .collect(Collectors.joining("; "));
     }
 
     @Override
