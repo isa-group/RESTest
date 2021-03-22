@@ -93,8 +93,8 @@ paths:
           description: Not authenticated
           schema:
             $ref: "#/definitions/Error"
-      security:
-        - APIKeyQueryParam: []
+#      security:
+#        - APIKeyQueryParam: []
 definitions:
   Response:
     type: object
