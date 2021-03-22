@@ -1,0 +1,149 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: DHL/headers.json
+testConfiguration:
+  operations:
+    - testPath: /find-by-address
+      operationId: findByAddress
+      method: get
+      testParameters:
+        - name: countryCode
+          in: query
+          weight: null
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/test/resources/DHL/findByAddress_countryCode.csv
+                  objectValues: null
+              valid: true
+        - name: addressLocality
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/test/resources/DHL/findByAddress_addressLocality.csv
+                  objectValues: null
+              valid: true
+        - name: postalCode
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/test/resources/DHL/findByAddress_postalCode.csv
+                  objectValues: null
+              valid: true
+        - name: streetAddress
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/test/resources/DHL/findByAddress_streetAddress.csv
+                  objectValues: null
+              valid: true
+        - name: providerType
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - express
+                    - parcel
+                  objectValues: null
+              valid: true
+        - name: locationType
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - servicepoint
+                    - locker
+                    - postoffice
+                    - postbank
+                  objectValues: null
+              valid: true
+        - name: serviceType
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - "parcel:pick-up"
+                    - "parcel:drop-off"
+                    - "express:pick-up"
+                    - "express:drop-off"
+                    - "parcel:pick-up-registered"
+                    - "parcel:pick-up-unregistered"
+                    - "parcel:drop-off-unregistered"
+                    - letter-service
+                    - postbank
+                    - cash-on-delivery
+                    - franking
+                    - cash-service
+                    - packaging-material
+                    - postident
+                    - age-verification
+                    - handicapped-access
+                    - parking
+                  objectValues: null
+              valid: true
+        - name: radius
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 25000
+                  objectValues: null
+              valid: true
+        - name: limit
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 50
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
