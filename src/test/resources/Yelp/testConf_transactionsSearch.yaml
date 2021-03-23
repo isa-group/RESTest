@@ -1,0 +1,77 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Yelp/headers.json
+testConfiguration:
+  operations:
+    - operationId: getTransactions
+      testPath: /transactions/{transaction_type}/search
+      method: get
+      testParameters:
+      - name: transaction_type
+        in: path
+        weight: null
+        generators:
+          - type: InputValue
+            genParameters:
+              - name: values
+                values:
+                  - delivery
+                objectValues: null
+            valid: true
+      - name: location
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - NYC
+            - Seville, Spain
+            - Milan, Italy
+            - Melbourne
+            - Tokyo
+            - Egypt
+            - Juarez, Mexico
+            - Paris
+            - San Francisco
+            - Krakow
+            - Daca, Bangladesh
+            - Santa Fe
+      - name: latitude
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - float
+          - name: max
+            values:
+            - 47.392337
+          - name: min
+            values:
+            - 33.125898
+      - name: longitude
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - float
+          - name: min
+            values:
+            - -119.205793
+          - name: max
+            values:
+            - -79.958475
