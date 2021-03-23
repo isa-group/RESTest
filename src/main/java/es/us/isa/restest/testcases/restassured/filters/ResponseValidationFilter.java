@@ -57,10 +57,10 @@ public class ResponseValidationFilter extends RESTestFilter implements OrderedFi
 
     private String getMessagesSummary(ValidationReport validationReport) {
         return validationReport.getMessages().stream()
-                .map(m -> m.getMessage().replaceAll("/\\d+(/|')", "/[item]$1"))
+                .map(m -> m.getMessage().replaceAll("/\\d+(/|')", "/[item]$1").replace(',', ';'))
                 .distinct()
                 .sorted()
-                .collect(Collectors.joining("; "));
+                .collect(Collectors.joining(" --- "));
     }
 
     @Override
