@@ -1,0 +1,71 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Spotify/headers.json
+testConfiguration:
+  operations:
+    - testPath: "/browse/categories/{category_id}"
+      operationId: browseCategoriesCategoryId
+      method: get
+      testParameters:
+        - name: category_id
+          in: path
+          weight: null
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - toplists
+                    - hiphop
+                    - pop
+                    - mood
+                    - rock
+                    - edm_dance
+                    - chill
+                    - party
+                    - latin
+                    - rnb
+                    - workout
+                    - at_home
+                    - classical
+                    - sleep
+                    - decades
+                    - jazz
+                  objectValues: null
+              valid: true
+        - name: country
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+                  objectValues: null
+              valid: true
+        - name: locale
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - es_ES
+                    - es_MX
+                    - en_US
+                    - en_GB
+                    - de_DE
+                    - fr_FR
+                    - it_IT
+                    - pt_PT
+                    - pt_BR
+                    - fi_FI
+                    - no_NO
+              valid: true
+      expectedResponse: 200
