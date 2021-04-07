@@ -83,7 +83,7 @@ paths:
           required: false
           type: string
       x-dependencies:
-        - Or(i, t, s);
+        - OnlyOne(i OR t, s);
       responses:
         '200':
           description: Successful operation
