@@ -37,13 +37,13 @@ testConfiguration:
           values:
           - '\{\"annotation\": \[((\{\"text\": \"(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will|BREAK\"JSON) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
           objectValues: null
-        - valid: true
-          type: RandomRegExp
-          genParameters:
-          - name: regExp
-            values:
-            - '\{\"annotation\": \[((\{\"text\": \"(y|viéndole|de|aquella|manera|con|muestras|de|tanta|tristeza|le|dijo|sábete|que|no|es|un|hombre|más|que|otro|si|no|hace|más|que|otro|todas|estas|borrascas|que|nos|suceden|son|señales|de|que|presto|ha|de|serenar|el|tiempo|y|han|de|sucedernos|una|mañana|tras|un|sueño|intranquilo|se|despertó|convertido|en|un|monstruoso|insecto|estaba|echado|de|espaldas|sobre|un|duro|caparazón|y|al|BREAK\"JSON) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
-            objectValues: null
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '\{\"annotation\": \[((\{\"text\": \"(y|viéndole|de|aquella|manera|con|muestras|de|tanta|tristeza|le|dijo|sábete|que|no|es|un|hombre|más|que|otro|si|no|hace|más|que|otro|todas|estas|borrascas|que|nos|suceden|son|señales|de|que|presto|ha|de|serenar|el|tiempo|y|han|de|sucedernos|una|mañana|tras|un|sueño|intranquilo|se|despertó|convertido|en|un|monstruoso|insecto|estaba|echado|de|espaldas|sobre|un|duro|caparazón|y|al|BREAK\"JSON) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
+          objectValues: null
       - valid: true
         type: RandomRegExp
         genParameters:
@@ -76,22 +76,22 @@ testConfiguration:
           values:
           - 'src/main/resources/TestData/languagetool-codes-with-auto.csv'
           objectValues: null
-#    - name: altLanguages
-#      in: formData
-#      weight: 0.5
-#      generators:
-#      - valid: true
-#        type: RandomInputValue
-#        genParameters:
-#          - name: csv
-#            values:
-#              - 'src/main/resources/TestData/languagetool-codes-variants.csv'
-#          - name: minValues
-#            values:
-#              - 1
-#          - name: maxValues
-#            values:
-#              - 3
+    - name: altLanguages
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/main/resources/TestData/languagetool-codes-variants.csv'
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
     - name: motherTongue
       in: formData
       weight: 0.5

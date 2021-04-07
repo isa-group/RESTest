@@ -2,16 +2,16 @@
   "swagger": "2.0",
   "info": {
     "title": "LanguageTool API",
-    "description": "Check texts for style and grammar issues with LanguageTool. See <a href='http://wiki.languagetool.org/public-http-api'>our wiki</a> for access limitations.",
-    "version": "1.0.2"
+    "description": "Check texts for style and grammar issues with LanguageTool. Please consider the following default limitations:<ul><li>your daily request limit depending on <a href='https://languagetool.org/editor/settings/api'>your plan</a> <li>maximum number of requests per minute: 20 (free) / 80 (Premium) <li>maximum number of characters per minute: 75,000 (free) / 300,000 (Premium) <li>maximum number of characters per request: 20,000 (free) / 60,000 (Premium) <li>for the free version, also consider the <a href='https://dev.languagetool.org/public-http-api'>limitations documented here</a> <li><b>Note:</b> any parameters or outputs not part of this documentation are internal and must not be relied on</ul> Need more generous limits? Just <a href='https://languagetool.org/proofreading-api'>contact us</a>.",
+    "version": "1.1.2"
   },
   "host": "api.languagetoolplus.com",
   "schemes": [
-      "https"
+    "https"
   ],
   "basePath": "/v2",
   "produces": [
-      "application/json"
+    "application/json"
   ],
   "consumes": [
     "application/x-www-form-urlencoded"
@@ -34,7 +34,7 @@
             "name": "data",
             "in": "formData",
             "type": "string",
-            "description": "The text to be checked, given as a JSON document that specifies what's text and what's markup. This or 'text' is required. Markup will be ignored when looking for errors. Example text: <pre>A &lt;b>test&lt;/b></pre>JSON for the example text: <pre>{\"annotation\":[\n {\"text\": \"A \"},\n {\"markup\": \"&lt;b>\"},\n {\"text\": \"test\"},\n {\"markup\": \"&lt;/b>\"}\n]}</pre> <p>If you have markup that should be interpreted as whitespace, like <tt>&lt;p&gt;</tt> in HTML, you can have it interpreted like this: <pre>{\"markup\": \"&lt;p&gt;\", \"interpretAs\": \"\\n\\n\"}</pre><p>The 'data' feature is not limited to HTML or XML, it can be used for any kind of markup.",
+            "description": "The text to be checked, given as a JSON document that specifies what's text and what's markup. This or 'text' is required. Markup will be ignored when looking for errors. Example text: <pre>A &lt;b>test&lt;/b></pre>JSON for the example text: <pre>{\"annotation\":[\n {\"text\": \"A \"},\n {\"markup\": \"&lt;b>\"},\n {\"text\": \"test\"},\n {\"markup\": \"&lt;/b>\"}\n]}</pre> <p>If you have markup that should be interpreted as whitespace, like <tt>&lt;p&gt;</tt> in HTML, you can have it interpreted like this: <pre>{\"markup\": \"&lt;p&gt;\", \"interpretAs\": \"\\n\\n\"}</pre><p>The 'data' feature is not limited to HTML or XML, it can be used for any kind of markup. Entities will need to be expanded in this input.",
             "required": false
           },
           {
@@ -48,8 +48,26 @@
             "name": "altLanguages",
             "in": "formData",
             "type": "string",
-            "description": "EXPERIMENTAL: Comma-separated list of language codes to check if a word is not similar to one of the main language (parameter `language`). Unknown words that are similar to a word from the main language will still be considered errors but with type `Hint`. For languages with variants (English, German, Portuguese) you need to specify the variant, e.g. `en-GB` instead of just `en`.",
-            "required": false
+            "description": "EXPERIMENTAL: Comma-separated list of language codes to check if a word is not similar to one of the main language (parameter `language`). Unknown words that are similar to a word from the main language will still be considered errors but with type `Hint`. For languages with variants (English, German, Portuguese) you need to specify the variant, e.g. `en-GB` instead of just `en`."
+          },
+          {
+            "name": "username",
+            "in": "formData",
+            "type": "string",
+            "description": "Set to get Premium API access: Your username/email as used to log in at languagetool.org."
+          },
+          {
+            "name": "apiKey",
+            "in": "formData",
+            "type": "string",
+            "format": "password",
+            "description": "Set to get Premium API access: <a target='_blank' href='https://languagetool.org/editor/settings/api'>your API key</a>"
+          },
+          {
+            "name": "dicts",
+            "in": "formData",
+            "type": "string",
+            "description": "Comma-separated list of dictionaries to include words from; uses special default dictionary if this is unset"
           },
           {
             "name": "motherTongue",
@@ -61,7 +79,7 @@
             "name": "preferredVariants",
             "in": "formData",
             "type": "string",
-            "description": "Comma-separated list of preferred language variants. The language detector used with `language=auto` can detect e.g. English, but it cannot decide whether British English or American English is used. Thus this parameter can be used to specify the preferred variants like `en-GB` and `de-AT`. Only available with `language=auto`."
+            "description": "Comma-separated list of preferred language variants. The language detector used with `language=auto` can detect e.g. English, but it cannot decide whether British English or American English is used. Thus this parameter can be used to specify the preferred variants like `en-GB` and `de-AT`. Only available with `language=auto`. You should set variants for at least German and English, as otherwise the spell checking will not work for those, as no spelling dictionary can be selected for just `en` or `de`."
           },
           {
             "name": "enabledRules",
@@ -98,13 +116,13 @@
             "name": "level",
             "in": "formData",
             "type": "string",
-            "description": "If set to picky, additional rules will be activated, i.e. rules that you might only find useful when checking formal text."
+            "enum": ["default", "picky"],
+            "description": "If set to `picky`, additional rules will be activated, i.e. rules that you might only find useful when checking formal text."
           }
         ],
         "x-dependencies": [
           "OnlyOne(text, data);",
           "IF preferredVariants THEN language=='auto';",
-          "IF enabledOnly==true THEN NOT (disabledRules OR disabledCategories);",
           "IF enabledOnly==true THEN (enabledRules OR enabledCategories);"
         ],
         "responses": {
@@ -116,10 +134,10 @@
                 "software": {
                   "type": "object",
                   "required": [
-                      "name",
-                      "version",
-                      "buildDate",
-                      "apiVersion"
+                    "name",
+                    "version",
+                    "buildDate",
+                    "apiVersion"
                   ],
                   "properties": {
                     "name": {
@@ -152,9 +170,9 @@
                   "type": "object",
                   "description": "The language used for checking the text.",
                   "required": [
-                      "name",
-                      "code",
-                      "detectedLanguage"
+                    "name",
+                    "code",
+                    "detectedLanguage"
                   ],
                   "properties": {
                     "name": {
@@ -163,14 +181,14 @@
                     },
                     "code": {
                       "type": "string",
-                      "description": "ISO 639-1 code like 'en', 'en-US', or 'ca-ES-valencia'."
+                      "description": "ISO 639-1 code like 'en', 'en-US', or 'ca-ES-valencia'"
                     },
                     "detectedLanguage": {
                       "type": "object",
                       "description": "The automatically detected text language (might be different from the language actually used for checking).",
                       "required": [
-                          "name",
-                          "code"
+                        "name",
+                        "code"
                       ],
                       "properties": {
                         "name": {
@@ -180,10 +198,6 @@
                         "code": {
                           "type": "string",
                           "description": "ISO 639-1 code like 'en', 'en-US', or 'ca-ES-valencia'."
-                        },
-                        "confidence": {
-                          "type": "number",
-                          "description": "Estimate of the probability of the submitted text being in the detected language. Between 0 and 1."
                         }
                       }
                     }
@@ -194,12 +208,12 @@
                   "items": {
                     "type": "object",
                     "required": [
-                        "message",
-                        "offset",
-                        "length",
-                        "replacements",
-                        "context",
-                        "sentence"
+                      "message",
+                      "offset",
+                      "length",
+                      "replacements",
+                      "context",
+                      "sentence"
                     ],
                     "properties": {
                       "message": {
@@ -234,9 +248,9 @@
                       "context": {
                         "type": "object",
                         "required": [
-                            "text",
-                            "offset",
-                            "length"
+                          "text",
+                          "offset",
+                          "length"
                         ],
                         "properties": {
                           "text": {
@@ -260,9 +274,9 @@
                       "rule": {
                         "type": "object",
                         "required": [
-                            "id",
-                            "description",
-                            "category"
+                          "id",
+                          "description",
+                          "category"
                         ],
                         "properties": {
                           "id": {
@@ -320,7 +334,6 @@
     "/languages": {
       "get": {
         "summary": "Get a list of supported languages.",
-        "operationId": "get",
         "responses": {
           "200": {
             "description": "An array of language objects.",
@@ -329,9 +342,9 @@
               "items": {
                 "type": "object",
                 "required": [
-                    "name",
-                    "code",
-                    "longCode"
+                  "name",
+                  "code",
+                  "longCode"
                 ],
                 "properties": {
                   "name": {
@@ -352,6 +365,162 @@
           }
         }
       }
+    },
+    "/words": {
+      "get": {
+        "summary": "List words in dictionaries",
+        "description": "List words in the user's personal dictionaries.",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "type": "integer",
+            "description": "Offset of where to start in the list of words. Defaults to 0."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "integer",
+            "description": "Maximum number of words to return. Defaults to 10."
+          },
+          {
+            "name": "username",
+            "in": "query",
+            "type": "string",
+            "description": "Your username as used to log in at languagetool.org.",
+            "required": true
+          },
+          {
+            "name": "apiKey",
+            "in": "query",
+            "type": "string",
+            "format": "password",
+            "description": "Your API key.",
+            "required": true
+          },
+          {
+            "name": "dicts",
+            "in": "query",
+            "type": "string",
+            "description": "Comma-separated list of dictionaries to include words from; uses special default dictionary if this is unset"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the user's words from the given user dictionaries",
+            "schema": {
+              "properties": {
+                "words": {
+                  "type": "array",
+                  "description": "array of words",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/words/add": {
+      "post": {
+        "summary": "Add word to a dictionary",
+        "description": "Add a word to one of the user's personal dictionaries. Please note that this feature is considered to be used for personal dictionaries which typically contain not more than a few hundred items per user. Adding more can have adverse effects on performance for every single text check. If this becomes an issue for you, contact us. Experimental user dictionary caching can be enabled by us on a per-account basis.",
+        "parameters": [
+          {
+            "name": "word",
+            "in": "formData",
+            "type": "string",
+            "description": "The word to be added. Must not be a phrase, i.e. cannot contain white space. The word is added to a global dictionary that applies to all languages.",
+            "required": true
+          },
+          {
+            "name": "username",
+            "in": "formData",
+            "type": "string",
+            "description": "Your username as used to log in at languagetool.org.",
+            "required": true
+          },
+          {
+            "name": "apiKey",
+            "in": "formData",
+            "type": "string",
+            "format": "password",
+            "description": "Your API key.",
+            "required": true
+          },
+          {
+            "name": "dict",
+            "in": "formData",
+            "type": "string",
+            "description": "Name of the dictionary to add the word to; non-existent dictionaries are created after calling this; if unset, adds to special default dictionary"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the result of adding the word",
+            "schema": {
+              "properties": {
+                "added": {
+                  "type": "boolean",
+                  "description": "true if the word has been added. false means the word hasn't been added because it had been added before."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/words/delete": {
+      "post": {
+        "summary": "Remove word from a dictionary",
+        "description": "Remove a word from one of the user's personal dictionaries.",
+        "parameters": [
+          {
+            "name": "word",
+            "in": "formData",
+            "type": "string",
+            "description": "The word to be removed.",
+            "required": true
+          },
+          {
+            "name": "username",
+            "in": "formData",
+            "type": "string",
+            "description": "Your username as used to log in at languagetool.org.",
+            "required": true
+          },
+          {
+            "name": "apiKey",
+            "in": "formData",
+            "type": "string",
+            "format": "password",
+            "description": "Your API key.",
+            "required": true
+          },
+          {
+            "name": "dict",
+            "in": "formData",
+            "type": "string",
+            "description": "Name of the dictionary to remove the word from; if the dictionary is empty upon calling this, it is deleted; if unset, removes from special default dictionary"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "the result of removing the word",
+            "schema": {
+              "properties": {
+                "deleted": {
+                  "type": "boolean",
+                  "description": "true if the word has been removed. false means the word hasn't been removed because it was not in the dictionary."
+                }
+              }
+            }
+          }
+        }
+      }
     }
+
   }
 }
