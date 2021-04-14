@@ -397,6 +397,14 @@
 			<systemPath>${project.basedir}/lib/Random Regex Turtle.jar</systemPath>
 		</dependency>
 
+		<!-- SAIGEN (REMOVE) -->
+		<dependency>
+			<groupId>SaigenLib</groupId>
+			<artifactId>SaigenLib</artifactId>
+			<scope>system</scope>
+			<version>1.0</version>
+			<systemPath>${project.basedir}/lib/saigen-lib.jar</systemPath>
+		</dependency>
 
 		<!-- OKHTTP (REMOVE) -->
 		<dependency>
