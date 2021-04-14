@@ -38,6 +38,7 @@ public class BodyGenerator implements ITestDataGenerator {
     ObjectMapper objectMapper;
 
     private static final Logger logger = LogManager.getLogger(BodyGenerator.class);
+    private static final String DOT_CONVERSION = "(dot)";
 
     public BodyGenerator() {
         this.random = new SecureRandom();
@@ -49,22 +50,20 @@ public class BodyGenerator implements ITestDataGenerator {
         ObjectNode body = null;
         String jsonPath = this.dataDirPath + '/' + this.operationId + "_data.json";
 
-        if (operationId != null) {
-            ObjectNode dictNode = FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
-            MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
+        ObjectNode dictNode = operationId != null && FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
+        MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
 
-            if (requestBody != null) {
-                Schema mutatedSchema = mutate? new SchemaMutation(requestBody.getSchema()).mutate() : requestBody.getSchema();
-                ObjectNode rootNode = objectMapper.createObjectNode();
-                try {
-                    generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "");
-                } catch (RESTestException e) {
-                    logger.warn("There isn't enough data to generate a valid request body for {} operation.", this.operationId);
-                    logger.warn("RESTest will use the default request body specified in the testConf.");
-                }
-                if (rootNode != null) {
-                    body = rootNode;
-                }
+        if (requestBody != null) {
+            Schema mutatedSchema = mutate? new SchemaMutation(requestBody.getSchema()).mutate() : requestBody.getSchema();
+            ObjectNode rootNode = objectMapper.createObjectNode();
+            try {
+                generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "");
+            } catch (RESTestException e) {
+                logger.warn("There isn't enough data to generate a valid request body for {} operation.", this.operationId);
+                logger.warn("RESTest will use the default request body specified in the testConf.");
+            }
+            if (rootNode != null) {
+                body = rootNode;
             }
         }
 
@@ -76,13 +75,14 @@ public class BodyGenerator implements ITestDataGenerator {
             schema = spec.getSpecification().getComponents().getSchemas().get(schema.get$ref().substring(schema.get$ref().lastIndexOf('/') + 1));
         }
 
-        JsonNode childNode = null;
+        JsonNode childNode;
         if (schema.getType().equals("object")) {
             childNode = "".equals(prefix)? rootNode : objectMapper.createObjectNode();
 
             if (schema.getProperties() != null) {
                 for (Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
-                    String newPrefix = "".equals(prefix)? prefix + entry.getKey() : prefix + '.' + entry.getKey();
+                    String paramName = entry.getKey().replace(".", DOT_CONVERSION);
+                    String newPrefix = "".equals(prefix)? prefix + paramName : prefix + '.' + paramName;
                     generateStatefulObjectNode(dictNode, entry.getValue(), childNode, newPrefix);
                 }
             }
@@ -93,7 +93,7 @@ public class BodyGenerator implements ITestDataGenerator {
                 generateStatefulObjectNode(dictNode, ((ArraySchema)schema).getItems(), childNode, prefix);
             }
         } else {
-            String resolvedPrefix = prefix.replace("-duplicated", "");
+            String resolvedPrefix = prefix.replace("-duplicated", "").replace(DOT_CONVERSION, ".");
             ArrayNode valueArray = (ArrayNode) dictNode.get(resolvedPrefix);
 
             if(valueArray != null) {
@@ -107,7 +107,7 @@ public class BodyGenerator implements ITestDataGenerator {
             if (childNode == null || childNode.isNull() || childNode.isMissingNode()) {
                 throw new RESTestException();
             } else if (rootNode.isObject()) {
-                ((ObjectNode) rootNode).set(prefix.substring(prefix.lastIndexOf('.') + 1), childNode);
+                ((ObjectNode) rootNode).set(prefix.substring(prefix.lastIndexOf('.') + 1).replace(DOT_CONVERSION, "."), childNode);
             } else {
                 ((ArrayNode) rootNode).add(childNode);
             }
@@ -168,12 +168,9 @@ public class BodyGenerator implements ITestDataGenerator {
     }
 
     private JsonNode getDefaultValue(Schema<?> schema) {
-        JsonNode node = objectMapper.getNodeFactory().nullNode();
+        JsonNode node;
 
         switch (schema.getType()) {
-            case "string":
-                node = objectMapper.getNodeFactory().textNode("");
-                break;
             case "integer":
                 node = objectMapper.getNodeFactory().numberNode(0);
                 break;
@@ -182,6 +179,18 @@ public class BodyGenerator implements ITestDataGenerator {
                 break;
             case "boolean":
                 node = objectMapper.getNodeFactory().booleanNode(true);
+                break;
+            default:
+                if ("date".equals(schema.getFormat())) {
+                    node = objectMapper.getNodeFactory().textNode("1970-01-01");
+                } else if("date-time".equals(schema.getFormat())) {
+                    node = objectMapper.getNodeFactory().textNode("1970-01-01T00:00:00Z");
+                } else if(schema.getEnum() != null) {
+                    String enumValue = (String) schema.getEnum().get(random.nextInt(schema.getEnum().size()));
+                    node = objectMapper.getNodeFactory().textNode(enumValue);
+                } else {
+                    node = objectMapper.getNodeFactory().textNode("");
+                }
                 break;
         }
 

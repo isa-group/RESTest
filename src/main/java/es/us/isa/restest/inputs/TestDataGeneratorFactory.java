@@ -73,11 +73,11 @@ public class TestDataGeneratorFactory {
 			case "BoundaryNumber":
 				gen = createBoundaryNumberGenerator(generator);
 				break;
-			case "StatefulBodyGenerator":
-				gen = createStatefulBodyGenerator(generator);
+			case "BodyGenerator":
+				gen = createBodyGenerator(generator);
 				break;
-			case "StatefulParameterGenerator":
-				gen = createStatefulParameterGenerator(generator);
+			case "ParameterGenerator":
+				gen = createParameterGenerator(generator);
 				break;
 			default:
 				throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
@@ -553,7 +553,7 @@ public class TestDataGeneratorFactory {
 		return gen;
 	}
 
-	private static ITestDataGenerator createStatefulBodyGenerator(Generator generator) {
+	private static ITestDataGenerator createBodyGenerator(Generator generator) {
 		BodyGenerator gen = new BodyGenerator();
 		// Set parameters
 		for(GenParameter param: generator.getGenParameters()) {
@@ -569,7 +569,7 @@ public class TestDataGeneratorFactory {
 		return gen;
 	}
 
-	private static ITestDataGenerator createStatefulParameterGenerator(Generator generator) {
+	private static ITestDataGenerator createParameterGenerator(Generator generator) {
 		ParameterGenerator gen = new ParameterGenerator();
 		// Set parameters
 		for(GenParameter param: generator.getGenParameters()) {

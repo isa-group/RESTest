@@ -20,12 +20,12 @@ public class ParameterGeneratorTest {
     @Before
     public void setUp() {
         generator = new Generator();
-        generator.setType("StatefulParameterGenerator");
+        generator.setType("ParameterGenerator");
         generator.setGenParameters(new ArrayList<>());
     }
 
     @Test
-    public void statefulParameterGenerationTest() {
+    public void parameterGenerationTest() {
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
         String dataDirPath = "src/test/resources/jsonData";
         String parameter = "id";

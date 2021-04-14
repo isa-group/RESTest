@@ -8,28 +8,52 @@ import es.us.isa.restest.util.JSONManager;
 import io.swagger.v3.oas.models.Operation;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import static org.junit.Assert.assertNotNull;
 
+@RunWith(Parameterized.class)
 public class BodyGeneratorTest {
 
-    Generator generator;
+    @Parameterized.Parameters
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][] {
+                {"src/test/resources/Comments/swagger.yaml", "src/test/resources/jsonData", "/comments" ,true},
+                {"src/test/resources/Comments/swagger_forTestSuite3.yaml", "", "/comments", true},
+                {"src/test/resources/Comments/swagger_forTestSuite4.yaml", "", "/comments", false},
+                {"src/test/resources/Traccar/openapi.yml", "", "/devices", false},
+                {"src/test/resources/Graphhopper/openapi.yaml", "", "/route", false}
+        });
+    }
 
-    @Before
-    public void setUp() {
+    private final Generator generator;
+    private final String specPath;
+    private final String dataDirPath;
+    private final String operationPath;
+    private final boolean mutate;
+
+    public BodyGeneratorTest(String specPath, String dataDirPath, String operationPath, boolean mutate) {
         generator = new Generator();
-        generator.setType("StatefulBodyGenerator");
+        generator.setType("BodyGenerator");
         generator.setGenParameters(new ArrayList<>());
+
+        this.specPath = specPath;
+        this.dataDirPath = dataDirPath;
+        this.operationPath = operationPath;
+        this.mutate = mutate;
     }
 
     @Test
-    public void statefulBodyGenerationTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
-        Operation oasOperation = spec.getSpecification().getPaths().get("/comments").getPost();
-        String dataDirPath = "src/test/resources/jsonData";
+    public void bodyGenerationTest() {
+        OpenAPISpecification spec = new OpenAPISpecification(specPath);
+        Operation oasOperation = spec.getSpecification().getPaths().get(operationPath).getPost();
 
         GenParameter defaultValue = new GenParameter();
         defaultValue.setName("defaultValue");
@@ -41,57 +65,7 @@ public class BodyGeneratorTest {
         gen.setSpec(spec);
         gen.setDataDirPath(dataDirPath);
 
-        String value = gen.nextValueAsString(oasOperation, "/comments", true);
-
-        assertNotNull("The generator cannot create a body", value);
-
-        Object jsonObject = JSONManager.readJSONFromString(value);
-
-        assertNotNull("The body generated is not valid", jsonObject);
-    }
-
-    @Test
-    public void statefulBodyGenerationGettingDataFromExampleTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite3.yaml");
-        Operation oasOperation = spec.getSpecification().getPaths().get("/comments").getPost();
-        String dataDirPath = "";
-
-        GenParameter defaultValue = new GenParameter();
-        defaultValue.setName("defaultValue");
-        defaultValue.setValues(Collections.singletonList("{}"));
-
-        generator.getGenParameters().add(defaultValue);
-
-        BodyGenerator gen = (BodyGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
-        gen.setSpec(spec);
-        gen.setDataDirPath(dataDirPath);
-
-        String value = gen.nextValueAsString(oasOperation, "/comments", true);
-
-        assertNotNull("The generator cannot create a body", value);
-
-        Object jsonObject = JSONManager.readJSONFromString(value);
-
-        assertNotNull("The body generated is not valid", jsonObject);
-    }
-
-    @Test
-    public void statefulBodyGenerationWithDefaultDataNoMutationTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite4.yaml");
-        Operation oasOperation = spec.getSpecification().getPaths().get("/comments").getPost();
-        String dataDirPath = "";
-
-        GenParameter defaultValue = new GenParameter();
-        defaultValue.setName("defaultValue");
-        defaultValue.setValues(Collections.singletonList("{}"));
-
-        generator.getGenParameters().add(defaultValue);
-
-        BodyGenerator gen = (BodyGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
-        gen.setSpec(spec);
-        gen.setDataDirPath(dataDirPath);
-
-        String value = gen.nextValueAsString(oasOperation, "/comments", false);
+        String value = gen.nextValueAsString(oasOperation, operationPath, mutate);
 
         assertNotNull("The generator cannot create a body", value);
 
