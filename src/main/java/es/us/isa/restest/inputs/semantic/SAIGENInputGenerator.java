@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
@@ -28,7 +29,7 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class SAIGENInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/dhl_original.properties";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_original.properties";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
@@ -65,7 +66,8 @@ public class SAIGENInputGenerator {
             List<String> parameterNames = getParameterNamesSaigen(semanticOperation);
 
             // Query SAIGEN
-            List<QueryResult> queryResults = Lib.Companion.getInputsForLabels(parameterNames);
+            List<String> parameterNamesLowercase = parameterNames.stream().map(String::toLowerCase).collect(Collectors.toList());
+            List<QueryResult> queryResults = Lib.Companion.getInputsForLabels(parameterNamesLowercase);
 
             // Convert QueryResult to result (Map<String, Set<String>)
             // TODO: Check SAIGEN case sensitive

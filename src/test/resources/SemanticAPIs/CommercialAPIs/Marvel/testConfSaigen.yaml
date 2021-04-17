@@ -1,0 +1,437 @@
+---
+auth:
+  required: true
+  queryParams:
+    apikey: '-----'
+    hash: '----'
+    ts: '---'
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/v1/public/characters/{characterId}/comics"
+    operationId: getComicsCharacterCollection
+    method: get
+    testParameters:
+    - name: characterId
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/MarvelCharacterIDs.csv
+          objectValues: null
+        valid: true
+    - name: format
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
+          objectValues: null
+        valid: true
+    - name: formatType
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - collection
+          objectValues: null
+        valid: true
+    - name: noVariants
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: dateDescriptor
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - lastWeek
+          - thisWeek
+          - nextWeek
+          - thisMonth
+          objectValues: null
+        valid: true
+    - name: dateRange
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - "((19\\d\\d)|(20[01]\\d)),((20[01]\\d)|2020)"
+          objectValues: null
+        valid: true
+    - name: title
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/gateway.marvel.com/getComicsCharacterCollection_title.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: titleStartsWith
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1970
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: issueNumber
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 500
+          objectValues: null
+        valid: true
+    - name: diamondCode
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: digitalId
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: upc
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/gateway.marvel.com/getComicsCharacterCollection_upc.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: isbn
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/gateway.marvel.com/getComicsCharacterCollection_isbn.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: ean
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/gateway.marvel.com/getComicsCharacterCollection_ean.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: issn
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/gateway.marvel.com/getComicsCharacterCollection_issn.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: hasDigitalIssue
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: startDate
+          values:
+          - 1970-01-01
+          objectValues: null
+        - name: endDate
+          values:
+          - 2020-01-01
+          objectValues: null
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/MarvelCreatorIDs.csv
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/MarvelSeriesIDs.csv
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/MarvelEventIDs.csv
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/MarvelStoryIDs-incomplete.csv
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: sharedAppearances
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/MarvelCharacterIDs.csv
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: collaborators
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/MarvelCreatorIDs.csv
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - focDate
+          - onsaleDate
+          - title
+          - issueNumber
+          - modified
+          - focDate
+          - onsaleDate
+          - title
+          - issueNumber
+          - modified
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200

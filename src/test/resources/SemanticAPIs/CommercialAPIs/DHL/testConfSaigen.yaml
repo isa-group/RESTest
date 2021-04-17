@@ -13,7 +13,7 @@ testConfiguration:
     testParameters:
     - name: countryCode
       in: query
-      weight: null
+      weight: 0.0
       generators:
       - type: RandomInputValue
         genParameters:
@@ -55,7 +55,7 @@ testConfiguration:
         valid: true
     - name: streetAddress
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomInputValue
         genParameters:
