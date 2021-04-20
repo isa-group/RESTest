@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer ----
+    Authorization: Bearer d4564ca07ca242f39efbd3c691e32da8
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -89,18 +89,15 @@ testConfiguration:
           - 7
           objectValues: null
         valid: true
-    - name: federalstate
+    - name: federalstate      # TODO: CHANGE
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
-      - type: RandomInputValue
+      - type: RandomEnglishWord
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/SAIGEN/Stationsdatenbereitstellung/getStations_federalstate.csv
-          objectValues: null
-        - name: predicates
-          values: []
+          - 1
           objectValues: null
         valid: true
     - name: eva

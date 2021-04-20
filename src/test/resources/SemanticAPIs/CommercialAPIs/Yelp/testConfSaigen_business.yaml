@@ -1,0 +1,250 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams:
+    Authorization: Bearer 2qdaWTebP6FJ2bjMPeecgmQJEeqvZFohSZuEqrOoKTFeXq-qbM4xKrMdDC5TFm33-sqW5ES_lQw9mPGbIDjSQiv3Um_IozuwUL24SyupxSGc4MXOrd286l4tTAx8YHYx
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /businesses/search
+    operationId: getBusinesses
+    method: get
+    testParameters:
+    - name: term
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/Yelp API/getBusinesses_term.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: location
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/Yelp API/getBusinesses_location.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: latitude
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/Yelp API/getBusinesses_latitude.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: longitude
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/Yelp API/getBusinesses_longitude.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: radius
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 40000
+          objectValues: null
+        valid: true
+    - name: categories
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/yelp-categories.csv
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: locale
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/Yelp API/getBusinesses_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: sort_by
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - best_match
+          - rating
+          - review_count
+          - distance
+          objectValues: null
+        valid: true
+    - name: price
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - 1
+          - 2
+          - 3
+          - 4
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 4
+          objectValues: null
+        valid: true
+    - name: open_now
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: open_at
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 2147483647
+          objectValues: null
+        valid: true
+    - name: attributes
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - hot_and_new
+          - request_a_quote
+          - reservation
+          - waitlist_reservation
+          - cashback
+          - deals
+          - gender_neutral_restrooms
+          - open_to_all
+          - wheelchair_accessible
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+          - 3
+          objectValues: null
+        valid: true
+    expectedResponse: 200

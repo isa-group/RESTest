@@ -7,71 +7,42 @@ auth:
   headersPath: /DHL/apikeys.json
 testConfiguration:
   operations:
-  - testPath: /find-by-address
-    operationId: findByAddress
+  - testPath: /find-by-geo
+    operationId: findByGeo
     method: get
     testParameters:
-    - name: countryCode
+    - name: latitude
       in: query
       weight: null
       generators:
-      - type: RandomInputValue
+      - type: RandomEnglishWord
         genParameters:
-        - name: csv
+        - name: maxWords
           values:
-          - src/main/resources/TestData/Generated/DHL Location Finder API/findByAddress_countryCode.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - "http://dbpedia.org/property/countryCode"
-          - "http://dbpedia.org/property/country"
-          - "http://dbpedia.org/property/code"
+          - 1
           objectValues: null
         valid: true
-    - name: addressLocality
+    - name: longitude
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: providerType
       in: query
       weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:
-        - name: csv
+        - name: values
           values:
-          - src/main/resources/TestData/Generated/DHL Location Finder API/findByAddress_addressLocality.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - "http://dbpedia.org/property/locality"
-          - "http://dbpedia.org/property/address"
-          objectValues: null
-        valid: true
-    - name: postalCode
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/main/resources/TestData/Generated/DHL Location Finder API/findByAddress_postalCode.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - "http://dbpedia.org/property/postalcode"
-          objectValues: null
-        valid: true
-    - name: streetAddress
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/main/resources/TestData/Generated/DHL Location Finder API/findByAddress_streetAddress.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - "http://dbpedia.org/property/streetAddress"
+          - express
+          - parcel
           objectValues: null
         valid: true
     - name: locationType
@@ -134,7 +105,7 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 25000
           objectValues: null
         valid: true
     - name: limit

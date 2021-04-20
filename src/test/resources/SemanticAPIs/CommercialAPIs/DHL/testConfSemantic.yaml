@@ -39,7 +39,7 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/locality"
-          - "http://dbpedia.org/property/address"
+          - "http://dbpedia.org/ontology/address"
           objectValues: null
         valid: true
     - name: postalCode
@@ -59,7 +59,7 @@ testConfiguration:
         valid: true
     - name: streetAddress
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:
@@ -70,6 +70,18 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/streetAddress"
+          objectValues: null
+        valid: true
+    - name: providerType
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - express
+          - parcel
           objectValues: null
         valid: true
     - name: locationType
@@ -132,7 +144,7 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 25000
           objectValues: null
         valid: true
     - name: limit
@@ -187,6 +199,18 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/longitude"
+          objectValues: null
+        valid: true
+    - name: providerType
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - express
+          - parcel
           objectValues: null
         valid: true
     - name: locationType

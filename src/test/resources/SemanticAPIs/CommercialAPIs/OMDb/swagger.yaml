@@ -51,7 +51,7 @@ paths:
           in: query
           description: Year of release
           required: false
-          type: integer
+          type: string    # TODO: CHANGE
         - name: type
           in: query
           description: Return movie or series

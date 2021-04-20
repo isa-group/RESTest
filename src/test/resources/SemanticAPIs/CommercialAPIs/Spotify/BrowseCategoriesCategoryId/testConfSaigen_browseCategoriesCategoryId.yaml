@@ -1,0 +1,80 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams:
+    Authorization: Bearer BQB6PExAV3A9nrBoc6O--8MZN8M1GaKJSrCo6Rc7PRTQB8jHE0enEgR4B9lirvBNnDPW5PWZ8R4C4T017HwgLZIGGJzmZdm2MNQLKWwlWpSXQPzoFxkQRVGWSZ7pAd1iTt571sIe4E1Y_83NYK__poZqo4FKdbnREDqYSIno7Md7CzY-Y-UO3Mxex4dW5Fbby3ek7-IlTuTKosn7m-Ef2UdQzoFXh_1DoPPIfRBdZ0DLgaDRbi__g2WjG6XWx7qyQT9uX3uoXwddcImnF7jHGN7DEOOvq895TDzdiqOz
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/browse/categories/{category_id}"
+    operationId: browseCategoriesCategoryId
+    method: get
+    testParameters:
+    - name: category_id
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - toplists
+          - hiphop
+          - dinner
+          - pop
+          - mood
+          - rock
+          - edm_dance
+          - chill
+          - party
+          - latin
+          - rnb
+          - workout
+          - at_home
+          - classical
+          - sleep
+          - jazz
+          objectValues: null
+        valid: true
+    - name: country
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/Spotify/browseCategoriesCategoryId_country.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: locale
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/Spotify/browseCategoriesCategoryId_locale.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: Accept
+      in: header
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

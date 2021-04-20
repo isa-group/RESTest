@@ -29,7 +29,7 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class SAIGENInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_original.properties";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/dhl_original.properties";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
