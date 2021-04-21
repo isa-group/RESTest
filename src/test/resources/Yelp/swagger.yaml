@@ -108,7 +108,6 @@ paths:
                 - request_a_quote
                 - reservation
                 - waitlist_reservation
-                - cashback
                 - deals
                 - gender_neutral_restrooms
                 - open_to_all
@@ -116,7 +115,7 @@ paths:
       x-dependencies:
         - Or(location, latitude AND longitude);
         - ZeroOrOne(open_now, open_at);
-        - IF offset AND limit THEN offset + limit <= 1000;
+        - offset + limit <= 1000;
         - IF offset AND NOT limit THEN offset <= 980;
       responses:
         "200":

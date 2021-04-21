@@ -6,7 +6,7 @@ auth:
   apiKeysPath: YouTube/apikeys.json
 testConfiguration:
   operations:
-  - testPath: /commentThreads
+  - testPath: /youtube/v3/commentThreads
     operationId: youtube.commentThreads.list
     method: get
     testParameters:
@@ -39,15 +39,15 @@ testConfiguration:
         - name: values
           values:
           - UCCj956IF62FbT7Gouszaj9w
-          - UC6nSFpj9HTCZ5t-N3Rm3-HA
+          - UCvosUrZ7hXpzAyobhfztg4w
           - UCMtFAi84ehTSYSE9XoHefig
           - UClzCn8DxRSCuMFv_WfzkcrQ
           - UCJ0uqCI0Vqr2Rrt1HseGirg
           - UCDwjiSF4qEb3aeT3ZLkPc_Q
-          - UC7DdEm33SyaTDtWYGO2CwdA
-          - UCHnyfMqiRRG1u-2MsSQLbXA
-          - UCe0TLA0EsQbE-MjuHXevj2A
-          - UCq-Fj5jknLsUf-MWSy4_brA
+          - UC-9-kyTW8ZkZNDHQJ6FgpwQ
+          - UCEgdi0XIXXZ-qJOFPf4JSKw
+          - UClgRkhTL3_hImCAmdLfDE4g
+          - UCYfdidRxbB8Qhf0Nx7ioOYw
     - name: id
       in: query
       weight: 0.5
@@ -175,11 +175,11 @@ testConfiguration:
           values:
           - zZa8PFYtWr4
           - TUJWx7vo44c
-          - usO_6-RuCrg
+          - eVIozKR9p50
           - 7m-NPuXPBqM
           - yDgLFOxnQ8Y
-          - jHbyQ_AQP8c
-          - YHD77LIL7s0
+          - 9bZkp7q19f0
+          - yuD34tEpRFw
           - n8I-YVuaSR0
           - t22flliJLTQ
           - 5kUu97Vkwj4

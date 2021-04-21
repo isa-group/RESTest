@@ -94,10 +94,11 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<aspectj.version>1.9.5</aspectj.version>
-		<swagger.version>2.1.2</swagger.version>
+		<jmetal.version>5.9</jmetal.version>
+		<swagger.version>2.1.7</swagger.version>
 		<openapivalidator.version>2.11.0</openapivalidator.version>
 		<restassured.version>4.2.0</restassured.version>
-		<jackson.version>2.11.0</jackson.version>
+		<jackson.version>2.11.4</jackson.version>
 		<allure.version>2.13.3</allure.version>
 		<mockito.version>3.7.7</mockito.version>
 		<sonar.projectKey>isa-group_RESTest</sonar.projectKey>
@@ -160,6 +161,13 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${jackson.version}</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
 

@@ -29862,7 +29862,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: scim
-        subcategory:
+        subcategory: 
     post:
       summary: Provision and invite a SCIM user
       description: Provision organization membership for a user, and send an activation
@@ -29968,7 +29968,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: scim
-        subcategory:
+        subcategory: 
   "/scim/v2/organizations/{org}/Users/{scim_user_id}":
     get:
       summary: Get SCIM provisioning information for a user
@@ -30003,7 +30003,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: scim
-        subcategory:
+        subcategory: 
     put:
       summary: Update a provisioned organization membership
       description: |-
@@ -30108,7 +30108,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: scim
-        subcategory:
+        subcategory: 
     patch:
       summary: Update an attribute for a SCIM user
       description: |-
@@ -30227,7 +30227,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: scim
-        subcategory:
+        subcategory: 
     delete:
       summary: Delete a SCIM user from an organization
       description: ''
@@ -30254,7 +30254,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: scim
-        subcategory:
+        subcategory: 
   "/search/code":
     get:
       summary: Search code
@@ -30344,7 +30344,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: search
-        subcategory:
+        subcategory: 
   "/search/commits":
     get:
       summary: Search commits
@@ -30429,7 +30429,7 @@ paths:
             application/vnd.github.cloak-preview
             ```
         category: search
-        subcategory:
+        subcategory: 
   "/search/issues":
     get:
       summary: Search issues and pull requests
@@ -30525,7 +30525,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: search
-        subcategory:
+        subcategory: 
   "/search/labels":
     get:
       summary: Search labels
@@ -30607,7 +30607,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: search
-        subcategory:
+        subcategory: 
   "/search/repositories":
     get:
       summary: Search repositories
@@ -30700,7 +30700,7 @@ paths:
             application/vnd.github.mercy-preview+json
             ```
         category: search
-        subcategory:
+        subcategory: 
   "/search/topics":
     get:
       summary: Search topics
@@ -30769,7 +30769,7 @@ paths:
             application/vnd.github.mercy-preview+json
             ```
         category: search
-        subcategory:
+        subcategory: 
   "/search/users":
     get:
       summary: Search users
@@ -30849,7 +30849,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: search
-        subcategory:
+        subcategory: 
   "/teams/{team_id}":
     get:
       summary: Get a team (Legacy)
@@ -30884,7 +30884,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
     patch:
       summary: Update a team (Legacy)
@@ -30973,7 +30973,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
     delete:
       summary: Delete a team (Legacy)
@@ -31005,7 +31005,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
   "/teams/{team_id}/discussions":
     get:
@@ -31572,7 +31572,7 @@ paths:
         removalDate: '2021-02-21'
         deprecationDate: '2020-02-26'
         category: reactions
-        subcategory:
+        subcategory: 
       deprecated: true
     post:
       summary: Create reaction for a team discussion comment (Legacy)
@@ -31640,7 +31640,7 @@ paths:
         removalDate: '2021-02-21'
         deprecationDate: '2020-02-26'
         category: reactions
-        subcategory:
+        subcategory: 
       deprecated: true
   "/teams/{team_id}/discussions/{discussion_number}/reactions":
     get:
@@ -31708,7 +31708,7 @@ paths:
         removalDate: '2021-02-21'
         deprecationDate: '2020-02-26'
         category: reactions
-        subcategory:
+        subcategory: 
       deprecated: true
     post:
       summary: Create reaction for a team discussion (Legacy)
@@ -31775,7 +31775,7 @@ paths:
         removalDate: '2021-02-21'
         deprecationDate: '2020-02-26'
         category: reactions
-        subcategory:
+        subcategory: 
       deprecated: true
   "/teams/{team_id}/invitations":
     get:
@@ -32246,7 +32246,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
   "/teams/{team_id}/projects/{project_id}":
     get:
@@ -32292,7 +32292,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
     put:
       summary: Add or update team project permissions (Legacy)
@@ -32370,7 +32370,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
     delete:
       summary: Remove a project from a team (Legacy)
@@ -32403,7 +32403,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
   "/teams/{team_id}/repos":
     get:
@@ -32446,7 +32446,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
   "/teams/{team_id}/repos/{owner}/{repo}":
     get:
@@ -32488,7 +32488,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
     put:
       summary: Add or update team repository permissions (Legacy)
@@ -32542,7 +32542,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
     delete:
       summary: Remove a repository from a team (Legacy)
@@ -32570,7 +32570,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
   "/teams/{team_id}/team-sync/group-mappings":
     get:
@@ -32744,7 +32744,7 @@ paths:
         removalDate: '2021-02-01'
         deprecationDate: '2020-01-21'
         category: teams
-        subcategory:
+        subcategory: 
       deprecated: true
   "/user":
     get:
@@ -32785,7 +32785,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: users
-        subcategory:
+        subcategory: 
     patch:
       summary: Update the authenticated user
       description: "**Note:** If your email is set to private and you send an `email`
@@ -32861,7 +32861,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: users
-        subcategory:
+        subcategory: 
   "/user/blocks":
     get:
       summary: List users blocked by the authenticated user
@@ -33921,7 +33921,7 @@ paths:
             ```
             The `reactions` key will have the following payload where `url` can be used to construct the API location for [listing and creating](https://docs.github.com/rest/reference/reactions) reactions.
         category: issues
-        subcategory:
+        subcategory: 
   "/user/keys":
     get:
       summary: List public SSH keys for the authenticated user
@@ -34708,7 +34708,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: orgs
-        subcategory:
+        subcategory: 
   "/user/packages/{package_type}/{package_name}":
     get:
       summary: Get a package for the authenticated user
@@ -34741,7 +34741,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
     delete:
       summary: Delete a package for the authenticated user
       description: |-
@@ -34772,7 +34772,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
   "/user/packages/{package_type}/{package_name}/restore":
     post:
       summary: Restore a package for the authenticated user
@@ -34807,7 +34807,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
   "/user/packages/{package_type}/{package_name}/versions":
     get:
       summary: Get all package versions for a package owned by the authenticated user
@@ -34848,7 +34848,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
   "/user/packages/{package_type}/{package_name}/versions/{package_version_id}":
     get:
       summary: Get a package version for the authenticated user
@@ -34882,7 +34882,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
     delete:
       summary: Delete a package version for the authenticated user
       description: |-
@@ -34914,7 +34914,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
   "/user/packages/{package_type}/{package_name}/versions/{package_version_id}/restore":
     post:
       summary: Restore a package version for the authenticated user
@@ -34950,7 +34950,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
   "/user/projects":
     post:
       summary: Create a user project
@@ -35012,7 +35012,7 @@ paths:
             application/vnd.github.inertia-preview+json
             ```
         category: projects
-        subcategory:
+        subcategory: 
   "/user/public_emails":
     get:
       summary: List public email addresses for the authenticated user
@@ -35165,7 +35165,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: repos
-        subcategory:
+        subcategory: 
     post:
       summary: Create a repository for the authenticated user
       description: |-
@@ -35321,7 +35321,7 @@ paths:
             application/vnd.github.baptiste-preview+json
             ```
         category: repos
-        subcategory:
+        subcategory: 
   "/user/repository_invitations":
     get:
       summary: List repository invitations for the authenticated user
@@ -35650,7 +35650,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: teams
-        subcategory:
+        subcategory: 
   "/users":
     get:
       summary: List users
@@ -35691,7 +35691,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: users
-        subcategory:
+        subcategory: 
   "/users/{username}":
     get:
       summary: Get a user
@@ -35732,7 +35732,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: users
-        subcategory:
+        subcategory: 
   "/users/{username}/events":
     get:
       summary: List events for the authenticated user
@@ -35958,7 +35958,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: gists
-        subcategory:
+        subcategory: 
   "/users/{username}/gpg_keys":
     get:
       summary: List GPG keys for a user
@@ -36054,7 +36054,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: users
-        subcategory:
+        subcategory: 
   "/users/{username}/installation":
     get:
       summary: Get a user installation for the authenticated app
@@ -36085,7 +36085,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: apps
-        subcategory:
+        subcategory: 
   "/users/{username}/keys":
     get:
       summary: List public keys for a user
@@ -36159,7 +36159,7 @@ paths:
         enabledForGitHubApps: true
         previews: []
         category: orgs
-        subcategory:
+        subcategory: 
   "/users/{username}/packages/{package_type}/{package_name}":
     get:
       summary: Get a package for a user
@@ -36193,7 +36193,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
   "/users/{username}/packages/{package_type}/{package_name}/versions":
     get:
       summary: Get all package versions for a package owned by a user
@@ -36235,7 +36235,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
   "/users/{username}/packages/{package_type}/{package_name}/versions/{package_version_id}":
     get:
       summary: Get a package version for a user
@@ -36270,7 +36270,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: packages
-        subcategory:
+        subcategory: 
   "/users/{username}/projects":
     get:
       summary: List user projects
@@ -36328,7 +36328,7 @@ paths:
             application/vnd.github.inertia-preview+json
             ```
         category: projects
-        subcategory:
+        subcategory: 
   "/users/{username}/received_events":
     get:
       summary: List events received by the authenticated user
@@ -36466,7 +36466,7 @@ paths:
             application/vnd.github.nebula-preview+json
             ```
         category: repos
-        subcategory:
+        subcategory: 
   "/users/{username}/settings/billing/actions":
     get:
       summary: Get GitHub Actions billing for a user
@@ -36499,7 +36499,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: billing
-        subcategory:
+        subcategory: 
   "/users/{username}/settings/billing/packages":
     get:
       summary: Get GitHub Packages billing for a user
@@ -36532,7 +36532,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: billing
-        subcategory:
+        subcategory: 
   "/users/{username}/settings/billing/shared-storage":
     get:
       summary: Get shared storage billing for a user
@@ -36565,7 +36565,7 @@ paths:
         enabledForGitHubApps: false
         previews: []
         category: billing
-        subcategory:
+        subcategory: 
   "/users/{username}/starred":
     get:
       summary: List repositories starred by a user
