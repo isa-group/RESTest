@@ -34,7 +34,7 @@ public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
 	// The values of the parameters minimumRecall, minimumValidAndInvalidValues and totalPredicates can be set in  reporting/StatsReportManager.java
-	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/findByGeo/dhl_saigen_geo.properties";
+	private static String propertiesFilePath = "----";
 
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file

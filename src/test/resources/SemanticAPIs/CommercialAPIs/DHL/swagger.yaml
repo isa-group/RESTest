@@ -531,7 +531,7 @@ definitions:
                   type: string
                   description: The ID as how the location is know within this business unit / provider.
                   example: 8003-4103535
-                providerType:
+                provider:
                   type: string
                   description: The business unit of the DHL Service Point location.
                   example: parcel
@@ -593,12 +593,12 @@ definitions:
             description: The geo coordinates of the DHL Service Point location.
             properties:
               latitude:
-                type: string
+                type: number
                 description: Latitude
               longitude:
-                type: string
+                type: number
                 description: Longitude
-      seviceTypes:
+      serviceTypes:
         description: >-
           The list of services available at the DHL Service Point location.
 
@@ -646,16 +646,19 @@ definitions:
             - 'parcel:pick-up-registered'
             - 'parcel:pick-up-unregistered'
             - 'parcel:drop-off-unregistered'
-            - letter-service
-            - postbank
-            - cash-on-delivery
-            - franking
-            - cash-service
-            - packaging-material
-            - postident
-            - age-verification
-            - handicapped-access
-            - parking
+            - "letter-service"
+            - "postbank"
+            - "cash-on-delivery"
+            - "franking"
+            - "cash-service"
+            - "packaging-material"
+            - "postident"
+            - "age-verification"
+            - "handicapped-access"
+            - "parking"
+            - "express:drop-off-prelabeled"
+            - "express:drop-off-easy"
+            - "express:drop-off-account"
       averageCapacityDayOfWeek:
         description: >-
           Indicates the average capacity of the parcel locker on the listed day. If this information is not available,
@@ -691,9 +694,11 @@ definitions:
           type: object
           properties:
             closes:
-              $ref: '#/definitions/supermodelIoSchemaorgPropertiesCloses'
+              type: string
+#              $ref: '#/definitions/supermodelIoSchemaorgPropertiesCloses'
             opens:
-              $ref: '#/definitions/supermodelIoSchemaorgPropertiesOpens'
+              type: string
+#              $ref: '#/definitions/supermodelIoSchemaorgPropertiesOpens'
             dayOfWeek:
               $ref: '#/definitions/supermodelIoSchemaorgPropertiesDayOfWeek'
       closurePeriods:
@@ -709,9 +714,11 @@ definitions:
               description: Reason for the closure
               example: holiday
             fromDate:
-              $ref: '#/definitions/supermodelIoLogisticsSupportingTimestamp'
+              type: string
+#              $ref: '#/definitions/supermodelIoLogisticsSupportingTimestamp'
             toDate:
-              $ref: '#/definitions/supermodelIoLogisticsSupportingTimestamp'
+              type: string
+#              $ref: '#/definitions/supermodelIoLogisticsSupportingTimestamp'
     example:
       url: /locations/8003-4103535
       location:
