@@ -1,5 +1,6 @@
 package es.us.isa.restest.specification;
 
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 
@@ -28,6 +29,8 @@ public class ParameterFeatures {
         type = p.getSchema().getType();
         format = p.getSchema().getFormat();
         enumValues = p.getSchema().getEnum();
+        if ("array".equals(type))
+            enumValues = (List<String>) ((ArraySchema)p.getSchema()).getItems().getEnum();
         min = p.getSchema().getMinimum();
         max = p.getSchema().getMaximum();
         minLength = p.getSchema().getMinLength();
@@ -46,6 +49,8 @@ public class ParameterFeatures {
         type = s.getType();
         format = s.getFormat();
         enumValues = s.getEnum();
+        if ("array".equals(type))
+            enumValues = (List<String>) ((ArraySchema)s).getItems().getEnum();
         min = s.getMinimum();
         max = s.getMaximum();
         minLength = s.getMinLength();

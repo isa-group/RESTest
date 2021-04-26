@@ -5,11 +5,13 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import es.us.isa.restest.configuration.pojos.Generator;
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
+import es.us.isa.restest.inputs.random.RandomInputValueIterator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
@@ -57,6 +59,20 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
 
         resetOperation();
 
+        // Set up generators for each parameter
+        for (TestParameter testParam: testOperation.getTestParameters()) {
+            if (!testParam.getIn().equals("body")) {
+                ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
+                List<String> fuzzingList = new ArrayList<>(fuzzingMap.get("common"));
+                fuzzingList.addAll(fuzzingMap.getOrDefault(param.getType(), fuzzingMap.get("string"))); // If unknown type, or array, or object, add "string"-type values
+                if (param.getEnumValues() != null) {
+                    fuzzingList.addAll(param.getEnumValues());
+                }
+                ITestDataGenerator generator = new RandomInputValueIterator<>(fuzzingList);
+                nominalGenerators.replace(Pair.with(testParam.getName(), testParam.getIn()), Collections.singletonList(generator));
+            }
+        }
+
         while (hasNext()) {
             TestCase test = generateNextTestCase(testOperation);
             test.setFulfillsDependencies(false);
@@ -76,26 +92,16 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
 
         if (testOperation.getTestParameters() != null) {
             for (TestParameter testParam : testOperation.getTestParameters()) {
-                if (!testParam.getIn().equals("body")) {
-                    generateFuzzingParameter(tc, testParam, testOperation);
-                } else {
-                    generateFuzzingBody(tc, testParam, testOperation);
+                if (testParam.getWeight() == null || rand.nextFloat() <= testParam.getWeight()) {
+                    if (!testParam.getIn().equals("body")) {
+                        tc.addParameter(testParam, nominalGenerators.get(Pair.with(testParam.getName(), testParam.getIn())).get(0).nextValueAsString());
+                    } else {
+                        generateFuzzingBody(tc, testParam, testOperation);
+                    }
                 }
             }
         }
         return tc;
-    }
-
-    private void generateFuzzingParameter(TestCase tc, TestParameter testParam, Operation testOperation) {
-        if (testParam.getWeight() == null || rand.nextFloat() <= testParam.getWeight()) {
-            ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
-            List<String> fuzzingList = fuzzingMap.get("common");
-            fuzzingList.addAll(fuzzingMap.get(param.getType()));
-            if (param.getEnumValues() != null) {
-                fuzzingList.addAll(param.getEnumValues());
-            }
-            tc.addParameter(testParam, fuzzingList.get(rand.nextInt(fuzzingList.size())));
-        }
     }
 
     private void generateFuzzingBody(TestCase tc, TestParameter testParam, Operation testOperation) {
