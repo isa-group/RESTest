@@ -24,12 +24,12 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingYelp {
 
     // Parameters to change
-    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_semantic_business.properties";
-    private static String operationPath = "/businesses/search";
-    private static String semanticParameterName = "longitude";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_saigen_transaction.properties";
+    private static String operationPath = "/transactions/{transaction_type}/search";
+    private static String semanticParameterName = "location";
     private static String baseUri = "https://api.yelp.com/v3";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apiKey = "Bearer ----";
+    private static String apiKey = "Bearer ---";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -63,7 +63,7 @@ public class MainTestingYelp {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                yelp_businessesSearch_longitude(semanticInput, apiKey);      // MODIFY
+                yelp_transactionsSearch_location(semanticInput, apiKey);      // MODIFY
 
 
                 i++;

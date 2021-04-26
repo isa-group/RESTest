@@ -28,12 +28,12 @@ public class MainTestingDB {
      */
 
     // Parameters to change
-    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Deutschebahn/db_semantic.properties";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Deutschebahn/db_saigen.properties";
     private static String operationPath = "/stations";
-    private static String semanticParameterName = "federalstate";
+    private static String semanticParameterName = "eva";
     private static String baseUri = "https://api.deutschebahn.com/stada/v2";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apiKey = "Bearer ----";
+    private static String apiKey = "Bearer ---";
 
 
     // Derived parameters
@@ -68,7 +68,7 @@ public class MainTestingDB {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                db_stations_federalstate(semanticInput, apiKey);      // MODIFY
+                db_stations_eva(semanticInput, apiKey);      // TODO: MODIFY
 
                 i++;
             }catch (Exception e){

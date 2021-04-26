@@ -23,14 +23,14 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingMarvel {
 
     // Parameters to change
-    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Marvel/marvel_semantic.properties";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Marvel/marvel_saigen.properties";
     private static String operationPath = "/v1/public/characters/{characterId}/comics";
-    private static String semanticParameterName = "isbn";
+    private static String semanticParameterName = "title";
     private static String baseUri = "https://gateway.marvel.com";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apiKey = "----";
+    private static String apiKey = "---";
     private static String hash = "----";
-    private static String ts = "----";
+    private static String ts = "---";
 
     // &hash=1fe81640f1dc09272438d40e70867298&ts=1606780800&isbn=
 
@@ -67,7 +67,7 @@ public class MainTestingMarvel {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                marvel_characterComics_isbn(semanticInput, apiKey, hash, ts);      // MODIFY
+                marvel_characterComics_title(semanticInput, apiKey, hash, ts);      // MODIFY
 
                 i++;
             }catch (Exception e){

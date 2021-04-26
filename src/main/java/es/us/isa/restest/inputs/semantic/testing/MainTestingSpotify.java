@@ -28,9 +28,9 @@ public class MainTestingSpotify {
      */
 
     // Parameters to change
-    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Spotify/albums/spotifySemantic_albums.properties";
-    private static String operationPath = "/albums";
-    private static String semanticParameterName = "market";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/Spotify/browseFeaturedPlaylists/spotifySaigen_browseFeaturedPlaylists.properties";
+    private static String operationPath = "/browse/featured-playlists";
+    private static String semanticParameterName = "timestamp";
     private static String baseUri = "https://api.spotify.com/v1";
     private static Integer limit = Integer.MAX_VALUE;
     private static String apiKey = "Bearer ----";
@@ -68,7 +68,7 @@ public class MainTestingSpotify {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                spotify_albums_market(semanticInput, apiKey);      // MODIFY
+                spotify_browseFeaturedPlaylists_timestamp(semanticInput, apiKey);      // TODO: MODIFY
 
                 i++;
             }catch (Exception e){

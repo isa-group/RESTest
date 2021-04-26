@@ -28,12 +28,12 @@ public class MainTestingDHL {
      */
 
     // Parameters to change
-    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/dhl_semantic_address.properties";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/DHL/findByAddress/dhl_saigen_address.properties";
     private static String operationPath = "/find-by-address";
-    private static String semanticParameterName = "countryCode";
+    private static String semanticParameterName = "postalCode";
     private static String baseUri = "https://api.dhl.com/location-finder/v1";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apiKey = "----";
+    private static String apiKey = "---";
 
 
     // Derived parameters
@@ -68,7 +68,7 @@ public class MainTestingDHL {
 
                 System.out.println("Iteration number " + i + "/" + maxCut);
 
-                dhl_findByAddress_countryCode(semanticInput, apiKey);      // MODIFY
+                dhl_findByAddress_postalCode(semanticInput, apiKey);      // TODO: MODIFY
 
                 i++;
             }catch (Exception e){

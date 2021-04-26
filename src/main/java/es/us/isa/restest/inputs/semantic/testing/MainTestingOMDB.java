@@ -23,11 +23,11 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingOMDB {
 
     // Parameters to change
-    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/OMDb/omdb_semantic.properties";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/OMDb/omdb_saigen.properties";
     private static String operationPath = "/";
-    private static String semanticParameterName = "t";
+    private static String semanticParameterName = "y";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apikey = "---";
+    private static String apikey = "8af2893e";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -60,7 +60,7 @@ public class MainTestingOMDB {
                 OkHttpClient client = new OkHttpClient();
 
                 // CHANGE PARAMETER NAME HERE
-                String uri = "http://www.omdbapi.com/?apikey=" + apikey + "&t=" + semanticInput;
+                String uri = "http://www.omdbapi.com/?apikey=" + apikey + "&t=Godfather&y=" + semanticInput;
 
                 Request request = new Request.Builder()
                         .url(uri)

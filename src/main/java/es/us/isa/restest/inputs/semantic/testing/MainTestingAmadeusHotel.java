@@ -28,12 +28,12 @@ public class MainTestingAmadeusHotel {
      */
 
     // Parameters to change
-    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotelSemantic_hotelOffers.properties";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/CommercialAPIs/AmadeusHotel/amadeusHotelSaigen_hotelOffers.properties";
     private static String operationPath = "/shopping/hotel-offers";
-    private static String semanticParameterName = "cityCode";
+    private static String semanticParameterName = "longitude";
     private static String baseUrl = "https://test.api.amadeus.com/v2";
-    private static Integer limit = Integer.MAX_VALUE;
-    private static String bearer = "----";
+    private static Integer limit = 9;
+    private static String bearer = "tGvyWeTwIDpn9ncnYSV5xBBGGnO9";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -65,8 +65,10 @@ public class MainTestingAmadeusHotel {
 
                 System.out.println(semanticInput);
 
-                String query = "?cityCode="+ semanticInput + "&radius=300&radiusUnit=KM";
-//                String query = "";//"?term=a";
+//                String query = "?cityCode="+ semanticInput + "&radius=300&radiusUnit=KM";
+//                String query = "?hotelId=RTVLCBON&lang=" + semanticInput;//"?term=a";
+//                String query = "?cityCode=PAR&radius=300&radiusUnit=KM&currency=" + semanticInput;
+                String query = "?radius=300&radiusUnit=KM&latitude=49.288&longitude=" + semanticInput;
                 String url = baseUrl + operationPath + query;
 
 

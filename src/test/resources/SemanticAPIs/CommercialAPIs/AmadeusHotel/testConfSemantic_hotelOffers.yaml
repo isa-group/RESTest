@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer -----
+    Authorization: Bearer 5mnnOaHkWIfaQ92TtAuqXLc2TOD7
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -318,7 +318,6 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/currencyCode"
-          - "http://dbpedia.org/property/currency"
           - "http://dbpedia.org/property/currencyIso"
           objectValues: null
         valid: true
@@ -442,7 +441,6 @@ testConfiguration:
           values:
           - "http://dbpedia.org/property/langcode"
           - "http://dbpedia.org/property/origLangCode"
-          - "http://dbpedia.org/property/lang"
           objectValues: null
         valid: true
     - name: cacheControl

@@ -441,7 +441,7 @@ parameters:
     in: query
     required: false
     type: string
-    pattern: "[A-Z]{3}"
+#    pattern: "[A-Z]{3}"
     description: |+
       use this parameter to request a specific currency. ISO currency code (http://www.iso.org/iso/home/standards/currency_codes.htm).
 
@@ -1244,7 +1244,7 @@ definitions:
     properties:
       lang:
         type: string
-        pattern: "[a-zA-Z0-9-]{2,5}"
+#        pattern: "[a-zA-Z0-9-]{2,5}"
         description: Language code of the text ISO language code (https://www.iso.org/iso-639-language-codes.html)
       text:
         type: string
