@@ -82,7 +82,7 @@ public class IterativeExampleTest {
         mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "logToFile")).thenReturn("false");
         mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "generator")).thenReturn("ART");
         mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "oas.path")).thenReturn("src/test/resources/AnApiOfIceAndFire/swagger.yaml");
-        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "conf.path")).thenReturn("src/test/resources/AnApiOfIceAndFire/testConf.yaml");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "conf.path")).thenReturn("src/test/resources/AnApiOfIceAndFire/fullConf.yaml");
         mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "test.target.dir")).thenReturn("src/generation/java/anApiOfIceAndFire");
         mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "experiment.name")).thenReturn("anApiOfIceAndFire");
         mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "experiment.execute")).thenReturn(null);
@@ -111,5 +111,41 @@ public class IterativeExampleTest {
         assertTrue(checkIfExists("target/test-data/anApiOfIceAndFire/time.csv"));
         assertTrue(checkIfExists("target/coverage-data/anApiOfIceAndFire"));
         assertTrue(checkIfExists("target/test-data/anApiOfIceAndFire"));
+    }
+
+    @Test
+    public void testIterativeExampleFuzzingTestCaseGeneration() throws RESTestException {
+        String propertiesFilePath = "src/test/resources/Comments/comments_betty.properties";
+
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "logToFile")).thenReturn("false");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "generator")).thenReturn("FT");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "oas.path")).thenReturn("src/test/resources/Comments/swagger_betty.yaml");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "conf.path")).thenReturn("src/test/resources/Comments/testConf_betty.yaml");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "test.target.dir")).thenReturn("src/generation/java/commentsTest");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "experiment.name")).thenReturn("commentsTest");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "experiment.execute")).thenReturn(null);
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "testclass.name")).thenReturn("CommentsTest");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "testsperoperation")).thenReturn("1");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "numtotaltestcases")).thenReturn("12");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "delay")).thenReturn("-1");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "reloadinputdataevery")).thenReturn("10");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "inputdatamaxvalues")).thenReturn("10");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "coverage.input")).thenReturn("true");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "coverage.output")).thenReturn("true");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "stats.csv")).thenReturn("true");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "deletepreviousresults")).thenReturn(null);
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "faulty.ratio")).thenReturn("0");
+        mock.when(() -> PropertyManager.readProperty(propertiesFilePath, "faulty.dependency.ratio")).thenReturn("0.5");
+
+        String[] args = {propertiesFilePath};
+        TestGenerationAndExecution.main(args);
+
+        assertTrue(checkIfExists("src/generation/java/commentsTest"));
+
+        assertTrue(checkIfExists("target/allure-results/commentsTest"));
+        assertTrue(checkIfExists("target/allure-reports/commentsTest"));
+        assertTrue(checkIfExists("target/test-data/commentsTest/time.csv"));
+        assertTrue(checkIfExists("target/coverage-data/commentsTest"));
+        assertTrue(checkIfExists("target/test-data/commentsTest"));
     }
 }

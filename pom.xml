@@ -23,40 +23,40 @@
 		<url>https://github.com/isa-group/RESTest/issues</url>
 	</issueManagement>
 
-    <developers>
-        <developer>
-            <id>Martin-Lopez</id>
-            <name>Alberto Martin-Lopez</name>
-            <email>amarlop@us.es</email>
-            <url>http://personal.us.es/amarlop/</url>
-            <organization>University of Seville</organization>
-            <organizationUrl>http://www.us.es</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>segura</id>
-            <name>Sergio Segura</name>
-            <email>sergiosegura@us.es</email>
-            <url>http://personal.us.es/sergiosegura/</url>
-            <organization>University of Seville</organization>
-            <organizationUrl>http://www.us.es</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>japarejo</id>
-            <name>José Antonio Parejo</name>
-            <email>japarejo@us.es</email>
-            <url>https://www.isa.us.es/3.0/members/jose-a-parejo/</url>
-            <organization>University of Seville</organization>
-            <organizationUrl>http://www.us.es</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-        </developer>
+	<developers>
+		<developer>
+			<id>Martin-Lopez</id>
+			<name>Alberto Martin-Lopez</name>
+			<email>amarlop@us.es</email>
+			<url>http://personal.us.es/amarlop/</url>
+			<organization>University of Seville</organization>
+			<organizationUrl>http://www.us.es</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>segura</id>
+			<name>Sergio Segura</name>
+			<email>sergiosegura@us.es</email>
+			<url>http://personal.us.es/sergiosegura/</url>
+			<organization>University of Seville</organization>
+			<organizationUrl>http://www.us.es</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>japarejo</id>
+			<name>José Antonio Parejo</name>
+			<email>japarejo@us.es</email>
+			<url>https://www.isa.us.es/3.0/members/jose-a-parejo/</url>
+			<organization>University of Seville</organization>
+			<organizationUrl>http://www.us.es</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+		</developer>
 		<developer>
 			<id>jfdelarosa</id>
 			<name>José Ramón Fernández de la Rosa</name>
@@ -73,8 +73,8 @@
 		<connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
 		<developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
 		<url>https://github.com/isa-group/RESTest/tree/master</url>
-	  <tag>HEAD</tag>
-  </scm>
+		<tag>HEAD</tag>
+	</scm>
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -104,7 +104,7 @@
 		<sonar.projectKey>isa-group_RESTest</sonar.projectKey>
 		<sonar.organization>isa-group</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <argLine />
+		<argLine />
 	</properties>
 
 	<dependencies>
@@ -170,8 +170,6 @@
 			<artifactId>jackson-datatype-jsr310</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
-
-
 
 		<!-- TEST DEPENDENCIES -->
 		<!-- JUnit 4 -->
