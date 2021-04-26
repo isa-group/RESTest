@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -374,7 +376,18 @@ public class CoverageGatherer {
                 rootPathSuffix += "{"; // update rootPathSuffix
             }
             if (currentResponseRef != null) { // if the response body refers to a OpenAPI definition, get properties from that object
-                openApiProperties = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef.replace("#/components/schemas/", "")).getProperties();
+                currentResponseRef = currentResponseRef.replace("#/components/schemas/", "");
+
+                if (currentResponseRef.matches("/properties/.*")) {
+                    openApiProperties = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef.replaceAll("/properties/.*", "")).getProperties();
+                    Matcher matcher = Pattern.compile("/properties/(.*)").matcher(currentResponseRef);
+                    for(int i=1; matcher.group(i) != null; i++) {
+                        openApiProperties = openApiProperties.get(matcher.group(i)).getProperties();
+                    }
+                } else {
+                    Schema propertiesSchema = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef);
+                    if (propertiesSchema != null) openApiProperties = propertiesSchema.getProperties();
+                }
             }
 
             if (openApiProperties != null) { // if there are properties to cover in this iteration, add new criterion

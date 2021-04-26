@@ -30,21 +30,15 @@ public class ARTestCaseGenerator extends ConstraintBasedTestCaseGenerator {
 
     @Override
     public TestCase generateNextTestCase(Operation testOperation, String faultyReason) throws RESTestException {
-        Pair<TestCase, Double> bestResult = Pair.with(null, 0.);
+        Pair<TestCase, Double> bestResult = Pair.with(generateTestCase(testOperation, faultyReason), .0);
 
-        if (testCases.isEmpty()) {
-            bestResult = bestResult.setAt0(generateTestCase(testOperation, faultyReason));
-        } else {
-            for (int i = 0; i < numberOfCandidates; i++) {
-                List<TestCase> tcs = new ArrayList<>(testCases);
+        if (!testCases.isEmpty()) {
+            for (int i = 0; i < numberOfCandidates-1; i++) {
                 TestCase tc = generateTestCase(testOperation, faultyReason);
                 if (tc != null) {
-                    tcs.add(0, tc);
-                    Double globalDiversity = diversity.evaluate(tcs);
-
-                    if (globalDiversity > bestResult.getValue1()) {
-                        bestResult = Pair.with(tc, globalDiversity);
-                    }
+                    Double minDistance = diversity.evaluate(testCases, tc);
+                    if (minDistance > bestResult.getValue1())
+                        bestResult = Pair.with(tc, minDistance);
                 }
             }
         }

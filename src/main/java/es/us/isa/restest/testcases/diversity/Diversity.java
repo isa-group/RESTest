@@ -45,4 +45,13 @@ public class Diversity {
         return globalDiversity;
     }
 
+    public Double evaluate(List<TestCase> testCases, TestCase testCase) {
+        double maxSimilarity = 0;
+        for (TestCase testCase_i: testCases) {
+            if (testCase_i.getOperationId().equals(testCase.getOperationId()))
+                maxSimilarity = Math.max(maxSimilarity, similarityMeter.apply(testCase.getFlatRepresentation(), testCase_i.getFlatRepresentation()));
+        }
+        return 1 - maxSimilarity;
+    }
+
 }

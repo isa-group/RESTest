@@ -29,14 +29,14 @@
 	},
 	{
 		"name": "SEVERITY 1: Status 2XX with invalid request (inter-parameter dependency violated)",
-		"messageRegex": ".*inter_parameter_dependency.*",
+		"messageRegex": "This faulty test case was expecting a 4XX status code.*inter_parameter_dependency.*",
 		"matchedStatuses": [
 			"failed"
 		]
 	},
 	{
 		"name": "SEVERITY 1: Status 2XX with invalid request (invalid parameter)",
-		"messageRegex": ".*(individual_parameter_constraint|invalid_request_body).*",
+		"messageRegex": "This faulty test case was expecting a 4XX status code.*(individual_parameter_constraint|invalid_request_body).*",
 		"matchedStatuses": [
 			"failed"
 		]
