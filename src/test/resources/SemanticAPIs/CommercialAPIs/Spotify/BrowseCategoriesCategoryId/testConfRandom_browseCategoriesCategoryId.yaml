@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: 'Bearer ----'
+    Authorization: 'Bearer BQAkif-u4Bi_bUnc2E1FAJgHf8cMAeNpzuJV9FWgmJGJDfiVEcD66s72aJYm82o7wbnPktzZUD3YgR8MsxJa3lvp-0LTxxsSWxlkWWEIjOvpzrjmwdxhoBw4gvnzTs-Du4nW5mdFkg7K6uk85_NH8xqEG1o_C3f8WVJyi5GHWkYrMyO4SynfT1JY2r271yztsLdT6RFyUcnTeFVLrahRwMqFoQF26G3-fBkPFLfhBOn05SWXPUG250FrI_8IZW6PACXuD5Q12OLPENEH6-3aR0yVHEd759Chzqsfmss4'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -406,7 +406,6 @@ testConfiguration:
         - name: values
           values:
           - toplists
-          - '2020'
           - hiphop
           - dinner
           - pop

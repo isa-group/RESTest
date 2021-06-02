@@ -66,7 +66,6 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - 1
           - 382ObEPsp2rxGrnsizN5TX
           - 1A2GTWGtFfWp7KSQTwWOyo
           - 2noRn2Aes5aoNVsU6iWThc
@@ -128,7 +127,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -225,7 +224,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -333,7 +332,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -383,7 +382,7 @@ testConfiguration:
         valid: true
     - name: Accept
       in: header
-      weight: 0
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -406,7 +405,6 @@ testConfiguration:
         - name: values
           values:
           - toplists
-          - '2020'
           - hiphop
           - dinner
           - pop
@@ -449,7 +447,7 @@ testConfiguration:
         valid: true
     - name: Accept
       in: header
-      weight: 0
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -486,7 +484,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -551,7 +549,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -612,7 +610,7 @@ testConfiguration:
         valid: true
     - name: Accept
       in: header
-      weight: 0
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -638,7 +636,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -714,7 +712,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -833,7 +831,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -968,7 +966,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -1125,7 +1123,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -1454,7 +1452,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:

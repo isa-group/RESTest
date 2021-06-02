@@ -4,6 +4,8 @@ import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.*;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.util.Timer;
+import nonapi.io.github.classgraph.json.JSONUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,11 +24,12 @@ import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
+import static es.us.isa.restest.util.Timer.TestStep.ALL;
 
 public class SemanticInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "---";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/FixerCurrency/fixerCurrency_original.properties";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
@@ -41,11 +44,14 @@ public class SemanticInputGenerator {
 
     private static final Logger log = LogManager.getLogger(SemanticInputGenerator.class);
 
-
     public static void main(String[] args) throws IOException {
+
+        System.out.println(log);
         
         // ONLY FOR LOCAL COPY OF DBPEDIA
         System.setProperty("http.maxConnections", "10000");
+
+        Timer.startCounting(ALL);
 
         setEvaluationParameters();
 
@@ -116,6 +122,24 @@ public class SemanticInputGenerator {
         TestConfigurationIO.toFile(newConf, semanticConfPath);
         log.info("Test configuration file updated");
 
+        Timer.stopCounting(ALL);
+        generateTimeReport();        // Iteration = 1
+
+    }
+
+    private static void generateTimeReport() {
+        Path path = Paths.get(confPath);
+        Path dir = path.getParent();
+        Path fn = path.getFileSystem().getPath("time_ARTE.csv");
+        Path target = (dir == null) ? fn : dir.resolve(fn);
+        String timePath = target.toString();
+        try {
+            Timer.exportToCSV(timePath, 1);
+        } catch (RuntimeException e) {
+            log.error("The time report cannot be generated. Stack trace:");
+            log.error(e.getMessage());
+        }
+        log.info("Time report generated.");
     }
 
 

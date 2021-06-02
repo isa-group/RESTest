@@ -14,10 +14,8 @@ import org.droidmate.saigen.storage.QueryResult;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
@@ -33,9 +31,13 @@ public class SaigenDraft {
     public static void main(String[] args) throws IOException {
 
         List<String> sampleParameters = new ArrayList<>();
-        sampleParameters.add("countryCode");
+
+        sampleParameters.add("lang");
         sampleParameters.add("latitude");
         sampleParameters.add("longitude");
+//        Collections.shuffle(sampleParameters);
+
+
 
         List<QueryResult> results = Lib.Companion.getInputsForLabels(sampleParameters);
 

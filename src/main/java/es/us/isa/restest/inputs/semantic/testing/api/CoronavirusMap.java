@@ -9,7 +9,7 @@ import java.io.IOException;
 public class CoronavirusMap {
 
     private static final String baseUri = "https://coronavirus-map.p.rapidapi.com";
-    private static final String operationPath = "/v1/summary/region";
+    private static final String operationPath = "/v1/spots/year";
 
     public static Response coronavirusMap_region(String semanticInput, String apiKey, String host) throws IOException {
 

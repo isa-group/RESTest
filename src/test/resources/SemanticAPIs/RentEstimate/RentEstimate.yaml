@@ -1,0 +1,90 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: 'The Rent Estimate API scans through millions records in Realty Mole''s
+    real estate property database to provide an accurate and current estimated rent
+    for a property. Also get up to 10 comps used to estimate the rent! '
+  title: Rent Estimate
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /rentalPrice:
+    get:
+      description: Based on the provided property details this API will return a rent
+        estimate along with comparable rental properties. Most of the response values
+        are self-explanatory. Please not that distance measurements are given in kilometers.
+      operationId: operations-Rent_Estimate_API_Documentation-Rent_Estimate
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - realtymole-rental-estimate-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Optionally include the number of bedrooms in the property to
+          help find more closely comparable rentals and improve the accuracy of the
+          estimate.
+        in: query
+        name: bedrooms
+        required: false
+        type: number
+      - description: This parameter filters out any comparable rentals that are older
+          than the provided value. If present, this parameter must be set to at least
+          15. The lower the number you provide the longer the API may take to return
+          data as it is forced to search over a bigger radius to find more recent
+          listings.
+        in: query
+        name: daysOld
+        required: false
+        type: number
+      - description: Longitude of the property. The latitude / longitude of a property
+          can be provided in lieu of the address parameter.
+        in: query
+        name: longitude
+        required: false
+        type: number
+      - description: Optionally include the square footage of the property. This should
+          be a number.
+        in: query
+        name: squareFootage
+        required: false
+        type: number
+      - description: Latitude of the property. The latitude / longitude of a property
+          can be provided in lieu of the address parameter.
+        in: query
+        name: latitude
+        required: false
+        type: number
+      - description: Optionally change the number of comparable rentals returned by
+          the API. This should be a number between 3 - 10.
+        in: query
+        name: compCount
+        required: false
+        type: number
+      - description: Optionally include the number of bathrooms in the property to
+          help find more closely comparable rentals and improve the accuracy of the
+          estimate.
+        in: query
+        name: bathrooms
+        required: false
+        type: number
+      - description: The property address in the format of Street Address, City, State.You
+          must provide either an address parameter or the latitude/longitude parameters.
+        in: query
+        name: address
+        required: false
+        type: string
+      - description: 'Optionally include the property type. This must be one the following:
+          Apartment, Single Family, Townhouse, Condo, Duplex-Triplex'
+        in: query
+        name: propertyType
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

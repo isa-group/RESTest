@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: 'Bearer ----'
+    Authorization: Bearer BQAK7mWCF5EtzDK-RVzbEXl5BYBFr3uLi7ztdYDlzvmzAAZsrOqDZlt4Qo7v_2MXE9xNBzgGqZnwKB8za_LvDdwG_H_7nR1gtK2Y8A1WqhInhParaERQffmpnQ7HDe9GuOTsOb8cdwSCjJwn_xwFB6_rJaMj-KWkENambkHiMmitMdRGwxwZVnSimGjfgrdQeu5zmtVQYhIOt8NWc57nrfBXx3bVMfoX810vOerRK9o5HQYQ-pkalr-5G2r9rECUzMgM4ioHaUVBTN59bLkWffWukoDhKM30fvJwq2br
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -551,7 +551,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -612,7 +612,7 @@ testConfiguration:
         valid: true
     - name: Accept
       in: header
-      weight: 0
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:

@@ -27,7 +27,7 @@ public class MainTestingOMDB {
     private static String operationPath = "/";
     private static String semanticParameterName = "y";
     private static Integer limit = Integer.MAX_VALUE;
-    private static String apikey = "8af2893e";
+    private static String apikey = "----";
 
     // Derived parameters
     private static OpenAPISpecification spec;

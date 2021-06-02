@@ -6,6 +6,7 @@ import es.us.isa.restest.configuration.pojos.SemanticParameter;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.postman.pojos.Query;
+import es.us.isa.restest.util.Timer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.droidmate.saigen.Lib;
@@ -24,12 +25,13 @@ import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConf;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
+import static es.us.isa.restest.util.Timer.TestStep.ALL;
 
 
 public class SAIGENInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/WeatherForecast14Days/weatherForecast14Days_original.properties";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/FixerCurrency/fixerCurrency_original.properties";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
@@ -46,8 +48,12 @@ public class SAIGENInputGenerator {
 
     public static void main(String[] args) throws IOException {
 
+        System.out.println(log);
+
         // ONLY FOR LOCAL COPY OF DBPEDIA
         System.setProperty("http.maxConnections", "10000");
+
+        Timer.startCounting(ALL);
 
         setSaigenEvaluationParameters();
 
@@ -66,7 +72,8 @@ public class SAIGENInputGenerator {
             List<String> parameterNames = getParameterNamesSaigen(semanticOperation);
 
             // Query SAIGEN
-            List<String> parameterNamesLowercase = parameterNames.stream().map(String::toLowerCase).collect(Collectors.toList());
+            List<String> parameterNamesLowercase = new ArrayList<>();
+            parameterNamesLowercase = parameterNames.stream().map(String::toLowerCase).collect(Collectors.toList());
             List<QueryResult> queryResults = Lib.Companion.getInputsForLabels(parameterNamesLowercase);
 
             // Convert QueryResult to result (Map<String, Set<String>)
@@ -117,6 +124,24 @@ public class SAIGENInputGenerator {
         TestConfigurationIO.toFile(newConf, saigenConfPath);
         log.info("Test configuration file updated");
 
+        Timer.stopCounting(ALL);
+        generateTimeReport();
+
+    }
+
+    private static void generateTimeReport() {
+        Path path = Paths.get(confPath);
+        Path dir = path.getParent();
+        Path fn = path.getFileSystem().getPath("time_SAIGEN.csv");
+        Path target = (dir == null) ? fn : dir.resolve(fn);
+        String timePath = target.toString();
+        try {
+            Timer.exportToCSV(timePath, 1);
+        } catch (RuntimeException e) {
+            log.error("The time report cannot be generated. Stack trace:");
+            log.error(e.getMessage());
+        }
+        log.info("Time report generated.");
     }
 
     private static void setSaigenEvaluationParameters() {

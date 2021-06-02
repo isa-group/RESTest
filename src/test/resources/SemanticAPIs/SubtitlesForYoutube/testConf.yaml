@@ -1,0 +1,218 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /subtitles/languages
+    operationId: operations-default-List_languages
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - subtitles-for-youtube.p.rapidapi.com
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /subtitles/searchInSubtitles
+    operationId: operations-default-Search_In_Subtitles
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - subtitles-for-youtube.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: from
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: query
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/subtitles/{videoId}"
+    operationId: operations-default-Get_Subtitle_in_JSON_format
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - subtitles-for-youtube.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: translated
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: type
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: videoId
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/subtitles/{videoId}.srt"
+    operationId: operations-default-Get_subtitle_in_SRT_format
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - subtitles-for-youtube.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: translated
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: type
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: videoId
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/subtitles/{videoId}/list"
+    operationId: operations-default-List_all_available_subtitles
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - subtitles-for-youtube.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: videoId
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

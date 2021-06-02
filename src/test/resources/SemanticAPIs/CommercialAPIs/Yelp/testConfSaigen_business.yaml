@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer 2qdaWTebP6FJ2bjMPeecgmQJEeqvZFohSZuEqrOoKTFeXq-qbM4xKrMdDC5TFm33-sqW5ES_lQw9mPGbIDjSQiv3Um_IozuwUL24SyupxSGc4MXOrd286l4tTAx8YHYx
+    Authorization: 'Bearer D1EyxhCdQc-PrxKYFyK9ZQ5TNV-E0zMC9MHf3IyK_-mAft1wXoGRVK20ElhZph5pyBMQg9PDuLquxz2qmE8xx8Nze4DlYE-yeJ47gQ3f_yrqtG1bfwXHTKKaK62qYHYx'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -203,21 +203,17 @@ testConfiguration:
         valid: true
     - name: open_at
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomNumber
+      - type: RandomInputValue
         genParameters:
-        - name: type
+        - name: values
           values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 2147483647
+          - 1621528223
+          - 1621441823
+          - 1621355423
+          - 1621269023
+          - 1621182623
           objectValues: null
         valid: true
     - name: attributes
@@ -248,3 +244,61 @@ testConfiguration:
           objectValues: null
         valid: true
     expectedResponse: 200
+#  - testPath: "/transactions/{transaction_type}/search"
+#    operationId: getTransactions
+#    method: get
+#    testParameters:
+#    - name: transaction_type
+#      in: path
+#      weight: null
+#      generators:
+#      - type: InputValue
+#        genParameters:
+#        - name: values
+#          values:
+#          - delivery
+#          objectValues: null
+#        valid: true
+#    - name: location
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomInputValue
+#        genParameters:
+#        - name: csv
+#          values:
+#          - src/main/resources/TestData/SAIGEN/Yelp API/getTransactions_location.csv
+#          objectValues: null
+#        - name: predicates
+#          values: []
+#          objectValues: null
+#        valid: true
+#    - name: latitude
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomInputValue
+#        genParameters:
+#        - name: csv
+#          values:
+#          - src/main/resources/TestData/SAIGEN/Yelp API/getTransactions_latitude.csv
+#          objectValues: null
+#        - name: predicates
+#          values: []
+#          objectValues: null
+#        valid: true
+#    - name: longitude
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomInputValue
+#        genParameters:
+#        - name: csv
+#          values:
+#          - src/main/resources/TestData/SAIGEN/Yelp API/getTransactions_longitude.csv
+#          objectValues: null
+#        - name: predicates
+#          values: []
+#          objectValues: null
+#        valid: true
+#    expectedResponse: 200

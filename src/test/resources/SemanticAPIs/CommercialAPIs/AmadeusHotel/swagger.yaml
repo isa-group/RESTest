@@ -65,10 +65,10 @@ paths:
       responses:
         '200':
           "$ref": "#/responses/MultiHotelsOffers"
-#        '400':
-#          "$ref": "#/responses/Error400Response"
-#        '500':
-#          "$ref": "#/responses/Error500Response"
+        '400':
+          "$ref": "#/responses/Error400Response"
+        '500':
+          "$ref": "#/responses/Error500Response"
       security: []
   "/shopping/hotel-offers/by-hotel":
     get:
@@ -92,12 +92,12 @@ paths:
       responses:
         '200':
           "$ref": "#/responses/SingleHotelOffers"
-#        '400':
-#          "$ref": "#/responses/Error400Response"
-#        '404':
-#          "$ref": "#/responses/Error404Response"
-#        '500':
-#          "$ref": "#/responses/Error500Response"
+        '400':
+          "$ref": "#/responses/Error400Response"
+        '404':
+          "$ref": "#/responses/Error404Response"
+        '500':
+          "$ref": "#/responses/Error500Response"
 #  "/shopping/hotel-offers/{offerId}":
 #    get:
 #      summary: VIEW ROOM DETAILS.
@@ -1695,31 +1695,31 @@ responses:
                 currency: EUR
                 total: '912.00'
               self: https://test.api.amadeus.com/v2/shopping/hotel-offers/2E5650829E01B8BD88085B597266F15EF03E6E23BC8DB1A470A6D03F8E2BA1A8
-#  Error400Response:
-#    description: "code    | title \n------- | -------------------------------------
-#      \ \n23      | PASSENGER TYPE NOT SUPPORTED\n61      | INVALID CURRENCY CODE\n137
-#      \    | INVALID ADULTS OCCUPANCY REQUESTED\n145     | DURATION PERIOD OR DATES
-#      INCORRECT\n195     | SERVICE RESTRICTION\n249     | INVALID RATE CODE\n367     |
-#      INVALID FORMAT        \n377     | MAX STAY DURATION IS EXCEEDED\n381     | INVALID
-#      CHECK-IN DATE\n382     | INVALID CHECK-OUT DATE\n383     | INVALID CITY CODE\n392
-#      \    | INVALID HOTEL CODE\n397     | INVALID NUMBER OF ADULTS\n400     | INVALID
-#      PROPERTY CODE\n402     | INVALID ROOM TYPE\n404     | CHECK_OUT DATE MUST BE
-#      FURTHER IN THE FUTURE THAN CHECK-IN DATE\n424     | NO HOTELS FOUND WHICH MATCH
-#      THIS INPUT\n431     | CHECK-OUT DATE IS TOO FAR IN THE FUTURE\n450     | INVALID
-#      PROVIDER RESPONSE\n451     | INVALID CREDENTIALS\n562     | RESTRICTED ACCESS
-#      FOR THE REQUESTED RATES AND CHAINS  \n784     | PROVIDER TIME OUT\n790     |
-#      NO PROPERTIES FOUND WITHIN THIS RADIUS\n795     | NO SIMILAR NAME FOUND, PLEASE
-#      ENLARGE YOUR SEARCH CRITERIA\n842     | RATE SECURITY NOT LOADED\n"
-#    schema:
-#      "$ref": "#/definitions/ErrorResponse"
-#  Error404Response:
-#    description: 'Hotel or offer not found
-#
-#      '
-#    schema:
-#      "$ref": "#/definitions/ErrorResponse"
-#  Error500Response:
-#    description: Internal server error.
-#    schema:
-#      "$ref": "#/definitions/ErrorResponse"
-#x-generatedAt: '2020-11-13T14:15:50.928Z'
+  Error400Response:
+    description: "code    | title \n------- | -------------------------------------
+      \ \n23      | PASSENGER TYPE NOT SUPPORTED\n61      | INVALID CURRENCY CODE\n137
+      \    | INVALID ADULTS OCCUPANCY REQUESTED\n145     | DURATION PERIOD OR DATES
+      INCORRECT\n195     | SERVICE RESTRICTION\n249     | INVALID RATE CODE\n367     |
+      INVALID FORMAT        \n377     | MAX STAY DURATION IS EXCEEDED\n381     | INVALID
+      CHECK-IN DATE\n382     | INVALID CHECK-OUT DATE\n383     | INVALID CITY CODE\n392
+      \    | INVALID HOTEL CODE\n397     | INVALID NUMBER OF ADULTS\n400     | INVALID
+      PROPERTY CODE\n402     | INVALID ROOM TYPE\n404     | CHECK_OUT DATE MUST BE
+      FURTHER IN THE FUTURE THAN CHECK-IN DATE\n424     | NO HOTELS FOUND WHICH MATCH
+      THIS INPUT\n431     | CHECK-OUT DATE IS TOO FAR IN THE FUTURE\n450     | INVALID
+      PROVIDER RESPONSE\n451     | INVALID CREDENTIALS\n562     | RESTRICTED ACCESS
+      FOR THE REQUESTED RATES AND CHAINS  \n784     | PROVIDER TIME OUT\n790     |
+      NO PROPERTIES FOUND WITHIN THIS RADIUS\n795     | NO SIMILAR NAME FOUND, PLEASE
+      ENLARGE YOUR SEARCH CRITERIA\n842     | RATE SECURITY NOT LOADED\n"
+    schema:
+      "$ref": "#/definitions/ErrorResponse"
+  Error404Response:
+    description: 'Hotel or offer not found
+
+      '
+    schema:
+      "$ref": "#/definitions/ErrorResponse"
+  Error500Response:
+    description: Internal server error.
+    schema:
+      "$ref": "#/definitions/ErrorResponse"
+x-generatedAt: '2020-11-13T14:15:50.928Z'

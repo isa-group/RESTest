@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer BQDeHRL5lnFLNQZXda6y1PeMlqyd-v76KyWOS7ABULldDKEuNLq_WuEpbBua5D8DRKoAAQloJqDLK0l3g7tfKSshw5g1WdfVJMwpi0FoiDWZaNurgNok_mx5i-aoQkumGh76TH_shsdyQH-qKOb8wUk7lnGPIX6nVy_vJOaszn2_Mba43OwPgrO7T3k8GV61VbXgxJ5Q0BUdlbEX14KwOYuo2Xh5ZDtNMJmWaLz-SOAqePQyl05LIKu439Mb9eIs4KXlQb-qVHOwPxsNJnsunJw4Fh_xBzeuNy61VDRS
+    Authorization: Bearer BQA3FxvcjoJwUvMyK78e3QUhnvB11zsmifdQ50af5hKeQIt_lBKjzpf4RBeiLmMlNTvjuH9yoAZQd-CJyJ2sF-dg68WuBkAaeUZjip5NI-ojnYz4RHJURhoF_FQtlmZbabB1NiUlXxpFEXzCg2FDk1r53ZbR4Kcnf7Yhj7Cp0pNkWGTzF2HUaWDF6wwMP7tN55k_KSgyRrDRPXUcJSPFuC84GEoWmQ4giZwHbej1H6OuCziZm0cWyYwTERn8Y4KxkhFyWlkJiNnQPOA5F91uOyFELzi3cwv_8xJIsY9e
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -24,7 +24,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:

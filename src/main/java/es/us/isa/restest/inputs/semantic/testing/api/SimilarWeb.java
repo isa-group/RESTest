@@ -11,9 +11,9 @@ import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printRespons
 public class SimilarWeb {
 
     private static final String baseUri = "https://similarweb2.p.rapidapi.com";
-    private static final String operationPath = "/pageoverview";
+    private static final String operationPath = "/trafficoverview";
 
-    public static void coronavirusMap_region(String semanticInput, String apiKey, String host) throws IOException {
+    public static void similarweb_website(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + operationPath + "?website=" + semanticInput;
         printResponse(url);
     }

@@ -1,0 +1,126 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Provides exchange rates based on the official banks data.
+  title: Currency Converter
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /currency/convert:
+    get:
+      description: Converts from one currency to another
+      operationId: operations-default-Currency_Converter
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - currency-converter5.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Desired currency code (AUD, CAD, EUR, GBP ...)
+        in: query
+        name: to
+        required: false
+        type: string
+      - description: 'Response format: json or xml'
+        in: query
+        name: format
+        required: false
+        type: string
+      - description: Amount that needs to be converted
+        in: query
+        name: amount
+        required: false
+        type: number
+      - description: Base currency code (AUD, CAD, EUR, GBP ...)
+        in: query
+        name: from
+        required: false
+        type: string
+      - description: ''
+        in: query
+        name: language
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /currency/historical/{date}:
+    get:
+      description: returns the rates on the specific date
+      operationId: operations-default-Historical_Currency_Data
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - currency-converter5.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: query
+        name: language
+        required: false
+        type: string
+      - description: ''
+        in: query
+        name: format
+        required: false
+        type: string
+      - description: ''
+        in: query
+        name: from
+        required: false
+        type: string
+      - description: ''
+        in: query
+        name: to
+        required: false
+        type: string
+      - description: 'Default value : 1'
+        in: query
+        name: amount
+        required: false
+        type: number
+      - description: 'Default value : 2020-01-20'
+        in: path
+        name: date
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /currency/list:
+    get:
+      description: List of available currencies
+      operationId: operations-default-Available_Currencies
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - currency-converter5.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: query
+        name: language
+        required: false
+        type: string
+      - description: 'Response format: json or xml'
+        in: query
+        name: format
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

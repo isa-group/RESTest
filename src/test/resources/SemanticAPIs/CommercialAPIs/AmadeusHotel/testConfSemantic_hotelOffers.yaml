@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer 5mnnOaHkWIfaQ92TtAuqXLc2TOD7
+    Authorization: Bearer 14YUoNdDMRJHNH82YbS7qkKx0Zpm
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -70,24 +70,26 @@ testConfiguration:
         valid: true
     - name: checkInDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - 2021-06-11
+          - 2021-06-15
           objectValues: null
         valid: true
     - name: checkOutDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - 2021-06-20
+          - 2021-06-25
           objectValues: null
         valid: true
     - name: roomQuantity
@@ -172,7 +174,6 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/hotelName"
-          - "http://dbpedia.org/property/name"
           objectValues: null
         valid: true
     - name: chains
@@ -296,13 +297,14 @@ testConfiguration:
         valid: true
     - name: priceRange
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - 1-1000
+          - 1-500
           objectValues: null
         valid: true
     - name: currency
@@ -318,6 +320,7 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/currencyCode"
+          - "http://dbpedia.org/property/currency"
           - "http://dbpedia.org/property/currencyIso"
           objectValues: null
         valid: true

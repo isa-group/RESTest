@@ -23,12 +23,12 @@ import static es.us.isa.restest.util.PropertyManager.readProperty;
 public class MainTestingSkyscanner {
 
     // Parameters to change
-    private static String propertiesPath = "src/test/resources/SemanticAPIs/SkyscannerFlightSearch/skyscanner.properties";
-    private static String operationPath = "/apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}";
+    private static String propertiesPath = "src/test/resources/SemanticAPIs/SkyscannerFlightSearch/skyscanner_saigen.properties";
+    private static String operationPath = "/apiservices/reference/v1.0/countries/{locale}";
     private static String semanticParameterName = "locale";
     private static String baseUrl = "https://skyscanner-skyscanner-flight-search-v1.p.rapidapi.com";
-    private static Integer limit = Integer.MAX_VALUE;
-    private static String apikey = "-----";
+    private static Integer limit = 10;
+    private static String apikey = "---";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -64,7 +64,7 @@ public class MainTestingSkyscanner {
 
 //                String query = "?latitude=49.6848&longitude=" + semanticInput;
 //                String url = baseUrl + operationPath + query;
-                String url = baseUrl + "/apiservices/browseroutes/v1.0/US/USD/"+semanticInput+"/SFO-sky/JFK-sky/anytime/anytime";
+                String url = baseUrl + "/apiservices/reference/v1.0/countries/" + semanticInput;
 //                                      /apiservices/browseroutes/v1.0/{country}/{currency}/{locale}/{originplace}/{destinationplace}/{outboundpartialdate}/{inboundpartialdate}
 
 

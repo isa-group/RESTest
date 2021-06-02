@@ -11,7 +11,7 @@ import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printRespons
 public class UsRestaurantMenus {
 
     private static final String baseUri = "https://us-restaurant-menus.p.rapidapi.com";
-    private static final String operationPath = "/restaurants/search/geo";
+    private static final String operationPath = "/menuitems/search/geo";
 
     // Test latitude (The operation name must be specified)
     public static void usRestaurantMenus_latitude(String semanticInput, String apiKey, String host) throws IOException {

@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer BQCN5_tU0SkZwRc2n_-PDIX7zQEFlcnIIJXdgQUsGWzv05NDrMyZpHJWiHMFpiPukgRDaR-e0Ob1eBqpfAfZ47dPg4ZRM1pkmWDWAZG3oJtMOWUS9qfFGvVBIj8o7jLO9C3C3D-W6sC59YYTEgf11QZxILwzcnmB-q60GU9ynEC-HAm9_lFGtK4sz4XpaXvt15rc0j_Eos-AofyUQzkO-HpucKv_HIhXKQ1tId6XOIICM8qnCh_mnl7JPcw0Xc1w_4EjJgz_0vTDHFoa2exyFSFnCb1JpLPW_qvEvbpP
+    Authorization: 'Bearer BQCTS4Qs_Nc4Cs_YkBY9HPsTOzmqbOiotSsH2DHOuWlfnWUQ9UNpPc-FG2Ts2S3gypZ-x0EMMs4ROI14CMz44EqM-BH7CAI8IlQdrgAR4T27VRO7f1UZx7vLlToeDMC7V7a0oPP041gF5O1-25GgfVYpE5V2qctL46wGw6O03PLnQtpHV8S-JiqNvKWn5G7kE98T-qKSYJxjGeGR_07o8ZZBvv_klJm6e7zTz3YPtp7cawZOS4Q2ATzrJc5UCF17nYeWEAegvseqRekApumlAUMNmY_u7qZLB0u3DFID'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -20,7 +20,6 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - 1
           - 382ObEPsp2rxGrnsizN5TX
           - 1A2GTWGtFfWp7KSQTwWOyo
           - 2noRn2Aes5aoNVsU6iWThc

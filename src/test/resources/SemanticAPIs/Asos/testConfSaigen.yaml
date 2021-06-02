@@ -111,11 +111,14 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/SAIGEN/asos/apiendpoint_4a07e891-2784-471d-b311-88999dc28e63_store.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: lang
@@ -198,19 +201,14 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomNumber
+      - type: RandomInputValue
         genParameters:
-        - name: type
+        - name: csv
           values:
-          - integer
+          - src/main/resources/TestData/SAIGEN/asos/apiendpoint_c4ef4a7f-279c-496a-8b6f-71d6c3878855_store.csv
           objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: categoryId
@@ -550,11 +548,14 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/SAIGEN/asos/apiendpoint_e192acbc-fd6b-4116-9b51-f5a86bc41179_store.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: priceMin
@@ -733,11 +734,14 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/SAIGEN/asos/apiendpoint_df68ed4e-2edf-4611-acc1-51be3ea96b0b_store.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -760,11 +764,14 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/SAIGEN/asos/apiendpoint_9b326d70-567d-47a9-b5cc-f1b58990e004_store.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: sizeSchema
@@ -892,11 +899,14 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/SAIGEN/asos/apiendpoint_64c830ef-8e57-4a9a-be30-b29c81290b08_store.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: sizeSchema
@@ -969,11 +979,14 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/SAIGEN/asos/apiendpoint_3aea55d6-65c3-4169-a7c7-f4a3ce810163_store.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: lang

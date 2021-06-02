@@ -13,12 +13,19 @@ public class ApiFootball {
     private static final String baseUri = "https://api-football-v1.p.rapidapi.com";
 
     // GET /v2/leagues/country/{country_name}/{season}
+    // country
     public static void apiFootball_leaguesCountryCountryNameSeason_countryName(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + "/v2/leagues/country/" + semanticInput + "/2019";
         printResponse(url);
     }
 
-    public static String apiFootball_leaguesCountryCountryNameSeason_season(String semanticInput, String apiKey, String host) throws IOException {
+    // season
+    public static void apiFootball_leaguesCountryCountryNameSeason_season(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/v2/leagues/country/england/" + semanticInput;
+        printResponse(url);
+    }
+
+    public static String apiFootball_leaguesCountryCountryNameSeason_season_regex(String semanticInput, String apiKey, String host) throws IOException {
 
         String url = baseUri + "/v2/leagues/country/england/" + semanticInput;
 

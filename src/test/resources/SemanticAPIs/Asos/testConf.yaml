@@ -102,7 +102,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -189,19 +189,11 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomNumber
+      - type: SemanticParameter
         genParameters:
         - name: type
           values:
           - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
           objectValues: null
         valid: true
     - name: categoryId
@@ -541,7 +533,7 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -724,7 +716,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -751,7 +743,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -871,7 +863,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -942,7 +934,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:

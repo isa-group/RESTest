@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer ToBVInDqxH17OKNTsjWvCYXXnElU
+    Authorization: Bearer zkUaGsoVkfyuUGmGrTLymHbjREA4
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -20,7 +20,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - "^[A-Za-z]{3}$"
+          - "[A-Za-z]{3}"
           objectValues: null
         - name: minLength
           values:
@@ -82,24 +82,26 @@ testConfiguration:
         valid: true
     - name: checkInDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - '2021-06-11'
+          - '2021-06-15'
           objectValues: null
         valid: true
     - name: checkOutDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - '2021-06-20'
+          - '2021-06-25'
           objectValues: null
         valid: true
     - name: roomQuantity
@@ -184,7 +186,7 @@ testConfiguration:
         valid: true
     - name: chains
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -297,13 +299,14 @@ testConfiguration:
         valid: true
     - name: priceRange
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - '1-1000'
+          - '1-500'
           objectValues: null
         valid: true
     - name: currency
@@ -446,174 +449,3 @@ testConfiguration:
           objectValues: null
         valid: true
     expectedResponse: 200
-#  - testPath: /shopping/hotel-offers/by-hotel
-#    operationId: getSingleHotelOffers
-#    method: get
-#    testParameters:
-#    - name: hotelId
-#      in: query
-#      weight: null
-#      generators:
-#      - type: RandomInputValue
-#        genParameters:
-#        - name: csv
-#          values:
-#          - 'src/main/resources/TestData/HotelCodes.csv'
-#          objectValues: null
-#        valid: true
-#    - name: checkInDate
-#      in: query
-#      weight: 0.0
-#      generators:
-#      - type: RandomDate
-#        genParameters:
-#        - name: format
-#          values:
-#          - yyyy-MM-dd
-#          objectValues: null
-#        valid: true
-#    - name: checkOutDate
-#      in: query
-#      weight: 0.0
-#      generators:
-#      - type: RandomDate
-#        genParameters:
-#        - name: format
-#          values:
-#          - yyyy-MM-dd
-#          objectValues: null
-#        valid: true
-#    - name: adults
-#      in: query
-#      weight: 0.2
-#      generators:
-#      - type: RandomNumber
-#        genParameters:
-#        - name: type
-#          values:
-#          - integer
-#          objectValues: null
-#        - name: min
-#          values:
-#          - 1
-#          objectValues: null
-#        - name: max
-#          values:
-#          - 9
-#          objectValues: null
-#        valid: true
-#    - name: rateCodes
-#      in: query
-#      weight: 0.1
-#      generators:
-#      - type: RandomInputValue
-#        genParameters:
-#        - name: values
-#          values:
-#          - CON
-#          - COR
-#          - FAM
-#          - GOV
-#          - MIL
-#          - PKG
-#          - PRO
-#          - RAC
-#          - SRS
-#          - STP
-#          - TUR
-#          - TVL
-#          - WKD
-#          objectValues: null
-#        - name: minValues
-#          values:
-#            - 1
-#          objectValues: null
-#        - name: maxValues
-#          values:
-#            - 5
-#          objectValues: null
-#        valid: true
-#    - name: roomQuantity
-#      in: query
-#      weight: 0.2
-#      generators:
-#      - type: RandomNumber
-#        genParameters:
-#        - name: type
-#          values:
-#          - integer
-#          objectValues: null
-#        - name: min
-#          values:
-#          - 1
-#          objectValues: null
-#        - name: max
-#          values:
-#          - 9
-#          objectValues: null
-#        valid: true
-#    - name: currency
-#      in: query
-#      weight: 0.5
-#      generators:
-#      - type: RandomRegExp
-#        genParameters:
-#        - name: regExp
-#          values:
-#          - "[A-Z]{3}"
-#          objectValues: null
-#        valid: true
-#    - name: paymentPolicy
-#      in: query
-#      weight: 0.1
-#      generators:
-#      - type: RandomInputValue
-#        genParameters:
-#        - name: values
-#          values:
-#          - GUARANTEE
-#          - DEPOSIT
-#          - NONE
-#          objectValues: null
-#        valid: true
-#    - name: boardType
-#      in: query
-#      weight: 0.1
-#      generators:
-#      - type: RandomInputValue
-#        genParameters:
-#        - name: values
-#          values:
-#          - ROOM_ONLY
-#          - BREAKFAST
-#          - HALF_BOARD
-#          - FULL_BOARD
-#          - ALL_INCLUSIVE
-#          objectValues: null
-#        valid: true
-#    - name: view
-#      in: query
-#      weight: 0.1
-#      generators:
-#      - type: RandomInputValue
-#        genParameters:
-#        - name: values
-#          values:
-#          - FULL_ALL_IMAGES
-#          - FULL
-#          - LIGHT
-#          - NONE
-#          objectValues: null
-#        valid: true
-#    - name: lang
-#      in: query
-#      weight: 0.5
-#      generators:
-#      - type: RandomRegExp
-#        genParameters:
-#        - name: regExp
-#          values:
-#          - "[a-zA-Z0-9-]{2,5}"
-#          objectValues: null
-#        valid: true
-#    expectedResponse: 200

@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer UbNz3rNJXQAvfN8EtvHOyc26OkkD
+    Authorization: Bearer QbZDhGLuORHkdaMcSZUlnd1huvgG
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -25,24 +25,26 @@ testConfiguration:
         valid: true
     - name: checkInDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - 2021-06-11
+          - 2021-06-15
           objectValues: null
         valid: true
     - name: checkOutDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - 2021-06-20
+          - 2021-06-25
           objectValues: null
         valid: true
     - name: adults
@@ -127,8 +129,8 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/currencyCode"
-          - "http://dbpedia.org/property/currencyIso"
           - "http://dbpedia.org/property/currency"
+          - "http://dbpedia.org/property/currencyIso"
           objectValues: null
         valid: true
     - name: paymentPolicy

@@ -89,6 +89,13 @@ public class Asos {
         printResponse(url);
     }
 
+    // GET /countries/list
+    // lang
+    public static void asos_countriesList_lang(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/countries/list?lang=" + semanticInput;
+        printResponse(url);
+    }
+
 
 
 

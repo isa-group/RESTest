@@ -1,0 +1,171 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Api for fetching YouTube subtitles
+  title: Subtitles for YouTube
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /subtitles/languages:
+    get:
+      description: ''
+      operationId: operations-default-List_languages
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - Insert host
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /subtitles/searchInSubtitles:
+    get:
+      description: This endpoint allows you to search within our collection of YouTube
+        subtitles for your search query. By default this API will return top 10 YouTube
+        video ids matching your search query.
+      operationId: operations-default-Search_In_Subtitles
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - Insert host
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: By default response has top 10 video ids in results. If you want
+          to get next 10 results, you can specify from=10 , similarly if you want
+          to get results from 21-30, you can specify from=20
+        in: query
+        name: from
+        required: false
+        type: number
+      - description: 'Query you want to search for within our collection of YouTube
+          videosDefault value : I''m beginnin'' to feel like a Rap God'
+        in: query
+        name: query
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /subtitles/{videoId}:
+    get:
+      description: Get subtitle as a JSON object
+      operationId: operations-default-Get_Subtitle_in_JSON_format
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - Insert host
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Get subtitle in this language, if not specified default language
+          of the video is picked. The languages codes can be retrieved using the List
+          languages endpoint
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: If subtitle is not present for a particular language, then we
+          auto-translate it to the requested language. This behaviour can be disabled
+          by passing translated=original, in that case if no subtitle is present in
+          the requested language, nothing will be returned
+        in: query
+        name: translated
+        required: false
+        type: string
+      - description: If you want to force either human generated subs or auto-generated
+          ones use this param. By default if the query param is not provided then
+          API will first try to find a human generated sub, on failing it will fall
+          back to auto-generated sub
+        in: query
+        name: type
+        required: false
+        type: string
+      - description: YouTube video Id
+        in: path
+        name: videoId
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /subtitles/{videoId}.srt:
+    get:
+      description: Get subtitle in SRT format
+      operationId: operations-default-Get_subtitle_in_SRT_format
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - Insert host
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: If subtitle is not present for a particular language, then we
+          auto-translate it to the requested language. This behaviour can be disabled
+          by passing translated=original, in that case if no subtitle is present in
+          the requested language, nothing will be returned
+        in: query
+        name: translated
+        required: false
+        type: string
+      - description: If you want to force either human generated subs or auto-generated
+          ones use this param. By default if the query param is not provided then
+          API will first try to find a human generated sub, on failing it will fall
+          back to auto-generated sub
+        in: query
+        name: type
+        required: false
+        type: string
+      - description: Get subtitle in this language, if not specified default language
+          of the video is picked. The languages codes can be retrieved using the List
+          languages endpoint
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: YouTube video Id
+        in: path
+        name: videoId
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /subtitles/{videoId}/list:
+    get:
+      description: List all available subtitles for a YouTube video
+      operationId: operations-default-List_all_available_subtitles
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - Insert host
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: YouTube video Id
+        in: path
+        name: videoId
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer BQB6PExAV3A9nrBoc6O--8MZN8M1GaKJSrCo6Rc7PRTQB8jHE0enEgR4B9lirvBNnDPW5PWZ8R4C4T017HwgLZIGGJzmZdm2MNQLKWwlWpSXQPzoFxkQRVGWSZ7pAd1iTt571sIe4E1Y_83NYK__poZqo4FKdbnREDqYSIno7Md7CzY-Y-UO3Mxex4dW5Fbby3ek7-IlTuTKosn7m-Ef2UdQzoFXh_1DoPPIfRBdZ0DLgaDRbi__g2WjG6XWx7qyQT9uX3uoXwddcImnF7jHGN7DEOOvq895TDzdiqOz
+    Authorization: Bearer BQCB7VADhpxJxipoXmVm8fbVN4AneBe4G16HykALLmPfXDPNjl7lOUEuEGMJEUoBx-6O8W8EVviSr8wrYpNTbnu4momOxm2Y15v2rUpxt0u3OZCD5zsM3ltUH686uoUA2_tf_lWlz57VzhqZZYIYkWSJGrAeW6zjyVhPCjX16LyKfZw24-H-1dhKn0tG3BQS6iUdE_yYjilcPG6lQD5_5x9_1glkK74wg6LkFTnx9BHgdpPED_eJ7nA08FhrMrCbomeTWUc9z13UzlvGQJYhUL8s_plwdroPmB7Gr_6Z
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -35,6 +35,7 @@ testConfiguration:
           - at_home
           - classical
           - sleep
+          - decades
           - jazz
           objectValues: null
         valid: true

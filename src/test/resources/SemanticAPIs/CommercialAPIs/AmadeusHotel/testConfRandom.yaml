@@ -66,24 +66,26 @@ testConfiguration:
         valid: true
     - name: checkInDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - '2021-06-11'
+          - '2021-06-15'
           objectValues: null
         valid: true
     - name: checkOutDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - '2021-06-20'
+          - '2021-06-25'
           objectValues: null
         valid: true
     - name: roomQuantity
@@ -168,7 +170,7 @@ testConfiguration:
         valid: true
     - name: chains
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -281,13 +283,14 @@ testConfiguration:
         valid: true
     - name: priceRange
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - '1-1000'
+          - '1-500'
           objectValues: null
         valid: true
     - name: currency
@@ -447,24 +450,26 @@ testConfiguration:
         valid: true
     - name: checkInDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - '2021-06-11'
+          - '2021-06-15'
           objectValues: null
         valid: true
     - name: checkOutDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - '2021-06-20'
+          - '2021-06-25'
           objectValues: null
         valid: true
     - name: adults

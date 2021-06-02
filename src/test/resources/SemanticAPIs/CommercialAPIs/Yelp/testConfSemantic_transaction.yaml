@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer -----
+    Authorization: Bearer DmFTsBUm82yKEi8mqt-QfRdcDdiLaFuKh2wJ4YQRrKC_U_0zu4IqPWBxgsNvtB3n4W1f3wDyWDtLwLTGlrQLaKwoGrjGfBpOOAm7W6-HifocsFraHuAlzjI3p4mbYHYx
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -37,7 +37,6 @@ testConfiguration:
           values:
           - "http://dbpedia.org/ontology/location"
           - "http://dbpedia.org/property/location"
-          - "http://dbpedia.org/property/locations"
           objectValues: null
         valid: true
     - name: latitude

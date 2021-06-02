@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer Id1m3dVGqCd7aj44enRAiWMv4ayQ
+    Authorization: Bearer mBpDmAj7TyYaOJASailDxhMkkFOn
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -25,24 +25,26 @@ testConfiguration:
         valid: true
     - name: checkInDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - '2021-06-11'
+          - '2021-06-15'
           objectValues: null
         valid: true
     - name: checkOutDate
       in: query
-      weight: 0.0
+      weight: 0.1
       generators:
-      - type: RandomDate
+      - type: RandomInputValue
         genParameters:
-        - name: format
+        - name: values
           values:
-          - yyyy-MM-dd
+          - '2021-06-20'
+          - '2021-06-25'
           objectValues: null
         valid: true
     - name: adults

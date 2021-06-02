@@ -1,0 +1,226 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Current weather data API, and Weather forecast API - Basic access to
+    the Weatherbit.io Weather API.
+  title: Weather
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /alerts:
+    get:
+      description: Get servere weather alerts from local meteorlogical agencies (US,
+        EU, and Isreal supported)
+      operationId: operations-default-Severe_Weather_Alerts
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - weatherbit-v1-mashape.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'LongitudeDefault value : -78.5'
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: 'LatitudeDefault value : 38.5'
+        in: query
+        name: lat
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /current:
+    get:
+      description: Returns the current (most recent) weather observation of a given
+        location
+      operationId: operations-default-Current_Weather_Data_of_a_location
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - weatherbit-v1-mashape.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: I = Imperial, S = Scientific, M = Metric (Default)
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: Language
+        in: query
+        name: lang
+        required: false
+        type: string # enum
+      - description: 'LongitudeDefault value : 38.5'
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: 'LatitudeDefault value : -78.5'
+        in: query
+        name: lat
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /forecast/3hourly:
+    get:
+      description: 3 hour interval - 5 day forecast for a given lat/lon
+      operationId: operations-default-5_day_Forecast
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - weatherbit-v1-mashape.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Language for weather condition
+        in: query
+        name: lang
+        required: false
+        type: string # enum
+      - description: I = Imperial, S = Scientific, M = Metric (Default)
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: 'Longitude (degrees)Default value : -78.5'
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: 'Latitude (Degrees)Default value : 35.5'
+        in: query
+        name: lat
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /forecast/daily:
+    get:
+      description: Returns a 16 day (daily) forecast
+      operationId: operations-default-16_Day_Forecast
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - weatherbit-v1-mashape.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: metric (Default), imperial
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: Language for weather description
+        in: query
+        name: lang
+        required: false
+        type: string # enum
+      - description: 'LatitudeDefault value : 38.5'
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: 'LongitudeDefault value : -78.5'
+        in: query
+        name: lon
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /forecast/hourly:
+    get:
+      description: Returns a forecast for up to 120 hours in the future (default 48
+        hours)
+      operationId: operations-default-120_Hour_Forecast
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - weatherbit-v1-mashape.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: I = Imperial, S = Scientific, M = Metric (Default)
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: 'Limit number of forecast hoursDefault value : 48'
+        in: query
+        name: hours
+        required: false
+        type: number
+      - description: Language for weather description
+        in: query
+        name: lang
+        required: false
+        type: string # enum
+      - description: 'LongitudeDefault value : -78.5'
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: 'LatitudeDefault value : 38.5'
+        in: query
+        name: lat
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /forecast/minutely:
+    get:
+      description: Retrieve a 60 minute "Nowcast" for precipitation, and snowfall
+      operationId: operations-default-1_Hour__Minutely_Forecast_Nowcast
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - weatherbit-v1-mashape.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: metric (Default), imperial
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: 'Default value : -78.5'
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: 'Default value : 35.5'
+        in: query
+        name: lat
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

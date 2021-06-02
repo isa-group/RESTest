@@ -17,10 +17,11 @@ public class ApiBasketball {
 
     // GET /standings
     // season
-    public static String apiBasketball_standings_season(String semanticInput, String apiKey, String host) throws IOException, JSONException {
+    public static String apiBasketball_standings_season_regex(String semanticInput, String apiKey, String host) throws IOException, JSONException {
 
         String url = baseUri + "/standings?league=12&season=" + semanticInput;
 
+        printResponse(url);
         System.out.println(url);
 
         OkHttpClient client = new OkHttpClient();
@@ -35,9 +36,15 @@ public class ApiBasketball {
         Response response = client.newCall(request).execute();
 
         System.out.println("RESPONSE CODE: " + response.code());
-//        System.out.println("--------------------------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------------");
 
         return response.body().string();
+    }
+
+    // season
+    public static void apiBasketball_standings_season(String semanticInput, String apiKey, String host) throws IOException, JSONException {
+        String url = baseUri + "/standings?league=12&season=" + semanticInput;
+        printResponse(url);
     }
 
     // stage
@@ -83,7 +90,7 @@ public class ApiBasketball {
         printResponse(url);
     }
 
-    // country
+    // code
     public static void apiBasketball_leagues_code(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + "/leagues?code=" + semanticInput;
         printResponse(url);

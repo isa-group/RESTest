@@ -23,4 +23,9 @@ public class MovieDatabase {
         printResponse(url);
     }
 
+    public static void movieDatabase_y_bySearch(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/?s=the&y=" + semanticInput;
+        printResponse(url);
+    }
+
 }

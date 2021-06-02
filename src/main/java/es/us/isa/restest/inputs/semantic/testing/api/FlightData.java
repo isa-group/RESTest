@@ -7,6 +7,7 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 
 import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printResponse;
+import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printResponseFlightData;
 
 public class FlightData {
 
@@ -18,11 +19,17 @@ public class FlightData {
     // origin
     public static void flightData_cityDirections_origin(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + "/v1/city-directions" + "?origin=" + semanticInput + "&currency=RUB";
-        printResponse(url);
+        printResponseFlightData(url);
     }
 
     // currency
-    public static Response flightData_cityDirections_currency(String semanticInput, String apiKey, String host) throws IOException {
+    public static void flightData_cityDirections_currency(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUrl + "/v1/city-directions" + "?origin=MOW&currency=" + semanticInput;
+        printResponseFlightData(url);
+    }
+
+    // currency regex
+    public static Response flightData_cityDirections_currency_regex(String semanticInput, String apiKey, String host) throws IOException {
 
         String url = baseUrl + "/v1/city-directions" + "?origin=MOW&currency=" + semanticInput;
 
@@ -53,19 +60,19 @@ public class FlightData {
     // origin
     public static void flightData_pricesCalendar_origin(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + "/v1/prices/calendar" + "?origin=" + semanticInput + "&destination=BCN&currency=RUB";
-        printResponse(url);
+        printResponseFlightData(url);
     }
 
     // destination
     public static void flightData_pricesCalendar_destination(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + "/v1/prices/calendar" + "?origin=MOW&destination=" + semanticInput + "&currency=RUB";
-        printResponse(url);
+        printResponseFlightData(url);
     }
 
     // currency
     public static void flightData_pricesCalendar_currency(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + "/v1/prices/calendar" + "?origin=MOW&destination=BCN&currency=" + semanticInput;
-        printResponse(url);
+        printResponseFlightData(url);
     }
 
 
@@ -73,7 +80,7 @@ public class FlightData {
     // airline_code
     public static void flightData_airlineDirections_airlineCode(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + "/v1/airline-directions" + "?airline_code=" + semanticInput;
-        printResponse(url);
+        printResponseFlightData(url);
     }
 
 
@@ -81,19 +88,19 @@ public class FlightData {
     // origin
     public static void flightData_pricesCheap_origin(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + operationPath + "?origin=" + semanticInput + "&destination=BCN&currency=RUB";
-        printResponse(url);
+        printResponseFlightData(url);
     }
 
     // currency
     public static void flightData_pricesCheap_currency(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + operationPath + "?origin=MOW&destination=BCN&currency=" + semanticInput;
-        printResponse(url);
+        printResponseFlightData(url);
     }
 
     // destination
     public static void flightData_pricesCheap_destination(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + operationPath + "?origin=MOW&destination="+semanticInput+"&currency=RUB";
-        printResponse(url);
+        printResponseFlightData(url);
     }
 
 

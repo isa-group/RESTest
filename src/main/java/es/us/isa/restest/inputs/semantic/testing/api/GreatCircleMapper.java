@@ -11,7 +11,7 @@ import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printRespons
 public class GreatCircleMapper {
 
     private static String baseUri = "https://greatcirclemapper.p.rapidapi.com";
-    private static String operationPath = "/aircraft/read/";
+    private static String operationPath = "/airports/search/";
 
     public static void greatCircleMapper_iataIcao(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + operationPath + semanticInput;

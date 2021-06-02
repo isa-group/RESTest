@@ -11,7 +11,7 @@ import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printRespons
 public class Climacell {
 
     private static final String baseUrl = "https://climacell-microweather-v1.p.rapidapi.com";
-    private static final String operationPath = "/weather/nowcast";
+    private static final String operationPath = "/weather/forecast/hourly";
 
     // Latitude
     public static void climacell_lat(String semanticInput, String apiKey, String host) throws IOException {

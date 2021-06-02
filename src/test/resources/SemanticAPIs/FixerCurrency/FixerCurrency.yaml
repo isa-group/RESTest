@@ -1,0 +1,150 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: 'Powered by 15+ exchange rate data sources, the Fixer API is capable
+    of delivering real-time exchange rate data for 170 world currencies. The API comes
+    with multiple endpoints, each serving a different use case. Endpoint functionalities
+    include getting the latest exchange rate data for all or a specific set of currencies,
+    converting amounts from one currency to another, retrieving Time-Series data for
+    one or multiple currencies and querying the API for daily fluctuation data.
+
+
+    Throughout this documentation you will learn about API structure, methods, potential
+    errors and code examples. In case there any question is left unanswered, please
+    make sure to contact us and our team will be happy to help out.'
+  title: Fixer Currency
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /convert:
+    get:
+      description: The Fixer API comes with a separate currency conversion endpoint,
+        which can be used to convert any amount from one currency to another. In order
+        to convert currencies, please use the API's convert endpoint, append the from
+        and to parameters and set them to your preferred base and target currency
+        codes.  It is also possible to convert currencies using historical exchange
+        rate data. To do this, please also use the API's date parameter and set it
+        to your preferred date. (format YYYY-MM-DD)
+      operationId: operations-default-Convert
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - fixer-fixer-currency-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Specify a date (format YYYY-MM-DD) to use historical rates for
+          this conversion.
+        in: query
+        name: date
+        required: false
+        type: string
+      - description: The amount to be converted.
+        in: query
+        name: amount
+        required: true
+        type: number
+      - description: The three-letter currency code of the currency you would like
+          to convert to.
+        in: query
+        name: to
+        required: true
+        type: string
+      - description: The three-letter currency code of the currency you would like
+          to convert from.
+        in: query
+        name: from
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /latest:
+    get:
+      description: Depending on your subscription plan, the API's latest endpoint
+        will return real-time exchange rate data updated every 60 minutes, every 10
+        minutes or every 60 seconds.
+      operationId: operations-default-Latest_Rates
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - fixer-fixer-currency-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Enter a list of comma-separated currency codes to limit output
+          currencies.
+        in: query
+        name: symbols
+        required: false
+        type: string
+      - description: Enter the three-letter currency code of your preferred base currency.
+        in: query
+        name: base
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /symbols:
+    get:
+      description: The Fixer API comes with a constantly updated endpoint returning
+        all available currencies. To access this list, make a request to the API's
+        symbols endpoint.
+      operationId: operations-default-Supported_Symbols
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - fixer-fixer-currency-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /{date}:
+    get:
+      description: Historical rates are available for most currencies all the way
+        back to the year of 1999. You can query the Fixer API for historical rates
+        by appending a date (format YYYY-MM-DD) to the base URL.
+      operationId: operations-default-Historical_Rates
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - fixer-fixer-currency-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Enter a list of comma-separated currency codes to limit output
+          currencies.
+        in: query
+        name: symbols
+        required: false
+        type: string
+      - description: Enter the three-letter currency code of your preferred base currency.
+        in: query
+        name: base
+        required: false
+        type: string
+      - description: A date in the past for which historical rates are requested.
+        in: path
+        name: date
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

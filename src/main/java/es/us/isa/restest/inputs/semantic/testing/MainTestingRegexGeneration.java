@@ -28,10 +28,10 @@ import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithNewPredicates;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.inputs.semantic.testing.MainTesting.readCsv;
-import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.apiBasketball_standings_season;
-import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.apiFootball_leaguesCountryCountryNameSeason_season;
+import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.apiBasketball_standings_season_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.apiFootball_leaguesCountryCountryNameSeason_season_regex;
 import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coronavirusMap_region;
-import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.flightData_cityDirections_currency;
+import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.flightData_cityDirections_currency_regex;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingRegexGeneration {
@@ -84,7 +84,7 @@ public class MainTestingRegexGeneration {
                 System.out.println("Iteration number: " + i);
                 i++;
                 System.out.println(semanticInput);
-                String response = apiBasketball_standings_season(semanticInput, apiKey, host);
+                String response = apiBasketball_standings_season_regex(semanticInput, apiKey, host);
 
                 System.out.println("###########");
                 System.out.println(response);

@@ -24,17 +24,23 @@ import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Asos.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.CarbonFootprint.carbonFootprint_PM;
 import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.climacell_lat;
+import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.climacell_lon;
 import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coronavirusMap_region;
 import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.CurrencyConverter.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.greatCircleMapper_iataIcao;
-import static es.us.isa.restest.inputs.semantic.testing.api.OpenWeatherMap.openWeatherMap_forecast_zip;
+import static es.us.isa.restest.inputs.semantic.testing.api.MovieDatabase.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.OpenWeatherMap.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_countryCode;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
+import static es.us.isa.restest.inputs.semantic.testing.api.RentEstimate.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.SimilarWeb.similarweb_website;
 import static es.us.isa.restest.inputs.semantic.testing.api.Skyscanner.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.TrueWayGeocoding.trueWayGeocoding_language;
-import static es.us.isa.restest.inputs.semantic.testing.api.TrueWayGeocoding.trueWayGeocoding_location;
+import static es.us.isa.restest.inputs.semantic.testing.api.SubtitlesForYoutube.getSubtitleJson;
+import static es.us.isa.restest.inputs.semantic.testing.api.TrueWayGeocoding.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.UsRestaurantMenus.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.UsWeatherByZipcode.UsWeatherByZipcode_zipcode;
 import static es.us.isa.restest.inputs.semantic.testing.api.WeatherForecast14Days.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import com.squareup.okhttp.OkHttpClient;
@@ -45,11 +51,11 @@ import com.squareup.okhttp.Response;
 public class MainTesting {
 
     // Parameters to change
-    private static final String propertiesPath = "src/test/resources/SemanticAPIs/ClimaCell/climacell.properties";
-    private static final String operationPath = "/weather/nowcast";
-    private static final String semanticParameterName = "lat";
+    private static final String propertiesPath = "src/test/resources/SemanticAPIs/CurrencyConverter/currencyConverter_saigen.properties";
+    private static final String operationPath = "/currency/historical/{date}";
+    private static final String semanticParameterName = "to";
     private static final Integer limit = Integer.MAX_VALUE;
-    private static final String apiKey = "----";
+    private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -88,7 +94,7 @@ public class MainTesting {
                 // RapidAPI operation to test
                 // In some cases it is required to change an attribute of the API class (e.g., operationPath in api/Climacell.java)
                 // Note that there is a different file for the Skyscanner API
-                climacell_lat(semanticInput, apiKey, host);        // REPLACE
+                currencyHistoricalTo(semanticInput, apiKey, host);        // TODO: REPLACE
 
                 i++;
 
@@ -97,7 +103,7 @@ public class MainTesting {
                 System.err.println("Exception ocurred");
             }
 
-            TimeUnit.SECONDS.sleep(6);
+            TimeUnit.SECONDS.sleep(2);
 
         }
 
@@ -153,6 +159,28 @@ public class MainTesting {
         Request request = new Request.Builder()
                 .url(uri)
                 .get()
+                .addHeader("x-rapidapi-host", host)
+                .addHeader("x-rapidapi-key", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println(response.body().string());
+        System.out.println("--------------------------------------------------------------------------------------");
+
+
+    }
+
+    public static void printResponseFlightData(String uri) throws IOException {
+        System.out.println(uri);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(uri)
+                .get()
+                .addHeader("x-access-token", "5b3ef0bdeca04643188c6610c30056f5")
                 .addHeader("x-rapidapi-host", host)
                 .addHeader("x-rapidapi-key", apiKey)
                 .build();

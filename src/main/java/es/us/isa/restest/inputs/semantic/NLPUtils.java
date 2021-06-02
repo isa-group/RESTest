@@ -80,8 +80,6 @@ public class NLPUtils {
 
         List<String> stopWords = getStopWords();
 
-        LevenshteinDistance leven = new LevenshteinDistance();
-
         //        FW	Foreign word
         //        NN	Noun, singular or mass
         //        NNS	Noun, plural
@@ -135,6 +133,8 @@ public class NLPUtils {
                 .createExtractorFromFiles(env, rules);
 
         StanfordCoreNLP pipeline = new StanfordCoreNLP(PropertiesUtils.asProperties("annotators", "tokenize,ssplit,pos,lemma"));
+
+        description = String.join(" ", posTagging(description));
 
         Annotation annotation = new Annotation(description);
 

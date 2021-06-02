@@ -70,7 +70,6 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - 1
           - 382ObEPsp2rxGrnsizN5TX
           - 1A2GTWGtFfWp7KSQTwWOyo
           - 2noRn2Aes5aoNVsU6iWThc
@@ -136,7 +135,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -233,7 +232,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -341,7 +340,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -422,7 +421,6 @@ testConfiguration:
         - name: values
           values:
           - toplists
-          - 2020
           - hiphop
           - dinner
           - pop
@@ -510,7 +508,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -575,7 +573,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -674,7 +672,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -750,7 +748,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -869,7 +867,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -1004,7 +1002,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -1161,7 +1159,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -1490,7 +1488,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:

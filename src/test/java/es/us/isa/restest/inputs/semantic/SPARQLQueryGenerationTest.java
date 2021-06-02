@@ -44,39 +44,6 @@ public class SPARQLQueryGenerationTest {
 	}
 
 	@Test
-	public void testExtractPredicateCandidatesFromDescription(){
-		Map<Double, Set<String>> descriptionCandidates = new HashMap<>();
-
-		String parameterName1 = "currency";
-		String parameterDescription1 = "A valid currency code";
-
-		descriptionCandidates = extractPredicateCandidatesFromDescription(parameterName1, parameterDescription1);
-
-		assertTrue("Error extracting predicate candidates from description", descriptionCandidates.keySet().size()==1);
-		assertTrue("Error extracting predicate candidates from description", descriptionCandidates.get(3.0).contains("currencycode"));
-
-		String parameterName2 = "lang";
-		String parameterDescription2 = "A valid language code";
-
-		descriptionCandidates = extractPredicateCandidatesFromDescription(parameterName2, parameterDescription2);
-
-		assertTrue("Error extracting predicate candidates from description", descriptionCandidates.keySet().size()==1);
-		assertTrue("Error extracting predicate candidates from description", descriptionCandidates.get(2.0).contains("langcode"));
-		assertTrue("Error extracting predicate candidates from description", descriptionCandidates.get(2.0).contains("languagecode"));
-
-
-		String parameterName3 = "foo";
-		String parameterDescription3 = "A city code or a imdb id";
-
-		descriptionCandidates = extractPredicateCandidatesFromDescription(parameterName3, parameterDescription3);
-
-		assertTrue("Error extracting predicate candidates from description", descriptionCandidates.keySet().size()==1);
-		assertTrue("Error extracting predicate candidates from description", descriptionCandidates.get(1.0).contains("citycode"));
-		assertTrue("Error extracting predicate candidates from description", descriptionCandidates.get(1.0).contains("imdbid"));
-
-	}
-
-	@Test
 	public void testGeneratePredicateQuery(){
 		String predicateQuery = generatePredicateQuery("keyword");
 

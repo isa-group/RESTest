@@ -30,7 +30,7 @@ public class TrueWayGeocoding {
         printResponse(url);
     }
 
-    // address
+    // country
     public static void trueWayGeocoding_country(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUrl + "/Geocode?address=505 Howard St, San Francisco&country=" + semanticInput;
         printResponse(url);
