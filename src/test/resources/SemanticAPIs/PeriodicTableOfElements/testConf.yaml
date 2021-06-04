@@ -1,0 +1,36 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/element/name/{name}"
+    operationId: operations-default-Get_Element_by_Name
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - periodic-table-of-elements.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: name
+      in: path
+      weight: null
+      generators:
+      - type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

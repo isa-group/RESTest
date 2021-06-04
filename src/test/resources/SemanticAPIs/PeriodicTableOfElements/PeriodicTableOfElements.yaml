@@ -1,0 +1,230 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: A simple API for querying elements from the periodic table of elements
+  title: Periodic Table of Elements
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /element/atomic_number/{atomic_number}:
+#    get:
+#      description: Returns the element with the atomic number entered in the query
+#        string
+#      operationId: operations-default-Get_Element_by_Atomic_Number
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : 1'
+#        in: path
+#        name: atomic_number
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /element/name/{name}:
+    get:
+      description: Get a single element by its name
+      operationId: operations-default-Get_Element_by_Name
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - periodic-table-of-elements.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: path
+        name: name
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /elements:
+#    get:
+#      description: Get an array of all elements in the periodic table
+#      operationId: operations-default-Get_All_Elements
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /elements/group/{group}:
+#    get:
+#      description: Get all elements within the specified group
+#      operationId: operations-default-Get_Elements_by_Group
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : 18'
+#        in: path
+#        name: group
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /elements/metal/{metal}:
+#    get:
+#      description: 'Get all elements that can either be classified as a metal or a
+#        non-metal. Valid values are:'
+#      operationId: operations-default-Get_Metal_or_Non-metal_Elements
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: metal
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /elements/metalloid/{metalloid}:
+#    get:
+#      description: 'Get all elements that can be classified as metalloids or non-metalloids.
+#        Valid values are:'
+#      operationId: operations-default-Get_Metalloid_or_Non-metalloid_Elements
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: metalloid
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /elements/natural/{natural}:
+#    get:
+#      description: 'Get all elements that are either natural or non-natural. Valid
+#        values are:'
+#      operationId: operations-default-Get_Natural_or_Non-natural_Elements
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: natural
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /elements/nonmetal/{nonmetal}:
+#    get:
+#      description: 'Get all elements that can be classified as non-metals or metals.
+#        Valid values are:'
+#      operationId: operations-default-Get_Non-Metal_or_Metal_Elements
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: nonmetal
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /elements/period/{period}:
+#    get:
+#      description: Get all elements with the specified period
+#      operationId: operations-default-Get_Elements_by_Period
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : 7'
+#        in: path
+#        name: period
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /elements/type/{type}:
+#    get:
+#      description: 'Get all elements with the specified type. Valid types are:'
+#      operationId: operations-default-Get_Elements_by_Type
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - periodic-table-of-elements.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : Noble Gas'
+#        in: path
+#        name: type
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

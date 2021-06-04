@@ -1,0 +1,39 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/api/yahoo/qu/quote/{symbol}/financial-data"
+    operationId: operations-Stocks-stock-financial-data
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - yahoo-finance15.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: symbol
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/Yahoo Finance/operations-Stocks-stock-financial-data_symbol.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200

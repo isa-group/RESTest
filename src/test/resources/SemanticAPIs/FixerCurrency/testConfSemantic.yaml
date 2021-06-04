@@ -110,7 +110,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/symbols"
+          - "http://dbpedia.org/property/currencyCode"
           objectValues: null
         valid: true
     - name: base
@@ -172,7 +172,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/symbols"
+          - "http://dbpedia.org/property/currencyCode"
           objectValues: null
         valid: true
     - name: base

@@ -1,0 +1,236 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Real-time satellite tracking and predictions
+  title: UPHERE.SPACE
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /satellite/list:
+    get:
+      description: List of satellites in orbit
+      operationId: operations-satellites-Satellite_List
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - uphere-space1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Search by text
+        in: query
+        name: text
+        required: false
+        type: string
+      - description: Search by country
+        in: query
+        name: country
+        required: false
+        type: string
+      - description: Page of results (60 per page)
+        in: query
+        name: page
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /satellite/list/categories:
+#    get:
+#      description: Categories used to filter satellites
+#      operationId: operations-satellites-Categories
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - uphere-space1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /satellite/list/countries:
+#    get:
+#      description: Countries who have launched satellites which have been or are in
+#        orbit.
+#      operationId: operations-satellites-Countries
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - uphere-space1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /satellite/list/launch-sites:
+#    get:
+#      description: Launch sites around the world
+#      operationId: operations-satellites-Launch_Sites
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - uphere-space1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /satellite/top:
+#    get:
+#      description: Most popular satellites going back x days
+#      operationId: operations-satellites-Popular_Satellites
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - uphere-space1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Days to go back
+#        in: query
+#        name: days
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /satellite/{number}/details:
+    get:
+      description: Details by Norad TLE number
+      operationId: operations-satellites-Details
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - uphere-space1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Norad TLE number
+        in: path
+        name: number
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /satellite/{number}/location:
+#    get:
+#      description: Current location by NORAD TLE number
+#      operationId: operations-satellites-Location
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - uphere-space1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Units for height and speed values.  Options are:
+#
+#
+#          imperial
+#
+#          metric
+#
+#          '
+#        in: query
+#        name: units
+#        required: false
+#        type: string
+#      - description: 'Latitude to get satellite visibilityDefault value : 47.6484346'
+#        in: query
+#        name: lat
+#        required: false
+#        type: number
+#      - description: 'Longitude to get satellite visibilityDefault value : 122.374199'
+#        in: query
+#        name: lng
+#        required: false
+#        type: number
+#      - description: NORAD TLE number
+#        in: path
+#        name: number
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /satellite/{number}/orbit:
+#    get:
+#      description: Orbital track for specified period
+#      operationId: operations-satellites-Orbit
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - uphere-space1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: NORAD ID Number
+#        in: path
+#        name: number
+#        required: true
+#        type: number
+#      - description: Orbital period (minutes)
+#        in: query
+#        name: period
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /user/visible:
+    get:
+      description: Satellites visible from a specific latitude and longitude
+      operationId: operations-satellites-Visible_Satellites
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - uphere-space1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: query
+        name: lat
+        required: true
+        type: string
+      - description: 'Default value : -117.9833'
+        in: query
+        name: lng
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

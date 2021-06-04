@@ -1,0 +1,81 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: A data retrieval interface for the skies... (visit astronomyapi.com
+    and obtain your free API key)
+  title: Astronomy
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /api/v2/bodies/positions:
+#    get:
+#      description: 'X-RapidAPI-Host'
+#      operationId: operations-default-Get_all_bodies_positions
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - astronomy.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /api/v2/bodies/positions/{body}:
+    get:
+      description: Returns properties of the given body for the given date range in
+        tabular format.
+      operationId: operations-default-Get_positions_for_body
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - astronomy.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : 166'
+        in: query
+        name: elevation
+        required: false
+        type: number
+      - description: 'Default value : 12:00:00'
+        in: query
+        name: time
+        required: false
+        type: string
+      - description: 'Default value : -84.39733'
+        in: query
+        name: longitude
+        required: true
+        type: number
+      - description: 'Default value : 2017-12-20'
+        in: query
+        name: from_date
+        required: true
+        type: string
+      - description: 'Default value : 33.775867'
+        in: query
+        name: latitude
+        required: true
+        type: number
+      - description: 'Default value : 2017-12-21'
+        in: query
+        name: to_date
+        required: true
+        type: string
+      - description: 'Default value : venus'
+        in: path
+        name: body
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

@@ -1,0 +1,68 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Geocoding is the process of converting addresses (like "1600 Amphitheatre
+    Parkway, Mountain View, CA") into geographic coordinates (like latitude 37.423021
+    and longitude -122.083739), which you can use to place markers on a map, or position
+    the map.
+  title: Google Maps Geocoding
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /geocode/json:
+    get:
+      description: Address Lookup
+      operationId: operations-default-Reverse_Geocoding
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - google-maps-geocoding.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The language in which to return results. See list of all supported
+          languages in API Overvier.
+        in: query
+        name: language
+        required: false
+        type: string
+      - description: 'A filter of one or more address types, separated by a pipe (|).
+          If the parameter contains multiple address types, the API returns all addresses
+          that match any of the types. A note about processing: The result_type parameter
+          does not restrict the search to the specified address type(s). Rather, the
+          result_type acts as a post-search filter: the API fetches all results for
+          the specified latlng, then discards those results that do not match the
+          specified address type(s). Note: This parameter is available only for requests
+          that include an API key or a client ID. List of all supported types can
+          be found in API Overview'
+        in: query
+        name: result_type
+        required: false
+        type: string
+      - description: 'A filter of one or more location types, separated by a pipe
+          (|). If the parameter contains multiple location types, the API returns
+          all addresses that match any of the types. A note about processing: The
+          location_type parameter does not restrict the search to the specified location
+          type(s). Rather, the location_type acts as a post-search filter: the API
+          fetches all results for the specified latlng, then discards those results
+          that do not match the specified location type(s). Note: This parameter is
+          available only for requests that include an API key or a client ID. A list
+          of supported types can be found in the API Overview.'
+        in: query
+        name: location_type
+        required: false
+        type: string
+      - description: The latitude and longitude values specifying the location for
+          which you wish to obtain the closest, human-readable address.
+        in: query
+        name: latlng
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

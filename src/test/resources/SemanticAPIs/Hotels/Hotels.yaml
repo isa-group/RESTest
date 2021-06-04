@@ -1,0 +1,426 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Hotels API helps to query rooms, price, facilities, policities, etc
+    information from many hotels around the world as on official site.
+  title: Hotels
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /get-meta-data:
+    get:
+      description: Get locale meta data
+      operationId: operations-default-get-meta-data
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - hotels4.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /locations/search:
+    get:
+      description: Search for related locations and suggestions
+      operationId: operations-default-locations-search
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - hotels4.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The language code
+        in: query
+        name: locale
+        required: false
+        type: string
+      - description: Name of countries, cities, districts, places, etc...
+        in: query
+        name: query
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /properties/get-details:
+    get:
+      description: Get all available information of a property
+      operationId: operations-default-properties-get-details
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - hotels4.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The age of every children separated by comma in the second room
+        in: query
+        name: children2
+        required: false
+        type: string
+      - description: The number of adults in the fifth room
+        in: query
+        name: adults5
+        required: false
+        type: number
+      - description: The number of adults in the eighth room
+        in: query
+        name: adults8
+        required: false
+        type: number
+      - description: The age of every children separated by comma in the fifth room
+        in: query
+        name: children5
+        required: false
+        type: string
+      - description: The check-in date at hotel
+        in: query
+        name: checkIn
+        required: false
+        type: string
+      - description: The age of every children separated by comma in the eighth room
+        in: query
+        name: children8
+        required: false
+        type: string
+      - description: The number of adults in the fourth room
+        in: query
+        name: adults4
+        required: false
+        type: number
+      - description: The check-out date at hotel
+        in: query
+        name: checkOut
+        required: false
+        type: string
+      - description: The currency code
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: The number of adults in the third room
+        in: query
+        name: adults3
+        required: false
+        type: number
+      - description: The age of every children separated by comma in the seventh room
+        in: query
+        name: children7
+        required: false
+        type: string
+      - description: The age of every children separated by comma in the fourth room
+        in: query
+        name: children4
+        required: false
+        type: string
+      - description: The language code
+        in: query
+        name: locale
+        required: false
+        type: string
+      - description: The number of adults in the sixth room
+        in: query
+        name: adults6
+        required: false
+        type: number
+      - description: The number of adults in the second room
+        in: query
+        name: adults2
+        required: false
+        type: number
+      - description: The number of adults in the seventh room
+        in: query
+        name: adults7
+        required: false
+        type: number
+      - description: The number of adults in the first room
+        in: query
+        name: adults1
+        required: false
+        type: number
+      - description: The age of every children separated by comma in the third room
+        in: query
+        name: children3
+        required: false
+        type: string
+      - description: 'The age of every children separated by comma in the first room.
+          Ex : 5,11'
+        in: query
+        name: children1
+        required: false
+        type: string
+      - description: The age of every children separated by comma in the sixth room
+        in: query
+        name: children6
+        required: false
+        type: string
+      - description: The value of id field that returned in properties/list endpoint
+        in: query
+        name: id
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /properties/get-hotel-photos:
+    get:
+      description: Get all available photos of property
+      operationId: operations-default-properties-get-hotel-photos
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - hotels4.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The value of id field that received from .../properties/list
+          endpoint
+        in: query
+        name: id
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /properties/list:
+    get:
+      description: List properties with options and filters
+      operationId: operations-default-properties-list
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - hotels4.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The number of adults in the third room
+        in: query
+        name: adults3
+        required: false
+        type: number
+      - description: 'The currency code Default value : USD'
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: The age of every children separated by comma in the seventh room
+        in: query
+        name: children7
+        required: false
+        type: number
+      - description: Check for suitable value (separated by comma to specify multiple
+          values) in facilities field returned right in this endpoint
+        in: query
+        name: amenityIds
+        required: false
+        type: string
+      - description: The number of adults in the sixth room
+        in: query
+        name: adults6
+        required: false
+        type: number
+      - description: 'The language code, get all supported language code from .../get-meta-data
+          endpointDefault value : en_US'
+        in: query
+        name: locale
+        required: false
+        type: string
+      - description: Check for suitable value (separated by comma to specify multiple
+          values) in themesAndTypes field returned right in this endpoint
+        in: query
+        name: themeIds
+        required: false
+        type: string
+      - description: The age of every children separated by comma in the second room
+        in: query
+        name: children2
+        required: false
+        type: number
+      - description: The number of adults in the seventh room
+        in: query
+        name: adults7
+        required: false
+        type: number
+      - description: Check for suitable value (separated by comma to specify multiple
+          values) in accommodationType field returned right in this endpoint
+        in: query
+        name: accommodationIds
+        required: false
+        type: string
+      - description: Check for suitable value (separated by comma to specify multiple
+          values) in landmarks field returned right in this endpoint
+        in: query
+        name: landmarkIds
+        required: false
+        type: string
+      - description: The number of adults in the fourth room
+        in: query
+        name: adults4
+        required: false
+        type: number
+      - description: The number of adults in the eighth room
+        in: query
+        name: adults8
+        required: false
+        type: number
+      - description: The age of every children separated by comma in the sixth room
+        in: query
+        name: children6
+        required: false
+        type: number
+      - description: 'Check for suitable value (separated by comma to specify multiple
+          values) in starRating returned right in this endpoint. Ex : 2,3'
+        in: query
+        name: starRatings
+        required: false
+        type: string
+      - description: Check for suitable max price in filters/price/range/max field
+          returned right in this endpoint
+        in: query
+        name: priceMax
+        required: false
+        type: string
+      - description: 'One of the following is allowed BEST_SELLER|STAR_RATING_HIGHEST_FIRST|STAR_RATING_LOWEST_FIRST|DISTANCE_FROM_LANDMARK|GUEST_RATING|PRICE_HIGHEST_FIRST|PRICEDefault
+          value : PRICE'
+        in: query
+        name: sortOrder
+        required: false
+        type: string
+      - description: 'The age of every children separated by comma in the first room.
+          Ex : 5,11'
+        in: query
+        name: children1
+        required: false
+        type: number
+      - description: The age of every children separated by comma in the fourth room
+        in: query
+        name: children4
+        required: false
+        type: number
+      - description: Check for suitable min price in filters/price/range/min field
+          returned right in this endpoint
+        in: query
+        name: priceMin
+        required: false
+        type: number
+      - description: The age of every children separated by comma in the fifth room
+        in: query
+        name: children5
+        required: false
+        type: number
+      - description: The number of adults in the second room
+        in: query
+        name: adults2
+        required: false
+        type: number
+      - description: The age of every children separated by comma in the eighth room
+        in: query
+        name: children8
+        required: false
+        type: string
+      - description: The number of adults in the fifth room
+        in: query
+        name: adults5
+        required: false
+        type: number
+      - description: The age of every children separated by comma in the third room
+        in: query
+        name: children3
+        required: false
+        type: string
+      - description: Check for suitable min rating in filters/guestRating/range/min
+          field returned right in this endpoint. Please use integer value.
+        in: query
+        name: guestRatingMin
+        required: false
+        type: number
+      - description: 'Total items returned in every requests (max 25)Default value
+          : 25'
+        in: query
+        name: pageSize
+        required: true
+        type: number
+      - description: 'The check-out date at hotel, formated as yyyy-MM-ddDefault value
+          : 2020-01-15'
+        in: query
+        name: checkOut
+        required: true
+        type: number
+      - description: 'The check-in date at hotel, formated as yyyy-MM-ddDefault value
+          : 2020-01-08'
+        in: query
+        name: checkIn
+        required: true
+        type: string
+      - description: 'The number of adults in first roomDefault value : 1'
+        in: query
+        name: adults1
+        required: true
+        type: number
+      - description: 'The page number in which data is displayDefault value : 1'
+        in: query
+        name: pageNumber
+        required: true
+        type: number
+      - description: 'The value of destinationId returned in locations/search endpointDefault
+          value : 1506246'
+        in: query
+        name: destinationId
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /reviews/list:
+    get:
+      description: Get all reviews of specific property
+      operationId: operations-default-reviews-list
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - hotels4.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'For paging purposeDefault value : 1'
+        in: query
+        name: page
+        required: false
+        type: number
+      - description: 'The language codeDefault value : en_US'
+        in: query
+        name: loc
+        required: false
+        type: string
+      - description: 'The value of id field that received from .../properties/list
+          endpointDefault value : 1178275040'
+        in: query
+        name: id
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

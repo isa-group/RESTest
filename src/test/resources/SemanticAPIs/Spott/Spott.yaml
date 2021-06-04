@@ -1,0 +1,297 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Search cities, countries and administrative divisions by name, autocompletion
+    or IP.
+  title: Spott
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /places:
+    get:
+      description: Returns a list of places (either countries, cities or administrative
+        divisions) matching a query and filtered by properties.
+      operationId: operations-default-Search_places
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spott.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Longitude component of a coordinates set to filter places by
+          their location. This parameter is ignored if "latitude" is not specified.
+        in: query
+        name: longitude
+        required: false
+        type: number
+      - description: Query string to find places with a similar name.
+        in: query
+        name: q
+        required: false
+        type: string
+      - description: Latitude component of a coordinates set to filter places by their
+          location. This parameter is ignored if "longitude" is not specified.
+        in: query
+        name: latitude
+        required: false
+        type: number
+      - description: Maximum radius from the point specified by "latitude" and "longitude"
+          to filter places located within the area. The value must be expressed in
+          Kilometers. Defaults to 100km.
+        in: query
+        name: accuracyRadiusKm
+        required: false
+        type: number
+      - description: Filters places by their adminDivision2 "id". It's possible to
+          specify multiple values separating them with commas.
+        in: query
+        name: adminDivision2
+        required: false
+        type: string
+      - description: Filters places by their adminDivision1 "id". It's possible to
+          specify multiple values separating them with commas (Ex. ?country=US.CA,US.DE).
+        in: query
+        name: adminDivision1
+        required: false
+        type: string
+      - description: Maximum number of places to return. Used together with "skip"
+          to paginate results. Defaults to 10, maximum is 100.
+        in: query
+        name: limit
+        required: false
+        type: number
+      - description: Filters places by their country "id". It's possible to specify
+          multiple values separating them with commas (Ex. ?country=US,CA,MX).
+        in: query
+        name: country
+        required: false
+        type: string
+      - description: Amount of places to ignore before beginning to return results.
+          Used together with "limit" to paginate results. Defaults to 0.
+        in: query
+        name: skip
+        required: false
+        type: number
+      - description: Specifies a language (ISO 639-1) to get the localized name of
+          the place. If translation is not available, "localizedName" property will
+          be null.
+        in: query
+        name: language
+        required: false
+        type: string
+      - description: Filters places by "type". It's possible to specify multiple values
+          separating them with commas. Valid types are CITY, ADMIN_DIVISION_1, ADMIN_DIVISION_2
+          and COUNTRY.
+        in: query
+        name: type
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /places/autocomplete:
+    get:
+      description: Returns a list of places matching a prefix and specified filter
+        properties. Useful to create "search as you type" inputs.
+      operationId: operations-default-Autocomplete_places
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spott.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Filters places by their country "id". It's possible to specify
+          multiple values separating them with commas (Ex. ?country=US,CA,MX).
+        in: query
+        name: country
+        required: false
+        type: string
+      - description: Filters places by their "type". It's possible to specify multiple
+          values separating them with commas. Valid types are CITY, ADMIN_DIVISION_1,
+          ADMIN_DIVISION_2 and COUNTRY.
+        in: query
+        name: type
+        required: false
+        type: string
+      - description: Longitude component of a coordinates set to filter places by
+          their location. This parameter is ignored if "latitude" is not specified.
+        in: query
+        name: longitude
+        required: false
+        type: number
+      - description: Query string to find places which name starts with this prefix.
+        in: query
+        name: q
+        required: false
+        type: string
+      - description: Filters places by their adminDivision2 "id". It's possible to
+          specify multiple values separating them with commas.
+        in: query
+        name: adminDivision2
+        required: false
+        type: string
+      - description: Latitude component of a coordinates set to filter places by their
+          location. This parameter is ignored if "longitude" is not specified.
+        in: query
+        name: latitude
+        required: false
+        type: number
+      - description: Maximum radius from the point specified by "latitude" and "longitude"
+          to filter places located within the area. The value must be expressed in
+          Kilometers. Defaults to 100km.
+        in: query
+        name: accuracyRadiusKm
+        required: false
+        type: number
+      - description: Filters places by their adminDivision1 "id". It's possible to
+          specify multiple values separating them with commas (Ex. ?country=US.CA,US.DE).
+        in: query
+        name: adminDivision1
+        required: false
+        type: string
+      - description: Specifies a language (ISO 639-1) to get the localized name of
+          the place. If translation is not available, "localizedName" property will
+          be null.
+        in: query
+        name: language
+        required: false
+        type: string
+      - description: Amount of places to ignore before beginning to return results.
+          Used together with "limit" to paginate results. Defaults to 0.
+        in: query
+        name: skip
+        required: false
+        type: number
+      - description: Maximum number of places to return. Used together with "skip"
+          to paginate results. Defaults to 10, maximum is 100.
+        in: query
+        name: limit
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /places/geoname-id/{geonameId}:
+    get:
+      description: Returns a single Place identified by a Geoname ID.
+      operationId: operations-default-Get_place_by_Geoname_ID
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spott.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Specifies a language (ISO 639-1) to get the localized name of
+          the place. If translation is not available, "localizedName" property will
+          be null.
+        in: query
+        name: language
+        required: false
+        type: string
+      - description: Unique identificator given by Geonames
+        in: path
+        name: geonameId
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /places/ip/me:
+    get:
+      description: Returns the place related to the IP where the request was performed.
+        Returns "Not Found" error when no place is related to the IP.
+      operationId: operations-default-Get_place_by_my_IP
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spott.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Specifies a language (ISO 639-1) to get the localized name of
+          the place. If translation is not available, "localizedName" property will
+          be null.
+        in: query
+        name: language
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /places/ip/{id}:
+    get:
+      description: Returns the Place where a given IP Address is located. Returns
+        "Not Found" error when no place is related to the IP. When sending '127.0.0.1'
+        or '0.0.0.0' IP Addresses it will return the Place from the request was performed.
+      operationId: operations-default-Get_place_by_IP
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spott.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Specifies a language (ISO 639-1) to get the localized name of
+          the place. If translation is not available, "localizedName" property will
+          be null.
+        in: query
+        name: language
+        required: false
+        type: string
+      - description: IP Address (v4 and v6 are supported).
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /places/{id}:
+    get:
+      description: Returns a single Place identified by an ID.
+      operationId: operations-default-Get_place_by_ID
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spott.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Specifies a language (ISO 639-1) to get the localized name of
+          the place. If translation is not available, "localizedName" property will
+          be null.
+        in: query
+        name: language
+        required: false
+        type: string
+      - description: ID of the Place.
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

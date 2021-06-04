@@ -1,0 +1,798 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Yahoo Finance official API for stocks, options, ETFs, mutual funds
+    and news.
+  title: Yahoo Finance
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /api/v1/sec/form4:
+#    get:
+#      description: Latest insider trading activities from CEO, Directors, Chief Executive
+#        Officer, 10% Owner, etc...
+#      operationId: operations-default-insider-trades
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/co/collections/aggressive_small_caps:
+#    get:
+#      description: Small cap stocks with earnings growth rates better than 25%.
+#      operationId: operations-Screener-market\/aggressive_small_caps
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/co/collections/day_gainers:
+#    get:
+#      description: Stocks ordered in descending order by price percent change with
+#        respect to the previous close.
+#      operationId: operations-Screener-market\/day_gainers
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/co/collections/day_losers:
+#    get:
+#      description: Stocks ordered in ascending order by price percent change with
+#        respect to the previous close.
+#      operationId: operations-Screener-market\/day_losers
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/co/collections/growth_technology_stocks:
+#    get:
+#      description: Technology stocks with revenue and earnings growth in excess of
+#        25%.
+#      operationId: operations-Screener-market\/growth_technology_stocks
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/co/collections/most_actives:
+#    get:
+#      description: Stocks ordered in descending order by intraday trade volume.
+#      operationId: operations-Screener-market\/most_actives
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/co/collections/small_cap_gainers:
+#    get:
+#      description: Small Caps with a 1 day price change of 5.0% or more.
+#      operationId: operations-Screener-market\/small_cap_gainers
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/co/collections/undervalued_growth_stocks:
+#    get:
+#      description: Stocks with earnings growth rates better than 25% and relatively
+#        low PE and PEG ratios.
+#      operationId: operations-Screener-market\/undervalued_growth_stocks
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/co/collections/undervalued_large_caps:
+#    get:
+#      description: Large cap stocks that are potentially undervalued.
+#      operationId: operations-Screener-market\/undervalued_large_caps
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/ga/topgainers:
+#    get:
+#      description: Stocks with the most gains in today's market
+#      operationId: operations-Screener-market\/top-gainers-depreciated
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Enter a start indexDefault value : 0'
+#        in: query
+#        name: start
+#        required: false
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/hi/history/{symbol}/{interval}:
+#    get:
+#      description: Historic data for stocks, ETFs, mutuals funds, etc...
+#      operationId: operations-Stocks-stock\/history
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Allows one of following : true|false'
+#        in: query
+#        name: diffandsplits
+#        required: false
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      - description: 'Allows one of following : 5m|15m|30m|1h|1d|1wk|1mo|3mo'
+#        in: path
+#        name: interval
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/mo/module/{symbol}:
+#    get:
+#      description: Get combine stock data such as profile, financial data, statistics,
+#        balance sheet, sec-filing, quote, earnings, trends and more!
+#      operationId: operations-default-stock\/combine-data
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'asset-profile, income-statement, balance-sheet, cashflow-statement,  default-key-statistics,
+#          calendar-events, sec-filings, upgrade-downgrade-history, institution-ownership,
+#          fund-ownership, insider-transactions, insider-holders, earnings-historyDefault
+#          value : asset-profile,financial-data,earnings'
+#        in: query
+#        name: module
+#        required: true
+#        type: string
+#      - description: 'A single symbol.Default value : AAPL'
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/ne/news:
+#    get:
+#      description: Recently published stock news in all sectors.
+#      operationId: operations-default-market\/news
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/ne/news/{symbol}:
+#    get:
+#      description: Recently published stock news in Yahoo finance.
+#      operationId: operations-default-market\/news_stock
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'A single stock symbolDefault value : AAPL'
+#        in: path
+#        name: symbol
+#        required: true
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/op/option/{symbol}:
+#    get:
+#      description: Get option data for stocks, ETFs and indexes.
+#      operationId: operations-Options-options
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Expiration date
+#        in: query
+#        name: expiration
+#        required: false
+#        type: number
+#      - description: A single stock symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}:
+#    get:
+#      description: Quote data for stocks, ETFs, mutuals funds, etc...
+#      operationId: operations-default-market\/quotes
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Multiple symbols separated by commas. Max is 50Default value
+#          : AAPL,MSFT'
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/asset-profile:
+#    get:
+#      description: Get stock profile information such as company name, descriptions,
+#        website, etc...
+#      operationId: operations-Stocks-stock\/profile
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/balance-sheet:
+#    get:
+#      description: Get stock balance sheet data.
+#      operationId: operations-Stocks-stock\/balance-sheet
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/calendar-events:
+#    get:
+#      description: Get stock calendar events.
+#      operationId: operations-Stocks-stock\/calendar-events
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/cashflow-statement:
+#    get:
+#      description: Get stock cash flow statements.
+#      operationId: operations-Stocks-stock\/cashflow-statement
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/default-key-statistics:
+#    get:
+#      description: Get stock key statistics data.
+#      operationId: operations-Stocks-stock\/key-statistics
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/earnings:
+#    get:
+#      description: Get earnings information for a particular stock
+#      operationId: operations-Stocks-stock\/earnings
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/earnings-history:
+#    get:
+#      description: Get earnings history information for a particular stock
+#      operationId: operations-Stocks-stock\/earnings-history
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/earnings-trend:
+#    get:
+#      description: Get earnings trend earnings history information for a particular
+#        stock
+#      operationId: operations-Stocks-stock\/earnings-trend
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /api/yahoo/qu/quote/{symbol}/financial-data:
+    get:
+      description: Get stock financial data.
+      operationId: operations-Stocks-stock-financial-data
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - yahoo-finance15.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: A single symbol
+        in: path
+        name: symbol
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/income-statement:
+#    get:
+#      description: Get stock income statement data.
+#      operationId: operations-Stocks-stock\/income-statement
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/index-trend:
+#    get:
+#      description: Get index trend earnings history information for a particular stock
+#      operationId: operations-Stocks-stock\/index-trend
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/insider-holders:
+#    get:
+#      description: Get stock insider holders' information.
+#      operationId: operations-Stocks-stock\/insider-holders
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/insider-transactions:
+#    get:
+#      description: Get stock insider transactions history.
+#      operationId: operations-Stocks-stock\/insider-transactions
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/institution-ownership:
+#    get:
+#      description: Get stock institution ownership.
+#      operationId: operations-Stocks-stock\/institution-ownership
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/net-share-purchase-activity:
+#    get:
+#      description: Get net share purchase activity information for a particular stock
+#      operationId: operations-Stocks-stock\/net-share-purchase-activity
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/recommendation-trend:
+#    get:
+#      description: Get stock recommendations and trends.
+#      operationId: operations-Stocks-stock\/recommendation-trend
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/sec-filings:
+#    get:
+#      description: Get stock SEC filings.
+#      operationId: operations-Stocks-stock\/sec-filings
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/qu/quote/{symbol}/upgrade-downgrade-history:
+#    get:
+#      description: Get stock upgrade and downgrade history.
+#      operationId: operations-Stocks-stock\/upgrade-downgrade-history
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: A single symbol
+#        in: path
+#        name: symbol
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/yahoo/tr/trending:
+#    get:
+#      description: Trending stocks in today's market
+#      operationId: operations-Screener-market\/most-watched
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - yahoo-finance15.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
