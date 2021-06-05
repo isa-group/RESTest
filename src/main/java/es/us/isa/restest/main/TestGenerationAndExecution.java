@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
+	private static String propertiesFilePath = "src/test/resources/GitHub/github_getUserRepos.properties";
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
 	private static OpenAPISpecification spec; 							// OAS specification
@@ -53,6 +53,7 @@ public class TestGenerationAndExecution {
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
+	private static String inputTestCasesPath;							// If not null, test cases will not be generated, but read from inputTestCasesPath CSV file
 
 	// For Constraint-based testing and AR Testing:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
@@ -84,6 +85,9 @@ public class TestGenerationAndExecution {
 		IWriter writer = createWriter(); // Test case writer
 		StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
 		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
+
+		// 
+
 		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer,
 					reportManager, statsReportManager);
 		runner.setExecuteTestCases(executeTestCases);
@@ -104,6 +108,11 @@ public class TestGenerationAndExecution {
 			((RESTAssuredWriter) writer).setTestId(id);
 			runner.setTestClassName(className);
 			runner.setTestId(id);
+
+			// si existe test cases input -> asignar propiedad
+			if (inputTestCasesPath != null){
+				runner.setInputTestCasesPath(inputTestCasesPath);
+			}
 
 			// Test case generation + execution + test report generation
 			runner.run();
@@ -335,8 +344,11 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("faulty.dependency.ratio") != null)
 			faultyDependencyRatio = Float.parseFloat(readParameterValue("faulty.dependency.ratio"));
 		logger.info("Faulty dependency ratio: {}", faultyDependencyRatio);
-		
-	
+
+		if (readParameterValue("testcases.input") != null)
+			inputTestCasesPath = readParameterValue("testcases.input");
+		logger.info("Test cases path: {}", inputTestCasesPath);
+
 	}
 
 	// Read the parameter value from the local .properties file. If the value is not found, it reads it form the global .properties file (config.properties)

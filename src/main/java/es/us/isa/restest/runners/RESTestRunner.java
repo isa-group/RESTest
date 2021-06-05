@@ -15,6 +15,7 @@ import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 
+import static es.us.isa.restest.util.TestManager.getTestCases;
 import static es.us.isa.restest.util.Timer.TestStep.*;
 
 /**
@@ -33,6 +34,7 @@ public class RESTestRunner {
 	protected AllureReportManager allureReportManager;	// Allure report manager
 	protected StatsReportManager statsReportManager;	// Stats report manager
 	private boolean executeTestCases;
+	private String inputTestCasesPath;					// Path to input test cases. If null, test cases will be generated
 	private int numTestCases = 0;						// Number of test cases generated so far
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 
@@ -51,6 +53,8 @@ public class RESTestRunner {
 
 		// Test generation and writing (RESTAssured)
 		testGeneration();
+
+		statsReportManager.generateCSVStats(testId);
 
 		if(executeTestCases) {
 			// Test execution
@@ -87,7 +91,12 @@ public class RESTestRunner {
 		// Generate test cases
 		logger.info("Generating tests");
 		Timer.startCounting(TEST_SUITE_GENERATION);
-		Collection<TestCase> testCases = generator.generate();
+		Collection<TestCase> testCases;
+		if (this.inputTestCasesPath==null) {
+			testCases = generator.generate();
+		} else {
+			testCases = getTestCases(this.inputTestCasesPath);
+		}
 		Timer.stopCounting(TEST_SUITE_GENERATION);
         this.numTestCases += testCases.size();
 
@@ -117,11 +126,15 @@ public class RESTestRunner {
 	public String getTargetDir() {
 		return targetDir;
 	}
-	
+
 	public void setTargetDir(String targetDir) {
 		this.targetDir = targetDir;
 	}
-	
+
+	public void setInputTestCasesPath(String inputTestCasesPath) {
+		this.inputTestCasesPath = inputTestCasesPath;
+	}
+
 	public String getTestClassName() {
 		return testClassName;
 	}
