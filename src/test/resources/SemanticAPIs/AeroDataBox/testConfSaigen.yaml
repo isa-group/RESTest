@@ -1,0 +1,310 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/aircrafts/reg/{reg}/image/beta"
+    operationId: operations-Aircrafts_API-Aircraft_image_by_registration
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - aerodatabox.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: reg
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AeroDataBox/operations-Aircrafts_API-Aircraft_image_by_registration_reg.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/aircrafts/{searchBy}/{searchParam}"
+    operationId: operations-Aircrafts_API-Aircraft_by_reg_hex_ICAO_24-bit_address
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - aerodatabox.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: searchBy
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - reg
+          - icao24
+          objectValues: null
+        valid: true
+    - name: searchParam
+      in: path
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AeroDataBox/operations-Aircrafts_API-Aircraft_by_reg_hex_ICAO_24-bit_address_searchParam.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airports/icao/{icao}/runways"
+    operationId: operations-Airports_API-Airport_runways_by_ICAO_code
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - aerodatabox.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: icao
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AeroDataBox/operations-Airports_API-Airport_runways_by_ICAO_code_icao.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airports/search/location/{lat}/{lon}/km/{radiusKm}/{limit}"
+    operationId: operations-Airports_API-Search_airports_by_location
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - aerodatabox.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: withFlightInfoOnly
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: lat
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AeroDataBox/operations-Airports_API-Search_airports_by_location_lat.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: limit
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: lon
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AeroDataBox/operations-Airports_API-Search_airports_by_location_lon.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: radiusKm
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airports/{codeType}/{codeFrom}/distance-time/{codeTo}"
+    operationId: operations-Airports_API-Distance_Flight_time_to_another_airport_by_IATA-ICAO-codes
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - aerodatabox.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: codeType
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: codeFrom
+      in: path
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AeroDataBox/operations-Airports_API-Distance_Flight_time_to_another_airport_by_IATA-ICAO-codes_codeFrom.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    - name: codeTo
+      in: path
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AeroDataBox/operations-Airports_API-Distance_Flight_time_to_another_airport_by_IATA-ICAO-codes_codeTo.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airports/{codeType}/{code}"
+    operationId: operations-Airports_API-Aiport_by_IATA-ICAO_code
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - aerodatabox.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: withRunways
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: withTime
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: codeType
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: code
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AeroDataBox/operations-Airports_API-Aiport_by_IATA-ICAO_code_code.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200

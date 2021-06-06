@@ -31,7 +31,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class SAIGENInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "----";
+    private static String propertiesFilePath = "-----";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;

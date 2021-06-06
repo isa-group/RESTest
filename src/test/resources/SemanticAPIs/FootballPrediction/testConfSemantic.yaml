@@ -1,0 +1,51 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /api/v2/performance-stats
+    operationId: operations-Past_performance-Performance_stats_for_past_predictions
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - football-prediction-api.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: federation
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Football Prediction/operations-Past_performance-Performance_stats_for_past_predictions_federation.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/federation"
+          objectValues: null
+        valid: true
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
