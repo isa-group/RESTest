@@ -20,6 +20,7 @@ import static es.us.isa.restest.inputs.semantic.testing.api.AirportInfo.airportI
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Asos.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.Astronomy.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.CarbonFootprint.carbonFootprint_PM;
 import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.climacell_lat;
 import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.climacell_lon;
@@ -33,6 +34,7 @@ import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.gr
 import static es.us.isa.restest.inputs.semantic.testing.api.Hotels.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.MovieDatabase.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.OpenWeatherMap.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.PeriodicTableOfElements.periodicTableOfElementsName;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_countryCode;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
 import static es.us.isa.restest.inputs.semantic.testing.api.RedlineZipcode.*;
@@ -42,6 +44,7 @@ import static es.us.isa.restest.inputs.semantic.testing.api.Skyscanner.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Spott.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.SubtitlesForYoutube.getSubtitleJson;
 import static es.us.isa.restest.inputs.semantic.testing.api.TrueWayGeocoding.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.UphereSpace.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.UsRestaurantMenus.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.UsWeatherByZipcode.UsWeatherByZipcode_zipcode;
 import static es.us.isa.restest.inputs.semantic.testing.api.WeatherForecast14Days.*;
@@ -55,9 +58,9 @@ import com.squareup.okhttp.Response;
 public class MainTesting {
 
     // Parameters to change
-    private static final String propertiesPath = "src/test/resources/SemanticAPIs/Spott/spott_saigen.properties";
-    private static final String operationPath = "/places";
-    private static final String semanticParameterName = "language";
+    private static final String propertiesPath = "src/test/resources/SemanticAPIs/PeriodicTableOfElements/PeriodicTableOfElements_saigen.properties";
+    private static final String operationPath = "/element/name/{name}";
+    private static final String semanticParameterName = "name";
     private static final Integer limit = Integer.MAX_VALUE;
     private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
@@ -98,12 +101,13 @@ public class MainTesting {
                 // RapidAPI operation to test
                 // In some cases it is required to change an attribute of the API class (e.g., operationPath in api/Climacell.java)
                 // Note that there is a different file for the Skyscanner API
-                spottLanguage(semanticInput, apiKey, host);        // TODO: REPLACE
+                periodicTableOfElementsName(semanticInput, apiKey, host);        // TODO: REPLACE
 
                 i++;
 
 
             }catch (Exception e){
+                System.out.println(e.getMessage());
                 System.err.println("Exception ocurred");
             }
 
@@ -159,6 +163,9 @@ public class MainTesting {
         System.out.println(uri);
 
         OkHttpClient client = new OkHttpClient();
+//        client.setConnectTimeout(60, TimeUnit.SECONDS);
+//        client.setReadTimeout(60, TimeUnit.SECONDS);
+//        client.setWriteTimeout(60, TimeUnit.SECONDS);
 
         Request request = new Request.Builder()
                 .url(uri)

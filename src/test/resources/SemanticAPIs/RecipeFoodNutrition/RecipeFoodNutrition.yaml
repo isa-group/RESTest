@@ -1,0 +1,3017 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: "The spoonacular Nutrition, Recipe, and Food API allows you to access\
+    \ over 365,000 recipes and 86,000 food products. Our food ontology and semantic\
+    \ recipe search engine makes it possible to search for recipes using natural language\
+    \ queries, such as \"gluten free brownies without sugar\" or \"low fat vegan cupcakes.\"\
+    \ You can automatically calculate the nutritional information for any recipe,\
+    \ analyze recipe costs, visualize ingredient lists, find recipes for what's in\
+    \ your fridge, find recipes based on special diets, nutritional requirements,\
+    \ or favorite ingredients, classify recipes into types and cuisines, convert ingredient\
+    \ amounts, or even compute an entire meal plan. With our powerful API, you can\
+    \ create many kinds of food and especially nutrition apps.\r\n\r\nSpecial diets/dietary\
+    \ requirements currently available include: vegan, vegetarian, pescetarian, gluten\
+    \ free, grain free, dairy free, high protein, low sodium, low carb, Paleo, Primal,\
+    \ ketogenic, FODMAP, and Whole 30. We will soon be adding Weight Watcher points,\
+    \ too."
+  title: Recipe - Food - Nutrition
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /food/converse:
+#    get:
+#      description: This endpoint can be used to have a conversation about food with
+#        the spoonacular chat bot. Use the chat suggests endpoint to show your user
+#        what he or she can say.
+#      operationId: operations-Chat-Talk_to_a_chatbot
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: An arbitrary globally unique id for your conversation. The conversation
+#          can contain states so you should pass your context id if you want the bot
+#          to be able to remember the conversation.
+#        in: query
+#        name: contextId
+#        required: false
+#        type: string
+#      - description: The request/question/answer from the user to the chat bot.
+#        in: query
+#        name: text
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/converse/suggest:
+#    get:
+#      description: This endpoint returns suggestions for things the user can say or
+#        ask the chat bot.
+#      operationId: operations-Chat-Get_Conversation_Suggests
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of suggestions to return must be in interval [1,25].
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: A (partial) query from the user. The endpoint will return if
+#          it matches topics it can talk about.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /food/images/analyze:
+    get:
+      description: Classify and analyze a food image by a given URL.
+      operationId: operations-Compute-Image_Analysis_URL
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: query
+        name: imageUrl
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /food/images/classify:
+    get:
+      description: Classify a food image.
+      operationId: operations-Compute-Image_Classification_URL
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: query
+        name: imageUrl
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /food/ingredients/autocomplete:
+#    get:
+#      description: Autocomplete a search for an ingredient.
+#      operationId: operations-Search-Autocomplete_Ingredient_Search
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of results to return, between [1,100]
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: Whether to return more meta information about the ingredients.--truefalse
+#        in: query
+#        name: metaInformation
+#        required: false
+#        type: boolean
+#      - description: 'A comma-separated list of intolerances. All found ingredients
+#          must not cause problems for people with one of the given tolerances. Possible
+#          values are: dairy, egg, gluten, peanut, sesame, seafood, shellfish, soy,
+#          sulfite, tree nut, and wheat.'
+#        in: query
+#        name: intolerances
+#        required: false
+#        type: string
+#      - description: The query - a partial or full ingredient name.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /food/ingredients/substitutes:
+    get:
+      description: Get ingredient substitutes by ingredient name.
+      operationId: operations-Search-Get_Ingredient_Substitutes
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The name of the ingredient you want to replace.
+        in: query
+        name: ingredientName
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /food/ingredients/{id}/information:
+#    get:
+#      description: Get information about a certain food (ingredient).
+#      operationId: operations-Data-Get_Food_Information
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The amount of that food.
+#        in: query
+#        name: amount
+#        required: false
+#        type: number
+#      - description: The unit for the given amount.
+#        in: query
+#        name: unit
+#        required: false
+#        type: string
+#      - description: The id of the food (ingredient).
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/ingredients/{id}/substitutes:
+#    get:
+#      description: Search for substitutes for a given ingredient.
+#      operationId: operations-Search-Get_Ingredient_Substitutes_by_Id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The id of the ingredient you want substitutes for.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/jokes/random:
+#    get:
+#      description: Get a random joke that includes or is about food.
+#      operationId: operations-Data-Get_a_Random_Food_Joke
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/menuItems/search:
+#    get:
+#      description: Search menu items (such as McDonalds Big Mac)
+#      operationId: operations-Search-Search_Menu_Items
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The search offset.
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: The number of results to return.
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The minimum number of calories the menu item can have
+#        in: query
+#        name: minCalories
+#        required: false
+#        type: number
+#      - description: The maximum number of calories the menu item can have
+#        in: query
+#        name: maxCalories
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of protein the menu item can have
+#        in: query
+#        name: minProtein
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of protein the menu item can have
+#        in: query
+#        name: maxProtein
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of fat the menu item can have.
+#        in: query
+#        name: minFat
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of fat the menu item can have.
+#        in: query
+#        name: maxFat
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of carbs the menu item can have.
+#        in: query
+#        name: minCarbs
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of carbs the menu item can have.
+#        in: query
+#        name: maxCarbs
+#        required: false
+#        type: number
+#      - description: The search query.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/menuItems/suggest:
+#    get:
+#      description: Generate suggestions for menu items based on a (partial) query.
+#        The matches will be found by looking in the title only.
+#      operationId: operations-Search-Autocomplete_Menu_Item_Search
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of results to return. Must be between 1 and 25.
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The (partial) search query.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/menuItems/{id}:
+#    get:
+#      description: Get information about a certain menu item.
+#      operationId: operations-Data-Get_Menu_Item_Information
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/menuItems/{id}/nutritionWidget:
+#    get:
+#      description: Visualize a menu items' nutrition data.
+#      operationId: operations-Compute-Visualize_Menu_Item_Nutrition
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Whether the default CSS should be added to the response.--truefalse
+#        in: query
+#        name: defaultCss
+#        required: false
+#        type: boolean
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      - description: Results are in HTML.
+#        in: header
+#        name: Accept
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/products/search:
+#    get:
+#      description: Search packaged food products like frozen pizza and snickers bars.
+#      operationId: operations-Search-Search_Grocery_Products
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of results to skip, defaults to 0.
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: The number of results to retrieve, defaults to 10.
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The maximum number of calories the product can have.
+#        in: query
+#        name: maxCalories
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of protein the product can have.
+#        in: query
+#        name: minProtein
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of protein the product can have.
+#        in: query
+#        name: maxProtein
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of fat the product can have.
+#        in: query
+#        name: minFat
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of fat the product can have.
+#        in: query
+#        name: maxFat
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of carbs the product can have.
+#        in: query
+#        name: minCarbs
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of carbs the product can have.
+#        in: query
+#        name: maxCarbs
+#        required: false
+#        type: number
+#      - description: The minimum number of calories the product can have.
+#        in: query
+#        name: minCalories
+#        required: false
+#        type: number
+#      - description: The search query.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/products/suggest:
+#    get:
+#      description: Generate suggestions for grocery products based on a (partial)
+#        query. The matches will be found by looking in the title only.
+#      operationId: operations-Search-Autocomplete_Product_Search
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of results to return. Must be between 1 and 25.
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The (partial) search query.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/products/upc/{upc}:
+#    get:
+#      description: Get information about a food product given its UPC.
+#      operationId: operations-Search-Search_Grocery_Products_by_UPC
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: upc
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /food/products/upc/{upc}/comparable:
+    get:
+      description: Find comparable products to the given one.
+      operationId: operations-Search-Get_Comparable_Products
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The UPC code of the product for that you want to find comparable
+          products.
+        in: path
+        name: upc
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /food/products/{id}:
+#    get:
+#      description: Get information about a packaged food product.
+#      operationId: operations-Data-Get_Product_Information
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The id of the packaged food product.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/products/{id}/nutritionWidget:
+#    get:
+#      description: Visualize a grocery product's nutritional information.
+#      operationId: operations-Compute-Visualize_Product_Nutrition
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Whether the default CSS should be added to the response.--truefalse
+#        in: query
+#        name: defaultCss
+#        required: false
+#        type: boolean
+#      - description: ''
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      - description: Results are in HTML.
+#        in: header
+#        name: Accept
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/site/search:
+#    get:
+#      description: Search spoonacular's site content. You'll be able to find everything
+#        that you could also find using the search suggests on spoonacular.com. This
+#        is a suggest API so you can send partial strings as queries.
+#      operationId: operations-Search-Search_Site_Content
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The query to search for. You can also use partial queries such
+#          as "spagh" to already find spaghetti recipes, articles, grocery products,
+#          and other content.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/trivia/random:
+#    get:
+#      description: Returns random food trivia.
+#      operationId: operations-Data-Get_Random_Food_Trivia
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /food/videos/search:
+#    get:
+#      description: Find recipe and other food related videos.
+#      operationId: operations-Search-Search_Food_Videos
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The search query.
+#        in: query
+#        name: query
+#        required: false
+#        type: string
+#      - description: 'The type of the recipe, e.g. one of the following: main course,
+#          side dish, dessert, appetizer, salad, bread, breakfast, soup, beverage,
+#          sauce, or drink.'
+#        in: query
+#        name: type
+#        required: false
+#        type: string
+#      - description: Minimum video length in seconds.
+#        in: query
+#        name: minLength
+#        required: false
+#        type: number
+#      - description: Maximum video length in seconds.
+#        in: query
+#        name: maxLength
+#        required: false
+#        type: number
+#      - description: The number of results [1,100].
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: 'The cuisine of the videos, e.g. one of the following: african,
+#          chinese, japanese, korean, vietnamese, thai, indian, british, irish, french,
+#          italian, mexican, spanish, middle eastern, jewish, american, cajun, southern,
+#          greek, german, nordic, eastern european, caribbean, latin american'
+#        in: query
+#        name: cuisine
+#        required: false
+#        type: string
+#      - description: Ingredients the recipe videos must contain.
+#        in: query
+#        name: includeingredients
+#        required: false
+#        type: string
+#      - description: Ingredients the recipe videos must not contain.
+#        in: query
+#        name: excludeingredients
+#        required: false
+#        type: string
+#      - description: The offset in the result set [0,900].
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /food/wine/description:
+    get:
+      description: "Get the description of a certain wine, e.g. 'malbec', 'riesling', or 'merlot'".
+      operationId: operations-Search-Get_Wine_Description
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: "The name of the wine, e.g. 'malbec', 'riesling', or 'merlot'."
+        in: query
+        name: wine
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /food/wine/dishes:
+#    get:
+#      description: Get a dish that goes well with a given wine.
+#      operationId: operations-Search-Get_Dish_Pairing_for_Wine
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The name of the wine that should be paired, e.g. "merlot", "riesling",
+#          or "malbec".
+#        in: query
+#        name: wine
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /food/wine/pairing:
+    get:
+      description: Find a wine that goes well with a food. Food can be a dish name
+        ("steak"), an ingredient name ("salmon"), or a cuisine ("italian").
+      operationId: operations-Search-Get_Wine_Pairing
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The maximum price for the specific wine recommendation.
+        in: query
+        name: maxPrice
+        required: false
+        type: number
+      - description: The food to get a pairing for. This can be a dish ("steak"),
+          an ingredient ("salmon"), or a cuisine ("italian").
+        in: query
+        name: food
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /food/wine/recommendation:
+#    get:
+#      description: Get a specific wine recommendation (concrete product) for a given
+#        wine, e.g. "merlot".
+#      operationId: operations-Search-Get_Wine_Recommendation
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The maximum price of the recommended wine.
+#        in: query
+#        name: maxPrice
+#        required: false
+#        type: number
+#      - description: The minimum rating of the recommended wine between 0 and 1. For
+#          example, 0.8 equals 4 out of 5 stars.
+#        in: query
+#        name: minRating
+#        required: false
+#        type: number
+#      - description: The number of wine recommendations expected.
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The name of the wine to get a specific product recommendation
+#          for.
+#        in: query
+#        name: wine
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/autocomplete:
+#    get:
+#      description: Autocomplete a partial input to possible recipe names.
+#      operationId: operations-Search-Autocomplete_Recipe_Search
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of results between [1,25].
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The query to be autocompleted.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/complexSearch:
+#    get:
+#      description: 'Search through hundreds of thousands of recipes using advanced
+#        filtering and ranking. NOTE: Since this method combines three other functionalities,
+#        each request counts as 3 requests.'
+#      operationId: operations-Search-Recipe_Complex_Search
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The maximum number of milligrams of Vitamin B1 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB1
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of potassium the recipe must
+#          have.
+#        in: query
+#        name: minPotassium
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of iron the recipe must have.
+#        in: query
+#        name: minIron
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin B5 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB5
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of calcium the recipe must have.
+#        in: query
+#        name: minCalcium
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of folic acid the recipe must
+#          have.
+#        in: query
+#        name: minFolicAcid
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of sugar the recipe can have.
+#        in: query
+#        name: maxSugar
+#        required: false
+#        type: number
+#      - description: Whether the recipes should have an open license that allows for
+#          displaying with proper attribution.--truefalse
+#        in: query
+#        name: limitLicense
+#        required: false
+#        type: boolean
+#      - description: The maximum number of milligrams of Vitamin B2 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB2
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin B6 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB6
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of sodium the recipe can have.
+#        in: query
+#        name: maxSodium
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of folate the recipe must have.
+#        in: query
+#        name: minFolate
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of Vitamin K the recipe must
+#          have.
+#        in: query
+#        name: minVitaminK
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of fluoride the recipe must
+#          have.
+#        in: query
+#        name: minFluoride
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of Vitamin B12 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB12
+#        required: false
+#        type: number
+#      - description: Whether the recipes must have instructions.--truefalse
+#        in: query
+#        name: instructionsRequired
+#        required: false
+#        type: boolean
+#      - description: The maximum number of IU of Vitamin A the recipe can have.
+#        in: query
+#        name: maxVitaminA
+#        required: false
+#        type: number
+#      - description: Whether to minimize missing ingredients (0), maximize used ingredients
+#          (1) first, or rank recipes by relevance (2).
+#        in: query
+#        name: ranking
+#        required: false
+#        type: number
+#      - description: If set to true, you get more information about the recipes returned.
+#          This saves the calls to get recipe information.--truefalse
+#        in: query
+#        name: addRecipeInformation
+#        required: false
+#        type: boolean
+#      - description: The number of results to return (between 1 and 100).
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of zinc the recipe must have.
+#        in: query
+#        name: minZinc
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of Vitamin K the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminK
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of magnesium the recipe can
+#          have.
+#        in: query
+#        name: maxMagnesium
+#        required: false
+#        type: number
+#      - description: The number of results to skip (between 0 and 900).
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of manganese the recipe can
+#          have.
+#        in: query
+#        name: maxManganese
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of fluoride the recipe can have.
+#        in: query
+#        name: maxFluoride
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of selenium the recipe can have.
+#        in: query
+#        name: maxSelenium
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of protein the recipe must have.
+#        in: query
+#        name: minProtein
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of alcohol the recipe must have.
+#        in: query
+#        name: minAlcohol
+#        required: false
+#        type: number
+#      - description: The minimum number of calories the recipe must have.
+#        in: query
+#        name: minCalories
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of choline the recipe must have.
+#        in: query
+#        name: minCholine
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of iodine the recipe can have.
+#        in: query
+#        name: maxIodine
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of copper the recipe can have.
+#        in: query
+#        name: maxCopper
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of fat the recipe must have.
+#        in: query
+#        name: minFat
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of Vitamin D the recipe must
+#          have.
+#        in: query
+#        name: minVitaminD
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of choline the recipe can have.
+#        in: query
+#        name: maxCholine
+#        required: false
+#        type: number
+#      - description: An comma-separated list of ingredients that must not be contained
+#          in the recipes.
+#        in: query
+#        name: excludeIngredients
+#        required: false
+#        type: string
+#      - description: The maximum number of milligrams of iron the recipe can have.
+#        in: query
+#        name: maxIron
+#        required: false
+#        type: number
+#      - description: 'The diet to which the recipes must be compliant. Possible values
+#          are: pescetarian, lacto vegetarian, ovo vegetarian, vegan, paleo, primal,
+#          and vegetarian.'
+#        in: query
+#        name: diet
+#        required: false
+#        type: string
+#      - description: The maximum number of milligrams of cholesterol the recipe can
+#          have.
+#        in: query
+#        name: maxCholesterol
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of selenium the recipe must
+#          have.
+#        in: query
+#        name: minSelenium
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin B1 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB1
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin B6 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB6
+#        required: false
+#        type: number
+#      - description: The maxnimum number of milligrams of potassium the recipe can
+#          have.
+#        in: query
+#        name: maxPotassium
+#        required: false
+#        type: number
+#      - description: 'A comma-separated list of intolerances. All found recipes must
+#          not have ingredients that could cause problems for people with one of the
+#          given tolerances. Possible values are: dairy, egg, gluten, peanut, sesame,
+#          seafood, shellfish, soy, sulfite, tree nut, and wheat.'
+#        in: query
+#        name: intolerances
+#        required: false
+#        type: string
+#      - description: The maximum number of grams of fat the recipe can have.
+#        in: query
+#        name: maxFat
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin C the recipe must
+#          have.
+#        in: query
+#        name: minVitaminC
+#        required: false
+#        type: number
+#      - description: A comma-separated list of ingredients that should/must be contained
+#          in the recipe.
+#        in: query
+#        name: includeIngredients
+#        required: false
+#        type: string
+#      - description: The username of the recipe author.
+#        in: query
+#        name: author
+#        required: false
+#        type: string
+#      - description: The maximum number of milligrams of phosphorus the recipe can
+#          have.
+#        in: query
+#        name: maxPhosphorus
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of folate the recipe can have.
+#        in: query
+#        name: maxFolate
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of magnesium the recipe must
+#          have.
+#        in: query
+#        name: minMagnesium
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of caffeine the recipe can have.
+#        in: query
+#        name: maxCaffeine
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of saturated fat the recipe must
+#          have.
+#        in: query
+#        name: minSaturatedFat
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin E the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminE
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of sodium the recipe must have.
+#        in: query
+#        name: minSodium
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin C the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminC
+#        required: false
+#        type: number
+#      - description: The minimum number of IU of Vitamin A the recipe must have.
+#        in: query
+#        name: minVitaminA
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin B3 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB3
+#        required: false
+#        type: number
+#      - description: 'The type of the recipes. One of the following: main course,
+#          side dish, dessert, appetizer, salad, bread, breakfast, soup, beverage,
+#          sauce, or drink.'
+#        in: query
+#        name: type
+#        required: false
+#        type: string
+#      - description: The maximum number of grams of saturated fat the recipe can have.
+#        in: query
+#        name: maxSaturatedFat
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of cholesterol the recipe must
+#          have.
+#        in: query
+#        name: minCholesterol
+#        required: false
+#        type: number
+#      - description: Add information about the used and missing ingredients in each
+#          recipe.--truefalse
+#        in: query
+#        name: fillIngredients
+#        required: false
+#        type: boolean
+#      - description: The minimum number of grams of fiber the recipe must have.
+#        in: query
+#        name: minFiber
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of carbohydrates the recipe can have.
+#        in: query
+#        name: maxCarbs
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of Vitamin B12 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB12
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of alcohol the recipe can have.
+#        in: query
+#        name: maxAlcohol
+#        required: false
+#        type: number
+#      - description: The maximum number of calories the recipe can have.
+#        in: query
+#        name: maxCalories
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of calcium the recipe can have.
+#        in: query
+#        name: maxCalcium
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of zinc the recipe can have.
+#        in: query
+#        name: maxZinc
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of phosphorus the recipe must
+#          have.
+#        in: query
+#        name: minPhosphorus
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin B3 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB3
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin E the recipe must
+#          have.
+#        in: query
+#        name: minVitaminE
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of Vitamin D the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminD
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of protein the recipe can have.
+#        in: query
+#        name: maxProtein
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of carbohydrates the recipe must
+#          have.
+#        in: query
+#        name: minCarbs
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of fiber the recipe can have.
+#        in: query
+#        name: maxFiber
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of copper the recipe must have.
+#        in: query
+#        name: minCopper
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of caffeine the recipe must
+#          have.
+#        in: query
+#        name: minCaffeine
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin B5 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB5
+#        required: false
+#        type: number
+#      - description: The recipe search query.
+#        in: query
+#        name: query
+#        required: false
+#        type: string
+#      - description: 'The cuisine(s) of the recipes. One or more (comma separated)
+#          of the following: african, chinese, japanese, korean, vietnamese, thai,
+#          indian, british, irish, french, italian, mexican, spanish, middle eastern,
+#          jewish, american, cajun, southern, greek, german, nordic, eastern european,
+#          caribbean, or latin american.'
+#        in: query
+#        name: cuisine
+#        required: false
+#        type: string
+#      - description: The minimum number of milligrams of manganese the recipe must
+#          have.
+#        in: query
+#        name: minManganese
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of sugar the recipe must have.
+#        in: query
+#        name: minSugar
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of iodine the recipe must have.
+#        in: query
+#        name: minIodine
+#        required: false
+#        type: number
+#      - description: A string that the recipes must contain in their titles.
+#        in: query
+#        name: titleMatch
+#        required: false
+#        type: string
+#      - description: The minimum number of milligrams of Vitamin B2 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB2
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of folic acid the recipe can
+#          have.
+#        in: query
+#        name: maxFolicAcid
+#        required: false
+#        type: number
+#      - description: The equipment required. Multiple values will be interpreted as
+#          'or'. For example, value could be "blender, frying pan, bowl"
+#        in: query
+#        name: equipment
+#        required: false
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/convert:
+#    get:
+#      description: Convert amounts like "2 cups of flour to grams".
+#      operationId: operations-Compute-Convert_Amounts
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The unit from which you want to convert, e.g. the cups in "2.5
+#          cups of flour to grams". You can also use "serving" or "piece".
+#        in: query
+#        name: sourceUnit
+#        required: false
+#        type: string
+#      - description: The amount from which you want to convert, e.g. the 2.5 in "2.5
+#          cups of flour to grams"
+#        in: query
+#        name: sourceAmount
+#        required: false
+#        type: number
+#      - description: The ingredient which you want to convert, e.g. the flour in "2.5
+#          cups of flour to grams"
+#        in: query
+#        name: ingredientName
+#        required: true
+#        type: string
+#      - description: The unit to which you want to convert, e.g. the grams in "2.5
+#          cups of flour to grams". You can also use "piece", e.g. "3.4 oz tomatoes
+#          to piece"
+#        in: query
+#        name: targetUnit
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /recipes/extract:
+    get:
+      description: Extract recipe data from a recipe blog or Web page.
+      operationId: operations-Extract-Extract_Recipe_from_Website
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: If true, the extraction will be triggered no matter whether we
+          know the recipe already. Use that only if information is missing as this
+          operation is slower.--truefalse
+        in: query
+        name: forceExtraction
+        required: false
+        type: boolean
+      - description: The URL of the recipe page.
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /recipes/findByIngredients:
+#    get:
+#      description: Find recipes that use as many of the given ingredients as possible
+#        and have as little as possible missing ingredients. This is a whats in your
+#        fridge API endpoint.
+#      operationId: operations-Search-Search_Recipes_by_Ingredients
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The maximal number of recipes to return (default = 5).
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: Whether to only show recipes with an attribution license.--truefalse
+#        in: query
+#        name: limitLicense
+#        required: false
+#        type: boolean
+#      - description: Whether to ignore pantry ingredients such as water, salt, flour
+#          etc..--truefalse
+#        in: query
+#        name: ignorePantry
+#        required: false
+#        type: boolean
+#      - description: Whether to maximize used ingredients (1) or minimize missing
+#          ingredients (2) first.
+#        in: query
+#        name: ranking
+#        required: false
+#        type: number
+#      - description: A comma-separated list of ingredients that the recipes should
+#          contain.
+#        in: query
+#        name: ingredients
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/findByNutrients:
+#    get:
+#      description: Find a set of recipes that adhere to the given nutrient limits.
+#        All the found recipes will have macro nutrients within the calories, protein,
+#        fat, and carbohydrate limits.
+#      operationId: operations-Search-Search_Recipes_by_Nutrients
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Whether the recipes should have an open license that allows for
+#          displaying with proper attribution.--truefalse
+#        in: query
+#        name: limitLicense
+#        required: false
+#        type: boolean
+#      - description: The minimum number of protein in grams the recipe must have.
+#        in: query
+#        name: minProtein
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin C milligrams the recipe must have.
+#        in: query
+#        name: minVitaminC
+#        required: false
+#        type: number
+#      - description: The minimum number of selenium in grams the recipe must have.
+#        in: query
+#        name: minSelenium
+#        required: false
+#        type: number
+#      - description: If true, every request will give you a random set of recipes
+#          within the requested limits.--truefalse
+#        in: query
+#        name: random
+#        required: false
+#        type: boolean
+#      - description: The maximum number of fluoride in milligrams the recipe can have.
+#        in: query
+#        name: maxFluoride
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin B5 in milligrams the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB5
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin B3 in milligrams the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB3
+#        required: false
+#        type: number
+#      - description: The maximum number of iodine in grams the recipe must have.
+#        in: query
+#        name: maxIodine
+#        required: false
+#        type: number
+#      - description: The minimum number of carbohydrates in grams the recipe must
+#          have.
+#        in: query
+#        name: minCarbs
+#        required: false
+#        type: number
+#      - description: The maximum number of calories the recipe can have.
+#        in: query
+#        name: maxCalories
+#        required: false
+#        type: number
+#      - description: The minimum number of alcohol in grams the recipe must have.
+#        in: query
+#        name: minAlcohol
+#        required: false
+#        type: number
+#      - description: The maximum number of copper in milligrams the recipe must have.
+#        in: query
+#        name: maxCopper
+#        required: false
+#        type: number
+#      - description: The maximum number of choline in milligrams the recipe can have.
+#        in: query
+#        name: maxCholine
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin B6 in milligrams the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB6
+#        required: false
+#        type: number
+#      - description: The minimum number of iron in milligrams the recipe must have.
+#        in: query
+#        name: minIron
+#        required: false
+#        type: number
+#      - description: The maximum number of manganese in milligrams the recipe can
+#          have.
+#        in: query
+#        name: maxManganese
+#        required: false
+#        type: number
+#      - description: The minimum number of sodium in milligrams the recipe must have.
+#        in: query
+#        name: minSodium
+#        required: false
+#        type: number
+#      - description: The minimum number of sugar in grams the recipe must have.
+#        in: query
+#        name: minSugar
+#        required: false
+#        type: number
+#      - description: The maximum number of fat in grams the recipe can have.
+#        in: query
+#        name: maxFat
+#        required: false
+#        type: number
+#      - description: The minimum number of choline in milligrams the recipe must have.
+#        in: query
+#        name: minCholine
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin C in milligrams the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminC
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin B2 in milligrams the recipe must
+#          have.
+#        in: query
+#        name: maxVitaminB2
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin B12 in micrograms the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB12
+#        required: false
+#        type: number
+#      - description: The maximum number of folic acid in grams the recipe must have.
+#        in: query
+#        name: maxFolicAcid
+#        required: false
+#        type: number
+#      - description: The minimum number of zinc in milligrams the recipe must have.
+#        in: query
+#        name: minZinc
+#        required: false
+#        type: number
+#      - description: The offset number for paging in the interval [0,990].
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: The maximum number of protein in grams the recipe can have.
+#        in: query
+#        name: maxProtein
+#        required: false
+#        type: number
+#      - description: The minimum number of calories the recipe must have.
+#        in: query
+#        name: minCalories
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of caffeine the recipe must
+#          have.
+#        in: query
+#        name: minCaffeine
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin D in micrograms the recipe must
+#          have.
+#        in: query
+#        name: minVitaminD
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin E in milligrams the recipe must
+#          have.
+#        in: query
+#        name: maxVitaminE
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin B2 in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB2
+#        required: false
+#        type: number
+#      - description: The minimum number of fiber in grams the recipe must have.
+#        in: query
+#        name: minFiber
+#        required: false
+#        type: number
+#      - description: The minimum number of folate in grams the recipe must have.
+#        in: query
+#        name: minFolate
+#        required: false
+#        type: number
+#      - description: The minimum number of manganese in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minManganese
+#        required: false
+#        type: number
+#      - description: The maximum number of potassium in milligrams the recipe can
+#          have.
+#        in: query
+#        name: maxPotassium
+#        required: false
+#        type: number
+#      - description: The maximum number of sugar in grams the recipe must have.
+#        in: query
+#        name: maxSugar
+#        required: false
+#        type: number
+#      - description: The maximum number of alcohol in grams the recipe must have.
+#        in: query
+#        name: maxCaffeine
+#        required: false
+#        type: number
+#      - description: The maximum number of cholesterol in milligrams the recipe must
+#          have.
+#        in: query
+#        name: maxCholesterol
+#        required: false
+#        type: number
+#      - description: The maximum number of saturated fat in grams the recipe must
+#          have.
+#        in: query
+#        name: maxSaturatedFat
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin B3 in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB3
+#        required: false
+#        type: number
+#      - description: The maximum number of fiber in grams the recipe must have.
+#        in: query
+#        name: maxFiber
+#        required: false
+#        type: number
+#      - description: The maximum number of phosphorus in milligrams the recipe can
+#          have.
+#        in: query
+#        name: maxPhosphorus
+#        required: false
+#        type: number
+#      - description: The minimum number of potassium in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minPotassium
+#        required: false
+#        type: number
+#      - description: The maximum number of selenium in grams the recipe must have.
+#        in: query
+#        name: maxSelenium
+#        required: false
+#        type: number
+#      - description: The maximum number of carbohydrates in grams the recipe can have.
+#        in: query
+#        name: maxCarbs
+#        required: false
+#        type: number
+#      - description: The minimum number of calcium in milligrams the recipe must have.
+#        in: query
+#        name: minCalcium
+#        required: false
+#        type: number
+#      - description: The minimum number of cholesterol in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minCholesterol
+#        required: false
+#        type: number
+#      - description: The minimum number of fluoride in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minFluoride
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin D in micrograms the recipe must
+#          have.
+#        in: query
+#        name: maxVitaminD
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin B12 in micrograms the recipe must
+#          have.
+#        in: query
+#        name: maxVitaminB12
+#        required: false
+#        type: number
+#      - description: The minimum number of Iodine in grams the recipe must have.
+#        in: query
+#        name: minIodine
+#        required: false
+#        type: number
+#      - description: The maximum number of zinc in milligrams the recipe can have.
+#        in: query
+#        name: maxZinc
+#        required: false
+#        type: number
+#      - description: The minimum number of saturated fat in grams the recipe must
+#          have.
+#        in: query
+#        name: minSaturatedFat
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin B1 in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB1
+#        required: false
+#        type: number
+#      - description: The maximum number of folate in grams the recipe must have.
+#        in: query
+#        name: maxFolate
+#        required: false
+#        type: number
+#      - description: The minimum number of folic acid in grams the recipe must have.
+#        in: query
+#        name: minFolicAcid
+#        required: false
+#        type: number
+#      - description: The maximum number of magnesium in milligrams the recipe can
+#          have.
+#        in: query
+#        name: maxMagnesium
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin K in micrograms the recipe must
+#          have.
+#        in: query
+#        name: minVitaminK
+#        required: false
+#        type: number
+#      - description: The maximum number of sodium in milligrams the recipe must have.
+#        in: query
+#        name: maxSodium
+#        required: false
+#        type: number
+#      - description: The maximum number of alcohol in grams the recipe must have.
+#        in: query
+#        name: maxAlcohol
+#        required: false
+#        type: number
+#      - description: The maximum number of calcium in milligrams the recipe must have.
+#        in: query
+#        name: maxCalcium
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin A in IU the recipe must have.
+#        in: query
+#        name: maxVitaminA
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin K in micrograms the recipe must
+#          have.
+#        in: query
+#        name: maxVitaminK
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin B5 in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB5
+#        required: false
+#        type: number
+#      - description: The maximum number of iron in milligrams the recipe can have.
+#        in: query
+#        name: maxIron
+#        required: false
+#        type: number
+#      - description: The minimum number of copper in milligrams the recipe must have.
+#        in: query
+#        name: minCopper
+#        required: false
+#        type: number
+#      - description: The maximum number of Vitamin B1 in milligrams the recipe must
+#          have.
+#        in: query
+#        name: maxVitaminB1
+#        required: false
+#        type: number
+#      - description: The number of expected results in the interval [1,10].
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin A in IU the recipe must have.
+#        in: query
+#        name: minVitaminA
+#        required: false
+#        type: number
+#      - description: The minimum number of phosphorus in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minPhosphorus
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin B6 in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB6
+#        required: false
+#        type: number
+#      - description: The minimum number of fat in grams the recipe must have.
+#        in: query
+#        name: minFat
+#        required: false
+#        type: number
+#      - description: The minimum number of Vitamin E in milligrams the recipe must
+#          have.
+#        in: query
+#        name: minVitaminE
+#        required: false
+#        type: number
+#      - description: The minimum number of magnesium in milligrams the recipe must
+#          have.
+#        in: path
+#        name: minMagnesium
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /recipes/guessNutrition:
+    get:
+      description: Guess the macro nutrients of a dish given its title.
+      operationId: operations-Compute-Guess_Nutrition_by_Dish_Name
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The title of the dish.
+        in: query
+        name: title
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /recipes/informationBulk:
+#    get:
+#      description: Get information about multiple recipes at once. That is equivalent
+#        of calling the Get Recipe Information endpoint multiple times but is faster.
+#        Note that each returned recipe counts as one request.
+#      operationId: operations-Data-Get_Recipe_Information_Bulk
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Include nutrition data to the recipe information.--truefalse
+#        in: query
+#        name: includeNutrition
+#        required: false
+#        type: boolean
+#      - description: A comma-separated list of recipe ids.
+#        in: query
+#        name: ids
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/mealplans/generate:
+#    get:
+#      description: Generate a meal plan with three meals per day (breakfast, lunch,
+#        and dinner).
+#      operationId: operations-Compute-Generate_Meal_Plan
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Either for one 'day' or an entire 'week'.
+#        in: query
+#        name: timeFrame
+#        required: false
+#        type: string
+#      - description: What is the caloric target for one day? The meal plan generator
+#          will try to get as close as possible to that goal.
+#        in: query
+#        name: targetCalories
+#        required: false
+#        type: number
+#      - description: Enter a diet that the meal plan has to adhere to, e.g. "vegetarian",
+#          "vegan", "paleo" etc.
+#        in: query
+#        name: diet
+#        required: false
+#        type: string
+#      - description: A comma-separated list of allergens or ingredients that must
+#          be excluded.
+#        in: query
+#        name: exclude
+#        required: false
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/queries/analyze:
+#    get:
+#      description: Parse a recipe search query to find out its intention.
+#      operationId: operations-Extract-Analyze_a_Recipe_Search_Query
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The recipe search query.
+#        in: query
+#        name: q
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/quickAnswer:
+#    get:
+#      description: Answer a nutrition related natural language question.
+#      operationId: operations-Compute-Quick_Answer
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The nutrition-related question.
+#        in: query
+#        name: q
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/random:
+#    get:
+#      description: Find random (popular) recipes.
+#      operationId: operations-Search-Get_Random_Recipes
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The number of random recipes to be returned. Must be in interval
+#          [1,100]. NOTE: Each random recipe returned counts as one request.'
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: Whether the recipes should have an open license that allows for
+#          displaying with proper attribution.--truefalse
+#        in: query
+#        name: limitLicense
+#        required: false
+#        type: boolean
+#      - description: Tags that the random recipe(s) must adhere to.
+#        in: query
+#        name: tags
+#        required: false
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/search:
+#    get:
+#      description: Search recipes in natural language.
+#      operationId: operations-Search-Search_Recipes
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The diet to which the recipes must be compliant. Possible values
+#          are: pescetarian, lacto vegetarian, ovo vegetarian, vegan, and vegetarian.'
+#        in: query
+#        name: diet
+#        required: false
+#        type: string
+#      - description: An comma-separated list of ingredients or ingredient types that
+#          must not be contained in the recipes.
+#        in: query
+#        name: excludeIngredients
+#        required: false
+#        type: string
+#      - description: 'A comma-separated list of intolerances. All found recipes must
+#          not have ingredients that could cause problems for people with one of the
+#          given tolerances. Possible values are: dairy, egg, gluten, peanut, sesame,
+#          seafood, shellfish, soy, sulfite, tree nut, and wheat.'
+#        in: query
+#        name: intolerances
+#        required: false
+#        type: string
+#      - description: The number of results to return (between 0 and 100).
+#        in: query
+#        name: number
+#        required: false
+#        type: number
+#      - description: The number of results to skip (between 0 and 900).
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'The type of the recipes. One of the following: main course,
+#          side dish, dessert, appetizer, salad, bread, breakfast, soup, beverage,
+#          sauce, or drink.'
+#        in: query
+#        name: type
+#        required: false
+#        type: string
+#      - description: Whether the recipes should have an open license that allows for
+#          displaying with proper attribution.--truefalse
+#        in: query
+#        name: limitLicense
+#        required: false
+#        type: boolean
+#      - description: Whether the recipes must have instructions.--truefalse
+#        in: query
+#        name: instructionsRequired
+#        required: false
+#        type: boolean
+#      - description: 'The cuisine(s) of the recipes. One or more (comma separated)
+#          of the following: african, chinese, japanese, korean, vietnamese, thai,
+#          indian, british, irish, french, italian, mexican, spanish, middle eastern,
+#          jewish, american, cajun, southern, greek, german, nordic, eastern european,
+#          caribbean, or latin american.'
+#        in: query
+#        name: cuisine
+#        required: false
+#        type: string
+#      - description: The (natural language) recipe search query.
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/searchComplex:
+#    get:
+#      description: 'Search through hundreds of thousands of recipes using advanced
+#        filtering and ranking. NOTE: Since this method combines three other functionalities,
+#        each request counts as 3 requests.'
+#      operationId: operations-Search-Search_Recipes_Complex
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The minimum number of milligrams of iron the recipe must have.
+#        in: query
+#        name: minIron
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of calcium the recipe must have.
+#        in: query
+#        name: minCalcium
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin B2 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB2
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of magnesium the recipe can
+#          have.
+#        in: query
+#        name: maxMagnesium
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of potassium the recipe must
+#          have.
+#        in: query
+#        name: minPotassium
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin B6 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB6
+#        required: false
+#        type: number
+#      - description: 'A comma-separated list of intolerances. All found recipes must
+#          not have ingredients that could cause problems for people with one of the
+#          given tolerances. Possible values are: dairy, egg, gluten, peanut, sesame,
+#          seafood, shellfish, soy, sulfite, tree nut, and wheat.'
+#        in: query
+#        name: intolerances
+#        required: false
+#        type: string
+#      - description: The maximum number of milligrams of Vitamin B5 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB5
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of folic acid the recipe must
+#          have.
+#        in: query
+#        name: minFolicAcid
+#        required: false
+#        type: number
+#      - description: The minimum number of IU of Vitamin A the recipe must have.
+#        in: query
+#        name: minVitaminA
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of sodium the recipe can have.
+#        in: query
+#        name: maxSodium
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of sugar the recipe can have.
+#        in: query
+#        name: maxSugar
+#        required: false
+#        type: number
+#      - description: 'The diet to which the recipes must be compliant. Possible values
+#          are: pescetarian, lacto vegetarian, ovo vegetarian, vegan, paleo, primal,
+#          and vegetarian.'
+#        in: query
+#        name: diet
+#        required: false
+#        type: string
+#      - description: The maximum number of IU of Vitamin A the recipe can have.
+#        in: query
+#        name: maxVitaminA
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of fluoride the recipe can have.
+#        in: query
+#        name: maxFluoride
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of fluoride the recipe must
+#          have.
+#        in: query
+#        name: minFluoride
+#        required: false
+#        type: number
+#      - description: Whether the recipes must have instructions.--truefalse
+#        in: query
+#        name: instructionsRequired
+#        required: false
+#        type: boolean
+#      - description: The minimum number of milligrams of Vitamin B1 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB1
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of choline the recipe must have.
+#        in: query
+#        name: minCholine
+#        required: false
+#        type: number
+#      - description: Whether to minimize missing ingredients (0), maximize used ingredients
+#          (1) first, or rank recipes by relevance (2).
+#        in: query
+#        name: ranking
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of fat the recipe must have.
+#        in: query
+#        name: minFat
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin B1 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB1
+#        required: false
+#        type: number
+#      - description: If set to true, you get more information about the recipes returned.
+#          This saves the calls to get recipe information.--truefalse
+#        in: query
+#        name: addRecipeInformation
+#        required: false
+#        type: boolean
+#      - description: The minimum number of micrograms of Vitamin B12 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB12
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of selenium the recipe can have.
+#        in: query
+#        name: maxSelenium
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of zinc the recipe must have.
+#        in: query
+#        name: minZinc
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of folate the recipe must have.
+#        in: query
+#        name: minFolate
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of manganese the recipe can
+#          have.
+#        in: query
+#        name: maxManganese
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of Vitamin B12 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB12
+#        required: false
+#        type: number
+#      - description: The maxnimum number of milligrams of potassium the recipe can
+#          have.
+#        in: query
+#        name: maxPotassium
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of iron the recipe can have.
+#        in: query
+#        name: maxIron
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of selenium the recipe must
+#          have.
+#        in: query
+#        name: minSelenium
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of Vitamin K the recipe must
+#          have.
+#        in: query
+#        name: minVitaminK
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of fiber the recipe can have.
+#        in: query
+#        name: maxFiber
+#        required: false
+#        type: number
+#      - description: Add information about the used and missing ingredients in each
+#          recipe.--truefalse
+#        in: query
+#        name: fillIngredients
+#        required: false
+#        type: boolean
+#      - description: The minimum number of milligrams of sodium the recipe must have.
+#        in: query
+#        name: minSodium
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of copper the recipe can have.
+#        in: query
+#        name: maxCopper
+#        required: false
+#        type: number
+#      - description: The minimum number of calories the recipe must have.
+#        in: query
+#        name: minCalories
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of choline the recipe can have.
+#        in: query
+#        name: maxCholine
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of cholesterol the recipe must
+#          have.
+#        in: query
+#        name: minCholesterol
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin E the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminE
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of protein the recipe must have.
+#        in: query
+#        name: minProtein
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin B3 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB3
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin B6 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB6
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of iodine the recipe can have.
+#        in: query
+#        name: maxIodine
+#        required: false
+#        type: number
+#      - description: An comma-separated list of ingredients that must not be contained
+#          in the recipes.
+#        in: query
+#        name: excludeIngredients
+#        required: false
+#        type: string
+#      - description: The maximum number of grams of protein the recipe can have.
+#        in: query
+#        name: maxProtein
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of magnesium the recipe must
+#          have.
+#        in: query
+#        name: minMagnesium
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of carbohydrates the recipe must
+#          have.
+#        in: query
+#        name: minCarbs
+#        required: false
+#        type: number
+#      - description: 'The cuisine(s) of the recipes. One or more (comma separated)
+#          of the following: african, chinese, japanese, korean, vietnamese, thai,
+#          indian, british, irish, french, italian, mexican, spanish, middle eastern,
+#          jewish, american, cajun, southern, greek, german, nordic, eastern european,
+#          caribbean, or latin american.'
+#        in: query
+#        name: cuisine
+#        required: false
+#        type: string
+#      - description: The maximum number of milligrams of caffeine the recipe can have.
+#        in: query
+#        name: maxCaffeine
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of saturated fat the recipe can have.
+#        in: query
+#        name: maxSaturatedFat
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of Vitamin K the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminK
+#        required: false
+#        type: number
+#      - description: The username of the recipe author.
+#        in: query
+#        name: author
+#        required: false
+#        type: string
+#      - description: The minimum number of grams of alcohol the recipe must have.
+#        in: query
+#        name: minAlcohol
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of iodine the recipe must have.
+#        in: query
+#        name: minIodine
+#        required: false
+#        type: number
+#      - description: The recipe search query.
+#        in: query
+#        name: query
+#        required: false
+#        type: string
+#      - description: The minimum number of grams of saturated fat the recipe must
+#          have.
+#        in: query
+#        name: minSaturatedFat
+#        required: false
+#        type: number
+#      - description: A comma-separated list of ingredients that should/must be contained
+#          in the recipe.
+#        in: query
+#        name: includeIngredients
+#        required: false
+#        type: string
+#      - description: The minimum number of milligrams of Vitamin E the recipe must
+#          have.
+#        in: query
+#        name: minVitaminE
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of calcium the recipe can have.
+#        in: query
+#        name: maxCalcium
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of fiber the recipe must have.
+#        in: query
+#        name: minFiber
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin C the recipe must
+#          have.
+#        in: query
+#        name: minVitaminC
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of zinc the recipe can have.
+#        in: query
+#        name: maxZinc
+#        required: false
+#        type: number
+#      - description: The maximum number of calories the recipe can have.
+#        in: query
+#        name: maxCalories
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of alcohol the recipe can have.
+#        in: query
+#        name: maxAlcohol
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of phosphorus the recipe must
+#          have.
+#        in: query
+#        name: minPhosphorus
+#        required: false
+#        type: number
+#      - description: The minimum number of micrograms of Vitamin D the recipe must
+#          have.
+#        in: query
+#        name: minVitaminD
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin B2 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB2
+#        required: false
+#        type: number
+#      - description: The minimum number of grams of sugar the recipe must have.
+#        in: query
+#        name: minSugar
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of folate the recipe can have.
+#        in: query
+#        name: maxFolate
+#        required: false
+#        type: number
+#      - description: 'The type of the recipes. One of the following: main course,
+#          side dish, dessert, appetizer, salad, bread, breakfast, soup, beverage,
+#          sauce, or drink.'
+#        in: query
+#        name: type
+#        required: false
+#        type: string
+#      - description: The maximum number of milligrams of cholesterol the recipe can
+#          have.
+#        in: query
+#        name: maxCholesterol
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin B3 the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminB3
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of caffeine the recipe must
+#          have.
+#        in: query
+#        name: minCaffeine
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of Vitamin B5 the recipe must
+#          have.
+#        in: query
+#        name: minVitaminB5
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of folic acid the recipe can
+#          have.
+#        in: query
+#        name: maxFolicAcid
+#        required: false
+#        type: number
+#      - description: The maximum number of grams of carbohydrates the recipe can have.
+#        in: query
+#        name: maxCarbs
+#        required: false
+#        type: number
+#      - description: The maximum number of micrograms of Vitamin D the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminD
+#        required: false
+#        type: number
+#      - description: The equipment required. Multiple values will be interpreted as
+#          'or'. For example, value could be "blender, frying pan, bowl"
+#        in: query
+#        name: equipment
+#        required: false
+#        type: string
+#      - description: The maximum number of grams of fat the recipe can have.
+#        in: query
+#        name: maxFat
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of copper the recipe must have.
+#        in: query
+#        name: minCopper
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of Vitamin C the recipe can
+#          have.
+#        in: query
+#        name: maxVitaminC
+#        required: false
+#        type: number
+#      - description: The maximum number of milligrams of phosphorus the recipe can
+#          have.
+#        in: query
+#        name: maxPhosphorus
+#        required: false
+#        type: number
+#      - description: The minimum number of milligrams of manganese the recipe must
+#          have.
+#        in: query
+#        name: minManganese
+#        required: false
+#        type: number
+#      - description: Whether the recipes should have an open license that allows for
+#          displaying with proper attribution.--truefalse
+#        in: query
+#        name: limitLicense
+#        required: true
+#        type: boolean
+#      - description: The number of results to skip (between 0 and 900).
+#        in: query
+#        name: offset
+#        required: true
+#        type: number
+#      - description: The number of results to return (between 1 and 100).
+#        in: query
+#        name: number
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/analyzedInstructions:
+#    get:
+#      description: Get an analyzed breakdown of a recipe's instructions. Each step
+#        is enriched with the ingredients and the equipment that is used.
+#      operationId: operations-Data-Get_Analyzed_Recipe_Instructions
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Whether to break down the recipe steps even more.--truefalse
+#        in: query
+#        name: stepBreakdown
+#        required: false
+#        type: boolean
+#      - description: The id of the recipe.
+#        in: path
+#        name: id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/equipmentWidget:
+#    get:
+#      description: Visualize a recipe's equipment list.
+#      operationId: operations-Compute-Visualize_Recipe_Equipment_by_id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Whether the default CSS should be added to the response.--truefalse
+#        in: query
+#        name: defaultCss
+#        required: false
+#        type: boolean
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      - description: Results are in HTML.
+#        in: header
+#        name: Accept
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/equipmentWidget.json:
+#    get:
+#      description: Get a recipe's equipment list.
+#      operationId: operations-Data-Get_Recipe_Equipment_by_id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/information:
+#    get:
+#      description: Get information about a recipe.
+#      operationId: operations-Data-Get_Recipe_Information
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Include nutrition data to the recipe information. Nutrition data
+#          is per serving. If you want the nutrition data for the entire recipe, just
+#          multiply by the number of servings.--truefalse
+#        in: query
+#        name: includeNutrition
+#        required: false
+#        type: boolean
+#      - description: The id of the recipe.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/ingredientWidget:
+#    get:
+#      description: Visualize a recipe's ingredient list.
+#      operationId: operations-Compute-Visualize_Recipe_Ingredients_by_id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Whether the default CSS should be added to the response.--truefalse
+#        in: query
+#        name: defaultCss
+#        required: false
+#        type: boolean
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      - description: Results are in HTML.
+#        in: header
+#        name: Accept
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/ingredientWidget.json:
+#    get:
+#      description: Get a recipe's ingredient list.
+#      operationId: operations-Data-Get_Recipe_Ingredients_by_id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/nutritionWidget:
+#    get:
+#      description: Visualize a recipe's nutrition data.
+#      operationId: operations-Compute-Visualize_Recipe_Nutrition_by_id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Whether the default CSS should be added to the response.--truefalse
+#        in: query
+#        name: defaultCss
+#        required: false
+#        type: boolean
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      - description: Results are in HTML.
+#        in: header
+#        name: Accept
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/nutritionWidget.json:
+#    get:
+#      description: Get a recipe's nutrition widget data.
+#      operationId: operations-Data-Get_Recipe_Nutrition_by_id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/priceBreakdownWidget:
+#    get:
+#      description: Visualize a recipe's price breakdown.
+#      operationId: operations-Compute-Visualize_Recipe_Price_Breakdown_by_id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Whether the default CSS should be added to the response.--truefalse
+#        in: query
+#        name: defaultCss
+#        required: false
+#        type: boolean
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      - description: Results are in HTML.
+#        in: header
+#        name: Accept
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/priceBreakdownWidget.json:
+#    get:
+#      description: Get a recipe's price breakdown data.
+#      operationId: operations-Data-Get_Recipe_Price_Breakdown_by_id
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The recipe id.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/similar:
+#    get:
+#      description: Find recipes which are similar to the given one.
+#      operationId: operations-Search-Get_Similar_Recipes
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The id of the source recipe to which similar recipes should be
+#          found.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /recipes/{id}/summary:
+#    get:
+#      description: Summarize the recipe in a short text.
+#      operationId: operations-Compute-Summarize_Recipe
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The id of the recipe that should be summarized.
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

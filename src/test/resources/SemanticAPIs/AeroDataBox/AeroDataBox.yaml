@@ -1,0 +1,658 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: 'Enthusiast-driven aviation and flight data API for a small travel
+    or aviation application. Flight status, delays, schedules. Airports, runways,
+    delay index, statistics, distance and flight-time between. Aircraft information,
+    aircraft image recognition by registration. '
+  title: AeroDataBox
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /aircrafts/reg/{reg}/image/beta:
+    get:
+      description: ''
+      operationId: operations-Aircrafts_API-Aircraft_image_by_registration
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aerodatabox.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: "Registration of the aircraft (full, stripped and any case formats are acceptable)."
+        in: path
+        name: reg
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /aircrafts/{searchBy}/{searchParam}:
+    get:
+      description: ''
+      operationId: operations-Aircrafts_API-Aircraft_by_reg_hex_ICAO_24-bit_address
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aerodatabox.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Criteria to search aircraft by
+        in: path
+        name: searchBy
+        required: true
+        type: string
+        enum:
+          - reg
+          - icao24
+      - description: "Value of the search criteria. If searchBy is:
+                            reg: then this field should be aircraft registration (with or without spaces or dashes, any case formats are acceptable, e.g.PH-BXO, DeMhJ);
+                            icao24, then this field should be aircraft ICAO 24-bit Mode-S address specified in hexadecimal format (e.g. 484161, 483EFD)."
+        in: path
+        name: searchParam
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /airports/icao/{icao}/delays:
+#    get:
+#      description: ''
+#      operationId: operations-Airports_API-Airport_delay_statistics_by_ICAO_code
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /airports/icao/{icao}/runways:
+    get:
+      description: Gets information about runways at specified airport.
+      operationId: operations-Airports_API-Airport_runways_by_ICAO_code
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aerodatabox.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: '4-digit ICAO-code of the airport (e.g.: EHAM, KLAX, UUEE, etc.).
+          Full, stripped and any case formats are acceptable.'
+        in: path
+        name: icao
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /airports/icao/{icao}/stats/routes/daily:
+#    get:
+#      description: ''
+#      operationId: operations-Airports_API-Airport_routes_and_daily_flights_by_ICAO_code
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /airports/icao/{icao}/time/local:
+#    get:
+#      description: ''
+#      operationId: operations-Airports_API-Airport_local_time_by_ICAO_code
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /airports/search/location/{lat}/{lon}/km/{radiusKm}/{limit}:
+    get:
+      description: Gets the list of airports found within specified radius around
+        specified location.
+      operationId: operations-Airports_API-Search_airports_by_location
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aerodatabox.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: If set to true, will only return airports which have flight data
+          (scheduled or live) available. Default = false.--truefalse
+        in: query
+        name: withFlightInfoOnly
+        required: false
+        type: boolean
+      - description: Latitude location coordinate in decimal format (between -90 and
+          90)
+        in: path
+        name: lat
+        required: true
+        type: number
+      - description: Maximum number of airports to be returned
+        in: path
+        name: limit
+        required: true
+        type: number
+      - description: Longitude location coordinate in decimal format (between -180
+          and 180)
+        in: path
+        name: lon
+        required: true
+        type: number
+      - description: Radius of search around specified location in kilometers (maximum
+          1000 km)
+        in: path
+        name: radiusKm
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /airports/search/term:
+#    get:
+#      description: ''
+#      operationId: operations-Airports_API-Search_airports_by_free_text
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /airports/{codeType}/{codeFrom}/distance-time/{codeTo}:
+    get:
+      description: What is distance between airports? and What is approximate flight
+        time between airports?
+      operationId: operations-Airports_API-Distance_Flight_time_to_another_airport_by_IATA-ICAO-codes
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aerodatabox.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Code type: IATA or ICAO'
+        in: path
+        name: codeType
+        required: true
+        type: string
+      - description: 'If code type is ICAO: 4-digit ICAO-code of the airport (e.g.:
+          EHAM, KLAX, UUEE, etc.). Full, stripped and any case formats are acceptable.
+
+          If code type is IATA: 3-digit IATA-code of the airport (e.g.: AMS, LAX,
+          SVO, etc.). Full, stripped and any case formats are acceptable.Default value
+          : LHR'
+        in: path
+        name: codeFrom
+        required: true
+        type: string
+      - description: 'If code type is ICAO: 4-digit ICAO-code of the airport (e.g.:
+          EHAM, KLAX, UUEE, etc.). Full, stripped and any case formats are acceptable.
+
+          If code type is IATA: 3-digit IATA-code of the airport (e.g.: AMS, LAX,
+          SVO, etc.). Full, stripped and any case formats are acceptable.Default value
+          : LAX'
+        in: path
+        name: codeTo
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /airports/{codeType}/{code}:
+    get:
+      description: Gets airport by IATA or ICAO code.
+      operationId: operations-Airports_API-Aiport_by_IATA-ICAO_code
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aerodatabox.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Should include runway information--truefalse
+        in: query
+        name: withRunways
+        required: false
+        type: boolean
+      - description: Should include current local time information--truefalse
+        in: query
+        name: withTime
+        required: false
+        type: boolean
+      - description: ''
+        in: path
+        name: codeType
+        required: true
+        type: string
+      - description: 'If code type is ICAO: 4-digit ICAO-code of the airport (e.g.:
+          EHAM, KLAX, UUEE, etc.). Full, stripped and any case formats are acceptable.
+
+          If code type is IATA: 3-digit IATA-code of the airport (e.g.: AMS, LAX,
+          SVO, etc.). Full, stripped and any case formats are acceptable.Default value
+          : LHR'
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /flights/airports/icao/{icao}/{fromLocal}/{toLocal}:
+#    get:
+#      description: '**What are current departures or arrivals at the airport? **or
+#        What is the flight schedule at the airport? or What is flight history at the
+#        airport?'
+#      operationId: operations-Flights_API-Departures_and_arrivals_\(FIDS\)_by_airport_ICAO_code
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'If set to true, result will include private flights (subject
+#          to availability).Default value : true--truefalse'
+#        in: query
+#        name: withPrivate
+#        required: false
+#        type: boolean
+#      - description: 'If set to true, will include movement information from airport
+#          opposite in this flight leg (airport of origin for arriving flight or airport
+#          of destination for departing flight). In this case, Movement property will
+#          be replaced with Departure and Arrival properties for each flight. Default:
+#          false.--truefalse'
+#        in: query
+#        name: withLeg
+#        required: false
+#        type: boolean
+#      - description: 'If set to true, result will include flights with all code-shared
+#          statuses. Otherwise, code-sharing flights will be excluded. For airports,
+#          where no information about code-share statuses of flights are supplied (all
+#          flights are CodeshareStatus=Unknown), complex filtering will be applied
+#          to determine which flights are likely to be operational (caution: false
+#          results are possible).Default value : true--truefalse'
+#        in: query
+#        name: withCodeshared
+#        required: false
+#        type: boolean
+#      - description: 'If set to true, result will include cancelled, divered, likely
+#          cancelled (CanceledUncertain) flights. Default: true.Default value : true--truefalse'
+#        in: query
+#        name: withCancelled
+#        required: false
+#        type: boolean
+#      - description: 'If set to true, result will include cargo flights (subject to
+#          availability).Default value : true--truefalse'
+#        in: query
+#        name: withCargo
+#        required: false
+#        type: boolean
+#      - description: 'Direction of flights: Arrival, Departure or Both (default)'
+#        in: query
+#        name: direction
+#        required: false
+#        type: string
+#      - description: 'End of the search range (local time, format: YYYY-MM-DDTHH:mm).
+#          Should be more than beginning of the search range, but not more than by
+#          12 hours.'
+#        in: path
+#        name: toLocal
+#        required: true
+#        type: string
+#      - description: 'Beginning of the search range (local time, format: YYYY-MM-DDTHH:mm)Default
+#          value : 2019-12-26T12:00'
+#        in: path
+#        name: fromLocal
+#        required: true
+#        type: string
+#      - description: '4-digit ICAO-code of the airport (e.g.: EHAM, KLAX, UUEE, etc.).
+#          Full, stripped and any case formats are acceptable.'
+#        in: path
+#        name: icao
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /flights/{number}/dates/{fromLocal}/{toLocal}:
+#    get:
+#      description: 'This endpoint is deprecated. Please Flight departure dates endpoint
+#        instead: https://rapidapi.com/squawk7000/api/aerodatabox?endpoint=apiendpoint_3dbf8f9a-22de-4a99-8e7d-e542f6e63e4f'
+#      operationId: operations-Flights_API-\[DEPRECATED\]_Flight_departure_dates_by_flight_number
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Beginning of the search range (local time, format: YYYY-MM-DD)Default
+#          value : 2020-06-01'
+#        in: path
+#        name: fromLocal
+#        required: true
+#        type: string
+#      - description: 'End of the search range (local time, format: YYYY-MM-DD)Default
+#          value : 2020-06-15'
+#        in: path
+#        name: toLocal
+#        required: true
+#        type: string
+#      - description: 'Flight number (with or without spaces, IATA or ICAO, any case
+#          formats are acceptable, e.g. KL1395, Klm 1395)Default value : KL945'
+#        in: path
+#        name: number
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /flights/{number}/delays:
+#    get:
+#      description: By how much the flight is delayed in average?
+#      operationId: operations-Flights_API-Flight_delay_statistics_by_flight_number
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Flight number (with or without spaces, IATA or ICAO, any case
+#          formats are acceptable, e.g. KL1395, Klm 1395)
+#        in: path
+#        name: number
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /flights/{number}/{dateLocal}:
+#    get:
+#      description: 'This endpoint is deprecated.
+#
+#        Please use Flight status endpoint instead: https://rapidapi.com/squawk7000/api/aerodatabox?endpoint=apiendpoint_9476738a-0f2b-4b04-a6b0-bc3663181d62'
+#      operationId: operations-Flights_API-\[DEPRECATED\]_Flight_by_number
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Should include aircraft image--truefalse
+#        in: query
+#        name: withAircraftImage
+#        required: false
+#        type: boolean
+#      - description: 'Should include real-time positional data, e.g.: location, speed,
+#          altitude, etc., if available--truefalse'
+#        in: query
+#        name: withLocation
+#        required: false
+#        type: boolean
+#      - description: 'Local date of departure or arrival (in format: YYYY-MM-DD, e.g.:
+#          2019-08-29).Default value : 2020-06-17'
+#        in: path
+#        name: dateLocal
+#        required: true
+#        type: string
+#      - description: 'Flight number (with or without spaces, IATA or ICAO, any case
+#          formats are acceptable, e.g. KL1395, Klm 1395)Default value : KL945'
+#        in: path
+#        name: number
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /flights/{searchBy}/{searchParameter}/dates/{fromLocal}/{toLocal}:
+#    get:
+#      description: On which days the flight operates? or What is the flight schedule?
+#      operationId: operations-Flights_API-Flight_departure_dates
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'End of the search range (local time, format: YYYY-MM-DD)Default
+#          value : 2020-06-15'
+#        in: path
+#        name: toLocal
+#        required: true
+#        type: string
+#      - description: 'Beginning of the search range (local time, format: YYYY-MM-DD)Default
+#          value : 2020-06-01'
+#        in: path
+#        name: fromLocal
+#        required: true
+#        type: string
+#      - description: 'If searchBy is:
+#
+#
+#          number, then then this field should be Flight number (with or without spaces,
+#          IATA or ICAO, any case formats are acceptable, e.g. KL1395, Klm 1395)
+#
+#          callsign, then this field should be ATC call-sign of the flight (with or
+#          without spaces, any case formats are acceptable, e.g. AFL1482, nca 008X);
+#
+#          reg: then this field should be Aircraft registration (with or without spaces
+#          or dashes, any case formats are acceptable, e.g. PH-BXO, DeMhJ);
+#
+#          icao24, then this field should be Aircraft ICAO 24-bit Mode-S address specified
+#          in hexadecimal format (e.g. 484161, 483EFD).
+#
+#          Default value : KL1395'
+#        in: path
+#        name: searchParameter
+#        required: true
+#        type: string
+#      - description: 'Criteria to search by:
+#
+#
+#          number: search flight operated under specified flight number;
+#
+#          callsign: search flight operated under specified ATC call-sign;
+#
+#          reg: search flight operated on an aircraft with specified registration;
+#
+#          icao24: search flight operated on an aircraft with specified ICAO 24-bit
+#          Mode-S transponder address.
+#
+#          '
+#        in: path
+#        name: searchBy
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /flights/{searchBy}/{searchParameter}/{dateLocal}:
+#    get:
+#      description: 'Gets information about the status of the nearest (either in past
+#        or in future) flight or about flight departing or arriving on the day specified
+#        (local time), operated:'
+#      operationId: operations-Flights_API-Flight_status
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Optional parameter: Local date of departure or arrival (in format:
+#          YYYY-MM-DD, e.g.: 2019-08-29). If specified, endpoint gets information about
+#          flight departing or arriving on the day specified (local time).Default value
+#          : 2020-06-10'
+#        in: path
+#        name: dateLocal
+#        required: true
+#        type: string
+#      - description: 'If searchBy is:
+#
+#
+#          number, then then this field should be Flight number (with or without spaces,
+#          IATA or ICAO, any case formats are acceptable, e.g. KL1395, Klm 1395)
+#
+#          callsign, then this field should be ATC call-sign of the flight (with or
+#          without spaces, any case formats are acceptable, e.g. AFL1482, nca 008X);
+#
+#          reg: then this field should be Aircraft registration (with or without spaces
+#          or dashes, any case formats are acceptable, e.g. PH-BXO, DeMhJ);
+#
+#          icao24, then this field should be Aircraft ICAO 24-bit Mode-S address specified
+#          in hexadecimal format (e.g. 484161, 483EFD).
+#
+#          Default value : KL1395'
+#        in: path
+#        name: searchParameter
+#        required: true
+#        type: string
+#      - description: 'Criteria to search by:
+#
+#
+#          number: search flight operated under specified flight number;
+#
+#          callsign: search flight operated under specified ATC call-sign;
+#
+#          reg: search flight operated on an aircraft with specified registration;
+#
+#          icao24: search flight operated on an aircraft with specified ICAO 24-bit
+#          Mode-S transponder address.
+#
+#          '
+#        in: path
+#        name: searchBy
+#        required: true
+#        type: string
+#      - description: Should include aircraft image.--truefalse
+#        in: query
+#        name: withAircraftImage
+#        required: false
+#        type: boolean
+#      - description: 'Should include real-time positional data, e.g.: location, speed,
+#          altitude, etc., if available--truefalse'
+#        in: query
+#        name: withLocation
+#        required: false
+#        type: boolean
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /health/services/airports/{icao}/feeds:
+#    get:
+#      description: Gets current status of airport data feed services (live flight
+#        updates, flight schedules, etc.) for requested airport.
+#      operationId: operations-Healthcheck_\&_Status_API-Airport_data_feed_services_status_by_ICAO_code
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: '4-digit ICAO-code of the airport (e.g.: EHAM, KLAX, UUEE, etc.). Full, stripped and any case formats are acceptable.Default value : EGLL'
+#        in: path
+#        name: icao
+#        required: true
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /health/services/feeds/{service}/airports:
+#    get:
+#      description: '**Which airports support flight schedules? **or Which airports
+#        support live flight updates?'
+#      operationId: operations-Healthcheck_\&_Status_API-Airports_supporting_data_feed_service
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aerodatabox.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Airport data feed service name
+#        in: path
+#        name: service
+#        required: true
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

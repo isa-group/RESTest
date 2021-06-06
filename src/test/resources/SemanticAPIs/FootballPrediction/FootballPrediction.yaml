@@ -1,0 +1,273 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: The Football Prediction API provides predictions for upcoming football
+    matches, average bookie odds, results for past matches and prediction performance
+    statistics for past results.
+  title: Football Prediction
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /api/v2/away-last-10/{id}:
+#    get:
+#      description: Grab the statistics and list of the last 10 matches played by the
+#        away team for a certain ID
+#      operationId: operations-Match_Statistics-Away_Team_Last_10_Matches
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: (use predictions endpoint to get list of IDs)
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/v2/away-league-stats/{id}:
+#    get:
+#      description: Shows the league table and stats for the away team of an upcoming
+#        match.
+#      operationId: operations-Match_Statistics-Away_Team_League_Stats
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: (use predictions endpoint to get list of IDs)
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/v2/get-list-of-fixture-ids:
+#    get:
+#      description: 'Returns a list of fixture IDs that can be used to make requests
+#        to endpoints expecting a ID url parameter.
+#
+#        Can be filtered by:'
+#      operationId: operations-Utils-Get_list_of_fixture_IDs
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/v2/head-to-head/{id}:
+#    get:
+#      description: Shows head to head stats and previous encounters for the home and
+#        away team of an upcoming match.
+#      operationId: operations-Match_Statistics-Head_To_Head
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Limit the search to only X previous encounters. (max is 10)
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: (use predictions endpoint to get list of IDs)
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/v2/home-last-10/{id}:
+#    get:
+#      description: Grab the statistics and list of the last 10 matches played by the
+#        home team for a certain ID
+#      operationId: operations-Match_Statistics-Home_Team_Last_10_Matches
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: (use predictions endpoint to get list of IDs)
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/v2/home-league-stats/{id}:
+#    get:
+#      description: Shows the league table and stats for the home team of an upcoming
+#        match.
+#      operationId: operations-Match_Statistics-Home_Team_League_Stats
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: (use predictions endpoint to get list of IDs)
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/v2/list-federations:
+#    get:
+#      description: Returns an array of all the available federations.
+#      operationId: operations-Utils-List_available_federations
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/v2/list-markets:
+#    get:
+#      description: List all available markets and the ones that are enabled for your
+#        subscription plan
+#      operationId: operations-Utils-List_available_markets
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /api/v2/performance-stats:
+    get:
+      description: Returns information about the accuracy of past predictions. (in
+        the last day, 7 days, 14 days and 30 days) Can be additionally filtered by
+        federation and market. If no market filter is provided it defaults to classic
+      operationId: operations-Past_performance-Performance_stats_for_past_predictions
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - football-prediction-api.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Filter stats by federation
+        in: query
+        name: federation
+        required: false
+        type: string
+      - description: "Show stats for a different prediction market. Defaults to 'classic' if not provided"
+        in: query
+        name: market
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /api/v2/predictions:
+#    get:
+#      description: This endpoint returns a list of the football predictions scheduled
+#        to start in the next 48hours. URL parameters can be specified to show past
+#        predictions or to filter by federation and prediction market.
+#      operationId: operations-Forecasting-Predictions
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Shows the predictions for a certain market. Defaults to "classic"
+#          if not provided
+#        in: query
+#        name: market
+#        required: false
+#        type: string
+#      - description: Will filter the results by date. Can be used to show past results.
+#        in: query
+#        name: iso_date
+#        required: false
+#        type: string
+#      - description: Filter the predictions by federation
+#        in: query
+#        name: federation
+#        required: false
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /api/v2/predictions/{id}:
+#    get:
+#      description: Grab all available predictions for a match id
+#      operationId: operations-Forecasting-Prediction_Details
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - football-prediction-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

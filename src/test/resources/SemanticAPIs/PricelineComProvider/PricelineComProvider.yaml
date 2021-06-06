@@ -1,0 +1,347 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: priceline.com | Lets you search hotels, cars for rent, flights.
+  title: Priceline com Provider
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /v1/cars-rentals/locations:
+#    get:
+#      description: Search locations by name
+#      operationId: operations-cars-rentals-get_v1_cars_rentals_locations
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'NameDefault value : London'
+#        in: query
+#        name: name
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/cars-rentals/search:
+#    get:
+#      description: Search car rentals by filter. Indicate the location_id -> use Search
+#        locations api point
+#      operationId: operations-cars-rentals-Search_car_rentals
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Return date and timeDefault value : 2021-09-27 14:00:00'
+#        in: query
+#        name: date_time_return
+#        required: true
+#        type: string($date-time)
+#      - description: 'Location return code or idDefault value : 1365100023'
+#        in: query
+#        name: location_return
+#        required: true
+#        type: string
+#      - description: 'Location pickup code or id. Ex: JFK or 1365100023, use Search
+#          locations api pointDefault value : JFK'
+#        in: query
+#        name: location_pickup
+#        required: true
+#        type: string
+#      - description: 'Pickup date and timeDefault value : 2021-09-26 14:00:00'
+#        in: query
+#        name: date_time_pickup
+#        required: true
+#        type: string($date-time)
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/flights/locations:
+#    get:
+#      description: Search airports and locations by name
+#      operationId: operations-flights-get_v1_flights_locations
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'NameDefault value : Los'
+#        in: query
+#        name: name
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /v1/flights/search:
+    get:
+      description: 'Search flights. Set type: ONE_WAY or ROUND_TRIP. Set location_departure and location_arrival, use /v1/flights/locations api point. You can filter out tickets by price, max duration and number of stops'
+      operationId: operations-flights-Search_flights
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - priceline-com-provider.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Price minDefault value : 100'
+        in: query
+        name: price_min
+        required: false
+        type: integer
+      - description: 'Duration max. SecondsDefault value : 2051'
+        in: query
+        name: duration_max
+        required: false
+        type: integer
+      - description: 'Number of passengersDefault value : 1'
+        in: query
+        name: number_of_passengers
+        required: false
+        type: integer
+      - description: 'Departure date backDefault value : 2021-09-27'
+        in: query
+        name: date_departure_return
+        required: false
+        type: string # date
+      - description: 'Price maxDefault value : 20000'
+        in: query
+        name: price_max
+        required: false
+        type: integer
+      - description: 'Number of stops. 0 - is direct flightDefault value : 1'
+        in: query
+        name: number_of_stops
+        required: false
+        type: integer
+      - description: 'Arrival location  codeDefault value : NYC'
+        in: query
+        name: location_arrival
+        required: true
+        type: string
+        pattern: "^[A-Z|]+$"
+      - description: 'Departure location code. Use Search locations api pointDefault
+          value : MOW'
+        in: query
+        name: location_departure
+        required: true
+        type: string
+        pattern: "^[A-Z|]+$"
+      - description: 'Departure dateDefault value : 2021-09-27'
+        in: query
+        name: date_departure
+        required: true
+        type: string    # date
+      - description: 'Available values : ECO, BUS, PEC, FSTDefault value : ECOECOBUSPECFST'
+        in: query
+        name: class_type
+        required: true
+        type: string
+      - description: 'Available values : ONE_WAY, ROUND_TRIPDefault value : ONE_WAYONE_WAYROUND_TRIP'
+        in: query
+        name: itinerary_type
+        required: true
+        type: string
+      - description: 'Available values : PRICE, ARRIVETIME, DEPARTTIME, TRAVELTIMEDefault
+          value : PRICEPRICEARRIVETIMEDEPARTTIMETRAVELTIME'
+        in: query
+        name: sort_order
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /v1/hotels/booking-details:
+#    get:
+#      description: Get hotel descriptions, prices and available booking options. Indicate
+#        the hotel_id, check-in and check-out date
+#      operationId: operations-hotels-Booking_details_of_the_hotel
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Rooms numberDefault value : 1'
+#        in: query
+#        name: rooms_number
+#        required: false
+#        type: integer
+#      - description: 'Checkin dateDefault value : 2021-09-26'
+#        in: query
+#        name: date_checkin
+#        required: true
+#        type: string($date)
+#      - description: 'Hotel idDefault value : 6733503'
+#        in: query
+#        name: hotel_id
+#        required: true
+#        type: integer
+#      - description: 'Checkout dateDefault value : 2022-09-27'
+#        in: query
+#        name: date_checkout
+#        required: true
+#        type: string($date)
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/hotels/details:
+#    get:
+#      description: Get all reviews and images of the hotel by hotel_id
+#      operationId: operations-hotels-Hotel_details
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Offset of reviewsDefault value : 0'
+#        in: query
+#        name: offset_of_reviews
+#        required: false
+#        type: integer
+#      - description: 'Hotel idDefault value : 6733503'
+#        in: query
+#        name: hotel_id
+#        required: true
+#        type: integer
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/hotels/locations:
+#    get:
+#      description: Search locations by name
+#      operationId: operations-hotels-Search_locations
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'NameDefault value : Berlin'
+#        in: query
+#        name: name
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /v1/hotels/locations-by-geo:
+    get:
+      description: Search locations by coordinates. Set coordinates latitude and longitude
+      operationId: operations-hotels-Search_locations_by_geolocation
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - priceline-com-provider.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'LongitudeDefault value : 14.418540'
+        in: query
+        name: longitude
+        required: true
+        type: number
+      - description: 'LatitudeDefault value : 50.073658'
+        in: query
+        name: latitude
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /v1/hotels/search:
+#    get:
+#      description: Get available hotels by the filter. Indicate the location_id ->
+#        use Search locations, check-in and check-out date
+#      operationId: operations-hotels-Search_hotels
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'AmenitiesDefault value : FINTRNT,FBRKFST'
+#        in: query
+#        name: amenities_ids
+#        required: false
+#        type: string
+#      - description: 'Hotel star ratingsDefault value : 3.0,3.5,4.0,4.5,5.0'
+#        in: query
+#        name: star_rating_ids
+#        required: false
+#        type: string
+#      - description: 'Rooms numberDefault value : 1'
+#        in: query
+#        name: rooms_number
+#        required: false
+#        type: integer
+#      - description: 'Number of pageDefault value : 0'
+#        in: query
+#        name: page_number
+#        required: false
+#        type: integer
+#      - description: 'Location id, use Search locations api pointDefault value : 3000035821'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: string
+#      - description: 'Available values : HDR, PRICE, STAR, PROXIMITY, DEALSDefault
+#          value : HDRHDRPRICESTARPROXIMITYDEALS'
+#        in: query
+#        name: sort_order
+#        required: true
+#        type: string
+#      - description: 'Checkout dateDefault value : 2021-11-27'
+#        in: query
+#        name: date_checkout
+#        required: true
+#        type: string($date)
+#      - description: 'Checkin dateDefault value : 2021-11-26'
+#        in: query
+#        name: date_checkin
+#        required: true
+#        type: string($date)
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
