@@ -209,22 +209,28 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/SAIGEN/NAVITIME Route(totalnavi)/operations-default-shape_transit_start.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: goal
       in: query
       weight: null
       generators:
-      - type: SemanticParameter
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/main/resources/TestData/SAIGEN/NAVITIME Route(totalnavi)/operations-default-shape_transit_goal.csv
+          objectValues: null
+        - name: predicates
+          values: []
           objectValues: null
         valid: true
     - name: start_time

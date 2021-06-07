@@ -1,0 +1,208 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/airport/city_code/{cityCode}/"
+    operationId: operations-Airport-Airports_by_City_code
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - airportix.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: cityCode
+      in: path
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AirportIX/operations-Airport-Airports_by_City_code_cityCode.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airport/code/{code}/"
+    operationId: operations-Airport-Airports_by_IATA_or_ICAO_code
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - airportix.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: code
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AirportIX/operations-Airport-Airports_by_IATA_or_ICAO_code_code.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airport/country_code/{isoCode}/{classification}"
+    operationId: operations-Airport-Airports_by_Country_code
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - airportix.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: classification
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: isoCode
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AirportIX/operations-Airport-Airports_by_Country_code_isoCode.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/airport/delay_index/{code}/"
+    operationId: operations-Airport-Airports_Delay_Index
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - airportix.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: code
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AirportIX/operations-Airport-Airports_Delay_Index_code.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/plane/bynumber/{number}/"
+    operationId: operations-Aircraft-Aircraft_by_MSN_or_Registration_number
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - airportix.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: number
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AirportIX/operations-Aircraft-Aircraft_by_MSN_or_Registration_number_number.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/plane/directory/{code}/"
+    operationId: operations-Aircraft-Aircraft_directory_by_IATA_code
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - airportix.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: code
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/SAIGEN/AirportIX/operations-Aircraft-Aircraft_directory_by_IATA_code_code.csv
+          objectValues: null
+        - name: predicates
+          values: []
+          objectValues: null
+        valid: true
+    expectedResponse: 200
