@@ -22,7 +22,7 @@ paths:
           required: true
           type: string
         - description: Full, public internet URL to image
-          in: form
+          in: query
           name: image_url
           required: true
           type: string
