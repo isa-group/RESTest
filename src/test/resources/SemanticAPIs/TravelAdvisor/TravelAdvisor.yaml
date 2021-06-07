@@ -1,0 +1,1713 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: "This API helps to query realtime Flights prices, Hotels booking, Restaurants, Attracting locations, etc. as on tripadvisor.com"
+  title: Travel Advisor
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /airports/search:
+#    get:
+#      description: ''
+#      operationId: operations-flights_Deprecating-airports_search_Deprecating
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: locale
+#        required: false
+#        type: string
+#      - description: 'Name of cities, districts, places, etc...Default value : new
+#          york'
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /answers/list:
+#    get:
+#      description: List answers related to a questions by its id
+#      operationId: operations-shared-answers\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: The number of items per response (max 10)
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: 'The value of id field that returned in questions/list endpointDefault
+#          value : 5283833'
+#        in: query
+#        name: question_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /attractions/get-details:
+#    get:
+#      description: Get all information of specific attracting location by its location_id
+#      operationId: operations-attractions-attractions\/get-details
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: 'The value of location_id field that returned in attractions/list
+#          endpointDefault value : 1451754'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /attractions/list:
+#    get:
+#      description: List attractions of specific location by location_id
+#      operationId: operations-attractions-attractions\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'One of following recommended|rankingDefault value : recommended'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: The number of items per response (max 30)
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: Rating - Min 3 max 5
+#        in: query
+#        name: min_rating
+#        required: false
+#        type: number
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: Attraction category - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (only one value is allowed at a time) returned right in this endpoint
+#        in: query
+#        name: subcategory
+#        required: false
+#        type: number
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: Book online first--truefalse
+#        in: query
+#        name: bookable_first
+#        required: false
+#        type: boolean
+#      - description: 'One of the followings km|miDefault value : km'
+#        in: query
+#        name: lunit
+#        required: false
+#        type: string
+#      - description: The value of location_id field that returned in locations/search
+#          endpoint
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /attractions/list-by-latlng:
+#    get:
+#      description: List attractions by specifying an coordinate and radius
+#      operationId: operations-attractions-attractions\/list-by-latlng
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of items per response (max 30)
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'One of the followings km|miDefault value : km'
+#        in: query
+#        name: lunit
+#        required: false
+#        type: string
+#      - description: The radius around specified coordinate (max 25)
+#        in: query
+#        name: distance
+#        required: false
+#        type: number
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: Latitude of coordinate
+#        in: query
+#        name: latitude
+#        required: true
+#        type: number
+#      - description: Longitude of coordinate
+#        in: query
+#        name: longitude
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /attractions/list-in-boundary:
+#    get:
+#      description: List attractions by specifying coordinates of bottom left and top
+#        right of a boundary
+#      operationId: operations-attractions-attractions\/list-in-boundary
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: The number of items per response (max 30)
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: 'One of the followings km|miDefault value : km'
+#        in: query
+#        name: lunit
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: Rating - Min 3 max 5
+#        in: query
+#        name: min_rating
+#        required: false
+#        type: number
+#      - description: Attraction category - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (only one value is allowed at a time) returned right in this endpoint
+#        in: query
+#        name: subcategory
+#        required: false
+#        type: number
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: Book online first--truefalse
+#        in: query
+#        name: bookable_first
+#        required: false
+#        type: boolean
+#      - description: Latitude of top right coordinate
+#        in: query
+#        name: tr_latitude
+#        required: true
+#        type: number
+#      - description: Latitude of bottom left coordinate
+#        in: query
+#        name: bl_latitude
+#        required: true
+#        type: number
+#      - description: Longitude of top right coordinate
+#        in: query
+#        name: tr_longitude
+#        required: true
+#        type: number
+#      - description: Longitude of bottom left coordinate
+#        in: query
+#        name: bl_longitude
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /flights/create-session:
+#    get:
+#      description: ''
+#      operationId: operations-flights_\(Deprecating\)-flights\/create-session_\(Deprecating\)
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The age of every children separated by comma. Ex : 11,5'
+#        in: query
+#        name: tc
+#        required: false
+#        type: string
+#      - description: The number of seniors
+#        in: query
+#        name: ts
+#        required: false
+#        type: number
+#      - description: 'Cabin code, such as 0 - Economy | 1- Business Class | 2 - First
+#          Class | 3 - Premium EconomyDefault value : 0'
+#        in: query
+#        name: c
+#        required: false
+#        type: number
+#      - description: 'The number of adultsDefault value : 1'
+#        in: query
+#        name: ta
+#        required: false
+#        type: number
+#      - description: The airport code of second origin location
+#        in: query
+#        name: o2
+#        required: false
+#        type: string
+#      - description: The airport code of second destination location
+#        in: query
+#        name: d2
+#        required: false
+#        type: string
+#      - description: 'The date of departure from first origin, the format is yyyy-MM-dd.
+#          Ex : 2020-05-15'
+#        in: query
+#        name: dd1
+#        required: true
+#        type: string
+#      - description: 'The airport code of first destination locationDefault value
+#          : CNX'
+#        in: query
+#        name: d1
+#        required: true
+#        type: string
+#      - description: 'Airport code of first originDefault value : DMK'
+#        in: query
+#        name: o1
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /flights/get-booking-url:
+#    get:
+#      description: ''
+#      operationId: operations-flights_\(Deprecating\)-flights\/get-booking-url_\(Deprecating\)
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The value of itineraries/l/impressionId field returned in response
+#          of .../flights/poll endpoint. For example : 372e5654-b873-4c26-859b-633c29f7ad84.93175'
+#        in: query
+#        name: impressionId
+#        required: false
+#        type: string
+#      - description: 'The value of search_params/sid field returned in response of
+#          .../flights/create-session endpoint. For example : 5aaa20e5-d5c8-4cdd-a657-b6453bb80756.1483'
+#        in: query
+#        name: searchId
+#        required: true
+#        type: string
+#      - description: 'Airport code of origin. For example : DMK'
+#        in: query
+#        name: Orig
+#        required: true
+#        type: string
+#      - description: 'The value of itineraries/l/id field returned in response of
+#          .../flights/poll endpoint. For example : AgodaFlights|1|68'
+#        in: query
+#        name: id
+#        required: true
+#        type: string
+#      - description: 'The value of summary/sh field returned in response of .../flights/create-session
+#          endpoint. For example : 2188ff0ed4e8e4ee7a50dc32b229e11d'
+#        in: query
+#        name: searchHash
+#        required: true
+#        type: string
+#      - description: 'Airport code of destination. For example : NYC'
+#        in: query
+#        name: Dest
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /flights/poll:
+#    get:
+#      description: ''
+#      operationId: operations-flights_\(Deprecating\)-flights\/poll_\(Deprecating\)
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: Check for suitable value of "summary/cp" or "summary/ocp" field
+#          (separated by comma to specify multiple values) returned in flights/create-session
+#          or right in this endpoint
+#        in: query
+#        name: mc
+#        required: false
+#        type: string
+#      - description: 'The offset of items to be ignored in response for paging. Use
+#          summary/nr field returned in response to get total flightsDefault value
+#          : 0'
+#        in: query
+#        name: o
+#        required: false
+#        type: number
+#      - description: 'Check for suitable value of "so" field returned in flights/create-session
+#          or right in this endpointDefault value : PRICE'
+#        in: query
+#        name: so
+#        required: false
+#        type: string
+#      - description: Check for suitable value of "summary/ap" field (separated by
+#          comma to specify multiple values) returned in flights/create-session or
+#          right in this endpoint
+#        in: query
+#        name: ca
+#        required: false
+#        type: string
+#      - description: Check for suitable value of "itineraries/ac" field (separated
+#          by comma to specify multiple values) returned in flights/create-session
+#          or right in this endpoint
+#        in: query
+#        name: am
+#        required: false
+#        type: string
+#      - description: 'The number of items per response (max 15)Default value : 15'
+#        in: query
+#        name: n
+#        required: false
+#        type: number
+#      - description: 'One of following NON_STOP | ONE_STOP | TWO_PLUS or separated
+#          by comma to specify multiple valuesDefault value : NON_STOP,ONE_STOP'
+#        in: query
+#        name: ns
+#        required: false
+#        type: string
+#      - description: The value of sid returned in flights/create-session endpoint
+#        in: query
+#        name: sid
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /hotel-filters/list:
+#    get:
+#      description: List all available options and filters
+#      operationId: operations-hotels-hotel-filters\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Check for suitable price range in filters/prices_slider field
+#          returned in hotel-filters/list endpoint. For exmaple : $120 -> 120'
+#        in: query
+#        name: pricesmax
+#        required: false
+#        type: number
+#      - description: 'Hotel Style - Check for suitable value of filters/zff field
+#          (separated by comma to filter by multiple values. Ex : 4,6) returned in
+#          hotel-filters/list endpoint'
+#        in: query
+#        name: zff
+#        required: false
+#        type: string
+#      - description: 'The number of adults in all roomsDefault value : 1'
+#        in: query
+#        name: adults
+#        required: false
+#        type: number
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: 'The check-in date at hotel, the format is yyyy-MM-dd. Ex : 2020-05-15'
+#        in: query
+#        name: checkin
+#        required: false
+#        type: string
+#      - description: 'The number of roomsDefault value : 1'
+#        in: query
+#        name: rooms
+#        required: false
+#        type: number
+#      - description: 'One of the followings : asc|desc, this param is used with sort
+#          by priceDefault value : asc'
+#        in: query
+#        name: order
+#        required: false
+#        type: string
+#      - description: 'Check for suitable value of filters/amenities field (separated
+#          by comma to filter by multiple values. Ex : beach,bar_lounge,airport_transportation)
+#          returned in hotel-filters/list endpoint'
+#        in: query
+#        name: amenities
+#        required: false
+#        type: string
+#      - description: 'One of the followings : recommended|popularity|priceDefault
+#          value : recommended'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: 'Check for suitable value of filters/subcategory field (separated
+#          by comma to filter by multiple values. Ex : hotel,bb,specialty) returned
+#          in hotel-filters/list endpoint'
+#        in: query
+#        name: subcategory
+#        required: false
+#        type: string
+#      - description: 'Check for suitable price range in filters/prices_slider field
+#          returned in hotel-filters/list endpoint. For exmaple : $120 -> 120'
+#        in: query
+#        name: pricesmin
+#        required: false
+#        type: number
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The age of every children separated by comma in all rooms. Ex
+#          : 7,10'
+#        in: query
+#        name: child_rm_ages
+#        required: false
+#        type: string
+#      - description: 'Check for suitable value of filters/hotel_class field (separated
+#          by comma to filter by multiple values. Ex : 1,2,3) returned in hotel-filters/list
+#          endpoint'
+#        in: query
+#        name: hotel_class
+#        required: false
+#        type: string
+#      - description: 'The number of nights to liveDefault value : 2'
+#        in: query
+#        name: nights
+#        required: false
+#        type: number
+#      - description: 'The value of location_id field that returned in locations/search
+#          endpointDefault value : 293919'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /hotels/get-details:
+#    get:
+#      description: Get all information of hotels
+#      operationId: operations-hotels-hotels\/get-details
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The number of adults in all roomsDefault value : 1'
+#        in: query
+#        name: adults
+#        required: false
+#        type: number
+#      - description: The number of rooms
+#        in: query
+#        name: rooms
+#        required: false
+#        type: string
+#      - description: 'The number of nights to liveDefault value : 2'
+#        in: query
+#        name: nights
+#        required: false
+#        type: number
+#      - description: 'The check-in date at hotelDefault value : 2020-01-15'
+#        in: query
+#        name: checkin
+#        required: false
+#        type: string
+#      - description: 'The age of every children separated by comma in all roomsDefault
+#          value : 7,10'
+#        in: query
+#        name: child_rm_ages
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: 'The value of location_id field that returned in .../hotels/list...
+#          endpointDefault value : 10359481'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /hotels/list:
+#    get:
+#      description: List all hotels around the world with options and filters
+#      operationId: operations-hotels-hotels\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Check for suitable price range in filters/prices_slider field
+#          returned in hotel-filters/list endpoint. For exmaple : $120 -> 120'
+#        in: query
+#        name: pricesmax
+#        required: false
+#        type: number
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: 'One of the followings : recommended|popularity|priceDefault
+#          value : recommended'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: 'Check for suitable price range in filters/prices_slider field
+#          returned in hotel-filters/list endpoint. For exmaple : $120 -> 120'
+#        in: query
+#        name: pricesmin
+#        required: false
+#        type: number
+#      - description: 'One of the followings : asc|desc, this param is used with sort
+#          by priceDefault value : asc'
+#        in: query
+#        name: order
+#        required: false
+#        type: string
+#      - description: 'The age of every children separated by comma in all rooms. Ex
+#          : 7,10'
+#        in: query
+#        name: child_rm_ages
+#        required: false
+#        type: string
+#      - description: 'Check for suitable value of filters/hotel_class field (separated
+#          by comma to filter by multiple values. Ex : 1,2,3) returned in hotel-filters/list
+#          endpoint'
+#        in: query
+#        name: hotel_class
+#        required: false
+#        type: string
+#      - description: 'Check for suitable value of filters/amenities field (separated
+#          by comma to filter by multiple values. Ex : beach,bar_lounge,airport_transportation)
+#          returned in hotel-filters/list endpoint'
+#        in: query
+#        name: amenities
+#        required: false
+#        type: string
+#      - description: 'The check-in date at hotel, the format is yyyy-MM-dd. Ex : 2020-05-15'
+#        in: query
+#        name: checkin
+#        required: false
+#        type: string
+#      - description: 'Check for suitable value of filters/subcategory field (separated
+#          by comma to filter by multiple values. Ex : hotel,bb,specialty) returned
+#          in hotel-filters/list endpoint'
+#        in: query
+#        name: subcategory
+#        required: false
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The number of items to ignore for paging purposeDefault value
+#          : 0'
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'Hotel Style - Check for suitable value of filters/zff field
+#          (separated by comma to filter by multiple values. Ex : 4,6) returned in
+#          hotel-filters/list endpoint'
+#        in: query
+#        name: zff
+#        required: false
+#        type: string
+#      - description: 'The number of items per response (max 30)Default value : 30'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: 'The number of nights to liveDefault value : 2'
+#        in: query
+#        name: nights
+#        required: true
+#        type: number
+#      - description: 'The number of adults in all roomsDefault value : 1'
+#        in: query
+#        name: adults
+#        required: true
+#        type: number
+#      - description: 'The value of location_id field that returned in locations/search
+#          endpointDefault value : 293919'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      - description: 'The number of roomsDefault value : 1'
+#        in: query
+#        name: rooms
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /hotels/list-by-latlng:
+    get:
+      description: List hotels by specifying a coordinate and radius
+      operationId: operations-hotels-hotels_list-by-latlng
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - travel-advisor.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'The number of nights to liveDefault value : 2'
+        in: query
+        name: nights
+        required: false
+        type: string
+      - description: 'The number of items per response (max 30)Default value : 30'
+        in: query
+        name: limit
+        required: false
+        type: number
+      - description: "Hotel Style - Check for suitable value of 'filters/zff' field (separated by comma to specify multiple values) returned in hotel-filters/list endpointDefault value : 4,6"
+        in: query
+        name: zff
+        required: false
+        type: string
+      - description: 'Check for suitable value of filters/hotel_class field (separated
+          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          value : 1,2,3'
+        in: query
+        name: hotel_class
+        required: false
+        type: string
+      - description: 'The check-in date at hotelDefault value : 2020-01-08'
+        in: query
+        name: checkin
+        required: false
+        type: string
+      - description: 'The number of roomsDefault value : 1'
+        in: query
+        name: rooms
+        required: false
+        type: number
+      - description: 'Check for suitable price range in filters/prices_slider field
+          returned in hotel-filters/list endpoint. For exmaple : $10 -> 10'
+        in: query
+        name: pricesmin
+        required: false
+        type: number
+      - description: The radius to look for nearest places
+        in: query
+        name: distance
+        required: false
+        type: number
+      - description: The number of items to ignore for paging purpose
+        in: query
+        name: offset
+        required: false
+        type: number
+      - description: 'The language codeDefault value : en_US'
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: 'The currency codeDefault value : USD'
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: 'The number of adults in all roomsDefault value : 1'
+        in: query
+        name: adults
+        required: false
+        type: number
+      - description: 'Check for suitable price range in filters/prices_slider field
+          returned in hotel-filters/list endpoint. For exmaple : $120 -> 120'
+        in: query
+        name: pricesmax
+        required: false
+        type: number
+      - description: 'Check for suitable value of filters/amenities field (separated
+          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          value : beach,bar_lounge,airport_transportation'
+        in: query
+        name: amenities
+        required: false
+        type: string
+      - description: 'Check for suitable value of filters/subcategory field (separated
+          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          value : hotel,bb,specialty'
+        in: query
+        name: subcategory
+        required: false
+        type: string
+      - description: 'The age of every children separated by comma in all roomsDefault
+          value : 7,10'
+        in: query
+        name: child_rm_ages
+        required: false
+        type: string
+      - description: 'Default value : 12.91285'
+        in: query
+        name: latitude
+        required: true
+        type: number
+      - description: 'Longitude of coordinateDefault value : 100.87808'
+        in: query
+        name: longitude
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /hotels/list-in-boundary:
+    get:
+      description: List hotels by specifying coordinates of bottom left and top right
+        of boundary
+      operationId: operations-hotels-hotels_list-in-boundary
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - travel-advisor.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'The number of items per response (max 30)Default value : 30'
+        in: query
+        name: limit
+        required: false
+        type: number
+      - description: 'Check for suitable value of filters/subcategory field (separated
+          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          value : hotel,bb,specialty'
+        in: query
+        name: subcategory
+        required: false
+        type: string
+      - description: ''
+        in: query
+        name: pricesmax
+        required: false
+        type: number
+      - description: 'The number of adults in all roomsDefault value : 1'
+        in: query
+        name: adults
+        required: false
+        type: number
+      - description: 'Hotel Style - Check for suitable value of "filters/zff" field
+          (separated by comma to specify multiple values) returned in hotel-filters/list
+          endpointDefault value : 4,6'
+        in: query
+        name: zff
+        required: false
+        type: string
+      - description: 'The age of every children separated by comma in all roomsDefault
+          value : 7,10'
+        in: query
+        name: child_rm_ages
+        required: false
+        type: string
+      - description: 'Check for suitable value of filters/hotel_class field (separated
+          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          value : 1,2,3'
+        in: query
+        name: hotel_class
+        required: false
+        type: string
+      - description: The number of rooms
+        in: query
+        name: rooms
+        required: false
+        type: number
+      - description: The number of items to ignore for paging purpose
+        in: query
+        name: offset
+        required: false
+        type: number
+      - description: 'Check for suitable price range in filters/prices_slider field
+          returned in hotel-filters/list endpoint. For exmaple : $10 -> 10'
+        in: query
+        name: pricesmin
+        required: false
+        type: number
+      - description: 'Check for suitable value of filters/amenities field (separated
+          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          value : beach,bar_lounge,airport_transportation'
+        in: query
+        name: amenities
+        required: false
+        type: string
+      - description: 'The currency codeDefault value : USD'
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: 'Longitude of top right coordinateDefault value : 109.149359'
+        in: query
+        name: tr_longitude
+        required: true
+        type: number
+      - description: 'Longitude of bottom left coordinateDefault value : 108.473209'
+        in: query
+        name: bl_longitude
+        required: true
+        type: number
+      - description: 'Latitude of top right coordinateDefault value : 12.838442'
+        in: query
+        name: tr_latitude
+        required: true
+        type: number
+      - description: 'Latitude of bottom left coordinateDefault value : 11.847676'
+        in: query
+        name: bl_latitude
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /keywords/list:
+#    get:
+#      description: List interesting keywords related to a specific location by its
+#        location_id
+#      operationId: operations-shared-keywords\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The number of items per response (max 10)Default value : 10'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'The value of location_id field that returned in hotels/list,
+#          restaurants/list, or attractions/list endpointsDefault value : 8014024'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /locations/auto-complete:
+#    get:
+#      description: List suggested locations by term or phrase
+#      operationId: operations-default-locations\/auto-complete
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'One of the followings : km|miDefault value : km'
+#        in: query
+#        name: units
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: 'Name of cities, districts, places, etc...Default value : eiffel
+#          tower'
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /locations/search:
+    get:
+      description: Search for related cities, countries, and suggestions
+      operationId: operations-default-locations_search
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - travel-advisor.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'The value of location_id field returned right in this endpoint or .../locations/auto-complete endpoint Default value : 1'
+        in: query
+        name: location_id
+        required: false
+        type: number
+      - description: 'The number of items to ignore for paging purpose Default value: 0'
+        in: query
+        name: offset
+        required: false
+        type: number
+      - description: 'One of the followings : km|mi Default value : km'
+        in: query
+        name: units
+        required: false
+        type: string
+      - description: 'One of the followings : relevance|distance Default value : relevance'
+        in: query
+        name: sort
+        required: false
+        type: string
+      - description: 'The number of items per response (max 30) Default value : 30'
+        in: query
+        name: limit
+        required: false
+        type: number
+      - description: 'The language codeDefault value : en_US'
+        in: query
+        name: lang
+        required: false
+        type: string
+      - description: 'The currency codeDefault value : USD'
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: 'Name of cities, districts, places, etc...Default value : pattaya'
+        in: query
+        name: query
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /photos/list:
+#    get:
+#      description: List photos related to a location by its id
+#      operationId: operations-shared-photos\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'The number of items per response (max 50)Default value : 50'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: 'The value of location_id field that returned in hotels/list,
+#          restaurants/list, or attractions/list endpointsDefault value : 2233968'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /questions/list:
+#    get:
+#      description: List questions related to a location by its id
+#      operationId: operations-shared-questions\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The number of items per response (max 10)Default value : 10'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'The value of location_id field that returned in hotels/list,
+#          restaurants/list, or attractions/list endpointsDefault value : 8014024'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /restaurants/get-details:
+#    get:
+#      description: Get all information of a specific restaurant by its location_id
+#      operationId: operations-restaurants-restaurants\/get-details
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: The value of location_id field that returned in restaurants/list
+#          endpoint
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /restaurants/list:
+#    get:
+#      description: List restaurants related to a location by location_id
+#      operationId: operations-restaurants-restaurants\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Restaurant Features - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_styles
+#        required: false
+#        type: string
+#      - description: Min 3 - Max 5
+#        in: query
+#        name: min_rating
+#        required: false
+#        type: string
+#      - description: Restaurant Features - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_dining_options
+#        required: false
+#        type: string
+#      - description: 'One of the followings km|miDefault value : km'
+#        in: query
+#        name: lunit
+#        required: false
+#        type: string
+#      - description: Dietary Restrictions - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: dietary_restrictions
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: 'Meals - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to filter by multiple values. Ex : 10598,10599)
+#          returned right in this endpoint'
+#        in: query
+#        name: restaurant_mealtype
+#        required: false
+#        type: string
+#      - description: Cuisine Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: combined_food
+#        required: false
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpointDefault value : 10591'
+#        in: query
+#        name: restaurant_tagcategory_standalone
+#        required: false
+#        type: string
+#      - description: 'Only returns restaurants which are opening nowDefault value
+#          : false--truefalse'
+#        in: query
+#        name: open_now
+#        required: false
+#        type: boolean
+#      - description: 'Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpointDefault value : 10591'
+#        in: query
+#        name: restaurant_tagcategory
+#        required: false
+#        type: string
+#      - description: 'The number of items per response (max 30)Default value : 30'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: Prices - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: prices_restaurants
+#        required: false
+#        type: string
+#      - description: 'The value of location_id field that returned in locations/search
+#          endpointDefault value : 293919'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /restaurants/list-by-latlng:
+#    get:
+#      description: List restaurants by specifying an coordinate and radius
+#      operationId: operations-restaurants-restaurants\/list-by-latlng
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_tagcategory
+#        required: false
+#        type: string
+#      - description: Dietary Restrictions - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: dietary_restrictions
+#        required: false
+#        type: string
+#      - description: Min 3 - Max 5
+#        in: query
+#        name: min_rating
+#        required: false
+#        type: string
+#      - description: 'Only returns restaurants which are opening nowDefault value
+#          : false--truefalse'
+#        in: query
+#        name: open_now
+#        required: false
+#        type: boolean
+#      - description: Restaurant Features - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_styles
+#        required: false
+#        type: string
+#      - description: 'One of the followings km|miDefault value : km'
+#        in: query
+#        name: lunit
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: Meals - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_mealtype
+#        required: false
+#        type: string
+#      - description: Cuisine Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: combined_food
+#        required: false
+#        type: string
+#      - description: 'The number of items per response (max 30)Default value : 30'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_tagcategory_standalone
+#        required: false
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The radius around specified coordinate (max 10)Default value
+#          : 2'
+#        in: query
+#        name: distance
+#        required: false
+#        type: number
+#      - description: Restaurant Features - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_dining_options
+#        required: false
+#        type: string
+#      - description: Prices - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: prices_restaurants
+#        required: false
+#        type: string
+#      - description: 'Longitude of coordinateDefault value : 100.87808'
+#        in: query
+#        name: longitude
+#        required: true
+#        type: number
+#      - description: 'Latitude of coordinateDefault value : 12.91285'
+#        in: query
+#        name: latitude
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /restaurants/list-in-boundary:
+#    get:
+#      description: List restaurants by specifying coordinates of bottom left and top
+#        right of a boundary
+#      operationId: operations-restaurants-restaurants\/list-in-boundary
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Meals - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to filter by multiple values. Ex : 10598,10599)
+#          returned right in this endpoint'
+#        in: query
+#        name: restaurant_mealtype
+#        required: false
+#        type: string
+#      - description: 'One of the followings km|miDefault value : km'
+#        in: query
+#        name: lunit
+#        required: false
+#        type: string
+#      - description: Restaurant Features - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_dining_options
+#        required: false
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: Cuisine Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: combined_food
+#        required: false
+#        type: string
+#      - description: 'Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpointDefault value : 10591'
+#        in: query
+#        name: restaurant_tagcategory
+#        required: false
+#        type: string
+#      - description: Dietary Restrictions - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: dietary_restrictions
+#        required: false
+#        type: string
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpointDefault value : 10591'
+#        in: query
+#        name: restaurant_tagcategory_standalone
+#        required: false
+#        type: string
+#      - description: Restaurant Features - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: restaurant_styles
+#        required: false
+#        type: string
+#      - description: Min 3 - Max 5
+#        in: query
+#        name: min_rating
+#        required: false
+#        type: number
+#      - description: 'Only returns restaurants which are opening nowDefault value
+#          : false--truefalse'
+#        in: query
+#        name: open_now
+#        required: false
+#        type: boolean
+#      - description: 'The number of items per response (max 30)Default value : 30'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: Prices - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
+#          field (separated by comma to specify multiple values) returned right in
+#          this endpoint
+#        in: query
+#        name: prices_restaurants
+#        required: false
+#        type: string
+#      - description: 'Longitude of top right coordinateDefault value : 109.149359'
+#        in: query
+#        name: tr_longitude
+#        required: true
+#        type: number
+#      - description: 'Longitude of bottom left coordinateDefault value : 109.095887'
+#        in: query
+#        name: bl_longitude
+#        required: true
+#        type: number
+#      - description: 'Latitude of top right coordinateDefault value : 12.838442'
+#        in: query
+#        name: tr_latitude
+#        required: true
+#        type: number
+#      - description: 'Latitude of bottom left coordinateDefault value : 11.847676'
+#        in: query
+#        name: bl_latitude
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /reviews/list:
+#    get:
+#      description: List reviews related to a location by its location_id
+#      operationId: operations-shared-reviews\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Check for suitable value of text field returned in keywords/list
+#          endpoint
+#        in: query
+#        name: keyword
+#        required: false
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The language codeDefault value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'The number of items per response (max 20)Default value : 20'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: 'The value of location_id field that returned in hotels/list,
+#          restaurants/list, or attractions/list endpointsDefault value : 8014024'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /tips/list:
+#    get:
+#      description: List tips of specific hotel by its location_id
+#      operationId: operations-shared-tips\/list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - travel-advisor.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The currency codeDefault value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: string
+#      - description: 'The number of items per response (max 20)Default value : 20'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: The number of items to ignore for paging purpose
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'Default value : en_US'
+#        in: query
+#        name: lang
+#        required: false
+#        type: string
+#      - description: 'The value of location_id field that returned in hotels/list
+#          endpointDefault value : 8014024'
+#        in: query
+#        name: location_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

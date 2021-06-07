@@ -22,13 +22,13 @@ public class PricelineComProvider {
     }
 
     // /v1/hotels/locations-by-geo (Search locations by geolocation)
-    // lat
+    // latitude
     public static void pricelineComProvider_locationsByGeolocation_lat(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + "/v1/hotels/locations-by-geo?longitude=14.418540&latitude=" + semanticInput;
         printResponse(url);
     }
 
-    // lon
+    // longitude
     public static void pricelineComProvider_locationsByGeolocation_lon(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + "/v1/hotels/locations-by-geo?longitude=" + semanticInput + "&latitude=50.073658";
         printResponse(url);

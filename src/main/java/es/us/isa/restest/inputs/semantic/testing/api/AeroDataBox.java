@@ -29,13 +29,13 @@ public class AeroDataBox {
     // /airports/search/location/{lat}/{lon}/km/{radiusKm}/{limit}
     // lat
     public static void aeroDataBoxSearchAirportsByLocationLat(String semanticInput, String apiKey, String host) throws IOException {
-        String url = baseUri + "/airports/search/location/" + semanticInput + "/-0.103869/km/100/16?withFlightInfoOnly=0";
+        String url = baseUri + "/airports/search/location/" + semanticInput + "/-0.103869/km/100/16";
         printResponse(url);
     }
 
     // lon
     public static void aeroDataBoxSearchAirportsByLocationLon(String semanticInput, String apiKey, String host) throws IOException {
-        String url = baseUri + "/airports/search/location/51.511142/" + semanticInput + "/km/100/16?withFlightInfoOnly=0";
+        String url = baseUri + "/airports/search/location/51.511142/" + semanticInput + "/km/100/16";
         printResponse(url);
     }
 

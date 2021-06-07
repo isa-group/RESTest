@@ -1,0 +1,144 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Calculate the optimal door-to-door route and fares by public transportation
+    and walking. In addition, you can get the station entrance/exit informations.
+  title: NAVITIME Route(totalnavi)
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /fare_table:
+    get:
+      description: Return fare divisions including route search results.
+      operationId: operations-default-fare_table
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - navitime-route-totalnavi.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /shape_transit:
+    get:
+      description: "\u30EB\u30FC\u30C8\u5F62\u72B6\u53D6\u5F97\uFF08\u30C8\u30FC\u30BF\
+        \u30EB\u30CA\u30D3\uFF09\n\u96FB\u8ECA\uFF08\u822A\u7A7A\u8DEF\u7DDA\u3001\
+        \u5F92\u6B69\u542B\u3080\uFF09\u3092\u79FB\u52D5\u624B\u6BB5\u3068\u3057\u3066\
+        \uFF12\u5730\u70B9\u9593\u306E\u30EB\u30FC\u30C8\u3092\u63A2\u7D22\u3057\u3001\
+        \u305D\u306E\u7D50\u679C\u3092\u5F62\u72B6\u3067\u53D6\u5F97\u3057\u307E\u3059\
+        \u3002"
+      operationId: operations-default-shape_transit
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - navitime-route-totalnavi.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Additional output information. (transport_shape: public transportation
+          route shape)'
+        in: query
+        name: options
+        required: false
+        type: string
+      - description: 'Output format (geojson: GeoJSON format (default), json: JSON
+          format)'
+        in: query
+        name: format
+        required: false
+        type: string
+      - description: Destination. (maximum number of 10 points)
+        in: query
+        name: via
+        required: false
+        type: string
+      - description: Arrival time. (ex.2020-04-01T09:00:00)
+        in: query
+        name: goal_time
+        required: false
+        type: string
+      - description: Public transportation that does not use.
+        in: query
+        name: unuse
+        required: false
+        type: string
+      - description: 'The unit of latitude and longitude included in the output data.
+          (degree: decimal system of degrees (default), millisec: milliseconds)'
+        in: query
+        name: coord_unit
+        required: false
+        type: string
+      - description: Route Number. When multiple routes are being returned, one route
+          must be identified.  Specifies the route number to be output. If not specified,
+          the first route will be selected.
+        in: query
+        name: 'no'
+        required: false
+        type: number
+      - description: 'Specify the route to use on foot (avoid_step: routes that avoid
+          stairs, avoid_escalator: routes that avoid stairway and escalator, avoid_rain:
+          routes that is less likely to get wet, babycar: routes that a stroller can
+          get through)'
+        in: query
+        name: walk_route
+        required: false
+        type: string
+      - description: 'Period-separated range of multiple possible search times. (Maximum
+          value: 2440, Default value: 1440) The unit is "minutes".'
+        in: query
+        name: term
+        required: false
+        type: number
+      - description: 'Output order. (total_distance: total movement distance, walk_distance:
+          total walking distance, fare: fare, time: required time, transit: transfer
+          times, commuter_pass_price: commuter pass price)'
+        in: query
+        name: order
+        required: false
+        type: string
+      - description: 'Geodetic system of latitude and longitude. (wgs84: World Geodetic
+          System (default), tokyo: Old Japan Geodetic System)'
+        in: query
+        name: datum
+        required: false
+        type: string
+      - description: 'Routing mode. (specified: specified order, optimal: optimal
+          order)'
+        in: query
+        name: via_type
+        required: false
+        type: string
+      - description: 'Number of searches. (Minimum value: 1, Maximum value: 10, Default
+          value: 5) Invalid if "via_type=optimal" is specified.'
+        in: query
+        name: limit
+        required: false
+        type: number
+      - description: Departure point. (node ID or latitude/longitude)
+        in: query
+        name: start
+        required: true
+        type: string
+      - description: Arrival point. (node ID or latitude/longitude)
+        in: query
+        name: goal
+        required: true
+        type: string
+      - description: Departure time. (ex.2020-04-01T09:00:00)
+        in: query
+        name: start_time
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

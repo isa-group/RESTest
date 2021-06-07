@@ -1,0 +1,192 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Query airports, airlines and aircraft types by IATA and ICAO codes
+  title: Aviation Reference Data
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /airline/search:
+#    get:
+#      description: Search or autocomplete airlines by name
+#      operationId: operations-default-Airlines_search
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aviation-reference-data.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Minimum search string length is 3 charactersDefault value: Samoa'
+#        in: query
+#        name: name
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /airline/{code}:
+    get:
+      description: Get airline information by IATA or ICAO code
+      operationId: operations-default-Airline
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aviation-reference-data.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : LH'
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /airports/search:
+    get:
+      description: Find airports within a specified range of a given location.
+      operationId: operations-default-Airport_search_by_location_coordinates
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aviation-reference-data.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : -54.810'
+        in: query
+        name: lat
+        required: false
+        type: number
+      - description: 'Default value : -68.315'
+        in: query
+        name: lon
+        required: false
+        type: number
+      - description: 'Default value : 100'
+        in: query
+        name: radius
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /airports/{code}:
+    get:
+      description: Get airport data by its IATA or ICAO code
+      operationId: operations-default-Airport
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aviation-reference-data.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : JFK'
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /countries:
+#    get:
+#      description: List all countries with ISO alpha-2, alpha-3 codes and name
+#      operationId: operations-default-Countries
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aviation-reference-data.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /countries/search:
+#    get:
+#      description: Search or autocomplete countries by name
+#      operationId: operations-default-Countries_search
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - aviation-reference-data.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Minimum search string length is 2 charactersDefault value :
+#          New Zealand'
+#        in: query
+#        name: name
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /countries/{code}:
+    get:
+      description: Query a country by its alpha-2 or alpha-3 ISO code
+      operationId: operations-default-Country
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aviation-reference-data.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : USA'
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /icaoType/{code}:
+    get:
+      description: 'Display information about ICAO aircraft type codes'
+      operationId: operations-default-Aircraft_type
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - aviation-reference-data.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

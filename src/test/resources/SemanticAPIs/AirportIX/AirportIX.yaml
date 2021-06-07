@@ -1,0 +1,238 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Service provide information about Airports, Airlines, Planes, Routes
+    and other. Also you can use autocomplete service by airports or flights.
+  title: AirportIX
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /airline/airlineByIATA/{code}/{lang}/:
+#    get:
+#      description: Lookup an airline information by IATA code
+#      operationId: operations-Airline-Airline_by_IATA_code
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - airportix.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Language ISO codeDefault value : de'
+#        in: path
+#        name: lang
+#        required: true
+#        type: string
+#      - description: 'Airline IATA CodeDefault value : LH'
+#        in: path
+#        name: code
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /airline/alliances/:
+#    get:
+#      description: Alliances with airlines list
+#      operationId: operations-Airline-Alliances
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - airportix.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /airline/routes/{code}/:
+#    get:
+#      description: This method return information about routes and flights count between
+#        airports for the last week
+#      operationId: operations-Airline-Airline_Routes
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - airportix.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Airline IATA CodeDefault value : LH'
+#        in: path
+#        name: code
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /airport/city_code/{cityCode}/:
+    get:
+      description: Returns a listing of airports that have had the given city code
+      operationId: operations-Airport-Airports_by_City_code
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - airportix.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'ISO City code (ISO 3166-1 alpha-3) Default value : MOW'
+        in: path
+        name: cityCode
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /airport/code/{code}/:
+    get:
+      description: Lookup an airport by its IATA or ICAO code
+      operationId: operations-Airport-Airports_by_IATA_or_ICAO_code
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - airportix.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'IATA or ICAO code Default value : MUC'
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /airport/country_code/{isoCode}/{classification}:
+    get:
+      description: Lookup an airport by Country code
+      operationId: operations-Airport-Airports_by_Country_code
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - airportix.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Airport classification. Where 1 are the largest airports and
+          5 are the smallestExamples: 12Example DescriptionLargest airport'
+        in: path
+        name: classification
+        required: true
+        type: number
+      - description: 'Country ISO code (ISO 3166-1 alpha-2)Default value : DE'
+        in: path
+        name: isoCode
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /airport/delay_index/{code}/:
+    get:
+      description: Service showof the level of departure delays a specified airport
+        is currently experiencing. A low index (0-1) indicates that departures are
+        running relatively smoothly. A higher index (4-5) is indicative of significant
+        delays and flight operations disruptions.
+      operationId: operations-Airport-Airports_Delay_Index
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - airportix.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'IATA codeDefault value : muc'
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /plane/bynumber/{number}/:
+    get:
+      description: This method provides information about plane. Search is possible
+        by MSN number or Registrtion number
+      operationId: operations-Aircraft-Aircraft_by_MSN_or_Registration_number
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - airportix.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : 3B-NBP'
+        in: path
+        name: number
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /plane/directory/:
+#    get:
+#      description: This method provides basic reference data about aircraft.
+#      operationId: operations-Aircraft-Aircrafts_directory
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - airportix.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /plane/directory/{code}/:
+    get:
+      description: This method provides basic reference data about aircraft by IATA
+        code
+      operationId: operations-Aircraft-Aircraft_directory_by_IATA_code
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - airportix.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'IATA aircraft codeDefault value : 320'
+        in: path
+        name: code
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

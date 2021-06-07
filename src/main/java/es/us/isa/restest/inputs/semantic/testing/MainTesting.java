@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
+import static es.us.isa.restest.inputs.semantic.testing.api.AeroDataBox.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.AirportInfo.airportInfo_iata;
 import static es.us.isa.restest.inputs.semantic.testing.api.AirportInfo.airportInfo_icao;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.*;
@@ -29,14 +30,17 @@ import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.CurrencyConverter.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FixerCurrency.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.FootballPrediction.footballPredictionFederation;
 import static es.us.isa.restest.inputs.semantic.testing.api.GoogleMapsGeocoding.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.greatCircleMapper_iataIcao;
 import static es.us.isa.restest.inputs.semantic.testing.api.Hotels.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.MovieDatabase.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.OpenWeatherMap.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.PeriodicTableOfElements.periodicTableOfElementsName;
+import static es.us.isa.restest.inputs.semantic.testing.api.PricelineComProvider.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_countryCode;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
+import static es.us.isa.restest.inputs.semantic.testing.api.RecipeFood.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RedlineZipcode.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RentEstimate.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.SimilarWeb.similarweb_website;
@@ -58,9 +62,9 @@ import com.squareup.okhttp.Response;
 public class MainTesting {
 
     // Parameters to change
-    private static final String propertiesPath = "src/test/resources/SemanticAPIs/PeriodicTableOfElements/PeriodicTableOfElements_saigen.properties";
-    private static final String operationPath = "/element/name/{name}";
-    private static final String semanticParameterName = "name";
+    private static final String propertiesPath = "src/test/resources/SemanticAPIs/RecipeFoodNutrition/recipeFoodNutrition_saigen.properties";
+    private static final String operationPath = "/food/ingredients/substitutes";
+    private static final String semanticParameterName = "ingredientName";
     private static final Integer limit = Integer.MAX_VALUE;
     private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
@@ -101,7 +105,7 @@ public class MainTesting {
                 // RapidAPI operation to test
                 // In some cases it is required to change an attribute of the API class (e.g., operationPath in api/Climacell.java)
                 // Note that there is a different file for the Skyscanner API
-                periodicTableOfElementsName(semanticInput, apiKey, host);        // TODO: REPLACE
+                recipeFood_getIngredientsSubstitute_ingredientName(semanticInput, apiKey, host);        // TODO: REPLACE
 
                 i++;
 
@@ -109,6 +113,7 @@ public class MainTesting {
             }catch (Exception e){
                 System.out.println(e.getMessage());
                 System.err.println("Exception ocurred");
+                i++;
             }
 
             TimeUnit.SECONDS.sleep(2);
