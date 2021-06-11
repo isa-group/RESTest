@@ -21,12 +21,12 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'Language ISO codeDefault value : de'
+#      - description: 'Language ISO code Default value : de'
 #        in: path
 #        name: lang
 #        required: true
 #        type: string
-#      - description: 'Airline IATA CodeDefault value : LH'
+#      - description: 'Airline IATA Code Default value : LH'
 #        in: path
 #        name: code
 #        required: true
@@ -66,7 +66,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'Airline IATA CodeDefault value : LH'
+#      - description: 'Airline IATA Code Default value : LH'
 #        in: path
 #        name: code
 #        required: true
@@ -138,7 +138,7 @@ paths:
         name: classification
         required: true
         type: number
-      - description: 'Country ISO code (ISO 3166-1 alpha-2)Default value : DE'
+      - description: 'Country ISO code (ISO 3166-1 alpha-2) Default value : DE'
         in: path
         name: isoCode
         required: true
@@ -163,7 +163,7 @@ paths:
         name: X-RapidAPI-Host
         required: true
         type: string
-      - description: 'IATA codeDefault value : muc'
+      - description: 'IATA code Default value : muc'
         in: path
         name: code
         required: true
@@ -226,7 +226,7 @@ paths:
         name: X-RapidAPI-Host
         required: true
         type: string
-      - description: 'IATA aircraft codeDefault value : 320'
+      - description: 'IATA aircraft code Default value : 320'
         in: path
         name: code
         required: true

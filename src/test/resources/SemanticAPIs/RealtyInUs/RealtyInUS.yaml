@@ -1,0 +1,1691 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: "This API helps to query properties for sale, rent, sold,etc. in US"
+  title: Realty in US
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /agents/get-listings:
+#    get:
+#      description: "Get agent's listings"
+#      operationId: operations-agents-agents_get-listings
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'One of the following : all|forSale|forSold|forRent|openHouses Default value : all'
+#        in: query
+#        name: type
+#        required: false
+#        type: string
+#      - description: 'For paging purpose Default value : 1'
+#        in: query
+#        name: page
+#        required: false
+#        type: number
+#      - description: 'The value of advertiser_id field returned in .../agents/list
+#          endpoint Default value : 1633379'
+#        in: query
+#        name: fulfillment_id
+#        required: true
+#        type: number
+#      - description: 'The value of ...member/id JSON object returned in .../agents/list
+#          endpoint Default value : 77018'
+#        in: query
+#        name: agent_id
+#        required: true
+#        type: number
+#      - description: 'The value of abbreviation field returned in .../agents/list
+#          endpoint Default value : AVCA'
+#        in: query
+#        name: id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /agents/get-profile:
+#    get:
+#      description: Get agent profile
+#      operationId: operations-agents-agents-get-profile
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The value of advertiser_id field returned in .../agents/list
+#          endpoint Default value : 1633379'
+#        in: query
+#        name: advertiser_id
+#        required: true
+#        type: number
+#      - description: 'The value of nrds_id field returned in .../agents/list endpoint Default
+#          value : 150577018'
+#        in: query
+#        name: nrds_id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /agents/get-recommendations:
+#    get:
+#      description: Get agent's recommendations
+#      operationId: operations-agents-agents-get-recommendations
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The value of advertiser_id field returned in .../agents/list
+#          endpoint Default value : 1633379'
+#        in: query
+#        name: advertiser_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /agents/get-reviews:
+#    get:
+#      description: Get agent reviews
+#      operationId: operations-agents-agents-get-reviews
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The value of advertiser_id field returned in .../agents/list
+#          endpoint Default value : 1633379'
+#        in: query
+#        name: advertiser_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /agents/list:
+#    get:
+#      description: List agents with filters and options
+#      operationId: operations-agents-agents-list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'For paging purpose (max 20) Default value : 20'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: Option filter by setting min price
+#        in: query
+#        name: price_min
+#        required: false
+#        type: number
+#      - description: Search for agent or team or company by name
+#        in: query
+#        name: name
+#        required: false
+#        type: string
+#      - description: Number of recommendations (max 10)
+#        in: query
+#        name: recommendations_count_min
+#        required: false
+#        type: number
+#      - description: 'One of the followings or leave empty : buyer | seller'
+#        in: query
+#        name: agent_type
+#        required: false
+#        type: string
+#      - description: 'One of the followings : recent_activity_high|recently_sold_high|for_sale_count_high|recommendations_count_high|agent_rating_high Default
+#          value : recent_activity_high'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: 'One of the followings : agent | team | office Default value :
+#          agent'
+#        in: query
+#        name: types
+#        required: false
+#        type: string
+#      - description: Rating (max 5)
+#        in: query
+#        name: agent_rating_min
+#        required: false
+#        type: number
+#      - description: Option filter by setting max price
+#        in: query
+#        name: price_max
+#        required: false
+#        type: number
+#      - description: 'The offset of items to be ignored in response for paging Default
+#          value : 0'
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'Zip code or postal code (do not use this parameter with city
+#          and state_code) Default value : 11234'
+#        in: query
+#        name: postal_code
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /finance/rates:
+    get:
+      description: Get finance rates
+      operationId: operations-mortgage_finance_tools-finance_rates
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - realty-in-us.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'The postal code Default value : 93505'
+        in: query
+        name: loc
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /locations/auto-complete:
+#    get:
+#      description: Get auto complete suggestions by city, ward, street name to pass
+#        in other endpoints. This endpoint also helps to get a specific property id
+#        by its address
+#      operationId: operations-default-locations_auto-complete
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Name of cities, districts, places Default value : new york'
+#        in: query
+#        name: input
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /mortgage/calculate:
+#    get:
+#      description: Calculate mortgage
+#      operationId: operations-mortgage_finance_tools-mortgage_calculate
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Interest rate Default value : 3.827'
+#        in: query
+#        name: rate
+#        required: true
+#        type: number
+#      - description: 'Home insurance Default value : 56.0'
+#        in: query
+#        name: hoi
+#        required: true
+#        type: number
+#      - description: 'Property tax Default value : 1.2485549449920654'
+#        in: query
+#        name: tax_rate
+#        required: true
+#        type: number
+#      - description: 'Mortgage loan type Default value : 30.0'
+#        in: query
+#        name: term
+#        required: true
+#        type: number
+#      - description: 'Down payment Default value : 44980'
+#        in: query
+#        name: downpayment
+#        required: true
+#        type: number
+#      - description: 'Home price Default value : 224900'
+#        in: query
+#        name: price
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /mortgage/calculate-affordability:
+#    get:
+#      description: Calculate affordability
+#      operationId: operations-mortgage_finance_tools-mortgage_calculate-affordability
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Served in the U.S. Military. If the value is false, down_payment
+#          will be zero. Default value : true--truefalse'
+#        in: query
+#        name: is_pmi_included
+#        required: false
+#        type: boolean
+#      - description: 'Default value : 0'
+#        in: query
+#        name: hoa_fees
+#        required: false
+#        type: number
+#      - description: 'Default value : 1500'
+#        in: query
+#        name: monthly_debt
+#        required: true
+#        type: number
+#      - description: 'Default value : 30'
+#        in: query
+#        name: loan_term
+#        required: true
+#        type: number
+#      - description: 'Default value : 0.012'
+#        in: query
+#        name: homeowner_insurance_rate
+#        required: true
+#        type: number
+#      - description: 'Default value : 250000'
+#        in: query
+#        name: annual_income
+#        required: true
+#        type: number
+#      - description: 'Default value : 0.43'
+#        in: query
+#        name: debt_to_income_ratio
+#        required: true
+#        type: number
+#      - description: 'Default value : 0.01'
+#        in: query
+#        name: tax_rate
+#        required: true
+#        type: number
+#      - description: 'Default value : 0.03119'
+#        in: query
+#        name: interest_rate
+#        required: true
+#        type: number
+#      - description: 'Default value : 172000'
+#        in: query
+#        name: down_payment
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /mortgage/check-equity-rates:
+    get:
+      description: Check mortgage equity rates
+      operationId: operations-mortgage_finance_tools-mortgage_check-equity-rates
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - realty-in-us.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'One of the following : excellent|good|fair|poor Default value : excellent'
+        in: query
+        name: creditScore
+        required: true
+        type: string
+      - description: 'The postal code Default value : 93505'
+        in: query
+        name: zip
+        required: true
+        type: string
+      - description: 'Default value : 150000'
+        in: query
+        name: mortgageBalance
+        required: true
+        type: number
+      - description: 'The state code Default value : CA'
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: 'One of the following : HELOC,HELOAN_FIXED_5YEARS,HELOAN_FIXED_10YEARS,HELOAN_FIXED_15YEARS,HELOAN_FIXED_20YEARS,HELOAN_FIXED_30YEARS. Separate by comma for multiple applied values Default value : HELOAN_FIXED_20YEARS,HELOAN_FIXED_30YEARS'
+        in: query
+        name: loanProduct
+        required: true
+        type: string
+      - description: 'Default value : 70000'
+        in: query
+        name: loanAmount
+        required: true
+        type: number
+      - description: 'Default value : 300000'
+        in: query
+        name: propertyValue
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /mortgage/check-rates:
+#    get:
+#      description: Check mortgage rates
+#      operationId: operations-mortgage_finance_tools-mortgage_check-rates
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : 85.2'
+#        in: query
+#        name: loanPercent
+#        required: true
+#        type: number
+#      - description: 'Default value : 250000'
+#        in: query
+#        name: propertyPrice
+#        required: true
+#        type: number
+#      - description: 'The postal code Default value : 90230'
+#        in: query
+#        name: zip
+#        required: true
+#        type: string
+#      - description: 'One of the following : ALL|30YrFixed|30YrFixed_FHA|30YrFixed_VA|20YrFixed|15YrFixed|10YrFixed|5Arm|7Arm Default
+#          value : ALL'
+#        in: query
+#        name: loanTypes
+#        required: true
+#        type: string
+#      - description: 'One of the following : excellent|good|fair|poor Default value
+#          : excellent'
+#        in: query
+#        name: creditScore
+#        required: true
+#        type: string
+#      - description: 'purchase|refinance Default value : purchase'
+#        in: query
+#        name: loanPurpose
+#        required: true
+#        type: string
+#      - description: 'One of the following : all|zero|zero_to_one|one_to_two Default
+#          value : all'
+#        in: query
+#        name: points
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/detail:
+#    get:
+#      description: Get property detail information
+#      operationId: operations-properties-properties_detail
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The value of property_id field returned in  .../properties/list-....
+#          or  .../properties/v2/list-... endpoints. Default value : 4599450556'
+#        in: query
+#        name: property_id
+#        required: true
+#        type: string
+#      - description: 'The value of listing_id field returned in  .../properties/list-....
+#          or  .../properties/v2/list-... endpoints. Default value : 608763437'
+#        in: query
+#        name: listing_id
+#        required: true
+#        type: string
+#      - description: 'One of the followings : for_sale|for_rent Default value : for_sale'
+#        in: query
+#        name: prop_status
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/list-by-mls:
+#    get:
+#      description: List properties by MLS ID
+#      operationId: operations-properties-properties_list-by-mls
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The offset of items to be ignored in response for paging Default
+#          value : 0'
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'One of the followings : price_low|price_high|photos|newest|open_house_date Default
+#          value : price_low'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: 'The number of items per response Default value : 200'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: The MLS ID
+#        in: query
+#        name: mls_id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/list-for-rent:
+#    get:
+#      description: List properties for rent
+#      operationId: operations-properties-properties_list-for-rent
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Radius in miles to look for properties
+#        in: query
+#        name: radius
+#        required: false
+#        type: number
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          apartment,single_family,mapi_condo_townhome,other'
+#        in: query
+#        name: prop_type
+#        required: false
+#        type: string
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          community_washer_dryer,community_parking,central_air,community_pool,community_gym'
+#        in: query
+#        name: mapi_community_features
+#        required: false
+#        type: string
+#      - description: Option filter by setting max price
+#        in: query
+#        name: price_max
+#        required: false
+#        type: number
+#      - description: 'One of the followings : completeness,photos,freshest|price_low|price_high|photos|newest Default
+#          value : relevance'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: Option filter by setting at least the number of bedrooms
+#        in: query
+#        name: beds_min
+#        required: false
+#        type: number
+#      - description: Option filter by setting at least the number of bathrooms
+#        in: query
+#        name: baths_min
+#        required: false
+#        type: number
+#      - description: Zip code or postal code (do not use this parameter with city
+#          and state_code)
+#        in: query
+#        name: postal_code
+#        required: false
+#        type: string
+#      - description: 'Date string format yyyy-MM-dd''T''HH:mm:ss''Z'' , such as :
+#          2019-08-01T16:24:40Z .The date from which the properties have been on realtor.com'
+#        in: query
+#        name: listed_date_min
+#        required: false
+#        type: string
+#      - description: 'Look for properties in bounding box, this is the min latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_min
+#        required: false
+#        type: number
+#      - description: true/false - Cats are allowed or not (cannot be used with no_pets_allowed)--truefalse
+#        in: query
+#        name: allows_cats
+#        required: false
+#        type: boolean
+#      - description: true/false - Dogs are allowed or not (cannot be used with no_pets_allowed)--truefalse
+#        in: query
+#        name: allows_dogs
+#        required: false
+#        type: boolean
+#      - description: 'Look for properties in bounding box, this is the max latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_max
+#        required: false
+#        type: number
+#      - description: true/false - Pets are allowed or not (cannot be used with allows_dogs,
+#          allows_cats)--truefalse
+#        in: query
+#        name: no_pets_allowed
+#        required: false
+#        type: boolean
+#      - description: Min size of the properties
+#        in: query
+#        name: sqft_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the max longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_max
+#        required: false
+#        type: number
+#      - description: Option filter by setting min price
+#        in: query
+#        name: price_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the min longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_min
+#        required: false
+#        type: number
+#      - description: Max size of the properties
+#        in: query
+#        name: sqft_max
+#        required: false
+#        type: number
+#      - description: 'The value of city field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : New York
+#          City'
+#        in: query
+#        name: city
+#        required: true
+#        type: string
+#      - description: 'The number of items to be responded in every request Default
+#          value : 200'
+#        in: query
+#        name: limit
+#        required: true
+#        type: number
+#      - description: 'The value of state_code field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : NY'
+#        in: query
+#        name: state_code
+#        required: true
+#        type: string
+#      - description: 'The offset of items to be ignored in response for paging Default
+#          value : 0'
+#        in: query
+#        name: offset
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/list-for-sale:
+#    get:
+#      description: List properties for sale
+#      operationId: operations-properties-properties_list-for-sale
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: true/false - Pending only--truefalse
+#        in: query
+#        name: is_pending
+#        required: false
+#        type: boolean
+#      - description: Option filter by setting at least the number of bedrooms
+#        in: query
+#        name: beds_min
+#        required: false
+#        type: number
+#      - description: true/false - Foreclosures only--truefalse
+#        in: query
+#        name: is_foreclosure
+#        required: false
+#        type: boolean
+#      - description: Min Lot/Acreage size
+#        in: query
+#        name: lot_sqft_min
+#        required: false
+#        type: number
+#      - description: Max size of the properties
+#        in: query
+#        name: sqft_max
+#        required: false
+#        type: number
+#      - description: Option filter by setting at least the number of bathrooms
+#        in: query
+#        name: baths_min
+#        required: false
+#        type: number
+#      - description: true/false - Price reduced only
+#        in: query
+#        name: reduced
+#        required: false
+#        type: string
+#      - description: 'Date string format yyyy-MM-dd''T''HH:mm:ss''Z'' , such as :
+#          2019-08-01T16:24:40Z .The date from which the properties have been on realtor.com'
+#        in: query
+#        name: listed_date_min
+#        required: false
+#        type: string
+#      - description: Option filter by setting min price
+#        in: query
+#        name: price_min
+#        required: false
+#        type: number
+#      - description: Max age of home
+#        in: query
+#        name: age_max
+#        required: false
+#        type: number
+#      - description: true/false - New construction only--truefalse
+#        in: query
+#        name: is_new_construction
+#        required: false
+#        type: boolean
+#      - description: true/false - Contingent only--truefalse
+#        in: query
+#        name: is_contingent
+#        required: false
+#        type: boolean
+#      - description: Min size of the properties
+#        in: query
+#        name: sqft_min
+#        required: false
+#        type: number
+#      - description: true/false - 3D tours only--truefalse
+#        in: query
+#        name: is_matterports
+#        required: false
+#        type: boolean
+#      - description: Max Lot/Acreage size
+#        in: query
+#        name: lot_sqft_max
+#        required: false
+#        type: number
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          single_family,condo,mobile,multi_family,farm,land'
+#        in: query
+#        name: prop_type
+#        required: false
+#        type: string
+#      - description: Zip code or postal code (do not use this parameter with city
+#          and state_code)
+#        in: query
+#        name: postal_code
+#        required: false
+#        type: string
+#      - description: 'Look for properties in bounding box, this is the max latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_max
+#        required: false
+#        type: number
+#      - description: Radius in miles to look for properties
+#        in: query
+#        name: radius
+#        required: false
+#        type: number
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          basement,den_or_office,dining_room,family_room,game_room,washer_dryer,energy_efficient_home,central_air,central_heat,forced_air,carport,garage_1_or_more,garage_2_or_more,garage_3_or_more,rv_or_boat_parking,disability_features,fireplace,hardwood_floors,horse_facilities,spa_or_hot_tub,swimming_pool,tennis_court,single_story,two_or_more_stories,lease_option,pets_allowed,corner_lot,cul_de_sac,golf_course_lot_or_frontage,waterfront,city_view,golf_course_view,hill_mountain,lake_view,ocean_view,river_view,water_view,view,community_swimming_pool,community_boat_facilities,community_spa_or_hot_tub,community_tennis_court,community_golf,community_clubhouse,community_security_features,senior_community,community_horse_facilities,community_park,recreation_facilities,exercise_area'
+#        in: query
+#        name: features
+#        required: false
+#        type: string
+#      - description: 'One of the followings (relevance | price_low | price_high |
+#          photos | newest | open_house_date | sqft_high | price_reduced_date) Default
+#          value : relevance'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: Option filter by setting max price
+#        in: query
+#        name: price_max
+#        required: false
+#        type: number
+#      - description: Min age of home
+#        in: query
+#        name: age_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the min latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the min longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the max longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_max
+#        required: false
+#        type: number
+#      - description: 'The value of city field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : New York
+#          City'
+#        in: query
+#        name: city
+#        required: true
+#        type: string
+#      - description: 'The value of state_code field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : NY'
+#        in: query
+#        name: state_code
+#        required: true
+#        type: string
+#      - description: 'The number of items to be responded in every request Default
+#          value : 200'
+#        in: query
+#        name: limit
+#        required: true
+#        type: number
+#      - description: 'The offset of items to be ignored in response for paging Default
+#          value : 0'
+#        in: query
+#        name: offset
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/list-similarities:
+#    get:
+#      description: List similar properties
+#      operationId: operations-properties-properties_list-similarities
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'One of the followings : for_sale|for_rent Default value : for_sale'
+#        in: query
+#        name: prop_status
+#        required: true
+#        type: string
+#      - description: The value of property_id field returned in  .../properties/list-....
+#          or  .../properties/v2/list-... endpoints.
+#        in: query
+#        name: property_id
+#        required: true
+#        type: number
+#      - description: The number of items responded
+#        in: query
+#        name: limit
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/list-sold:
+#    get:
+#      description: List sold properties
+#      operationId: operations-properties-properties_list-sold
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Radius in miles to look for properties
+#        in: query
+#        name: radius
+#        required: false
+#        type: number
+#      - description: Max Lot/Acreage size
+#        in: query
+#        name: lot_sqft_max
+#        required: false
+#        type: number
+#      - description: 'One of the followings : price_low|price_high Default value :
+#          relevance'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: Max age of home
+#        in: query
+#        name: age_max
+#        required: false
+#        type: number
+#      - description: Max size of the properties
+#        in: query
+#        name: sqft_max
+#        required: false
+#        type: number
+#      - description: Option filter by setting min price
+#        in: query
+#        name: price_min
+#        required: false
+#        type: number
+#      - description: Option filter by setting max price
+#        in: query
+#        name: price_max
+#        required: false
+#        type: number
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          single_family, condo, mobile, multi_family, farm, land'
+#        in: query
+#        name: prop_type
+#        required: false
+#        type: string
+#      - description: Min Lot/Acreage size
+#        in: query
+#        name: lot_sqft_min
+#        required: false
+#        type: number
+#      - description: Zip code or postal code (do not use this parameter with city
+#          and state_code)
+#        in: query
+#        name: postal_code
+#        required: false
+#        type: string
+#      - description: Min age of home
+#        in: query
+#        name: age_min
+#        required: false
+#        type: number
+#      - description: Min size of the properties
+#        in: query
+#        name: sqft_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the min latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the max longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_max
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the min longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_min
+#        required: false
+#        type: string
+#      - description: 'Look for properties in bounding box, this is the max latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_max
+#        required: false
+#        type: number
+#      - description: 'The offset of items to be ignored in response for paging Default
+#          value : 0'
+#        in: query
+#        name: offset
+#        required: true
+#        type: number
+#      - description: 'The value of city field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : New York
+#          City'
+#        in: query
+#        name: city
+#        required: true
+#        type: string
+#      - description: 'The number of items to be responded in every request Default
+#          value : 200'
+#        in: query
+#        name: limit
+#        required: true
+#        type: number
+#      - description: 'The value of state_code field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : NY'
+#        in: query
+#        name: state_code
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/v2/detail:
+#    get:
+#      description: Get property detail information
+#      operationId: operations-properties-properties_v2_detail
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The value of property_id field returned in  .../properties/list-....
+#          or  .../properties/v2/list-... endpoints. Default value : O3599084026'
+#        in: query
+#        name: property_id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/v2/list-by-mls:
+#    get:
+#      description: List properties by MLS ID
+#      operationId: operations-properties-properties_v2_list-by-mls
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The number of items per response Default value : 10'
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: 'The offset of items to be ignored in response for paging Default
+#          value : 0'
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: 'One of the followings : for_sale|for_rent|recently_sold'
+#        in: query
+#        name: prop_status
+#        required: false
+#        type: string
+#      - description: The MLS ID
+#        in: query
+#        name: mls_id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/v2/list-for-rent:
+#    get:
+#      description: List properties for rent
+#      operationId: operations-properties-properties_v2_list-for-rent
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Min Lot/Acreage size
+#        in: query
+#        name: lot_sqft_min
+#        required: false
+#        type: number
+#      - description: Min beds of properties
+#        in: query
+#        name: beds_min
+#        required: false
+#        type: number
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          condo,cond_op,townhouse,co_op'
+#        in: query
+#        name: prop_sub_type
+#        required: false
+#        type: string
+#      - description: Max Lot/Acreage size
+#        in: query
+#        name: lot_sqft_max
+#        required: false
+#        type: number
+#      - description: Min baths of properties
+#        in: query
+#        name: baths_min
+#        required: false
+#        type: number
+#      - description: Option filter by setting max price
+#        in: query
+#        name: price_max
+#        required: false
+#        type: number
+#      - description: Max size of the properties
+#        in: query
+#        name: sqft_max
+#        required: false
+#        type: number
+#      - description: Min size of the properties
+#        in: query
+#        name: sqft_min
+#        required: false
+#        type: number
+#      - description: Radius in miles to look for properties (1 to 20)
+#        in: query
+#        name: radius
+#        required: false
+#        type: number
+#      - description: Zip code or postal code (do not use this parameter with city
+#          and state_code)
+#        in: query
+#        name: postal_code
+#        required: false
+#        type: string
+#      - description: false/true - Whether or not cats are allowed to live in properties--truefalse
+#        in: query
+#        name: allows_cats
+#        required: false
+#        type: boolean
+#      - description: 'One of the followings : relevance|newest|price_low|price_high|photos|open_house_date|sqft_high|price_reduced_date Default
+#          value : relevance'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          single_family,multi_family,condo,mobile,land,farm,other'
+#        in: query
+#        name: prop_type
+#        required: false
+#        type: string
+#      - description: false/true - Whether or not dogs are allowed to live in properties--truefalse
+#        in: query
+#        name: allows_dogs
+#        required: false
+#        type: boolean
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          recreation_facilities,swimming_pool,washer_dryer,garage_1_or_more,central_air,fireplace,spa_or_hot_tub,dishwasher,community_doorman,community_elevator,furnished,laundry_room,community_no_fee,community_outdoor_space,pets_allowed'
+#        in: query
+#        name: features
+#        required: false
+#        type: string
+#      - description: Option filter by setting min price
+#        in: query
+#        name: price_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the min longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the min latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the max latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_max
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the max longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_max
+#        required: false
+#        type: number
+#      - description: 'The offset of items to be ignored in response for paging Default
+#          value : 0'
+#        in: query
+#        name: offset
+#        required: true
+#        type: number
+#      - description: 'The number of items to be responded in every request Default
+#          value : 200'
+#        in: query
+#        name: limit
+#        required: true
+#        type: number
+#      - description: 'The value of city field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : New York
+#          City'
+#        in: query
+#        name: city
+#        required: true
+#        type: string
+#      - description: 'The value of state_code field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : NY'
+#        in: query
+#        name: state_code
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/v2/list-for-sale:
+#    get:
+#      description: List properties for sale
+#      operationId: operations-properties-properties_v2_list-for-sale
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Max age of properties
+#        in: query
+#        name: age_max
+#        required: false
+#        type: number
+#      - description: Zip code or postal code (do not use this parameter with city
+#          and state_code)
+#        in: query
+#        name: postal_code
+#        required: false
+#        type: string
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          single_family,multi_family,condo,mobile,land,farm,other'
+#        in: query
+#        name: prop_type
+#        required: false
+#        type: string
+#      - description: Min Lot/Acreage size
+#        in: query
+#        name: lot_sqft_min
+#        required: false
+#        type: number
+#      - description: Max Lot/Acreage size
+#        in: query
+#        name: lot_sqft_max
+#        required: false
+#        type: number
+#      - description: Min baths of properties
+#        in: query
+#        name: baths_min
+#        required: false
+#        type: number
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          relevance|newest|price_low|price_high|photos|open_house_date|sqft_high|price_reduced_date Default
+#          value : relevance'
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: Min size of the properties
+#        in: query
+#        name: sqft_min
+#        required: false
+#        type: number
+#      - description: Option filter by setting min price
+#        in: query
+#        name: price_min
+#        required: false
+#        type: number
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          garage_2_or_more,view,waterfront,golf_course_view,swimming_pool,cul_de_sac,hardwood_floors,basement,fireplace,energy_efficient,disability_features,dining_room,washer_dryer,family_room,den_or_office,game_room,central_air,central_heat,forced_air,single_story,two_or_more_stories,corner_lot,water_view,golf_course_lot_or_frontage,hill_or_mountain_view,ocean_view,city_view,lake_view,river_view,community_security_features,community_swimming_pool,community_boat_facilities,recreation_facilities,community_clubhouse,community_horse_facilities,community_tennis_court,community_park,community_golf,senior_community,community_spa_or_hot_tub,rv_or_boat_parking,horse_facilities,tennis_court,spa_or_hot_tub,garage_1_or_more,garage_3_or_more,carport'
+#        in: query
+#        name: features
+#        required: false
+#        type: string
+#      - description: Option filter by setting max price
+#        in: query
+#        name: price_max
+#        required: false
+#        type: number
+#      - description: true/false - Pending only--truefalse
+#        in: query
+#        name: is_pending
+#        required: false
+#        type: boolean
+#      - description: true/false - Open houses only--truefalse
+#        in: query
+#        name: has_open_house
+#        required: false
+#        type: boolean
+#      - description: Max size of the properties
+#        in: query
+#        name: sqft_max
+#        required: false
+#        type: number
+#      - description: 'One of the followings (separated by comma for multiple values):
+#          condo,cond_op,townhouse,co_op'
+#        in: query
+#        name: prop_sub_type
+#        required: false
+#        type: string
+#      - description: true/false - 3D tours only--truefalse
+#        in: query
+#        name: is_matterports
+#        required: false
+#        type: boolean
+#      - description: Min beds of properties
+#        in: query
+#        name: beds_min
+#        required: false
+#        type: number
+#      - description: Radius in miles to look for properties (1 to 20)
+#        in: query
+#        name: radius
+#        required: false
+#        type: number
+#      - description: true/false - New construction only--truefalse
+#        in: query
+#        name: is_new_construction
+#        required: false
+#        type: boolean
+#      - description: true/false - Foreclosures only--truefalse
+#        in: query
+#        name: is_foreclosure
+#        required: false
+#        type: boolean
+#      - description: true/false - Contingent only--truefalse
+#        in: query
+#        name: is_contingent
+#        required: false
+#        type: boolean
+#      - description: Min age of properties
+#        in: query
+#        name: age_min
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the max latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_max
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the max longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_max
+#        required: false
+#        type: number
+#      - description: 'Look for properties in bounding box, this is the min longitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lng_min
+#        required: false
+#        type: number
+#      - description: true/false - Homes not yet built--truefalse
+#        in: query
+#        name: is_new_plan
+#        required: false
+#        type: boolean
+#      - description: 'Look for properties in bounding box, this is the min latitude
+#          of the coordinate.
+#
+#          Has no affect if postal_code, or city or state_code parameter has value.'
+#        in: query
+#        name: lat_min
+#        required: false
+#        type: number
+#      - description: 'The value of state_code field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : NY'
+#        in: query
+#        name: state_code
+#        required: true
+#        type: string
+#      - description: 'The value of city field responded in locations/auto-complete
+#          API (do not use this parameter with postal_code) Default value : New York
+#          City'
+#        in: query
+#        name: city
+#        required: true
+#        type: string
+#      - description: 'The number of items to be responded in every request Default
+#          value : 200'
+#        in: query
+#        name: limit
+#        required: true
+#        type: number
+#      - description: 'The offset of items to be ignored in response for paging Default
+#          value : 0'
+#        in: query
+#        name: offset
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/v2/list-similar-homes:
+#    get:
+#      description: List similar properties for sale
+#      operationId: operations-properties-properties_v2_list-similar-homes_Deprecating
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The value of property_id field returned in  .../properties/list-....
+#          or  .../properties/v2/list-... endpoints. Default value : 1170009314'
+#        in: query
+#        name: property_id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/v2/list-similar-rental-homes:
+#    get:
+#      description: List similar properties for rent
+#      operationId: operations-properties-properties_v2_list-similar-rental-homes_Deprecating
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-in-us.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The value of postal_code field returned in all list endpoints Default
+#          value : 11432'
+#        in: query
+#        name: postal_code
+#        required: true
+#        type: string
+#      - description: 'The value of property_id field returned in  .../properties/list-....
+#          or  .../properties/v2/list-... endpoints. Default value : R9154733878'
+#        in: query
+#        name: property_id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /properties/v2/list-sold:
+    get:
+      description: List sold properties
+      operationId: operations-properties-properties_v2_list-sold
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - realty-in-us.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Min age of home
+        in: query
+        name: age_min
+        required: false
+        type: number
+      - description: Radius in miles to look for properties (1 to 20)
+        in: query
+        name: radius
+        required: false
+        type: number
+      - description: Min Lot/Acreage size
+        in: query
+        name: lot_sqft_min
+        required: false
+        type: number
+      - description: Option filter by setting min price
+        in: query
+        name: price_min
+        required: false
+        type: number
+      - description: Min baths of properties
+        in: query
+        name: baths_min
+        required: false
+        type: number
+      - description: Min size of the properties
+        in: query
+        name: sqft_min
+        required: false
+        type: number
+      - description: 'Look for properties in bounding box, this is the min latitude
+          of the coordinate.
+
+          Has no affect if postal_code, or city or state_code parameter has value.'
+        in: query
+        name: lat_min
+        required: false
+        type: number
+      - description: Option filter by setting max price
+        in: query
+        name: price_max
+        required: false
+        type: number
+      - description: 'Look for properties in bounding box, this is the min longitude
+          of the coordinate.
+
+          Has no affect if postal_code, or city or state_code parameter has value.'
+        in: query
+        name: lng_min
+        required: false
+        type: number
+      - description: 'One of the followings (separated by comma for multiple values):
+          single_family,multi_family,condo,mobile,land,farm,other'
+        in: query
+        name: prop_type
+        required: false
+        type: string
+      - description: Zip code or postal code (do not use this parameter with city
+          and state_code)
+        in: query
+        name: postal_code
+        required: false
+        type: string
+      - description: Max Lot/Acreage size
+        in: query
+        name: lot_sqft_max
+        required: false
+        type: number
+      - description: 'One of the followings : sold_date|beds_high|price_low|price_high|lot_sqft_high Default value : sold_date'
+        in: query
+        name: sort
+        required: false
+        type: string
+      - description: Max size of the properties
+        in: query
+        name: sqft_max
+        required: false
+        type: number
+      - description: Min beds of properties
+        in: query
+        name: beds_min
+        required: false
+        type: number
+      - description: Max age of home
+        in: query
+        name: age_max
+        required: false
+        type: number
+      - description: 'Look for properties in bounding box, this is the max latitude of the coordinate. Has no affect if postal_code, or city or state_code parameter has value.'
+        in: query
+        name: lat_max
+        required: false
+        type: number
+      - description: 'Look for properties in bounding box, this is the max longitude of the coordinate. Has no affect if postal_code, or city or state_code parameter has value.'
+        in: query
+        name: lng_max
+        required: false
+        type: number
+      - description: 'The value of city field responded in locations/auto-complete API (do not use this parameter with postal_code) Default value : New York City'
+        in: query
+        name: city
+        required: true
+        type: string
+      - description: 'The value of state_code field responded in locations/auto-complete API (do not use this parameter with postal_code) Default value : NY'
+        in: query
+        name: state_code
+        required: true
+        type: string
+      - description: 'The number of items to be responded in every request Default value : 200'
+        in: query
+        name: limit
+        required: true
+        type: number
+      - description: 'The offset of items to be ignored in response for paging Default value : 0'
+        in: query
+        name: offset
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /schools/list-nearby:
+    get:
+      description: List schools that are near the property
+      operationId: operations-default-schools_list-nearby
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - realty-in-us.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'The longitude co-ordinate Default value : -117.937021'
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: 'The latitude co-ordinate Default value : 35.129431'
+        in: query
+        name: lat
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

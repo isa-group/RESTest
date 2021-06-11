@@ -1,0 +1,86 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: "Instant domain search.\r\n\r\nDocumentation available at https://domainr.com/docs/api"
+  title: Domainr
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /v2/register:
+#    get:
+#      description: ''
+#      operationId: operations-v2-v2-register
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - domainr.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /v2/search:
+    get:
+      description: Responds with search suggestions related to the query.
+      operationId: operations-v2-v2-search
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - domainr.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Optionally include a comma-separated list of zones to include by default.
+        in: query
+        name: defaults
+        required: false
+        type: string
+      - description: Optionally restrict returned results to those supported by a registrar.
+        in: query
+        name: registrar
+        required: false
+        type: string
+      - description: Optional two-character country code, to include Geo TLDs.
+        in: query
+        name: location
+        required: false
+        type: string
+      - description: Search query
+        in: query
+        name: query
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /v2/status:
+    get:
+      description: Check domain availability.
+      operationId: operations-v2-v2-status
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - domainr.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: A single domain to check.
+        in: query
+        name: domain
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

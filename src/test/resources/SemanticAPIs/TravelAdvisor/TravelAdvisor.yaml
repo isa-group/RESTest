@@ -20,12 +20,12 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: locale
 #        required: false
 #        type: string
-#      - description: 'Name of cities, districts, places, etc...Default value : new
+#      - description: 'Name of cities, districts, places, etc... Default value : new
 #          york'
 #        in: query
 #        name: query
@@ -58,7 +58,7 @@ paths:
 #        name: limit
 #        required: false
 #        type: number
-#      - description: 'The value of id field that returned in questions/list endpointDefault
+#      - description: 'The value of id field that returned in questions/list endpoint Default
 #          value : 5283833'
 #        in: query
 #        name: question_id
@@ -81,18 +81,18 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
 #        type: string
 #      - description: 'The value of location_id field that returned in attractions/list
-#          endpointDefault value : 1451754'
+#          endpoint Default value : 1451754'
 #        in: query
 #        name: location_id
 #        required: true
@@ -114,7 +114,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'One of following recommended|rankingDefault value : recommended'
+#      - description: 'One of following recommended|ranking Default value : recommended'
 #        in: query
 #        name: sort
 #        required: false
@@ -134,7 +134,7 @@ paths:
 #        name: offset
 #        required: false
 #        type: number
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
@@ -145,7 +145,7 @@ paths:
 #        name: subcategory
 #        required: false
 #        type: number
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -155,7 +155,7 @@ paths:
 #        name: bookable_first
 #        required: false
 #        type: boolean
-#      - description: 'One of the followings km|miDefault value : km'
+#      - description: 'One of the followings km|mi Default value : km'
 #        in: query
 #        name: lunit
 #        required: false
@@ -188,7 +188,7 @@ paths:
 #        name: limit
 #        required: false
 #        type: number
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -198,7 +198,7 @@ paths:
 #        name: offset
 #        required: false
 #        type: number
-#      - description: 'One of the followings km|miDefault value : km'
+#      - description: 'One of the followings km|mi Default value : km'
 #        in: query
 #        name: lunit
 #        required: false
@@ -208,7 +208,7 @@ paths:
 #        name: distance
 #        required: false
 #        type: number
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
@@ -241,7 +241,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
@@ -251,12 +251,12 @@ paths:
 #        name: limit
 #        required: false
 #        type: number
-#      - description: 'One of the followings km|miDefault value : km'
+#      - description: 'One of the followings km|mi Default value : km'
 #        in: query
 #        name: lunit
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -319,7 +319,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
@@ -335,12 +335,12 @@ paths:
 #        required: false
 #        type: number
 #      - description: 'Cabin code, such as 0 - Economy | 1- Business Class | 2 - First
-#          Class | 3 - Premium EconomyDefault value : 0'
+#          Class | 3 - Premium Economy Default value : 0'
 #        in: query
 #        name: c
 #        required: false
 #        type: number
-#      - description: 'The number of adultsDefault value : 1'
+#      - description: 'The number of adults Default value : 1'
 #        in: query
 #        name: ta
 #        required: false
@@ -361,13 +361,13 @@ paths:
 #        name: dd1
 #        required: true
 #        type: string
-#      - description: 'The airport code of first destination locationDefault value
+#      - description: 'The airport code of first destination location Default value
 #          : CNX'
 #        in: query
 #        name: d1
 #        required: true
 #        type: string
-#      - description: 'Airport code of first originDefault value : DMK'
+#      - description: 'Airport code of first origin Default value : DMK'
 #        in: query
 #        name: o1
 #        required: true
@@ -440,7 +440,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
@@ -453,14 +453,14 @@ paths:
 #        required: false
 #        type: string
 #      - description: 'The offset of items to be ignored in response for paging. Use
-#          summary/nr field returned in response to get total flightsDefault value
+#          summary/nr field returned in response to get total flights Default value
 #          : 0'
 #        in: query
 #        name: o
 #        required: false
 #        type: number
 #      - description: 'Check for suitable value of "so" field returned in flights/create-session
-#          or right in this endpointDefault value : PRICE'
+#          or right in this endpoint Default value : PRICE'
 #        in: query
 #        name: so
 #        required: false
@@ -479,13 +479,13 @@ paths:
 #        name: am
 #        required: false
 #        type: string
-#      - description: 'The number of items per response (max 15)Default value : 15'
+#      - description: 'The number of items per response (max 15) Default value : 15'
 #        in: query
 #        name: n
 #        required: false
 #        type: number
 #      - description: 'One of following NON_STOP | ONE_STOP | TWO_PLUS or separated
-#          by comma to specify multiple valuesDefault value : NON_STOP,ONE_STOP'
+#          by comma to specify multiple values Default value : NON_STOP,ONE_STOP'
 #        in: query
 #        name: ns
 #        required: false
@@ -525,12 +525,12 @@ paths:
 #        name: zff
 #        required: false
 #        type: string
-#      - description: 'The number of adults in all roomsDefault value : 1'
+#      - description: 'The number of adults in all rooms Default value : 1'
 #        in: query
 #        name: adults
 #        required: false
 #        type: number
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -540,13 +540,13 @@ paths:
 #        name: checkin
 #        required: false
 #        type: string
-#      - description: 'The number of roomsDefault value : 1'
+#      - description: 'The number of rooms Default value : 1'
 #        in: query
 #        name: rooms
 #        required: false
 #        type: number
 #      - description: 'One of the followings : asc|desc, this param is used with sort
-#          by priceDefault value : asc'
+#          by price Default value : asc'
 #        in: query
 #        name: order
 #        required: false
@@ -558,7 +558,7 @@ paths:
 #        name: amenities
 #        required: false
 #        type: string
-#      - description: 'One of the followings : recommended|popularity|priceDefault
+#      - description: 'One of the followings : recommended|popularity|price Default
 #          value : recommended'
 #        in: query
 #        name: sort
@@ -577,7 +577,7 @@ paths:
 #        name: pricesmin
 #        required: false
 #        type: number
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
@@ -595,13 +595,13 @@ paths:
 #        name: hotel_class
 #        required: false
 #        type: string
-#      - description: 'The number of nights to liveDefault value : 2'
+#      - description: 'The number of nights to live Default value : 2'
 #        in: query
 #        name: nights
 #        required: false
 #        type: number
 #      - description: 'The value of location_id field that returned in locations/search
-#          endpointDefault value : 293919'
+#          endpoint Default value : 293919'
 #        in: query
 #        name: location_id
 #        required: true
@@ -623,12 +623,12 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
 #        type: string
-#      - description: 'The number of adults in all roomsDefault value : 1'
+#      - description: 'The number of adults in all rooms Default value : 1'
 #        in: query
 #        name: adults
 #        required: false
@@ -638,29 +638,29 @@ paths:
 #        name: rooms
 #        required: false
 #        type: string
-#      - description: 'The number of nights to liveDefault value : 2'
+#      - description: 'The number of nights to live Default value : 2'
 #        in: query
 #        name: nights
 #        required: false
 #        type: number
-#      - description: 'The check-in date at hotelDefault value : 2020-01-15'
+#      - description: 'The check-in date at hotel Default value : 2020-01-15'
 #        in: query
 #        name: checkin
 #        required: false
 #        type: string
-#      - description: 'The age of every children separated by comma in all roomsDefault
+#      - description: 'The age of every children separated by comma in all rooms Default
 #          value : 7,10'
 #        in: query
 #        name: child_rm_ages
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
 #        type: string
 #      - description: 'The value of location_id field that returned in .../hotels/list...
-#          endpointDefault value : 10359481'
+#          endpoint Default value : 10359481'
 #        in: query
 #        name: location_id
 #        required: true
@@ -688,12 +688,12 @@ paths:
 #        name: pricesmax
 #        required: false
 #        type: number
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
 #        type: string
-#      - description: 'One of the followings : recommended|popularity|priceDefault
+#      - description: 'One of the followings : recommended|popularity|price Default
 #          value : recommended'
 #        in: query
 #        name: sort
@@ -706,7 +706,7 @@ paths:
 #        required: false
 #        type: number
 #      - description: 'One of the followings : asc|desc, this param is used with sort
-#          by priceDefault value : asc'
+#          by price Default value : asc'
 #        in: query
 #        name: order
 #        required: false
@@ -743,12 +743,12 @@ paths:
 #        name: subcategory
 #        required: false
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
 #        type: string
-#      - description: 'The number of items to ignore for paging purposeDefault value
+#      - description: 'The number of items to ignore for paging purpose Default value
 #          : 0'
 #        in: query
 #        name: offset
@@ -761,28 +761,28 @@ paths:
 #        name: zff
 #        required: false
 #        type: string
-#      - description: 'The number of items per response (max 30)Default value : 30'
+#      - description: 'The number of items per response (max 30) Default value : 30'
 #        in: query
 #        name: limit
 #        required: false
 #        type: number
-#      - description: 'The number of nights to liveDefault value : 2'
+#      - description: 'The number of nights to live Default value : 2'
 #        in: query
 #        name: nights
 #        required: true
 #        type: number
-#      - description: 'The number of adults in all roomsDefault value : 1'
+#      - description: 'The number of adults in all rooms Default value : 1'
 #        in: query
 #        name: adults
 #        required: true
 #        type: number
 #      - description: 'The value of location_id field that returned in locations/search
-#          endpointDefault value : 293919'
+#          endpoint Default value : 293919'
 #        in: query
 #        name: location_id
 #        required: true
 #        type: number
-#      - description: 'The number of roomsDefault value : 1'
+#      - description: 'The number of rooms Default value : 1'
 #        in: query
 #        name: rooms
 #        required: true
@@ -804,34 +804,34 @@ paths:
         name: X-RapidAPI-Host
         required: true
         type: string
-      - description: 'The number of nights to liveDefault value : 2'
+      - description: 'The number of nights to live Default value : 2'
         in: query
         name: nights
         required: false
         type: string
-      - description: 'The number of items per response (max 30)Default value : 30'
+      - description: 'The number of items per response (max 30) Default value : 30'
         in: query
         name: limit
         required: false
         type: number
-      - description: "Hotel Style - Check for suitable value of 'filters/zff' field (separated by comma to specify multiple values) returned in hotel-filters/list endpointDefault value : 4,6"
+      - description: "Hotel Style - Check for suitable value of 'filters/zff' field (separated by comma to specify multiple values) returned in hotel-filters/list endpoint Default value : 4,6"
         in: query
         name: zff
         required: false
         type: string
       - description: 'Check for suitable value of filters/hotel_class field (separated
-          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          by comma to specify multiple values) returned in hotel-filters/list endpoint Default
           value : 1,2,3'
         in: query
         name: hotel_class
         required: false
         type: string
-      - description: 'The check-in date at hotelDefault value : 2020-01-08'
+      - description: 'The check-in date at hotel Default value : 2020-01-08'
         in: query
         name: checkin
         required: false
         type: string
-      - description: 'The number of roomsDefault value : 1'
+      - description: 'The number of rooms Default value : 1'
         in: query
         name: rooms
         required: false
@@ -852,17 +852,17 @@ paths:
         name: offset
         required: false
         type: number
-      - description: 'The language codeDefault value : en_US'
+      - description: 'The language code Default value : en_US'
         in: query
         name: lang
         required: false
         type: string
-      - description: 'The currency codeDefault value : USD'
+      - description: 'The currency code Default value : USD'
         in: query
         name: currency
         required: false
         type: string
-      - description: 'The number of adults in all roomsDefault value : 1'
+      - description: 'The number of adults in all rooms Default value : 1'
         in: query
         name: adults
         required: false
@@ -874,20 +874,20 @@ paths:
         required: false
         type: number
       - description: 'Check for suitable value of filters/amenities field (separated
-          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          by comma to specify multiple values) returned in hotel-filters/list endpoint Default
           value : beach,bar_lounge,airport_transportation'
         in: query
         name: amenities
         required: false
         type: string
       - description: 'Check for suitable value of filters/subcategory field (separated
-          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          by comma to specify multiple values) returned in hotel-filters/list endpoint Default
           value : hotel,bb,specialty'
         in: query
         name: subcategory
         required: false
         type: string
-      - description: 'The age of every children separated by comma in all roomsDefault
+      - description: 'The age of every children separated by comma in all rooms Default
           value : 7,10'
         in: query
         name: child_rm_ages
@@ -898,7 +898,7 @@ paths:
         name: latitude
         required: true
         type: number
-      - description: 'Longitude of coordinateDefault value : 100.87808'
+      - description: 'Longitude of coordinate Default value : 100.87808'
         in: query
         name: longitude
         required: true
@@ -921,13 +921,13 @@ paths:
         name: X-RapidAPI-Host
         required: true
         type: string
-      - description: 'The number of items per response (max 30)Default value : 30'
+      - description: 'The number of items per response (max 30) Default value : 30'
         in: query
         name: limit
         required: false
         type: number
       - description: 'Check for suitable value of filters/subcategory field (separated
-          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          by comma to specify multiple values) returned in hotel-filters/list endpoint Default
           value : hotel,bb,specialty'
         in: query
         name: subcategory
@@ -938,26 +938,26 @@ paths:
         name: pricesmax
         required: false
         type: number
-      - description: 'The number of adults in all roomsDefault value : 1'
+      - description: 'The number of adults in all rooms Default value : 1'
         in: query
         name: adults
         required: false
         type: number
       - description: 'Hotel Style - Check for suitable value of "filters/zff" field
           (separated by comma to specify multiple values) returned in hotel-filters/list
-          endpointDefault value : 4,6'
+          endpoint Default value : 4,6'
         in: query
         name: zff
         required: false
         type: string
-      - description: 'The age of every children separated by comma in all roomsDefault
+      - description: 'The age of every children separated by comma in all rooms Default
           value : 7,10'
         in: query
         name: child_rm_ages
         required: false
         type: string
       - description: 'Check for suitable value of filters/hotel_class field (separated
-          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          by comma to specify multiple values) returned in hotel-filters/list endpoint Default
           value : 1,2,3'
         in: query
         name: hotel_class
@@ -980,33 +980,33 @@ paths:
         required: false
         type: number
       - description: 'Check for suitable value of filters/amenities field (separated
-          by comma to specify multiple values) returned in hotel-filters/list endpointDefault
+          by comma to specify multiple values) returned in hotel-filters/list endpoint Default
           value : beach,bar_lounge,airport_transportation'
         in: query
         name: amenities
         required: false
         type: string
-      - description: 'The currency codeDefault value : USD'
+      - description: 'The currency code Default value : USD'
         in: query
         name: currency
         required: false
         type: string
-      - description: 'Longitude of top right coordinateDefault value : 109.149359'
+      - description: 'Longitude of top right coordinate Default value : 109.149359'
         in: query
         name: tr_longitude
         required: true
         type: number
-      - description: 'Longitude of bottom left coordinateDefault value : 108.473209'
+      - description: 'Longitude of bottom left coordinate Default value : 108.473209'
         in: query
         name: bl_longitude
         required: true
         type: number
-      - description: 'Latitude of top right coordinateDefault value : 12.838442'
+      - description: 'Latitude of top right coordinate Default value : 12.838442'
         in: query
         name: tr_latitude
         required: true
         type: number
-      - description: 'Latitude of bottom left coordinateDefault value : 11.847676'
+      - description: 'Latitude of bottom left coordinate Default value : 11.847676'
         in: query
         name: bl_latitude
         required: true
@@ -1029,7 +1029,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The number of items per response (max 10)Default value : 10'
+#      - description: 'The number of items per response (max 10) Default value : 10'
 #        in: query
 #        name: limit
 #        required: false
@@ -1040,7 +1040,7 @@ paths:
 #        required: false
 #        type: number
 #      - description: 'The value of location_id field that returned in hotels/list,
-#          restaurants/list, or attractions/list endpointsDefault value : 8014024'
+#          restaurants/list, or attractions/list endpoints Default value : 8014024'
 #        in: query
 #        name: location_id
 #        required: true
@@ -1062,17 +1062,17 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'One of the followings : km|miDefault value : km'
+#      - description: 'One of the followings : km|mi Default value : km'
 #        in: query
 #        name: units
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
 #        type: string
-#      - description: 'Name of cities, districts, places, etc...Default value : eiffel
+#      - description: 'Name of cities, districts, places, etc... Default value : eiffel
 #          tower'
 #        in: query
 #        name: query
@@ -1120,17 +1120,17 @@ paths:
         name: limit
         required: false
         type: number
-      - description: 'The language codeDefault value : en_US'
+      - description: 'The language code Default value : en_US'
         in: query
         name: lang
         required: false
         type: string
-      - description: 'The currency codeDefault value : USD'
+      - description: 'The currency code Default value : USD'
         in: query
         name: currency
         required: false
         type: string
-      - description: 'Name of cities, districts, places, etc...Default value : pattaya'
+      - description: 'Name of cities, districts, places, etc... Default value : pattaya'
         in: query
         name: query
         required: true
@@ -1152,7 +1152,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
@@ -1162,18 +1162,18 @@ paths:
 #        name: offset
 #        required: false
 #        type: number
-#      - description: 'The number of items per response (max 50)Default value : 50'
+#      - description: 'The number of items per response (max 50) Default value : 50'
 #        in: query
 #        name: limit
 #        required: false
 #        type: number
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
 #        type: string
 #      - description: 'The value of location_id field that returned in hotels/list,
-#          restaurants/list, or attractions/list endpointsDefault value : 2233968'
+#          restaurants/list, or attractions/list endpoints Default value : 2233968'
 #        in: query
 #        name: location_id
 #        required: true
@@ -1195,7 +1195,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The number of items per response (max 10)Default value : 10'
+#      - description: 'The number of items per response (max 10) Default value : 10'
 #        in: query
 #        name: limit
 #        required: false
@@ -1206,7 +1206,7 @@ paths:
 #        required: false
 #        type: number
 #      - description: 'The value of location_id field that returned in hotels/list,
-#          restaurants/list, or attractions/list endpointsDefault value : 8014024'
+#          restaurants/list, or attractions/list endpoints Default value : 8014024'
 #        in: query
 #        name: location_id
 #        required: true
@@ -1228,12 +1228,12 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -1280,7 +1280,7 @@ paths:
 #        name: restaurant_dining_options
 #        required: false
 #        type: string
-#      - description: 'One of the followings km|miDefault value : km'
+#      - description: 'One of the followings km|mi Default value : km'
 #        in: query
 #        name: lunit
 #        required: false
@@ -1292,7 +1292,7 @@ paths:
 #        name: dietary_restrictions
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -1311,7 +1311,7 @@ paths:
 #        name: combined_food
 #        required: false
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
@@ -1323,12 +1323,12 @@ paths:
 #        type: number
 #      - description: 'Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
 #          field (separated by comma to specify multiple values) returned right in
-#          this endpointDefault value : 10591'
+#          this endpoint Default value : 10591'
 #        in: query
 #        name: restaurant_tagcategory_standalone
 #        required: false
 #        type: string
-#      - description: 'Only returns restaurants which are opening nowDefault value
+#      - description: 'Only returns restaurants which are opening now Default value
 #          : false--truefalse'
 #        in: query
 #        name: open_now
@@ -1336,12 +1336,12 @@ paths:
 #        type: boolean
 #      - description: 'Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
 #          field (separated by comma to specify multiple values) returned right in
-#          this endpointDefault value : 10591'
+#          this endpoint Default value : 10591'
 #        in: query
 #        name: restaurant_tagcategory
 #        required: false
 #        type: string
-#      - description: 'The number of items per response (max 30)Default value : 30'
+#      - description: 'The number of items per response (max 30) Default value : 30'
 #        in: query
 #        name: limit
 #        required: false
@@ -1354,7 +1354,7 @@ paths:
 #        required: false
 #        type: string
 #      - description: 'The value of location_id field that returned in locations/search
-#          endpointDefault value : 293919'
+#          endpoint Default value : 293919'
 #        in: query
 #        name: location_id
 #        required: true
@@ -1400,7 +1400,7 @@ paths:
 #        name: min_rating
 #        required: false
 #        type: string
-#      - description: 'Only returns restaurants which are opening nowDefault value
+#      - description: 'Only returns restaurants which are opening now Default value
 #          : false--truefalse'
 #        in: query
 #        name: open_now
@@ -1413,12 +1413,12 @@ paths:
 #        name: restaurant_styles
 #        required: false
 #        type: string
-#      - description: 'One of the followings km|miDefault value : km'
+#      - description: 'One of the followings km|mi Default value : km'
 #        in: query
 #        name: lunit
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -1437,7 +1437,7 @@ paths:
 #        name: combined_food
 #        required: false
 #        type: string
-#      - description: 'The number of items per response (max 30)Default value : 30'
+#      - description: 'The number of items per response (max 30) Default value : 30'
 #        in: query
 #        name: limit
 #        required: false
@@ -1449,12 +1449,12 @@ paths:
 #        name: restaurant_tagcategory_standalone
 #        required: false
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
 #        type: string
-#      - description: 'The radius around specified coordinate (max 10)Default value
+#      - description: 'The radius around specified coordinate (max 10) Default value
 #          : 2'
 #        in: query
 #        name: distance
@@ -1474,12 +1474,12 @@ paths:
 #        name: prices_restaurants
 #        required: false
 #        type: string
-#      - description: 'Longitude of coordinateDefault value : 100.87808'
+#      - description: 'Longitude of coordinate Default value : 100.87808'
 #        in: query
 #        name: longitude
 #        required: true
 #        type: number
-#      - description: 'Latitude of coordinateDefault value : 12.91285'
+#      - description: 'Latitude of coordinate Default value : 12.91285'
 #        in: query
 #        name: latitude
 #        required: true
@@ -1509,7 +1509,7 @@ paths:
 #        name: restaurant_mealtype
 #        required: false
 #        type: string
-#      - description: 'One of the followings km|miDefault value : km'
+#      - description: 'One of the followings km|mi Default value : km'
 #        in: query
 #        name: lunit
 #        required: false
@@ -1521,12 +1521,12 @@ paths:
 #        name: restaurant_dining_options
 #        required: false
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -1540,7 +1540,7 @@ paths:
 #        type: string
 #      - description: 'Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
 #          field (separated by comma to specify multiple values) returned right in
-#          this endpointDefault value : 10591'
+#          this endpoint Default value : 10591'
 #        in: query
 #        name: restaurant_tagcategory
 #        required: false
@@ -1559,7 +1559,7 @@ paths:
 #        type: number
 #      - description: 'Establishment Type - Check for suitable values of filters_v2/filter_sections/filter_groups/options/value
 #          field (separated by comma to specify multiple values) returned right in
-#          this endpointDefault value : 10591'
+#          this endpoint Default value : 10591'
 #        in: query
 #        name: restaurant_tagcategory_standalone
 #        required: false
@@ -1576,13 +1576,13 @@ paths:
 #        name: min_rating
 #        required: false
 #        type: number
-#      - description: 'Only returns restaurants which are opening nowDefault value
+#      - description: 'Only returns restaurants which are opening now Default value
 #          : false--truefalse'
 #        in: query
 #        name: open_now
 #        required: false
 #        type: boolean
-#      - description: 'The number of items per response (max 30)Default value : 30'
+#      - description: 'The number of items per response (max 30) Default value : 30'
 #        in: query
 #        name: limit
 #        required: false
@@ -1594,22 +1594,22 @@ paths:
 #        name: prices_restaurants
 #        required: false
 #        type: string
-#      - description: 'Longitude of top right coordinateDefault value : 109.149359'
+#      - description: 'Longitude of top right coordinate Default value : 109.149359'
 #        in: query
 #        name: tr_longitude
 #        required: true
 #        type: number
-#      - description: 'Longitude of bottom left coordinateDefault value : 109.095887'
+#      - description: 'Longitude of bottom left coordinate Default value : 109.095887'
 #        in: query
 #        name: bl_longitude
 #        required: true
 #        type: number
-#      - description: 'Latitude of top right coordinateDefault value : 12.838442'
+#      - description: 'Latitude of top right coordinate Default value : 12.838442'
 #        in: query
 #        name: tr_latitude
 #        required: true
 #        type: number
-#      - description: 'Latitude of bottom left coordinateDefault value : 11.847676'
+#      - description: 'Latitude of bottom left coordinate Default value : 11.847676'
 #        in: query
 #        name: bl_latitude
 #        required: true
@@ -1637,12 +1637,12 @@ paths:
 #        name: keyword
 #        required: false
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
 #        type: string
-#      - description: 'The language codeDefault value : en_US'
+#      - description: 'The language code Default value : en_US'
 #        in: query
 #        name: lang
 #        required: false
@@ -1652,13 +1652,13 @@ paths:
 #        name: offset
 #        required: false
 #        type: number
-#      - description: 'The number of items per response (max 20)Default value : 20'
+#      - description: 'The number of items per response (max 20) Default value : 20'
 #        in: query
 #        name: limit
 #        required: false
 #        type: number
 #      - description: 'The value of location_id field that returned in hotels/list,
-#          restaurants/list, or attractions/list endpointsDefault value : 8014024'
+#          restaurants/list, or attractions/list endpoints Default value : 8014024'
 #        in: query
 #        name: location_id
 #        required: true
@@ -1680,12 +1680,12 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'The currency codeDefault value : USD'
+#      - description: 'The currency code Default value : USD'
 #        in: query
 #        name: currency
 #        required: false
 #        type: string
-#      - description: 'The number of items per response (max 20)Default value : 20'
+#      - description: 'The number of items per response (max 20) Default value : 20'
 #        in: query
 #        name: limit
 #        required: false
@@ -1701,7 +1701,7 @@ paths:
 #        required: false
 #        type: string
 #      - description: 'The value of location_id field that returned in hotels/list
-#          endpointDefault value : 8014024'
+#          endpoint Default value : 8014024'
 #        in: query
 #        name: location_id
 #        required: true

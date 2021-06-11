@@ -173,7 +173,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/lang"
+          - "http://dbpedia.org/property/langcode"
           objectValues: null
         valid: true
     - name: currency
@@ -188,7 +188,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/currency"
+          - "http://dbpedia.org/property/currencyCode"
           objectValues: null
         valid: true
     - name: adults
@@ -489,7 +489,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/currency"
+          - "http://dbpedia.org/property/currencyCode"
           objectValues: null
         valid: true
     - name: tr_longitude
@@ -663,7 +663,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/lang"
+          - "http://dbpedia.org/property/langcode"
           objectValues: null
         valid: true
     - name: currency
@@ -678,7 +678,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/currency"
+          - "http://dbpedia.org/property/currencyCode"
           objectValues: null
         valid: true
     - name: query

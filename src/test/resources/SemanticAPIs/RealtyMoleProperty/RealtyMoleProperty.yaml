@@ -1,0 +1,479 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: 'Search for real estate data like property owner details, property
+    attributes (square footage, # of bedrooms, etc), rental history, zip code data,
+    etc. across millions of properties and rentals. '
+  title: Realty Mole Property
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /properties:
+#    get:
+#      description: 'Returns data for real estate properties. By passing in the appropriate
+#        options you can find a specific property or a list of properties matching
+#        your particular criteria. Data returned includes but is not limited to: owner
+#        details, number of bedrooms/bathrooms, square footage, tax assesments, etc.'
+#      operationId: operations-developers-Properties
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-mole-property-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: pass an optional address for looking up a specific property.
+#          The address should be formatted as street address, city, state zip (ie 123
+#          Main St, Conway, SC 29526)
+#        in: query
+#        name: address
+#        required: false
+#        type: string
+#      - description: Specify a latitude, longitude and radius to search for properties
+#          in a particular area.
+#        in: query
+#        name: longitude
+#        required: false
+#        type: number
+#      - description: filter listings within this specified number of kilometers. You
+#          must provide either an address or latitude/longitude parameters when using
+#          a radius search.
+#        in: query
+#        name: radius
+#        required: false
+#        type: number
+#      - description: filter results for a specific number of bathrooms
+#        in: query
+#        name: bathrooms
+#        required: false
+#        type: number
+#      - description: filter results for a specific state
+#        in: query
+#        name: state
+#        required: false
+#        type: string
+#      - description: Specify a latitude, longitude and radius to search for properties
+#          in a particular area.
+#        in: query
+#        name: latitude
+#        required: false
+#        type: number
+#      - description: filter results for a specific number of bedrooms
+#        in: query
+#        name: bedrooms
+#        required: false
+#        type: number
+#      - description: filter results for a specific city
+#        in: query
+#        name: city
+#        required: false
+#        type: string
+#      - description: skip the specified number of properties. use this to page through
+#          large sets of properties.
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: maximum number of records to return
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /properties/{propertyId}:
+#    get:
+#      description: Returns a list of real estate properties. By passing in the appropriate
+#        options you can find a specific property or a list of properties matching
+#        your particular criteria
+#      operationId: operations-developers-Find_Property_by_ID
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-mole-property-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Id of the property to return
+#        in: path
+#        name: propertyId
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /randomProperties:
+#    get:
+#      description: This API returns a list of random addresses and corresponding property
+#        data. This can be very useful for testing applications that need random addresses
+#        or random real estate property details.
+#      operationId: operations-developers-Random_Addresses
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-mole-property-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Number of random properties returned
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /rentalListings:
+#    get:
+#      description: Search for rental listings for specific properties or a list of
+#        properties based on your criteria (city, state, etc.) This API returns the
+#        rent price, bedrooms, bathrooms, days on market and other data specified in
+#        the original rental listing.
+#      operationId: operations-developers-Rental_Listings
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-mole-property-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: skip the specified number of properties. use this to page through
+#          large sets of properties.
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: pass an optional address for looking up a specific property.
+#          The address should be formatted as street address, city, state zip (ie 123
+#          Main St, Conway, SC 29526)
+#        in: query
+#        name: address
+#        required: false
+#        type: string
+#      - description: filter results for a specific city
+#        in: query
+#        name: city
+#        required: false
+#        type: string
+#      - description: Specify a latitude, longitude and radius to search for properties
+#          in a particular area.
+#        in: query
+#        name: longitude
+#        required: false
+#        type: number
+#      - description: filter results for rental listings with a specific number of
+#          bathrooms
+#        in: query
+#        name: bathrooms
+#        required: false
+#        type: number
+#      - description: filter results for rental listings with a specific number of
+#          bedrooms
+#        in: query
+#        name: bedrooms
+#        required: false
+#        type: number
+#      - description: maximum number of records to return. must be less than or equal
+#          to 50
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: Specify a latitude, longitude and radius to search for properties
+#          in a particular area.
+#        in: query
+#        name: latitude
+#        required: false
+#        type: number
+#      - description: filter results for a specific state. Use the two character state
+#          abbreviation
+#        in: query
+#        name: state
+#        required: false
+#        type: string
+#      - description: filter listings within this specified number of kilometers. You
+#          must provide either an address or latitude/longitude parameters when using
+#          a radius search.
+#        in: query
+#        name: radius
+#        required: false
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /rentalPrice:
+#    get:
+#      description: Based on the provided property details this API will return a rent
+#        estimate along with comparable rental properties. Most of the response values
+#        are self-explanatory. Please note that distance measurements are given in
+#        kilometers.
+#      operationId: operations-developers-Rent_Estimate
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - realty-mole-property-api.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Latitude of the property. The latitude / longitude of a property
+#          can be provided in lieu of the address parameter.
+#        in: query
+#        name: latitude
+#        required: false
+#        type: number
+#      - description: Optionally include the number of bedrooms in the property to
+#          help find more closely comparable rentals and improve the accuracy of the
+#          estimate.
+#        in: query
+#        name: bedrooms
+#        required: false
+#        type: number
+#      - description: The property address in the format of Street Address, City, State.You
+#          must provide either an address parameter or the latitude/longitude parameters.
+#        in: query
+#        name: address
+#        required: false
+#        type: string
+#      - description: Optionally include the number of bathrooms in the property to
+#          help find more closely comparable rentals and improve the accuracy of the
+#          estimate.
+#        in: query
+#        name: bathrooms
+#        required: false
+#        type: number
+#      - description: Optionally include the square footage of the property. This should
+#          be a number.
+#        in: query
+#        name: squareFootage
+#        required: false
+#        type: number
+#      - description: Longitude of the property. The latitude / longitude of a property
+#          can be provided in lieu of the address parameter.
+#        in: query
+#        name: longitude
+#        required: false
+#        type: number
+#      - description: 'Optionally include the property type. This must be one the following:
+#          Apartment, Single Family, Townhouse, Condo, Duplex-Triplex'
+#        in: query
+#        name: propertyType
+#        required: false
+#        type: string
+#      - description: This parameter filters out any comparable rentals that are older
+#          than the provided value. If present, this parameter must be set to at least
+#          15. The lower the number you provide the longer the API may take to return
+#          data as it is forced to search over a bigger radius to find more recent
+#          listings.
+#        in: query
+#        name: daysOld
+#        required: false
+#        type: number
+#      - description: Optionally change the number of comparable rentals returned by
+#          the API. This should be a number between 3 - 10.
+#        in: query
+#        name: compCount
+#        required: false
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /saleListings:
+    get:
+      description: IN BETA Search for sale listings for specific properties or a list
+        of properties based on your criteria (city, state, etc.) This API returns
+        the sale price, bedrooms, bathrooms, days on market and other data specified
+        in the original sale listing.
+      operationId: operations-developers-Sale_Listings
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - realty-mole-property-api.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Specify a latitude, longitude and radius to search for properties
+          in a particular area.
+        in: query
+        name: latitude
+        required: false
+        type: number
+      - description: filter results for rental listings with a specific number of
+          bedrooms
+        in: query
+        name: bedrooms
+        required: false
+        type: number
+      - description: maximum number of records to return. must be less than or equal
+          to 50
+        in: query
+        name: limit
+        required: false
+        type: number
+      - description: filter results for a specific city
+        in: query
+        name: city
+        required: false
+        type: string
+      - description: pass an optional address for looking up a specific property.
+          The address should be formatted as street address, city, state zip (ie 123
+          Main St, Conway, SC 29526)
+        in: query
+        name: address
+        required: false
+        type: string
+      - description: filter listings within this specified number of kilometers. You
+          must provide either an address or latitude/longitude parameters when using
+          a radius search.
+        in: query
+        name: radius
+        required: false
+        type: number
+      - description: Specify a latitude, longitude and radius to search for properties
+          in a particular area.
+        in: query
+        name: longitude
+        required: false
+        type: number
+      - description: filter results for rental listings with a specific number of
+          bathrooms
+        in: query
+        name: bathrooms
+        required: false
+        type: number
+      - description: skip the specified number of properties. use this to page through
+          large sets of properties.
+        in: query
+        name: offset
+        required: false
+        type: number
+      - description: filter results for a specific state. Use the two character state
+          abbreviation
+        in: query
+        name: state
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /salePrice:
+    get:
+      description: IN BETA Based on the provided property details this API will return
+        a sale price  estimate along with comparable properties. Most of the response
+        values are self-explanatory. Please note that distance measurements are given
+        in kilometers.
+      operationId: operations-developers-Sale_Price_Estimate
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - realty-mole-property-api.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: "Optionally change the number of comparable rentals returned by the API. This should be a number between 3 - 10."
+        in: query
+        name: compCount
+        required: false
+        type: number
+      - description: "The property address in the format of Street Address, City, State. You
+          must provide either an address parameter or the latitude/longitude parameters."
+        in: query
+        name: address
+        required: false
+        type: string
+      - description: Optionally include the number of bedrooms in the property to
+          help find more closely comparable rentals and improve the accuracy of the
+          estimate.
+        in: query
+        name: bedrooms
+        required: false
+        type: number
+      - description: "This parameter filters out any comparable rentals that are older
+          than the provided value. If present, this parameter must be set to at least
+          15. The lower the number you provide the longer the API may take to return
+          data as it is forced to search over a bigger radius to find more recent
+          listings."
+        in: query
+        name: daysOld
+        required: false
+        type: number
+      - description: 'Optionally include the property type. This must be one the following:
+          Apartment, Single Family, Townhouse, Condo, Duplex-Triplex'
+        in: query
+        name: propertyType
+        required: false
+        type: string
+      - description: "Longitude of the property. The latitude / longitude of a property
+          can be provided in lieu of the address parameter."
+        in: query
+        name: longitude
+        required: false
+        type: number
+      - description: "Latitude of the property. The latitude / longitude of a property
+          can be provided in lieu of the address parameter."
+        in: query
+        name: latitude
+        required: false
+        type: number
+      - description: "Optionally include the square footage of the property. This should be a number."
+        in: query
+        name: squareFootage
+        required: false
+        type: number
+      - description: Optionally include the number of bathrooms in the property to
+          help find more closely comparable rentals and improve the accuracy of the
+          estimate.
+        in: query
+        name: bathrooms
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /zipCodes/{zipCode}:
+    get:
+      description: Returns rental data for a specified zip code like the average rent
+        by zip code, the number of rentals seen in that zip code. It also includes
+        detailed breakdowns of rental data by bedroom count.
+      operationId: operations-developers-Zip_Code_Rental_Data
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - realty-mole-property-api.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Zip Code being queried
+        in: path
+        name: zipCode
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

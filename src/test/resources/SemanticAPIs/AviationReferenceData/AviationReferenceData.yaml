@@ -20,7 +20,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'Minimum search string length is 3 charactersDefault value: Samoa'
+#      - description: 'Minimum search string length is 3 characters Default value: Samoa'
 #        in: query
 #        name: name
 #        required: true
@@ -135,7 +135,7 @@ paths:
 #        name: X-RapidAPI-Host
 #        required: true
 #        type: string
-#      - description: 'Minimum search string length is 2 charactersDefault value :
+#      - description: 'Minimum search string length is 2 characters Default value :
 #          New Zealand'
 #        in: query
 #        name: name
