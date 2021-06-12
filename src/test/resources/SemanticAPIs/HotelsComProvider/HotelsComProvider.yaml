@@ -212,7 +212,7 @@ paths:
         in: query
         name: checkin_date
         required: true
-        type: string($date)
+        type: string
       - description: 'Number of adults Default value : 1'
         in: query
         name: adults_number
@@ -242,7 +242,7 @@ paths:
         in: query
         name: checkout_date
         required: true
-        type: string($date)
+        type: string
       responses:
         '200':
           description: Ok

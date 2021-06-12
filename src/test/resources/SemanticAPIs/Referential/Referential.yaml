@@ -55,7 +55,7 @@ paths:
           name: lang
           required: false
           type: string
-        - description: "Search as "contains" on city name in chosen lang"
+        - description: "Search as 'contains' on city name in chosen lang"
           in: query
           name: name
           required: false

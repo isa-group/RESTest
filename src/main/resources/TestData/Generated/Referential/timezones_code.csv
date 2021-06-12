@@ -1,0 +1,105 @@
+rgba
+@while
+head::tail
+profile = { social: { wikipedia: { name: 'Foo Baz' } } }
+arguments[0], arguments[1], ... arguments[n]
+document.write
+Hndel
+$_SESSION
+x.Name
+var x
+$_POST
+@import
+myArray[10] = 'someThing'
+clear:right
+text
+x.Method
+bbc
+link text
+-subscribe
+[HKEY_CLASSES_ROOT\Interface]
+!important
+{font-style: italic}
+{font-weight: bold}
+[HKEY_CLASSES_ROOT\Component Categories]
+contents, above
+{ Name:string; Age:int }
+~/list
+session_register
+Greeting << ' world!' if Greeting == 'Hello'
+x :? string
+:link
+clear:left
+:first-letter
+x :?> string
+div .myClass {color: red;}
+:visited
+Closure::call
+...
+Table of contents
+Array.prototype.newMethod = function {...}
+if  { ... }
+:? string as s
+{ r with Name='CD' }
+*b
+do { statement } while ;
+-unsubscribe
+!-- A Comment -->
+if obj && obj.foo && obj.foo.bar
+var x = 1
+#heading p
+@import url;
+::first-line
+HTML
+vmf
+[HKEY_CLASSES_ROOT\CLSID]
+{font-size: larger}
+This text could blink
+~/list/public
+@for
+abbr.
+display: block;
+:hover
+Para 1 Para 2 Para 3
+{text-decoration: line-through}
+::first-letter
+{white-space: pre; font-family: monospace;}
+eval
+typeof my_var === 'undefined'
+ezmlm-unsub ~/list mailbox
+graygrey
+a:hover
+hsl
+ezmlm-unsub
+myArray[57] = 'somethingOther'
+[item1; item2; item3]
+x = 1
+rgb
+content
+clear:both
+{ Name='AB'; Age=42 }
+ezmlm-sub ~/list mailbox
+$x
+public
+$y
+--Xbegin!--Y-->Xend-->
+AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz
+session_is_registered
+cja
+??
+{text-decoration: underline}
+cjm
+[HKEY_CLASSES_ROOT\TypeLib]
+... {comment tags} ...
+mnp
+gry
+new Form
+Jane Doe
+session_unregister
+hsla
+ezmlm-make ~/list ~/.qmail-list `whoami`-list host
+#elementid:hover
+ezmlm-sub
+@each
+see contents
+{ new obj with member x.ToString = 'hello' }

@@ -1,0 +1,883 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /v1/city
+    operationId: cities
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - referential.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: iso_a2
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/cities_iso_a2.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: state_hasc
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: timezone_offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: timezone
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/cities_timezone.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/timeZone"
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/cities_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/lang"
+          objectValues: null
+        valid: true
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: state_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/cities_state_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/state"
+          - "http://dbpedia.org/property/code"
+          objectValues: null
+        valid: true
+    - name: geonameid
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: prefix
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: sort
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: order
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/state
+    operationId: state
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - referential.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: iso_3166_2
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/state_iso_3166_2.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/iso31661Num"
+          - "http://dbpedia.org/property/iso"
+          - "http://dbpedia.org/property/2a"
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: iso_a2
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/state_iso_a2.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/state_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/lang"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/continent
+    operationId: continents
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - referential.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: continent_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/continents_continent_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/continent"
+          - "http://dbpedia.org/property/code"
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/continents_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/langcode"
+          objectValues: null
+        valid: true
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/continent/{id}"
+    operationId: continent_by_id
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - referential.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: code
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/continent_by_id_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/code"
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/continent_by_id_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/langcode"
+          objectValues: null
+        valid: true
+    - name: continent_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/continent_by_id_continent_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/continent"
+          - "http://dbpedia.org/property/code"
+          objectValues: null
+        valid: true
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/country
+    operationId: countries
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - referential.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: currency_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/countries_currency_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyCode"
+          objectValues: null
+        valid: true
+    - name: currency_num_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/countries_currency_num_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyCode"
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: continent_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/countries_continent_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/continent"
+          - "http://dbpedia.org/property/code"
+          objectValues: null
+        valid: true
+    - name: iso_a2
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/countries_iso_a2.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: dial_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/countries_dial_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/dialCode"
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/countries_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/lang"
+          objectValues: null
+        valid: true
+    - name: iso_a3
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/countries_iso_a3.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: currency
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/countries_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currency"
+          objectValues: null
+        valid: true
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/country/{iso_code}"
+    operationId: country_by_iso_code
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - referential.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: iso_code
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/country_by_iso_code_iso_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/country_by_iso_code_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/langcode"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/timezone
+    operationId: timezones
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - referential.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: daylights
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/timezones_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/code"
+          objectValues: null
+        valid: true
+    - name: daylights_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/timezones_daylights_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/ontology/daylightSavingTimeZone"
+          - "http://dbpedia.org/property/code"
+          objectValues: null
+        valid: true
+    - name: timezone
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/timezones_timezone.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/timeZone"
+          objectValues: null
+        valid: true
+    - name: daylights_offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/timezones_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/lang"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/lang/{lang}"
+    operationId: language_by_id
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - referential.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: lang
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/language_by_id_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/langcode"
+          objectValues: null
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/language_by_id_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/langcode"
+          objectValues: null
+        valid: true
+    - name: lang_3
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/language_by_id_lang_3.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/3v"
+          - "http://dbpedia.org/property/lang"
+          objectValues: null
+        valid: true
+    - name: iso_a2
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Referential/language_by_id_iso_a2.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
