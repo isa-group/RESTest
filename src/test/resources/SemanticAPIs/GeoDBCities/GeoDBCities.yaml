@@ -1,0 +1,527 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Get global city, region, and country data. Filter cities by name prefix,
+    country, location, time-zone, and even minimum population. Display results in
+    multiple languages. Sort by name, country code, elevation, and population - or
+    any combination of these. Get distances between cities. Get all country regions.
+    Get all cities in a given region. RESTful API adheres to industry best-practices,
+    including HATEOAS-style links to facilitate paging results. Data is periodically
+    refreshed from GeoNames and WikiData. Backed by cloud-based load-balanced infrastructure
+    for resiliency and performance! If you'd like to host the service internally,
+    contact us for details through the dev portal site. Data licensed under Creative
+    Commons, http://creativecommons.org/licenses/by/3.0
+  title: GeoDB Cities
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /v1/geo/adminDivisions:
+    get:
+      description: "Find administrative divisions, filtering by optional criteria. If no criteria are set, you will get back all known divisions with a population of at least 1000."
+      operationId: geo_adminDivisions
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - wft-geo-db.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: "Only divisions having no more than this population"
+        in: query
+        name: maxPopulation
+        required: false
+        type: string
+      - description: "Only divisions near this location. Latitude/longitude in ISO-6709 format: ±DD.DDDD±DDD.DDDD"
+        in: query
+        name: location
+        required: false
+        type: string
+      - description: "The zero-ary offset into the results"
+        in: query
+        name: offset
+        required: false
+        type: number
+      - description: "Display results using ASCII characters"
+        in: query
+        name: asciiMode
+        required: false
+        type: boolean
+      - description: "How to sort the results. Format: ±SORTFIELD,±SORTFIELD where SORT_FIELD = countryCode | elevation | name | population"
+        in: query
+        name: sort
+        required: false
+        type: string
+      - description: "Only divisions in these time-zones"
+        in: query
+        name: timeZoneIds
+        required: false
+        type: string
+      - description: "The unit of distance to use: MI | KM"
+        in: query
+        name: distanceUnit
+        required: false
+        type: string
+      - description: "Only divisions having at least this population"
+        in: query
+        name: minPopulation
+        required: false
+        type: number
+      - description: "Only divisions whose names start with this prefix. If languageCode is set, the prefix will be matched on the name as it appears in that language."
+        in: query
+        name: namePrefix
+        required: false
+        type: string
+      - description: "The maximum number of results to retrieve"
+        in: query
+        name: limit
+        required: false
+        type: number
+      - description: "Display results in this language"
+        in: query
+        name: languageCode
+        required: false
+        type: string
+      - description: "Only divisions NOT in these countries (comma-delimited country codes or WikiData ids)"
+        in: query
+        name: excludedCountryIds
+        required: false
+        type: string
+      - description: " Only divisions in these countries (comma-delimited country codes or WikiData ids)"
+        in: query
+        name: countryIds
+        required: false
+        type: string
+      - description: "The location radius within which to find divisions"
+        in: query
+        name: radius
+        required: false
+        type: string
+      - description: "Include HATEOAS-style links in results"
+        in: query
+        name: hateoasMode
+        required: false
+        type: boolean
+      - description: "Whether to include any divisions marked deleted: ALL | SINCEYESTERDAY | SINCELAST_WEEK | NONE"
+        in: query
+        name: includeDeleted
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /v1/geo/countries:
+    get:
+      description: "Find countries, filtering by optional criteria. If no criteria are set, you will get back all known countries."
+      operationId: geo_countries
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - wft-geo-db.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: "Only countries supporting this currency"
+          in: query
+          name: currencyCode
+          required: false
+          type: string
+        - description: "The zero-ary offset index into the results"
+          in: query
+          name: offset
+          required: false
+          type: number
+        - description: "The maximum number of results to retrieve"
+          in: query
+          name: limit
+          required: false
+          type: number
+        - description: "Display results in this language"
+          in: query
+          name: languageCode
+          required: false
+          type: string
+        - description: "Include HATEOAS-style links in results"
+          in: query
+          name: hateoasMode
+          required: false
+          type: boolean
+        - description: "Only countries whose names start with this prefix. If languageCode is set, the prefix will be matched on the name as it appears in that language."
+          in: query
+          name: namePrefix
+          required: false
+          type: string
+        - description: "Display results using ASCII characters"
+          in: query
+          name: asciiMode
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /v1/geo/countries/{countryid}/regions:
+    get:
+      description: 'Find regions in a specific country, filtering by optional criteria. Regions can be states, provinces, districts, or otherwise major political divisions.'
+      operationId: 'geo_countries_regions'
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - wft-geo-db.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: "An ISO-3166 country code or WikiData id"
+          in: path
+          name: countryid
+          required: true
+          type: string
+        - description: "The zero-ary offset index into the results"
+          in: query
+          name: offset
+          required: false
+          type: number
+        - description: "The maximum number of results to retrieve"
+          in: query
+          name: limit
+          required: false
+          type: number
+        - description: "Only regions whose names start with this prefix. If languageCode is set, the prefix will be matched on the name as it appears in that language."
+          in: query
+          name: namePrefix
+          required: false
+          type: string
+        - description: "Display results using ASCII characters"
+          in: query
+          name: asciiMode
+          required: false
+          type: boolean
+        - description: "Display results in this language"
+          in: query
+          name: languageCode
+          required: false
+          type: string
+        - description: "Include HATEOAS-style links in results"
+          in: query
+          name: hateoasMode
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /v1/geo/countries/{countryid}/regions/{regioncode}:
+    get:
+      description: 'Get the details of a specific country region, including number of cities.'
+      operationId: 'geo_countries_regions_details'
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - wft-geo-db.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: "An ISO-3166 or FIPS region code"
+          in: path
+          name: regioncode
+          required: true
+          type: string
+        - description: "An ISO-3166 country code or WikiData id"
+          in: path
+          name: countryid
+          required: true
+          type: string
+        - description: "Display results using ASCII characters"
+          in: query
+          name: asciiMode
+          required: false
+          type: boolean
+        - description: "Display results in this language"
+          in: query
+          name: languageCode
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /v1/geo/cities/{cityid}/distance:
+#    get:
+#      description: ''
+#      operationId: operations-geo-City_Distance
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - wft-geo-db.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/geo/countries/{countryid}/regions/{regioncode}/adminDivisions:
+#    get:
+#      description: Get the administrative divisions in the given region.
+#      operationId: operations-geo-Country_Region_Divisions
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - wft-geo-db.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: "How to sort the results. Format: \xB1SORT_FIELD,\xB1SORT_FIELD\
+#          \ where SORT_FIELD =  elevation | name | population"
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: The zero-ary offset into the results
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: Only cities having at least this population
+#        in: query
+#        name: minPopulation
+#        required: false
+#        type: number
+#      - description: 'Whether to include any cities marked deleted: ALL | SINCE_YESTERDAY
+#          | SINCE_LAST_WEEK | NONE'
+#        in: query
+#        name: includeDeleted
+#        required: false
+#        type: string
+#      - description: Display results using ASCII characters--truefalse
+#        in: query
+#        name: asciiMode
+#        required: false
+#        type: boolean
+#      - description: Display results in this language
+#        in: query
+#        name: languageCode
+#        required: false
+#        type: string
+#      - description: The maximum number of results to retrieve
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: Include HATEOAS-style links in results--truefalse
+#        in: query
+#        name: hateoasMode
+#        required: false
+#        type: boolean
+#      - description: An ISO-3166 country code or WikiData id
+#        in: path
+#        name: countryid
+#        required: true
+#        type: string
+#      - description: An ISO-3166 or FIPS region code
+#        in: path
+#        name: regioncode
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/geo/countries/{countryid}/regions/{regioncode}/cities:
+#    get:
+#      description: Get the cities in the given region.
+#      operationId: operations-geo-Country_Region_Cities
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - wft-geo-db.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: Only cities whose names start with this prefix. If languageCode
+#          is set, the prefix will be matched on the name as it appears in that language.
+#        in: query
+#        name: namePrefix
+#        required: false
+#        type: string
+#      - description: Only cities in these time-zones
+#        in: query
+#        name: timeZoneIds
+#        required: false
+#        type: string
+#      - description: The maximum number of results to retrieve
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: 'Only cities for these types (comma-delimited): CITY | ADM2'
+#        in: query
+#        name: types
+#        required: false
+#        type: string
+#      - description: Display results in this language
+#        in: query
+#        name: languageCode
+#        required: false
+#        type: string
+#      - description: Include HATEOAS-style links in results--truefalse
+#        in: query
+#        name: hateoasMode
+#        required: false
+#        type: boolean
+#      - description: Only cities having at least this population
+#        in: query
+#        name: minPopulation
+#        required: false
+#        type: number
+#      - description: Display results using ASCII characters--truefalse
+#        in: query
+#        name: asciiMode
+#        required: false
+#        type: boolean
+#      - description: 'Whether to include any cities marked deleted: ALL | SINCE_YESTERDAY
+#          | SINCE_LAST_WEEK | NONE'
+#        in: query
+#        name: includeDeleted
+#        required: false
+#        type: string
+#      - description: "How to sort the results. Format: \xB1SORT_FIELD,\xB1SORT_FIELD\
+#          \ where SORT_FIELD =  elevation | name | population"
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: The zero-ary offset into the results
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: An ISO-3166 or FIPS region code
+#        in: path
+#        name: regioncode
+#        required: true
+#        type: string
+#      - description: An ISO-3166 country code or WikiData id
+#        in: path
+#        name: countryid
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/geo/locations/{locationid}/nearbyDivisions:
+#    get:
+#      description: Get administrative divisions near the given location, filtering
+#        by optional criteria.
+#      operationId: operations-geo-Divisions_Near_Location
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - wft-geo-db.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Whether to include any divisions marked deleted: ALL | SINCE_YESTERDAY
+#          | SINCE_LAST_WEEK | NONE'
+#        in: query
+#        name: includeDeleted
+#        required: false
+#        type: string
+#      - description: The maximum number of results to retrieve
+#        in: query
+#        name: limit
+#        required: false
+#        type: number
+#      - description: Display results in this language
+#        in: query
+#        name: languageCode
+#        required: false
+#        type: string
+#      - description: "How to sort the results. Format: \xB1SORT_FIELD,\xB1SORT_FIELD\
+#          \ where SORT_FIELD = countryCode | elevation | name | population"
+#        in: query
+#        name: sort
+#        required: false
+#        type: string
+#      - description: Only divisions in these time-zones
+#        in: query
+#        name: timeZoneIds
+#        required: false
+#        type: string
+#      - description: Include HATEOAS-style links in results--truefalse
+#        in: query
+#        name: hateoasMode
+#        required: false
+#        type: boolean
+#      - description: The zero-ary offset into the results
+#        in: query
+#        name: offset
+#        required: false
+#        type: number
+#      - description: Only divisions having at least this population
+#        in: query
+#        name: minPopulation
+#        required: false
+#        type: number
+#      - description: Only divisions whose names start with this prefix. If languageCode
+#          is set, the prefix will be matched on the name as it appears in that language.
+#        in: query
+#        name: namePrefix
+#        required: false
+#        type: string
+#      - description: Only divisions in these countries (comma-delimited country codes
+#          or WikiData ids)
+#        in: query
+#        name: countryIds
+#        required: false
+#        type: string
+#      - description: 'The unit of distance to use: MI | KM'
+#        in: query
+#        name: distanceUnit
+#        required: false
+#        type: string
+#      - description: Only divisions NOT in these countries (comma-delimited country
+#          codes or WikiData ids)
+#        in: query
+#        name: excludedCountryIds
+#        required: false
+#        type: string
+#      - description: Display results using ASCII characters--truefalse
+#        in: query
+#        name: asciiMode
+#        required: false
+#        type: boolean
+#      - description: The location radius within which to find divisions
+#        in: query
+#        name: radius
+#        required: true
+#        type: string
+#      - description: "Only divisions near this location. Latitude/longitude in ISO-6709\
+#          \ format: \xB1DD.DDDD\xB1DDD.DDDD"
+#        in: path
+#        name: locationid
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

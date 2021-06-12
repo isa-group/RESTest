@@ -26,19 +26,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomNumber
+      - type: SemanticParameter
         genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
+        - name: maxWords
           values:
           - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
           objectValues: null
         valid: true
     - name: bedrooms
@@ -83,7 +75,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -94,7 +86,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
@@ -124,19 +116,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomNumber
+      - type: SemanticParameter
         genParameters:
-        - name: type
-          values:
-          - integer
-          objectValues: null
-        - name: min
+        - name: maxWords
           values:
           - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
           objectValues: null
         valid: true
     - name: bathrooms
@@ -181,7 +165,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:

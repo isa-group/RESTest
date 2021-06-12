@@ -12,7 +12,7 @@
 
 
 {
-    pattern:   (( ?$word3  [ {pos: FW} | {pos: NN} | {pos: NNS} | {pos: NNP} | {pos: NNPS} ] ) (?$code3 [{word: /(?i)code|id/}] )),
+    pattern:   (( ?$word3  [ {pos: FW} | {pos: NN} | {pos: NNS} | {pos: NNP} | {pos: NNPS} | {pos: JJ} ] ) (?$code3 [{word: /(?i)code|id/}] )),
     result:    Concat($$word3.text, $$code3.text),
     priority:   1
 }

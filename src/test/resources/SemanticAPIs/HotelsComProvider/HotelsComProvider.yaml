@@ -1,0 +1,442 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: www.hotels.com | Search for hotels, view prices, photos of the hotels,
+    reviews
+  title: Hotels com Provider
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /v1/destinations/search:
+#    get:
+#      description: Search destinations or locations by query
+#      operationId: operations-hotels-Search_destinations_by_query
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - hotels-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Available values : USD, EUR, AED, ANG, ARS, AUD, BGN, BHD, BOB,
+#          BRL, BTN, BZD, CAD, CHF, CLP, CNY, COP, CRC, CZK, DKK, EGP, GBP, GNF, GTQ,
+#          GYD, HKD, HNL, HRK, HUF, IDR, ILS, INR, ISK, JOD, JPY, KHR, KRW, KWD, KZT,
+#          LAK, LBP, LKR, MAD, MOP, MXN, MYR, NIO, NOK, NZD, OMR, PAB, PEN, PHP, PKR,
+#          PLN, PYG, QAR, RON, RUB, SAR, SEK, SGD, SRD, THB, TND, TRY, TWD, UAH, UYU,
+#          VND, ZARDefault value : USDUSDEURAEDANGARSAUDBGNBHDBOBBRLBTNBZDCADCHFCLPCNYCOPCRCCZKDKKEGPGBPGNFGTQGYDHKDHNLHRKHUFIDRILSINRISKJODJPYKHRKRWKWDKZTLAKLBPLKRMADMOPMXNMYRNIONOKNZDOMRPABPENPHPPKRPLNPYGQARRONRUBSARSEKSGDSRDTHBTNDTRYTWDUAHUYUVNDZAR'
+#        in: query
+#        name: currency
+#        required: true
+#        type: string
+#      - description: 'QueryDefault value : London'
+#        in: query
+#        name: query
+#        required: true
+#        type: string
+#      - description: 'Available values : en_US, ar_AE, cs_CZ, da_DK, de_AT, de_BE,
+#          de_CH, de_DE, el_GR, en_AS, en_AU, en_CA, en_CN, en_GB, en_HK, en_ID, en_IE,
+#          en_IL, en_IN, en_JP, en_KR, en_LA, en_MX, en_MY, en_NZ, en_PH, en_SG, en_TH,
+#          en_TW, en_VN, en_ZA, es_AR, es_BO, es_BZ, es_CL, es_CO, es_CR, es_EC, es_ES,
+#          es_GT, es_GY, es_HN, es_MX, es_NI, es_PA, es_PE, es_PY, es_SV, es_US, es_UY,
+#          es_VE, et_EE, fi_FI, fr_BE, fr_CA, fr_CH, fr_FR, fr_GF, hr_HR, hu_HU, in_ID,
+#          is_IS, it_CH, it_IT, iw_IL, ja_JP, ko_KR, lt_LT, lv_LV, ms_MY, nl_BE, nl_NL,
+#          nl_SR, no_NO, pl_PL, pt_BR, pt_PT, ru_RU, sk_SK, sv_SE, th_TH, tr_TR, uk_UA,
+#          vi_VN, zh_CN, zh_HK, zh_TWDefault value : en_USen_USar_AEcs_CZda_DKde_ATde_BEde_CHde_DEel_GRen_ASen_AUen_CAen_CNen_GBen_HKen_IDen_IEen_ILen_INen_JPen_KRen_LAen_MXen_MYen_NZen_PHen_SGen_THen_TWen_VNen_ZAes_ARes_BOes_BZes_CLes_COes_CRes_ECes_ESes_GTes_GYes_HNes_MXes_NIes_PAes_PEes_PYes_SVes_USes_UYes_VEet_EEfi_FIfr_BEfr_CAfr_CHfr_FRfr_GFhr_HRhu_HUin_IDis_ISit_CHit_ITiw_ILja_JPko_KRlt_LTlv_LVms_MYnl_BEnl_NLnl_SRno_NOpl_PLpt_BRpt_PTru_RUsk_SKsv_SEth_THtr_TRuk_UAvi_VNzh_CNzh_HKzh_TW'
+#        in: query
+#        name: locale
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/hotels/booking-details:
+#    get:
+#      description: Get hotel descriptions, prices and available booking options. Indicate
+#        the hotel_id, check-in and check-out date, number of adults and children.
+#      operationId: operations-hotels-Booking_details_of_the_hotel
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - hotels-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'The age of every child. If children will be staying in the room,
+#          please indicate their ages separated by commas. 0-less than a yearDefault
+#          value : 4,0'
+#        in: query
+#        name: children_ages
+#        required: false
+#        type: string
+#      - description: 'Checkin dateDefault value : 2022-03-26'
+#        in: query
+#        name: checkin_date
+#        required: true
+#        type: string($date)
+#      - description: 'Available values : USD, EUR, AED, ANG, ARS, AUD, BGN, BHD, BOB,
+#          BRL, BTN, BZD, CAD, CHF, CLP, CNY, COP, CRC, CZK, DKK, EGP, GBP, GNF, GTQ,
+#          GYD, HKD, HNL, HRK, HUF, IDR, ILS, INR, ISK, JOD, JPY, KHR, KRW, KWD, KZT,
+#          LAK, LBP, LKR, MAD, MOP, MXN, MYR, NIO, NOK, NZD, OMR, PAB, PEN, PHP, PKR,
+#          PLN, PYG, QAR, RON, RUB, SAR, SEK, SGD, SRD, THB, TND, TRY, TWD, UAH, UYU,
+#          VND, ZARDefault value : USDUSDEURAEDANGARSAUDBGNBHDBOBBRLBTNBZDCADCHFCLPCNYCOPCRCCZKDKKEGPGBPGNFGTQGYDHKDHNLHRKHUFIDRILSINRISKJODJPYKHRKRWKWDKZTLAKLBPLKRMADMOPMXNMYRNIONOKNZDOMRPABPENPHPPKRPLNPYGQARRONRUBSARSEKSGDSRDTHBTNDTRYTWDUAHUYUVNDZAR'
+#        in: query
+#        name: currency
+#        required: true
+#        type: string
+#      - description: 'Checkout dateDefault value : 2022-03-27'
+#        in: query
+#        name: checkout_date
+#        required: true
+#        type: string($date)
+#      - description: 'Number of adultsDefault value : 1'
+#        in: query
+#        name: adults_number
+#        required: true
+#        type: integer
+#      - description: 'Available values : en_US, ar_AE, cs_CZ, da_DK, de_AT, de_BE,
+#          de_CH, de_DE, el_GR, en_AS, en_AU, en_CA, en_CN, en_GB, en_HK, en_ID, en_IE,
+#          en_IL, en_IN, en_JP, en_KR, en_LA, en_MX, en_MY, en_NZ, en_PH, en_SG, en_TH,
+#          en_TW, en_VN, en_ZA, es_AR, es_BO, es_BZ, es_CL, es_CO, es_CR, es_EC, es_ES,
+#          es_GT, es_GY, es_HN, es_MX, es_NI, es_PA, es_PE, es_PY, es_SV, es_US, es_UY,
+#          es_VE, et_EE, fi_FI, fr_BE, fr_CA, fr_CH, fr_FR, fr_GF, hr_HR, hu_HU, in_ID,
+#          is_IS, it_CH, it_IT, iw_IL, ja_JP, ko_KR, lt_LT, lv_LV, ms_MY, nl_BE, nl_NL,
+#          nl_SR, no_NO, pl_PL, pt_BR, pt_PT, ru_RU, sk_SK, sv_SE, th_TH, tr_TR, uk_UA,
+#          vi_VN, zh_CN, zh_HK, zh_TWDefault value : en_USen_USar_AEcs_CZda_DKde_ATde_BEde_CHde_DEel_GRen_ASen_AUen_CAen_CNen_GBen_HKen_IDen_IEen_ILen_INen_JPen_KRen_LAen_MXen_MYen_NZen_PHen_SGen_THen_TWen_VNen_ZAes_ARes_BOes_BZes_CLes_COes_CRes_ECes_ESes_GTes_GYes_HNes_MXes_NIes_PAes_PEes_PYes_SVes_USes_UYes_VEet_EEfi_FIfr_BEfr_CAfr_CHfr_FRfr_GFhr_HRhu_HUin_IDis_ISit_CHit_ITiw_ILja_JPko_KRlt_LTlv_LVms_MYnl_BEnl_NLnl_SRno_NOpl_PLpt_BRpt_PTru_RUsk_SKsv_SEth_THtr_TRuk_UAvi_VNzh_CNzh_HKzh_TW'
+#        in: query
+#        name: locale
+#        required: true
+#        type: string
+#      - description: 'Hotel idDefault value : 363464'
+#        in: query
+#        name: hotel_id
+#        required: true
+#        type: integer
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /v1/hotels/nearby:
+    get:
+      description: Get available nearby hotels. Set coordinates and find hotels nearby
+      operationId: operations-hotels-Search_nearby_hotels
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - hotels-com-provider.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Accessibility and facilities, check for suitable value in facilities
+          field returned right in this endpoint. Ex.: 537 Smoking areas, 539 Spa,
+          527 WiFi included, 131072 Accessible bathroom, 524288 Parking Default value : 527,2063'
+        in: query
+        name: amenity_ids
+        required: false
+        type: string
+      - description: 'Theme ids. Filter by thematic hotels. Ex.: 18 Adventure, 6 Beach,
+          4 Boutique, 14 Business , Casino 8, 25 Family-friendly, 26 Golf, 2 Historic,
+          22 Hot Springs, 15 Luxury, 1 Romantic, 28 Ski, 27 Spa Hotel, 19 Winery/Vineyard Default
+          value : 14,27,25'
+        in: query
+        name: theme_ids
+        required: false
+        type: string
+      - description: 'Number of page Default value : 1'
+        in: query
+        name: page_number
+        required: false
+        type: integer
+      - description: 'Maximum price Default value : 500'
+        in: query
+        name: price_max
+        required: false
+        type: integer
+      - description: 'Minimal guest rating Default value : 4'
+        in: query
+        name: guest_rating_min
+        required: false
+        type: integer
+      - description: 'Minimal price Default value : 10'
+        in: query
+        name: price_min
+        required: false
+        type: integer
+      - description: 'Hotel star ratings Default value : 3,4,5'
+        in: query
+        name: star_rating_ids
+        required: false
+        type: string
+      - description: 'Accommodation ids. Ex.: 20 Apart-hotels, 15 Apartments, 5 B&Bs,
+          43 Capsule hotels, 11 Cottages, 24 Country houses, 30 Guest houses, 4 Holiday
+          homes, 12 Hostels, 1 Hotels, 8 Inns, 3 Resorts Default value : 20,8,15,5,1'
+        in: query
+        name: accommodation_ids
+        required: false
+        type: string
+      - description: 'The age of every child. If children will be staying in the room,
+          please indicate their ages separated by commas. 0 - less than a year Default
+          value : 4,0,15'
+        in: query
+        name: children_ages
+        required: false
+        type: string
+      - description: 'Available values : STAR_RATING_HIGHEST_FIRST, STAR_RATING_LOWEST_FIRST,
+          BEST_SELLER, DISTANCE_FROM_LANDMARK, GUEST_RATING, PRICE_HIGHEST_FIRST,
+          PRICE Default value : STAR_RATING_HIGHEST_FIRSTSTAR_RATING_HIGHEST_FIRSTSTAR_RATING_LOWEST_FIRSTBEST_SELLERDISTANCE_FROM_LANDMARKGUEST_RATINGPRICE_HIGHEST_FIRSTPRICE'
+        in: query
+        name: sort_order
+        required: true
+        type: string
+      - description: 'Available values : en_US, ar_AE, cs_CZ, da_DK, de_AT, de_BE,
+          de_CH, de_DE, el_GR, en_AS, en_AU, en_CA, en_CN, en_GB, en_HK, en_ID, en_IE,
+          en_IL, en_IN, en_JP, en_KR, en_LA, en_MX, en_MY, en_NZ, en_PH, en_SG, en_TH,
+          en_TW, en_VN, en_ZA, es_AR, es_BO, es_BZ, es_CL, es_CO, es_CR, es_EC, es_ES,
+          es_GT, es_GY, es_HN, es_MX, es_NI, es_PA, es_PE, es_PY, es_SV, es_US, es_UY,
+          es_VE, et_EE, fi_FI, fr_BE, fr_CA, fr_CH, fr_FR, fr_GF, hr_HR, hu_HU, in_ID,
+          is_IS, it_CH, it_IT, iw_IL, ja_JP, ko_KR, lt_LT, lv_LV, ms_MY, nl_BE, nl_NL,
+          nl_SR, no_NO, pl_PL, pt_BR, pt_PT, ru_RU, sk_SK, sv_SE, th_TH, tr_TR, uk_UA,
+          vi_VN, zh_CN, zh_HK, zh_TW Default value : en_USen_USar_AEcs_CZda_DKde_ATde_BEde_CHde_DEel_GRen_ASen_AUen_CAen_CNen_GBen_HKen_IDen_IEen_ILen_INen_JPen_KRen_LAen_MXen_MYen_NZen_PHen_SGen_THen_TWen_VNen_ZAes_ARes_BOes_BZes_CLes_COes_CRes_ECes_ESes_GTes_GYes_HNes_MXes_NIes_PAes_PEes_PYes_SVes_USes_UYes_VEet_EEfi_FIfr_BEfr_CAfr_CHfr_FRfr_GFhr_HRhu_HUin_IDis_ISit_CHit_ITiw_ILja_JPko_KRlt_LTlv_LVms_MYnl_BEnl_NLnl_SRno_NOpl_PLpt_BRpt_PTru_RUsk_SKsv_SEth_THtr_TRuk_UAvi_VNzh_CNzh_HKzh_TW'
+        in: query
+        name: locale
+        required: true
+        type: string
+      - description: 'Checkin date Default value : 2022-03-26'
+        in: query
+        name: checkin_date
+        required: true
+        type: string($date)
+      - description: 'Number of adults Default value : 1'
+        in: query
+        name: adults_number
+        required: true
+        type: integer
+      - description: 'Available values : USD, EUR, AED, ANG, ARS, AUD, BGN, BHD, BOB,
+          BRL, BTN, BZD, CAD, CHF, CLP, CNY, COP, CRC, CZK, DKK, EGP, GBP, GNF, GTQ,
+          GYD, HKD, HNL, HRK, HUF, IDR, ILS, INR, ISK, JOD, JPY, KHR, KRW, KWD, KZT,
+          LAK, LBP, LKR, MAD, MOP, MXN, MYR, NIO, NOK, NZD, OMR, PAB, PEN, PHP, PKR,
+          PLN, PYG, QAR, RON, RUB, SAR, SEK, SGD, SRD, THB, TND, TRY, TWD, UAH, UYU,
+          VND, ZARDefault value : USDUSDEURAEDANGARSAUDBGNBHDBOBBRLBTNBZDCADCHFCLPCNYCOPCRCCZKDKKEGPGBPGNFGTQGYDHKDHNLHRKHUFIDRILSINRISKJODJPYKHRKRWKWDKZTLAKLBPLKRMADMOPMXNMYRNIONOKNZDOMRPABPENPHPPKRPLNPYGQARRONRUBSARSEKSGDSRDTHBTNDTRYTWDUAHUYUVNDZAR'
+        in: query
+        name: currency
+        required: true
+        type: string
+      - description: 'Latitude Default value : 51.509865'
+        in: query
+        name: latitude
+        required: true
+        type: number
+      - description: 'Longitude Default value : -0.118092'
+        in: query
+        name: longitude
+        required: true
+        type: number
+      - description: 'Checkout date Default value : 2022-03-27'
+        in: query
+        name: checkout_date
+        required: true
+        type: string($date)
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /v1/hotels/photos:
+#    get:
+#      description: Get all photos of the hotel by hotel_id
+#      operationId: operations-hotels-Photos_of_the_hotel
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - hotels-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Hotel idDefault value : 363464'
+#        in: query
+#        name: hotel_id
+#        required: true
+#        type: integer
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/hotels/reviews:
+#    get:
+#      description: Get all reviews of the hotel by hotel_id
+#      operationId: operations-hotels-Reviews_of_the_hotel
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - hotels-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Number of pageDefault value : 1'
+#        in: query
+#        name: page_number
+#        required: false
+#        type: integer
+#      - description: 'Hotel idDefault value : 363464'
+#        in: query
+#        name: hotel_id
+#        required: true
+#        type: integer
+#      - description: 'Available values : en_US, ar_AE, cs_CZ, da_DK, de_AT, de_BE,
+#          de_CH, de_DE, el_GR, en_AS, en_AU, en_CA, en_CN, en_GB, en_HK, en_ID, en_IE,
+#          en_IL, en_IN, en_JP, en_KR, en_LA, en_MX, en_MY, en_NZ, en_PH, en_SG, en_TH,
+#          en_TW, en_VN, en_ZA, es_AR, es_BO, es_BZ, es_CL, es_CO, es_CR, es_EC, es_ES,
+#          es_GT, es_GY, es_HN, es_MX, es_NI, es_PA, es_PE, es_PY, es_SV, es_US, es_UY,
+#          es_VE, et_EE, fi_FI, fr_BE, fr_CA, fr_CH, fr_FR, fr_GF, hr_HR, hu_HU, in_ID,
+#          is_IS, it_CH, it_IT, iw_IL, ja_JP, ko_KR, lt_LT, lv_LV, ms_MY, nl_BE, nl_NL,
+#          nl_SR, no_NO, pl_PL, pt_BR, pt_PT, ru_RU, sk_SK, sv_SE, th_TH, tr_TR, uk_UA,
+#          vi_VN, zh_CN, zh_HK, zh_TWDefault value : en_USen_USar_AEcs_CZda_DKde_ATde_BEde_CHde_DEel_GRen_ASen_AUen_CAen_CNen_GBen_HKen_IDen_IEen_ILen_INen_JPen_KRen_LAen_MXen_MYen_NZen_PHen_SGen_THen_TWen_VNen_ZAes_ARes_BOes_BZes_CLes_COes_CRes_ECes_ESes_GTes_GYes_HNes_MXes_NIes_PAes_PEes_PYes_SVes_USes_UYes_VEet_EEfi_FIfr_BEfr_CAfr_CHfr_FRfr_GFhr_HRhu_HUin_IDis_ISit_CHit_ITiw_ILja_JPko_KRlt_LTlv_LVms_MYnl_BEnl_NLnl_SRno_NOpl_PLpt_BRpt_PTru_RUsk_SKsv_SEth_THtr_TRuk_UAvi_VNzh_CNzh_HKzh_TW'
+#        in: query
+#        name: locale
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /v1/hotels/search:
+#    get:
+#      description: Get available hotels by the filter. Indicate the destination_id
+#        -> use Search destinations by query, check-in and check-out date, number of
+#        adults and children
+#      operationId: operations-hotels-Search_hotels
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - hotels-com-provider.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Number of pageDefault value : 1'
+#        in: query
+#        name: page_number
+#        required: false
+#        type: integer
+#      - description: 'Minimal priceDefault value : 10'
+#        in: query
+#        name: price_min
+#        required: false
+#        type: integer
+#      - description: Destination id
+#        in: query
+#        name: landmark_id
+#        required: false
+#        type: integer
+#      - description: 'Maximum priceDefault value : 500'
+#        in: query
+#        name: price_max
+#        required: false
+#        type: integer
+#      - description: 'Accommodation ids. Ex.: 20 Apart-hotels, 15 Apartments, 5 B&Bs,
+#          43 Capsule hotels, 11 Cottages, 24 Country houses, 30 Guest houses, 4 Holiday
+#          homes, 12 Hostels, 1 Hotels, 8 Inns, 3 ResortsDefault value : 20,8,15,5,1'
+#        in: query
+#        name: accommodation_ids
+#        required: false
+#        type: string
+#      - description: 'Accessibility and facilities, check for suitable value in facilities
+#          field returned right in this endpoint. Ex.: 537 Smoking areas, 539 Spa,
+#          527 WiFi included, 131072 Accessible bathroom, 524288 ParkingDefault value
+#          : 527,2063'
+#        in: query
+#        name: amenity_ids
+#        required: false
+#        type: string
+#      - description: 'The age of every child. If children will be staying in the room,
+#          please indicate their ages separated by commas. 0 - less than a yearDefault
+#          value : 4,0,15'
+#        in: query
+#        name: children_ages
+#        required: false
+#        type: string
+#      - description: 'Minimal guest ratingDefault value : 4'
+#        in: query
+#        name: guest_rating_min
+#        required: false
+#        type: integer
+#      - description: 'Theme ids. Filter by thematic hotels. Ex.: 18 Adventure, 6 Beach,
+#          4 Boutique, 14 Business , Casino 8, 25 Family-friendly, 26 Golf, 2 Historic,
+#          22 Hot Springs, 15 Luxury, 1 Romantic, 28 Ski, 27 Spa Hotel, 19 Winery/VineyardDefault
+#          value : 14,27,25'
+#        in: query
+#        name: theme_ids
+#        required: false
+#        type: string
+#      - description: 'Hotel star ratingsDefault value : 3,4,5'
+#        in: query
+#        name: star_rating_ids
+#        required: false
+#        type: string
+#      - description: 'Number of adultsDefault value : 1'
+#        in: query
+#        name: adults_number
+#        required: true
+#        type: integer
+#      - description: 'Available values : USD, EUR, AED, ANG, ARS, AUD, BGN, BHD, BOB,
+#          BRL, BTN, BZD, CAD, CHF, CLP, CNY, COP, CRC, CZK, DKK, EGP, GBP, GNF, GTQ,
+#          GYD, HKD, HNL, HRK, HUF, IDR, ILS, INR, ISK, JOD, JPY, KHR, KRW, KWD, KZT,
+#          LAK, LBP, LKR, MAD, MOP, MXN, MYR, NIO, NOK, NZD, OMR, PAB, PEN, PHP, PKR,
+#          PLN, PYG, QAR, RON, RUB, SAR, SEK, SGD, SRD, THB, TND, TRY, TWD, UAH, UYU,
+#          VND, ZARDefault value : USDUSDEURAEDANGARSAUDBGNBHDBOBBRLBTNBZDCADCHFCLPCNYCOPCRCCZKDKKEGPGBPGNFGTQGYDHKDHNLHRKHUFIDRILSINRISKJODJPYKHRKRWKWDKZTLAKLBPLKRMADMOPMXNMYRNIONOKNZDOMRPABPENPHPPKRPLNPYGQARRONRUBSARSEKSGDSRDTHBTNDTRYTWDUAHUYUVNDZAR'
+#        in: query
+#        name: currency
+#        required: true
+#        type: string
+#      - description: 'Checkout dateDefault value : 2022-03-27'
+#        in: query
+#        name: checkout_date
+#        required: true
+#        type: string($date)
+#      - description: 'Checkin dateDefault value : 2022-03-26'
+#        in: query
+#        name: checkin_date
+#        required: true
+#        type: string($date)
+#      - description: 'Available values : en_US, ar_AE, cs_CZ, da_DK, de_AT, de_BE,
+#          de_CH, de_DE, el_GR, en_AS, en_AU, en_CA, en_CN, en_GB, en_HK, en_ID, en_IE,
+#          en_IL, en_IN, en_JP, en_KR, en_LA, en_MX, en_MY, en_NZ, en_PH, en_SG, en_TH,
+#          en_TW, en_VN, en_ZA, es_AR, es_BO, es_BZ, es_CL, es_CO, es_CR, es_EC, es_ES,
+#          es_GT, es_GY, es_HN, es_MX, es_NI, es_PA, es_PE, es_PY, es_SV, es_US, es_UY,
+#          es_VE, et_EE, fi_FI, fr_BE, fr_CA, fr_CH, fr_FR, fr_GF, hr_HR, hu_HU, in_ID,
+#          is_IS, it_CH, it_IT, iw_IL, ja_JP, ko_KR, lt_LT, lv_LV, ms_MY, nl_BE, nl_NL,
+#          nl_SR, no_NO, pl_PL, pt_BR, pt_PT, ru_RU, sk_SK, sv_SE, th_TH, tr_TR, uk_UA,
+#          vi_VN, zh_CN, zh_HK, zh_TWDefault value : en_USen_USar_AEcs_CZda_DKde_ATde_BEde_CHde_DEel_GRen_ASen_AUen_CAen_CNen_GBen_HKen_IDen_IEen_ILen_INen_JPen_KRen_LAen_MXen_MYen_NZen_PHen_SGen_THen_TWen_VNen_ZAes_ARes_BOes_BZes_CLes_COes_CRes_ECes_ESes_GTes_GYes_HNes_MXes_NIes_PAes_PEes_PYes_SVes_USes_UYes_VEet_EEfi_FIfr_BEfr_CAfr_CHfr_FRfr_GFhr_HRhu_HUin_IDis_ISit_CHit_ITiw_ILja_JPko_KRlt_LTlv_LVms_MYnl_BEnl_NLnl_SRno_NOpl_PLpt_BRpt_PTru_RUsk_SKsv_SEth_THtr_TRuk_UAvi_VNzh_CNzh_HKzh_TW'
+#        in: query
+#        name: locale
+#        required: true
+#        type: string
+#      - description: 'Available values : STAR_RATING_HIGHEST_FIRST, STAR_RATING_LOWEST_FIRST,
+#          BEST_SELLER, DISTANCE_FROM_LANDMARK, GUEST_RATING, PRICE_HIGHEST_FIRST,
+#          PRICEDefault value : STAR_RATING_HIGHEST_FIRSTSTAR_RATING_HIGHEST_FIRSTSTAR_RATING_LOWEST_FIRSTBEST_SELLERDISTANCE_FROM_LANDMARKGUEST_RATINGPRICE_HIGHEST_FIRSTPRICE'
+#        in: query
+#        name: sort_order
+#        required: true
+#        type: string
+#      - description: 'Destination id -> use Search destinations by queryDefault value
+#          : 1708350'
+#        in: query
+#        name: destination_id
+#        required: true
+#        type: integer
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

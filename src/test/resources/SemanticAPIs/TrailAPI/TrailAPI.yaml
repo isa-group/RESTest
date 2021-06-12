@@ -1,0 +1,180 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Information and photos for tens of thousands of outdoor recreation
+    locations including hiking and mountain biking trails, campgrounds, ski resorts,
+    ATV trails, and more.
+  title: TrailAPI
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /:
+    get:
+      description: Support for legacy queries. Data is no longer updated, but is still available.
+      operationId: operations-General-Outdoors_Legacy
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - trailapi-trailapi.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Limit results to specific outdoor activity [hiking, mountain
+          biking, camping, caving, trail running, snow sports, atv, or horseback riding]
+        in: query
+        name: q-activities_activity_type_name_eq
+        required: false
+        type: string
+      - description: Used in combination with a lat/lon. Value is in miles.
+        in: query
+        name: radius
+        required: false
+        type: number
+      - description: US state or Canadian province
+        in: query
+        name: q-state_cont
+        required: false
+        type: string
+      - description: Name of a country
+        in: query
+        name: q-country_cont
+        required: false
+        type: string
+      - description: Name of a city
+        in: query
+        name: q-city_cont
+        required: false
+        type: string
+      - description: Longitude
+        in: query
+        name: lon
+        required: false
+        type: number
+      - description: Defaults to 100 results
+        in: query
+        name: limit
+        required: false
+        type: number
+      - description: Latitude
+        in: query
+        name: lat
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /trails/explore/:
+    get:
+      description: 'Find trails near a point on the map.'
+      operationId: operations-Bike_Trails-Find_Bike_Trails
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - trailapi-trailapi.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Longitude
+        in: query
+        name: lon
+        required: true
+        type: number
+      - description: Latitude
+        in: query
+        name: lat
+        required: true
+        type: number
+      - description: "Radius (default: 25 miles; max: 100 miles)"
+        in: query
+        name: radius
+        required: false
+        type: number
+      - description: "Results per page (default: 50)"
+        in: query
+        name: per_page
+        required: false
+        type: number
+      - description: "Results page (default: 1)"
+        in: query
+        name: page
+        required: false
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /trails/map/{id}/gpx/:
+#    get:
+#      description: Get GPX data for a map. Returns a file in GPX format. Input (id)
+#        is a map ID, not a trail ID. To get the map ID, call /maps with the trail
+#        ID.
+#      operationId: operations-Bike_Trails-Map_GPX
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - trailapi-trailapi.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /trails/{id}:
+#    get:
+#      description: Get detailed information about a single trail.
+#      operationId: operations-Bike_Trails-Bike_Trail_Info
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - trailapi-trailapi.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /trails/{id}/maps/:
+#    get:
+#      description: Get a summary list of maps for this trail.
+#      operationId: operations-Bike_Trails-Trail_Map_List
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - trailapi-trailapi.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: path
+#        name: id
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

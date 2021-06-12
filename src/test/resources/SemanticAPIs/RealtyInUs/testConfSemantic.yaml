@@ -34,7 +34,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/loc"
+          - "http://dbpedia.org/property/postalcode"
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -76,7 +76,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/zip"
+          - "http://dbpedia.org/property/postalcode"
           objectValues: null
         valid: true
     - name: mortgageBalance

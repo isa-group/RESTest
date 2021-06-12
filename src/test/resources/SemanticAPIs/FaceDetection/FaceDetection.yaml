@@ -1,0 +1,38 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Use our Face Detection API to detect the location of human faces in
+    your images with optional extra features like Age and Gender.
+  title: Face Detection
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /img/face:
+    post:
+      description: Use our Face Detection API to detect the location of human faces in your images.
+      operationId: img_face
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - face-detection6.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: "URL for image to be passed through the model"
+          in: query
+          name: url
+          required: true
+          type: string
+        - description: "Accuracy_Boost value to increase model accuracy (values 1 to 4, default 2)"
+          in: query
+          name: accuracy_boost
+          required: true
+          type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

@@ -17,49 +17,48 @@ import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfigurat
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.inputs.semantic.testing.api.AeroDataBox.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.AirportIX.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.AirportInfo.airportInfo_iata;
-import static es.us.isa.restest.inputs.semantic.testing.api.AirportInfo.airportInfo_icao;
+import static es.us.isa.restest.inputs.semantic.testing.api.AirportInfo.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Asos.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Astronomy.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.AviationReferenceData.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.CarbonFootprint.carbonFootprint_PM;
-import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.climacell_lat;
-import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.climacell_lon;
-import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coronavirusMap_region;
+import static es.us.isa.restest.inputs.semantic.testing.api.CarbonFootprint.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.Climacell.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.CurrencyConverter.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.Domainr.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FixerCurrency.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.FootballPrediction.footballPredictionFederation;
+import static es.us.isa.restest.inputs.semantic.testing.api.FootballPrediction.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.GoogleMapsGeocoding.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.greatCircleMapper_iataIcao;
+import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Hotels.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.MovieDatabase.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.NavitimeRouteCar.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.NavitimeRouteTotalNavi.navitimeRouteCar_shapeTransit_goal;
-import static es.us.isa.restest.inputs.semantic.testing.api.NavitimeRouteTotalNavi.navitimeRouteCar_shapeTransit_start;
+import static es.us.isa.restest.inputs.semantic.testing.api.NavitimeRouteTotalNavi.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.OpenWeatherMap.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.PeriodicTableOfElements.periodicTableOfElementsName;
+import static es.us.isa.restest.inputs.semantic.testing.api.PeriodicTableOfElements.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.PricelineComProvider.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_countryCode;
-import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.publicHoliday_year;
+import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.RealtyInUs.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.RealtyMoleProperty.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RecipeFood.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RedlineZipcode.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RentEstimate.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.RestbAiWatermarkDetection.restbAiWatermarkDetection_imageurl;
-import static es.us.isa.restest.inputs.semantic.testing.api.SimilarWeb.similarweb_website;
+import static es.us.isa.restest.inputs.semantic.testing.api.RestbAiWatermarkDetection.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.SimilarWeb.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Skyscanner.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.TravelAdvisor.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Spott.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.SubtitlesForYoutube.getSubtitleJson;
+import static es.us.isa.restest.inputs.semantic.testing.api.SubtitlesForYoutube.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.TrueWayGeocoding.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.UphereSpace.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.UsRestaurantMenus.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.UsWeatherByZipcode.UsWeatherByZipcode_zipcode;
+import static es.us.isa.restest.inputs.semantic.testing.api.UsWeatherByZipcode.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.WeatherForecast14Days.*;
-import static es.us.isa.restest.inputs.semantic.testing.api.YahooFinance.yahooFinanceGetFinancialData;
+import static es.us.isa.restest.inputs.semantic.testing.api.YahooFinance.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -69,9 +68,9 @@ import com.squareup.okhttp.Response;
 public class MainTesting {
 
     // Parameters to change
-    private static final String propertiesPath = "src/test/resources/SemanticAPIs/RestbAiWatermarkDetection/RestbAiWatermarkDetection_semantic.properties";
-    private static final String operationPath = "/wmdetect";
-    private static final String semanticParameterName = "image_url";
+    private static final String propertiesPath = "--------";
+    private static final String operationPath = "/finance/rates";
+    private static final String semanticParameterName = "loc";
     private static final Integer limit = Integer.MAX_VALUE;
     private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
@@ -112,7 +111,7 @@ public class MainTesting {
                 // RapidAPI operation to test
                 // In some cases it is required to change an attribute of the API class (e.g., operationPath in api/Climacell.java)
                 // Note that there is a different file for the Skyscanner API
-                restbAiWatermarkDetection_imageurl(semanticInput, apiKey, host);        // TODO: REPLACE
+                realtyInUs_financeRates_loc(semanticInput, apiKey, host);        // TODO: REPLACE
 
                 i++;
 
@@ -175,9 +174,9 @@ public class MainTesting {
         System.out.println(uri);
 
         OkHttpClient client = new OkHttpClient();
-//        client.setConnectTimeout(60, TimeUnit.SECONDS);
-//        client.setReadTimeout(60, TimeUnit.SECONDS);
-//        client.setWriteTimeout(60, TimeUnit.SECONDS);
+        client.setConnectTimeout(120, TimeUnit.SECONDS);
+        client.setReadTimeout(120, TimeUnit.SECONDS);
+        client.setWriteTimeout(120, TimeUnit.SECONDS);
 
         Request request = new Request.Builder()
                 .url(uri)

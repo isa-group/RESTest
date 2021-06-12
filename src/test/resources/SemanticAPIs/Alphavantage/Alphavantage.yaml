@@ -1,0 +1,74 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: The simplest and most effective way to receive stock, ETF, forex, technical
+    indicators, and cryptocurrency data.  Constantly ranked as a leading API provider
+    for ease of use, accuracy, and price. [See the documentation](https://www.alphavantage.co/documentation/)
+    and [read more](https://medium.com/@patrick.collins_58673/stock-api-landscape-5c6e054ee631)
+    on the market data industry.  [Start now for free](https://www.alphavantage.co/support/#api-key).
+  title: Alpha Vantage
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /query:
+    get:
+      description: 'This API returns weekly time series (last trading day of each week, weekly open, weekly high, weekly low, weekly close, weekly volume) of the global equity specified, covering 20+ years of historical data.'
+      operationId: operations-Digital_Crypto_Currencies
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - alpha-vantage.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: "The time series of your choice."
+        in: query
+        name: function
+        type: string
+        required: true
+        enum:
+          - TIME_SERIES_WEEKLY
+          - FX_MONTHLY
+          - CURRENCY_EXCHANGE_RATE
+      # TIME_SERIES_WEEKLY
+      - description: "The name of the equity of your choice."
+        in: query
+        name: symbol
+        type: string
+        required: false
+      - description: "By default, datatype=json. Strings json and csv are accepted with the following specifications: json returns the intraday time series in JSON format; csv returns the time series as a CSV (comma separated value) file."
+        in: query
+        name: datatype
+        type: string
+        required: false
+      # FX_MONTHLY
+      # - datatype
+      - description: "A three-letter symbol from the forex currency list. For example: from_symbol=EUR"
+        in: query
+        name: from_symbol
+        type: string
+        required: false # true
+      - description: "A three-letter symbol from the forex currency list. For example: from_symbol=USD"
+        in: query
+        name: to_symbol
+        type: string
+        required: false # true
+      # CURRENCY_EXCHANGE_RATE
+      - description: "The currency you want to convert to"
+        in: query
+        name: to_currency
+        required: false # true
+        type: string
+      - description: "The currency you want to convert"
+        in: query
+        name: from_currency
+        required: false
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

@@ -1,0 +1,291 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: 'Real time Priceline API: Car Rentals, Hotels, Flights.'
+  title: Priceline.com
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+#  /cars/location/search:
+#    get:
+#      description: Search car rental location
+#      operationId: operations-default-car_rental_location
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : Seattle'
+#        in: query
+#        name: q
+#        required: true
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /cars/{pickup_location_id}:
+#    get:
+#      description: Search car rental prices
+#      operationId: operations-default-car_rental_prices
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: ''
+#        in: query
+#        name: return_location_id
+#        required: false
+#        type: ''
+#      - description: 'Default value : 2021-02-10T12:00'
+#        in: query
+#        name: return_date
+#        required: true
+#        type: ''
+#      - description: 'Default value : 2021-01-31T12:00'
+#        in: query
+#        name: pickup_date
+#        required: true
+#        type: ''
+#      - description: 'Default value : SEA'
+#        in: path
+#        name: pickup_location_id
+#        required: true
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /flights/{origin}/{destination}/{departure_date}:
+    get:
+      description: Search one way flights
+      operationId: operations-default-flights_one_way
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - priceline-com.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : 1'
+        in: query
+        name: adults
+        required: false
+        type: number
+      - description: 'Default value : LAX'
+        in: path
+        name: origin
+        required: true
+        type: string
+      - description: 'Default value : 2021-02-17'
+        in: path
+        name: departure_date
+        required: true
+        type: string
+      - description: 'Default value : SFO'
+        in: path
+        name: destination
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /flights/{origin}/{destination}/{departure_date}/{return_date}:
+#    get:
+#      description: Search round trip flights
+#      operationId: operations-default-flights_round_trip
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : 1'
+#        in: query
+#        name: adults
+#        required: false
+#        type: number
+#      - description: 'Default value : SFO'
+#        in: path
+#        name: origin
+#        required: true
+#        type: ''
+#      - description: 'Default value : LAX'
+#        in: path
+#        name: destination
+#        required: true
+#        type: ''
+#      - description: 'Default value : 2021-02-25'
+#        in: path
+#        name: return_date
+#        required: true
+#        type: string
+#      - description: 'Default value : 2021-02-15'
+#        in: path
+#        name: departure_date
+#        required: true
+#        type: string
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+  /hotel/{id}:
+    get:
+      description: Get hotel details
+      operationId: operations-default-hotel_details
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - priceline-com.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : USD'
+        in: query
+        name: currency
+        required: false
+        type: string
+      - description: 'Default value : 1'
+        in: query
+        name: rooms
+        required: false
+        type: number
+      - description: 'Default value : 2021-01-23'
+        in: query
+        name: checkout_date
+        required: true
+        type: string
+      - description: 'Default value : 2021-01-22'
+        in: query
+        name: checkin_date
+        required: true
+        type: string
+      - description: 'Default value : 8794805'
+        in: path
+        name: id
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /hotels/city/nearby/{latitude}/{longitude}:
+    get:
+      description: Search city id by geolocation
+      operationId: operations-default-hotel_city_nearby
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - priceline-com.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Default value : 100'
+        in: query
+        name: radius
+        required: false
+        type: number
+      - description: 'Default value : 37.788719679657554'
+        in: path
+        name: latitude
+        required: true
+        type: string
+      - description: 'Default value : -122.40057774847898'
+        in: path
+        name: longitude
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+#  /hotels/city/search:
+#    get:
+#      description: Search city id by keyword
+#      operationId: operations-default-hotel_city_search
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : Seattle'
+#        in: query
+#        name: q
+#        required: true
+#        type: ''
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
+#  /hotels/{city_id}:
+#    get:
+#      description: List hotels by city ID
+#      operationId: operations-default-hotel_list
+#      parameters:
+#      - description: X-RapidAPI-Host
+#        enum:
+#        - priceline-com.p.rapidapi.com
+#        in: header
+#        name: X-RapidAPI-Host
+#        required: true
+#        type: string
+#      - description: 'Default value : 1'
+#        in: query
+#        name: rooms
+#        required: false
+#        type: number
+#      - description: 'Default value : 0'
+#        in: query
+#        name: offset
+#        required: false
+#        type: ''
+#      - description: 'Default value : USD'
+#        in: query
+#        name: currency
+#        required: false
+#        type: ''
+#      - description: 'Default value : 2021-01-23'
+#        in: query
+#        name: checkout_date
+#        required: true
+#        type: string
+#      - description: 'Default value : 2021-01-22'
+#        in: query
+#        name: checkin_date
+#        required: true
+#        type: string
+#      - description: 'Default value : 3000002244'
+#        in: path
+#        name: city_id
+#        required: true
+#        type: number
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error

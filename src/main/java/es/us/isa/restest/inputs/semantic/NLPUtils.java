@@ -53,7 +53,7 @@ public class NLPUtils {
         //        NNPS	Proper noun, plural
         List<String> names = document.tokens().stream()
                 .filter(x -> (x.tag().equals("FW") || x.tag().equals("NN") ||
-                        x.tag().equals("NNS") || x.tag().equals("NNP") || x.tag().equals("NNPS"))
+                        x.tag().equals("NNS") || x.tag().equals("NNP") || x.tag().equals("NNPS") || x.tag().equals("JJ"))
                         &&  (!stopWords.contains(x.lemma())))
                 .map(x -> x.lemma())
                 .filter(x -> x.charAt(0) == name.charAt(0))
@@ -87,7 +87,7 @@ public class NLPUtils {
         //        NNPS	Proper noun, plural
         List<String> names = document.tokens().stream()
                 .filter(x -> (x.tag().equals("FW") || x.tag().equals("NN") ||
-                        x.tag().equals("NNS") || x.tag().equals("NNP") || x.tag().equals("NNPS"))
+                        x.tag().equals("NNS") || x.tag().equals("NNP") || x.tag().equals("NNPS") || x.tag().equals("JJ"))
                         &&  (!stopWords.contains(x.lemma())))
                 .map(x -> x.lemma())
                 .collect(Collectors.toList());
