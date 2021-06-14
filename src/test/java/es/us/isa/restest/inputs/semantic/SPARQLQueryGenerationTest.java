@@ -2,6 +2,7 @@ package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.specification.OpenAPISpecification;
+import javafx.util.Pair;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.junit.Test;
@@ -81,9 +82,9 @@ public class SPARQLQueryGenerationTest {
 			semanticParameter.setPredicates(Collections.singleton("http://dbpedia.org/ontology/" + semanticParameter.getTestParameter().getName()));
 		}
 
-		String queryString = generateQuery(semanticParameters, false);
+		Pair<String, Map<String, String>> queryString = generateQuery(semanticParameters, false);
 
-		Query query = QueryFactory.create(queryString);
+		Query query = QueryFactory.create(queryString.getKey());
 		assertNotNull(query);
 	}
 

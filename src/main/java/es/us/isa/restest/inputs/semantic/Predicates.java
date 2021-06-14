@@ -5,6 +5,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import javafx.util.Pair;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.*;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
@@ -98,6 +99,11 @@ public class Predicates {
                 }
             }
 
+            // If the parameter name contains -, replace it with _
+//            if(parameterName.contains("-")){
+//                parameterName = parameterName.replace("-", "_");
+//            }
+
             // DESCRIPTION
             Map<Double, Set<String>> descriptionCandidates = new HashMap<>();
 
@@ -146,17 +152,18 @@ public class Predicates {
     public static Set<String> getPredicatesOfSingleParameter(String parameterName, TestParameter testParameter, List<String> predicatesToIgnore){
 
         // PARAMETER NAME
-        // Query creation
+        // Query creation       TODO: kebab-case
         String queryString = generatePredicateQuery(parameterName);
 
         // Query execution
         String predicate = executePredicateSPARQLQuery(queryString, testParameter, predicatesToIgnore);
 
         if(predicate == null){
-            String[] words = parameterName.split("_");
-            // If snake_case
+            // Separate snake_case and kebab-case
+            String[] words = parameterName.split("_|-");
+            // If snake_case or kebab-case
             if(words.length > 1){
-                // Join words (convert to camel case)
+                // Join words (convert to camelCase)
                 String newQuery = generatePredicateQuery(String.join("", words));
                 predicate = executePredicateSPARQLQuery(newQuery, testParameter, predicatesToIgnore);
 
@@ -228,7 +235,8 @@ public class Predicates {
 
         Query query = QueryFactory.create(queryString);
         QueryExecution qexec = QueryExecutionFactory.sparqlService(szEndpoint, query);
-        ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
+        qexec.setTimeout(10000000, 10000000);
+        ((QueryEngineHTTP)qexec).addParam("timeout", "10000000");
 
         // Execute query
         int iCount = 0;
@@ -291,10 +299,10 @@ public class Predicates {
         SemanticParameter semanticParameter = new SemanticParameter(testParameter);
         semanticParameter.setPredicates(Collections.singleton(predicate));
 
-        String queryString = generateQuery(Collections.singleton(semanticParameter), true);
+        Pair<String, Map<String, String>> queryString = generateQuery(Collections.singleton(semanticParameter), true);
 
         // Execute query
-        Integer supportOfPredicate = executeSPARQLQueryCount(queryString, szEndpoint);
+        Integer supportOfPredicate = executeSPARQLQueryCount(queryString.getKey(), szEndpoint);
 
         return supportOfPredicate;
     }

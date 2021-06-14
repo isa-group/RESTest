@@ -2,12 +2,12 @@ package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.ParameterValues;
 import es.us.isa.restest.configuration.pojos.SemanticParameter;
-import es.us.isa.restest.configuration.pojos.TestParameter;
+import javafx.util.Pair;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 
 
 import java.net.URI;
@@ -31,9 +31,9 @@ public class SPARQLUtils {
 
         if(semanticParameters.size()>0) {
 
-            String queryString = generateQuery(semanticParameters, false);
+            Pair<String, Map<String, String>> queryString = generateQuery(semanticParameters, false);
             System.out.println(queryString);
-
+            // TODO: kebab-case
             result = executeSPARQLQuery(queryString, szEndpoint);
 
             Set<String> parameterNames = result.keySet();
@@ -59,8 +59,8 @@ public class SPARQLUtils {
                                 .filter(x-> !x.getTestParameter().getName().equals(subGraphParameterName)).collect(Collectors.toSet());
 
                         // Compute support
-                        String queryCount = generateQuery(currentSubGraphParameters, true);
-                        Integer currentSupport = executeSPARQLQueryCount(queryCount, szEndpoint);
+                        Pair<String, Map<String, String>> queryCount = generateQuery(currentSubGraphParameters, true);
+                        Integer currentSupport = executeSPARQLQueryCount(queryCount.getKey(), szEndpoint);
 
                         // Compare size with accumulator
                         if (currentSupport >= maxSupport) {
@@ -113,20 +113,21 @@ public class SPARQLUtils {
 
     // Execute a Query
     // Returns Map<ParameterName, Set<ParameterValue>>
-    public static Map<String, Set<String>> executeSPARQLQuery(String szQuery, String szEndpoint)
+    public static Map<String, Set<String>> executeSPARQLQuery(Pair<String, Map<String, String>> szQuery, String szEndpoint)
             throws Exception
     {
         Map<String, Set<String>> res = new HashMap<>();
 
         // Create a Query with the given String
-        Query query = QueryFactory.create(szQuery);
+        Query query = QueryFactory.create(szQuery.getKey());
 
         // Create the Execution Factory using the given Endpoint
         QueryExecution qexec = QueryExecutionFactory.sparqlService(
                 szEndpoint, query);
 
         // Set Timeout
-//        ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
+        qexec.setTimeout(10000000, 10000000);
+        ((QueryEngineHTTP)qexec).addParam("timeout", "10000000");
 
         // Execute Query
         ResultSet rs = qexec.execSelect();
@@ -179,27 +180,79 @@ public class SPARQLUtils {
 
         }
 
+
+        // TODO: Change names
+        Map<String, String> parameterNamesMap = szQuery.getValue();
+        Map<String, String> newKeys = new HashMap<>();
+//        List<String> keysToRemove = new ArrayList<>();
+        for(String key: res.keySet()) {
+            if (!parameterNamesMap.containsKey(key)){
+                // replace key (randomly generated) with original name (kebab-case)
+                Map.Entry<String, String> newEntry = parameterNamesMap.entrySet().stream().filter(entry -> key.equals(entry.getValue())).findFirst().orElse(null);
+                if(newEntry!=null){
+                    String newKey = newEntry.getKey();
+                    newKeys.put(key, newKey);
+//                    res.put(newKey, res.get(key)); concurrent
+
+
+//                    res.remove(key);
+//                    keysToRemove.add(key);
+                }
+            }
+        }
+
+        for(String oldKey: newKeys.keySet()){
+            res.put(newKeys.get(oldKey), res.get(oldKey));
+            res.remove(oldKey);
+
+        }
+//        newKeys.keySet().forEach(res.keySet()::remove);
+//        keysToRemove.forEach(res.keySet()::remove);
+
         return res;
     }
 
-    public static String generateQuery(Set<SemanticParameter> semanticParameters, Boolean count) {
-        String queryString = "";
-        String filters = "";
+    public static Map<String, String> getAllParametersName(List<SemanticParameter> allParameters){
 
-        List<SemanticParameter> allParameters = new ArrayList<>(semanticParameters);
+        // key: original name, value: new name
+        Map<String, String> res = new HashMap<>();
 
         List<String> allParametersName = allParameters.stream()
                 .map(x-> x.getTestParameter().getName())
                 .collect(Collectors.toList());
 
+        for(String parameterName: allParametersName){
+            if(parameterName.contains("-")){
+                // If the parameter name is in kebab-case, generate a new string as variable name
+                res.put(parameterName, generateRandomString(allParametersName));
+            } else {
+                res.put(parameterName, parameterName);
+            }
+        }
+        return res;
+    }
+
+    public static Pair<String, Map<String, String>> generateQuery(Set<SemanticParameter> semanticParameters, Boolean count) {
+        String queryString = "";
+        String filters = "";
+
+        List<SemanticParameter> allParameters = new ArrayList<>(semanticParameters);
+
+        // Old
+//        List<String> allParametersName = allParameters.stream()
+//                .map(x-> x.getTestParameter().getName())
+//                .map(x-> x.replace("-","_"))    // kebab-case       (Avoid duplicates)
+//                .collect(Collectors.toList());
+        Map<String, String> allParametersNameMap = getAllParametersName(allParameters);
+
 
         // Random String and parameter string
-        String randomString = generateRandomString(allParametersName);
-        String parametersString = generateParametersString(allParametersName);
+        String randomString = generateRandomString(new ArrayList<>(allParametersNameMap.values()));
+        String parametersString = generateParametersString(new ArrayList<>(allParametersNameMap.values()));
 
         // First line
         if(count){
-            if(allParametersName.size() == 1){
+            if(allParametersNameMap.keySet().size() == 1){
                 queryString = queryString + "Select count(distinct " + parametersString + ")" + " where { \n\n";
             }else{
                 queryString = queryString + "Select distinct count(*)  where { \n\n";
@@ -219,6 +272,7 @@ public class SPARQLUtils {
                 // Add required parameter to query
                 SemanticParameter currentParameter = allParameters.get(i);
                 String currentParameterName = currentParameter.getTestParameter().getName();
+                currentParameterName = allParametersNameMap.get(currentParameterName);      // kebab-case
 
                 // Predicates
                 Set<String> predicates = currentParameter.getPredicates();
@@ -231,6 +285,7 @@ public class SPARQLUtils {
             }
             SemanticParameter lastParameter = allParameters.get(requiredSize - 1);
             String lastParameterName = lastParameter.getTestParameter().getName();
+            lastParameterName = allParametersNameMap.get(lastParameterName);      // kebab-case
 
             // Predicates
             Set<String> predicates = lastParameter.getPredicates();
@@ -248,7 +303,9 @@ public class SPARQLUtils {
 
         // Close query
         queryString = queryString + "\n}  \n";
-        return queryString;
+
+        return new Pair<>(queryString, allParametersNameMap);
+//        return queryString; old
 
     }
 
@@ -263,7 +320,8 @@ public class SPARQLUtils {
                 szEndpoint, query);
 
         // Set Timeout
-        ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
+        qexec.setTimeout(10000000, 10000000);
+        ((QueryEngineHTTP)qexec).addParam("timeout", "10000000");
 
         // Execute Query
         Integer res = 0;
@@ -337,7 +395,7 @@ public class SPARQLUtils {
         SemanticParameter semanticParameter = new SemanticParameter(parameterValues.getTestParameter());
         semanticParameter.setPredicates(predicates);
 
-        String queryString = generateQuery(Collections.singleton(semanticParameter), false);
+        Pair<String, Map<String, String>> queryString = generateQuery(Collections.singleton(semanticParameter), false);
 
         try {
             result = executeSPARQLQuery(queryString, szEndpoint);

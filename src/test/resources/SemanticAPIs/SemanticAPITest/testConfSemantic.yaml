@@ -1,0 +1,118 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /
+    operationId: operations-General-Outdoors_Legacy
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - trailapi-trailapi.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: q-city_cont
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/TrailAPI/operations-General-Outdoors_Legacy_q-city_cont.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/cont"
+          - "http://dbpedia.org/property/city"
+          - "http://dbpedia.org/property/q"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /secondEndopoint
+    operationId: second_endpoint
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - trailapi-trailapi.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: currency_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/TrailAPI/second_endpoint_currency_code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/currencyCode"
+          objectValues: null
+        valid: true
+    - name: countryCode
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/TrailAPI/second_endpoint_countryCode.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/countryCode"
+          objectValues: null
+        valid: true
+    - name: lang-code
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/TrailAPI/second_endpoint_lang-code.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/langcode"
+          objectValues: null
+        valid: true
+    - name: asd-fgh
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/TrailAPI/second_endpoint_asd-fgh.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - "http://dbpedia.org/property/imdbId"
+          objectValues: null
+        valid: true
+    expectedResponse: 200

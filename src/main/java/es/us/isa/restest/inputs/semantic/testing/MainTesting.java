@@ -18,6 +18,7 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 import static es.us.isa.restest.inputs.semantic.testing.api.AeroDataBox.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.AirportIX.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.AirportInfo.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.AlphaVantage.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Asos.*;
@@ -29,27 +30,33 @@ import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.CountriesCities.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.CurrencyConverter.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Domainr.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.FaceDetection.faceDetection_url;
 import static es.us.isa.restest.inputs.semantic.testing.api.FixerCurrency.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.FootballPrediction.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.GeoDBCities.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.GoogleMapsGeocoding.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.GreatCircleMapper.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Hotels.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.HotelsComProvider.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.MovieDatabase.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.NavitimeRouteCar.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.NavitimeRouteTotalNavi.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.OpenWeatherMap.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.PeriodicTableOfElements.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.PricelineCom.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.PricelineComProvider.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.PublicHoliday.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RealtyInUs.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RealtyMoleProperty.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RecipeFood.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RedlineZipcode.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.Referential.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RentEstimate.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.RestbAiWatermarkDetection.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.SimilarWeb.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Skyscanner.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.TrailAPI.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.TravelAdvisor.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.Spott.*;
 import static es.us.isa.restest.inputs.semantic.testing.api.SubtitlesForYoutube.*;
@@ -68,9 +75,9 @@ import com.squareup.okhttp.Response;
 public class MainTesting {
 
     // Parameters to change
-    private static final String propertiesPath = "--------";
-    private static final String operationPath = "/finance/rates";
-    private static final String semanticParameterName = "loc";
+    private static final String propertiesPath = "---";
+    private static final String operationPath = "/img/face";
+    private static final String semanticParameterName = "url";
     private static final Integer limit = Integer.MAX_VALUE;
     private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
@@ -111,7 +118,7 @@ public class MainTesting {
                 // RapidAPI operation to test
                 // In some cases it is required to change an attribute of the API class (e.g., operationPath in api/Climacell.java)
                 // Note that there is a different file for the Skyscanner API
-                realtyInUs_financeRates_loc(semanticInput, apiKey, host);        // TODO: REPLACE
+                faceDetection_url(semanticInput, apiKey, host);        // TODO: REPLACE
 
                 i++;
 

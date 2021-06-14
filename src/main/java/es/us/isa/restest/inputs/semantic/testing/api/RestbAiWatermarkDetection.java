@@ -13,7 +13,7 @@ public class RestbAiWatermarkDetection {
     // image_url
     public static void restbAiWatermarkDetection_imageurl(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + "/wmdetect";
-        String body = "image_url=" + semanticInput;
+        String body = "image_url=http%3A%2F%2Fwww.wizards.com%2Fdnd%2Fimages%2FMM35_gallery%2FMM35_PG130.jpg";// + semanticInput;
         printResponsePost(url, body);
     }
 

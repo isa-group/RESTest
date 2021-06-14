@@ -1,0 +1,96 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /
+    operationId: operations-General-Outdoors_Legacy
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - trailapi-trailapi.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: q-city_cont
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /secondEndopoint
+    operationId: second_endpoint
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - trailapi-trailapi.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: currency_code
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: countryCode
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lang-code
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: asd-fgh
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

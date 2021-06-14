@@ -20,15 +20,17 @@ public class GenerateSPARQLFilters {
         List<GenParameter> genParameters = generator.getGenParameters();
 
         for(GenParameter genParameter: genParameters){
+            // kebab-case
+            String parameterName = parameter.getName().replace("-","_");
             switch (genParameter.getName()){
                 case GEN_PARAM_REG_EXP:
-                    res = res + generateSPARQLFilterRegExp(parameter.getName(), genParameter.getValues().get(0));
+                    res = res + generateSPARQLFilterRegExp(parameterName, genParameter.getValues().get(0));
                     break;
                 case GEN_PARAM_MIN:
-                    res = res + generateSPARQLFilterMinMax(parameter.getName(), genParameter.getValues().get(0), true);
+                    res = res + generateSPARQLFilterMinMax(parameterName, genParameter.getValues().get(0), true);
                     break;
                 case GEN_PARAM_MAX:
-                    res = res + generateSPARQLFilterMinMax(parameter.getName(), genParameter.getValues().get(0), false);
+                    res = res + generateSPARQLFilterMinMax(parameterName, genParameter.getValues().get(0), false);
                     break;
             }
         }
