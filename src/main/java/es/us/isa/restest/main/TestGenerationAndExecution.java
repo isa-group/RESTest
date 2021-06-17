@@ -109,7 +109,7 @@ public class TestGenerationAndExecution {
 			runner.setTestClassName(className);
 			runner.setTestId(id);
 
-			// si existe test cases input -> asignar propiedad
+			// if the test cases input property exists -> set the property
 			if (inputTestCasesPath != null){
 				runner.setInputTestCasesPath(inputTestCasesPath);
 			}

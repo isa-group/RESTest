@@ -982,13 +982,6 @@ paths:
           name: videoId
           schema:
             type: string
-      x-dependencies:
-        - OnlyOne(allThreadsRelatedToChannelId, channelId, id, videoId);
-        - ZeroOrOne(id, maxResults);
-        - ZeroOrOne(id, moderationStatus);
-        - ZeroOrOne(id, order);
-        - ZeroOrOne(id, pageToken);
-        - ZeroOrOne(id, searchTerms);
       responses:
         "200":
           content:
@@ -3155,25 +3148,6 @@ paths:
               - movie
               - episode
             type: string
-      x-dependencies:
-        - ZeroOrOne(forContentOwner, forDeveloper, forMine, relatedToVideoId);
-        - IF forContentOwner==true THEN onBehalfOfContentOwner AND type=='video' AND NOT (videoDefinition OR videoDimension OR videoDuration OR videoLicense OR videoEmbeddable OR videoSyndicated OR videoType);
-        - IF forMine==true THEN type=='video' AND NOT (videoDefinition OR videoDimension OR videoDuration OR videoLicense OR videoEmbeddable OR videoSyndicated OR videoType);
-        - IF relatedToVideoId THEN type=='video' AND NOT (channelId OR channelType OR eventType OR location OR locationRadius OR onBehalfOfContentOwner OR order OR publishedAfter OR publishedBefore OR q OR topicId OR videoCaption OR videoCategoryId OR videoDefinition OR videoDimension OR videoDuration OR videoEmbeddable OR videoLicense OR videoSyndicated OR videoType);
-        - IF eventType THEN type=='video';
-        - AllOrNone(location, locationRadius);
-#        - publishedAfter>=publishedBefore; # Not supported yet
-        - IF videoCaption THEN type=='video';
-        - IF videoCategoryId THEN type=='video';
-        - IF videoDefinition THEN type=='video';
-        - IF videoDimension THEN type=='video';
-        - IF videoDuration THEN type=='video';
-        - IF videoEmbeddable THEN type=='video';
-        - IF videoLicense THEN type=='video';
-        - IF videoSyndicated THEN type=='video';
-        - IF videoType THEN type=='video';
-#        - IF channelType THEN type=='channel'; # Unspecified dependency
-#        - IF location THEN type=='video'; # Unspecified dependency
       responses:
         "200":
           content:
@@ -3952,12 +3926,6 @@ paths:
           name: videoCategoryId
           schema:
             type: string
-      x-dependencies:
-        - OnlyOne(chart, id, myRating);
-        - ZeroOrOne(maxResults, id);
-        - ZeroOrOne(pageToken, id);
-        - IF regionCode THEN chart;
-        - IF videoCategoryId THEN chart;
       responses:
         "200":
           content:

@@ -120,11 +120,6 @@
             "description": "If set to `picky`, additional rules will be activated, i.e. rules that you might only find useful when checking formal text."
           }
         ],
-        "x-dependencies": [
-          "OnlyOne(text, data);",
-          "IF preferredVariants THEN language=='auto';",
-          "IF enabledOnly==true THEN (enabledRules OR enabledCategories);"
-        ],
         "responses": {
           "200": {
             "description": "the result of checking the text",
