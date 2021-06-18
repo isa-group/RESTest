@@ -1,5 +1,9 @@
 package es.us.isa.restest.inputs.semantic.testing.api;
 
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+
 import java.io.IOException;
 
 import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printResponse;
@@ -40,6 +44,54 @@ public class AlphaVantage {
         String url = baseUri + "/query?to_currency=" + semanticInput + "&function=CURRENCY_EXCHANGE_RATE&from_currency=USD";
         printResponse(url);
     }
+
+    // REGEX GENERATION
+    // /query?to_currency=JPY&function=CURRENCY_EXCHANGE_RATE&from_currency=USD (CURRENCY_EXCHANGE_RATE)
+    // from_currency
+    public static String alphaVantage_currencyExchangeRate_fromCurrency_regex(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/query?to_currency=BOB&function=CURRENCY_EXCHANGE_RATE&from_currency=" + semanticInput;
+        System.out.println(url);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("x-rapidapi-host", host)
+                .addHeader("x-rapidapi-key", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println("--------------------------------------------------------------------------------------");
+
+        return response.body().string();
+    }
+
+    // to_currency
+    public static String alphaVantage_currencyExchangeRate_toCurrency_regex(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/query?to_currency=" + semanticInput + "&function=CURRENCY_EXCHANGE_RATE&from_currency=BOB";
+
+        System.out.println(url);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("x-rapidapi-host", host)
+                .addHeader("x-rapidapi-key", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println("--------------------------------------------------------------------------------------");
+
+        return response.body().string();
+    }
+
 
 
 }

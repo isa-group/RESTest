@@ -28,19 +28,29 @@ import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithNewPredicates;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.inputs.semantic.testing.MainTesting.readCsv;
+import static es.us.isa.restest.inputs.semantic.testing.api.AeroDataBox.aeroDataBox_FlightTimeToAnotherAirportByIataIcao_codeTo_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.AirportIX.*;
+import static es.us.isa.restest.inputs.semantic.testing.api.AlphaVantage.alphaVantage_currencyExchangeRate_fromCurrency_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.AlphaVantage.alphaVantage_currencyExchangeRate_toCurrency_regex;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiBasketball.apiBasketball_standings_season_regex;
 import static es.us.isa.restest.inputs.semantic.testing.api.ApiFootball.apiFootball_leaguesCountryCountryNameSeason_season_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.AviationReferenceData.aviationReferenceData_airport_code_regex;
 import static es.us.isa.restest.inputs.semantic.testing.api.CoronavirusMap.coronavirusMap_region;
 import static es.us.isa.restest.inputs.semantic.testing.api.FlightData.flightData_cityDirections_currency_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.GeoDBCities.geoDbCities_administrativeDivisions_languageCode_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.RealtyInUs.realtyInUs_mortageCheckEquitityRates_state_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.RealtyMoleProperty.realtyMoleProperty_saleListings_state_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.RedlineZipcode.redlineStateToZipcode_regex;
+import static es.us.isa.restest.inputs.semantic.testing.api.YahooFinance.yahooFinanceGetFinancialData_regex;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 
 public class MainTestingRegexGeneration {
 
     // Parameters to change
-    private static final String propertiesPath = "src/test/resources/SemanticAPIs/Api-basketball/apiBasketball.properties";
-    private static final String operationPath = "/standings/groups";
-    private static final String semanticParameterName = "season";
-    private static final String apiKey = "----";
+    private static final String propertiesPath = "----";
+    private static final String operationPath = "/saleListings";
+    private static final String semanticParameterName = "state";
+    private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
 
     // Derived parameters
     private static OpenAPISpecification spec;
@@ -73,9 +83,9 @@ public class MainTestingRegexGeneration {
         List<String> semanticInputs = readCsv(csvPath);
         System.out.println("Number of inputs " + semanticInputs.size());
 
-        Collections.shuffle(semanticInputs);
+//        Collections.shuffle(semanticInputs);
 
-        ParameterValues parameterValues = new ParameterValues("flightData", operation, testParameter);
+        ParameterValues parameterValues = new ParameterValues("RealtyMoleProperty_semantic", operation, testParameter);      // TODO: Change
 
         // API call
         int i = 1;
@@ -84,62 +94,21 @@ public class MainTestingRegexGeneration {
                 System.out.println("Iteration number: " + i);
                 i++;
                 System.out.println(semanticInput);
-                String response = apiBasketball_standings_season_regex(semanticInput, apiKey, host);
+                Response response = realtyMoleProperty_saleListings_state_regex(semanticInput, apiKey, host);        // TODO: Replace
 
                 System.out.println("###########");
                 System.out.println(response);
 
-                // VALIDATION in  ApiFootball (the errors are shown in a parameter)
-//                JSONObject Jobject = new JSONObject(response);
-//                JSONObject api = Jobject.getJSONObject("api");
-//
-//                Boolean isValid = true;
-//                if(api.has("error")){
-//                    isValid = false;
-//                }
-//
-//                if(isValid){
-//                    validSet.add(semanticInput);
-//                    System.out.println(semanticInput + " added to valid");
-//                }else{
-//                    invalidSet.add(semanticInput);
-//                    System.out.println(semanticInput + " added to invalid");
-//                }
-
-
-                // VALIDATION in ApiBasketball (the errors are shown in a parameter)
-                JSONObject Jobject = new JSONObject(response);
-                Object errors = Jobject.get("errors");
-
-                Boolean isValid = false;
-                if (errors instanceof JSONObject){
-                    isValid = false;
-                }else{
-                    JSONArray jsonArray = (JSONArray) errors;
-
-                    isValid = jsonArray.length() == 0;
-                }
-
-                if(isValid){
-                    validSet.add(semanticInput);
-                    System.out.println(semanticInput + " added to valid");
-                }else{
+                // TODO: Realty Mole Property
+                if (response == null || response.code() != 200) {     // TODO: DELETE
                     invalidSet.add(semanticInput);
                     System.out.println(semanticInput + " added to invalid");
+                } else {
+                    validSet.add(semanticInput);
+                    System.out.println(semanticInput + " added to valid");
                 }
 
-
-
-
-
-                // VALIDATION IN Skyscanner and flightData (errors with 400 code)
-//                if(response.code() == 200){
-//                    validSet.add(semanticInput);
-//                    System.out.println(semanticInput + " added to valid");
-//                }else{
-//                    invalidSet.add(semanticInput);
-//                    System.out.println(semanticInput + " added to invalid");
-//                }
+//                validation_errors400Code(response, semanticInput, validSet, invalidSet);                    // TODO: Replace
 
                 System.out.println("Valid values: " + validSet);
                 System.out.println("Invalid values: " + invalidSet);
@@ -240,6 +209,137 @@ public class MainTestingRegexGeneration {
                 .getGenerators().stream().filter(x -> x.getType().equals(RANDOM_INPUT_VALUE)).findFirst().get()
                 .getGenParameters().stream().filter(x->x.getName().equals("csv")).findFirst().get()
                 .getValues().get(0);
+    }
+
+
+    // Validation function
+    // VALIDATION in  ApiFootball (the errors are shown in a parameter)
+    public static void validation_apiFootball(String response, String semanticInput, Set<String> validSet, Set<String> invalidSet){
+        JSONObject Jobject = new JSONObject(response);
+        JSONObject api = Jobject.getJSONObject("api");
+
+        Boolean isValid = true;
+        if(api.has("error")){
+            isValid = false;
+        }
+
+        if(isValid){
+            validSet.add(semanticInput);
+            System.out.println(semanticInput + " added to valid");
+        }else{
+            invalidSet.add(semanticInput);
+            System.out.println(semanticInput + " added to invalid");
+        }
+
+    }
+
+    // Validation function
+    // VALIDATION in  AirportIX (the errors are shown in a parameter)
+    public static void validation_airportIX(String response, String semanticInput, Set<String> validSet, Set<String> invalidSet){
+        JSONObject Jobject = new JSONObject(response);
+
+        Boolean isValid = !Jobject.getBoolean("error");
+
+        if(isValid){
+            validSet.add(semanticInput);
+            System.out.println(semanticInput + " added to valid");
+        }else{
+            invalidSet.add(semanticInput);
+            System.out.println(semanticInput + " added to invalid");
+        }
+
+    }
+
+    // VALIDATION IN Yahoo Finance
+    public static void validation_yahooFinance(String response, String semanticInput, Set<String> validSet, Set<String> invalidSet){
+        JSONObject Jobject = new JSONObject(response);
+
+        Boolean isValid = true;
+        if(Jobject.has("error")){
+            isValid = false;
+        }
+
+        if(isValid){
+            validSet.add(semanticInput);
+            System.out.println(semanticInput + " added to valid");
+        }else{
+            invalidSet.add(semanticInput);
+            System.out.println(semanticInput + " added to invalid");
+        }
+
+    }
+
+    // VALIDATION IN Alpha vantage
+    public static void validation_alphaVantage(String response, String semanticInput, Set<String> validSet, Set<String> invalidSet){
+        JSONObject Jobject = new JSONObject(response);
+
+        Boolean isValid = true;
+        if(Jobject.has("Error Message")){
+            isValid = false;
+        }
+
+        if(isValid){
+            validSet.add(semanticInput);
+            System.out.println(semanticInput + " added to valid");
+        }else{
+            invalidSet.add(semanticInput);
+            System.out.println(semanticInput + " added to invalid");
+        }
+
+    }
+
+    // VALIDATION in ApiBasketball (the errors are shown in a parameter)
+    public static void validation_apiBasketball(String response, String semanticInput, Set<String> validSet, Set<String> invalidSet){
+        JSONObject Jobject = new JSONObject(response);
+        Object errors = Jobject.get("errors");
+
+        Boolean isValid = false;
+        if (errors instanceof JSONObject){
+            isValid = false;
+        }else{
+            JSONArray jsonArray = (JSONArray) errors;
+            isValid = jsonArray.length() == 0;
+        }
+
+        if(isValid){
+            validSet.add(semanticInput);
+            System.out.println(semanticInput + " added to valid");
+        }else{
+            invalidSet.add(semanticInput);
+            System.out.println(semanticInput + " added to invalid");
+        }
+    }
+
+    // VALIDATION IN Realty in US
+    // Check equitity rates
+    public static void validation_realtyInUs(String response, String semanticInput, Set<String> validSet, Set<String> invalidSet){
+        JSONObject Jobject = new JSONObject(response);
+
+        Boolean isValid = true;
+        if(Jobject.has("status")){
+            isValid = false;
+        }
+
+        if(isValid){
+            validSet.add(semanticInput);
+            System.out.println(semanticInput + " added to valid");
+        }else{
+            invalidSet.add(semanticInput);
+            System.out.println(semanticInput + " added to invalid");
+        }
+
+    }
+
+    // VALIDATION IN Skyscanner, flightData, redline zipcode, Realty Mole Property, GeoDBCity, AeroDataBox, AviationReferenceData (errors with 4XX code)
+    public static void validation_errors400Code(Response response, String semanticInput, Set<String> validSet, Set<String> invalidSet) {
+        if(response.code() == 200){
+            validSet.add(semanticInput);
+            System.out.println(semanticInput + " added to valid");
+        }else{
+            invalidSet.add(semanticInput);
+            System.out.println(semanticInput + " added to invalid");
+        }
+
     }
 
 }

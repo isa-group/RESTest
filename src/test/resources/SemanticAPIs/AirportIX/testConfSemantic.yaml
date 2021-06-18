@@ -67,6 +67,11 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/code"
+          - "http://dbpedia.org/ontology/code"
+          objectValues: null
+        - name: regExp
+          values:
+          - ^\w\w++$
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -148,6 +153,11 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/property/code"
+          - "http://dbpedia.org/ontology/code"
+          objectValues: null
+        - name: regExp
+          values:
+          - ^\w\w\w$
           objectValues: null
         valid: true
     expectedResponse: 200

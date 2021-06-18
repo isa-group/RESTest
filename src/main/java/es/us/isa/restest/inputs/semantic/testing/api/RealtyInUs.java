@@ -1,5 +1,10 @@
 package es.us.isa.restest.inputs.semantic.testing.api;
 
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import org.json.JSONException;
+
 import java.io.IOException;
 
 import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printResponse;
@@ -52,6 +57,28 @@ public class RealtyInUs {
     public static void realtyInUs_mortageCheckEquityRates_state(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + "/mortgage/check-equity-rates?loanAmount=70000&mortgageBalance=150000&propertyValue=300000&zip=93505&state=" + semanticInput;
         printResponse(url);
+    }
+
+    public static String realtyInUs_mortageCheckEquitityRates_state_regex(String semanticInput, String apiKey, String host) throws IOException, JSONException {
+        String url = baseUri + "/mortgage/check-equity-rates?loanAmount=70000&mortgageBalance=150000&propertyValue=300000&zip=93505&state=" + semanticInput;
+
+        System.out.println(url);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("x-rapidapi-host", host)
+                .addHeader("x-rapidapi-key", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println("--------------------------------------------------------------------------------------");
+
+        return response.body().string();
     }
 
 

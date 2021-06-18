@@ -1,5 +1,9 @@
 package es.us.isa.restest.inputs.semantic.testing.api;
 
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+
 import java.io.IOException;
 
 import static es.us.isa.restest.inputs.semantic.testing.MainTesting.printResponse;
@@ -66,6 +70,31 @@ public class GeoDBCities {
     public static void geoDbCities_countryRegionDetails_regioncode(String semanticInput, String apiKey, String host) throws IOException {
         String url = baseUri + "/v1/geo/countries/US/regions/" + semanticInput;
         printResponse(url);
+    }
+
+
+    // REGEX /v1/geo/adminDivisions (Administrative Divisions)
+    // languageCode
+    public static Response geoDbCities_administrativeDivisions_languageCode_regex(String semanticInput, String apiKey, String host) throws IOException {
+        String url = baseUri + "/v1/geo/adminDivisions?languageCode=" + semanticInput;
+
+        System.out.println(url);
+
+        OkHttpClient client = new OkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("x-rapidapi-host", host)
+                .addHeader("x-rapidapi-key", apiKey)
+                .build();
+
+        Response response = client.newCall(request).execute();
+
+        System.out.println("RESPONSE CODE: " + response.code());
+        System.out.println("--------------------------------------------------------------------------------------");
+
+        return response;
     }
 
 }

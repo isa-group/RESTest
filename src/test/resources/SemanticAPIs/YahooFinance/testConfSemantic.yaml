@@ -35,6 +35,11 @@ testConfiguration:
         - name: predicates
           values:
           - "http://dbpedia.org/ontology/symbol"
+          - "http://dbpedia.org/property/symbol"
+          objectValues: null
+        - name: regExp
+          values:
+          - "^[A-Za-z]*+$"
           objectValues: null
         valid: true
     expectedResponse: 200
