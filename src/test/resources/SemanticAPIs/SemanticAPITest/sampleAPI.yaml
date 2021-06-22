@@ -1,10 +1,8 @@
 basePath: /
 host: rapidapi.p.rapidapi.com
 info:
-  description: Information and photos for tens of thousands of outdoor recreation
-    locations including hiking and mountain biking trails, campgrounds, ski resorts,
-    ATV trails, and more.
-  title: TrailAPI
+  description: SampleAPI
+  title: SampleAPI
   version: '1.0'
 schemes:
 - https
@@ -22,9 +20,9 @@ paths:
         name: X-RapidAPI-Host
         required: true
         type: string
-      - description: Name of a city
+      - description: Checking for synonyms
         in: query
-        name: q-city_cont
+        name: excludedCountryId
         required: false
         type: string
       responses:
@@ -32,43 +30,43 @@ paths:
           description: Ok
         default:
           description: Unexpected error
-  /secondEndopoint:
-    get:
-      description: Support for legacy queries. Data is no longer updated, but is still available.
-      operationId: second_endpoint
-      parameters:
-        - description: X-RapidAPI-Host
-          enum:
-            - trailapi-trailapi.p.rapidapi.com
-          in: header
-          name: X-RapidAPI-Host
-          required: true
-          type: string
-        - description: Name of a city
-          in: query
-          name: currency_code
-          required: false
-          type: string
-        - description: Nanana
-          in: query
-          name: countryCode
-          type: string
-          required: false
-        - description: Ananana
-          in: query
-          name: lang-code
-          type: string
-          required: false
-        - description: a imdb id
-          in: query
-          name: asd-fgh
-          type: string
-          required: false
-      responses:
-        '200':
-          description: Ok
-        default:
-          description: Unexpected error
+#  /secondEndopoint:
+#    get:
+#      description: Support for legacy queries. Data is no longer updated, but is still available.
+#      operationId: second_endpoint
+#      parameters:
+#        - description: X-RapidAPI-Host
+#          enum:
+#            - trailapi-trailapi.p.rapidapi.com
+#          in: header
+#          name: X-RapidAPI-Host
+#          required: true
+#          type: string
+#        - description: Name of a city
+#          in: query
+#          name: currency_code
+#          required: false
+#          type: string
+#        - description: Nanana
+#          in: query
+#          name: countryCode
+#          type: string
+#          required: false
+#        - description: Ananana
+#          in: query
+#          name: lang-code
+#          type: string
+#          required: false
+#        - description: a imdb id
+#          in: query
+#          name: asd-fgh
+#          type: string
+#          required: false
+#      responses:
+#        '200':
+#          description: Ok
+#        default:
+#          description: Unexpected error
 #  /trails/map/{id}/gpx/:
 #    get:
 #      description: Get GPX data for a map. Returns a file in GPX format. Input (id)

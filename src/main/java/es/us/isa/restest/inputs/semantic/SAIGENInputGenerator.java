@@ -31,7 +31,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class SAIGENInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "----";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/CommercialAPIs/Yelp/yelp_original.properties";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
@@ -77,7 +77,6 @@ public class SAIGENInputGenerator {
             List<QueryResult> queryResults = Lib.Companion.getInputsForLabels(parameterNamesLowercase);
 
             // Convert QueryResult to result (Map<String, Set<String>)
-            // TODO: Check SAIGEN case sensitive
             Map<String, Set<String>> result = convertQueryResultsToMap(queryResults, parameterNames);
 
             // Update parameter values with SAIGEN
