@@ -20,6 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -212,10 +214,8 @@ public class CoverageGatherer {
 
                 // this criterion only applies for header, query and path parameters
                 if (currentParameter.getIn().equals("query") || currentParameter.getIn().equals("header") || currentParameter.getIn().equals("path")) {
-                    String paramType = currentParameter.getSchema().getType();
-                    List<String> paramEnumValues = currentParameter.getSchema().getEnum();
-                    if (paramType.equals(BOOLEAN_TYPE) || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
-                        List<String> parameterValuesList = getParameterValues(paramType, paramEnumValues);
+                    List<String> parameterValuesList = getSchemaValues(currentParameter.getSchema());
+                    if (!parameterValuesList.isEmpty()) { // only if the parameter has enum values or is a boolean
                         criteria.add(createCriterion(parameterValuesList, PARAMETER_VALUE,
                                 currentPathEntry.getKey() + "->" +
                                         currentOperationEntry.getKey().toString() + "->" +
@@ -232,6 +232,32 @@ public class CoverageGatherer {
         }
     }
 
+    private List<String> getSchemaValues(Schema schema) {
+        List<String> paramValues = new ArrayList<>(getIndividualSchemaValues(schema));
+
+        if (schema instanceof ComposedSchema) {
+            ComposedSchema paramSchema = (ComposedSchema)schema;
+            List<Schema> paramSchemas = paramSchema.getAnyOf() != null ? paramSchema.getAnyOf() : paramSchema.getOneOf();
+            if (paramSchemas != null)
+                paramSchemas.forEach(ps -> paramValues.addAll(getSchemaValues(ps)));
+        }
+
+        return paramValues;
+    }
+
+    private List<String> getIndividualSchemaValues(Schema schema) {
+        String paramType = schema.getType();
+        List<String> paramEnumValues = schema.getEnum();
+
+        if (BOOLEAN_TYPE.equals(paramType))
+            return Arrays.asList("true", "false");
+        else if (paramEnumValues != null)
+            return paramEnumValues;
+
+        return new ArrayList<>();
+
+    }
+
     private void getFormDataParameterValues(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry, RequestBody requestBody) {
         MediaType mediaType = requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
                 requestBody.getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
@@ -239,10 +265,8 @@ public class CoverageGatherer {
 
         for (Object entry : mediaType.getSchema().getProperties().entrySet()) {
             Schema parameterSchema = ((Entry<String, Schema>) entry).getValue();
-            String paramType = parameterSchema.getType();
-            List<String> paramEnumValues = parameterSchema.getEnum();
-            if (paramType.equals(BOOLEAN_TYPE) || paramEnumValues != null) { // only if the parameter has enum values or is a boolean
-                List<String> parameterValuesList = getParameterValues(paramType, paramEnumValues);
+            List<String> parameterValuesList = getSchemaValues(parameterSchema);
+            if (!parameterValuesList.isEmpty()) { // only if the parameter has enum values or is a boolean
                 criteria.add(createCriterion(parameterValuesList, PARAMETER_VALUE,
                         currentPathEntry.getKey() + "->" +
                                 currentOperationEntry.getKey().toString() + "->" +
@@ -250,16 +274,6 @@ public class CoverageGatherer {
                 ));
             }
         }
-    }
-
-    private List<String> getParameterValues(String paramType, List<String> paramEnumValues) {
-        List<String> parameterValuesList = new ArrayList<>(); // list of parameter values per criterion
-        if (paramType.equals(BOOLEAN_TYPE)) {
-            parameterValuesList.addAll(Arrays.asList("true", "false")); // add both boolean values to test
-        } else {
-            parameterValuesList.addAll(paramEnumValues); // add all enum values to test
-        }
-        return parameterValuesList;
     }
 
     private void getInputContentTypeCoverageCriteria(List<CoverageCriterion> criteria, Entry<String, PathItem> currentPathEntry, Entry<HttpMethod, Operation> currentOperationEntry) {
@@ -345,24 +359,36 @@ public class CoverageGatherer {
         String currentResponseRef = null;
         Map<String, Schema> openApiProperties = null;
 
-        if(mediaTypeSchema instanceof ComposedSchema && ((ComposedSchema) mediaTypeSchema).getAnyOf() != null) {
-            addResponseBodyPropertiesCriterion(((ComposedSchema) mediaTypeSchema).getAnyOf().get(0), criteria, baseRootPath);
-
+        if(mediaTypeSchema instanceof ComposedSchema || mediaTypeSchema.getType() == null) {
+//            addResponseBodyPropertiesCriterion(((ComposedSchema) mediaTypeSchema).getAnyOf().get(0), criteria, baseRootPath);
+            // TODO: Handle anyOf, oneOf and allOf
+            // TODO: Handle when type == null, which seems to be with allOf
         } else {
             if (mediaTypeSchema.get$ref() != null) { // the response is an object and its schema is defined in the OpenAPI 'ref' tag
                 currentResponseRef = mediaTypeSchema.get$ref();
                 rootPathSuffix += "{"; // update rootPathSuffix
-            } else if (mediaTypeSchema.getType().equals("array")) { // the response is an array
+            } else if (mediaTypeSchema instanceof ArraySchema && mediaTypeSchema.getType().equals("array")) { // the response is an array
                 if (((ArraySchema)mediaTypeSchema).getItems().get$ref() != null) { // each item of the array has the schema of the OpenAPI 'ref' tag
                     currentResponseRef = ((ArraySchema)mediaTypeSchema).getItems().get$ref();
                     rootPathSuffix += "[{"; // update rootPathSuffix to reflect depth level inside the response body
                 }
-            } else if (mediaTypeSchema.getType().equals("object") && mediaTypeSchema.getProperties() != null) { // the response is an object and its schema is defined right after
+            } else if (mediaTypeSchema.getProperties() != null && mediaTypeSchema.getType().equals("object")) { // the response is an object and its schema is defined right after
                 openApiProperties = mediaTypeSchema.getProperties();
                 rootPathSuffix += "{"; // update rootPathSuffix
             }
             if (currentResponseRef != null) { // if the response body refers to a OpenAPI definition, get properties from that object
-                openApiProperties = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef.replace("#/components/schemas/", "")).getProperties();
+                currentResponseRef = currentResponseRef.replace("#/components/schemas/", "");
+
+                if (currentResponseRef.matches("/properties/.*")) {
+                    openApiProperties = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef.replaceAll("/properties/.*", "")).getProperties();
+                    Matcher matcher = Pattern.compile("/properties/(.*)").matcher(currentResponseRef);
+                    for(int i=1; matcher.group(i) != null; i++) {
+                        openApiProperties = openApiProperties.get(matcher.group(i)).getProperties();
+                    }
+                } else {
+                    Schema propertiesSchema = spec.getSpecification().getComponents().getSchemas().get(currentResponseRef);
+                    if (propertiesSchema != null) openApiProperties = propertiesSchema.getProperties();
+                }
             }
 
             if (openApiProperties != null) { // if there are properties to cover in this iteration, add new criterion

@@ -108,7 +108,6 @@ paths:
                 - request_a_quote
                 - reservation
                 - waitlist_reservation
-                - cashback
                 - deals
                 - gender_neutral_restrooms
                 - open_to_all
@@ -116,7 +115,7 @@ paths:
       x-dependencies:
         - Or(location, latitude AND longitude);
         - ZeroOrOne(open_now, open_at);
-        - IF offset AND limit THEN offset + limit <= 1000;
+        - offset + limit <= 1000;
         - IF offset AND NOT limit THEN offset <= 980;
       responses:
         "200":
@@ -126,6 +125,46 @@ paths:
               schema:
                 $ref: "#/components/schemas/BusinessesResult"
         "400":
+          description: bad request
+  /transactions/{transaction_type}/search:
+    get:
+      operationId: getTransactions
+      summary: Get transactions
+      description: Get transactions
+      parameters:
+        - name: transaction_type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: location
+          in: query
+          required: false
+          description: "Required when latitude and longitude aren't provided. Address of the location you want to deliver to."
+          schema:
+            type: string
+        - name: latitude
+          in: query
+          required: false
+          description: "Required when latitude and longitude aren't provided. Address of the location you want to deliver to."
+          schema:
+            type: string
+        - name: longitude
+          in: query
+          required: false
+          description: "Required when location isn't provided. Longitude of the location you want to deliver to."
+          schema:
+            type: string
+      x-dependencies:
+        - Or(location, latitude AND longitude);
+      responses:
+        200:
+          description: Returns all businesses
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/BusinessesResult'
+        400:
           description: bad request
 servers:
   - url: https://api.yelp.com/v3

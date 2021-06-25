@@ -315,12 +315,32 @@ public abstract class AbstractTestCaseGenerator {
 	protected TestCase generateFaultyTestCaseDueToIndividualConstraints(Operation testOperation) throws RESTestException {
 
 		TestCase test = null;
-		List<String> generationAlternatives;
+		ITestDataGenerator bodyGenerator = null;
+		List<String> generationAlternatives = new ArrayList<>();
+		generationAlternatives.add("mutation");
 
 		if (testOperation.getOpenApiOperation().getRequestBody() != null) {
-			generationAlternatives = Arrays.asList("invalid_generator", "mutation", "request_body_mutation");
-		} else {
-			generationAlternatives = Arrays.asList("invalid_generator", "mutation");
+			TestParameter bodyParam = testOperation.getTestParameters().stream().filter(x -> x.getName().equals("body")).findFirst().orElse(null);
+			Stream<ITestDataGenerator> s;
+			if (bodyParam != null) {
+				if (faultyGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())) != null) {
+					s = Stream.concat(
+							nominalGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())).stream(),
+							faultyGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())).stream());
+				} else {
+					s = nominalGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())).stream();
+				}
+				bodyGenerator = s.filter(x -> x instanceof BodyGenerator)
+						.findFirst()
+						.orElse(null);
+
+				if (bodyGenerator != null) {
+					generationAlternatives.add("request_body_mutation");
+				}
+			}
+		}
+		if (!faultyGenerators.isEmpty()) {
+			generationAlternatives.add("invalid_generator");
 		}
 
 		Collections.shuffle(generationAlternatives);
@@ -329,9 +349,11 @@ public abstract class AbstractTestCaseGenerator {
 		while (i < generationAlternatives.size() && test == null) {
             if (generationAlternatives.get(i).equals("invalid_generator")) {// Request with invalid generator
                 test = generateRandomInvalidTestCase(testOperation);
-            } else if (generationAlternatives.get(i).equals("request_body_mutation")) { //Request with invalid
-                test = generateFaultyTestDueToInvalidRequestBody(testOperation);
-            } else { // Valid request and mutate it
+            }
+            if (test == null && generationAlternatives.get(i).equals("request_body_mutation")) { //Request with invalid
+                test = generateFaultyTestDueToInvalidRequestBody(testOperation, bodyGenerator);
+            }
+            if (test == null) { // Valid request and mutate it
 				test = generateRandomValidTestCase(testOperation);
 				if(test != null) {
 					String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
@@ -350,40 +372,30 @@ public abstract class AbstractTestCaseGenerator {
 		return test;
 	}
 
-    protected TestCase generateFaultyTestDueToInvalidRequestBody(Operation testOperation) throws RESTestException {
+	/* Works only if there's a body and a BodyGenerator configured, otherwise returns null */
+    protected TestCase generateFaultyTestDueToInvalidRequestBody(Operation testOperation, ITestDataGenerator bodyGenerator) throws RESTestException {
 	    TestCase test = null;
 	    TestParameter bodyParam = testOperation.getTestParameters().stream().filter(x -> x.getName().equals("body")).findFirst().orElse(null);
+		List<String> errors = new ArrayList<>();
 
-	    ITestDataGenerator generator;
-	    if (bodyParam != null) {
-	    	Stream<ITestDataGenerator> s;
-	    	if (faultyGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())) != null) {
-	    		s = Stream.concat(
-						nominalGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())).stream(),
-						faultyGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())).stream());
-			} else {
-	    		s = nominalGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())).stream();
+		if (bodyGenerator != null && bodyParam != null) {
+			test = generateRandomValidTestCase(testOperation);
+			errors = new ArrayList<>();
+			for (int i = 0; i < maxTriesPerTestCase && errors.isEmpty(); i++) {
+				test.addParameter(bodyParam, ((BodyGenerator) bodyGenerator).nextValueAsString(testOperation.getOpenApiOperation(), testOperation.getTestPath(), true));
+				errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
 			}
-            generator = s.filter(x -> x instanceof BodyGenerator)
-                    .findFirst()
-                    .orElse(null);
-
-            if (generator != null) {
-                test = generateRandomValidTestCase(testOperation);
-                test.addParameter(bodyParam, ((BodyGenerator) generator).nextValueAsString(testOperation.getOpenApiOperation(), testOperation.getTestPath(), true));
-            }
-        }
+			// No invalid body generated. Return null and try to generate faulty test case in different way
+			if (errors.isEmpty()) {
+				logger.error("Maximum number of tries reached when trying to generate invalid JSON body for the operation {}", testOperation.getOpenApiOperation().getOperationId());
+				test = null;
+			}
+		}
 
 	    if (test != null) {
-			List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
-			if (!errors.isEmpty()) {
-				test.setFaulty(true);
-				String errorsMsg = errors.stream().collect(Collectors.joining("\n", "- ", ""));
-				test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ':' + " invalid request body\n" + errorsMsg);
-			} else {
-				test.setFaulty(null);
-				test.setFaultyReason(null);
-			}
+			test.setFaulty(true);
+			String errorsMsg = errors.stream().collect(Collectors.joining("\n", "- ", ""));
+			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ':' + " invalid request body\n" + errorsMsg);
 		}
 
 	    return test;
@@ -461,12 +473,14 @@ public abstract class AbstractTestCaseGenerator {
 	protected void updateIndexes(TestCase test) {
 		nTotalTests++;		// Total number of test cases generated by the generator
 		nTests++;			// Number of test cases generated for the current operation
-		if (test.getFaulty() == null || test.getFaulty()) {
-			nTotalFaulty++;		// Total number of faulty test cases
-			nFaulty++;			// Number of faulty test cases generated for the current operation
-		} else {
-			nTotalNominal++;		// Total number of nominal test cases
-			nNominal++;				// Number of nominal test cases generated for the current operation
+		if (test.getFaulty() != null) {
+			if (test.getFaulty()) {
+				nTotalFaulty++;        // Total number of faulty test cases
+				nFaulty++;            // Number of faulty test cases generated for the current operation
+			} else {
+				nTotalNominal++;        // Total number of nominal test cases
+				nNominal++;                // Number of nominal test cases generated for the current operation
+			}
 		}
 	}
 

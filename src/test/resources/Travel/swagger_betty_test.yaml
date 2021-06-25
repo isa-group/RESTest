@@ -1,0 +1,758 @@
+swagger: '2.0'
+info:
+  description: This is a simple travels API
+  version: 1.0.0
+  title: Travels API
+# tags are used for organizing operations
+tags:
+  - name: Trip
+    description: travels system
+  - name: Users
+    description: users system
+
+paths:
+  /trips:
+    get:
+      operationId: getTrips
+      tags:
+        - Trip
+      summary: Searches travels
+      description: |
+        Returns all travels system
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: offset to return results
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          description: limit results
+      responses:
+        200:
+          description: Returns all travels
+          schema:
+            $ref: '#/definitions/TripPagination'
+        400:
+          description: bad request
+        "default":
+          description: unexpected response
+  /trips/skyscanner:
+    put:
+      operationId: updateSkyscanner
+      summary: Updates Skycanner information of a trip
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: skyscanner
+          description: skyscanner information to put
+          required: true
+          schema:
+            $ref: '#/definitions/SkyscannerUpdate'
+      responses:
+        204:
+          description: Skyscanner information updated
+        400:
+          description: Invalid input, Skyscanner information invalid
+        404:
+          description: Trip or Skyscanner information not found
+        "default":
+          description: Unexpected response
+  /trips/user:
+    get:
+      operationId: getTripsFromUser
+      tags:
+        - Trip
+      summary: Searches travels by user
+      description: |
+        Returns all the user's travels
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - in: query
+          name: username
+          type: string
+          required: true
+        - in: query
+          name: password
+          type: string
+          required: true
+        - in: query
+          name: isAdmin
+          type: boolean
+          required: false
+          default: false
+        - in: query
+          name: maxPriceAirbnb
+          type: integer
+          required: false
+        - in: query
+          name: includeTripsWithUnsetAirbnbPrice
+          description: When filtering by maxPriceAirbnb, whether to include those trips whose Airbnb's price is not set
+          type: boolean
+          required: false
+        - in: query
+          name: sort
+          type: string
+          required: false
+          description: sort results by price
+          enum:
+            - "+price"
+            - "-price"
+      x-dependencies:
+        - IF maxPriceAirbnb THEN includeTripsWithUnsetAirbnbPrice;
+      responses:
+        200:
+          description: Returns all trips of user
+          schema:
+            $ref: '#/definitions/TripPagination'
+        400:
+          description: invalid input
+        404:
+          description: user not found
+        "default":
+          description: unexpected response
+#    delete:
+#      operationId: deleteTripsFromUser
+#      tags:
+#        - Trip
+#      summary: Deletes the user's travel
+#      description: |
+#        Deletes the user's travels with the specified username and password.
+#      produces:
+#        - text/html;charset=utf-8
+#      parameters:
+#        - in: query
+#          name: username
+#          type: string
+#          required: true
+#        - in: query
+#          name: password
+#          type: string
+#          required: true
+#        - in: query
+#          name: idTrip
+#          type: integer
+#          required: true
+#      responses:
+#        204:
+#          description: Travels were deleted.
+#        400:
+#          description: invalid input
+#        404:
+#          description: user not found
+#        "default":
+#          description: unexpected response
+  /users:
+    get:
+      operationId: getUser
+      tags:
+        - Users
+      summary: Search an user by id
+      description: |
+        Returns an user
+      parameters:
+        - in: query
+          name: id
+          type: integer
+          required: true
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      responses:
+        200:
+          description: User found
+          schema:
+            $ref: '#/definitions/User'
+        400:
+          description: bad request
+        404:
+          description: user not found
+        "default":
+          description: unexpected response
+    post:
+      operationId: createUser
+      tags:
+        - Users
+      summary: Add an user to the system
+      description: |
+        Add an user to the system
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - in: body
+          name: user
+          description: usre to add
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        201:
+          description: user created
+          schema:
+            $ref: '#/definitions/UserReturned'
+        400:
+          description: invalid input, user invalid
+        409:
+          description: an existing user already exist
+        "default":
+          description: unexpected response
+    put:
+      operationId: updateUser
+      tags:
+        - Users
+      summary: Edits an user
+      description: Edits a system's user
+      consumes:
+        - application/json
+      produces:
+        - text/html;charset=utf-8
+      parameters:
+        - in: body
+          name: user
+          description: user to add
+          required: true
+          schema:
+            $ref: '#/definitions/UserUpdate'
+      responses:
+        204:
+          description: user edited
+        400:
+          description: invalid input, user invalid
+        404:
+          description: user not found
+        409:
+          description: new username already exists
+        "default":
+          description: unexpected response
+definitions:
+  TripPagination:
+    type: object
+    required:
+      - numTripsShown
+      - numTotalTrips
+      - tripsList
+    properties:
+      numTripsShown:
+        type: integer
+        example: 22
+      numTotalTrips:
+        type: integer
+        example: 24
+      tripsList:
+        type: array
+        items:
+          $ref: '#/definitions/Trip'
+    example:
+      numTripsShown: 22
+      numTotalTrips: 24
+      tripsList:
+        - $ref: '#/definitions/Trip/example'
+  Trip:
+    required:
+      - idTrip
+    properties:
+      idTrip:
+        type: integer
+        example: 0
+      skyscanner:
+        $ref: '#/definitions/Skyscanner'
+      blablacar:
+        $ref: '#/definitions/BlaBlacar'
+      airbnb:
+        $ref: '#/definitions/Airbnb'
+      priceTotal:
+        type: number
+        example: 120
+    example:
+      idTrip: 0
+      skyscanner:
+        $ref: '#/definitions/Skyscanner/example'
+      blablacar:
+        $ref: '#/definitions/BlaBlacar/example'
+      airbnb:
+        $ref: '#/definitions/Airbnb/example'
+  TripPost:
+    properties:
+      idTrip:
+        type: integer
+        example: 0
+      skyscanner:
+        $ref: '#/definitions/Skyscanner'
+      blablacar:
+        $ref: '#/definitions/BlaBlacar'
+      airbnb:
+        $ref: '#/definitions/Airbnb'
+    example:
+      skyscanner:
+        $ref: '#/definitions/Skyscanner/example'
+      blablacar:
+        $ref: '#/definitions/BlaBlacar/example'
+      airbnb:
+        $ref: '#/definitions/Airbnb/example'
+  Skyscanner:
+    required:
+      - dayDeparture
+      - timeDeparture
+      - duration
+      - price
+      - origin
+      - codeAirportDeparture
+      - codeAirportArrival
+      - destination
+      - company
+    properties:
+      idSkyscanner:
+        type: integer
+        example: 2332
+      dayDeparture:
+        type: string
+        example: 15/07/2019
+      timeDeparture:
+        type: string
+        example: 11:00
+      duration:
+        type: number
+        example: 1.20
+      price:
+        type: number
+        example: 100
+      codeAirportDeparture:
+        type: string
+        example: 408-867-5309
+      origin:
+        type: string
+        example: 'Sevilla'
+      codeAirportArrival:
+        type: string
+        example: 408-867-5314
+      destination:
+        type: string
+        example: 'Barcelona'
+      company:
+        type: string
+        example: 'Airlines'
+    example:
+      idSkyscanner: 2332
+      dayDeparture: 15/07/2019
+      timeDeparture: 11:00
+      duration: 1.20
+      price: 100
+      codeAirportDeparture: 408-867-5309
+      origin: 'Sevilla'
+      codeAirportArrival: 408-867-5314
+      destination: 'Barcelona'
+      company: 'Airlines'
+  SkyscannerUpdate:
+    required:
+      - idTrip
+      - idSkyscanner
+      - dayDeparture
+      - timeDeparture
+      - duration
+      - price
+      - origin
+      - codeAirportDeparture
+      - codeAirportArrival
+      - destination
+      - company
+    properties:
+      idTrip:
+        type: integer
+        example: 1
+      idSkyscanner:
+        type: integer
+        example: 2332
+      dayDeparture:
+        type: string
+        example: 15/07/2019
+      timeDeparture:
+        type: string
+        example: 11:00
+      duration:
+        type: number
+        example: 1.20
+      price:
+        type: number
+        example: 100
+      codeAirportDeparture:
+        type: string
+        example: 408-867-5309
+      origin:
+        type: string
+        example: 'Sevilla'
+      codeAirportArrival:
+        type: string
+        example: 408-867-5314
+      destination:
+        type: string
+        example: 'Barcelona'
+      company:
+        type: string
+        example: 'Airlines'
+    example:
+      idTrip: 1
+      idSkyscanner: 2332
+      dayDeparture: 15/07/2019
+      timeDeparture: 11:00
+      duration: 1.20
+      price: 100
+      codeAirportDeparture: 408-867-5309
+      origin: 'Sevilla'
+      codeAirportArrival: 408-867-5314
+      destination: 'Barcelona'
+      company: 'Airlines'
+  BlaBlacar:
+    required:
+      - model
+      - brand
+      - price
+      - comfort
+      - dateTimeCheckout
+      - dateTimeCheckin
+      - freeSeats
+      - link
+    properties:
+      idBlablacar:
+        type: integer
+        example: 3
+      model:
+        type: string
+        example: 'Mondeo'
+      brand:
+        type: string
+        example: 'Ford'
+      price:
+        type: number
+        example: 1
+      comfort:
+        type: string
+        example: 'Muy cómodo'
+      dateTimeCheckout:
+        type: string
+        example: "21/07/2017"
+      dateTimeCheckin:
+        type: string
+        example: "12:30"
+      freeSeats:
+        type: integer
+        example: 3
+      link:
+        type: string
+        example: 'http://tripcoche.com'
+    example:
+      idBlablacar: 3
+      model: 'Mondeo'
+      brand: 'Ford'
+      price: 1
+      comfort: 'Muy cómodo'
+      dateTimeCheckout: "21/07/2017"
+      dateTimeCheckin: "12:30"
+      freeSeats: 3
+      link: 'http://tripcoche.com'
+  BlaBlacarUpdate:
+    required:
+      - idTrip
+      - idBlablacar
+      - model
+      - brand
+      - price
+      - comfort
+      - dateTimeCheckout
+      - dateTimeCheckin
+      - freeSeats
+      - link
+    properties:
+      idTrip:
+        type: integer
+        example: 1
+      idBlablacar:
+        type: integer
+        example: 3
+      model:
+        type: string
+        example: 'Mondeo'
+      brand:
+        type: string
+        example: 'Ford'
+      price:
+        type: number
+        example: 1
+      comfort:
+        type: string
+        example: 'Muy cómodo'
+      dateTimeCheckout:
+        type: string
+        example: "21/07/2017"
+      dateTimeCheckin:
+        type: string
+        example: "12:30"
+      freeSeats:
+        type: integer
+        example: 3
+      link:
+        type: string
+        example: 'http://tripcoche.com'
+    example:
+      idTrip: 1
+      idBlablacar: 3
+      model: 'Mondeo'
+      brand: 'Ford'
+      price: 1
+      comfort: 'Muy cómodo'
+      dateTimeCheckout: "21/07/2017"
+      dateTimeCheckin: "12:30"
+      freeSeats: 3
+      link: 'http://tripcoche.com'
+  Airbnb:
+    required:
+      - name
+      - nRoom
+      - nBathroom
+      - city
+      - neighborhood
+      - capacity
+      - nameOwner
+      - image
+      - direction
+      - rating
+      - price
+    properties:
+      idAirbnb:
+        type: integer
+        example: 2
+      name:
+        type: string
+        example: 'Piso Oromana'
+      nRoom:
+        type: integer
+        example: 2
+      nBathroom:
+        type: integer
+        example: 1
+      city:
+        type: string
+        example: 'Sevilla'
+      neighborhood:
+        type: string
+        example: 'Rochelamber'
+      capacity:
+        type: integer
+        example: 7
+      nameOwner:
+        type: string
+        example: 'Alejandro Santos'
+      image:
+        type: string
+        example: 'https://d1bvpoagx8hqbg.cloudfront.net/originals/habitacion-estudiantes-casa-familia-aa8c8a0f835c7a0b15f3f68d849a1d88.jpg'
+      direction:
+        type: string
+        example: 'C/ Lucena Nº51'
+      rating:
+        type: integer
+        example: 5
+      price:
+        type: number
+        example: 120
+    example:
+      idAirbnb: 2
+      name: 'Piso Oromana'
+      nRoom: 2
+      nBathroom: 1
+      city: 'Sevilla'
+      neighborhood: 'Rochelamber'
+      capacity: 7
+      nameOwner: 'Alejandro Santos'
+      image: 'https://d1bvpoagx8hqbg.cloudfront.net/originals/habitacion-estudiantes-casa-familia-aa8c8a0f835c7a0b15f3f68d849a1d88.jpg'
+      direction: 'C/ Lucena Nº51'
+      rating: 5
+      price: 120
+  AirbnbUpdate:
+    required:
+      - idTrip
+      - idAirbnb
+      - name
+      - nRoom
+      - nBathroom
+      - city
+      - neighborhood
+      - capacity
+      - nameOwner
+      - image
+      - direction
+      - rating
+      - price
+    properties:
+      idTrip:
+        type: integer
+        example: 1
+      idAirbnb:
+        type: integer
+        example: 2
+      name:
+        type: string
+        example: 'Piso Oromana'
+      nRoom:
+        type: integer
+        example: 2
+      nBathroom:
+        type: integer
+        example: 1
+      city:
+        type: string
+        example: 'Sevilla'
+      neighborhood:
+        type: string
+        example: 'Rochelamber'
+      capacity:
+        type: integer
+        example: 7
+      nameOwner:
+        type: string
+        example: 'Alejandro Santos'
+      image:
+        type: string
+        example: 'https://d1bvpoagx8hqbg.cloudfront.net/originals/habitacion-estudiantes-casa-familia-aa8c8a0f835c7a0b15f3f68d849a1d88.jpg'
+      direction:
+        type: string
+        example: 'C/ Lucena Nº51'
+      rating:
+        type: integer
+        example: 5
+      price:
+        type: number
+        example: 120
+    example:
+      idTrip: 1
+      idAirbnb: 2
+      name: 'Piso Oromana'
+      nRoom: 2
+      nBathroom: 1
+      city: 'Sevilla'
+      neighborhood: 'Rochelamber'
+      capacity: 7
+      nameOwner: 'Alejandro Santos'
+      image: 'https://d1bvpoagx8hqbg.cloudfront.net/originals/habitacion-estudiantes-casa-familia-aa8c8a0f835c7a0b15f3f68d849a1d88.jpg'
+      direction: 'C/ Lucena Nº51'
+      rating: 5
+      price: 120
+  User:
+    required:
+      - username
+      - password
+      - province
+      - phone
+    properties:
+      idUser:
+        type: integer
+        example: 1
+      username:
+        type: string
+        minLength: 1
+        example: 'User'
+      password:
+        type: string
+        minLength: 1
+        example: 'Password'
+      province:
+        type: string
+        minLength: 1
+        example: 'Sevilla'
+      phone:
+        type: string
+        minLength: 1
+        example: '342233434'
+    example:
+      idUser: 1
+      username: 'User'
+      password: 'Password'
+      province: 'Sevilla'
+      phone: '342233434'
+  UserReturned:
+    required:
+      - idUser
+    properties:
+      idUser:
+        type: integer
+        example: 1
+      username:
+        type: string
+        minLength: 1
+        example: 'User'
+      password:
+        type: string
+        minLength: 1
+        example: 'Password'
+      province:
+        type: string
+        minLength: 1
+        example: 'Sevilla'
+      phone:
+        type: string
+        minLength: 1
+        example: '342233434'
+    example:
+      idUser: 1
+      username: 'User'
+      password: 'Password'
+      province: 'Sevilla'
+      phone: '342233434'
+  UserUpdate:
+    required:
+      - username
+      - password
+    properties:
+      idUser:
+        type: integer
+        example: 1
+      username:
+        type: string
+        minLength: 1
+        example: 'User'
+      password:
+        type: string
+        minLength: 1
+        example: 'Password'
+      newUsername:
+        type: string
+        minLength: 1
+        example: 'User1'
+      newPassword:
+        type: string
+        minLength: 1
+        example: 'Password1'
+      province:
+        type: string
+        minLength: 1
+        example: 'Sevilla'
+      phone:
+        type: string
+        minLength: 1
+        example: '342233434'
+    example:
+      idUser: 1
+      username: 'User'
+      password: 'Password'
+      newUsername: 'User1'
+      newPassword: 'Password1'
+      province: 'Sevilla'
+      phone: '342233434'
+
+# Added by API Auto Mocking Plugin
+host: betty.us.es
+basePath: /TravelAPI/api
+schemes:
+  - http

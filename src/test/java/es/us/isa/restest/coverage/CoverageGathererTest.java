@@ -42,4 +42,51 @@ public class CoverageGathererTest {
         }
 
     }
+
+    @Test
+    public void coverageGathererComplexParametersTest() {
+        String oasPath = "src/test/resources/GitHub/swagger_forTestSuite.yaml";
+        OpenAPISpecification oas = new OpenAPISpecification(oasPath);
+        List<CriterionType> coverageCriterionTypes = new ArrayList<>();
+
+        coverageCriterionTypes.add(PATH);
+        coverageCriterionTypes.add(OPERATION);
+        coverageCriterionTypes.add(PARAMETER);
+        coverageCriterionTypes.add(PARAMETER_VALUE);
+        coverageCriterionTypes.add(INPUT_CONTENT_TYPE);
+        coverageCriterionTypes.add(STATUS_CODE);
+        coverageCriterionTypes.add(STATUS_CODE_CLASS);
+        coverageCriterionTypes.add(RESPONSE_BODY_PROPERTIES);
+        coverageCriterionTypes.add(OUTPUT_CONTENT_TYPE);
+
+        CoverageGatherer covGath = new CoverageGatherer(oas, coverageCriterionTypes);
+
+        System.out.println("As long as this is printed, this test cases passes (no exceptions thrown).");
+
+    }
+
+    @Test
+    public void coverageGathererComplexComplexRefResponseBodyPropertiesTest() {
+        String oasPath = "src/test/resources/restest-test-resources/swagger-dhl.yaml";
+        OpenAPISpecification oas = new OpenAPISpecification(oasPath);
+        List<CriterionType> coverageCriterionTypes = new ArrayList<>();
+
+        coverageCriterionTypes.add(PATH);
+        coverageCriterionTypes.add(OPERATION);
+        coverageCriterionTypes.add(PARAMETER);
+        coverageCriterionTypes.add(PARAMETER_VALUE);
+        coverageCriterionTypes.add(INPUT_CONTENT_TYPE);
+        coverageCriterionTypes.add(STATUS_CODE);
+        coverageCriterionTypes.add(STATUS_CODE_CLASS);
+        coverageCriterionTypes.add(RESPONSE_BODY_PROPERTIES);
+        coverageCriterionTypes.add(OUTPUT_CONTENT_TYPE);
+
+        CoverageGatherer covGath = new CoverageGatherer(oas, coverageCriterionTypes);
+
+        assertTrue(covGath.getCoverageCriteria().stream().filter(cc -> cc.getType() == RESPONSE_BODY_PROPERTIES && cc.getRootPath().equals("/find-by-keyword-id->GET->200->{place{address{")).findFirst().get().getElements().size()==4);
+        assertFalse(covGath.getCoverageCriteria().stream().filter(cc -> cc.getType() == RESPONSE_BODY_PROPERTIES && cc.getRootPath().equals("/find-by-keyword-id->GET->200->{place{address{countryCode")).findFirst().isPresent());
+
+        System.out.println("As long as this is printed, this test cases passes (no exceptions thrown).");
+
+    }
 }

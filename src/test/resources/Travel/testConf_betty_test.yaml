@@ -1,0 +1,251 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+testConfiguration:
+  operations:
+  - operationId: getTrips
+    testPath: /trips
+    method: get
+    testParameters:
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    expectedResponse: 200
+  - operationId: updateSkyscanner
+    testPath: /trips/skyscanner
+    method: put
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: ObjectPerturbator
+        genParameters:
+        - name: object
+          values: null
+          objectValues:
+            - idTrip: 1
+              idSkyscanner: 2332
+              dayDeparture: 15/07/2019
+              timeDeparture: 11:00
+              duration: 1.20
+              price: 100
+              codeAirportDeparture: 408-867-5309
+              origin: 'Sevilla'
+              codeAirportArrival: 408-867-5314
+              destination: 'Barcelona'
+              company: 'Airlines'
+    expectedResponse: 200
+  - operationId: getTripsFromUser
+    testPath: /trips/user
+    method: get
+    testParameters:
+    - name: username
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: password
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: isAdmin
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomBoolean
+        genParameters: []
+    - name: maxPriceAirbnb
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: includeTripsWithUnsetAirbnbPrice
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomBoolean
+        genParameters: []
+    - name: sort
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - +price
+          - -price
+          objectValues: null
+    expectedResponse: 200
+#  - operationId: deleteTripsFromUser
+#    testPath: /trips/user
+#    method: delete
+#    testParameters:
+#    - name: username
+#      in: query
+#      weight: null
+#      generators:
+#      - valid: true
+#        type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#    - name: password
+#      in: query
+#      weight: null
+#      generators:
+#      - valid: true
+#        type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#    - name: idTrip
+#      in: query
+#      weight: null
+#      generators:
+#      - valid: true
+#        type: RandomNumber
+#        genParameters:
+#        - name: type
+#          values:
+#          - integer
+#          objectValues: null
+#        - name: min
+#          values:
+#          - 1
+#          objectValues: null
+#        - name: max
+#          values:
+#          - 100
+#          objectValues: null
+#    expectedResponse: 200
+  - operationId: getUser
+    testPath: /users
+    method: get
+    testParameters:
+    - name: id
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    expectedResponse: 200
+  - operationId: updateUser
+    testPath: /users
+    method: put
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: ObjectPerturbator
+        genParameters:
+        - name: stringObject
+          values:
+          - '{"idUser":1,"username":"User","password":"Password","newUsername":"User1","newPassword":"Password1","province":"Sevilla","phone":"342233434"}'
+          objectValues: null
+    expectedResponse: 200
+  - operationId: createUser
+    testPath: /users
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: ObjectPerturbator
+        genParameters:
+        - name: stringObject
+          values:
+          - '{"idUser":1,"username":"User","password":"Password","province":"Sevilla","phone":"342233434"}'
+          objectValues: null
+    expectedResponse: 200

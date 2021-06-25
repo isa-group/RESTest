@@ -28,6 +28,8 @@ testConfiguration:
                 - exciting
                 - cafe
                 - ok
+                - the
+                - watch
       - name: location
         in: query
         weight: 0.5
@@ -47,6 +49,8 @@ testConfiguration:
             - Paris
             - San Francisco
             - Krakow
+            - Daca, Bangladesh
+            - Santa Fe
       - name: latitude
         in: query
         weight: 0.5
@@ -215,7 +219,7 @@ testConfiguration:
             objectValues: null
           - name: min
             values:
-            - 1609459200
+            - 1625486989
             objectValues: null
           - name: max
             values:
@@ -234,7 +238,6 @@ testConfiguration:
                 - request_a_quote
                 - reservation
                 - waitlist_reservation
-                - cashback
                 - deals
                 - gender_neutral_restrooms
                 - open_to_all
