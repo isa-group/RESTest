@@ -7,7 +7,7 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-    - testPath: /youtube/v3/search
+    - testPath: /search
       operationId: youtube.search.list
       method: get
       testParameters:

@@ -151,15 +151,6 @@ paths:
           description: A URL of a publicly-accessible webpage for this product.
             May only be set if type=`good`.
           type: string
-      x-dependencies:
-        - IF caption THEN type=='good';
-        - IF [deactivate_on[]] THEN type=='good';
-        - IF [package_dimensions[height]] OR [package_dimensions[length]] OR [package_dimensions[weight]] OR [package_dimensions[width]] THEN type=='good';
-        - AllOrNone([package_dimensions[height]], [package_dimensions[length]], [package_dimensions[weight]], [package_dimensions[width]]);
-        - IF shippable THEN type=='good';
-        - IF url THEN type=='good';
-#        - ZeroOrOne(statement_descriptor, type=='good'); # Unspecified dependency
-#        - ZeroOrOne(unit_label, type=='good'); # Unspecified dependency
       responses:
         '200':
           description: Successful response.

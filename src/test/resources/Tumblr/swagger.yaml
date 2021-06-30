@@ -48,8 +48,6 @@ paths:
           required: false
           name: after
           description: Retrieve posts liked after the specified timestamp
-      x-dependencies:
-        - ZeroOrOne(before, after, offset);
       responses:
         200:
           description: "OK"

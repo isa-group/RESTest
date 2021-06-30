@@ -101,11 +101,6 @@ paths:
               - gender_neutral_restrooms
               - open_to_all
               - wheelchair_accessible
-      x-dependencies:
-        - Or(location, latitude AND longitude);
-        - ZeroOrOne(open_now, open_at);
-        - IF offset AND limit THEN offset + limit <= 1000;
-        - IF offset AND NOT limit THEN offset <= 980;
       responses:
         200:
           description: Returns all businesses

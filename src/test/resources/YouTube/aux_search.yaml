@@ -1,6 +1,6 @@
 openapi: 3.0.0
 servers:
-  - url: https://youtube.googleapis.com/
+  - url: http://localhost:8080/api
 info:
   contact:
     name: Google
@@ -2919,7 +2919,7 @@ paths:
 #            - https://www.googleapis.com/auth/youtubepartner
 #      tags:
 #        - playlists
-  /youtube/v3/search:
+  /search:
     get:
       description: Retrieves a list of search resources
       operationId: youtube.search.list
