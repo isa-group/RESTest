@@ -50,7 +50,7 @@ public class MainTestingRegexGeneration {
     private static final String propertiesPath = "----";
     private static final String operationPath = "/saleListings";
     private static final String semanticParameterName = "state";
-    private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
+    private static final String apiKey = "---";
 
     // Derived parameters
     private static OpenAPISpecification spec;

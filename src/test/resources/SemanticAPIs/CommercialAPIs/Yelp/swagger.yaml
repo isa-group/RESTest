@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   description: Yelp API
   version: 1.0.0
-  title: Yelp API
+  title: Yelp
 host: api.yelp.com
 basePath: /v3
 schemes:

@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer BQBHdahDzzqHwPFXGA4TUfz-ZL7b5nf4ifR1zIncLdEpIa3tKaUVZQwACd72z_jLfqBy0Y42CIH2Ea6goWaYfXq0F5KRaCX_SJuZ64prnHGaAA8O5V2SJQBC4nnq35GlEBOW8gyfxSDEomhD0kXG43-fDd02TXvf4bwf7QlkyVloHREHyJv1MfsawCZJl-RYvJ0GZ69hVCQ15HxqPFMCmAaKLiOaOqZxXnThnCK611IdoqI948qO1k9v07j_bjr51WPUuAv6jm-XL0LJdN5I1U6PxS35ZLT78R2nvuwT
+    Authorization: Bearer ----
   apiKeysPath: null
   headersPath: null
 testConfiguration:

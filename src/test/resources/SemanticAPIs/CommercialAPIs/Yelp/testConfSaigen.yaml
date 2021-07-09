@@ -14,7 +14,7 @@ testConfiguration:
     testParameters:
     - name: term
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:
@@ -108,7 +108,7 @@ testConfiguration:
         valid: true
     - name: locale
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:

@@ -79,7 +79,7 @@ public class MainTesting {
     private static final String operationPath = "/img/face";
     private static final String semanticParameterName = "url";
     private static final Integer limit = Integer.MAX_VALUE;
-    private static final String apiKey = "6a615b46f4mshab392a25b2bc44dp16cee9jsn2bd2d62e5f69";
+    private static final String apiKey = "----";
 
     // Derived parameters
     private static OpenAPISpecification spec;

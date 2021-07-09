@@ -33,7 +33,7 @@ public class MainTestingAmadeusHotel {
     private static String semanticParameterName = "longitude";
     private static String baseUrl = "https://test.api.amadeus.com/v2";
     private static Integer limit = 9;
-    private static String bearer = "tGvyWeTwIDpn9ncnYSV5xBBGGnO9";
+    private static String bearer = "---";
 
     // Derived parameters
     private static OpenAPISpecification spec;
