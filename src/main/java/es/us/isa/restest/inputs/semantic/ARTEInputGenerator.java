@@ -41,7 +41,7 @@ public class ARTEInputGenerator {
     // Minimum support of a predicate
     public static final Integer minSupport = 20;
     // Parameter minimum threshold of unique parameter values to obtain: default 100
-    public static final Integer THRESHOLD = 30;
+    public static final Integer THRESHOLD = 100;
     // Limit
     public static Integer LIMIT = 30;
     // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
