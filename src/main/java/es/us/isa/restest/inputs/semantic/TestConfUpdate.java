@@ -62,7 +62,7 @@ public class TestConfUpdate {
     }
 
     public static void updateTestConfWithNewPredicates(TestConfigurationObject conf, String confPath, ParameterValues parameterValues, Set<String>  newPredicates){
-        Integer opIndex = IntStream.range(0, conf.getTestConfiguration().getOperations().size())
+        int opIndex = IntStream.range(0, conf.getTestConfiguration().getOperations().size())
                 .filter(i -> parameterValues.getOperation().getOperationId().equals(conf.getTestConfiguration().getOperations().get(i).getOperationId()))
                 .findFirst().getAsInt();
 
@@ -70,12 +70,12 @@ public class TestConfUpdate {
                 .get(opIndex)
                 .getTestParameters().stream()
                 .filter(x ->x.getName().equals(parameterValues.getTestParameter().getName()))
-                .findFirst().get();
+                .findFirst().orElseThrow(() -> new NullPointerException("No TestParameter found"));
         Generator generator = testParameter.getGenerators().stream()
-                .filter(x->x.getType().equals(RANDOM_INPUT_VALUE) && x.getGenParameters().stream().anyMatch(y->y.getName().equals("predicates"))).findFirst().get();
+                .filter(x->x.getType().equals(RANDOM_INPUT_VALUE) && x.getGenParameters().stream().anyMatch(y->y.getName().equals("predicates"))).findFirst().orElseThrow(() -> new NullPointerException("No Generator found"));
 
         GenParameter genParameter = generator.getGenParameters().stream()
-                .filter(x->x.getName().equals("predicates")).findFirst().get();
+                .filter(x->x.getName().equals("predicates")).findFirst().orElseThrow( () -> new NullPointerException("No predicates genParameter found"));
 
         List<String> oldPredicates = genParameter.getValues();
 

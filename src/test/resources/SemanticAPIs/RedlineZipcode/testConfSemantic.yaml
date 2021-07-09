@@ -1,0 +1,352 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: "/rest/city-zips.json/{city}/{state}"
+    operationId: operations-Location_Info-Location_to_Zip_Code
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - redline-redline-zipcode.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: state
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: city
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/rest/distance.json/{zipcode1}/{zipcode2}/{units}"
+    operationId: operations-Distance-Distance_Between_Zip_Codes
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - redline-redline-zipcode.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: units
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: zipcode2
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/RedLine Zipcode/operations-Distance-Distance_Between_Zip_Codes_zipcode2.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/zipCode
+          objectValues: null
+        valid: true
+    - name: zipcode1
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/RedLine Zipcode/operations-Distance-Distance_Between_Zip_Codes_zipcode1.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/zipCode
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/rest/info.json/{zipcode}/{units}"
+    operationId: operations-Location_Info-Zip_Code_to_Location_Information
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - redline-redline-zipcode.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: units
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: zipcode
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/RedLine Zipcode/operations-Location_Info-Zip_Code_to_Location_Information_zipcode.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/zipCode
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/rest/multi-info.json/{zipcodes}/{units}"
+    operationId: operations-default-Multiple_Zip_Codes_to_Location_Information
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - redline-redline-zipcode.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: units
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: zipcodes
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/RedLine Zipcode/operations-default-Multiple_Zip_Codes_to_Location_Information_zipcodes.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/zipCode
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/rest/radius.json/{zipcode}/{radius}/{units}"
+    operationId: operations-Distance-Zip_Codes_within_Radius
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - redline-redline-zipcode.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: radius
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: units
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: zipcode
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/rest/state-zips.json/{state}"
+    operationId: operations-Location_Info-State_to_Zip_Codes
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - redline-redline-zipcode.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: state
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/rest/multi-radius.json/{distance}/{units}"
+    operationId: multiple-zip-codes-by-radius
+    method: post
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - redline-redline-zipcode.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: units
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: distance
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: zip_codes
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/RedLine Zipcode/multiple-zip-codes-by-radius_zip_codes.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/zipCode
+          objectValues: null
+        valid: true
+    - name: addrs
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

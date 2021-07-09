@@ -108,7 +108,7 @@ public class NLPUtils {
         return lines;
     }
 
-    public static String splitCamelAndSnakeCase(String s) { // TODO: kebab-case
+    public static String splitCamelAndSnakeCase(String s) {
         return s.replaceAll("_"," ").replaceAll(
                 String.format("%s|%s|%s",
                         "(?<=[A-Z])(?=[A-Z][a-z])",

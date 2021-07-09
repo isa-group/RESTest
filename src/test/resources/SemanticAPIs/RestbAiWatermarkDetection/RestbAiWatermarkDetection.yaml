@@ -1,0 +1,33 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: Detect artificially added watermarks, texts and logos in images with
+    an A.I. powered computer vision solution
+  title: Restb.ai Watermark Detection
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /wmdetect:
+    post:
+      description: "endpoint for Watermark Detection"
+      operationId: "restbaiWatermarkDetection-wmdetect"
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+          - restb-ai-watermark-detection.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: Full, public internet URL to image
+          in: query
+          name: image_url
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

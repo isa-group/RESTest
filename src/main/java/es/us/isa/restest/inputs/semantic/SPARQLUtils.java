@@ -181,10 +181,8 @@ public class SPARQLUtils {
         }
 
 
-        // TODO: Change names
         Map<String, String> parameterNamesMap = szQuery.getValue();
         Map<String, String> newKeys = new HashMap<>();
-//        List<String> keysToRemove = new ArrayList<>();
         for(String key: res.keySet()) {
             if (!parameterNamesMap.containsKey(key)){
                 // replace key (randomly generated) with original name (kebab-case)
@@ -192,11 +190,6 @@ public class SPARQLUtils {
                 if(newEntry!=null){
                     String newKey = newEntry.getKey();
                     newKeys.put(key, newKey);
-//                    res.put(newKey, res.get(key)); concurrent
-
-
-//                    res.remove(key);
-//                    keysToRemove.add(key);
                 }
             }
         }
@@ -204,10 +197,7 @@ public class SPARQLUtils {
         for(String oldKey: newKeys.keySet()){
             res.put(newKeys.get(oldKey), res.get(oldKey));
             res.remove(oldKey);
-
         }
-//        newKeys.keySet().forEach(res.keySet()::remove);
-//        keysToRemove.forEach(res.keySet()::remove);
 
         return res;
     }

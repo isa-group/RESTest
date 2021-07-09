@@ -28,15 +28,18 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/Yelp/yelp_original.properties";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/FixerCurrency/fixerCurrency_original.properties";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
 
+
+    // Minimum support of a predicate
+    public static final Integer minSupport = 20;
+
     // Parameter minimum threshold of unique parameter values to obtain
-    // The value of the minimum support parameter can be changed in the Predicates.java class of this same package
     public static final Integer THRESHOLD = 100;
     // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
     public static final String szEndpoint = "http://dbpedia.org/sparql";
@@ -173,9 +176,18 @@ public class ARTEInputGenerator {
     }
 
     private static Set<TestParameter> getSemanticParameters(Operation operation){
-        Set<TestParameter> res = operation.getTestParameters().stream()
-                .filter(x-> x.getGenerators().stream().anyMatch(y-> y.getType().equalsIgnoreCase(SEMANTIC_PARAMETER)))
-                .collect(Collectors.toSet());
+
+        Set<TestParameter> res = new HashSet<>();
+
+        for(TestParameter testParameter: operation.getTestParameters()){
+            int numberOfSemanticParameters = (int) testParameter.getGenerators().stream().filter(y -> y.getType().equalsIgnoreCase(SEMANTIC_PARAMETER)).count();
+
+            if(numberOfSemanticParameters == 1){
+                res.add(testParameter);
+            }else if(numberOfSemanticParameters > 1){
+                throw new IllegalArgumentException("There can only be one " + "'" + SEMANTIC_PARAMETER + "'" + " generator per parameter");
+            }
+        }
 
         return res;
     }

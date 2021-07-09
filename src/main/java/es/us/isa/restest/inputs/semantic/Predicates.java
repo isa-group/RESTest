@@ -17,6 +17,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.minSupport;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.extractPredicateCandidatesFromDescription;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.executeSPARQLQueryCount;
@@ -25,7 +26,6 @@ import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
 
 public class Predicates {
 
-    private static final Integer minSupport = 20;
     private static final Logger log = LogManager.getLogger(Predicates.class);
 
     public static Set<String> getPredicates(ParameterValues parameterValues, String regex, List<String> predicatesToIgnore, OpenAPISpecification specification){
@@ -79,8 +79,6 @@ public class Predicates {
     public static void setPredicates(SemanticOperation semanticOperation, OpenAPISpecification spec){
         Set<SemanticParameter> semanticParameters = semanticOperation.getSemanticParameters();
 
-//        Map<TestParameter, List<String>> res = new HashMap<>();
-
         for(SemanticParameter p: semanticParameters){
 
             String parameterName = p.getTestParameter().getName();
@@ -97,11 +95,6 @@ public class Predicates {
                     parameterName = possibleNames.get(0);
                 }
             }
-
-            // If the parameter name contains -, replace it with _
-//            if(parameterName.contains("-")){
-//                parameterName = parameterName.replace("-", "_");
-//            }
 
             // DESCRIPTION
             Map<Double, Set<String>> descriptionCandidates = new HashMap<>();

@@ -34,7 +34,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/ontology/location"
+          - http://dbpedia.org/ontology/location
           objectValues: null
         valid: true
     - name: latitude
@@ -49,7 +49,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/latitude"
+          - http://dbpedia.org/property/latitude
           objectValues: null
         valid: true
     - name: longitude
@@ -64,7 +64,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/longitude"
+          - http://dbpedia.org/property/longitude
           objectValues: null
         valid: true
     - name: radius
@@ -236,7 +236,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/ontology/location"
+          - http://dbpedia.org/ontology/location
           objectValues: null
         valid: true
     - name: latitude
@@ -251,7 +251,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/latitude"
+          - http://dbpedia.org/property/latitude
           objectValues: null
         valid: true
     - name: longitude
@@ -266,7 +266,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - "http://dbpedia.org/property/longitude"
+          - http://dbpedia.org/property/longitude
           objectValues: null
         valid: true
     expectedResponse: 200
