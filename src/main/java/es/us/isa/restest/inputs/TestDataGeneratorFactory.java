@@ -8,6 +8,8 @@ import es.us.isa.restest.inputs.boundary.BoundaryStringConfigurator;
 import es.us.isa.restest.inputs.fixed.InputValueIterator;
 import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
 import es.us.isa.restest.inputs.random.*;
+import es.us.isa.restest.inputs.fuzzing.BodyGenerator;
+import es.us.isa.restest.inputs.fuzzing.ParameterGenerator;
 import es.us.isa.restest.util.CSVManager;
 import es.us.isa.restest.util.DataType;
 import es.us.isa.restest.util.JSONManager;
@@ -71,13 +73,18 @@ public class TestDataGeneratorFactory {
 			case "BoundaryNumber":
 				gen = createBoundaryNumberGenerator(generator);
 				break;
+			case "BodyGenerator":
+				gen = createBodyGenerator(generator);
+				break;
+			case "ParameterGenerator":
+				gen = createParameterGenerator(generator);
+				break;
 			default:
 				throw new IllegalArgumentException("Unexpected parameter for generator TestDataGenerator factory: " + generator.getType());
 		}
 		
 		return gen;
 	}
-
 
 	// Create a random date generator
 	private static ITestDataGenerator createRandomDate(Generator generator) {
@@ -545,6 +552,38 @@ public class TestDataGeneratorFactory {
 		else
 			gen = new InputValueIterator<>(boundNumbConf.returnValues());
 
+		return gen;
+	}
+
+	private static ITestDataGenerator createBodyGenerator(Generator generator) {
+		BodyGenerator gen = new BodyGenerator();
+		// Set parameters
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+
+				case "defaultValue":
+					gen.setDefaultValue(param.getValues().get(0));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for stateful body generator: " + param.getName());
+			}
+		}
+		return gen;
+	}
+
+	private static ITestDataGenerator createParameterGenerator(Generator generator) {
+		ParameterGenerator gen = new ParameterGenerator();
+		// Set parameters
+		for(GenParameter param: generator.getGenParameters()) {
+			switch (param.getName()) {
+
+				case "defaultValue":
+					gen.setDefaultValue(param.getValues().get(0));
+					break;
+				default:
+					throw new IllegalArgumentException("Unexpected parameter for stateful parameter generator: " + param.getName());
+			}
+		}
 		return gen;
 	}
 }

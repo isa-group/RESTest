@@ -41,8 +41,8 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	// Indexes
 	private int maxFaultyTestDueToDependencyViolations;											// Maximum number of faulty test cases due to dependency violations to be generated
 	private int maxFaultyTestsDueToIndividualConstraints;										// Maximum number of faulty test cases due to individual constraints to be generated
-	private int nFaultyTestDueToDependencyViolations;											// Current number of faulty test cases due to dependency violations to be generated
-	private int nFaultyTestsDueToIndividualConstraint;											// Current number of faulty test cases due to individual constraints to be generated
+	int nFaultyTestDueToDependencyViolations;													// Current number of faulty test cases due to dependency violations to be generated
+	int nFaultyTestsDueToIndividualConstraint;													// Current number of faulty test cases due to individual constraints to be generated
 	
 	public ConstraintBasedTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
@@ -176,7 +176,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	
 
 	/* Returns a valid test case satisfying all the individual constraints and inter-parameter dependencies described in the API specification */ 
-	private TestCase generateValidTestCase(Operation testOperation) throws RESTestException {
+	TestCase generateValidTestCase(Operation testOperation) throws RESTestException {
 		TestCase test = null;
 		
 		if (idlReasoner != null) {		// The operation has inter-parameter dependencies
@@ -195,7 +195,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	
 	
 	/* Returns a faulty test case violating one ore more inter-parameter dependency constraints */
-	private TestCase generateFaultyTestCaseDueToViolatedDependencies(Operation testOperation) throws RESTestException {
+	TestCase generateFaultyTestCaseDueToViolatedDependencies(Operation testOperation) throws RESTestException {
 		
 		TestCase test = null;
 		

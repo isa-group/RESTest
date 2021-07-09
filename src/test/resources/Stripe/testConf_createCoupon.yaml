@@ -7,7 +7,7 @@ auth:
   headersPath: Stripe/headers.json
 testConfiguration:
   operations:
-  - testPath: /coupons
+  - testPath: /v1/coupons
     operationId: PostCoupons
     method: post
     testParameters:
@@ -151,7 +151,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-            - 1609459200
+            - 1639459200
           objectValues: null
         - name: max
           values:

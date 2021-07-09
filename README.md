@@ -1,4 +1,5 @@
-# RESTest
+<img src="https://personales.us.es/sergiosegura/wp-content/uploads/2021/01/RESTLogo_Black.png" alt="RESTest Logo" width="200px"/>
+
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest/badge.svg)](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest)
 [![javadoc](https://javadoc.io/badge2/es.us.isa/restest/javadoc.svg)](https://javadoc.io/doc/es.us.isa/restest)
 [![Build Status](https://circleci.com/gh/isa-group/RESTest.svg?style=svg)](https://circleci.com/gh/isa-group/RESTest)

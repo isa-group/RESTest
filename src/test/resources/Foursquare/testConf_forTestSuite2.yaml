@@ -1,3 +1,4 @@
+---
 auth:
   required: true
   queryParams: {}
@@ -19,7 +20,7 @@ testConfiguration:
               genParameters:
                 - name: values
                   values:
-                    - 20200306
+                    - 20210309
         - name: ll
           in: query
           weight: 0.5
@@ -39,6 +40,9 @@ testConfiguration:
                     - 39.904325, 116.405302
                     - 13.753789, 100.501572
                     - 19.430849, -99.135857
+                    - 47.020917, 28.860922
+                    - 23.999919, 90.418527
+                    - -33.301720, -66.335946
                   objectValues: null
         - name: near
           in: query
@@ -59,33 +63,35 @@ testConfiguration:
                     - Paris
                     - San Francisco
                     - Krakow
-        - name: name
-          in: query
-          weight: 0.5
-          generators:
-            - valid: true
-              type: RandomInputValue
-              genParameters:
-                - name: values
-                  values:
-                    - McDonald's
-                    - Burger King
-                    - KFC
-                    - Vips
-        - name: intent
-          in: query
-          weight: 0.5
-          generators:
-            - valid: true
-              type: RandomInputValue
-              genParameters:
-                - name: values
-                  values:
-                    - checkin
-                    - global
-                    - browse
-                    - match
-                  objectValues: null
+                    - Daca, Bangladesh
+                    - Santa Fe
+        #        - name: name
+        #          in: query
+        #          weight: 0.5
+        #          generators:
+        #          - valid: true
+        #            type: RandomInputValue
+        #            genParameters:
+        #              - name: values
+        #                values:
+        #                  - McDonald's
+        #                  - Burger King
+        #                  - KFC
+        #                  - Vips
+        #        - name: intent
+        #          in: query
+        #          weight: 0.5
+        #          generators:
+        #          - valid: true
+        #            type: RandomInputValue
+        #            genParameters:
+        #              - name: values
+        #                values:
+        #                  - checkin
+        #                  - global
+        #                  - browse
+        #                  - match
+        #                objectValues: null
         - name: radius
           in: query
           weight: 0.5
@@ -105,38 +111,38 @@ testConfiguration:
                   values:
                     - 100000
                   objectValues: null
-        - name: sw
-          in: query
-          weight: 0.5
-          generators:
-            - valid: true
-              type: RandomInputValue
-              genParameters:
-                - name: values
-                  values:
-                    - 40.309162, -3.888093
-                    - 40.297638, -3.864874
-                    - 40.284098, -3.807502
-                    - 40.297657, -3.837888
-                    - 40.254710, -3.862130
-                    - 40.334412, -3.833693
-                  objectValues: null
-        - name: ne
-          in: query
-          weight: 0.5
-          generators:
-            - valid: true
-              type: RandomInputValue
-              genParameters:
-                - name: values
-                  values:
-                    - 40.453084, -3.470426
-                    - 40.479201, -3.548690
-                    - 40.435893, -3.599699
-                    - 40.426404, -3.604623
-                    - 40.423249, -3.584061
-                    - 40.382748, -3.597664
-                  objectValues: null
+        #        - name: sw
+        #          in: query
+        #          weight: 0.5
+        #          generators:
+        #          - valid: true
+        #            type: RandomInputValue
+        #            genParameters:
+        #              - name: values
+        #                values:
+        #                  - 40.309162, -3.888093
+        #                  - 40.297638, -3.864874
+        #                  - 40.284098, -3.807502
+        #                  - 40.297657, -3.837888
+        #                  - 40.254710, -3.862130
+        #                  - 40.334412, -3.833693
+        #                objectValues: null
+        #        - name: ne
+        #          in: query
+        #          weight: 0.5
+        #          generators:
+        #          - valid: true
+        #            type: RandomInputValue
+        #            genParameters:
+        #              - name: values
+        #                values:
+        #                  - 40.453084, -3.470426
+        #                  - 40.479201, -3.548690
+        #                  - 40.435893, -3.599699
+        #                  - 40.426404, -3.604623
+        #                  - 40.423249, -3.584061
+        #                  - 40.382748, -3.597664
+        #                objectValues: null
         - name: query
           in: query
           weight: 0.5
@@ -154,6 +160,8 @@ testConfiguration:
                     - exciting
                     - cafe
                     - ok
+                    - the
+                    - watch
         - name: limit
           in: query
           weight: 0.5
@@ -182,7 +190,7 @@ testConfiguration:
               genParameters:
                 - name: csv
                   values:
-                    - "src/main/resources/TestData/FoursquareCategoryIds-incomplete.csv"
+                    - "src/test/resources/Foursquare/foursquare-categories.csv"
                 - name: minValues
                   values:
                     - 1

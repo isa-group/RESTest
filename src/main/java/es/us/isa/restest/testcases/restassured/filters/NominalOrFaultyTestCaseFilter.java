@@ -39,12 +39,14 @@ public class NominalOrFaultyTestCaseFilter extends RESTestFilter implements Orde
 
     // If nominal/faulty validation error is found, throw exception
     public void filterValidation(Response response) {
-        // If test case [is faulty] AND [returned status code below 400 (5XX is handled by a previous filter)]
-        if (testCaseIsFaulty && response.getStatusCode() < 400)
-            saveTestResultAndThrowException(response, "This faulty test case was expecting a 4XX status code(" + faultyReason + "), but received a 2XX one.");
-        // If test case [is valid] AND [returned status code 400]
-        else if (!testCaseIsFaulty && dependenciesFulfilled && response.getStatusCode() == 400)
-            saveTestResultAndThrowException(response, "This test case's input was correct, but received a 400 (Bad Request) status code.");
+        if(testCaseIsFaulty != null) {
+            // If test case [is faulty] AND [returned status code below 400 (5XX is handled by a previous filter)]
+            if (testCaseIsFaulty && response.getStatusCode() < 400)
+                saveTestResultAndThrowException(response, "This faulty test case was expecting a 4XX status code(" + faultyReason + "), but received a 2XX one.");
+            // If test case [is valid] AND [returned status code 400]
+            else if (!testCaseIsFaulty && dependenciesFulfilled && response.getStatusCode() == 400)
+                saveTestResultAndThrowException(response, "This test case's input was correct, but received a 400 (Bad Request) status code.");
+        }
     }
 
     @Override

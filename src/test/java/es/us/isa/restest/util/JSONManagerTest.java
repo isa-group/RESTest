@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -27,5 +28,29 @@ public class JSONManagerTest {
         assertEquals("Wrong id field", 1000, objectMap1.get("id"));
         assertTrue("Wrong name field", objectMap1.get("name").equals("Toby"));
         assertTrue("Wrong name field", objectMap2.get("name").equals("Max"));
+    }
+
+    @Test
+    public void readJSONFromStringTest() {
+        String json = "{\"id\": 1000, \"name\": \"Toby\"}";
+
+        Object jsonObject = JSONManager.readJSONFromString(json);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> objectMap = objectMapper.convertValue(jsonObject, Map.class);
+
+        assertEquals("Wrong id field", 1000, objectMap.get("id"));
+        assertEquals("Wrong name field", "Toby", objectMap.get("name"));
+    }
+
+    @Test
+    public void getStringFromJSONTest() throws JsonProcessingException {
+        String json = "{\"id\":1000,\"name\":\"Toby\"}";
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode node = objectMapper.readTree(json);
+        String jsonContent = JSONManager.getStringFromJSON(node);
+
+        assertEquals(json, jsonContent);
     }
 }

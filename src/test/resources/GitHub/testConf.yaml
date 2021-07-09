@@ -1,0 +1,154 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: GitHub/headers.json
+testConfiguration:
+  operations:
+  - testPath: /user/repos
+    operationId: getUserRepos
+    method: get
+    testParameters:
+    - name: type
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - all
+          - public
+          - private
+          - owner
+          - member
+          objectValues: null
+    - name: visibility
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - all
+          - public
+          - private
+          objectValues: null
+    - name: affiliation
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - owner
+          - collaborator
+          - organization_member
+        - name: minValues
+          values:
+          - 1
+        - name: maxValues
+          values:
+          - 3
+    - name: sort
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - created
+          - updated
+          - pushed
+          - full_name
+          objectValues: null
+    - name: direction
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - asc
+          - desc
+          objectValues: null
+    - name: per_page
+      in:   query
+      weight: 0.5
+      generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+          - name: min
+            values:
+            - 1
+          - name: max
+            values:
+            - 100
+    - name: page
+      in: query
+      weight: 0.5
+      generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+              - integer
+          - name: min
+            values:
+              - 1
+          - name: max
+            values:
+              - 5
+    - name: since
+      in: query
+      weight: 0.5
+      generators:
+        - valid: true
+          type: RandomDate
+          genParameters:
+            - name: startDate
+              values:
+                - 2010-01-01
+              objectValues: null
+            - name: endDate
+              values:
+                - 2015-12-31
+              objectValues: null
+            - name: format
+              values:
+                - yyyy-MM-dd'T'HH:mm:ss'Z'
+    - name: before
+      in: query
+      weight: 0.5
+      generators:
+        - valid: true
+          type: RandomDate
+          genParameters:
+            - name: startDate
+              values:
+                - 2016-01-01
+              objectValues: null
+            - name: endDate
+              values:
+                - 2021-12-31
+              objectValues: null
+            - name: format
+              values:
+                - yyyy-MM-dd'T'HH:mm:ss'Z'
+    expectedResponse: 200

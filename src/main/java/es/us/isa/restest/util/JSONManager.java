@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
@@ -42,5 +43,29 @@ public class JSONManager {
             logger.error("Exception: ", ex);
         }
         return jsonData;
+    }
+
+    public static Object readJSONFromString(String json) {
+        JsonNode jsonData = null;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            jsonData = objectMapper.readTree(json);
+        } catch (IOException ex) {
+            logger.error("Error parsing JSON String: \n {}", json);
+            logger.error("Exception: ", ex);
+        }
+        return jsonData;
+    }
+
+    public static String getStringFromJSON(JsonNode node) {
+        String json = null;
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            json = objectMapper.writeValueAsString(node);
+        } catch (JsonProcessingException ex) {
+            logger.error("Error parsing JSON: {}", node);
+            logger.error("Exception: ", ex);
+        }
+        return json;
     }
 }

@@ -26,6 +26,7 @@ public class RESTAssuredWriter implements IWriter {
 	private boolean allureReport = false;			// Generate request and response attachment for allure reports
 	private boolean enableStats = false;			// If true, export test results data to CSV
 	private boolean enableOutputCoverage = false;	// If true, export output coverage data to CSV
+	private boolean storeGetResponseBodies = true; // If true, export GET response bodies to JSON file
 
 	private String specPath;						// Path to OAS specification file
 	private String testFilePath;					// Path to test configuration file
@@ -95,16 +96,15 @@ public class RESTAssuredWriter implements IWriter {
 		content += "import org.junit.*;\n"
 				+  "import io.restassured.RestAssured;\n"
 				+  "import io.restassured.response.Response;\n"
-				+  "import com.fasterxml.jackson.databind.JsonNode;\n"
-				+  "import com.fasterxml.jackson.databind.ObjectMapper;\n"
-				+  "import java.io.IOException;\n"
 				+  "import org.junit.FixMethodOrder;\n"
 				+  "import static org.junit.Assert.fail;\n"
+				+  "import com.fasterxml.jackson.databind.ObjectMapper;\n"
 				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.testcases.restassured.filters.StatusCode5XXFilter;\n"
 				+  "import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFilter;\n"
+				+  "import es.us.isa.restest.testcases.restassured.filters.StatefulFilter;\n"
 				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
@@ -127,6 +127,12 @@ public class RESTAssuredWriter implements IWriter {
 					+   "import io.restassured.filter.log.ResponseLoggingFilter;\n"
 					+   "import java.io.PrintStream;\n";
 		}
+
+		if (storeGetResponseBodies) {
+			content +=  "import java.nio.file.Files;\n"
+					+	"import java.nio.file.Paths;\n"
+					+   "import com.fasterxml.jackson.databind.node.ArrayNode;\n";
+		}
 		
 		content +="\n";
 		
@@ -145,7 +151,8 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
 				+  "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
 				+  "\tprivate static final NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter();\n"
-				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
+				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n"
+				+  "\tprivate static final StatefulFilter statefulFilter = new StatefulFilter(\"" + specPath.substring(0, specPath.lastIndexOf('/')) + "\");\n";
 
 		if (logToFile) {
 			content +=  "\tprivate static RequestLoggingFilter requestLoggingFilter;\n"
@@ -161,6 +168,10 @@ public class RESTAssuredWriter implements IWriter {
 			content += "\tprivate static final String APIName = \"" + APIName + "\";\n"
 					+  "\tprivate static final String testId = \"" + testId + "\";\n"
 					+  "\tprivate static final CSVFilter csvFilter = new CSVFilter(APIName, testId);\n";
+		}
+
+		if (storeGetResponseBodies) {
+			content += "\tprivate static final ObjectMapper objectMapper = new ObjectMapper();\n";
 		}
 
 		content += "\n";
@@ -211,9 +222,6 @@ public class RESTAssuredWriter implements IWriter {
 
 		// Generate the start of the try block
 		content += generateTryBlockStart();
-
-		// Generate all stuff needed before the RESTAssured request
-		content += generatePreRequest(t);
 		
 		// Generate RESTAssured object pointing to the right path
 		content += generateRESTAssuredObject(t);
@@ -274,14 +282,18 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateFiltersInitialization(TestCase t) {
 		String content = "";
 
-		content += "\t\tnominalOrFaultyTestCaseFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n" +
-				"\t\tstatusCode5XXFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n";
+		content += "\t\tnominalOrFaultyTestCaseFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + escapeJava(t.getFaultyReason()) + "\");\n" +
+				"\t\tstatusCode5XXFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + escapeJava(t.getFaultyReason()) + "\");\n";
 
 		if (enableStats || enableOutputCoverage)
 			content += "\t\tcsvFilter.setTestResultId(testResultId);\n" +
 					"\t\tstatusCode5XXFilter.setTestResultId(testResultId);\n" +
 					"\t\tnominalOrFaultyTestCaseFilter.setTestResultId(testResultId);\n" +
 					"\t\tvalidationFilter.setTestResultId(testResultId);\n";
+
+		if (t.getMethod().equals(HttpMethod.GET)) {
+			content += "\t\tstatefulFilter.setOperationId(\"" + t.getOperationId() + "\");\n";
+		}
 
 		content += "\n";
 
@@ -290,28 +302,6 @@ public class RESTAssuredWriter implements IWriter {
 
 	private String generateTryBlockStart() {
 		return "\t\ttry {\n";
-	}
-
-	private String generatePreRequest(TestCase t) {
-		String content = "";
-
-		if (t.getBodyParameter() != null) {
-			content += generateJSONtoObjectConversion(t);
-		}
-
-		return content;
-	}
-
-	private String generateJSONtoObjectConversion(TestCase t) {
-		String content = "";
-		String bodyParameter = escapeJava(t.getBodyParameter());
-
-		content += "\t\t\tObjectMapper objectMapper = new ObjectMapper();\n"
-				+  "\t\t\tJsonNode jsonBody =  objectMapper.readTree(\""
-				+  bodyParameter
-				+  "\");\n\n";
-
-		return content;
 	}
 
 	private String generateRESTAssuredObject(TestCase t) {
@@ -373,14 +363,14 @@ public class RESTAssuredWriter implements IWriter {
 
 	private String generateBodyParameter(TestCase t) {
 		String content = "";
-
+		String bodyParameter = escapeJava(t.getBodyParameter());
 		if ((t.getFormParameters() == null || t.getFormParameters().size() == 0) &&
 				t.getBodyParameter() != null &&
 				(t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
 				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE)))
 			content += "\t\t\t\t.contentType(\"application/json\")\n";
 		if (t.getBodyParameter() != null) {
-			content += "\t\t\t\t.body(jsonBody)\n";
+			content += "\t\t\t\t.body(\"" + bodyParameter + "\")\n";
 		}
 
 		return content;
@@ -406,6 +396,9 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\t\t\t\t.filter(validationFilter)\n";
 		if (enableStats || enableOutputCoverage) // CSV filter
 			content += "\t\t\t\t.filter(csvFilter)\n";
+		if (t.getMethod().equals(HttpMethod.GET)) {
+			content += "\t\t\t\t.filter(statefulFilter)\n";
+		}
 
 		return content;
 	}
@@ -420,10 +413,15 @@ public class RESTAssuredWriter implements IWriter {
 //			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
 //			         + "\n\t\t\tresponse.then().log().ifError();\n";
 //		}
+
 		content += "\n\t\t\tresponse.then()";
-		if (logging)
+
+		if (logging) {
 			content += ".log().all()";
+		}
+
 		content += ";\n";
+
 		
 //		if (OAIValidation)
 //			content += "\t\t} catch (RuntimeException ex) {\n"
@@ -501,15 +499,7 @@ public class RESTAssuredWriter implements IWriter {
 //	}
 
 	private String generatePostResponseValidation(TestCase t) {
-		
-		String content = "\t\t\tSystem.out.println(\"Test passed.\");\n";
-
-		if (t.getBodyParameter() != null) {
-			content += "\t\t} catch (IOException e) {\n"
-					+  "\t\t\te.printStackTrace();\n";
-		}
-
-		return content;
+		return "\t\t\tSystem.out.println(\"Test passed.\");\n";
 	}
 
 	private String generateTryBlockEnd() {
@@ -619,5 +609,13 @@ public class RESTAssuredWriter implements IWriter {
 
 	public void setTestId(String testId) {
 		this.testId = testId;
+	}
+
+	public boolean isStoreGetResponseBodies() {
+		return storeGetResponseBodies;
+	}
+
+	public void setStoreGetResponseBodies(boolean storeGetResponseBodies) {
+		this.storeGetResponseBodies = storeGetResponseBodies;
 	}
 }

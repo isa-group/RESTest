@@ -1,0 +1,1618 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams:
+    Authorization: Basic YWRtaW46YWRtaW4=
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /commands
+    operationId: getCommands
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: refresh
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: /commands
+    operationId: postCommand
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: "/commands/{id}"
+    operationId: putCommand
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /commands/send
+    operationId: getSendCommands
+    method: get
+    testParameters:
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /commands/send
+    operationId: sendCommands
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /commands/types
+    operationId: getCommandTypes
+    method: get
+    testParameters:
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: protocol
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: textChannel
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: /devices
+    operationId: getDevices
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: id
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: uniqueId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /devices
+    operationId: postDevice
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/devices/{id}"
+    operationId: putDevice
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/devices/{id}/accumulators"
+    operationId: putDeviceAccumulators
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /groups
+    operationId: getGroups
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /groups
+    operationId: postGroup
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/groups/{id}"
+    operationId: putGroup
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /permissions
+    operationId: postPermissions
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /positions
+    operationId: getPositions
+    method: get
+    testParameters:
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: from
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    - name: to
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    - name: id
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /users
+    operationId: getUsers
+    method: get
+    testParameters:
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /users
+    operationId: postUser
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/users/{id}"
+    operationId: putUser
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /notifications
+    operationId: getNotifications
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: refresh
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: /notifications
+    operationId: postNotification
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/notifications/{id}"
+    operationId: putNotification
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /notifications/types
+    operationId: getNotificationTypes
+    method: get
+    testParameters: null
+    expectedResponse: 200
+  - testPath: /notifications/test
+    operationId: sendNotifications
+    method: post
+    testParameters: null
+    expectedResponse: 200
+  - testPath: /geofences
+    operationId: getGeofences
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: refresh
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: /geofences
+    operationId: postGeofence
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/geofences/{id}"
+    operationId: putGeofence
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/events/{id}"
+    operationId: getEvent
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /reports/route
+    operationId: getReportsRoute
+    method: get
+    testParameters:
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: from
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    - name: to
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /reports/events
+    operationId: getReportsEvents
+    method: get
+    testParameters:
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: type
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: from
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    - name: to
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /reports/summary
+    operationId: getReportsSummary
+    method: get
+    testParameters:
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: from
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    - name: to
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /reports/trips
+    operationId: getReportsTrips
+    method: get
+    testParameters:
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: from
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    - name: to
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /reports/stops
+    operationId: getReportsStops
+    method: get
+    testParameters:
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: from
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    - name: to
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /statistics
+    operationId: getStatistics
+    method: get
+    testParameters:
+    - name: from
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    - name: to
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - "yyyy-MM-dd'T'HH:mm:ss'Z'"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /calendars
+    operationId: getCalendars
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /calendars
+    operationId: postCalendar
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/calendars/{id}"
+    operationId: putCalendar
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /attributes/computed
+    operationId: getListAttributes
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: refresh
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: /attributes/computed
+    operationId: postAttribute
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/attributes/computed/{id}"
+    operationId: putAttribute
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /drivers
+    operationId: getDrivers
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: refresh
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: /drivers
+    operationId: postDriver
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/drivers/{id}"
+    operationId: putDriver
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: /maintenance
+    operationId: getMaintenances
+    method: get
+    testParameters:
+    - name: all
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: userId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: deviceId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: groupId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: refresh
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: /maintenance
+    operationId: postMaintenance
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200
+  - testPath: "/maintenance/{id}"
+    operationId: putMaintenance
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: [ ]
+        valid: true
+    expectedResponse: 200

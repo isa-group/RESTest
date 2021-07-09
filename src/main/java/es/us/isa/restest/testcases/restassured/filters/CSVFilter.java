@@ -1,6 +1,5 @@
 package es.us.isa.restest.testcases.restassured.filters;
 
-//import io.restassured.filter.Filter;
 import io.restassured.filter.FilterContext;
 import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;

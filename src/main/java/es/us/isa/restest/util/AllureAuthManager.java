@@ -49,7 +49,7 @@ public class AllureAuthManager {
 
             for (String authProperty : authProperties) {
                 if (fileString != null) {
-                    fileString = fileString.replaceAll("(" + authProperty + "([=:]))(.[^<&'])*([<&'])", "$1CENSORED$4");
+                    fileString = fileString.replaceAll("(" + authProperty + "([=:]))([^<&'])*([<&'])", "$1CENSORED$4");
                 }
             }
 

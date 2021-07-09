@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 
 public class FileManager {
 
@@ -58,6 +59,20 @@ public class FileManager {
             logger.error("Exception: ", e);
         }
         return null;
+    }
+
+    /**
+     * This method writes a String into a file. If the file exists, it will be overwritten.
+     * @param path the path to the file
+     * @param data the text to be written
+     */
+    public static void writeFile(String path, String data) {
+        try {
+            Files.write(Paths.get(path), Collections.singleton(data));
+        } catch (IOException e) {
+            logger.error("Error writing in file: {}", path);
+            logger.error("Exception: ", e);
+        }
     }
 
 }

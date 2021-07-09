@@ -83,7 +83,7 @@ paths:
           required: false
           type: string
       x-dependencies:
-        - Or(i, t, s);
+        - OnlyOne(i OR t, s);
       responses:
         '200':
           description: Successful operation
@@ -93,8 +93,8 @@ paths:
           description: Not authenticated
           schema:
             $ref: "#/definitions/Error"
-      security:
-        - APIKeyQueryParam: []
+#      security:
+#        - APIKeyQueryParam: []
 definitions:
   Response:
     type: object

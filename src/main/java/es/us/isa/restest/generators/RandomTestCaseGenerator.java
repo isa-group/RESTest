@@ -8,7 +8,6 @@ import java.util.List;
 
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
@@ -43,13 +42,13 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			TestCase test = generateNextTestCase(testOperation);
 			test.setFulfillsDependencies(fulfillsDependencies);
 			//Timer.stopCounting(TEST_CASE_GENERATION);
-			
+
 			// Set authentication data (if any)
 			authenticateTestCase(test);
 
 			// Add test case to the collection
 			testCases.add(test);
-			
+
 			// Update indexes
 			updateIndexes(test);
 

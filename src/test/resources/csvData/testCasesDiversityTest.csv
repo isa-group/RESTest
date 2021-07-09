@@ -1,0 +1,5 @@
+testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType,headerParameters,pathParameters,queryParameters,formParameters,bodyParameter
+1hr8n979k1n50,false,null,false,addPet,/pet,POST,application/x-www-form-urlencoded,application/json,,,,name=Laika;type=dog,
+abcdefghi,false,null,false,addPet,/pet,POST,application/x-www-form-urlencoded,application/json,,,,name=Pompeya;type=cat,
+jklmnopqa,false,null,false,getPet,/pet,GET,application/json,application/json,,,id=1,,
+zyxwvutsr,true,null,false,getPet,/pet,GET,application/json,application/json,,,id=a,,
