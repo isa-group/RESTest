@@ -37,7 +37,7 @@ testConfiguration:
       in: path
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
