@@ -2,7 +2,8 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
+  headerParams:
+    Authorization: "Bearer ----"
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -13,7 +14,7 @@ testConfiguration:
     testParameters:
     - name: term
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -69,7 +70,7 @@ testConfiguration:
         valid: true
     - name: radius
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomNumber
         genParameters:
@@ -88,7 +89,7 @@ testConfiguration:
         valid: true
     - name: categories
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -99,7 +100,7 @@ testConfiguration:
         valid: true
     - name: locale
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -110,7 +111,7 @@ testConfiguration:
         valid: true
     - name: limit
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomNumber
         genParameters:
@@ -129,7 +130,7 @@ testConfiguration:
         valid: true
     - name: offset
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomNumber
         genParameters:
@@ -162,7 +163,7 @@ testConfiguration:
         valid: true
     - name: price
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -180,7 +181,7 @@ testConfiguration:
         valid: true
     - name: open_at
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomNumber
         genParameters:
@@ -199,7 +200,7 @@ testConfiguration:
         valid: true
     - name: attributes
       in: query
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:

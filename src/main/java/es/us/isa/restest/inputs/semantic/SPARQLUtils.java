@@ -14,9 +14,8 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.*;
 import static es.us.isa.restest.inputs.semantic.GenerateSPARQLFilters.generateSPARQLFilters;
-import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.THRESHOLD;
-import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
 
 
 public class SPARQLUtils {
@@ -292,7 +291,11 @@ public class SPARQLUtils {
 
 
         // Close query
-        queryString = queryString + "\n}  \n";
+        queryString = queryString + "\n} ";
+
+//        if (LIMIT != null){
+//            queryString = queryString + " LIMIT " + LIMIT + " \n";
+//        }
 
         return new Pair<>(queryString, allParametersNameMap);
 //        return queryString; old

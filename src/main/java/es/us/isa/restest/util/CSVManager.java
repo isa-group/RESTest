@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVFormat;
@@ -11,6 +12,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.LIMIT;
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
 import static es.us.isa.restest.util.FileManager.deleteFile;
 
@@ -122,6 +124,14 @@ public class CSVManager {
 		String collect = collection.stream().collect(Collectors.joining("\n"));
 		writer.write(collect);
 		writer.close();
-		
+	}
+
+	public static void setToCSVWithLimit(String path, Set<String> collection) throws IOException {
+		FileWriter writer = new FileWriter(path);
+		Set<String> subSet = collection.stream().limit(LIMIT).collect(Collectors.toSet());
+		String collect = subSet.stream().collect(Collectors.joining("\n"));
+		writer.write(collect);
+		writer.close();
+
 	}
 }

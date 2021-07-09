@@ -20,6 +20,7 @@ import static es.us.isa.restest.inputs.semantic.Predicates.setPredicates;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.*;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConf;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
+import static es.us.isa.restest.util.CSVManager.setToCSVWithLimit;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.PropertyManager.readProperty;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
@@ -28,7 +29,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/FixerCurrency/fixerCurrency_original.properties";
+    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/Yelp/yelp_original.properties";
     private static OpenAPISpecification specification;
     private static String OAISpecPath;
     private static String confPath;
@@ -36,13 +37,16 @@ public class ARTEInputGenerator {
     private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
 
 
+    // Parameters
     // Minimum support of a predicate
     public static final Integer minSupport = 20;
-
-    // Parameter minimum threshold of unique parameter values to obtain
-    public static final Integer THRESHOLD = 100;
+    // Parameter minimum threshold of unique parameter values to obtain: default 100
+    public static final Integer THRESHOLD = 30;
+    // Limit
+    public static Integer LIMIT = 30;
     // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
     public static final String szEndpoint = "http://dbpedia.org/sparql";
+
 
     private static final Logger log = LogManager.getLogger(ARTEInputGenerator.class);
 
@@ -110,7 +114,11 @@ public class ARTEInputGenerator {
                 createFileIfNotExists(path);
 
                 // Write the Set of values as a csv file
-                collectionToCSV(path, semanticParameter.getValues());
+                if(LIMIT == null){
+                    collectionToCSV(path, semanticParameter.getValues());
+                } else{
+                    setToCSVWithLimit(path, semanticParameter.getValues());
+                }
 
                 // Update TestConfFile
                 updateTestConf(newConf, semanticParameter, path, opIndex);
