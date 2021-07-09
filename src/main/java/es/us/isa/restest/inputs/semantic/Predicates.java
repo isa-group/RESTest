@@ -15,14 +15,13 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.extractPredicateCandidatesFromDescription;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.executeSPARQLQueryCount;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.generateQuery;
-import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.szEndpoint;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
 
 public class Predicates {
 

@@ -10,11 +10,10 @@ import org.junit.Test;
 import java.util.*;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
-import static es.us.isa.restest.inputs.semantic.NLPUtils.extractPredicateCandidatesFromDescription;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
 import static es.us.isa.restest.inputs.semantic.Predicates.generatePredicateQuery;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.generateQuery;
-import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.getSemanticOperations;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.getSemanticOperations;
 import static org.junit.Assert.*;
 
 public class SPARQLQueryGenerationTest {

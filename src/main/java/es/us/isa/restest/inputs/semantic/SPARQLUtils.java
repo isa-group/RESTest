@@ -15,8 +15,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static es.us.isa.restest.inputs.semantic.GenerateSPARQLFilters.generateSPARQLFilters;
-import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.THRESHOLD;
-import static es.us.isa.restest.inputs.semantic.SemanticInputGenerator.szEndpoint;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.THRESHOLD;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
 
 
 public class SPARQLUtils {
@@ -32,7 +32,7 @@ public class SPARQLUtils {
         if(semanticParameters.size()>0) {
 
             Pair<String, Map<String, String>> queryString = generateQuery(semanticParameters, false);
-            System.out.println(queryString);
+            System.out.println(queryString.getKey());
             // TODO: kebab-case
             result = executeSPARQLQuery(queryString, szEndpoint);
 
