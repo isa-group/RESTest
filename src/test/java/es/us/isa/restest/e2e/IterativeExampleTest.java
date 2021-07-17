@@ -6,6 +6,7 @@ import es.us.isa.restest.util.RESTestException;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -51,6 +52,7 @@ public class IterativeExampleTest {
 //        mock.when(() -> PropertyManager.readProperty("deletepreviousresults")).thenReturn("true");
 //    }
 
+    @Ignore // Bikewise is currently down
     @Test
     public void testIterativeExampleWithBasicPropertiesFile() throws RESTestException {
         String propertiesFilePath = "src/test/resources/Bikewise/bikewise_test.properties";

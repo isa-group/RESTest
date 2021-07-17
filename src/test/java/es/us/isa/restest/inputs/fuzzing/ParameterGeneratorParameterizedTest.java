@@ -13,7 +13,7 @@ import java.util.Collections;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class ParameterGeneratorTest {
+public class ParameterGeneratorParameterizedTest {
 
     Generator generator;
 

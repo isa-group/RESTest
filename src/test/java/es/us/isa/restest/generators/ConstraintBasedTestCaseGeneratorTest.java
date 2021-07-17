@@ -27,10 +27,11 @@ public class ConstraintBasedTestCaseGeneratorTest {
     public void bikewiseFullTestCaseGeneratorNoConstraints() throws RESTestException {
         // Load specification
         String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+        String testConf = "src/test/resources/Bikewise/fullConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Bikewise/fullConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(testConf, spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 5;
@@ -53,7 +54,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase(), false);
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, testConf, "src/generation/java/restassured", "BikewiseTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -348,10 +349,11 @@ public class ConstraintBasedTestCaseGeneratorTest {
     public void amadeusHotelFullTestCaseGenerator() throws RESTestException {
         // Load specification
         String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
+        String testConf = "src/test/resources/AmadeusHotel/defaultConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(testConf, spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 4;
@@ -384,7 +386,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase(), false);
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, testConf, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -396,10 +398,11 @@ public class ConstraintBasedTestCaseGeneratorTest {
     public void amadeusHotelFullTestCaseGeneratorWithFaults() throws RESTestException {
         // Load specification
         String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
+        String testConf = "src/test/resources/AmadeusHotel/defaultConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
-        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/AmadeusHotel/defaultConf.yaml", spec);
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(testConf, spec);
 
         // Set number of test cases to be generated on each path, on each operation (HTTP method)
         int numTestCases = 40;
@@ -440,7 +443,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 
         // Write RESTAssured test cases
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase(), false);
+        RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, testConf, "src/generation/java/restassured", "AmadeusHotelTest", "restassured", basePath.toLowerCase(), false);
         writer.setOAIValidation(true);
         writer.setLogging(true);
         writer.write(testCases);
@@ -455,10 +458,11 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Load specification
 		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		String testConf = "src/test/resources/Comments/testConf_forTestSuite3.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf_forTestSuite3.yaml", spec);
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(testConf, spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 10;
@@ -492,7 +496,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsTest", "restassured", basePath, true);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, testConf, "src/generation/java/restassured", "CommentsTest", "restassured", basePath, true);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}
@@ -502,10 +506,11 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Load specification
 		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		String testConf = "src/test/resources/Comments/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf.yaml", spec);
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(testConf, spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 10;
@@ -542,7 +547,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath, true);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, testConf, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath, true);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}
@@ -553,10 +558,11 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Load specification
 		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		String testConf = "src/test/resources/Comments/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
 		// Load configuration
-		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf.yaml", spec);
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(testConf, spec);
 		
 		// Set number of test cases to be generated on each path
 		int numTestCases = 10;
@@ -604,7 +610,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		
 		// Write test cases
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath, false);
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, testConf, "src/generation/java/restassured", "CommentsConstraintBasedTest", "restassured", basePath, false);
 		writer.setOAIValidation(true);
 		writer.write(testCases);	
 	}

@@ -20,7 +20,7 @@ import java.util.Collections;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(Parameterized.class)
-public class BodyGeneratorTest {
+public class BodyGeneratorParameterizedTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
@@ -39,7 +39,7 @@ public class BodyGeneratorTest {
     private final String operationPath;
     private final boolean mutate;
 
-    public BodyGeneratorTest(String specPath, String dataDirPath, String operationPath, boolean mutate) {
+    public BodyGeneratorParameterizedTest(String specPath, String dataDirPath, String operationPath, boolean mutate) {
         generator = new Generator();
         generator.setType("BodyGenerator");
         generator.setGenParameters(new ArrayList<>());

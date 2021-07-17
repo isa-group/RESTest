@@ -1,0 +1,147 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+testConfiguration:
+  operations:
+  - testPath: /comments
+    operationId: getComments
+    method: get
+    testParameters:
+    - name: contains
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+    - name: type
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - Review
+          - Request
+          - Complain
+          - All
+    - name: order
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - date
+          - +date
+          - -date
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - 0
+        - name: max
+          values:
+          - 100
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - 0
+        - name: max
+          values:
+          - 100
+      - valid: false
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - -100
+        - name: max
+          values:
+          - -1
+  - testPath: /comments
+    operationId: putComment
+    method: put
+    testParameters:
+    - name: comment
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: BodyGenerator
+        genParameters: []
+#        - name: defaultValue
+#          values:
+#          - '{"id":"c1","userName":"josedelpino","text":"I love Spotify","date":"2013-04-16T20:44:53.950+0000","type":"Review"}'
+  - testPath: /comments
+    operationId: postComment
+    method: post
+    testParameters:
+    - name: comment
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: BodyGenerator
+        genParameters: []
+#        - name: defaultValue
+#          values:
+#          - '{"id":"c1","userName":"josedelpino","text":"I love Spotify","date":"2013-04-16T20:44:53.950+0000","type":"Review"}'
+  - testPath: /comments/{id}
+    operationId: getComment
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: ParameterGenerator
+        genParameters: []
+#        - name: defaultValue
+#          values:
+#          - c1
+  - testPath: /comments/{id}
+    operationId: deleteComment
+    method: delete
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: ParameterGenerator
+        genParameters: []
+#        - name: defaultValue
+#          values:
+#          - c1
