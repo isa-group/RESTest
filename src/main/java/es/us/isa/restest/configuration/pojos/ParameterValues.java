@@ -1,7 +1,7 @@
 package es.us.isa.restest.configuration.pojos;
 
 import es.us.isa.restest.util.PropertyManager;
-import javafx.util.Pair;
+import org.javatuples.Pair;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -94,7 +94,7 @@ public class ParameterValues {
 
         for(Pair<Operation, TestParameter> i: operationParameters){
             // Create new parameterValues (experimentName, operationId, testParameter)
-            ParameterValues parameterValues = new ParameterValues(experimentName, i.getKey(), i.getValue());
+            ParameterValues parameterValues = new ParameterValues(experimentName, i.getValue0(), i.getValue1());
             // Add new parameterValues to valuesFromPreviousIterations
             valuesFromPreviousIterations.add(parameterValues);
         }

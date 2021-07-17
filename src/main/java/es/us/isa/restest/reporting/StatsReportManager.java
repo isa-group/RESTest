@@ -11,12 +11,11 @@ import es.us.isa.restest.util.TestManager;
 
 
 import it.units.inginf.male.outputs.FinalSolution;
-import javafx.util.Pair;
+import org.javatuples.Pair;
 
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 
 import java.util.*;
 

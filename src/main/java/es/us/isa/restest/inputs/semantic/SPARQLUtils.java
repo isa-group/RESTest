@@ -2,7 +2,7 @@ package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.ParameterValues;
 import es.us.isa.restest.configuration.pojos.SemanticParameter;
-import javafx.util.Pair;
+import org.javatuples.Pair;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +31,7 @@ public class SPARQLUtils {
         if(semanticParameters.size()>0) {
 
             Pair<String, Map<String, String>> queryString = generateQuery(semanticParameters, false);
-            System.out.println(queryString.getKey());
+            System.out.println(queryString.getValue0());
             // TODO: kebab-case
             result = executeSPARQLQuery(queryString, szEndpoint);
 
@@ -59,7 +59,7 @@ public class SPARQLUtils {
 
                         // Compute support
                         Pair<String, Map<String, String>> queryCount = generateQuery(currentSubGraphParameters, true);
-                        Integer currentSupport = executeSPARQLQueryCount(queryCount.getKey(), szEndpoint);
+                        Integer currentSupport = executeSPARQLQueryCount(queryCount.getValue0(), szEndpoint);
 
                         // Compare size with accumulator
                         if (currentSupport >= maxSupport) {
@@ -118,7 +118,7 @@ public class SPARQLUtils {
         Map<String, Set<String>> res = new HashMap<>();
 
         // Create a Query with the given String
-        Query query = QueryFactory.create(szQuery.getKey());
+        Query query = QueryFactory.create(szQuery.getValue0());
 
         // Create the Execution Factory using the given Endpoint
         QueryExecution qexec = QueryExecutionFactory.sparqlService(
@@ -180,7 +180,7 @@ public class SPARQLUtils {
         }
 
 
-        Map<String, String> parameterNamesMap = szQuery.getValue();
+        Map<String, String> parameterNamesMap = szQuery.getValue1();
         Map<String, String> newKeys = new HashMap<>();
         for(String key: res.keySet()) {
             if (!parameterNamesMap.containsKey(key)){
@@ -297,7 +297,7 @@ public class SPARQLUtils {
 //            queryString = queryString + " LIMIT " + LIMIT + " \n";
 //        }
 
-        return new Pair<>(queryString, allParametersNameMap);
+        return Pair.with(queryString, allParametersNameMap);
 //        return queryString; old
 
     }

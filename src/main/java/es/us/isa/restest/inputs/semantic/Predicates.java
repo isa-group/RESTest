@@ -5,7 +5,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.parameters.Parameter;
-import javafx.util.Pair;
+import org.javatuples.Pair;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.*;
 import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
@@ -294,7 +294,7 @@ public class Predicates {
         Pair<String, Map<String, String>> queryString = generateQuery(Collections.singleton(semanticParameter), true);
 
         // Execute query
-        Integer supportOfPredicate = executeSPARQLQueryCount(queryString.getKey(), szEndpoint);
+        Integer supportOfPredicate = executeSPARQLQueryCount(queryString.getValue0(), szEndpoint);
 
         return supportOfPredicate;
     }

@@ -2,7 +2,7 @@ package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import javafx.util.Pair;
+import org.javatuples.Pair;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryFactory;
 import org.junit.Test;
@@ -83,7 +83,7 @@ public class SPARQLQueryGenerationTest {
 
 		Pair<String, Map<String, String>> queryString = generateQuery(semanticParameters, false);
 
-		Query query = QueryFactory.create(queryString.getKey());
+		Query query = QueryFactory.create(queryString.getValue0());
 		assertNotNull(query);
 	}
 

@@ -10,7 +10,7 @@ import it.units.inginf.male.postprocessing.BasicPostprocessor;
 import it.units.inginf.male.postprocessing.JsonPostProcessor;
 import it.units.inginf.male.strategy.ExecutionStrategy;
 import it.units.inginf.male.strategy.impl.CoolTextualExecutionListener;
-import javafx.util.Pair;
+import org.javatuples.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -93,7 +93,7 @@ public class RegexGeneratorUtils {
 
                             if(genParameter.getName().equals("predicates")){
                                 // Adding the pair <OperationId, parameterName> to the map
-                                Pair<Operation, TestParameter> operationAndParameter = new Pair(operation, testParameter);
+                                Pair<Operation, TestParameter> operationAndParameter = Pair.with(operation, testParameter);
                                 res.put(operationAndParameter, new HashSet<>());
                             }
                         }
@@ -206,12 +206,12 @@ public class RegexGeneratorUtils {
 
         // Iterate semantic parameters (Filter by operationId)
         Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
-                .filter(x -> x.getKey().getOperationId().equals(operationId)).map(x -> x.getValue())
+                .filter(x -> x.getValue0().getOperationId().equals(operationId)).map(x -> x.getValue1())
                 .collect(Collectors.toSet());
 
         for (TestParameter parameter : parametersOfOperation) {
             Operation operation = operations.stream().filter(x->x.getOperationId().equals(operationId)).findFirst().get();
-            Pair<Operation, TestParameter> pair = new Pair<>(operation, parameter);
+            Pair<Operation, TestParameter> pair = Pair.with(operation, parameter);
 
             // Search parameter value in corresponding map
             String value = testCase.getParameterValue(parameter.getIn(), parameter.getName());
@@ -249,7 +249,7 @@ public class RegexGeneratorUtils {
         Map<Pair<Operation, TestParameter>, Set<String>> validValuesOfOperation =
                 validValues
                         .keySet().stream()
-                        .filter(x->x.getKey().equals(operation) && !x.getValue().getName().equals(parameterToDiscard.getName()))
+                        .filter(x->x.getValue0().equals(operation) && !x.getValue1().getName().equals(parameterToDiscard.getName()))
                         .filter(validValues::containsKey).collect(Collectors.toMap(Function.identity(), validValues::get));
 
         Set<ParameterValues> valuesFromPreviousIterationsOfOperation = valuesFromPreviousIterations.stream()
@@ -261,7 +261,7 @@ public class RegexGeneratorUtils {
             TestParameter testParameter = parameterValues.getTestParameter();
 
             String value = testCase.getParameterValue(testParameter.getIn(), testParameter.getName());
-            Pair<Operation, TestParameter> operationParameter = new Pair<>(operation, testParameter);
+            Pair<Operation, TestParameter> operationParameter = Pair.with(operation, testParameter);
 
             if(
                     value!=null &&
