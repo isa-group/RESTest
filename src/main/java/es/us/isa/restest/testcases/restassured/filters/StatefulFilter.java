@@ -1,5 +1,7 @@
 package es.us.isa.restest.testcases.restassured.filters;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -11,9 +13,12 @@ import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;
 
@@ -22,6 +27,8 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
     private String specDirPath;
     private String operationId;
     private ObjectMapper objectMapper;
+
+    private static final Logger logger = LogManager.getLogger(StatefulFilter.class.getName());
 
     public StatefulFilter(String specDirPath) {
         requireNonEmpty(specDirPath, "The specification directory path is required");
@@ -34,38 +41,40 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
     public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
         Response response = ctx.next(requestSpec, responseSpec);
         if (response.getStatusCode() < 400) {
-            String body = response.getBody().prettyPrint();
-            ObjectNode originalNode = objectMapper.createObjectNode();
+            File jsonFile = new File(this.specDirPath + '/' + this.operationId + "_data.json");
+            String body = response.getBody().asString();
+            Map<String, List<String>> allValues = new HashMap<>();
 
-            if (FileManager.checkIfExists(this.specDirPath + '/' + this.operationId + "_data.json")) {
-                originalNode = (ObjectNode) JSONManager.readJSON(this.specDirPath + '/' + this.operationId + "_data.json");
+            try {
+                if (jsonFile.exists())
+                    allValues = objectMapper.readValue(new File(this.specDirPath + '/' + this.operationId + "_data.json"), new TypeReference<Map<String, List<String>>>() {});
+                JsonNode bodyNode = objectMapper.readTree(body);
+                addResponseBodyValues(allValues, bodyNode, "");
+                objectMapper.writeValue(jsonFile, allValues);
+            } catch (IOException e) {
+                logger.warn("The response body could not be saved to the JSON: {}", e.getMessage());
             }
-
-            JsonNode bodyNode = (JsonNode) JSONManager.readJSONFromString(body);
-            addResponseBodyValues(originalNode, bodyNode, "");
-
-            String newFileData = JSONManager.getStringFromJSON(originalNode);
-            FileManager.writeFile(this.specDirPath + '/' + this.operationId + "_data.json", newFileData);
         }
         return response;
     }
 
-    private void addResponseBodyValues(ObjectNode originalNode, JsonNode bodyNode, String prefix) {
+    private void addResponseBodyValues(Map<String, List<String>> allValues, JsonNode bodyNode, String prefix) {
         if (bodyNode.isObject()) {
             for (Iterator<Map.Entry<String, JsonNode>> it = bodyNode.fields(); it.hasNext(); ) {
                 Map.Entry<String, JsonNode> entry = it.next();
                 String newPrefix = "".equals(prefix)? entry.getKey() : prefix + '.' + entry.getKey();
-                addResponseBodyValues(originalNode, entry.getValue(), newPrefix);
+                addResponseBodyValues(allValues, entry.getValue(), newPrefix);
             }
         } else if (bodyNode.isArray()) {
             for (Iterator<JsonNode> it = bodyNode.elements(); it.hasNext(); ) {
-                addResponseBodyValues(originalNode, it.next(), prefix);
+                addResponseBodyValues(allValues, it.next(), prefix);
             }
-        } else if (bodyNode.isValueNode() && !bodyNode.isNull() && originalNode.has(prefix)) {
-            ((ArrayNode) originalNode.get(prefix)).add(bodyNode);
-        } else if (!bodyNode.isNull()) {
-            ArrayNode arrayNode = objectMapper.createArrayNode().add(bodyNode);
-            originalNode.set(prefix, arrayNode);
+        } else if (bodyNode.isValueNode() && !bodyNode.isNull() && allValues.containsKey(prefix)) {
+            if (!allValues.get(prefix).contains(bodyNode.asText()))
+                allValues.get(prefix).add(bodyNode.asText());
+        } else if (bodyNode.isValueNode() && !bodyNode.isNull()) {
+            allValues.put(prefix, new ArrayList<>());
+            allValues.get(prefix).add(bodyNode.asText());
         }
 
     }
@@ -76,6 +85,6 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
 
     @Override
     public int getOrder() {
-        return Integer.MAX_VALUE - 5; // Sixth lowest priority of all filters, so it runs sixth-to-last before sending the request and sixth after sending it
+        return Integer.MAX_VALUE; // Lowest priority of all filters, so it runs last before sending the request and first after sending it
     }
 }
