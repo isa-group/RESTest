@@ -20,6 +20,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -58,7 +60,7 @@ public class BodyGenerator implements ITestDataGenerator {
             Schema mutatedSchema = mutate? new SchemaMutation(requestBody.getSchema()).mutate() : requestBody.getSchema();
             ObjectNode rootNode = objectMapper.createObjectNode();
             try {
-                generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "");
+                generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "", new ArrayList<>());
             } catch (RESTestException e) {
                 logger.warn("There isn't enough data to generate a valid request body for {} operation.", operationMethod+operationPath);
                 logger.warn("RESTest will use the default request body specified in the testConf.");
@@ -71,66 +73,72 @@ public class BodyGenerator implements ITestDataGenerator {
         return body;
     }
 
-    private void generateStatefulObjectNode(ObjectNode dictNode, Schema<?> schema, JsonNode rootNode, String prefix) throws RESTestException {
+    private void generateStatefulObjectNode(ObjectNode dictNode, Schema<?> schema, JsonNode rootNode, String prefix, List<String> requiredProperties) throws RESTestException {
         if (schema.get$ref() != null) {
             schema = spec.getSpecification().getComponents().getSchemas().get(schema.get$ref().substring(schema.get$ref().lastIndexOf('/') + 1));
         }
 
-        JsonNode childNode = null;
-        if (schema.getType().equals("object")) {
-            childNode = "".equals(prefix)? rootNode : objectMapper.createObjectNode();
+        String resolvedProperty = prefix.substring(prefix.lastIndexOf('.') + 1).replace("-duplicated", "").replace(DOT_CONVERSION, ".");
 
-            if (schema.getProperties() != null) {
-                for (Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
-                    String paramName = entry.getKey().replace(".", DOT_CONVERSION);
-                    String newPrefix = "".equals(prefix)? prefix + paramName : prefix + '.' + paramName;
-                    generateStatefulObjectNode(dictNode, entry.getValue(), childNode, newPrefix);
-                }
-            }
+        if ("".equals(prefix) // First level object
+                || requiredProperties == null && rootNode.isArray() // Array has no req. properties, but generate at least one
+                || (requiredProperties != null && requiredProperties.contains(resolvedProperty)) // Req. property
+                || ((requiredProperties == null || !requiredProperties.contains(resolvedProperty)) && random.nextBoolean())) { // Optional property (50% prob.)
+            JsonNode childNode = null;
+            if (schema.getType().equals("object")) {
+                childNode = "".equals(prefix) ? rootNode : objectMapper.createObjectNode();
 
-        } else if (schema.getType().equals("array")) {
-            childNode = objectMapper.createArrayNode();
-            if (schema instanceof ArraySchema && ((ArraySchema)schema).getItems() != null) {
-                generateStatefulObjectNode(dictNode, ((ArraySchema)schema).getItems(), childNode, prefix);
-            }
-        } else {
-            String resolvedPrefix = prefix.replace("-duplicated", "").replace(DOT_CONVERSION, ".");
-
-            // Data from the same operation:
-            ObjectNode operationDict = (ObjectNode) dictNode.get(operationMethod + operationPath);
-            if (operationDict != null) {
-                ArrayNode paramDict = ((ArrayNode) dictNode.get(resolvedPrefix));
-                if (paramDict != null) {
-                    childNode = paramDict.get(this.random.nextInt(paramDict.size()));
-                }
-            }
-
-            // Data from other operations:
-            if (childNode == null) {
-                for (JsonNode otherOperationDict : dictNode) {
-                    ArrayNode paramDict = ((ArrayNode) otherOperationDict.get(resolvedPrefix));
-                    if (paramDict != null) {
-                        childNode = paramDict.get(this.random.nextInt(paramDict.size()));
-                        break;
+                if (schema.getProperties() != null) {
+                    for (Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
+                        String paramName = entry.getKey().replace(".", DOT_CONVERSION);
+                        String newPrefix = "".equals(prefix) ? prefix + paramName : prefix + '.' + paramName;
+                        generateStatefulObjectNode(dictNode, entry.getValue(), childNode, newPrefix, schema.getRequired());
                     }
                 }
-            }
 
-            if (childNode == null) {
-                childNode = createNodeFromExample(schema, resolvedPrefix);
-            }
-        }
-
-        if (!"".equals(prefix)) {
-            if (childNode == null || childNode.isNull() || childNode.isMissingNode()) {
-                throw new RESTestException();
-            } else if (rootNode.isObject()) {
-                ((ObjectNode) rootNode).set(prefix.substring(prefix.lastIndexOf('.') + 1).replace(DOT_CONVERSION, "."), childNode);
+            } else if (schema.getType().equals("array")) {
+                childNode = objectMapper.createArrayNode();
+                if (schema instanceof ArraySchema && ((ArraySchema) schema).getItems() != null) {
+                    generateStatefulObjectNode(dictNode, ((ArraySchema) schema).getItems(), childNode, prefix, schema.getRequired());
+                }
             } else {
-                ((ArrayNode) rootNode).add(childNode);
+                String resolvedPrefix = prefix.replace("-duplicated", "").replace(DOT_CONVERSION, ".");
+
+                // Data from the same operation:
+                ObjectNode operationDict = (ObjectNode) dictNode.get(operationMethod + operationPath);
+                if (operationDict != null) {
+                    ArrayNode paramDict = ((ArrayNode) dictNode.get(resolvedPrefix));
+                    if (paramDict != null) {
+                        childNode = paramDict.get(this.random.nextInt(paramDict.size()));
+                    }
+                }
+
+                // Data from other operations:
+                if (childNode == null) {
+                    for (JsonNode otherOperationDict : dictNode) {
+                        ArrayNode paramDict = ((ArrayNode) otherOperationDict.get(resolvedPrefix));
+                        if (paramDict != null) {
+                            childNode = paramDict.get(this.random.nextInt(paramDict.size()));
+                            break;
+                        }
+                    }
+                }
+
+                if (childNode == null) {
+                    childNode = createNodeFromExample(schema, resolvedPrefix);
+                }
+            }
+
+            if (!"".equals(prefix)) {
+                if (childNode == null || childNode.isNull() || childNode.isMissingNode()) {
+                    throw new RESTestException();
+                } else if (rootNode.isObject()) {
+                    ((ObjectNode) rootNode).set(prefix.substring(prefix.lastIndexOf('.') + 1).replace(DOT_CONVERSION, "."), childNode);
+                } else {
+                    ((ArrayNode) rootNode).add(childNode);
+                }
             }
         }
-
     }
 
     private JsonNode createNodeFromExample(Schema<?> schema, String prefix) {
@@ -207,7 +215,7 @@ public class BodyGenerator implements ITestDataGenerator {
                     String enumValue = (String) schema.getEnum().get(random.nextInt(schema.getEnum().size()));
                     node = objectMapper.getNodeFactory().textNode(enumValue);
                 } else {
-                    node = objectMapper.getNodeFactory().textNode("");
+                    node = objectMapper.getNodeFactory().textNode("randomString");
                 }
                 break;
         }
