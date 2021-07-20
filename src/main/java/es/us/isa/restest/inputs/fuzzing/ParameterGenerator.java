@@ -9,13 +9,19 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.FileManager;
 import es.us.isa.restest.util.JSONManager;
 
+import java.io.File;
 import java.security.SecureRandom;
+import java.util.Iterator;
 import java.util.Random;
+
+import static es.us.isa.restest.util.FileManager.checkIfExists;
+import static es.us.isa.restest.util.JSONManager.readJSON;
 
 
 public class ParameterGenerator implements ITestDataGenerator {
 
-    private  String operationId;
+    private String operationMethod;
+    private String operationPath;
     private String parameterName;
 
     private String dataDirPath;
@@ -23,6 +29,7 @@ public class ParameterGenerator implements ITestDataGenerator {
     private OpenAPISpecification spec;
 
     private Random random;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ParameterGenerator() {
         this.random = new SecureRandom();
@@ -31,19 +38,34 @@ public class ParameterGenerator implements ITestDataGenerator {
     @Override
     public JsonNode nextValue() {
         JsonNode valueNode = null;
-        String jsonPath = this.dataDirPath + '/' + this.operationId + "_data.json";
+        String jsonPath = dataDirPath + "/stateful_data.json";
 
-        if (operationId != null && FileManager.checkIfExists(jsonPath)) {
-            ObjectNode dictNode = (ObjectNode) JSONManager.readJSON(jsonPath);
-            ArrayNode arrayNode = ((ArrayNode)dictNode.get(parameterName));
-            if (arrayNode != null) {
-                valueNode = arrayNode.get(this.random.nextInt(arrayNode.size()));
+        if (operationPath != null && checkIfExists(jsonPath)) {
+            ObjectNode dict = (ObjectNode) readJSON(jsonPath);
+
+            // Data from the same operation:
+            ObjectNode operationDict = (ObjectNode) dict.get(operationMethod + operationPath);
+            if (operationDict != null) {
+                ArrayNode paramDict = ((ArrayNode) dict.get(parameterName));
+                if (paramDict != null) {
+                    valueNode = paramDict.get(this.random.nextInt(paramDict.size()));
+                }
+            }
+
+            // Data from other operations:
+            if (valueNode == null) {
+                for (JsonNode otherOperationDict : dict) {
+                    ArrayNode paramDict = ((ArrayNode) otherOperationDict.get(parameterName));
+                    if (paramDict != null) {
+                        valueNode = paramDict.get(this.random.nextInt(paramDict.size()));
+                        break;
+                    }
+                }
             }
         }
 
         if (valueNode == null) {
-            ObjectMapper mapper = new ObjectMapper();
-            valueNode = mapper.getNodeFactory().textNode(defaultValue);
+            valueNode = objectMapper.getNodeFactory().textNode(defaultValue);
         }
 
         return valueNode;
@@ -62,7 +84,7 @@ public class ParameterGenerator implements ITestDataGenerator {
     public String nextValueAsString(String operationPath) {
         io.swagger.v3.oas.models.Operation getOperation = spec.getSpecification().getPaths().get(operationPath).getGet();
         if (getOperation != null) {
-            setOperationId(getOperation.getOperationId());
+            setOperation("GET", operationPath);
         }
         return nextValueAsString();
     }
@@ -75,8 +97,9 @@ public class ParameterGenerator implements ITestDataGenerator {
         this.dataDirPath = dataDirPath;
     }
 
-    public void setOperationId(String operationId) {
-        this.operationId = operationId;
+    public void setOperation(String operationMethod, String operationPath) {
+        this.operationMethod = operationMethod;
+        this.operationPath = operationPath;
     }
 
     public void setSpec(OpenAPISpecification spec) {

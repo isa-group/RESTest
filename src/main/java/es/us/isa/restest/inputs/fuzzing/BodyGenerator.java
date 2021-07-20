@@ -26,7 +26,8 @@ import java.util.Random;
 
 public class BodyGenerator implements ITestDataGenerator {
 
-    String operationId;
+    String operationMethod;
+    String operationPath;
     Operation openApiOperation;
     String defaultValue;
     boolean mutate;
@@ -48,9 +49,9 @@ public class BodyGenerator implements ITestDataGenerator {
     @Override
     public ObjectNode nextValue() {
         ObjectNode body = null;
-        String jsonPath = this.dataDirPath + '/' + this.operationId + "_data.json";
+        String jsonPath = this.dataDirPath + "/stateful_data.json";
 
-        ObjectNode dictNode = operationId != null && FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
+        ObjectNode dictNode = operationPath != null && FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
         MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
 
         if (requestBody != null) {
@@ -59,7 +60,7 @@ public class BodyGenerator implements ITestDataGenerator {
             try {
                 generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "");
             } catch (RESTestException e) {
-                logger.warn("There isn't enough data to generate a valid request body for {} operation.", this.operationId);
+                logger.warn("There isn't enough data to generate a valid request body for {} operation.", operationMethod+operationPath);
                 logger.warn("RESTest will use the default request body specified in the testConf.");
             }
             if (rootNode != null) {
@@ -75,7 +76,7 @@ public class BodyGenerator implements ITestDataGenerator {
             schema = spec.getSpecification().getComponents().getSchemas().get(schema.get$ref().substring(schema.get$ref().lastIndexOf('/') + 1));
         }
 
-        JsonNode childNode;
+        JsonNode childNode = null;
         if (schema.getType().equals("object")) {
             childNode = "".equals(prefix)? rootNode : objectMapper.createObjectNode();
 
@@ -94,11 +95,28 @@ public class BodyGenerator implements ITestDataGenerator {
             }
         } else {
             String resolvedPrefix = prefix.replace("-duplicated", "").replace(DOT_CONVERSION, ".");
-            ArrayNode valueArray = (ArrayNode) dictNode.get(resolvedPrefix);
 
-            if(valueArray != null) {
-                childNode = valueArray.get(random.nextInt(valueArray.size()));
-            } else {
+            // Data from the same operation:
+            ObjectNode operationDict = (ObjectNode) dictNode.get(operationMethod + operationPath);
+            if (operationDict != null) {
+                ArrayNode paramDict = ((ArrayNode) dictNode.get(resolvedPrefix));
+                if (paramDict != null) {
+                    childNode = paramDict.get(this.random.nextInt(paramDict.size()));
+                }
+            }
+
+            // Data from other operations:
+            if (childNode == null) {
+                for (JsonNode otherOperationDict : dictNode) {
+                    ArrayNode paramDict = ((ArrayNode) otherOperationDict.get(resolvedPrefix));
+                    if (paramDict != null) {
+                        childNode = paramDict.get(this.random.nextInt(paramDict.size()));
+                        break;
+                    }
+                }
+            }
+
+            if (childNode == null) {
                 childNode = createNodeFromExample(schema, resolvedPrefix);
             }
         }
@@ -212,7 +230,7 @@ public class BodyGenerator implements ITestDataGenerator {
         setMutate(mutate);
         io.swagger.v3.oas.models.Operation getOperation = spec.getSpecification().getPaths().get(operationPath).getGet();
         if (getOperation != null) {
-            setOperationId(getOperation.getOperationId());
+            setOperation("GET", operationPath);
         }
         return nextValueAsString();
     }
@@ -221,8 +239,9 @@ public class BodyGenerator implements ITestDataGenerator {
         this.dataDirPath = dataDirPath;
     }
 
-    public void setOperationId(String operationId) {
-        this.operationId = operationId;
+    public void setOperation(String operationMethod, String operationPath) {
+        this.operationMethod = operationMethod;
+        this.operationPath = operationPath;
     }
 
     public void setOpenApiOperation(Operation operation) {

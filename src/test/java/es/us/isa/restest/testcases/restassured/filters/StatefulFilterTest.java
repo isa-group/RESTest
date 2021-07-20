@@ -21,7 +21,7 @@ public class StatefulFilterTest {
     public void shouldSaveResponsesInJson() {
         String dirPath = "src/test/resources/restest-test-resources";
         StatefulFilter filter = new StatefulFilter(dirPath);
-        filter.setOperationId("prueba");
+        filter.setOperation("GET", "/api/characters/{character-id}");
 
         try {
             Response response = RestAssured
@@ -37,16 +37,16 @@ public class StatefulFilterTest {
             fail(ex.getMessage());
         }
 
-        assertTrue("The JSON file was not created", FileManager.checkIfExists(dirPath + "/prueba_data.json"));
+        assertTrue("The JSON file was not created", FileManager.checkIfExists(dirPath + "/stateful_data.json"));
 
-        FileManager.deleteFile(dirPath + "/prueba_data.json");
+        FileManager.deleteFile(dirPath + "/stateful_data.json");
     }
 
     @Test
     public void shouldNotRepeatValuesInJson() {
         String dirPath = "src/test/resources/restest-test-resources";
         StatefulFilter filter = new StatefulFilter(dirPath);
-        filter.setOperationId("prueba");
+        filter.setOperation("GET", "/api/characters/{character-id}");
 
         try {
             Response response = RestAssured
@@ -62,8 +62,8 @@ public class StatefulFilterTest {
             fail(ex.getMessage());
         }
 
-        assertTrue("The JSON file was not created", FileManager.checkIfExists(dirPath + "/prueba_data.json"));
-        String jsonContent = readFile(dirPath + "/prueba_data.json");
+        assertTrue("The JSON file was not created", FileManager.checkIfExists(dirPath + "/stateful_data.json"));
+        String jsonContent = readFile(dirPath + "/stateful_data.json");
 
         try {
             Response response = RestAssured
@@ -79,8 +79,8 @@ public class StatefulFilterTest {
             fail(ex.getMessage());
         }
 
-        assertEquals("The JSON file should not have been updated", jsonContent, readFile(dirPath + "/prueba_data.json"));
+        assertEquals("The JSON file should not have been updated", jsonContent, readFile(dirPath + "/stateful_data.json"));
 
-        FileManager.deleteFile(dirPath + "/prueba_data.json");
+        FileManager.deleteFile(dirPath + "/stateful_data.json");
     }
 }

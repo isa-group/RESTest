@@ -305,7 +305,7 @@ public class RESTAssuredWriter implements IWriter {
 					"\t\tvalidationFilter.setTestResultId(testResultId);\n";
 
 		if (statefulFilter && t.getMethod().equals(HttpMethod.GET)) {
-			content += "\t\tstatefulFilter.setOperationId(\"" + t.getOperationId() + "\");\n";
+			content += "\t\tstatefulFilter.setOperation(\"" + t.getMethod().toString() + "\", \"" + t.getPath() + "\");\n";
 		}
 
 		content += "\n";

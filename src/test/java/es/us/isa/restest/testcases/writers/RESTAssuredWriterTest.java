@@ -57,7 +57,7 @@ public class RESTAssuredWriterTest {
 		writer.write(testCases);
 		assertTrue(
 				"The generated test class should use the stateful filter",
-				readFile("src/generation/java/restassured/CommentsTestStateful.java").contains("statefulFilter.setOperationId")
+				readFile("src/generation/java/restassured/CommentsTestStateful.java").contains("statefulFilter.setOperation")
 				);
 	}
 

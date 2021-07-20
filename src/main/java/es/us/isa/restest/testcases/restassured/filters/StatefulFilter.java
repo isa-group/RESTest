@@ -25,7 +25,8 @@ import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;
 public class StatefulFilter extends RESTestFilter implements OrderedFilter {
 
     private String specDirPath;
-    private String operationId;
+    private String operationMethod;
+    private String operationPath;
     private ObjectMapper objectMapper;
 
     private static final Logger logger = LogManager.getLogger(StatefulFilter.class.getName());
@@ -41,15 +42,16 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
     public Response filter(FilterableRequestSpecification requestSpec, FilterableResponseSpecification responseSpec, FilterContext ctx) {
         Response response = ctx.next(requestSpec, responseSpec);
         if (response.getStatusCode() < 400) {
-            File jsonFile = new File(this.specDirPath + '/' + this.operationId + "_data.json");
+            File jsonFile = new File(this.specDirPath + '/' + "stateful_data.json");
             String body = response.getBody().asString();
-            Map<String, List<String>> allValues = new HashMap<>();
+            Map<String, Map<String, List<String>>> allValues = new HashMap<>();
 
             try {
                 if (jsonFile.exists())
-                    allValues = objectMapper.readValue(new File(this.specDirPath + '/' + this.operationId + "_data.json"), new TypeReference<Map<String, List<String>>>() {});
+                    allValues = objectMapper.readValue(jsonFile, new TypeReference<Map<String, Map<String, List<String>>>>() {});
+                allValues.putIfAbsent(operationMethod + operationPath, new HashMap<>());
                 JsonNode bodyNode = objectMapper.readTree(body);
-                addResponseBodyValues(allValues, bodyNode, "");
+                addResponseBodyValues(allValues.get(operationMethod + operationPath), bodyNode, "");
                 objectMapper.writeValue(jsonFile, allValues);
             } catch (IOException e) {
                 logger.warn("The response body could not be saved to the JSON: {}", e.getMessage());
@@ -79,8 +81,9 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
 
     }
 
-    public void setOperationId(String operationId) {
-        this.operationId = operationId;
+    public void setOperation(String operationMethod, String operationPath) {
+        this.operationMethod = operationMethod;
+        this.operationPath = operationPath;
     }
 
     @Override
