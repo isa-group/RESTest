@@ -238,6 +238,8 @@ definitions:
       - userName
       - date
       - type
+      - tags
+      - updates
     properties:
       id:
         type: string
@@ -266,6 +268,8 @@ definitions:
         type: array
         items:
           type: object
+          required:
+            - category
           properties:
             name:
               type: string

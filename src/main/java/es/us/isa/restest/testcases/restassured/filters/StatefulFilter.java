@@ -71,12 +71,10 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
             for (Iterator<JsonNode> it = bodyNode.elements(); it.hasNext(); ) {
                 addResponseBodyValues(allValues, it.next(), prefix);
             }
-        } else if (bodyNode.isValueNode() && !bodyNode.isNull() && allValues.containsKey(prefix)) {
+        } else if (bodyNode.isValueNode() && !bodyNode.isNull()) {
+            allValues.putIfAbsent(prefix, new ArrayList<>());
             if (!allValues.get(prefix).contains(bodyNode.asText()))
                 allValues.get(prefix).add(bodyNode.asText());
-        } else if (bodyNode.isValueNode() && !bodyNode.isNull()) {
-            allValues.put(prefix, new ArrayList<>());
-            allValues.get(prefix).add(bodyNode.asText());
         }
 
     }
