@@ -26,6 +26,7 @@ public class BodyGeneratorParameterizedTest {
                 {"src/test/resources/Comments/swagger.yaml", "src/test/resources/jsonData", "/comments" ,true},
                 {"src/test/resources/Comments/swagger_forTestSuite3.yaml", "", "/comments", true},
                 {"src/test/resources/Comments/swagger_forTestSuite4.yaml", "", "/comments", false},
+                {"src/test/resources/Comments/swagger_forTestSuite6.yaml", "", "/comments/multiple", false},
                 {"src/test/resources/Traccar/openapi.yml", "", "/devices", false},
                 {"src/test/resources/Graphhopper/openapi.yaml", "", "/route", false}
         });

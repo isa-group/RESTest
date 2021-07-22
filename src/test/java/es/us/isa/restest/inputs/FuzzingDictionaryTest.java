@@ -87,7 +87,8 @@ public class FuzzingDictionaryTest {
     @Test
     public void getNodeFuzzingValueBooleanTest() {
         JsonNode node = getNodeFuzzingValue("boolean");
-        assertTrue(node instanceof TextNode || node instanceof NullNode || node instanceof BooleanNode);
+        assertTrue(node instanceof TextNode || node instanceof NullNode
+                || node instanceof LongNode || node instanceof BooleanNode);
     }
 
     @Test

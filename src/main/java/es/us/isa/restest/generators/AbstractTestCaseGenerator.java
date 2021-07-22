@@ -26,6 +26,8 @@ import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
+import static es.us.isa.restest.configuration.TestConfigurationVisitor.hasStatefulGenerators;
+
 /**
  * Abstract class to be implemented by test case generators
  * @author Sergio Segura
@@ -58,7 +60,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected int nFaulty;													// Number of faulty test cases generated for the current operation
 	protected int nNominal;													// Number of nominal test cases generated for the current operation
 
-
+	protected boolean hasStatefulGenerators;
 
 
 	public AbstractTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
@@ -227,6 +229,9 @@ public abstract class AbstractTestCaseGenerator {
 		// Create test data generators for each parameter
 		createGenerators(testOperation);
 
+		// Update this boolean, which may differ for every operation
+		hasStatefulGenerators = hasStatefulGenerators(testOperation);
+
 		return generateOperationTestCases(testOperation);
 	}
 
@@ -263,9 +268,13 @@ public abstract class AbstractTestCaseGenerator {
 		}
 
 		// Make sure the test case generated conforms to the specification. Otherwise, throw an exception and stop the execution
-		List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
-		if (!errors.isEmpty()) {
-			throw new RESTestException("The test case generated does not conform to the specification: " + errors);
+		// There's an exception: if stateful generators are configured, we cannot assure that the test case will be valid,
+		// therefore we omit this
+		if (!hasStatefulGenerators) {
+			List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
+			if (!errors.isEmpty()) {
+				throw new RESTestException("The test case generated does not conform to the specification: " + errors);
+			}
 		}
 
 		// If a perturbation generator is included in the test configuration file, try to generate a new (valid) test case by perturbating a valid input object

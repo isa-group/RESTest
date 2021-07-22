@@ -19,8 +19,6 @@ import io.swagger.v3.oas.models.media.Schema;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -50,8 +48,8 @@ public class BodyGenerator implements ITestDataGenerator {
     }
 
     @Override
-    public ObjectNode nextValue() {
-        ObjectNode body = null;
+    public JsonNode nextValue() {
+        JsonNode body = null;
         String jsonPath = this.dataDirPath + "/stateful_data.json";
 
         ObjectNode dictNode = operationPath != null && FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
@@ -59,9 +57,13 @@ public class BodyGenerator implements ITestDataGenerator {
 
         if (requestBody != null) {
             Schema mutatedSchema = mutate? new SchemaMutation(requestBody.getSchema()).mutate() : requestBody.getSchema();
-            ObjectNode rootNode = objectMapper.createObjectNode();
+            JsonNode rootNode = null;
+            if (mutatedSchema instanceof ArraySchema)
+                rootNode = objectMapper.createArrayNode();
+            else
+                rootNode = objectMapper.createObjectNode();
             try {
-                generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "", new ArrayList<>());
+                generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "", new ArrayList<>(), true);
             } catch (RESTestException e) {
                 logger.warn("There isn't enough data to generate a valid request body for {} operation.", operationMethod+operationPath);
                 logger.warn("RESTest will use the default request body specified in the testConf.");
@@ -74,7 +76,7 @@ public class BodyGenerator implements ITestDataGenerator {
         return body;
     }
 
-    private void generateStatefulObjectNode(ObjectNode dictNode, Schema<?> schema, JsonNode rootNode, String prefix, List<String> requiredProperties) throws RESTestException {
+    private void generateStatefulObjectNode(ObjectNode dictNode, Schema<?> schema, JsonNode rootNode, String prefix, List<String> requiredProperties, boolean firstLevel) throws RESTestException {
         if (schema.get$ref() != null) {
             schema = spec.getSpecification().getComponents().getSchemas().get(schema.get$ref().substring(schema.get$ref().lastIndexOf('/') + 1));
         }
@@ -87,20 +89,20 @@ public class BodyGenerator implements ITestDataGenerator {
                 || ((requiredProperties == null || !requiredProperties.contains(resolvedProperty)) && random.nextBoolean())) { // Optional property (50% prob.)
             JsonNode childNode = null;
             if (schema.getType().equals("object")) {
-                childNode = "".equals(prefix) ? rootNode : objectMapper.createObjectNode();
+                childNode = "".equals(prefix) && firstLevel ? rootNode : objectMapper.createObjectNode();
 
                 if (schema.getProperties() != null) {
                     for (Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
                         String paramName = entry.getKey().replace(".", DOT_CONVERSION);
                         String newPrefix = "".equals(prefix) ? prefix + paramName : prefix + '.' + paramName;
-                        generateStatefulObjectNode(dictNode, entry.getValue(), childNode, newPrefix, schema.getRequired());
+                        generateStatefulObjectNode(dictNode, entry.getValue(), childNode, newPrefix, schema.getRequired(), false);
                     }
                 }
 
             } else if (schema.getType().equals("array")) {
-                childNode = objectMapper.createArrayNode();
+                childNode = "".equals(prefix) && firstLevel ? rootNode : objectMapper.createArrayNode();
                 if (schema instanceof ArraySchema && ((ArraySchema) schema).getItems() != null) {
-                    generateStatefulObjectNode(dictNode, ((ArraySchema) schema).getItems(), childNode, prefix, schema.getRequired());
+                    generateStatefulObjectNode(dictNode, ((ArraySchema) schema).getItems(), childNode, prefix, schema.getRequired(), false);
                 }
             } else {
                 String resolvedPrefix = prefix.replace("-duplicated", "").replace(DOT_CONVERSION, ".");
@@ -110,8 +112,8 @@ public class BodyGenerator implements ITestDataGenerator {
                 }
             }
 
-            if (!"".equals(prefix)) {
-                if (childNode == null || childNode.isNull() || childNode.isMissingNode()) {
+            if (!"".equals(prefix) || !firstLevel) {
+                if (childNode == null || childNode.isMissingNode()) {
                     throw new RESTestException();
                 } else if (rootNode.isObject()) {
                     ((ObjectNode) rootNode).set(prefix.substring(prefix.lastIndexOf('.') + 1).replace(DOT_CONVERSION, "."), childNode);
@@ -193,9 +195,9 @@ public class BodyGenerator implements ITestDataGenerator {
     @Override
     public String nextValueAsString() {
         String value = null;
-        ObjectNode node = nextValue();
+        JsonNode node = nextValue();
         if (node != null) {
-            value = node.toPrettyString().replace("-duplicated", "");
+            value = node.toString().replace("-duplicated", "");
         }
         return value;
     }
@@ -203,10 +205,7 @@ public class BodyGenerator implements ITestDataGenerator {
     public String nextValueAsString(Operation openApiOperation, String operationPath, boolean mutate) {
         setOpenApiOperation(openApiOperation);
         setMutate(mutate);
-        io.swagger.v3.oas.models.Operation getOperation = spec.getSpecification().getPaths().get(operationPath).getGet();
-        if (getOperation != null) {
-            setOperation("GET", operationPath);
-        }
+        setOperation("GET", operationPath);
         return nextValueAsString();
     }
 

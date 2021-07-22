@@ -160,17 +160,19 @@ public class TestConfigurationVisitor {
 	 * If there's any of those, returns true, otherwise returns false.
 	 */
 	public static boolean hasStatefulGenerators(TestConfigurationObject conf) {
-		return conf.getTestConfiguration().getOperations().stream().anyMatch(o -> {
-			try {
-				return o.getTestParameters().stream().anyMatch(p ->
-						p.getGenerators().stream().anyMatch(g ->
-								g.getType().equals("BodyGenerator") || g.getType().equals("ParameterGenerator")
-						)
-				);
-			} catch (NullPointerException e) { // Parameters could be "null"
-				return false;
-			}
-		});
+		return conf.getTestConfiguration().getOperations().stream().anyMatch(TestConfigurationVisitor::hasStatefulGenerators);
+	}
+
+	public static boolean hasStatefulGenerators(Operation operation) {
+		try {
+			return operation.getTestParameters().stream().anyMatch(p ->
+					p.getGenerators().stream().anyMatch(g ->
+							g.getType().equals("BodyGenerator") || g.getType().equals("ParameterGenerator")
+					)
+			);
+		} catch (NullPointerException e) { // Parameters could be "null"
+			return false;
+		}
 	}
 
 }

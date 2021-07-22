@@ -56,4 +56,35 @@ public class BodyGeneratorTest {
             fail("The body could not be parsed as a JSON");
         }
     }
+
+    @Test
+    public void bodyGenerationFirstLevelArrayTest() {
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite6.yaml");
+        String operationPath = "/comments/multiple";
+        Operation oasOperation = spec.getSpecification().getPaths().get(operationPath).getPost();
+        String dataDirPath = "src/test/resources/jsonData/stateful_bodies";
+
+        GenParameter defaultValue = new GenParameter();
+        defaultValue.setName("defaultValue");
+        defaultValue.setValues(Collections.singletonList("{}"));
+
+        generator.getGenParameters().add(defaultValue);
+
+        BodyGenerator gen = (BodyGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+        gen.setSpec(spec);
+        gen.setDataDirPath(dataDirPath);
+
+        String value = gen.nextValueAsString(oasOperation, operationPath, false);
+
+        assertNotNull("The generator could not generate a body parameter", value);
+
+        try {
+            JsonNode body = (new ObjectMapper()).readTree(value);
+            assertEquals("markSpecter", body.get(0).get("userName").asText());
+            assertEquals("Too bad, too late.", body.get(0).get("text").asText());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            fail("The body could not be parsed as a JSON");
+        }
+    }
 }
