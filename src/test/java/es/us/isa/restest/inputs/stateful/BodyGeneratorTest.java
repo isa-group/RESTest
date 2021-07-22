@@ -1,4 +1,4 @@
-package es.us.isa.restest.inputs.fuzzing;
+package es.us.isa.restest.inputs.stateful;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;

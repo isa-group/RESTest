@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import es.us.isa.restest.configuration.pojos.Generator;
-import es.us.isa.restest.inputs.fuzzing.BodyGenerator;
-import es.us.isa.restest.inputs.fuzzing.ParameterGenerator;
+import es.us.isa.restest.inputs.stateful.BodyGenerator;
+import es.us.isa.restest.inputs.stateful.ParameterGenerator;
 import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.util.*;
 import org.apache.logging.log4j.LogManager;
@@ -225,7 +225,7 @@ public abstract class AbstractTestCaseGenerator {
 		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
 
 		// Create test data generators for each parameter
-		createGenerators(testOperation.getTestParameters());
+		createGenerators(testOperation);
 
 		return generateOperationTestCases(testOperation);
 	}
@@ -485,8 +485,9 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	// Create all generators needed for the parameters of an operation.
-	public void createGenerators(List<TestParameter> testParameters) {
+	public void createGenerators(Operation operation) {
 
+		List<TestParameter> testParameters = operation.getTestParameters();
 		this.nominalGenerators = new HashMap<>();
 		this.faultyGenerators = new HashMap<>();
 
@@ -505,6 +506,7 @@ public abstract class AbstractTestCaseGenerator {
 						((ParameterGenerator) gen).setDataDirPath(spec.getPath().substring(0, spec.getPath().lastIndexOf('/')));
 						((ParameterGenerator) gen).setSpec(spec);
 						((ParameterGenerator) gen).setParameterName(param.getName());
+						((ParameterGenerator) gen).setParameterType(SpecificationVisitor.findParameter(operation.getOpenApiOperation(), param.getName(), param.getIn()).getType());
 					}
 
 					if(g.isValid()) nomGens.add(gen);

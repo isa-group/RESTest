@@ -1,4 +1,4 @@
-package es.us.isa.restest.inputs.fuzzing;
+package es.us.isa.restest.inputs.stateful;
 
 import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Generator;

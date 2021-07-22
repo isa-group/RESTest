@@ -1,4 +1,4 @@
-package es.us.isa.restest.inputs.fuzzing;
+package es.us.isa.restest.inputs.stateful;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,11 +19,13 @@ import io.swagger.v3.oas.models.media.Schema;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+
+import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFuzzingValue;
+import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
 
 
 public class BodyGenerator implements ITestDataGenerator {
@@ -38,14 +40,13 @@ public class BodyGenerator implements ITestDataGenerator {
     OpenAPISpecification spec;
 
     Random random;
-    ObjectMapper objectMapper;
+    ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Logger logger = LogManager.getLogger(BodyGenerator.class);
     private static final String DOT_CONVERSION = "(dot)";
 
     public BodyGenerator() {
         this.random = new SecureRandom();
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -103,27 +104,7 @@ public class BodyGenerator implements ITestDataGenerator {
                 }
             } else {
                 String resolvedPrefix = prefix.replace("-duplicated", "").replace(DOT_CONVERSION, ".");
-
-                // Data from the same operation:
-                ObjectNode operationDict = (ObjectNode) dictNode.get(operationMethod + operationPath);
-                if (operationDict != null) {
-                    ArrayNode paramDict = ((ArrayNode) dictNode.get(resolvedPrefix));
-                    if (paramDict != null) {
-                        childNode = paramDict.get(this.random.nextInt(paramDict.size()));
-                    }
-                }
-
-                // Data from other operations:
-                if (childNode == null) {
-                    for (JsonNode otherOperationDict : dictNode) {
-                        ArrayNode paramDict = ((ArrayNode) otherOperationDict.get(resolvedPrefix));
-                        if (paramDict != null) {
-                            childNode = paramDict.get(this.random.nextInt(paramDict.size()));
-                            break;
-                        }
-                    }
-                }
-
+                childNode = getParameterValue(dictNode, operationMethod, operationPath, resolvedPrefix);
                 if (childNode == null) {
                     childNode = createNodeFromExample(schema, resolvedPrefix);
                 }
@@ -194,30 +175,16 @@ public class BodyGenerator implements ITestDataGenerator {
     }
 
     private JsonNode getDefaultValue(Schema<?> schema) {
-        JsonNode node;
+        JsonNode node = getNodeFuzzingValue(schema.getType());
 
-        switch (schema.getType()) {
-            case "integer":
-                node = objectMapper.getNodeFactory().numberNode(0);
-                break;
-            case "number":
-                node = objectMapper.getNodeFactory().numberNode(0.0);
-                break;
-            case "boolean":
-                node = objectMapper.getNodeFactory().booleanNode(true);
-                break;
-            default:
-                if ("date".equals(schema.getFormat())) {
-                    node = objectMapper.getNodeFactory().textNode("1970-01-01");
-                } else if("date-time".equals(schema.getFormat())) {
-                    node = objectMapper.getNodeFactory().textNode("1970-01-01T00:00:00Z");
-                } else if(schema.getEnum() != null) {
-                    String enumValue = (String) schema.getEnum().get(random.nextInt(schema.getEnum().size()));
-                    node = objectMapper.getNodeFactory().textNode(enumValue);
-                } else {
-                    node = objectMapper.getNodeFactory().textNode("randomString");
-                }
-                break;
+        // For dates and enums in particular, we may generate valid default values
+        if ("date".equals(schema.getFormat()) && random.nextBoolean()) {
+            node = objectMapper.getNodeFactory().textNode("2020-01-01");
+        } else if("date-time".equals(schema.getFormat()) && random.nextBoolean()) {
+            node = objectMapper.getNodeFactory().textNode("2020-01-01T12:00:00Z");
+        } else if(schema.getEnum() != null && random.nextBoolean()) {
+            String enumValue = (String) schema.getEnum().get(random.nextInt(schema.getEnum().size()));
+            node = objectMapper.getNodeFactory().textNode(enumValue);
         }
 
         return node;

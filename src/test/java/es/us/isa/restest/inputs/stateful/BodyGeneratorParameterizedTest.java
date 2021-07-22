@@ -1,4 +1,4 @@
-package es.us.isa.restest.inputs.fuzzing;
+package es.us.isa.restest.inputs.stateful;
 
 import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Generator;
@@ -6,9 +6,7 @@ import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.JSONManager;
 import io.swagger.v3.oas.models.Operation;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 

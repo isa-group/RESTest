@@ -1,19 +1,18 @@
-package es.us.isa.restest.inputs.fuzzing;
+package es.us.isa.restest.inputs.stateful;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.util.FileManager;
-import es.us.isa.restest.util.JSONManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.security.SecureRandom;
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
+import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFuzzingValue;
+import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static es.us.isa.restest.util.JSONManager.readJSON;
 
@@ -23,6 +22,7 @@ public class ParameterGenerator implements ITestDataGenerator {
     private String operationMethod;
     private String operationPath;
     private String parameterName;
+    private String parameterType;
 
     private String dataDirPath;
     private String defaultValue;
@@ -30,6 +30,8 @@ public class ParameterGenerator implements ITestDataGenerator {
 
     private Random random;
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final Logger logger = LogManager.getLogger(ParameterGenerator.class);
 
     public ParameterGenerator() {
         this.random = new SecureRandom();
@@ -42,31 +44,15 @@ public class ParameterGenerator implements ITestDataGenerator {
 
         if (operationPath != null && checkIfExists(jsonPath)) {
             ObjectNode dict = (ObjectNode) readJSON(jsonPath);
-
-            // Data from the same operation:
-            ObjectNode operationDict = (ObjectNode) dict.get(operationMethod + operationPath);
-            if (operationDict != null) {
-                ArrayNode paramDict = ((ArrayNode) dict.get(parameterName));
-                if (paramDict != null) {
-                    valueNode = paramDict.get(this.random.nextInt(paramDict.size()));
-                }
-            }
-
-            // Data from other operations:
-            if (valueNode == null) {
-                for (JsonNode otherOperationDict : dict) {
-                    ArrayNode paramDict = ((ArrayNode) otherOperationDict.get(parameterName));
-                    if (paramDict != null) {
-                        valueNode = paramDict.get(this.random.nextInt(paramDict.size()));
-                        break;
-                    }
-                }
-            }
+            // TODO: if parameterName == id => augment it
+            valueNode = getParameterValue(dict, operationMethod, operationPath, parameterName);
         }
 
-        if (valueNode == null) {
+        if (valueNode == null)
             valueNode = objectMapper.getNodeFactory().textNode(defaultValue);
-        }
+
+        if (valueNode == null)
+            valueNode = getNodeFuzzingValue(parameterType);
 
         return valueNode;
     }
@@ -91,6 +77,10 @@ public class ParameterGenerator implements ITestDataGenerator {
 
     public void setParameterName(String parameterName) {
         this.parameterName = parameterName;
+    }
+
+    public void setParameterType(String parameterType) {
+        this.parameterType = parameterType;
     }
 
     public void setDataDirPath(String dataDirPath) {

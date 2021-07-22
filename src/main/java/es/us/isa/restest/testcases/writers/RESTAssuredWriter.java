@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Map.Entry;
 
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.inputs.fuzzing.BodyGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;

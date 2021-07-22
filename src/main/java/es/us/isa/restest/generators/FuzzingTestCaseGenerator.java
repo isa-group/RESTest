@@ -28,6 +28,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 
+import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getFuzzingValues;
+import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFromValue;
+
 /**
  * This class implements a generator of fuzzing test cases. It uses a customizable dictionary to obtain
  * fuzzing parameters. Those parameters are classified by type (string, integer, number, boolean).
@@ -37,19 +40,10 @@ import java.util.*;
 
 public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
 
-    private Map<String, List<String>> fuzzingMap;
-
     private static Logger logger = LogManager.getLogger(FuzzingTestCaseGenerator.class.getName());
 
     public FuzzingTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
         super(spec, conf, nTests);
-        TypeReference<HashMap<String, List<String>>> typeRef = new TypeReference<HashMap<String, List<String>>>() {
-        };
-        try {
-            this.fuzzingMap = new ObjectMapper().readValue(FileManager.readFile("src/main/resources/fuzzing-dictionary.json"), typeRef);
-        } catch (JsonProcessingException e) {
-            logger.error("Error processing JSON fuzzing dictionary", e);
-        }
     }
 
     @Override
@@ -63,11 +57,9 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
         for (TestParameter testParam: testOperation.getTestParameters()) {
             if (!testParam.getIn().equals("body")) {
                 ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
-                List<String> fuzzingList = new ArrayList<>(fuzzingMap.get("common"));
-                fuzzingList.addAll(fuzzingMap.getOrDefault(param.getType(), fuzzingMap.get("string"))); // If unknown type, or array, or object, add "string"-type values
-                if (param.getEnumValues() != null) {
+                List<String> fuzzingList = getFuzzingValues(param.getType());
+                if (param.getEnumValues() != null)
                     fuzzingList.addAll(param.getEnumValues());
-                }
                 ITestDataGenerator generator = new RandomInputValueIterator<>(fuzzingList);
                 nominalGenerators.replace(Pair.with(testParam.getName(), testParam.getIn()), Collections.singletonList(generator));
             }
@@ -144,32 +136,11 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
 
     private JsonNode createValueNode(Schema schema, ObjectMapper mapper) {
         JsonNode node = null;
-        List<String> fuzzingList = fuzzingMap.get("common");
-        fuzzingList.addAll(fuzzingMap.get(schema.getType()));
-        if (schema.getEnum() != null) {
+        List<String> fuzzingList = getFuzzingValues(schema.getType());
+        if (schema.getEnum() != null)
             fuzzingList.addAll(schema.getEnum());
-        }
         String value = fuzzingList.get(rand.nextInt(fuzzingList.size()));
-        if (NumberUtils.isCreatable(value)) {
-            Number n = NumberUtils.createNumber(value);
-            if (n instanceof Integer || n instanceof Long) {
-                node = mapper.getNodeFactory().numberNode(n.longValue());
-            } else if (n instanceof BigInteger) {
-                node = mapper.getNodeFactory().numberNode((BigInteger) n);
-            } else if (n instanceof Double || n instanceof Float) {
-                node = mapper.getNodeFactory().numberNode(n.doubleValue());
-            } else if (n instanceof BigDecimal) {
-                node = mapper.getNodeFactory().numberNode((BigDecimal) n);
-            }
-        } else if("true".equals(value) || "false".equals(value)) {
-            node = mapper.getNodeFactory().booleanNode(Boolean.parseBoolean(value));
-        }
-
-        if (node == null) {
-            node = mapper.getNodeFactory().textNode(value);
-        }
-
-        return node;
+        return getNodeFromValue(value);
     }
 
     @Override
