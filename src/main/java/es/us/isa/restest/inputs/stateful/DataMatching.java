@@ -22,6 +22,12 @@ public class DataMatching {
         JsonNode paramValue = null;
         ObjectNode operationDict = (ObjectNode) dict.get(operationMethod + operationPath);
 
+        if ("id".equalsIgnoreCase(paramName)) {
+            paramValue = getParameterValue(dict, operationMethod, operationPath, getIdParameterName(paramName, operationPath));
+            if (paramValue != null)
+                return paramValue;
+        }
+
         // 1st option: Original operation, same parameter name
         paramValue = getValueFromOperationDict(operationDict, paramName);
 
@@ -86,5 +92,12 @@ public class DataMatching {
                 .map(m::stem)
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining());
+    }
+
+    private static String getIdParameterName(String paramName, String operationPath) {
+        return m.stem(operationPath
+                .substring(operationPath.lastIndexOf('/') + 1)
+                .replaceAll("(?i)^(get|post|put|delete|patch|obtain|retrieve|create|update|remove)", ""))
+                + ("ID".equals(paramName) ? "ID" : "Id");
     }
 }
