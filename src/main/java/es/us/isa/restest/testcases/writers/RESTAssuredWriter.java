@@ -4,11 +4,15 @@ import java.io.FileWriter;
 import java.util.Collection;
 import java.util.Map.Entry;
 
+import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
+import static es.us.isa.restest.configuration.TestConfigurationVisitor.hasStatefulGenerators;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
 
@@ -28,24 +32,32 @@ public class RESTAssuredWriter implements IWriter {
 	private boolean enableOutputCoverage = false;	// If true, export output coverage data to CSV
 
 	private String specPath;						// Path to OAS specification file
-	private String testFilePath;					// Path to test configuration file
+	private String testConfPath;					// Path to testConf
+	private OpenAPISpecification spec;				// OpenAPI spec
+	private TestConfigurationObject testConf;		// testConf
+	private String targetDirJava;					// Path to target Java dir (where tests are generated)
 	private String className;						// Test class name
 	private String testId;							// Test suite ID
 	private String packageName;						// Package name
 	private String baseURI;							// API base URI
 	private boolean logToFile;						// If 'true', REST-Assured requests and responses will be logged into external files
+	private boolean statefulFilter;					// If 'true', stateful filter will be used in written classes
 
 	private String APIName;							// API name (necessary for folder name of exported data)
 
 	private static final Logger logger = LogManager.getLogger(RESTAssuredWriter.class.getName());
 	
-	public RESTAssuredWriter(String specPath, String testFilePath, String className, String packageName, String baseURI, Boolean logToFile) {
+	public RESTAssuredWriter(String specPath, String testConfPath, String targetDirJava, String className, String packageName, String baseURI, Boolean logToFile) {
 		this.specPath = specPath;
-		this.testFilePath = testFilePath;
+		this.spec = new OpenAPISpecification(specPath);
+		this.testConfPath = testConfPath;
+		this.testConf = loadConfiguration(testConfPath, spec);
+		this.targetDirJava = targetDirJava;
 		this.className = className;
 		this.packageName = packageName;
 		this.baseURI = baseURI;
 		this.logToFile = logToFile;
+		this.statefulFilter = hasStatefulGenerators(testConf);
 	}
 	
 	/* (non-Javadoc)
@@ -78,7 +90,7 @@ public class RESTAssuredWriter implements IWriter {
 		contentFile += "}\n";
 		
 		//Save to file
-		saveToFile(testFilePath,className,contentFile);
+		saveToFile(targetDirJava,className,contentFile);
 		
 		/* Test Compile
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -95,16 +107,15 @@ public class RESTAssuredWriter implements IWriter {
 		content += "import org.junit.*;\n"
 				+  "import io.restassured.RestAssured;\n"
 				+  "import io.restassured.response.Response;\n"
-				+  "import com.fasterxml.jackson.databind.JsonNode;\n"
-				+  "import com.fasterxml.jackson.databind.ObjectMapper;\n"
-				+  "import java.io.IOException;\n"
 				+  "import org.junit.FixMethodOrder;\n"
 				+  "import static org.junit.Assert.fail;\n"
+				+  "import com.fasterxml.jackson.databind.ObjectMapper;\n"
 				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
 		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.testcases.restassured.filters.StatusCode5XXFilter;\n"
 				+  "import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFilter;\n"
+				+  "import es.us.isa.restest.testcases.restassured.filters.StatefulFilter;\n"
 				+  "import java.io.File;\n";
 		
 		// OAIValidation (Optional)
@@ -127,6 +138,12 @@ public class RESTAssuredWriter implements IWriter {
 					+   "import io.restassured.filter.log.ResponseLoggingFilter;\n"
 					+   "import java.io.PrintStream;\n";
 		}
+
+//		if (statefulFilter) {
+//			content +=  "import java.nio.file.Files;\n"
+//					+	"import java.nio.file.Paths;\n"
+//					+   "import com.fasterxml.jackson.databind.node.ArrayNode;\n";
+//		}
 		
 		content +="\n";
 		
@@ -146,6 +163,8 @@ public class RESTAssuredWriter implements IWriter {
 				+  "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
 				+  "\tprivate static final NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter();\n"
 				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
+		if (statefulFilter)
+			content += "\tprivate static final StatefulFilter statefulFilter = new StatefulFilter(\"" + specPath.substring(0, specPath.lastIndexOf('/')) + "\");\n";
 
 		if (logToFile) {
 			content +=  "\tprivate static RequestLoggingFilter requestLoggingFilter;\n"
@@ -162,6 +181,10 @@ public class RESTAssuredWriter implements IWriter {
 					+  "\tprivate static final String testId = \"" + testId + "\";\n"
 					+  "\tprivate static final CSVFilter csvFilter = new CSVFilter(APIName, testId);\n";
 		}
+
+//		if (statefulFilter) {
+//			content += "\tprivate static final ObjectMapper objectMapper = new ObjectMapper();\n";
+//		}
 
 		content += "\n";
 		
@@ -211,9 +234,6 @@ public class RESTAssuredWriter implements IWriter {
 
 		// Generate the start of the try block
 		content += generateTryBlockStart();
-
-		// Generate all stuff needed before the RESTAssured request
-		content += generatePreRequest(t);
 		
 		// Generate RESTAssured object pointing to the right path
 		content += generateRESTAssuredObject(t);
@@ -274,14 +294,18 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateFiltersInitialization(TestCase t) {
 		String content = "";
 
-		content += "\t\tnominalOrFaultyTestCaseFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n" +
-				"\t\tstatusCode5XXFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + t.getFaultyReason() + "\");\n";
+		content += "\t\tnominalOrFaultyTestCaseFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + escapeJava(t.getFaultyReason()) + "\");\n" +
+				"\t\tstatusCode5XXFilter.updateFaultyData(" + t.getFaulty() + ", " + t.getFulfillsDependencies() + ", \"" + escapeJava(t.getFaultyReason()) + "\");\n";
 
 		if (enableStats || enableOutputCoverage)
 			content += "\t\tcsvFilter.setTestResultId(testResultId);\n" +
 					"\t\tstatusCode5XXFilter.setTestResultId(testResultId);\n" +
 					"\t\tnominalOrFaultyTestCaseFilter.setTestResultId(testResultId);\n" +
 					"\t\tvalidationFilter.setTestResultId(testResultId);\n";
+
+		if (statefulFilter && t.getMethod().equals(HttpMethod.GET)) {
+			content += "\t\tstatefulFilter.setOperation(\"" + t.getMethod().toString() + "\", \"" + t.getPath() + "\");\n";
+		}
 
 		content += "\n";
 
@@ -290,28 +314,6 @@ public class RESTAssuredWriter implements IWriter {
 
 	private String generateTryBlockStart() {
 		return "\t\ttry {\n";
-	}
-
-	private String generatePreRequest(TestCase t) {
-		String content = "";
-
-		if (t.getBodyParameter() != null) {
-			content += generateJSONtoObjectConversion(t);
-		}
-
-		return content;
-	}
-
-	private String generateJSONtoObjectConversion(TestCase t) {
-		String content = "";
-		String bodyParameter = escapeJava(t.getBodyParameter());
-
-		content += "\t\t\tObjectMapper objectMapper = new ObjectMapper();\n"
-				+  "\t\t\tJsonNode jsonBody =  objectMapper.readTree(\""
-				+  bodyParameter
-				+  "\");\n\n";
-
-		return content;
 	}
 
 	private String generateRESTAssuredObject(TestCase t) {
@@ -373,14 +375,14 @@ public class RESTAssuredWriter implements IWriter {
 
 	private String generateBodyParameter(TestCase t) {
 		String content = "";
-
+		String bodyParameter = escapeJava(t.getBodyParameter());
 		if ((t.getFormParameters() == null || t.getFormParameters().size() == 0) &&
 				t.getBodyParameter() != null &&
 				(t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
 				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE)))
 			content += "\t\t\t\t.contentType(\"application/json\")\n";
 		if (t.getBodyParameter() != null) {
-			content += "\t\t\t\t.body(jsonBody)\n";
+			content += "\t\t\t\t.body(\"" + bodyParameter + "\")\n";
 		}
 
 		return content;
@@ -406,6 +408,9 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\t\t\t\t.filter(validationFilter)\n";
 		if (enableStats || enableOutputCoverage) // CSV filter
 			content += "\t\t\t\t.filter(csvFilter)\n";
+		if (statefulFilter && t.getMethod().equals(HttpMethod.GET)) {
+			content += "\t\t\t\t.filter(statefulFilter)\n";
+		}
 
 		return content;
 	}
@@ -420,10 +425,15 @@ public class RESTAssuredWriter implements IWriter {
 //			content += "\n\t\t\tresponse.then().log().ifValidationFails();"
 //			         + "\n\t\t\tresponse.then().log().ifError();\n";
 //		}
+
 		content += "\n\t\t\tresponse.then()";
-		if (logging)
+
+		if (logging) {
 			content += ".log().all()";
+		}
+
 		content += ";\n";
+
 		
 //		if (OAIValidation)
 //			content += "\t\t} catch (RuntimeException ex) {\n"
@@ -501,15 +511,7 @@ public class RESTAssuredWriter implements IWriter {
 //	}
 
 	private String generatePostResponseValidation(TestCase t) {
-		
-		String content = "\t\t\tSystem.out.println(\"Test passed.\");\n";
-
-		if (t.getBodyParameter() != null) {
-			content += "\t\t} catch (IOException e) {\n"
-					+  "\t\t\te.printStackTrace();\n";
-		}
-
-		return content;
+		return "\t\t\tSystem.out.println(\"Test passed.\");\n";
 	}
 
 	private String generateTryBlockEnd() {
@@ -577,12 +579,12 @@ public class RESTAssuredWriter implements IWriter {
 		this.specPath = specPath;
 	}
 
-	public String getTestFilePath() {
-		return testFilePath;
+	public String getTargetDirJava() {
+		return targetDirJava;
 	}
 
-	public void setTestFilePath(String testFilePath) {
-		this.testFilePath = testFilePath;
+	public void setTargetDirJava(String targetDirJava) {
+		this.targetDirJava = targetDirJava;
 	}
 
 	public String getClassName() {
@@ -619,5 +621,13 @@ public class RESTAssuredWriter implements IWriter {
 
 	public void setTestId(String testId) {
 		this.testId = testId;
+	}
+
+	public boolean isStatefulFilter() {
+		return statefulFilter;
+	}
+
+	public void setStatefulFilter(boolean statefulFilter) {
+		this.statefulFilter = statefulFilter;
 	}
 }

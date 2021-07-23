@@ -8,8 +8,10 @@ import es.us.isa.restest.util.RESTestException;
 import org.junit.Test;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class FuzzingTestCaseGeneratorTest {
 
@@ -111,5 +113,46 @@ public class FuzzingTestCaseGeneratorTest {
         assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
 
 
+    }
+
+    @Test
+    public void comments2FuzzingTestCaseGenerator() throws RESTestException {
+        // Load specification
+        String OAISpecPath = "src/test/resources/Comments/swagger_forTestSuite6.yaml";
+        OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+        // Load configuration
+        TestConfigurationObject conf = TestConfigurationIO.loadConfiguration("src/test/resources/Comments/testConf_forTestSuite6.yaml", spec);
+
+        // Set number of test cases to be generated on each path
+        int numTestCases = 5;
+
+        FuzzingTestCaseGenerator gen = new FuzzingTestCaseGenerator(spec, conf, numTestCases);
+
+        Collection<TestCase> testCases = gen.generate();
+
+        int expectedNumberOfTestCases = 30;
+        int expectedNumberOfInvalidTestCases = 0;
+        int expectedNumberOfValidTestCases = 30;
+
+        // Total number of test cases
+        assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+
+        // Valid test cases
+        assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, gen.getnNominal());
+        assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+
+        // Invalid test cases
+        assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, gen.getnFaulty());
+        assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+
+        Collection<TestCase> testCasesCommentsMultiplePath = testCases.stream().filter(tc -> tc.getPath().equals("/comments/multiple")).collect(Collectors.toList());
+
+        assertEquals(5, testCasesCommentsMultiplePath.size());
+
+        testCasesCommentsMultiplePath.forEach(tc -> {
+            assertTrue("The generated body should be an array of objects",
+                    tc.getBodyParameter().matches("^\\[\\{\".*userName.*text.*}]"));
+        });
     }
 }

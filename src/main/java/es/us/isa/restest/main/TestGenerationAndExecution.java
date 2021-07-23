@@ -173,7 +173,7 @@ public class TestGenerationAndExecution {
 	// Create a writer for RESTAssured
 	private static IWriter createWriter() {
 		String basePath = spec.getSpecification().getServers().get(0).getUrl();
-		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, targetDirJava, testClassName, packageName,
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, confPath, targetDirJava, testClassName, packageName,
 				basePath, logToFile);
 		writer.setLogging(true);
 		writer.setAllureReport(true);

@@ -205,6 +205,12 @@
 			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-inline</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
+		</dependency>
 
 
 		<!-- MISC DEPENDENCIES -->
@@ -310,6 +316,13 @@
 			<groupId>es.us.isa</groupId>
 			<artifactId>idl</artifactId>
 			<version>0.0.1</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp -->
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.0.0</version>
 		</dependency>
 
 	</dependencies>

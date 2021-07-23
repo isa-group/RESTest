@@ -414,7 +414,7 @@ public class DefaultTestConfigurationGenerator {
 			testParam.setName("body");
 			testParam.setIn("body");
 
-			if (!requestBody.getRequired()) {
+			if (requestBody.getRequired() != null && !requestBody.getRequired()) {
 				testParam.setWeight(0.5f);
 			}
 

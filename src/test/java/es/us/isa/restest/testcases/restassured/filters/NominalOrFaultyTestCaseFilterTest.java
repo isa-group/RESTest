@@ -4,10 +4,12 @@ import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFi
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.fail;
 
+@Ignore // Bikewise is currently down
 public class NominalOrFaultyTestCaseFilterTest {
 
     @BeforeClass
