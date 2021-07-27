@@ -1,4 +1,4 @@
-package es.us.isa.restest.inputs.fuzzing;
+package es.us.isa.restest.inputs.stateful;
 
 import es.us.isa.restest.configuration.pojos.GenParameter;
 import es.us.isa.restest.configuration.pojos.Generator;
@@ -6,9 +6,7 @@ import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.JSONManager;
 import io.swagger.v3.oas.models.Operation;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -20,7 +18,7 @@ import java.util.Collections;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(Parameterized.class)
-public class BodyGeneratorTest {
+public class BodyGeneratorParameterizedTest {
 
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
@@ -28,6 +26,7 @@ public class BodyGeneratorTest {
                 {"src/test/resources/Comments/swagger.yaml", "src/test/resources/jsonData", "/comments" ,true},
                 {"src/test/resources/Comments/swagger_forTestSuite3.yaml", "", "/comments", true},
                 {"src/test/resources/Comments/swagger_forTestSuite4.yaml", "", "/comments", false},
+                {"src/test/resources/Comments/swagger_forTestSuite6.yaml", "", "/comments/multiple", false},
                 {"src/test/resources/Traccar/openapi.yml", "", "/devices", false},
                 {"src/test/resources/Graphhopper/openapi.yaml", "", "/route", false}
         });
@@ -39,7 +38,7 @@ public class BodyGeneratorTest {
     private final String operationPath;
     private final boolean mutate;
 
-    public BodyGeneratorTest(String specPath, String dataDirPath, String operationPath, boolean mutate) {
+    public BodyGeneratorParameterizedTest(String specPath, String dataDirPath, String operationPath, boolean mutate) {
         generator = new Generator();
         generator.setType("BodyGenerator");
         generator.setGenParameters(new ArrayList<>());

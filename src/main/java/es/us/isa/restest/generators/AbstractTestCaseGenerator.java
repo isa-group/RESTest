@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import es.us.isa.restest.configuration.pojos.Generator;
-import es.us.isa.restest.inputs.fuzzing.BodyGenerator;
-import es.us.isa.restest.inputs.fuzzing.ParameterGenerator;
+import es.us.isa.restest.inputs.stateful.BodyGenerator;
+import es.us.isa.restest.inputs.stateful.ParameterGenerator;
 import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.util.*;
 import org.apache.logging.log4j.LogManager;
@@ -25,6 +25,8 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
+
+import static es.us.isa.restest.configuration.TestConfigurationVisitor.hasStatefulGenerators;
 
 /**
  * Abstract class to be implemented by test case generators
@@ -58,7 +60,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected int nFaulty;													// Number of faulty test cases generated for the current operation
 	protected int nNominal;													// Number of nominal test cases generated for the current operation
 
-
+	protected boolean hasStatefulGenerators;
 
 
 	public AbstractTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
@@ -225,7 +227,10 @@ public abstract class AbstractTestCaseGenerator {
 		Operation testOperation = TestConfigurationVisitor.getOperation(conf, path, method.name());
 
 		// Create test data generators for each parameter
-		createGenerators(testOperation.getTestParameters());
+		createGenerators(testOperation);
+
+		// Update this boolean, which may differ for every operation
+		hasStatefulGenerators = hasStatefulGenerators(testOperation);
 
 		return generateOperationTestCases(testOperation);
 	}
@@ -263,9 +268,13 @@ public abstract class AbstractTestCaseGenerator {
 		}
 
 		// Make sure the test case generated conforms to the specification. Otherwise, throw an exception and stop the execution
-		List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
-		if (!errors.isEmpty()) {
-			throw new RESTestException("The test case generated does not conform to the specification: " + errors);
+		// There's an exception: if stateful generators are configured, we cannot assure that the test case will be valid,
+		// therefore we omit this
+		if (!hasStatefulGenerators) {
+			List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
+			if (!errors.isEmpty()) {
+				throw new RESTestException("The test case generated does not conform to the specification: " + errors);
+			}
 		}
 
 		// If a perturbation generator is included in the test configuration file, try to generate a new (valid) test case by perturbating a valid input object
@@ -485,8 +494,9 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	// Create all generators needed for the parameters of an operation.
-	public void createGenerators(List<TestParameter> testParameters) {
+	public void createGenerators(Operation operation) {
 
+		List<TestParameter> testParameters = operation.getTestParameters();
 		this.nominalGenerators = new HashMap<>();
 		this.faultyGenerators = new HashMap<>();
 
@@ -505,6 +515,7 @@ public abstract class AbstractTestCaseGenerator {
 						((ParameterGenerator) gen).setDataDirPath(spec.getPath().substring(0, spec.getPath().lastIndexOf('/')));
 						((ParameterGenerator) gen).setSpec(spec);
 						((ParameterGenerator) gen).setParameterName(param.getName());
+						((ParameterGenerator) gen).setParameterType(SpecificationVisitor.findParameter(operation.getOpenApiOperation(), param.getName(), param.getIn()).getType());
 					}
 
 					if(g.isValid()) nomGens.add(gen);

@@ -1,4 +1,4 @@
-package es.us.isa.restest.inputs.fuzzing;
+package es.us.isa.restest.inputs.stateful;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,13 +20,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.security.SecureRandom;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
+
+import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFuzzingValue;
+import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
 
 
 public class BodyGenerator implements ITestDataGenerator {
 
-    String operationId;
+    String operationMethod;
+    String operationPath;
     Operation openApiOperation;
     String defaultValue;
     boolean mutate;
@@ -35,31 +38,34 @@ public class BodyGenerator implements ITestDataGenerator {
     OpenAPISpecification spec;
 
     Random random;
-    ObjectMapper objectMapper;
+    ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Logger logger = LogManager.getLogger(BodyGenerator.class);
     private static final String DOT_CONVERSION = "(dot)";
 
     public BodyGenerator() {
         this.random = new SecureRandom();
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
-    public ObjectNode nextValue() {
-        ObjectNode body = null;
-        String jsonPath = this.dataDirPath + '/' + this.operationId + "_data.json";
+    public JsonNode nextValue() {
+        JsonNode body = null;
+        String jsonPath = this.dataDirPath + "/stateful_data.json";
 
-        ObjectNode dictNode = operationId != null && FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
+        ObjectNode dictNode = operationPath != null && FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
         MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
 
         if (requestBody != null) {
             Schema mutatedSchema = mutate? new SchemaMutation(requestBody.getSchema()).mutate() : requestBody.getSchema();
-            ObjectNode rootNode = objectMapper.createObjectNode();
+            JsonNode rootNode = null;
+            if (mutatedSchema instanceof ArraySchema)
+                rootNode = objectMapper.createArrayNode();
+            else
+                rootNode = objectMapper.createObjectNode();
             try {
-                generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "");
+                generateStatefulObjectNode(dictNode, mutatedSchema, rootNode, "", new ArrayList<>(), true);
             } catch (RESTestException e) {
-                logger.warn("There isn't enough data to generate a valid request body for {} operation.", this.operationId);
+                logger.warn("There isn't enough data to generate a valid request body for {} operation.", operationMethod+operationPath);
                 logger.warn("RESTest will use the default request body specified in the testConf.");
             }
             if (rootNode != null) {
@@ -70,49 +76,52 @@ public class BodyGenerator implements ITestDataGenerator {
         return body;
     }
 
-    private void generateStatefulObjectNode(ObjectNode dictNode, Schema<?> schema, JsonNode rootNode, String prefix) throws RESTestException {
+    private void generateStatefulObjectNode(ObjectNode dictNode, Schema<?> schema, JsonNode rootNode, String prefix, List<String> requiredProperties, boolean firstLevel) throws RESTestException {
         if (schema.get$ref() != null) {
             schema = spec.getSpecification().getComponents().getSchemas().get(schema.get$ref().substring(schema.get$ref().lastIndexOf('/') + 1));
         }
 
-        JsonNode childNode;
-        if (schema.getType().equals("object")) {
-            childNode = "".equals(prefix)? rootNode : objectMapper.createObjectNode();
+        String resolvedProperty = prefix.substring(prefix.lastIndexOf('.') + 1).replace("-duplicated", "").replace(DOT_CONVERSION, ".");
 
-            if (schema.getProperties() != null) {
-                for (Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
-                    String paramName = entry.getKey().replace(".", DOT_CONVERSION);
-                    String newPrefix = "".equals(prefix)? prefix + paramName : prefix + '.' + paramName;
-                    generateStatefulObjectNode(dictNode, entry.getValue(), childNode, newPrefix);
+        if ("".equals(prefix) // First level object
+                || requiredProperties == null && rootNode.isArray() // Array has no req. properties, but generate at least one
+                || (requiredProperties != null && requiredProperties.contains(resolvedProperty)) // Req. property
+                || ((requiredProperties == null || !requiredProperties.contains(resolvedProperty)) && random.nextBoolean())) { // Optional property (50% prob.)
+            JsonNode childNode = null;
+            if (schema.getType().equals("object")) {
+                childNode = "".equals(prefix) && firstLevel ? rootNode : objectMapper.createObjectNode();
+
+                if (schema.getProperties() != null) {
+                    for (Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
+                        String paramName = entry.getKey().replace(".", DOT_CONVERSION);
+                        String newPrefix = "".equals(prefix) ? prefix + paramName : prefix + '.' + paramName;
+                        generateStatefulObjectNode(dictNode, entry.getValue(), childNode, newPrefix, schema.getRequired(), false);
+                    }
+                }
+
+            } else if (schema.getType().equals("array")) {
+                childNode = "".equals(prefix) && firstLevel ? rootNode : objectMapper.createArrayNode();
+                if (schema instanceof ArraySchema && ((ArraySchema) schema).getItems() != null) {
+                    generateStatefulObjectNode(dictNode, ((ArraySchema) schema).getItems(), childNode, prefix, schema.getRequired(), false);
+                }
+            } else {
+                String resolvedPrefix = prefix.replace("-duplicated", "").replace(DOT_CONVERSION, ".");
+                childNode = getParameterValue(dictNode, operationMethod, operationPath, resolvedPrefix);
+                if (childNode == null) {
+                    childNode = createNodeFromExample(schema, resolvedPrefix);
                 }
             }
 
-        } else if (schema.getType().equals("array")) {
-            childNode = objectMapper.createArrayNode();
-            if (schema instanceof ArraySchema && ((ArraySchema)schema).getItems() != null) {
-                generateStatefulObjectNode(dictNode, ((ArraySchema)schema).getItems(), childNode, prefix);
-            }
-        } else {
-            String resolvedPrefix = prefix.replace("-duplicated", "").replace(DOT_CONVERSION, ".");
-            ArrayNode valueArray = (ArrayNode) dictNode.get(resolvedPrefix);
-
-            if(valueArray != null) {
-                childNode = valueArray.get(random.nextInt(valueArray.size()));
-            } else {
-                childNode = createNodeFromExample(schema, resolvedPrefix);
+            if (!"".equals(prefix) || !firstLevel) {
+                if (childNode == null || childNode.isMissingNode()) {
+                    throw new RESTestException();
+                } else if (rootNode.isObject()) {
+                    ((ObjectNode) rootNode).set(prefix.substring(prefix.lastIndexOf('.') + 1).replace(DOT_CONVERSION, "."), childNode);
+                } else {
+                    ((ArrayNode) rootNode).add(childNode);
+                }
             }
         }
-
-        if (!"".equals(prefix)) {
-            if (childNode == null || childNode.isNull() || childNode.isMissingNode()) {
-                throw new RESTestException();
-            } else if (rootNode.isObject()) {
-                ((ObjectNode) rootNode).set(prefix.substring(prefix.lastIndexOf('.') + 1).replace(DOT_CONVERSION, "."), childNode);
-            } else {
-                ((ArrayNode) rootNode).add(childNode);
-            }
-        }
-
     }
 
     private JsonNode createNodeFromExample(Schema<?> schema, String prefix) {
@@ -168,30 +177,16 @@ public class BodyGenerator implements ITestDataGenerator {
     }
 
     private JsonNode getDefaultValue(Schema<?> schema) {
-        JsonNode node;
+        JsonNode node = getNodeFuzzingValue(schema.getType());
 
-        switch (schema.getType()) {
-            case "integer":
-                node = objectMapper.getNodeFactory().numberNode(0);
-                break;
-            case "number":
-                node = objectMapper.getNodeFactory().numberNode(0.0);
-                break;
-            case "boolean":
-                node = objectMapper.getNodeFactory().booleanNode(true);
-                break;
-            default:
-                if ("date".equals(schema.getFormat())) {
-                    node = objectMapper.getNodeFactory().textNode("1970-01-01");
-                } else if("date-time".equals(schema.getFormat())) {
-                    node = objectMapper.getNodeFactory().textNode("1970-01-01T00:00:00Z");
-                } else if(schema.getEnum() != null) {
-                    String enumValue = (String) schema.getEnum().get(random.nextInt(schema.getEnum().size()));
-                    node = objectMapper.getNodeFactory().textNode(enumValue);
-                } else {
-                    node = objectMapper.getNodeFactory().textNode("");
-                }
-                break;
+        // For dates and enums in particular, we may generate valid default values
+        if ("date".equals(schema.getFormat()) && random.nextBoolean()) {
+            node = objectMapper.getNodeFactory().textNode("2020-01-01");
+        } else if("date-time".equals(schema.getFormat()) && random.nextBoolean()) {
+            node = objectMapper.getNodeFactory().textNode("2020-01-01T12:00:00Z");
+        } else if(schema.getEnum() != null && random.nextBoolean()) {
+            String enumValue = (String) schema.getEnum().get(random.nextInt(schema.getEnum().size()));
+            node = objectMapper.getNodeFactory().textNode(enumValue);
         }
 
         return node;
@@ -200,9 +195,9 @@ public class BodyGenerator implements ITestDataGenerator {
     @Override
     public String nextValueAsString() {
         String value = null;
-        ObjectNode node = nextValue();
+        JsonNode node = nextValue();
         if (node != null) {
-            value = node.toPrettyString().replace("-duplicated", "");
+            value = node.toString().replace("-duplicated", "");
         }
         return value;
     }
@@ -210,10 +205,7 @@ public class BodyGenerator implements ITestDataGenerator {
     public String nextValueAsString(Operation openApiOperation, String operationPath, boolean mutate) {
         setOpenApiOperation(openApiOperation);
         setMutate(mutate);
-        io.swagger.v3.oas.models.Operation getOperation = spec.getSpecification().getPaths().get(operationPath).getGet();
-        if (getOperation != null) {
-            setOperationId(getOperation.getOperationId());
-        }
+        setOperation("GET", operationPath);
         return nextValueAsString();
     }
 
@@ -221,8 +213,9 @@ public class BodyGenerator implements ITestDataGenerator {
         this.dataDirPath = dataDirPath;
     }
 
-    public void setOperationId(String operationId) {
-        this.operationId = operationId;
+    public void setOperation(String operationMethod, String operationPath) {
+        this.operationMethod = operationMethod;
+        this.operationPath = operationPath;
     }
 
     public void setOpenApiOperation(Operation operation) {

@@ -1,28 +1,37 @@
-package es.us.isa.restest.inputs.fuzzing;
+package es.us.isa.restest.inputs.stateful;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.util.FileManager;
-import es.us.isa.restest.util.JSONManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.security.SecureRandom;
-import java.util.Random;
+import java.util.*;
+
+import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFuzzingValue;
+import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
+import static es.us.isa.restest.util.FileManager.checkIfExists;
+import static es.us.isa.restest.util.JSONManager.readJSON;
 
 
 public class ParameterGenerator implements ITestDataGenerator {
 
-    private  String operationId;
+    private String operationMethod;
+    private String operationPath;
     private String parameterName;
+    private String parameterType;
 
     private String dataDirPath;
     private String defaultValue;
     private OpenAPISpecification spec;
 
     private Random random;
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final Logger logger = LogManager.getLogger(ParameterGenerator.class);
 
     public ParameterGenerator() {
         this.random = new SecureRandom();
@@ -31,20 +40,19 @@ public class ParameterGenerator implements ITestDataGenerator {
     @Override
     public JsonNode nextValue() {
         JsonNode valueNode = null;
-        String jsonPath = this.dataDirPath + '/' + this.operationId + "_data.json";
+        String jsonPath = dataDirPath + "/stateful_data.json";
 
-        if (operationId != null && FileManager.checkIfExists(jsonPath)) {
-            ObjectNode dictNode = (ObjectNode) JSONManager.readJSON(jsonPath);
-            ArrayNode arrayNode = ((ArrayNode)dictNode.get(parameterName));
-            if (arrayNode != null) {
-                valueNode = arrayNode.get(this.random.nextInt(arrayNode.size()));
-            }
+        if (operationPath != null && checkIfExists(jsonPath)) {
+            ObjectNode dict = (ObjectNode) readJSON(jsonPath);
+            // TODO: if parameterName == id => augment it
+            valueNode = getParameterValue(dict, operationMethod, operationPath, parameterName);
         }
 
-        if (valueNode == null) {
-            ObjectMapper mapper = new ObjectMapper();
-            valueNode = mapper.getNodeFactory().textNode(defaultValue);
-        }
+        if (valueNode == null)
+            valueNode = objectMapper.getNodeFactory().textNode(defaultValue);
+
+        if (valueNode == null)
+            valueNode = getNodeFuzzingValue(parameterType);
 
         return valueNode;
     }
@@ -62,7 +70,7 @@ public class ParameterGenerator implements ITestDataGenerator {
     public String nextValueAsString(String operationPath) {
         io.swagger.v3.oas.models.Operation getOperation = spec.getSpecification().getPaths().get(operationPath).getGet();
         if (getOperation != null) {
-            setOperationId(getOperation.getOperationId());
+            setOperation("GET", operationPath);
         }
         return nextValueAsString();
     }
@@ -71,12 +79,17 @@ public class ParameterGenerator implements ITestDataGenerator {
         this.parameterName = parameterName;
     }
 
+    public void setParameterType(String parameterType) {
+        this.parameterType = parameterType;
+    }
+
     public void setDataDirPath(String dataDirPath) {
         this.dataDirPath = dataDirPath;
     }
 
-    public void setOperationId(String operationId) {
-        this.operationId = operationId;
+    public void setOperation(String operationMethod, String operationPath) {
+        this.operationMethod = operationMethod;
+        this.operationPath = operationPath;
     }
 
     public void setSpec(OpenAPISpecification spec) {

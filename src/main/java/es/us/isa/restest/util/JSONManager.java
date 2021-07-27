@@ -1,5 +1,6 @@
 package es.us.isa.restest.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,6 +19,8 @@ public class JSONManager {
 
     private static final Logger logger = LogManager.getLogger(JSONManager.class.getName());
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
     public static List<Object> readMultipleJSONs(List<String> jsonPaths) {
         List<Object> values = new ArrayList<Object>();
         Object jsonData;
@@ -35,9 +38,7 @@ public class JSONManager {
     public static Object readJSON(String jsonPath) {
         JsonNode jsonData = null;
         try {
-            String content = readFile(jsonPath);
-            ObjectMapper objectMapper = new ObjectMapper();
-            jsonData = objectMapper.readTree(content);
+            jsonData = objectMapper.readTree(new File(jsonPath));
         } catch (IOException ex) {
             logger.error("Error parsing JSON file: {}", jsonPath);
             logger.error("Exception: ", ex);
@@ -48,7 +49,6 @@ public class JSONManager {
     public static Object readJSONFromString(String json) {
         JsonNode jsonData = null;
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             jsonData = objectMapper.readTree(json);
         } catch (IOException ex) {
             logger.error("Error parsing JSON String: \n {}", json);
@@ -60,7 +60,6 @@ public class JSONManager {
     public static String getStringFromJSON(JsonNode node) {
         String json = null;
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
             json = objectMapper.writeValueAsString(node);
         } catch (JsonProcessingException ex) {
             logger.error("Error parsing JSON: {}", node);
