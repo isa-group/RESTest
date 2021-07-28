@@ -6,5 +6,9 @@ orbs:
 workflows:
   maven_test:
     jobs:
+      - install_dependencies:
+          command: ./scripts/install_dependencies.sh
       - maven/test:
-          command: verify  org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dmaven.javadoc.skip=true -Dgpg.skip=true
+          requires:
+            - install_dependencies
+          command: verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dmaven.javadoc.skip=true -Dgpg.skip=true

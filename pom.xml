@@ -307,15 +307,15 @@
 		<!-- IDLreasoner dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idl-reasoner</artifactId>
-			<version>0.0.1</version>
+			<artifactId>idlreasoner-choco</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- IDL dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idl</artifactId>
-			<version>0.0.1</version>
+			<artifactId>idl-choco</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp -->
