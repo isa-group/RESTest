@@ -4,7 +4,7 @@ version: 2.1
 #  maven: circleci/maven@1.2.0
 
 jobs:
-  maven/test:
+  custom_maven:
     docker:
       - image: cimg/openjdk:8.0
     steps:
@@ -31,4 +31,4 @@ jobs:
 workflows:
   maven_test:
     jobs:
-      - maven/test
+      - custom_maven
