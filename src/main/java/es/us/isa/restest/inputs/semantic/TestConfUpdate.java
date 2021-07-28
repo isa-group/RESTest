@@ -61,15 +61,19 @@ public class TestConfUpdate {
 
     }
 
-    public static void updateTestConfWithNewPredicates(TestConfigurationObject conf, String confPath, ParameterValues parameterValues, Set<String>  newPredicates){
+    public static void updateTestConfWithNewPredicates(
+            TestConfigurationObject conf, String confPath, SemanticOperation semanticOperation,
+            SemanticParameter semanticParameter, Set<String>  newPredicates
+    ){
+
         int opIndex = IntStream.range(0, conf.getTestConfiguration().getOperations().size())
-                .filter(i -> parameterValues.getOperation().getOperationId().equals(conf.getTestConfiguration().getOperations().get(i).getOperationId()))
+                .filter(i -> semanticOperation.getOperationId().equals(conf.getTestConfiguration().getOperations().get(i).getOperationId()))
                 .findFirst().getAsInt();
 
         TestParameter testParameter = conf.getTestConfiguration().getOperations()
                 .get(opIndex)
                 .getTestParameters().stream()
-                .filter(x ->x.getName().equals(parameterValues.getTestParameter().getName()))
+                .filter(x ->x.getName().equals(semanticParameter.getTestParameter().getName()))
                 .findFirst().orElseThrow(() -> new NullPointerException("No TestParameter found"));
         Generator generator = testParameter.getGenerators().stream()
                 .filter(x->x.getType().equals(RANDOM_INPUT_VALUE) && x.getGenParameters().stream().anyMatch(y->y.getName().equals("predicates"))).findFirst().orElseThrow(() -> new NullPointerException("No Generator found"));

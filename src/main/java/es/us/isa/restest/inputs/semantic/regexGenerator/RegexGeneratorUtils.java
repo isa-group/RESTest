@@ -80,30 +80,30 @@ public class RegexGeneratorUtils {
     }
 
     // This method returns all the Semantic parameters of a given testConf file
-    public static Map<Pair<Operation, TestParameter>, Set<String>> getMapOfSemanticParameters(List<Operation> operations){
-        Map<Pair<Operation, TestParameter>, Set<String>> res = new HashMap<>();
-
-        for(Operation operation: operations){
-            // Adding parameters that use a csv to the maps
-            for(TestParameter testParameter: operation.getTestParameters()){
-                List<Generator> generatorList = testParameter.getGenerators();
-                for(Generator generator: generatorList){
-                    if(generator.getType().equals(RANDOM_INPUT_VALUE)){
-                        for(GenParameter genParameter: generator.getGenParameters()){
-
-                            if(genParameter.getName().equals("predicates")){
-                                // Adding the pair <OperationId, parameterName> to the map
-                                Pair<Operation, TestParameter> operationAndParameter = Pair.with(operation, testParameter);
-                                res.put(operationAndParameter, new HashSet<>());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return res;
-    }
+//    public static Map<Pair<Operation, TestParameter>, Set<String>> getMapOfSemanticParameters(List<Operation> operations){
+//        Map<Pair<Operation, TestParameter>, Set<String>> res = new HashMap<>();
+//
+//        for(Operation operation: operations){
+//            // Adding parameters that use a csv to the maps
+//            for(TestParameter testParameter: operation.getTestParameters()){
+//                List<Generator> generatorList = testParameter.getGenerators();
+//                for(Generator generator: generatorList){
+//                    if(generator.getType().equals(RANDOM_INPUT_VALUE)){
+//                        for(GenParameter genParameter: generator.getGenParameters()){
+//
+//                            if(genParameter.getName().equals("predicates")){
+//                                // Adding the pair <OperationId, parameterName> to the map
+//                                Pair<Operation, TestParameter> operationAndParameter = Pair.with(operation, testParameter);
+//                                res.put(operationAndParameter, new HashSet<>());
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        return res;
+//    }
 
     public static List<String> getCsvPaths(TestParameter testParameter){
         List<String> res = new ArrayList<>();
@@ -156,8 +156,8 @@ public class RegexGeneratorUtils {
         return res;
     }
 
-    public static void updateCsvWithRegex(ParameterValues parameterValues, String regex){
-        List<String> csvPaths = getCsvPaths(parameterValues.getTestParameter());
+    public static void updateCsvWithRegex(SemanticParameter semanticParameter, String regex){
+        List<String> csvPaths = getCsvPaths(semanticParameter.getTestParameter());
 
         // Filter CSVs by regex
         for(String csvPath: csvPaths){
@@ -167,10 +167,9 @@ public class RegexGeneratorUtils {
 
     }
 
-    public static void addResultsToCSV(ParameterValues parameterValues, Set<String> results){
-        List<String> csvPaths = getCsvPaths(parameterValues.getTestParameter());
+    public static void addResultsToCSV(SemanticParameter semanticParameter, Set<String> results){
+        List<String> csvPaths = getCsvPaths(semanticParameter.getTestParameter());
 
-        // TODO: Consider creating a separated CSV file
         String csvPath = csvPaths.get(0);
 
         // Update the first CSV file with new data
@@ -193,40 +192,37 @@ public class RegexGeneratorUtils {
 
     }
 
-    // TODO (REFACTOR): Operation and testCase (contains operationId) are redundant
-    public static void updateValidAndInvalidValues(
-            TestCase testCase,
-            Map<Pair<Operation, TestParameter>, Set<String>> validValues,
-            Map<Pair<Operation, TestParameter>, Set<String>> invalidValues,
-            Set<ParameterValues> valuesFromPreviousIterations,
-            String responseCode,
-            List<Operation> operations){
+    public static void updateValidAndInvalidValues(Set<SemanticOperation> semanticOperations, TestCase testCase, String responseCode){
 
-        String operationId = testCase.getOperationId();
+        String testCaseOperationId = testCase.getOperationId();
 
-        // Iterate semantic parameters (Filter by operationId)
-        Set<TestParameter> parametersOfOperation = validValues.keySet().stream()
-                .filter(x -> x.getValue0().getOperationId().equals(operationId)).map(x -> x.getValue1())
-                .collect(Collectors.toSet());
+        // Get SemanticOperation
+        SemanticOperation semanticOperation = semanticOperations.stream()
+                .filter(x-> x.getOperationId().equals(testCaseOperationId)).findFirst()
+                .orElseThrow(() -> new NullPointerException("Semantic Operation not found"));
 
-        for (TestParameter parameter : parametersOfOperation) {
-            Operation operation = operations.stream().filter(x->x.getOperationId().equals(operationId)).findFirst().get();
-            Pair<Operation, TestParameter> pair = Pair.with(operation, parameter);
+        // Get SemanticParameter of iteration
+        Set<SemanticParameter> semanticParametersOfOperation = semanticOperation.getSemanticParameters();
 
+
+
+        for (SemanticParameter semanticParameter : semanticParametersOfOperation) {
             // Search parameter value in corresponding map
-            String value = testCase.getParameterValue(parameter.getIn(), parameter.getName());
+            TestParameter testParameter = semanticParameter.getTestParameter();
+            String value = testCase.getParameterValue(testParameter.getIn(), testParameter.getName());
 
             // Add parameter value to a map depending on the response code
             // 5XX codes are not taken into consideration
             if(value != null){
                 switch (responseCode.charAt(0)) {
                     case '2':
-                        validValues.get(pair).add(value);
+                        // Add valid value to SemanticParameter
+                        semanticParameter.addValidValue(value);
                         break;
                     case '4':
-                        if(isTestValueInvalid(testCase, parameter, valuesFromPreviousIterations, validValues, operation)){
+                        if(isTestValueInvalid(testCase, semanticParameter, semanticOperation)){
                             // Add only if the rest of the parameter values are considered valid (from previous or current iterations)
-                            invalidValues.get(pair).add(value);
+                            semanticParameter.addInvalidValue(value);
                         }
                         break;
                 }
@@ -236,47 +232,28 @@ public class RegexGeneratorUtils {
 
     public static Boolean isTestValueInvalid
             (TestCase testCase,
-             TestParameter parameterToDiscard,
-             Set<ParameterValues> valuesFromPreviousIterations,
-             Map<Pair<Operation, TestParameter>, Set<String>> validValues,
-             Operation operation
+             SemanticParameter parameterToDiscard,
+             SemanticOperation semanticOperation
             ){
-        // TODO: Check if this method is uncommented (remember refactorization)
+        // This function returns true if all the other values of the semantic parameters are valid, meaning that
+        // the current value is invalid
+        for(SemanticParameter otherSemanticParameter: semanticOperation.getSemanticParameters()) {
+            //Check that all the other values are valid
+            if(!otherSemanticParameter.equals(parameterToDiscard)){
 
-//        String operationId = testCase.getOperationId();
+                // Get the value from the current testCase
+                String currentValueOfOtherParameter = testCase.getParameterValue(otherSemanticParameter.getTestParameter().getIn(), otherSemanticParameter.getTestParameter().getName());
 
-        // Get values of current iteration and remove parameterToDiscard
-        Map<Pair<Operation, TestParameter>, Set<String>> validValuesOfOperation =
-                validValues
-                        .keySet().stream()
-                        .filter(x->x.getValue0().equals(operation) && !x.getValue1().getName().equals(parameterToDiscard.getName()))
-                        .filter(validValues::containsKey).collect(Collectors.toMap(Function.identity(), validValues::get));
-
-        Set<ParameterValues> valuesFromPreviousIterationsOfOperation = valuesFromPreviousIterations.stream()
-                .filter(x->x.getOperation().getOperationId().equals(operation.getOperationId()) && !x.getTestParameter().getName().equals(parameterToDiscard.getName()))
-                .collect(Collectors.toSet());
-
-        // Iterate test parameters, if the rest of parameter values are valid at some point, add the parameterToDiscard to the invalid set (return true)
-        for(ParameterValues parameterValues: valuesFromPreviousIterationsOfOperation){
-            TestParameter testParameter = parameterValues.getTestParameter();
-
-            String value = testCase.getParameterValue(testParameter.getIn(), testParameter.getName());
-            Pair<Operation, TestParameter> operationParameter = Pair.with(operation, testParameter);
-
-            if(
-                    value!=null &&
-                    !parameterValues.getValidValues().contains(value) &&
-                    !validValuesOfOperation.get(operationParameter).contains(value)
-            ){
-                return false;
+                if (
+                        currentValueOfOtherParameter != null &&
+                        !otherSemanticParameter.getValidValues().contains(currentValueOfOtherParameter)
+                ){
+                    return false;
+                }
             }
         }
-
         return true;
     }
-
-
-
 
 
 //    public static void main(String[] args) throws Exception {

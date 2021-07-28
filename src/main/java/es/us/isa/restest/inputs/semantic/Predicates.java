@@ -28,20 +28,23 @@ public class Predicates {
 
     private static final Logger log = LogManager.getLogger(Predicates.class);
 
-    public static Set<String> getPredicates(ParameterValues parameterValues, String regex, List<String> predicatesToIgnore, OpenAPISpecification specification){
+    public static Set<String> getPredicates(
+            SemanticOperation semanticOperation,
+            SemanticParameter semanticParameter,
+            String regex,
+            OpenAPISpecification specification){
 
         Set<String> predicates = new HashSet<>();
+        List<String> predicatesToIgnore = new ArrayList<>(semanticParameter.getPredicates());
 
-//        OpenAPISpecification spec = getOpenAPISpecification();
-
-        TestParameter testParameter = parameterValues.getTestParameter();
+        TestParameter testParameter = semanticParameter.getTestParameter();
         String parameterName = testParameter.getName();
 
         // Add regex to semanticParameter
         testParameter.addRegexToSemanticParameter(regex);
 
-        PathItem pathItem = specification.getSpecification().getPaths().get(parameterValues.getOperation().getTestPath());
-        String parameterDescription = getParameterDescription(pathItem, parameterName, parameterValues.getOperation().getMethod());
+        PathItem pathItem = specification.getSpecification().getPaths().get(semanticOperation.getOperationPath());
+        String parameterDescription = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
 
         // If the paramater name is only a character, compare with description
         if(parameterName.length() == 1 && parameterDescription!=null){
@@ -342,20 +345,20 @@ public class Predicates {
         return parameterName;
     }
 
-    public  static List<String> getPredicatesToIgnore(TestParameter testParameter){
-        List<Generator> generators = testParameter.getGenerators();
-        for(Generator generator: generators){
-            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
-                for(GenParameter genParameter: generator.getGenParameters()){
-                    if(genParameter.getName().equals("predicates")){
-                        return genParameter.getValues();
-                    }
-                }
-
-            }
-        }
-        throw new NullPointerException("The provided TestParameter does not contain a list of predicates");
-    }
+//    public  static List<String> getPredicatesToIgnore(TestParameter testParameter){
+//        List<Generator> generators = testParameter.getGenerators();
+//        for(Generator generator: generators){
+//            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
+//                for(GenParameter genParameter: generator.getGenParameters()){
+//                    if(genParameter.getName().equals("predicates")){
+//                        return genParameter.getValues();
+//                    }
+//                }
+//
+//            }
+//        }
+//        throw new NullPointerException("The provided TestParameter does not contain a list of predicates");
+//    }
 
 
 

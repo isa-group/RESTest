@@ -9,24 +9,19 @@ import es.us.isa.restest.testcases.TestResult;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.TestManager;
 
-
 import it.units.inginf.male.outputs.FinalSolution;
-import org.javatuples.Pair;
-
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
-import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
-import static es.us.isa.restest.configuration.pojos.ParameterValues.getValuesFromPreviousIterations;
+import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.Predicates.*;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithNewPredicates;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.*;
-import static es.us.isa.restest.util.FileManager.*;
 import java.util.Collection;
 import java.util.List;
 
@@ -86,14 +81,13 @@ public class StatsReportManager {
 
 
     public void learn(String testId, Boolean secondPredicateSearch, OpenAPISpecification spec, String confPath) {
+
+        // 1. Get Semantic Operations (Set<SemanticOperation>)
+        // 2. Set valid and invalid values with values from previous iterations
         List<Operation> operations = getTestConfigurationObject().getTestConfiguration().getOperations();
+        // An operation is a SemanticOperation if it contains the genParameter "predicates"
+        Set<SemanticOperation> semanticOperations = getSemanticOperationsWithValuesFromPreviousIterations(operations, getExperimentName());
 
-        // Store the values of the parameters of successful and unsuccessful operations (current iteration)
-        Map<Pair<Operation, TestParameter>, Set<String>> validValues = getMapOfSemanticParameters(operations);
-        Map<Pair<Operation, TestParameter>, Set<String>> invalidValues = getMapOfSemanticParameters(operations);
-
-        // Read the valid and invalid values of previous iterations
-        Set<ParameterValues> valuesFromPreviousIterations = getValuesFromPreviousIterations(getExperimentName(), validValues.keySet());
 
         // Get TestResults
         String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
@@ -108,41 +102,43 @@ public class StatsReportManager {
                         .findFirst()
                         .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
-                // Add parameter value to a map depending on the response code
-                updateValidAndInvalidValues(testCase, validValues, invalidValues, valuesFromPreviousIterations, responseCode, operations);
+                // Add parameter value to valid or invalid values depending on the response code
+                updateValidAndInvalidValues(semanticOperations, testCase, responseCode);
             }
         }
 
-        // Write csv of valid (directory)
-        for(ParameterValues parameterValues: valuesFromPreviousIterations){
-            Pair<Operation, TestParameter> key = new Pair<>(parameterValues.getOperation(), parameterValues.getTestParameter());
-            parameterValues.updateValidAndInvalidValuesCSV(validValues.get(key), invalidValues.get(key));
+        // Write csv of valid and invalid values (directory)
+        for(SemanticOperation semanticOperation: semanticOperations){
+            semanticOperation.updateCSVWithValidAndInvalidValues(getExperimentName());
         }
 
         // Learn regular expression
         // valuesFromPreviousIterations has been updated, containing PREVIOUS AND CURRENT values
-        for(ParameterValues parameterValues: valuesFromPreviousIterations){
 
-            Set<String> validSet = parameterValues.getValidValues();
-            Set<String> invalidSet = parameterValues.getInvalidValues();
+        // NEW
+        for(SemanticOperation semanticOperation: semanticOperations){
+            for(SemanticParameter semanticParameter: semanticOperation.getSemanticParameters()){
 
-            List<String> predicatesToIgnore = getPredicatesToIgnore(parameterValues.getTestParameter());
+                Set<String> validSet = semanticParameter.getValidValues();
+                Set<String> invalidSet = semanticParameter.getInvalidValues();
 
-            // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
-            if(invalidSet.size() >= minimumValidAndInvalidValues && validSet.size() >= minimumValidAndInvalidValues){
+//                Set<String> predicatesToIgnore = semanticParameter.getPredicates();
 
-                // OperationName_parameterId
-                String name = parameterValues.getOperation().getOperationId() + "_" + parameterValues.getTestParameter().getName();
+                // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
+                if(invalidSet.size() >= minimumValidAndInvalidValues && validSet.size() >= minimumValidAndInvalidValues){
 
-                // Generate regex
-                logger.info("Generating regex...");
-                FinalSolution solution = learnRegex(name, validSet, invalidSet,false);
-                String regex = solution.getSolution();
-                logger.info("Regex learned for parameter " + parameterValues.getTestParameter().getName() + ": " + regex);
-                logger.info("Accuracy: " + solution.getValidationPerformances().get("character accuracy"));
-                logger.info("Precision: " + solution.getValidationPerformances().get("match precision"));
-                logger.info("Recall: " + solution.getValidationPerformances().get("match recall"));
-                logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
+                    // OperationName_parameterId
+                    String name = semanticOperation.getOperationId() + "_" + semanticParameter.getTestParameter().getName();
+
+                    // Generate regex
+                    logger.info("Generating regex...");
+                    FinalSolution solution = learnRegex(name, validSet, invalidSet,false);
+                    String regex = solution.getSolution();
+                    logger.info("Regex learned for parameter " + semanticParameter.getTestParameter().getName() + ": " + regex);
+                    logger.info("Accuracy: " + solution.getValidationPerformances().get("character accuracy"));
+                    logger.info("Precision: " + solution.getValidationPerformances().get("match precision"));
+                    logger.info("Recall: " + solution.getValidationPerformances().get("match recall"));
+                    logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
 //                "match precision"
 //                        "character accuracy": 1.0,
 //                        "character precision": 1.0,
@@ -150,44 +146,44 @@ public class StatsReportManager {
 //                        "character recall": 1.0,
 //                        "match f-measure": 1.0
 
-                // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
-                if(solution.getValidationPerformances().get(metricToUse)  >= minimumValueOfMetric){
-                    // Filter all the CSVs of the associated testParameter
-                    updateCsvWithRegex(parameterValues, regex);
+                    // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
+                    if(solution.getValidationPerformances().get(metricToUse)  >= minimumValueOfMetric){
+                        // Filter all the CSVs of the associated testParameter
+                        updateCsvWithRegex(semanticParameter, regex);
 
-                    // Update CSVs of valid and invalid values according to the generated regex
-                    updateCsvWithRegex(parameterValues.getValidCSVPath(), regex);
-                    updateCsvWithRegex(parameterValues.getInvalidCSVPath(), regex);
+                        // Update CSVs of valid and invalid values according to the generatede regular expression
+                        updateCsvWithRegex(semanticParameter.getValidCSVPath(getExperimentName(),semanticOperation.getOperationId()), regex);
+                        updateCsvWithRegex(semanticParameter.getInvalidCSVPath(getExperimentName(), semanticOperation.getOperationId()), regex);
 
-                    // Second predicate search using the generated regex
-                    if(secondPredicateSearch && predicatesToIgnore.size() < maxNumberOfPredicates){
+                        // Second predicate search using the generated regex
+                        if(secondPredicateSearch && semanticParameter.getPredicates().size() < maxNumberOfPredicates){
 
-                        // Get new predicates for parameter
-                        Set<String> predicates = new HashSet<>();
-                        predicates = getPredicates(parameterValues, regex, predicatesToIgnore, spec);
+                            // Get new predicates for parameter
+                            Set<String> predicates = getPredicates(semanticOperation, semanticParameter, regex, spec);
 
+                            if(predicates.size() > 0) {
+                                // Get new values
+                                Set<String> results = getNewValues(semanticParameter, predicates, regex);
 
-                        if(predicates.size() > 0) {
-                            // Get new values
-                            Set<String> results = getNewValues(parameterValues, predicates, regex);
+                                // Add results to the corresponding CSV Path
+                                addResultsToCSV(semanticParameter, results);
 
-                            // Add results to the corresponding CSV Path
-                            addResultsToCSV(parameterValues, results);
-
-                            // Add predicate to TestParameter and update testConf file
-                            TestConfigurationObject conf = getTestConfigurationObject();
-                            updateTestConfWithNewPredicates(conf, confPath, parameterValues, predicates);
-
+                                // Add predicate to TestParameter and update testConf file
+                                TestConfigurationObject conf = getTestConfigurationObject();
+                                updateTestConfWithNewPredicates(conf, confPath, semanticOperation, semanticParameter, predicates);
+                            }
 
                         }
-                    }
 
+
+                    }
 
                 }
 
             }
 
         }
+
 
     }
 

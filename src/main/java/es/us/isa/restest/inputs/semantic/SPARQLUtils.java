@@ -1,7 +1,7 @@
 package es.us.isa.restest.inputs.semantic;
 
-import es.us.isa.restest.configuration.pojos.ParameterValues;
 import es.us.isa.restest.configuration.pojos.SemanticParameter;
+import es.us.isa.restest.configuration.pojos.TestParameter;
 import org.javatuples.Pair;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.RDFNode;
@@ -381,14 +381,18 @@ public class SPARQLUtils {
         return res;
     }
 
-    public static Set<String> getNewValues(ParameterValues parameterValues,
+    public static Set<String> getNewValues(SemanticParameter oldSemanticParameter,
                                            Set<String> predicates, String regex){
         Map<String, Set<String>> result = new HashMap<>();
 
-        SemanticParameter semanticParameter = new SemanticParameter(parameterValues.getTestParameter());
-        semanticParameter.setPredicates(predicates);
+        // We create a new Semantic parameter containing the new predicates
+        TestParameter testParameter = oldSemanticParameter.getTestParameter();
+        // Add regex to semanticParameter
+        testParameter.addRegexToSemanticParameter(regex);
+        SemanticParameter newSemanticParameter = new SemanticParameter(testParameter);
+        newSemanticParameter.setPredicates(predicates);
 
-        Pair<String, Map<String, String>> queryString = generateQuery(Collections.singleton(semanticParameter), false);
+        Pair<String, Map<String, String>> queryString = generateQuery(Collections.singleton(newSemanticParameter), false);
 
         try {
             result = executeSPARQLQuery(queryString, szEndpoint);
@@ -396,7 +400,7 @@ public class SPARQLUtils {
             e.printStackTrace();
         }
 
-        return result.get(parameterValues.getTestParameter().getName());
+        return result.get(newSemanticParameter.getTestParameter().getName());
 
     }
 
