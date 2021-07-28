@@ -1,8 +1,5 @@
 version: 2.1
 
-#orbs:
-#  maven: circleci/maven@1.2.0
-
 jobs:
   maven_test:
     docker:
@@ -17,7 +14,7 @@ jobs:
           key: maven-{{ checksum "/tmp/maven_cache_seed" }}
       - run:
           name: Install Dependencies
-          command: ls -la && ./scripts/install_dependencies.sh && mvn dependency:go-offline
+          command: ./scripts/install_dependencies.sh && mvn dependency:go-offline
       - run:
           name: Run Tests
           command: mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dmaven.javadoc.skip=true -Dgpg.skip=true
@@ -32,3 +29,17 @@ workflows:
   maven_test:
     jobs:
       - maven_test
+
+
+# Uncomment when idl-choco and idlreasoner-choco are uploaded to mvnrepository
+
+#version: 2.1
+#
+#orbs:
+#  maven: circleci/maven@1.0.3
+#
+#workflows:
+#  maven_test:
+#    jobs:
+#      - maven/test:
+#          command: verify  org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dmaven.javadoc.skip=true -Dgpg.skip=true
