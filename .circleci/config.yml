@@ -3,18 +3,18 @@ version: 2.1
 jobs:
   maven_test:
     docker:
-      - image: cimg/openjdk:8.0
+      - image: cimg/openjdk:11.0
     steps:
       - checkout
-#      - run:
-#          name: Generate Cache Checksum
-#          command: find . -name 'pom.xml' | sort | xargs cat > /tmp/maven_cache_seed
-#      - restore_cache:
-#          name: Restoring cache
-#          key: maven-{{ checksum "/tmp/maven_cache_seed" }}
+      - run:
+          name: Generate Cache Checksum
+          command: find . -name 'pom.xml' | sort | xargs cat > /tmp/maven_cache_seed
+      - restore_cache:
+          name: Restoring cache
+          key: maven-{{ checksum "/tmp/maven_cache_seed" }}
       - run:
           name: Install Dependencies
-          command: ./scripts/install_dependencies.sh && mvn -DskipTests clean install dependency:resolve-plugins dependency:go-offline
+          command: ./scripts/install_dependencies.sh && mvn dependency:go-offline
       - run:
           name: Run Tests
           command: mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dmaven.javadoc.skip=true -Dgpg.skip=true
