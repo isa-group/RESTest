@@ -4,7 +4,7 @@ version: 2.1
 #  maven: circleci/maven@1.2.0
 
 jobs:
-  custom_maven:
+  maven_test:
     docker:
       - image: cimg/openjdk:8.0
     steps:
@@ -17,7 +17,7 @@ jobs:
           key: maven-{{ checksum "/tmp/maven_cache_seed" }}
       - run:
           name: Install Dependencies
-          command: ls -la && ./RESTest/scripts/install_dependencies && mvn dependency:go-offline
+          command: ls -la && ./scripts/install_dependencies.sh && mvn dependency:go-offline
       - run:
           name: Run Tests
           command: mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dmaven.javadoc.skip=true -Dgpg.skip=true
@@ -31,4 +31,4 @@ jobs:
 workflows:
   maven_test:
     jobs:
-      - custom_maven
+      - maven_test
