@@ -965,5 +965,8 @@
     "comments.id": ["8"],
     "commentId": ["9"],
     "commentIds": ["10"]
+  },
+  "GET/youtube/v3/testingIdTransformation": {
+    "random.exampleId": ["0"]
   }
 }
