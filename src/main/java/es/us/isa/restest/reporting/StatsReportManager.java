@@ -19,6 +19,7 @@ import java.util.*;
 import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.Predicates.*;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
+import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithIncreasedNumberOfTries;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithNewPredicates;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.*;
@@ -44,6 +45,7 @@ public class StatsReportManager {
     private final int minimumValidAndInvalidValues = 5;
     private final String metricToUse = "match recall";
     private final Double minimumValueOfMetric = 0.9;
+    private final int maxNumberOfTriesToGenerateRegularExpression = 2;
 
 
     private static final Logger logger = LogManager.getLogger(StatsReportManager.class.getName());
@@ -120,9 +122,13 @@ public class StatsReportManager {
                 Set<String> invalidSet = semanticParameter.getInvalidValues();
 
                 // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
-                // TODO: Add number of tries to if statement (Check)
-                if(invalidSet.size() >= minimumValidAndInvalidValues && validSet.size() >= minimumValidAndInvalidValues){
-                    // TODO: Increase the number of tries
+                if(invalidSet.size() >= minimumValidAndInvalidValues && validSet.size() >= minimumValidAndInvalidValues &&
+                   semanticParameter.getNumberOfTriesToGenerateRegex() < maxNumberOfTriesToGenerateRegularExpression){
+
+                    // Increase the number of tries
+                    // and update testConf with new value of number of tries
+                    updateTestConfWithIncreasedNumberOfTries(getTestConfigurationObject(), confPath, semanticOperation, semanticParameter);
+
                     // OperationName_parameterId
                     String name = semanticOperation.getOperationId() + "_" + semanticParameter.getTestParameter().getName();
 
@@ -135,6 +141,7 @@ public class StatsReportManager {
                     logger.info("Precision: " + solution.getValidationPerformances().get("match precision"));
                     logger.info("Recall: " + solution.getValidationPerformances().get("match recall"));
                     logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
+                    logger.info("\n Number of tries for generating regex for this parameter: " + semanticParameter.getNumberOfTriesToGenerateRegex());
 //                "match precision"
 //                        "character accuracy": 1.0,
 //                        "character precision": 1.0,
@@ -152,26 +159,27 @@ public class StatsReportManager {
                         updateCsvWithRegex(semanticParameter.getInvalidCSVPath(getExperimentName(), semanticOperation.getOperationId()), regex);
 
                         // Second predicate search using the generated regex
-                        if(secondPredicateSearch && semanticParameter.getPredicates().size() < maxNumberOfPredicates){
+                        if(secondPredicateSearch && semanticParameter.getPredicates().size() <= maxNumberOfPredicates){
 
                             // Get new predicates for parameter
-                            Set<String> predicates = getPredicates(semanticOperation, semanticParameter, regex, spec);
+                            Set<String> newPredicates = getPredicates(semanticOperation, semanticParameter, regex, spec);
 
-                            if(predicates.size() > 0) {
-                                // TODO: Set the value to 0 again
+                            if(newPredicates.size() > 0) {
                                 // Get new values
-                                Set<String> results = getNewValues(semanticParameter, predicates, regex);
+                                Set<String> results = getNewValues(semanticParameter, newPredicates, regex);
 
                                 // Add results to the corresponding CSV Path
                                 addResultsToCSV(semanticParameter, results);
 
-                                // Add predicate to TestParameter and update testConf file
+                                // Add predicate to TestParameter
+                                // Set the value of numberOfTriesToGenerateRegex to 0
+                                // Update testConf file
+                                // Set the value to 0 again (and update testConf accordingly)
                                 TestConfigurationObject conf = getTestConfigurationObject();
-                                updateTestConfWithNewPredicates(conf, confPath, semanticOperation, semanticParameter, predicates);
+                                updateTestConfWithNewPredicates(conf, confPath, semanticOperation, semanticParameter, newPredicates);
                             }
 
                         }
-
 
                     }
 

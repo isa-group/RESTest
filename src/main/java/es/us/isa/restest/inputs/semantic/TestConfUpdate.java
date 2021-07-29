@@ -68,6 +68,40 @@ public class TestConfUpdate {
 
     }
 
+    public static void updateTestConfWithIncreasedNumberOfTries(
+            TestConfigurationObject conf, String confPath,
+            SemanticOperation semanticOperation, SemanticParameter semanticParameter) {
+
+        semanticParameter.increaseNumberOfTriesToGenerateRegex();
+
+        int opIndex = IntStream.range(0, conf.getTestConfiguration().getOperations().size())
+                .filter(i -> semanticOperation.getOperationId().equals(conf.getTestConfiguration().getOperations().get(i).getOperationId()))
+                .findFirst().getAsInt();
+
+        TestParameter testParameter = conf.getTestConfiguration().getOperations()
+                .get(opIndex)
+                .getTestParameters().stream()
+                .filter(x ->x.getName().equals(semanticParameter.getTestParameter().getName()))
+                .findFirst().orElseThrow(() -> new NullPointerException("No TestParameter found"));
+
+        Generator generator = testParameter.getGenerators().stream()
+                .filter(x->x.getType().equals(RANDOM_INPUT_VALUE) && x.getGenParameters().stream().anyMatch(y->y.getName().equals(PREDICATES)))
+                .findFirst().orElseThrow(() -> new NullPointerException("No Generator found"));
+
+        GenParameter genParameterNumberOfTries = generator.getGenParameters().stream()
+                .filter(x->x.getName().equals(NUMBER_OF_TRIES_TO_GENERATE_REGEX)).findFirst()
+                .orElseThrow( () -> new NullPointerException("Number of tries to generate regex genParameter found"));
+
+        List<String> newValues = new ArrayList<>();
+        newValues.add(Integer.toString(semanticParameter.getNumberOfTriesToGenerateRegex()));
+        genParameterNumberOfTries.setValues(newValues);
+
+        // Write new test configuration to file
+        TestConfigurationIO.toFile(conf, confPath);
+        log.info("Number of tries increased for parameter " + testParameter.getName());
+
+    }
+
     public static void updateTestConfWithNewPredicates(
             TestConfigurationObject conf, String confPath, SemanticOperation semanticOperation,
             SemanticParameter semanticParameter, Set<String>  newPredicates
@@ -82,11 +116,13 @@ public class TestConfUpdate {
                 .getTestParameters().stream()
                 .filter(x ->x.getName().equals(semanticParameter.getTestParameter().getName()))
                 .findFirst().orElseThrow(() -> new NullPointerException("No TestParameter found"));
+
         Generator generator = testParameter.getGenerators().stream()
                 .filter(x->x.getType().equals(RANDOM_INPUT_VALUE) && x.getGenParameters().stream().anyMatch(y->y.getName().equals(PREDICATES))).findFirst().orElseThrow(() -> new NullPointerException("No Generator found"));
 
         GenParameter genParameter = generator.getGenParameters().stream()
-                .filter(x->x.getName().equals(PREDICATES)).findFirst().orElseThrow( () -> new NullPointerException("No predicates genParameter found"));
+                .filter(x->x.getName().equals(PREDICATES)).findFirst()
+                .orElseThrow( () -> new NullPointerException("No predicates genParameter found"));
 
         List<String> oldPredicates = genParameter.getValues();
 
@@ -94,9 +130,20 @@ public class TestConfUpdate {
 
         genParameter.setValues(oldPredicates);
 
+        // Set the numberOfTriesToGenerateRegex to 0
+        GenParameter genParameterNumberOfTries = generator.getGenParameters().stream()
+                .filter(x -> x.getName().equals(NUMBER_OF_TRIES_TO_GENERATE_REGEX)).findFirst()
+                .orElseThrow(() -> new NullPointerException("Number of tries to generate regex not found"));
+
+        List<String> zero = new ArrayList<>();
+        zero.add("0");
+        genParameterNumberOfTries.setValues(zero);
+
         // Write new test configuration to file
         TestConfigurationIO.toFile(conf, confPath);
         log.info("Test configuration file updated");
 
     }
+
+
 }
