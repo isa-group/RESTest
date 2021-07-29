@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.NUMBER_OF_TRIES_TO_GENERATE_REGEX;
 import static es.us.isa.restest.util.CSVManager.readValues;
 import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
@@ -17,6 +18,7 @@ public class SemanticParameter {
     private Set<String> values;
     private Set<String> validValues;
     private Set<String> invalidValues;
+    private int numberOfTriesToGenerateRegex;
 
     // Initial generation:
     public SemanticParameter(TestParameter testParameter){
@@ -26,6 +28,7 @@ public class SemanticParameter {
         this.values = new HashSet<>();
         this.validValues = new HashSet<>();
         this.invalidValues = new HashSet<>();
+        this.numberOfTriesToGenerateRegex = 0;
 
     }
 
@@ -57,6 +60,12 @@ public class SemanticParameter {
         this.values.addAll(values);
     }
 
+    public int getNumberOfTriesToGenerateRegex() { return numberOfTriesToGenerateRegex; }
+
+    public void setNumberOfTriesToGenerateRegex(int numberOfTriesToGenerateRegex) { this.numberOfTriesToGenerateRegex = numberOfTriesToGenerateRegex; }
+
+    public void increaseNumberOfTriesToGenerateRegex() { this.numberOfTriesToGenerateRegex = this.numberOfTriesToGenerateRegex + 1; }
+
     public Set<String> getValidValues() { return validValues; }
     public void setValidValues(Set<String> validValues) { this.validValues = validValues; }
 
@@ -76,14 +85,22 @@ public class SemanticParameter {
 
     // Regex and Second predicate search:
     // Create Semantic parameter with a list of predicates and a set of valid and invalid values
-    public SemanticParameter(TestParameter testParameter, List<String> currentPredicates, String experimentName, String operationId){
+    public SemanticParameter(TestParameter testParameter, List<GenParameter> genParameters, List<String> currentPredicates, String experimentName, String operationId){
+        // TODO: Add number of tries
 
         this.testParameter = testParameter;
         this.predicates = new HashSet<>(currentPredicates);
         this.values = new HashSet<>();
 
-        // Get valid and invalid values from the respective csv paths
+        // Get the number of tries
+        String numberOfTriesString = genParameters.stream()
+                .filter(x-> x.getName().equals(NUMBER_OF_TRIES_TO_GENERATE_REGEX)).findFirst()
+                .orElseThrow(() -> new NullPointerException("Number of tries to generate regex not founds"))
+                .getValues().get(0);
 
+        this.numberOfTriesToGenerateRegex = Integer.parseInt(numberOfTriesString);
+
+        // Get valid and invalid values from the respective csv paths
         // Read from csv (if exists)
         String csvPath = this.getCSVPath(experimentName, operationId);
         createDir(csvPath); // This dir is created if it does not exist

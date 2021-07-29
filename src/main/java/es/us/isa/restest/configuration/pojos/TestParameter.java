@@ -5,8 +5,7 @@ package es.us.isa.restest.configuration.pojos;
 import java.util.Collections;
 import java.util.List;
 
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.GEN_PARAM_REG_EXP;
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.*;
 
 public class TestParameter {
 
@@ -54,7 +53,7 @@ public class TestParameter {
         for(Generator generator: generators){
             if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
                 for(GenParameter genParameter: generator.getGenParameters()){
-                    if(genParameter.getName().equals("predicates")){
+                    if(genParameter.getName().equals(PREDICATES)){
 
                         GenParameter oldGenParameter = generator.getGenParameters().stream().filter(x-> x.getName().equals("regExp")).findFirst().orElse(null);
                         if(oldGenParameter != null){

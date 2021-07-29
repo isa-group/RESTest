@@ -1,7 +1,6 @@
 package es.us.isa.restest.configuration.pojos;
 
-import es.us.isa.restest.configuration.pojos.Operation;
-import es.us.isa.restest.configuration.pojos.TestParameter;
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.PREDICATES;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 
 import java.io.IOException;
@@ -80,12 +79,13 @@ public class SemanticOperation {
                 List<Generator> generatorList = testParameter.getGenerators();
                 for(Generator generator: generatorList){
                     if(generator.getType().equals(RANDOM_INPUT_VALUE)){
-                        for(GenParameter genParameter: generator.getGenParameters()){
+                        List<GenParameter> genParameters = generator.getGenParameters();
+                        for(GenParameter genParameter: genParameters){
                             // If the test parameter contains a "predicates" genParameter (i.e., It is a SemanticParameter)
-                            if(genParameter.getName().equals("predicates")){
+                            if(genParameter.getName().equals(PREDICATES)){
                                 // Add the SemanticParameter to the list
                                 // Includes valid and invalid values from previous iterations (if any)
-                                SemanticParameter semanticParameter = new SemanticParameter(testParameter, genParameter.getValues(), experimentName, operation.getOperationId());
+                                SemanticParameter semanticParameter = new SemanticParameter(testParameter, genParameters, genParameter.getValues(), experimentName, operation.getOperationId());
                                 semanticParameters.add(semanticParameter);
 
                             }
@@ -125,7 +125,7 @@ public class SemanticOperation {
             invalidValues.removeAll(intersection);
 
             // Update CSV files
-            // Write the set of valuesj as CSV
+            // Write the set of values as CSV
             try{
                 collectionToCSV(validPath, validValues);
                 collectionToCSV(invalidPath, invalidValues);

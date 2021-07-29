@@ -12,8 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.stream.IntStream;
 
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.*;
 
 
 public class TestConfUpdate {
@@ -30,13 +29,21 @@ public class TestConfUpdate {
 
         // PREDICATES GenParameter
         GenParameter predicatesGenParameter = new GenParameter();
-        predicatesGenParameter.setName("predicates");
+        predicatesGenParameter.setName(PREDICATES);
         predicatesGenParameter.setValues(new ArrayList<>(semanticParameter.getPredicates()));
+
+        // NUMBER_OF_TRIES_TO_GENERATE_REGEX
+        GenParameter numberOfTriesToGenerateRegexGenParameter = new GenParameter();
+        numberOfTriesToGenerateRegexGenParameter.setName(NUMBER_OF_TRIES_TO_GENERATE_REGEX);
+        List<String> numberOfTriesList = new ArrayList<>();
+        numberOfTriesList.add(Integer.toString(semanticParameter.getNumberOfTriesToGenerateRegex()));
+        numberOfTriesToGenerateRegexGenParameter.setValues(numberOfTriesList);
 
         // List of GenParameters
         List<GenParameter> genParameterList = new ArrayList<>();
         genParameterList.add(csvGenParameter);
         genParameterList.add(predicatesGenParameter);
+        genParameterList.add(numberOfTriesToGenerateRegexGenParameter);
 
         // GENERATOR
         Generator newGenerator = new Generator();
@@ -76,10 +83,10 @@ public class TestConfUpdate {
                 .filter(x ->x.getName().equals(semanticParameter.getTestParameter().getName()))
                 .findFirst().orElseThrow(() -> new NullPointerException("No TestParameter found"));
         Generator generator = testParameter.getGenerators().stream()
-                .filter(x->x.getType().equals(RANDOM_INPUT_VALUE) && x.getGenParameters().stream().anyMatch(y->y.getName().equals("predicates"))).findFirst().orElseThrow(() -> new NullPointerException("No Generator found"));
+                .filter(x->x.getType().equals(RANDOM_INPUT_VALUE) && x.getGenParameters().stream().anyMatch(y->y.getName().equals(PREDICATES))).findFirst().orElseThrow(() -> new NullPointerException("No Generator found"));
 
         GenParameter genParameter = generator.getGenParameters().stream()
-                .filter(x->x.getName().equals("predicates")).findFirst().orElseThrow( () -> new NullPointerException("No predicates genParameter found"));
+                .filter(x->x.getName().equals(PREDICATES)).findFirst().orElseThrow( () -> new NullPointerException("No predicates genParameter found"));
 
         List<String> oldPredicates = genParameter.getValues();
 

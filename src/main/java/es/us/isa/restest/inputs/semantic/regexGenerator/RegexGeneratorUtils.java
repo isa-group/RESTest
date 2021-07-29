@@ -24,6 +24,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.PREDICATES;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static es.us.isa.restest.util.CSVManager.readValues;
@@ -83,7 +84,7 @@ public class RegexGeneratorUtils {
         List<String> res = new ArrayList<>();
 
         for(Generator generator: testParameter.getGenerators()){
-            if(generator.getType().equals(RANDOM_INPUT_VALUE) && generator.getGenParameters().stream().anyMatch(x->x.getName().equals("predicates"))){
+            if(generator.getType().equals(RANDOM_INPUT_VALUE) && generator.getGenParameters().stream().anyMatch(x->x.getName().equals(PREDICATES))){
                 res = generator.getGenParameters().stream().filter(x->x.getName().equals("csv"))
                         .flatMap(x->x.getValues().stream()).collect(Collectors.toList());
             }

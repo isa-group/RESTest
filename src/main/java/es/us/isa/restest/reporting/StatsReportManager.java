@@ -120,8 +120,9 @@ public class StatsReportManager {
                 Set<String> invalidSet = semanticParameter.getInvalidValues();
 
                 // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
+                // TODO: Add number of tries to if statement (Check)
                 if(invalidSet.size() >= minimumValidAndInvalidValues && validSet.size() >= minimumValidAndInvalidValues){
-
+                    // TODO: Increase the number of tries
                     // OperationName_parameterId
                     String name = semanticOperation.getOperationId() + "_" + semanticParameter.getTestParameter().getName();
 
@@ -141,7 +142,7 @@ public class StatsReportManager {
 //                        "character recall": 1.0,
 //                        "match f-measure": 1.0
 
-                    // If the performance of the generated regex surpasses a given value of F1-Score, filter csv file
+                    // If the performance of the generated regex surpasses a given value of the selected metric (acc, precision, recall and F1-Score), filter csv file
                     if(solution.getValidationPerformances().get(metricToUse)  >= minimumValueOfMetric){
                         // Filter all the CSVs of the associated testParameter
                         updateCsvWithRegex(semanticParameter, regex);
@@ -157,6 +158,7 @@ public class StatsReportManager {
                             Set<String> predicates = getPredicates(semanticOperation, semanticParameter, regex, spec);
 
                             if(predicates.size() > 0) {
+                                // TODO: Set the value to 0 again
                                 // Get new values
                                 Set<String> results = getNewValues(semanticParameter, predicates, regex);
 

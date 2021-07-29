@@ -45,7 +45,6 @@ public class DefaultTestConfigurationGenerator {
 	public static final String RANDOM_BOOLEAN = "RandomBoolean";
 	public static final String RANDOM_INPUT_VALUE = "RandomInputValue";
 	public static final String OBJECT_PERTURBATOR = "ObjectPerturbator";
-	public static final String SEMANTIC_PARAMETER = "SemanticParameter";
 
 	public static final String GEN_PARAM_VALUES = "values";
 	public static final String GEN_PARAM_STRING_OBJECTS = "stringObjects";
@@ -61,6 +60,11 @@ public class DefaultTestConfigurationGenerator {
 	public static final String MEDIA_TYPE_APPLICATION_JSON = "application/json";
 	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
+
+	// ARTE
+	public static final String SEMANTIC_PARAMETER = "SemanticParameter";
+	public static final String PREDICATES = "predicates";
+	public static final String NUMBER_OF_TRIES_TO_GENERATE_REGEX = "numberOfTriesToGenerateRegex";
 
 	private static final Logger logger = LogManager.getLogger(DefaultTestConfigurationGenerator.class);
 
