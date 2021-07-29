@@ -79,32 +79,6 @@ public class RegexGeneratorUtils {
 
     }
 
-    // This method returns all the Semantic parameters of a given testConf file
-//    public static Map<Pair<Operation, TestParameter>, Set<String>> getMapOfSemanticParameters(List<Operation> operations){
-//        Map<Pair<Operation, TestParameter>, Set<String>> res = new HashMap<>();
-//
-//        for(Operation operation: operations){
-//            // Adding parameters that use a csv to the maps
-//            for(TestParameter testParameter: operation.getTestParameters()){
-//                List<Generator> generatorList = testParameter.getGenerators();
-//                for(Generator generator: generatorList){
-//                    if(generator.getType().equals(RANDOM_INPUT_VALUE)){
-//                        for(GenParameter genParameter: generator.getGenParameters()){
-//
-//                            if(genParameter.getName().equals("predicates")){
-//                                // Adding the pair <OperationId, parameterName> to the map
-//                                Pair<Operation, TestParameter> operationAndParameter = Pair.with(operation, testParameter);
-//                                res.put(operationAndParameter, new HashSet<>());
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return res;
-//    }
-
     public static List<String> getCsvPaths(TestParameter testParameter){
         List<String> res = new ArrayList<>();
 

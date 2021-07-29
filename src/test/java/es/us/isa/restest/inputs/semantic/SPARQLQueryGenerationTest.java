@@ -24,10 +24,10 @@ public class SPARQLQueryGenerationTest {
 		TestConfigurationObject conf = loadConfiguration("src/test/resources/ClimaCell/testConf.yaml", specification);
 
 		Set<SemanticOperation> semanticOperations = getSemanticOperations(conf);
-		assertTrue("Incorrect number of semantic operations", semanticOperations.size()==3);
+		assertEquals("Incorrect number of semantic operations", 3, semanticOperations.size());
 
 		for(SemanticOperation semanticOperation: semanticOperations){
-			assertTrue("Incorrect number of semantic parameters", semanticOperation.getSemanticParameters().size()==2);
+			assertEquals("Incorrect number of semantic parameters", 2, semanticOperation.getSemanticParameters().size());
 		}
 
 	}
@@ -39,7 +39,7 @@ public class SPARQLQueryGenerationTest {
 
 		List<String> possibleNames = posTagging(parameterDescription, parameterName);
 
-		assertTrue("Error obtaining complete parameter name", possibleNames.get(0).equals("title"));
+		assertEquals("Error obtaining complete parameter name", "title", possibleNames.get(0));
 
 	}
 
@@ -58,7 +58,7 @@ public class SPARQLQueryGenerationTest {
 				"}\n" +
 				"order by strlen(str(?predicate)) \n";
 
-		assertTrue("Error generating predicate query", predicateQuery.equals(targetPredicateQuery));
+		assertEquals("Error generating predicate query", predicateQuery, targetPredicateQuery);
 
 		Query query = QueryFactory.create(predicateQuery);
 

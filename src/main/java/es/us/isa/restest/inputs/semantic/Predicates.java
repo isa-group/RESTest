@@ -345,45 +345,4 @@ public class Predicates {
         return parameterName;
     }
 
-//    public  static List<String> getPredicatesToIgnore(TestParameter testParameter){
-//        List<Generator> generators = testParameter.getGenerators();
-//        for(Generator generator: generators){
-//            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
-//                for(GenParameter genParameter: generator.getGenParameters()){
-//                    if(genParameter.getName().equals("predicates")){
-//                        return genParameter.getValues();
-//                    }
-//                }
-//
-//            }
-//        }
-//        throw new NullPointerException("The provided TestParameter does not contain a list of predicates");
-//    }
-
-
-
-//    public static void addRegexToSemanticParameter(TestParameter testParameter, String regex){
-//        List<Generator> generators = testParameter.getGenerators();
-//
-//        for(Generator generator: generators){
-//            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
-//                for(GenParameter genParameter: generator.getGenParameters()){
-//                    if(genParameter.getName().equals("predicates")){
-//
-//                        GenParameter regexGenParameter = new GenParameter();
-//                        regexGenParameter.setName(GEN_PARAM_REG_EXP);
-//                        regexGenParameter.setValues(Collections.singletonList(regex));
-//
-//                        generator.addGenParameter(regexGenParameter);
-//
-////                        return genParameter.getValues();
-//                    }
-//                }
-//
-//            }
-//        }
-//
-//        throw new NullPointerException("The provided TestParameter does not contain a list of predicates");
-//    }
-
 }

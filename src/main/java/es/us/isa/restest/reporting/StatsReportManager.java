@@ -113,16 +113,11 @@ public class StatsReportManager {
         }
 
         // Learn regular expression
-        // valuesFromPreviousIterations has been updated, containing PREVIOUS AND CURRENT values
-
-        // NEW
         for(SemanticOperation semanticOperation: semanticOperations){
             for(SemanticParameter semanticParameter: semanticOperation.getSemanticParameters()){
 
                 Set<String> validSet = semanticParameter.getValidValues();
                 Set<String> invalidSet = semanticParameter.getInvalidValues();
-
-//                Set<String> predicatesToIgnore = semanticParameter.getPredicates();
 
                 // If the obtained data is enough, a regular expression is generated and the associated csv file is filtered
                 if(invalidSet.size() >= minimumValidAndInvalidValues && validSet.size() >= minimumValidAndInvalidValues){

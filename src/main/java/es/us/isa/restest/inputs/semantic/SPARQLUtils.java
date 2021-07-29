@@ -32,7 +32,7 @@ public class SPARQLUtils {
 
             Pair<String, Map<String, String>> queryString = generateQuery(semanticParameters, false);
             System.out.println(queryString.getValue0());
-            // TODO: kebab-case
+            // kebab-case
             result = executeSPARQLQuery(queryString, szEndpoint);
 
             Set<String> parameterNames = result.keySet();
@@ -292,10 +292,6 @@ public class SPARQLUtils {
 
         // Close query
         queryString = queryString + "\n} ";
-
-//        if (LIMIT != null){
-//            queryString = queryString + " LIMIT " + LIMIT + " \n";
-//        }
 
         return Pair.with(queryString, allParametersNameMap);
 //        return queryString; old
