@@ -54,6 +54,12 @@ git clone https://github.com/isa-group/RESTest.git
 cd RESTest
 ````
 
+### Installing local dependencies
+RESTest relies on two libraries located in the `lib/` folder. To install them, simply run the following command from the parent directory (i.e., `RESTest/`):
+```
+./scripts/install_dependencies.sh
+```
+
 ### Setting up RESTest
 
 Let's try RESTest with some API, for example, [Bikewise](https://bikewise.org/). Follow these steps:
@@ -223,8 +229,6 @@ If you want to cite RESTest in your research, please use the BibTeX entry below.
 RESTest is distributed under the [GNU Lesser General Public License v3.0](LICENSE).
 
 RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
-
-RESTest also includes MiniZinc &copy; 2014-2020 Monash University and Data61, CSIRO. Its source code is available from [GitHub](https://github.com/MiniZinc/libminizinc) under the MPL 2.0 License, which can be obtained from https://www.mozilla.org/en-US/MPL/2.0.
 
 ### Icon credits
 This README and some pages of the Wiki use icons provided by [Freepik](https://www.flaticon.com/authors/freepik), available at [Flaticon](https://www.flaticon.com/).
