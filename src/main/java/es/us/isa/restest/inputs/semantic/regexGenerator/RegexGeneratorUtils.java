@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.PREDICATES;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.LIMIT;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static es.us.isa.restest.util.CSVManager.readValues;
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
@@ -151,7 +152,17 @@ public class RegexGeneratorUtils {
         List<String> csvValues = readValues(csvPath);
 
         // add new values
-        csvValues.addAll(results);
+        if (LIMIT == null){
+            csvValues.addAll(results);
+        } else{
+            List<String> resultsAsList = new ArrayList<>(results);
+            Collections.shuffle(resultsAsList);
+
+            Set<String> subSet = resultsAsList.stream().limit(LIMIT).collect(Collectors.toSet());
+
+            csvValues.addAll(subSet);
+        }
+
 
         // Rewrite csv
         deleteFile(csvPath);

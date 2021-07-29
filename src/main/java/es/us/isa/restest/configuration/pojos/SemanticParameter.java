@@ -86,7 +86,6 @@ public class SemanticParameter {
     // Regex and Second predicate search:
     // Create Semantic parameter with a list of predicates and a set of valid and invalid values
     public SemanticParameter(TestParameter testParameter, List<GenParameter> genParameters, List<String> currentPredicates, String experimentName, String operationId){
-        // TODO: Add number of tries
 
         this.testParameter = testParameter;
         this.predicates = new HashSet<>(currentPredicates);

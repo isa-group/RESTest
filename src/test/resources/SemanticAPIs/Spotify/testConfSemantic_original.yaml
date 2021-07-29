@@ -2,7 +2,8 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
+  headerParams:
+    Authorization: 'Bearer BQC0rKq58hVwQBird8WpweW_gu6b5BW7fKGlw5i1jy15afjuFDs9-f2w5myKo7qmMu5lAHIi5ejiokec9p6iTb7cf_BjMEA6e2MVTg_QtCVbak-yh0anPwX5Fedlz-1WrUy1L0w8dqLLPFTcOrTHrePFk025F8o4bEVSE0xd1lmuKV0RTMVsg5S7gNNkatbCV11BOUMQ45qxXCmL-H8aW6cNXdY9k9vrJPlKdETjXKsK4YSM1BWQqHNjzxhT0YV2m-NjOqoQOVkMPs-OhKRHDYUSceXn9YMVWxplZ48y'
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -108,7 +109,7 @@ testConfiguration:
         valid: true
     - name: Accept
       in: header
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:

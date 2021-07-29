@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 
 import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.LIMIT;
 import static es.us.isa.restest.inputs.semantic.Predicates.*;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithIncreasedNumberOfTries;
@@ -151,10 +152,10 @@ public class StatsReportManager {
 
                     // If the performance of the generated regex surpasses a given value of the selected metric (acc, precision, recall and F1-Score), filter csv file
                     if(solution.getValidationPerformances().get(metricToUse)  >= minimumValueOfMetric){
-                        // Filter all the CSVs of the associated testParameter
+                        // Filter all the CSVs of the associated testParameter (testConfSemantic)
                         updateCsvWithRegex(semanticParameter, regex);
 
-                        // Update CSVs of valid and invalid values according to the generatede regular expression
+                        // Update CSVs of valid and invalid values according to the generated regular expression (test-data folder)
                         updateCsvWithRegex(semanticParameter.getValidCSVPath(getExperimentName(),semanticOperation.getOperationId()), regex);
                         updateCsvWithRegex(semanticParameter.getInvalidCSVPath(getExperimentName(), semanticOperation.getOperationId()), regex);
 
@@ -169,6 +170,7 @@ public class StatsReportManager {
                                 Set<String> results = getNewValues(semanticParameter, newPredicates, regex);
 
                                 // Add results to the corresponding CSV Path
+                                // Without exceding the limit
                                 addResultsToCSV(semanticParameter, results);
 
                                 // Add predicate to TestParameter

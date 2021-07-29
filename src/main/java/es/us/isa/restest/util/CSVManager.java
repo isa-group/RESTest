@@ -1,10 +1,7 @@
 package es.us.isa.restest.util;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVFormat;
@@ -128,9 +125,14 @@ public class CSVManager {
 
 	public static void setToCSVWithLimit(String path, Set<String> collection) throws IOException {
 		FileWriter writer = new FileWriter(path);
-		Set<String> subSet = collection.stream().limit(LIMIT).collect(Collectors.toSet());
+
+		List<String> collectionAsList = new ArrayList<>(collection);
+		Collections.shuffle(collectionAsList);
+
+		Set<String> subSet = collectionAsList.stream().limit(LIMIT).collect(Collectors.toSet());
 		String collect = subSet.stream().collect(Collectors.joining("\n"));
 		writer.write(collect);
+
 		writer.close();
 
 	}

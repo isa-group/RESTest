@@ -138,6 +138,7 @@ public class TestConfUpdate {
         List<String> zero = new ArrayList<>();
         zero.add("0");
         genParameterNumberOfTries.setValues(zero);
+        log.info("Number of tries to generate regex set to 0 again");
 
         // Write new test configuration to file
         TestConfigurationIO.toFile(conf, confPath);
