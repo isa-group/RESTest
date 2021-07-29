@@ -141,7 +141,7 @@ public class StatsReportManager {
                     logger.info("Precision: " + solution.getValidationPerformances().get("match precision"));
                     logger.info("Recall: " + solution.getValidationPerformances().get("match recall"));
                     logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
-                    logger.info("\n Number of tries for generating regex for this parameter: " + semanticParameter.getNumberOfTriesToGenerateRegex());
+                    logger.info("\n Number of tries for generating regex for this parameter: " + semanticParameter.getNumberOfTriesToGenerateRegex() + "/" + maxNumberOfTriesToGenerateRegularExpression);
 //                "match precision"
 //                        "character accuracy": 1.0,
 //                        "character precision": 1.0,
