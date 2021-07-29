@@ -458,8 +458,7 @@ public class TestCase implements Serializable {
 		try {
 			return idlReasoner.isValidRequest(restest2idlTestCase(tc)); // Previous version of IDLReasoner: idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
 		} catch (IDLException e) {
-			logger.warn("There was an error generating an invalid request with IDLReasoner");
-			e.printStackTrace();
+			logger.warn("There was an error generating an invalid request with IDLReasoner: {}", e.getMessage());
 			return false;
 		}
 	}

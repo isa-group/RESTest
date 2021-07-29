@@ -67,8 +67,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 			try {
 				idlReasoner = new OASAnalyzer(spec.getPath(), testOperation.getTestPath(), testOperation.getMethod());
 			} catch (IDLException e) {
-				logger.warn("There was an error processing the dependencies of the operation {} {}", testOperation.getMethod(), testOperation.getTestPath());
-				e.printStackTrace();
+				logger.warn("There was an error processing the dependencies of the operation {} {}: {}", testOperation.getMethod(), testOperation.getTestPath(), e.getMessage());
 			}
 		}
 	}
@@ -83,8 +82,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 			try {
 				idlReasoner.updateData(inputData);
 			} catch (IDLException e) {
-				logger.warn("There was an error updating the data of IDLReasoner");
-				e.printStackTrace();
+				logger.warn("There was an error updating the data of IDLReasoner: {}", e.getMessage());
 			}
 		}
 	}
@@ -202,8 +200,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 			try {
 				idl2restestTestCase(test, idlReasoner.getRandomValidRequest(), testOperation); // Generate valid test case with IDLReasoner
 			} catch (IDLException e) {
-				logger.warn("There was an error generating a valid request with IDLReasoner");
-				e.printStackTrace();
+				logger.warn("There was an error generating a valid request with IDLReasoner: {}", e.getMessage());
 				throw new RESTestException(e);
 			}
 		}
@@ -228,8 +225,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 			try {
 				idl2restestTestCase(test, idlReasoner.getRandomInvalidRequest(), testOperation); // Generate invalid test case with IDLReasoner
 			} catch (IDLException e) {
-				logger.warn("There was an error generating an invalid request with IDLReasoner");
-				e.printStackTrace();
+				logger.warn("There was an error generating an invalid request with IDLReasoner: {}", e.getMessage());
 				throw new RESTestException(e);
 			}
 			test.setFaulty(true);
