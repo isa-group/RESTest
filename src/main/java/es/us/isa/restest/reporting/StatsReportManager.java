@@ -42,11 +42,12 @@ public class StatsReportManager {
     private boolean enableOutputCoverage = true;
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
-    private final int maxNumberOfPredicates = 3;                // MaxNumberOfPredicates = AdditionalPredicates + 1
-    private final int minimumValidAndInvalidValues = 5;
-    private final String metricToUse = "match recall";
-    private final Double minimumValueOfMetric = 0.9;
-    private final int maxNumberOfTriesToGenerateRegularExpression = 2;
+    private Boolean secondPredicateSearch;
+    private Integer maxNumberOfPredicates;                // MaxNumberOfPredicates = AdditionalPredicates + 1
+    private Integer minimumValidAndInvalidValues;
+    private String metricToUse;
+    private Double minimumValueOfMetric;
+    private Integer maxNumberOfTriesToGenerateRegularExpression;
 
 
     private static final Logger logger = LogManager.getLogger(StatsReportManager.class.getName());
@@ -55,13 +56,23 @@ public class StatsReportManager {
         this(PropertyManager.readProperty("data.tests.dir"), PropertyManager.readProperty("data.coverage.tests.dir"));
     }
 
-    public StatsReportManager(String testDataDir, String coverageDataDir, boolean enableCSVStats, boolean enableInputCoverage, boolean enableOutputCoverage, CoverageMeter coverageMeter) {
+    public StatsReportManager(String testDataDir, String coverageDataDir, boolean enableCSVStats, boolean enableInputCoverage, boolean enableOutputCoverage, CoverageMeter coverageMeter,
+                              Boolean secondPredicateSearch, Integer maxNumberOfPredicates, Integer minimumValidAndInvalidValues,
+                              String metricToUse, Double minimumValueOfMetric, Integer maxNumberOfTriesToGenerateRegularExpression) {
         this.testDataDir = testDataDir;
         this.coverageDataDir = coverageDataDir;
         this.enableCSVStats = enableCSVStats;
         this.enableInputCoverage = enableInputCoverage;
         this.enableOutputCoverage = enableOutputCoverage;
         this.coverageMeter = coverageMeter;
+
+        this.secondPredicateSearch = secondPredicateSearch;
+        this.maxNumberOfPredicates = maxNumberOfPredicates;
+        this.minimumValidAndInvalidValues = minimumValidAndInvalidValues;
+        this.metricToUse = metricToUse;
+        this.minimumValueOfMetric = minimumValueOfMetric;
+        this.maxNumberOfTriesToGenerateRegularExpression = maxNumberOfTriesToGenerateRegularExpression;
+
     }
 
     public StatsReportManager(String testDataDir, String coverageDataDir) {
@@ -83,7 +94,7 @@ public class StatsReportManager {
     }
 
 
-    public void learn(String testId, Boolean secondPredicateSearch, OpenAPISpecification spec, String confPath) {
+    public void learn(String testId, OpenAPISpecification spec, String confPath) {
 
         // 1. Get Semantic Operations (Set<SemanticOperation>)
         // 2. Set valid and invalid values with values from previous iterations

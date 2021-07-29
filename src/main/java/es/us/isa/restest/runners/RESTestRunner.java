@@ -77,7 +77,7 @@ public class RESTestRunner {
 		generateReports();
 
 		if(learnRegex){
-			statsReportManager.learn(testId, secondPredicateSearch, spec, confPath);
+			statsReportManager.learn(testId, spec, confPath);
 		}
 	}
 

@@ -53,8 +53,6 @@ public class TestGenerationAndExecution {
 	private static Integer totalNumTestCases; 							// Total number of test cases to be generated (-1 for infinite loop)
 	private static Integer timeDelay; 									// Delay between requests in seconds (-1 for no delay)
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
-	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
-	private static boolean secondPredicateSearch;
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 
@@ -66,6 +64,15 @@ public class TestGenerationAndExecution {
 	// For AR Testing only:
 	private static String similarityMetric;								// The algorithm to measure the similarity between test cases
 	private static Integer numberCandidates;							// Number of candidate test cases per AR iteration
+
+	// ARTE
+	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
+	private static boolean secondPredicateSearch;
+	private static int maxNumberOfPredicates;                // MaxNumberOfPredicates = AdditionalPredicates + 1
+	private static int minimumValidAndInvalidValues;
+	private static String metricToUse;
+	private static Double minimumValueOfMetric;
+	private static int maxNumberOfTriesToGenerateRegularExpression;
 
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
@@ -233,8 +240,12 @@ public class TestGenerationAndExecution {
 			createDir(coverageDataDir);
 		}
 
+//			return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
+//					enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
 		return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
-				enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
+					enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)),
+					secondPredicateSearch, maxNumberOfPredicates, minimumValidAndInvalidValues,
+					metricToUse, minimumValueOfMetric, maxNumberOfTriesToGenerateRegularExpression);
 	}
 
 	private static void generateTimeReport(Integer iterations) {
@@ -348,6 +359,7 @@ public class TestGenerationAndExecution {
 			faultyDependencyRatio = Float.parseFloat(readParameterValue("faulty.dependency.ratio"));
 		logger.info("Faulty dependency ratio: {}", faultyDependencyRatio);
 
+		// ARTE
 		if (readParameterValue("learnRegex") != null)
 			learnRegex = Boolean.parseBoolean(readParameterValue("learnRegex"));
 		logger.info("Learn Regular expressions: {}", learnRegex);
@@ -355,6 +367,26 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("secondPredicateSearch") != null)
 			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("secondPredicateSearch"));
 		logger.info("Second Predicate Search: {}", secondPredicateSearch);
+
+		if (readParameterValue("maxNumberOfPredicates") != null)
+			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("maxNumberOfPredicates"));
+		logger.info("Maximum number of predicates: {}", maxNumberOfPredicates);
+
+		if (readParameterValue("minimumValidAndInvalidValues") != null)
+			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("minimumValidAndInvalidValues"));
+		logger.info("Minimum valid and invalid values: {}", minimumValidAndInvalidValues);
+
+		if (readParameterValue("metricToUse") != null)
+			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("metricToUse"));
+		logger.info("Minimum valid and invalid values: {}", metricToUse);
+
+		if (readParameterValue("minimumValueOfMetric") != null)
+			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("minimumValueOfMetric"));
+		logger.info("Minimum valid and invalid values: {}", minimumValueOfMetric);
+
+		if (readParameterValue("maxNumberOfTriesToGenerateRegularExpression") != null)
+			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("maxNumberOfTriesToGenerateRegularExpression"));
+		logger.info("Minimum valid and invalid values: {}", maxNumberOfTriesToGenerateRegularExpression);
 	
 	}
 
