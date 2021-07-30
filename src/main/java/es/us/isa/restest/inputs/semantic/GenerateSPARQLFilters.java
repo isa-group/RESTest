@@ -14,8 +14,8 @@ public class GenerateSPARQLFilters {
         String res = "";
 //        Generator generator = parameter.getGenerators().stream().filter(x-> x.getType().equals(SEMANTIC_PARAMETER)).findFirst().get(); OLD
         Generator generator = parameter.getGenerators().stream()
-                .filter(x-> x.getType().equals(SEMANTIC_PARAMETER) || (  x.getType().equals(RANDOM_INPUT_VALUE) && x.isValid()==true  ))
-                .findFirst().get();
+                .filter(x-> x.getType().equals(SEMANTIC_PARAMETER) || (  x.getType().equals(RANDOM_INPUT_VALUE) && x.isValid()  ))
+                .findFirst().orElseThrow(() -> new NullPointerException("Generator not found"));
 
         List<GenParameter> genParameters = generator.getGenParameters();
 

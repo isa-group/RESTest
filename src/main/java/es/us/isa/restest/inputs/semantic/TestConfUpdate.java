@@ -55,7 +55,7 @@ public class TestConfUpdate {
                 .get(opIndex)
                 .getTestParameters().stream()
                 .filter(x ->x.equals(semanticParameter.getTestParameter()))
-                .findFirst().get();
+                .findFirst().orElseThrow(() -> new NullPointerException("TestParameter not found"));
         List<Generator> generators = testParameter.getGenerators();
 
         generators.removeIf(x->x.getType().equalsIgnoreCase(SEMANTIC_PARAMETER));

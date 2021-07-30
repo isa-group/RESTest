@@ -119,8 +119,7 @@ public class RegexGeneratorUtils {
     private static List<String> readCsv(String csvFile) {
 
         List<String> res = new ArrayList<>();
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(csvFile));
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
             String line = "";
             while((line = br.readLine()) != null) {
                 res.add(line);

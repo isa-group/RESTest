@@ -329,7 +329,7 @@ public class Predicates {
             case "patch":
                 operation = pathItem.getPatch();
                 break;
-            case "trace":
+            default:        // "trace"
                 operation = pathItem.getTrace();
                 break;
         }
