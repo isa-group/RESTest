@@ -10,17 +10,13 @@ import it.units.inginf.male.postprocessing.BasicPostprocessor;
 import it.units.inginf.male.postprocessing.JsonPostProcessor;
 import it.units.inginf.male.strategy.ExecutionStrategy;
 import it.units.inginf.male.strategy.impl.CoolTextualExecutionListener;
-import org.javatuples.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Test;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -67,7 +63,7 @@ public class RegexGeneratorUtils {
         try {
             strategy.execute(config, consolelistener);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            logger.error(e.getMessage());
         }
 
 
@@ -76,8 +72,7 @@ public class RegexGeneratorUtils {
             config.getPostProcessor().elaborate(config, results, startTime);
         }
 
-        FinalSolution finalSolution = results.getBestSolution();
-        return finalSolution;
+        return results.getBestSolution();
 
     }
 
@@ -124,9 +119,8 @@ public class RegexGeneratorUtils {
             while((line = br.readLine()) != null) {
                 res.add(line);
             }
-            br.close();
         } catch(IOException e) {
-            System.err.println(e.getMessage());
+            logger.error(e.getMessage());
         }
         return res;
     }
@@ -172,7 +166,7 @@ public class RegexGeneratorUtils {
             collectionToCSV(csvPath, csvValues);
             logger.info("CSV file updated");
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.error(e.getMessage());
         }
 
     }
@@ -210,12 +204,15 @@ public class RegexGeneratorUtils {
                             semanticParameter.addInvalidValue(value);
                         }
                         break;
+                    default:
+                        logger.error("Potential bug detected");
+                        break;
                 }
             }
         }
     }
 
-    public static Boolean isTestValueInvalid
+    public static boolean isTestValueInvalid
             (TestCase testCase,
              SemanticParameter parameterToDiscard,
              SemanticOperation semanticOperation
@@ -239,33 +236,6 @@ public class RegexGeneratorUtils {
         }
         return true;
     }
-
-
-//    public static void main(String[] args) throws Exception {
-//
-//        // -------------------------------------------------------- CREATING DATASET --------------------------------------------------------
-//        String name = "getAlbums_locale";
-//
-//        Set<String> matches = new HashSet<>();
-//        matches.add("en_Us");
-//        matches.add("es_esp");
-//        matches.add("po_iuy");
-//        matches.add("lk_hgf");
-//        matches.add("mn_bvc");
-//
-//        Set<String> unmatches = new HashSet<>();
-//        unmatches.add("qwe");
-//        unmatches.add("rty");
-//        unmatches.add("uio");
-//        unmatches.add("pas");
-//        unmatches.add("dfg");
-//        // ----------------------------------------------------------------------------------------------------------------------------------
-//
-//
-//        FinalSolution solution = learnRegex(name, matches, unmatches, false);
-//        System.out.println("-----------------------SOLUTION: " + solution.getSolution());
-//    }
-
 
 
 }

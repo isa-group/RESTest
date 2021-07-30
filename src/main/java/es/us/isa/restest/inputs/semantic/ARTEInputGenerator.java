@@ -79,7 +79,7 @@ public class ARTEInputGenerator {
                 // Values are generated only if the size of Set<predicates> is greater than 0
                 result = getParameterValues(semanticOperation.getSemanticParameters().stream().filter(x->!x.getPredicates().isEmpty()).collect(Collectors.toSet()));
             }catch(Exception e){
-                System.err.println(e.getMessage());
+                log.error(e.getMessage());
             }
 
             semanticOperation.updateSemanticParametersValues(result);

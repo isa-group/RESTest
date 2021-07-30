@@ -11,6 +11,7 @@ import org.apache.jena.sparql.engine.http.QueryEngineHTTP;
 
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,10 +33,10 @@ public class SPARQLUtils {
 
         Map<String, Set<String>> result = new HashMap<>();
 
-        if(semanticParameters.size()>0) {
+        if(!semanticParameters.isEmpty()) {
 
             Pair<String, Map<String, String>> queryString = generateQuery(semanticParameters, false);
-            System.out.println(queryString.getValue0());
+            log.info(queryString.getValue0());
             // kebab-case
             result = executeSPARQLQuery(queryString, szEndpoint);
 
@@ -92,7 +93,7 @@ public class SPARQLUtils {
                     }
 
 
-                } else if ((subGraphParameterNames.size() > 0) && (subGraphParameterNames.size() < parameterNames.size())) {  // Smaller Set case
+                } else if (!subGraphParameterNames.isEmpty() && (subGraphParameterNames.size() < parameterNames.size())) {  // Smaller Set case
                     log.info("Insufficient inputs for a group of parameters, querying DBPedia with a subset of parameters");
 
                     Set<SemanticParameter> subGraphParameters = semanticParameters.stream()
@@ -117,7 +118,7 @@ public class SPARQLUtils {
     // Execute a Query
     // Returns Map<ParameterName, Set<ParameterValue>>
     public static Map<String, Set<String>> executeSPARQLQuery(Pair<String, Map<String, String>> szQuery, String szEndpoint)
-            throws Exception
+            throws URISyntaxException
     {
         Map<String, Set<String>> res = new HashMap<>();
 
@@ -135,7 +136,7 @@ public class SPARQLUtils {
         // Execute Query
         ResultSet rs = qexec.execSelect();
 
-        rs.getResultVars().stream().forEach(x->res.put(x, new HashSet<String>()));
+        rs.getResultVars().stream().forEach(x->res.put(x, new HashSet<>()));
 
         while (rs.hasNext()) {
             // Get Result
@@ -225,17 +226,12 @@ public class SPARQLUtils {
         return res;
     }
 
-    public static Pair<String, Map<String, String>> generateQuery(Set<SemanticParameter> semanticParameters, Boolean count) {
+    public static Pair<String, Map<String, String>> generateQuery(Set<SemanticParameter> semanticParameters, boolean count) {
         String queryString = "";
         String filters = "";
 
         List<SemanticParameter> allParameters = new ArrayList<>(semanticParameters);
 
-        // Old
-//        List<String> allParametersName = allParameters.stream()
-//                .map(x-> x.getTestParameter().getName())
-//                .map(x-> x.replace("-","_"))    // kebab-case       (Avoid duplicates)
-//                .collect(Collectors.toList());
         Map<String, String> allParametersNameMap = getAllParametersName(allParameters);
 
 
@@ -298,7 +294,6 @@ public class SPARQLUtils {
         queryString = queryString + "\n} ";
 
         return Pair.with(queryString, allParametersNameMap);
-//        return queryString; old
 
     }
 
@@ -338,17 +333,17 @@ public class SPARQLUtils {
     private static String getAlphaNumericString() {
 
         // chose a Character random from this String
-        String AlphaNumericString = "abcdefghijklmnopqrstuvxyz";
+        String alphaNumericString = "abcdefghijklmnopqrstuvxyz";
 
         // create StringBuffer size of AlphaNumericString
         StringBuilder sb = new StringBuilder(10);
 
         for (int i = 0; i < 10; i++) {
             int index
-                    = (int)(AlphaNumericString.length()
+                    = (int)(alphaNumericString.length()
                     * Math.random());
 
-            sb.append(AlphaNumericString
+            sb.append(alphaNumericString
                     .charAt(index));
         }
 
@@ -366,7 +361,7 @@ public class SPARQLUtils {
 
     private static  String getPredicatesString(Set<String> predicates){
 
-        if(predicates==null || predicates.size()==0){
+        if(predicates==null || predicates.isEmpty()){
             throw new NullPointerException("A semantic parameter must contain at least one predicate");
         }
 
@@ -397,7 +392,7 @@ public class SPARQLUtils {
         try {
             result = executeSPARQLQuery(queryString, szEndpoint);
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
         }
 
         return result.get(newSemanticParameter.getTestParameter().getName());

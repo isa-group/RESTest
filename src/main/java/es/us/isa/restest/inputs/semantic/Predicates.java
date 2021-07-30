@@ -260,36 +260,6 @@ public class Predicates {
         return null;
     }
 
-//    public static String executePredicateSPARQLQuery(String queryString, TestParameter testParameter){
-//
-//        Query query = QueryFactory.create(queryString);
-//        QueryExecution qexec = QueryExecutionFactory.sparqlService(szEndpoint, query);
-//        ((QueryEngineHTTP)qexec).addParam("timeout", "10000");
-//
-//        // Execute query
-//        int iCount = 0;
-//        ResultSet rs = qexec.execSelect();
-//        while (rs.hasNext() && iCount<5) {
-//            iCount++;
-//
-//            QuerySolution qs = rs.next();
-//            Iterator<String> itVars = qs.varNames();
-//
-//            while(itVars.hasNext()){
-//                String sVar = itVars.next();
-//                String szVal = qs.get(sVar).toString();
-//
-//                Integer support = computeSupportOfPredicate(szVal, testParameter);
-//
-//                if(support >= minSupport){
-//                    return szVal;
-//                }
-//            }
-//
-//        }
-//
-//        return null;
-//    }
 
     public static Integer computeSupportOfPredicate(String predicate, TestParameter testParameter){
         // Generate query

@@ -121,7 +121,7 @@ public class CSVManager {
 			String collect = collection.stream().collect(Collectors.joining("\n"));
 			writer.write(collect);
 		} catch (IOException e) {
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 
 	}
@@ -137,7 +137,7 @@ public class CSVManager {
 			writer.write(collect);
 
 		} catch(IOException e) {
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 
 	}

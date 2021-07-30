@@ -15,7 +15,6 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
-import net.sf.extjwnl.data.Exc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -240,8 +239,6 @@ public class TestGenerationAndExecution {
 			createDir(coverageDataDir);
 		}
 
-//			return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
-//					enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
 		return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
 					enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)),
 					secondPredicateSearch, maxNumberOfPredicates, minimumValidAndInvalidValues,
@@ -409,9 +406,6 @@ public class TestGenerationAndExecution {
 	}
 
 	public static String getExperimentName(){ return experimentName; }
-
-//	public static String getConfPath(){ return confPath; }
-
 
 	private static void setUpLogger() {
 		String logPath = readParameterValue("log.path");

@@ -2,7 +2,6 @@ package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.*;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +15,10 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 
 
 public class TestConfUpdate {
+
+    private TestConfUpdate(){
+        throw new IllegalStateException("Utilities class");
+    }
 
     private static final Logger log = LogManager.getLogger(TestConfUpdate.class);
 
@@ -62,7 +65,8 @@ public class TestConfUpdate {
         generators.add(newGenerator);
 
         testParameter.setGenerators(generators);
-        if(semanticParameter.getValues().size() == 0){
+
+        if(semanticParameter.getValues().isEmpty()){
             testParameter.setWeight(0.0f);
         }
 
@@ -98,7 +102,7 @@ public class TestConfUpdate {
 
         // Write new test configuration to file
         TestConfigurationIO.toFile(conf, confPath);
-        log.info("Number of tries increased for parameter " + testParameter.getName());
+        log.info("Number of tries increased for parameter {}", testParameter.getName());
 
     }
 

@@ -91,15 +91,14 @@ public class NLPUtils {
         //        NNS	Noun, plural
         //        NNP	Proper noun, singular
         //        NNPS	Proper noun, plural
-        List<String> names = document.tokens().stream()
+        // Return names
+        return document.tokens().stream()
                 .filter(x -> (x.tag().equals("FW") || x.tag().equals("NN") ||
                         x.tag().equals("NNS") || x.tag().equals("NNP") || x.tag().equals("NNPS") || x.tag().equals("JJ"))
                         &&  (!stopWords.contains(x.lemma())))
                 .map(x -> x.lemma())
                 .collect(Collectors.toList());
 
-
-        return names;
     }
 
 
@@ -109,7 +108,7 @@ public class NLPUtils {
         try{
             lines = Files.readAllLines(Paths.get(stopwordsPath), StandardCharsets.UTF_8);
         }catch (IOException e){
-            System.err.println(e.getMessage());
+            log.error(e.getMessage());
         }
         return lines;
     }

@@ -17,7 +17,6 @@ import org.apache.logging.log4j.Logger;
 import java.util.*;
 
 import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
-import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.LIMIT;
 import static es.us.isa.restest.inputs.semantic.Predicates.*;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithIncreasedNumberOfTries;
@@ -42,7 +41,7 @@ public class StatsReportManager {
     private boolean enableOutputCoverage = true;
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
-    private Boolean secondPredicateSearch;
+    private boolean secondPredicateSearch;
     private Integer maxNumberOfPredicates;                // MaxNumberOfPredicates = AdditionalPredicates + 1
     private Integer minimumValidAndInvalidValues;
     private String metricToUse;
@@ -110,7 +109,7 @@ public class StatsReportManager {
         // Iterate the test cases of an operation
         for(TestCase testCase: testCases) {
             // The results are only considered if the testCase is not faulty
-            if (!testCase.getFaulty()) {
+            if (Boolean.TRUE.equals(!testCase.getFaulty())) {
                 // Obtain response code of the given testCase
                 String responseCode = trs.stream().filter(tr -> tr.getId().equals(testCase.getId()))
                         .findFirst()
@@ -148,12 +147,12 @@ public class StatsReportManager {
                     logger.info("Generating regex...");
                     FinalSolution solution = learnRegex(name, validSet, invalidSet,false);
                     String regex = solution.getSolution();
-                    logger.info("Regex learned for parameter " + semanticParameter.getTestParameter().getName() + ": " + regex);
-                    logger.info("Accuracy: " + solution.getValidationPerformances().get("character accuracy"));
-                    logger.info("Precision: " + solution.getValidationPerformances().get("match precision"));
-                    logger.info("Recall: " + solution.getValidationPerformances().get("match recall"));
-                    logger.info("F1-Score: " + solution.getValidationPerformances().get("match f-measure"));
-                    logger.info("\n Number of tries for generating regex for this parameter: " + semanticParameter.getNumberOfTriesToGenerateRegex() + "/" + maxNumberOfTriesToGenerateRegularExpression);
+                    logger.info("Regex learned for parameter {}: {} ", semanticParameter.getTestParameter().getName(), regex);
+                    logger.info("Accuracy: {}", solution.getValidationPerformances().get("character accuracy"));
+                    logger.info("Precision: {}", solution.getValidationPerformances().get("match precision"));
+                    logger.info("Recall: {}", solution.getValidationPerformances().get("match recall"));
+                    logger.info("F1-Score: {}", solution.getValidationPerformances().get("match f-measure"));
+                    logger.info("\n Number of tries for generating regex for this parameter: {}/{}", semanticParameter.getNumberOfTriesToGenerateRegex(), maxNumberOfTriesToGenerateRegularExpression);
 //                "match precision"
 //                        "character accuracy": 1.0,
 //                        "character precision": 1.0,
@@ -176,7 +175,7 @@ public class StatsReportManager {
                             // Get new predicates for parameter
                             Set<String> newPredicates = getPredicates(semanticOperation, semanticParameter, regex, spec);
 
-                            if(newPredicates.size() > 0) {
+                            if(!newPredicates.isEmpty()) {
                                 // Get new values
                                 Set<String> results = getNewValues(semanticParameter, newPredicates, regex);
 

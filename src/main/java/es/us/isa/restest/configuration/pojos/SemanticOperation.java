@@ -1,6 +1,5 @@
 package es.us.isa.restest.configuration.pojos;
 
-import es.us.isa.restest.reporting.StatsReportManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -135,13 +134,13 @@ public class SemanticOperation {
                 collectionToCSV(validPath, validValues);
                 collectionToCSV(invalidPath, invalidValues);
             }catch (IOException e){
-                System.err.println(e.getMessage());
+                logger.error(e.getMessage());
             }
 
             logger.info("---------------------------------------------------------------------------");
-            logger.info("Parameter: " + semanticParameter.getTestParameter().getName());
-            logger.info("Valid values: " + validValues);
-            logger.info("Invalid values: " + invalidValues);
+            logger.info("Parameter: {}", semanticParameter.getTestParameter().getName());
+            logger.info("Valid values: {}", validValues);
+            logger.info("Invalid values: {}", invalidValues);
             logger.info("---------------------------------------------------------------------------");
 
         }
