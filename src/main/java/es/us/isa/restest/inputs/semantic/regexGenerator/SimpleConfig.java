@@ -2,37 +2,29 @@ package es.us.isa.restest.inputs.semantic.regexGenerator;
 
 import it.units.inginf.male.configuration.Configuration;
 import it.units.inginf.male.configuration.DatasetContainer;
-import it.units.inginf.male.generations.EmptyPopulationBuilder;
-import it.units.inginf.male.generations.FlaggingNaivePopulationBuilder;
-import it.units.inginf.male.generations.TokenizedPopulationBuilder;
 import it.units.inginf.male.inputs.DataSet;
-import it.units.inginf.male.objective.FlaggingAccuracyPrecisionLengthObjective;
-import it.units.inginf.male.selections.best.BasicFlaggingLearningBestSelector;
 import it.units.inginf.male.strategy.impl.MultithreadStrategy;
-import it.units.inginf.male.terminalsets.FlaggingNgramsTerminalSetBuilder;
-import it.units.inginf.male.terminalsets.TokenizedTerminalSetBuilder;
-import java.util.Arrays;
 import java.util.logging.Logger;
 
 public class SimpleConfig {
     //Maximum unmatch_chars/match_chars ratio
     //and sets the maximum unmatch_chars/match_chars ratio; this value defines the margin size around the matches
-    transient private final double STRIPING_DEFAULT_MARGIN_SIZE = 10;
-    public int numberThreads;
-    public int numberOfJobs;
-    public int generations;
-    public int populationSize;
-    public DataSet dataset;
-    public boolean populateOptionalFields;
-    public boolean isStriped = false;
-    public boolean isFlagging = false;
+    transient private static final double STRIPING_DEFAULT_MARGIN_SIZE = 10;
+    public static int numberThreads;
+    public static int numberOfJobs;
+    public static int generations;
+    public static int populationSize;
+    public static DataSet dataset;
+    public static boolean populateOptionalFields;
+    public static boolean isStriped = false;
+    public static boolean isFlagging = false;
 
     /**
      * Percentange [0,100] of the number of the generations used for the Spared termination
      * criteria.
      */
-    public double termination = 20.0;
-    public String comment;
+    public static double termination = 20.0;
+    public static String comment;
 
     public Configuration buildConfiguration(){
         assert !(isFlagging&&isStriped);

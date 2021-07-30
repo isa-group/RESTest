@@ -23,17 +23,24 @@ import java.util.stream.Collectors;
 
 public class NLPUtils {
 
+    private NLPUtils() {
+        throw new IllegalStateException("Utility class");
+    }
+
     private static final Logger log = LogManager.getLogger(NLPUtils.class);
 
     private static String stopwordsPath = "src/main/java/es/us/isa/restest/inputs/semantic/englishStopWords.txt";
     private static String rules = "src/main/java/es/us/isa/restest/inputs/semantic/rules.txt";
+
+    private static String annotatorName = "annotators";
+    private static String annotatorValue = "tokenize,ssplit,pos,lemma";
 
     // With Comparator
     public static List<String> posTagging(String description, String name){
         String res = description.toLowerCase().trim();
         Properties props = new Properties();
 
-        props.setProperty("annotators","tokenize,ssplit,pos,lemma");
+        props.setProperty(annotatorName, annotatorValue);
 
         //Build pipeline
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
@@ -51,7 +58,8 @@ public class NLPUtils {
         //        NNS	Noun, plural
         //        NNP	Proper noun, singular
         //        NNPS	Proper noun, plural
-        List<String> names = document.tokens().stream()
+        // Return the list of names
+        return document.tokens().stream()
                 .filter(x -> (x.tag().equals("FW") || x.tag().equals("NN") ||
                         x.tag().equals("NNS") || x.tag().equals("NNP") || x.tag().equals("NNPS") || x.tag().equals("JJ"))
                         &&  (!stopWords.contains(x.lemma())))
@@ -60,8 +68,6 @@ public class NLPUtils {
                 .sorted(Comparator.comparing(x->leven.apply(name, x)))
                 .collect(Collectors.toList());
 
-
-        return names;
     }
 
     // Without Comparator
@@ -69,7 +75,7 @@ public class NLPUtils {
         String res = description.toLowerCase().trim();
         Properties props = new Properties();
 
-        props.setProperty("annotators","tokenize,ssplit,pos,lemma");
+        props.setProperty(annotatorName, annotatorValue);
 
         //Build pipeline
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
@@ -85,15 +91,14 @@ public class NLPUtils {
         //        NNS	Noun, plural
         //        NNP	Proper noun, singular
         //        NNPS	Proper noun, plural
-        List<String> names = document.tokens().stream()
+        // Return names
+        return document.tokens().stream()
                 .filter(x -> (x.tag().equals("FW") || x.tag().equals("NN") ||
                         x.tag().equals("NNS") || x.tag().equals("NNP") || x.tag().equals("NNPS") || x.tag().equals("JJ"))
                         &&  (!stopWords.contains(x.lemma())))
                 .map(x -> x.lemma())
                 .collect(Collectors.toList());
 
-
-        return names;
     }
 
 
@@ -103,21 +108,21 @@ public class NLPUtils {
         try{
             lines = Files.readAllLines(Paths.get(stopwordsPath), StandardCharsets.UTF_8);
         }catch (IOException e){
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
         return lines;
     }
 
-    public static String splitCamelAndSnakeCase(String s) {
-        return s.replaceAll("_"," ").replaceAll(
-                String.format("%s|%s|%s",
-                        "(?<=[A-Z])(?=[A-Z][a-z])",
-                        "(?<=[^A-Z])(?=[A-Z])",
-                        "(?<=[A-Za-z])(?=[^A-Za-z])"
-                ),
-                " "
-        );
-    }
+//    public static String splitCamelAndSnakeCase(String s) {
+//        return s.replaceAll("_"," ").replaceAll(
+//                String.format("%s|%s|%s",
+//                        "(?<=[A-Z])(?=[A-Z][a-z])",
+//                        "(?<=[^A-Z])(?=[A-Z])",
+//                        "(?<=[A-Za-z])(?=[^A-Za-z])"
+//                ),
+//                " "
+//        );
+//    }
 
     public static Map<Double, Set<String>> extractPredicateCandidatesFromDescription(String name, String description){
 
@@ -132,7 +137,7 @@ public class NLPUtils {
         CoreMapExpressionExtractor<MatchedExpression> extractor = CoreMapExpressionExtractor
                 .createExtractorFromFiles(env, rules);
 
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(PropertiesUtils.asProperties("annotators", "tokenize,ssplit,pos,lemma"));
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(PropertiesUtils.asProperties(annotatorName, annotatorValue));
 
         description = String.join(" ", posTagging(description));
 
@@ -152,7 +157,7 @@ public class NLPUtils {
                 if(priority == 2.0){
                     String[] array = matched.getValue().get().toString().split(" ");
 
-                    log.info("Added {} and {} to candidates list", array[0], name+array[1]);
+                    log.info("Added {} and {}{} to candidates list", array[0], name, array[1]);
 
                     match.add(array[0]);
                     match.add(name + array[1]);

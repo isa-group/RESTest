@@ -117,23 +117,28 @@ public class CSVManager {
 	}
 
 	public static void collectionToCSV(String path, Collection<String> collection) throws IOException {
-		FileWriter writer = new FileWriter(path);
-		String collect = collection.stream().collect(Collectors.joining("\n"));
-		writer.write(collect);
-		writer.close();
+		try (FileWriter writer = new FileWriter(path)) {
+			String collect = collection.stream().collect(Collectors.joining("\n"));
+			writer.write(collect);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+
 	}
 
 	public static void setToCSVWithLimit(String path, Set<String> collection) throws IOException {
-		FileWriter writer = new FileWriter(path);
 
-		List<String> collectionAsList = new ArrayList<>(collection);
-		Collections.shuffle(collectionAsList);
+		try (FileWriter writer = new FileWriter(path)) {
+			List<String> collectionAsList = new ArrayList<>(collection);
+			Collections.shuffle(collectionAsList);
 
-		Set<String> subSet = collectionAsList.stream().limit(LIMIT).collect(Collectors.toSet());
-		String collect = subSet.stream().collect(Collectors.joining("\n"));
-		writer.write(collect);
+			Set<String> subSet = collectionAsList.stream().limit(LIMIT).collect(Collectors.toSet());
+			String collect = subSet.stream().collect(Collectors.joining("\n"));
+			writer.write(collect);
 
-		writer.close();
+		} catch(IOException e) {
+			logger.error(e.getMessage());
+		}
 
 	}
 }

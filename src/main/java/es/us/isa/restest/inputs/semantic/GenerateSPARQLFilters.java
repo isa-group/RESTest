@@ -10,12 +10,16 @@ import static es.us.isa.restest.configuration.generators.DefaultTestConfiguratio
 
 public class GenerateSPARQLFilters {
 
+    private GenerateSPARQLFilters() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static String generateSPARQLFilters(TestParameter parameter){
         String res = "";
 //        Generator generator = parameter.getGenerators().stream().filter(x-> x.getType().equals(SEMANTIC_PARAMETER)).findFirst().get(); OLD
         Generator generator = parameter.getGenerators().stream()
-                .filter(x-> x.getType().equals(SEMANTIC_PARAMETER) || (  x.getType().equals(RANDOM_INPUT_VALUE) && x.isValid()==true  ))
-                .findFirst().get();
+                .filter(x-> x.getType().equals(SEMANTIC_PARAMETER) || (  x.getType().equals(RANDOM_INPUT_VALUE) && x.isValid()  ))
+                .findFirst().orElseThrow(() -> new NullPointerException("Generator not found"));
 
         List<GenParameter> genParameters = generator.getGenParameters();
 
@@ -32,6 +36,8 @@ public class GenerateSPARQLFilters {
                 case GEN_PARAM_MAX:
                     res = res + generateSPARQLFilterMinMax(parameterName, genParameter.getValues().get(0), false);
                     break;
+                default:
+                    break;
             }
         }
 
@@ -42,14 +48,13 @@ public class GenerateSPARQLFilters {
         String modifiedRegex = regexp.replace("\\", "\\\\");
         modifiedRegex = modifiedRegex.replace("\"", "\\\"");
 
-        String res = "\tFILTER regex(str(?" + parameterName + "), " + " \"" + modifiedRegex + "\")\n";
+        return "\tFILTER regex(str(?" + parameterName + "), " + " \"" + modifiedRegex + "\")\n";
 
-        return res;
     }
 
 
 
-    private static String generateSPARQLFilterMinMax(String parameterName, String number, Boolean isMin){
+    private static String generateSPARQLFilterMinMax(String parameterName, String number, boolean isMin){
 
         String res = "";
 

@@ -1,12 +1,10 @@
 package es.us.isa.restest.runners;
 
 import java.util.Collection;
-import java.util.List;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.*;
 import es.us.isa.restest.util.ClassLoader;
-import org.apache.jena.base.Sys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
@@ -18,7 +16,6 @@ import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.writers.IWriter;
 
-import static es.us.isa.restest.util.CSVManager.readCSV;
 import static es.us.isa.restest.util.Timer.TestStep.*;
 
 /**
@@ -39,8 +36,8 @@ public class RESTestRunner {
 	private boolean executeTestCases;
 	private int numTestCases = 0;						// Number of test cases generated so far
 
-	private Boolean learnRegex;
-	private Boolean secondPredicateSearch;
+	private boolean learnRegex;
+	private boolean secondPredicateSearch;
 	private OpenAPISpecification spec;
 	private String confPath;
 
