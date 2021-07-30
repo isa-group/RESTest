@@ -130,12 +130,9 @@ public class SemanticOperation {
 
             // Update CSV files
             // Write the set of values as CSV
-            try{
-                collectionToCSV(validPath, validValues);
-                collectionToCSV(invalidPath, invalidValues);
-            }catch (IOException e){
-                logger.error(e.getMessage());
-            }
+            collectionToCSV(validPath, validValues);
+            collectionToCSV(invalidPath, invalidValues);
+
 
             logger.info("---------------------------------------------------------------------------");
             logger.info("Parameter: {}", semanticParameter.getTestParameter().getName());

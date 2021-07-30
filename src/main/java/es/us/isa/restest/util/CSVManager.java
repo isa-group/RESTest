@@ -116,7 +116,7 @@ public class CSVManager {
 
 	}
 
-	public static void collectionToCSV(String path, Collection<String> collection) throws IOException {
+	public static void collectionToCSV(String path, Collection<String> collection) {
 		try (FileWriter writer = new FileWriter(path)) {
 			String collect = collection.stream().collect(Collectors.joining("\n"));
 			writer.write(collect);
@@ -126,7 +126,7 @@ public class CSVManager {
 
 	}
 
-	public static void setToCSVWithLimit(String path, Set<String> collection) throws IOException {
+	public static void setToCSVWithLimit(String path, Set<String> collection) {
 
 		try (FileWriter writer = new FileWriter(path)) {
 			List<String> collectionAsList = new ArrayList<>(collection);

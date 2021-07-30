@@ -107,11 +107,7 @@ public class RegexGeneratorUtils {
         createFileIfNotExists(csvPath);
 
         // Write the Set of values as a csv file
-        try {
-            collectionToCSV(csvPath, matches);
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
+        collectionToCSV(csvPath, matches);
 
     }
 
@@ -166,12 +162,8 @@ public class RegexGeneratorUtils {
         createFileIfNotExists(csvPath);
 
         // Write the Set of values as a csv file
-        try {
             collectionToCSV(csvPath, csvValues);
             logger.info("CSV file updated");
-        } catch (IOException e) {
-            logger.error(e.getMessage());
-        }
 
     }
 
