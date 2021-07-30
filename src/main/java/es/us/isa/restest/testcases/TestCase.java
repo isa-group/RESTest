@@ -9,11 +9,13 @@ import java.util.stream.Collectors;
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.report.ValidationReport;
-import es.us.isa.idlreasoner.analyzer.Analyzer;
+import es.us.isa.idlreasonerchoco.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.idlreasonerchoco.configuration.IDLException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
@@ -42,6 +44,8 @@ public class TestCase implements Serializable {
 	private Map<String, String> queryParameters;			// Input parameters and values
 	private Map<String, String> formParameters;				// Form-data parameters
 	private String bodyParameter;							// Body parameter
+
+	private static Logger logger = LogManager.getLogger(TestCase.class.getName());
 
 	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
@@ -451,7 +455,12 @@ public class TestCase implements Serializable {
 	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
 		if (idlReasoner == null)
 			return true;
-		return idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
+		try {
+			return idlReasoner.isValidRequest(restest2idlTestCase(tc)); // Previous version of IDLReasoner: idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
+		} catch (IDLException e) {
+			logger.warn("There was an error generating an invalid request with IDLReasoner: {}", e.getMessage());
+			return false;
+		}
 	}
 
 	public String toString() {

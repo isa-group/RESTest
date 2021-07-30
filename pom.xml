@@ -76,6 +76,24 @@
 		<tag>HEAD</tag>
 	</scm>
 
+	<profiles>
+		<profile>
+			<id>deployment</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
@@ -301,15 +319,15 @@
 		<!-- IDLreasoner dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idl-reasoner</artifactId>
-			<version>0.0.1</version>
+			<artifactId>idlreasoner-choco</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- IDL dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idl</artifactId>
-			<version>0.0.1</version>
+			<artifactId>idl-choco</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- Jena -->
@@ -512,7 +530,7 @@
 				<executions>
 					<execution>
 						<id>sign-artifacts</id>
-						<phase>verify</phase>
+						<phase>deploy</phase>
 						<goals>
 							<goal>sign</goal>
 						</goals>
