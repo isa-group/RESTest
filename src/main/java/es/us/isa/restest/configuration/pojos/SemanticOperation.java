@@ -1,5 +1,9 @@
 package es.us.isa.restest.configuration.pojos;
 
+import es.us.isa.restest.reporting.StatsReportManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.PREDICATES;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 
@@ -16,6 +20,7 @@ public class SemanticOperation {
     private String operationId = null;
     private Set<SemanticParameter> semanticParameters = null;
 
+    private static final Logger logger = LogManager.getLogger(SemanticOperation.class.getName());
 
     // Initial generation
     public SemanticOperation(Operation operation, Set<TestParameter> testParameters){
@@ -96,7 +101,7 @@ public class SemanticOperation {
             }
 
         // Add semanticOperation to res
-        if(semanticParameters.size() > 0) {
+        if(!semanticParameters.isEmpty()) {
             SemanticOperation semanticOperation = new SemanticOperation(operation, semanticParameters);
             res.add(semanticOperation);
         }
@@ -133,13 +138,11 @@ public class SemanticOperation {
                 System.err.println(e.getMessage());
             }
 
-            System.out.println("---------------------------------------------------------------------------");
-            System.out.println("---------------------------------------------------------------------------");
-            System.out.println("Parameter: " + semanticParameter.getTestParameter().getName());
-            System.out.println("Valid values: " + validValues);
-            System.out.println("Invalid values: " + invalidValues);
-            System.out.println("---------------------------------------------------------------------------");
-            System.out.println("---------------------------------------------------------------------------");
+            logger.info("---------------------------------------------------------------------------");
+            logger.info("Parameter: " + semanticParameter.getTestParameter().getName());
+            logger.info("Valid values: " + validValues);
+            logger.info("Invalid values: " + invalidValues);
+            logger.info("---------------------------------------------------------------------------");
 
         }
     }

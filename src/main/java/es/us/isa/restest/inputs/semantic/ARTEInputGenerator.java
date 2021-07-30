@@ -29,9 +29,8 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static String propertiesFilePath = "src/test/resources/SemanticAPIs/Spotify/spotify.properties";
+    private static final String propertiesFilePath = "src/test/resources/SemanticAPIs/Spotify/spotify.properties";
     private static OpenAPISpecification specification;
-    private static String OAISpecPath;
     private static String confPath;
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
@@ -43,7 +42,7 @@ public class ARTEInputGenerator {
     // Parameter minimum threshold of unique parameter values to obtain: default 100
     public static final Integer THRESHOLD = 100;
     // Limit
-    public static Integer LIMIT = 30;
+    public static final Integer LIMIT = 30;
     // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
     public static final String szEndpoint = "http://dbpedia.org/sparql";
 
@@ -51,8 +50,6 @@ public class ARTEInputGenerator {
     private static final Logger log = LogManager.getLogger(ARTEInputGenerator.class);
 
     public static void main(String[] args) throws IOException {
-
-        System.out.println(log);
         
         // ONLY FOR LOCAL COPY OF DBPEDIA
 //        System.setProperty("http.maxConnections", "10000");
@@ -61,7 +58,7 @@ public class ARTEInputGenerator {
 
         setEvaluationParameters();
 
-        System.out.println(confPath);
+        log.info(confPath);
         TestConfigurationObject conf = loadConfiguration(confPath, specification);
 
         // Key: OperationName       Value: Parameters
@@ -80,16 +77,16 @@ public class ARTEInputGenerator {
                 // Query DBPedia
                 log.info("Querying DBPedia for operation {}...", semanticOperation.getOperationId());
                 // Values are generated only if the size of Set<predicates> is greater than 0
-                result = getParameterValues(semanticOperation.getSemanticParameters().stream().filter(x->x.getPredicates().size()>0).collect(Collectors.toSet()));
-            }catch(Exception ex){
-                System.err.println(ex);
+                result = getParameterValues(semanticOperation.getSemanticParameters().stream().filter(x->!x.getPredicates().isEmpty()).collect(Collectors.toSet()));
+            }catch(Exception e){
+                System.err.println(e.getMessage());
             }
 
             semanticOperation.updateSemanticParametersValues(result);
 
         }
 
-        if(semanticOperations.size() == 0){
+        if(semanticOperations.isEmpty()){
             log.info("No semantic operations found");
         }
 
@@ -155,7 +152,7 @@ public class ARTEInputGenerator {
 
     private static void setEvaluationParameters() {
 
-        OAISpecPath = readProperty(propertiesFilePath, "oas.path");
+        String OAISpecPath = readProperty(propertiesFilePath, "oas.path");
         confPath = readProperty(propertiesFilePath, "conf.path");
         specification = new OpenAPISpecification(OAISpecPath);
         csvPath = csvPath + specification.getSpecification().getInfo().getTitle();
@@ -174,7 +171,7 @@ public class ARTEInputGenerator {
 
         for(Operation operation: testConfigurationObject.getTestConfiguration().getOperations()){
             Set<TestParameter> semanticParameters = getSemanticParameters(operation);
-            if(semanticParameters.size() > 0){
+            if(!semanticParameters.isEmpty()){
                 log.info("Semantic operation {} added to list of semantic operations", operation.getOperationId());
                 semanticOperations.add(new SemanticOperation(operation, semanticParameters));
             }

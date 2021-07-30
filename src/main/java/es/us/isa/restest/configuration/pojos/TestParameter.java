@@ -48,14 +48,16 @@ public class TestParameter {
 
     public void addRegexToSemanticParameter(String regex){
 
-        List<Generator> generators = this.generators;
+        List<Generator> modifiedGenerators = this.generators;
 
-        for(Generator generator: generators){
-            if(generator.isValid() && generator.getType().equals(RANDOM_INPUT_VALUE)){
+        for(Generator generator: modifiedGenerators){
+            Boolean isGeneratorValid = generator.isValid();
+            if(isGeneratorValid && generator.getType().equals(RANDOM_INPUT_VALUE)){
                 for(GenParameter genParameter: generator.getGenParameters()){
                     if(genParameter.getName().equals(PREDICATES)){
 
-                        GenParameter oldGenParameter = generator.getGenParameters().stream().filter(x-> x.getName().equals("regExp")).findFirst().orElse(null);
+                        GenParameter oldGenParameter = generator.getGenParameters().stream().filter(x-> x.getName().equals("regExp")).findFirst()
+                                .orElse(null);
                         if(oldGenParameter != null){
                             generator.removeGenParameter(oldGenParameter);
                         }
@@ -75,7 +77,7 @@ public class TestParameter {
 
         }
 
-        this.generators = generators;
+        this.generators = modifiedGenerators;
 
     }
 
