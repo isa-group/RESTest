@@ -330,6 +330,19 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<!-- RG++ -->
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>MaleRegexTree</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>RandomRegexTurtle</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
 		<!-- Jena -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -372,23 +385,6 @@
 			<groupId>edu.stanford.nlp</groupId>
 			<artifactId>stanford-parser</artifactId>
 			<version>3.9.2</version>
-		</dependency>
-
-		<!-- RG++ -->
-		<dependency>
-			<groupId>MaleRegexTree</groupId>
-			<artifactId>MaleRegexTree</artifactId>
-			<scope>system</scope>
-			<version>1.0</version>
-			<systemPath>${project.basedir}/lib/MaleRegexTree.jar</systemPath>
-		</dependency>
-
-		<dependency>
-			<groupId>RandomRegexTurtle</groupId>
-			<artifactId>RandomRegexTurtle</artifactId>
-			<scope>system</scope>
-			<version>1.0</version>
-			<systemPath>${project.basedir}/lib/Random Regex Turtle.jar</systemPath>
 		</dependency>
 
 	</dependencies>
