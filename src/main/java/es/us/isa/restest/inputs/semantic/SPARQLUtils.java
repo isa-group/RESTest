@@ -20,6 +20,10 @@ import static es.us.isa.restest.inputs.semantic.GenerateSPARQLFilters.generateSP
 
 public class SPARQLUtils {
 
+    private SPARQLUtils(){
+        throw new IllegalStateException("Utilities class");
+    }
+
     private static final Logger log = LogManager.getLogger(SPARQLUtils.class);
 
 

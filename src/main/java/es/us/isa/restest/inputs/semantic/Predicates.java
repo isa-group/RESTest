@@ -16,7 +16,6 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
 import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.minSupport;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.extractPredicateCandidatesFromDescription;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.posTagging;
@@ -26,6 +25,10 @@ import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
 
 public class Predicates {
 
+    private Predicates(){
+        throw new IllegalStateException("Utilities class");
+    }
+
     private static final Logger log = LogManager.getLogger(Predicates.class);
 
     public static Set<String> getPredicates(
@@ -34,7 +37,7 @@ public class Predicates {
             String regex,
             OpenAPISpecification specification){
 
-        Set<String> predicates = new HashSet<>();
+        Set<String> predicates;
         List<String> predicatesToIgnore = new ArrayList<>(semanticParameter.getPredicates());
 
         TestParameter testParameter = semanticParameter.getTestParameter();
@@ -49,7 +52,7 @@ public class Predicates {
         // If the paramater name is only a character, compare with description
         if(parameterName.length() == 1 && parameterDescription!=null){
             List<String> possibleNames = posTagging(parameterDescription, parameterName);
-            if(possibleNames.size()>0){
+            if(!possibleNames.isEmpty()){
                 parameterName = possibleNames.get(0);
             }
         }
@@ -70,7 +73,7 @@ public class Predicates {
         }else{
             // PARAMETER NAME
             predicates = getPredicatesOfSingleParameter(parameterName, testParameter, predicatesToIgnore);
-            if(predicates.size()>0){
+            if(!predicates.isEmpty()){
                 return predicates;
             }
         }
@@ -94,7 +97,7 @@ public class Predicates {
             // If the paramater name is only a character, compare with description
             if(parameterName.length() == 1 && parameterDescription!=null){
                 List<String> possibleNames = posTagging(parameterDescription, parameterName);
-                if(possibleNames.size()>0){
+                if(!possibleNames.isEmpty()){
                     parameterName = possibleNames.get(0);
                 }
             }
@@ -115,7 +118,7 @@ public class Predicates {
             }else{
                 // PARAMETER NAME
                 Set<String> predicates = getPredicatesOfSingleParameter(parameterName, p.getTestParameter(), new ArrayList<>());
-                if(predicates.size()>0){
+                if(!predicates.isEmpty()){
                     p.setPredicates(predicates);
                 }
             }
@@ -147,7 +150,7 @@ public class Predicates {
     public static Set<String> getPredicatesOfSingleParameter(String parameterName, TestParameter testParameter, List<String> predicatesToIgnore){
 
         // PARAMETER NAME
-        // Query creation       TODO: kebab-case
+        // Query creation
         String queryString = generatePredicateQuery(parameterName);
 
         // Query execution
@@ -193,7 +196,7 @@ public class Predicates {
                         predicates.add(wordPredicate);
                     }
                 }
-                if(predicates.size() > 0){
+                if(!predicates.isEmpty()){
                     return predicates;
                 }
 
@@ -210,7 +213,7 @@ public class Predicates {
 
     public static String generatePredicateQuery(String parameterName){
 
-        String queryString = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+        return "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                 "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
                 "\n" +
                 "SELECT distinct ?predicate where {\n" +
@@ -222,7 +225,6 @@ public class Predicates {
                 "order by strlen(str(?predicate)) " +
                 "\n";
 
-        return queryString;
     }
 
 
@@ -296,10 +298,9 @@ public class Predicates {
 
         Pair<String, Map<String, String>> queryString = generateQuery(Collections.singleton(semanticParameter), true);
 
-        // Execute query
-        Integer supportOfPredicate = executeSPARQLQueryCount(queryString.getValue0(), szEndpoint);
+        // Execute query and return support of predicate
+        return executeSPARQLQueryCount(queryString.getValue0(), szEndpoint);
 
-        return supportOfPredicate;
     }
 
 
