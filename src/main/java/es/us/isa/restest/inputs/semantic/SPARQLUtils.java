@@ -393,7 +393,7 @@ public class SPARQLUtils {
         try {
             result = executeSPARQLQuery(queryString, szEndpoint);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
         return result.get(newSemanticParameter.getTestParameter().getName());

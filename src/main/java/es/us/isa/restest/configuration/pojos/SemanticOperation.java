@@ -130,7 +130,7 @@ public class SemanticOperation {
                 collectionToCSV(validPath, validValues);
                 collectionToCSV(invalidPath, invalidValues);
             }catch (IOException e){
-                e.printStackTrace();
+                System.err.println(e.getMessage());
             }
 
             System.out.println("---------------------------------------------------------------------------");

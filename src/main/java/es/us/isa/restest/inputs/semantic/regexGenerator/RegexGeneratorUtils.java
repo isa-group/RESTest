@@ -67,7 +67,7 @@ public class RegexGeneratorUtils {
         try {
             strategy.execute(config, consolelistener);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
 
@@ -111,7 +111,7 @@ public class RegexGeneratorUtils {
         try {
             collectionToCSV(csvPath, matches);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
     }
@@ -125,8 +125,8 @@ public class RegexGeneratorUtils {
                 res.add(line);
             }
             br.close();
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
+        } catch(IOException e) {
+            System.err.println(e.getMessage());
         }
         return res;
     }
@@ -172,7 +172,7 @@ public class RegexGeneratorUtils {
             collectionToCSV(csvPath, csvValues);
             logger.info("CSV file updated");
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
 
     }

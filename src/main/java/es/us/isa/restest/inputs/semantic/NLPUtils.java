@@ -103,7 +103,7 @@ public class NLPUtils {
         try{
             lines = Files.readAllLines(Paths.get(stopwordsPath), StandardCharsets.UTF_8);
         }catch (IOException e){
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
         return lines;
     }
