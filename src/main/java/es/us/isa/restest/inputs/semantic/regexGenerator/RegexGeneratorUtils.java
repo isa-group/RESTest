@@ -30,6 +30,10 @@ import static es.us.isa.restest.util.FileManager.deleteFile;
 
 public class RegexGeneratorUtils {
 
+    private RegexGeneratorUtils(){
+        throw new IllegalStateException("Utilities class");
+    }
+
     private static final Logger logger = LogManager.getLogger(RegexGeneratorUtils.class.getName());
 
     public static FinalSolution learnRegex(String name, Set<String> matches, Set<String> unmatches, Boolean print) {
@@ -106,7 +110,7 @@ public class RegexGeneratorUtils {
         try {
             collectionToCSV(csvPath, matches);
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            logger.error(e.getMessage());
         }
 
     }

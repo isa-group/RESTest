@@ -366,24 +366,24 @@ public class TestGenerationAndExecution {
 		logger.info("Second Predicate Search: {}", secondPredicateSearch);
 
 		if (readParameterValue("maxNumberOfPredicates") != null)
-			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("maxNumberOfPredicates"));
+			maxNumberOfPredicates = Integer.parseInt(readParameterValue("maxNumberOfPredicates"));
 		logger.info("Maximum number of predicates: {}", maxNumberOfPredicates);
 
 		if (readParameterValue("minimumValidAndInvalidValues") != null)
-			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("minimumValidAndInvalidValues"));
+			minimumValidAndInvalidValues = Integer.parseInt(readParameterValue("minimumValidAndInvalidValues"));
 		logger.info("Minimum valid and invalid values: {}", minimumValidAndInvalidValues);
 
 		if (readParameterValue("metricToUse") != null)
-			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("metricToUse"));
-		logger.info("Minimum valid and invalid values: {}", metricToUse);
+			metricToUse = readParameterValue("metricToUse");
+		logger.info("Metric to use: {}", metricToUse);
 
 		if (readParameterValue("minimumValueOfMetric") != null)
-			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("minimumValueOfMetric"));
-		logger.info("Minimum valid and invalid values: {}", minimumValueOfMetric);
+			minimumValueOfMetric = Double.parseDouble(readParameterValue("minimumValueOfMetric"));
+		logger.info("Minimum value of metric: {}", minimumValueOfMetric);
 
 		if (readParameterValue("maxNumberOfTriesToGenerateRegularExpression") != null)
-			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("maxNumberOfTriesToGenerateRegularExpression"));
-		logger.info("Minimum valid and invalid values: {}", maxNumberOfTriesToGenerateRegularExpression);
+			maxNumberOfTriesToGenerateRegularExpression = Integer.parseInt(readParameterValue("maxNumberOfTriesToGenerateRegularExpression"));
+		logger.info("Maximum number of tries to generate a regular expression: {}", maxNumberOfTriesToGenerateRegularExpression);
 	
 	}
 

@@ -177,7 +177,7 @@ public class Predicates {
                         }
 
                     }
-                    if(predicates.size()>0){
+                    if(!predicates.isEmpty()){
                         return predicates;
                     }
                 }
