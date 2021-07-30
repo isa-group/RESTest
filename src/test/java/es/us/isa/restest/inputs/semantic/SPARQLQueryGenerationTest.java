@@ -20,8 +20,8 @@ public class SPARQLQueryGenerationTest {
 
 	@Test
 	public void testSemanticOperationsRetrieval(){
-		OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/ClimaCell/ClimaCell.yaml");
-		TestConfigurationObject conf = loadConfiguration("src/test/resources/ClimaCell/testConf.yaml", specification);
+		OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/ClimaCell/ClimaCell.yaml");
+		TestConfigurationObject conf = loadConfiguration("src/test/resources/semanticAPITests/ClimaCell/testConf.yaml", specification);
 
 		Set<SemanticOperation> semanticOperations = getSemanticOperations(conf);
 		assertEquals("Incorrect number of semantic operations", 3, semanticOperations.size());
@@ -68,8 +68,8 @@ public class SPARQLQueryGenerationTest {
 	@Test
 	public void testGetParameterValues(){
 
-		OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/ClimaCell/ClimaCell.yaml");
-		TestConfigurationObject conf = loadConfiguration("src/test/resources/ClimaCell/testConf.yaml", specification);
+		OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/ClimaCell/ClimaCell.yaml");
+		TestConfigurationObject conf = loadConfiguration("src/test/resources/semanticAPITests/ClimaCell/testConf.yaml", specification);
 
 		Set<SemanticOperation> semanticOperations = getSemanticOperations(conf);
 		SemanticOperation semanticOperation = semanticOperations.stream().findFirst().orElse(null);

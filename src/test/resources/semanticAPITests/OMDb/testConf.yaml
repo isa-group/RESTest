@@ -4,7 +4,6 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: OMDb/apikeys.json
-  headersPath: null
 testConfiguration:
   operations:
   - testPath: /
@@ -15,40 +14,41 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - valid: true
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: i
       in: query
       weight: 0.5
       generators:
-      - type: RandomRegExp
+      - valid: true
+        type: RandomRegExp
         genParameters:
         - name: regExp
           values:
-          - "tt(([0-1][0-9])|(2[0-3]))\\d\\d\\d\\d\\d"
+          - tt(([0-1][0-9])|(2[0-3]))\d\d\d\d\d
           objectValues: null
-        valid: true
     - name: s
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - valid: true
+        type: SemanticParameter
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     - name: page
       in: query
       weight: 0.5
       generators:
-      - type: RandomNumber
+      - valid: true
+        type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -62,12 +62,12 @@ testConfiguration:
           values:
           - 100
           objectValues: null
-        valid: true
-    - name: "y"
+    - name: y
       in: query
       weight: 0.5
       generators:
-      - type: RandomNumber
+      - valid: true
+        type: SemanticParameter
         genParameters:
         - name: type
           values:
@@ -81,12 +81,12 @@ testConfiguration:
           values:
           - 2021
           objectValues: null
-        valid: true
     - name: type
       in: query
       weight: 0.5
       generators:
-      - type: RandomInputValue
+      - valid: true
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -94,40 +94,39 @@ testConfiguration:
           - series
           - episode
           objectValues: null
-        valid: true
     - name: plot
       in: query
       weight: 0.5
       generators:
-      - type: RandomInputValue
+      - valid: true
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - short
           - full
           objectValues: null
-        valid: true
     - name: r
       in: query
-      weight: 0.0
+      weight: 0
       generators:
-      - type: RandomInputValue
+      - valid: true
+        type: RandomInputValue
         genParameters:
         - name: values
           values:
           - json
           - xml
           objectValues: null
-        valid: true
     - name: callback
       in: query
-      weight: 0.0
+      weight: 0
       generators:
-      - type: RandomEnglishWord
+      - valid: true
+        type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
-        valid: true
     expectedResponse: 200

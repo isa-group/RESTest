@@ -29,7 +29,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static final String propertiesFilePath = "src/test/resources/SemanticAPIs/Spotify/spotify.properties";
+    private static final String propertiesFilePath = "----";
     private static OpenAPISpecification specification;
     private static String confPath;
     private static String semanticConfPath;

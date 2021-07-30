@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
-  apiKeysPath: null
+  apiKeysPath: OMDb/apikeys.json
   headersPath: null
 testConfiguration:
   operations:
@@ -14,38 +14,57 @@ testConfiguration:
     - name: t
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/OMDb API/search_t.csv
           objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/title
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
     - name: i
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomRegExp
         genParameters:
-        - name: csv
+        - name: regExp
           values:
-          - src/main/resources/TestData/Generated/OMDb API/search_i.csv
+          - "tt(([0-1][0-9])|(2[0-3]))\\d\\d\\d\\d\\d"
           objectValues: null
+        valid: true
     - name: s
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/OMDb API/search_s.csv
           objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/series
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
     - name: page
       in: query
       weight: 0.5
-      generator:
-        type: RandomNumber
+      generators:
+      - type: RandomNumber
         genParameters:
         - name: type
           values:
@@ -59,21 +78,31 @@ testConfiguration:
           values:
           - 100
           objectValues: null
+        valid: true
     - name: "y"
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: csv
           values:
           - src/main/resources/TestData/Generated/OMDb API/search_y.csv
           objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/year
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
     - name: type
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
@@ -81,36 +110,40 @@ testConfiguration:
           - series
           - episode
           objectValues: null
+        valid: true
     - name: plot
       in: query
       weight: 0.5
-      generator:
-        type: RandomInputValue
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - short
           - full
           objectValues: null
+        valid: true
     - name: r
       in: query
-      weight: 0.5
-      generator:
-        type: RandomInputValue
+      weight: 0.0
+      generators:
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
           - json
           - xml
           objectValues: null
+        valid: true
     - name: callback
       in: query
-      weight: 0.5
-      generator:
-        type: RandomEnglishWord
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
           - 1
           objectValues: null
+        valid: true
     expectedResponse: 200

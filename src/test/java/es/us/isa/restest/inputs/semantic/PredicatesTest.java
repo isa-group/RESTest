@@ -1,18 +1,23 @@
 package es.us.isa.restest.inputs.semantic;
 
-import es.us.isa.restest.configuration.pojos.GenParameter;
-import es.us.isa.restest.configuration.pojos.Generator;
-import es.us.isa.restest.configuration.pojos.TestParameter;
+import es.us.isa.restest.configuration.pojos.*;
+import es.us.isa.restest.specification.OpenAPISpecification;
 import nu.xom.jaxen.util.SingletonList;
 import org.chocosolver.solver.constraints.nary.nvalue.amnv.graph.G;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.GEN_PARAM_REG_EXP;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
+import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.getSemanticOperations;
 import static es.us.isa.restest.inputs.semantic.NLPUtils.extractPredicateCandidatesFromDescription;
 import static es.us.isa.restest.inputs.semantic.Predicates.*;
+import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getParameterValues;
+import static es.us.isa.restest.main.TestGenerationAndExecution.getExperimentName;
 import static org.junit.Assert.*;
 
 public class PredicatesTest {
@@ -119,11 +124,13 @@ public class PredicatesTest {
     @Test
     public void testGetPredicatesFromDescription() {
         Map<Double, Set<String>> descriptionCandidates = new HashMap<>();
-        Set<String> values = new HashSet<>();
+        Set<String> values2 = new HashSet<>();
         String keyword = "currencyCode";
-        values.add(keyword);
+        values2.add(keyword);
 
-        descriptionCandidates.put(1.0, values);
+
+        descriptionCandidates.put(1.0, Collections.singleton("thisPredicatesDoesNotExists"));
+        descriptionCandidates.put(2.0, values2);
 
 
 
@@ -151,6 +158,75 @@ public class PredicatesTest {
 
         assertTrue("The obtained predicate does not match the keyword", obtainedPredicate.contains(keyword));
         assertNotEquals("The predicate to ignore must be ignored", predicateToIgnore, obtainedPredicate);
+    }
+
+    @Test
+    public void testGetPredicates() {
+
+        String confPath = "src/test/resources/semanticAPITests/OMDb/testConfSemantic.yaml";
+        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/OMDb/swagger.yaml");
+        TestConfigurationObject conf = loadConfiguration(confPath, specification);
+        String regex = "^\\w*$";
+
+        List<Operation> operations = conf.getTestConfiguration().getOperations();
+        Set<SemanticOperation> semanticOperations = getSemanticOperationsWithValuesFromPreviousIterations(operations, getExperimentName());
+
+        for(SemanticOperation semanticOperation: semanticOperations) {
+
+            Set<SemanticParameter> semanticParameters = semanticOperation.getSemanticParameters();
+
+            assertEquals("Incorrect number of semantic operations", 3, semanticParameters.size());
+
+            for(SemanticParameter semanticParameter: semanticParameters) {
+                Set<String> oldPredicates = semanticParameter.getPredicates();
+                Set<String> newPredicates = getPredicates(semanticOperation, semanticParameter, regex, specification);
+                assertFalse("The new predicates must be different from the previous ones", newPredicates.containsAll(oldPredicates));
+            }
+        }
+    }
+
+    @Test
+    public void testSetPredicatesAndGetParameterValues() {
+        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/OMDb/swagger.yaml");
+
+        String confPath = "src/test/resources/semanticAPITests/OMDb/testConf.yaml";
+        TestConfigurationObject conf = loadConfiguration(confPath, specification);
+        Set<SemanticOperation> semanticOperations = getSemanticOperations(conf);
+
+        // Get initial set of predicates
+        for(SemanticOperation semanticOperation: semanticOperations) {
+
+            setPredicates(semanticOperation, specification);
+
+            for(SemanticParameter semanticParameter: semanticOperation.getSemanticParameters()) {
+                assertFalse("No predicates found", semanticParameter.getPredicates().isEmpty());
+                assertEquals("Wrong number of remaining tries", 0, semanticParameter.getNumberOfTriesToGenerateRegex());
+            }
+
+        }
+
+        for(SemanticOperation semanticOperation: semanticOperations) {
+            // Get initial set of values
+            Map<String, Set<String>> results = new HashMap<>();
+
+            try{
+                results = getParameterValues(semanticOperation.getSemanticParameters().stream().filter(x->!x.getPredicates().isEmpty()).collect(Collectors.toSet()));
+            }catch(Exception e){
+                System.err.println(e.getMessage());
+            }
+
+            for(Set<String> valuesOfParameter: results.values()) {
+                assertFalse("No values found for parameter", valuesOfParameter.isEmpty());
+            }
+
+            semanticOperation.updateSemanticParametersValues(results);
+
+            for(SemanticParameter semanticParameter: semanticOperation.getSemanticParameters()) {
+                assertFalse("No values added to the semantic parameter", semanticParameter.getValues().isEmpty());
+            }
+
+        }
+
     }
 
 
