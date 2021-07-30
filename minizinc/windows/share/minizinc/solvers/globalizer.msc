@@ -1,0 +1,30 @@
+{
+    "executable": "../../../bin/minizinc-globalizer",
+    "id": "org.minizinc.globalizer",
+    "isGUIApplication": false,
+    "mznlib": "../globalizer",
+    "name": "Globalizer",
+    "supportsMzn": true,
+    "version": "0.1.6.0",
+    "needsStdlibDir": false,
+    "needsMznExecutable": true,
+    "stdFlags": ["--output-html", "-v", "-p"],
+    "tags": ["experimental", "tool"],
+    "extraFlags": [
+      ["--maxConstraints", "Max constraints per set (2)", "int"],
+      ["--randomSolutions", "Number of solutions for submodel (30)", "int"],
+      ["--sampleSolutions", "Number of solutions for scoring (30)", "int"],
+      ["--solvingTimeout", "Solver timeout 1000(ms)", "int"],
+      ["--constraintfilter", "Consider only these comma separated substrings", "string"],
+      ["--no-initial-pass", "Don't check for channeling opportunities", "bool"],
+      ["--free-search", "Don't use random heuristics", "bool"]
+      ["--debug-args", "Debugging info for argument generation", "bool"],
+      ["--debug-constraints", "Debugging info for constraint checking", "bool"],
+      ["--debug-scoring", "Debugging info for constraint scoring", "bool"],
+      ["--debug-checking", "Debugging info for constraint checking", "bool"],
+      ["--debug-norm", "Debuginging info for model normalization", "bool"],
+      ["--debug-solving", "Debugging info for model solving", "bool"],
+      ["--debug-model", "Debugging info for group models", "bool"],
+      ["--debug-high", "Debugging info for high-level progress", "bool"],
+    ]
+}
