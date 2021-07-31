@@ -22,6 +22,7 @@ public class TestConfUpdate {
 
     private static final Logger log = LogManager.getLogger(TestConfUpdate.class);
 
+    // Called when creating the first set of input values
     public static void updateTestConf(TestConfigurationObject newConf, SemanticParameter semanticParameter,
                                       String path, Integer opIndex){
 
@@ -94,7 +95,7 @@ public class TestConfUpdate {
 
         GenParameter genParameterNumberOfTries = generator.getGenParameters().stream()
                 .filter(x->x.getName().equals(NUMBER_OF_TRIES_TO_GENERATE_REGEX)).findFirst()
-                .orElseThrow( () -> new NullPointerException("Number of tries to generate regex genParameter found"));
+                .orElseThrow( () -> new NullPointerException("Number of tries to generate regex genParameter not found"));
 
         List<String> newValues = new ArrayList<>();
         newValues.add(Integer.toString(semanticParameter.getNumberOfTriesToGenerateRegex()));

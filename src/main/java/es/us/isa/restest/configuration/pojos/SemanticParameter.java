@@ -62,6 +62,8 @@ public class SemanticParameter {
 
     public int getNumberOfTriesToGenerateRegex() { return numberOfTriesToGenerateRegex; }
 
+    public void resetNumberOfTriesToGenerateRegex() { this.numberOfTriesToGenerateRegex = 0; }
+
     public void increaseNumberOfTriesToGenerateRegex() { this.numberOfTriesToGenerateRegex = this.numberOfTriesToGenerateRegex + 1; }
 
     public Set<String> getValidValues() { return validValues; }

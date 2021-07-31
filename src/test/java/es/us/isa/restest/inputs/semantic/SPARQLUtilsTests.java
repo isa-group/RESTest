@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
-import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.getSemanticOperations;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getExperimentName;
 import static org.junit.Assert.assertTrue;

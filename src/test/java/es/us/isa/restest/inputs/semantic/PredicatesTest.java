@@ -2,15 +2,12 @@ package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import nu.xom.jaxen.util.SingletonList;
-import org.chocosolver.solver.constraints.nary.nvalue.amnv.graph.G;
 import org.junit.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
-import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.GEN_PARAM_REG_EXP;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.SEMANTIC_PARAMETER;
 import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.getSemanticOperations;
