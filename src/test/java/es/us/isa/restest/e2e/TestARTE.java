@@ -38,7 +38,8 @@ public class TestARTE {
 
         String testConfSemanticPath = basePath + "testConfSemantic.yaml";
         String swaggerPath = basePath + "swagger.yaml";
-        TestConfigurationObject testConfSemantic = loadConfiguration(testConfSemanticPath, new OpenAPISpecification(swaggerPath));
+        String testConfOriginalPath = basePath + "testConf.yaml";
+        TestConfigurationObject testConfSemantic = loadConfiguration(testConfOriginalPath, new OpenAPISpecification(swaggerPath));
 
         // Existence of testConfSemantic
         assertTrue(checkIfExists(testConfSemanticPath));
@@ -87,7 +88,8 @@ public class TestARTE {
 
         String testConfSemanticPath = basePath + "testConfSemantic.yaml";
         String swaggerPath = basePath + "swagger.yaml";
-        TestConfigurationObject testConfSemantic = loadConfiguration(testConfSemanticPath, new OpenAPISpecification(swaggerPath));
+        String testConfOriginalPath = basePath + "testConf.yaml";
+        TestConfigurationObject testConfSemantic = loadConfiguration(testConfOriginalPath, new OpenAPISpecification(swaggerPath));
 
         // Existence of testConfSemantic
         assertTrue(checkIfExists(testConfSemanticPath));

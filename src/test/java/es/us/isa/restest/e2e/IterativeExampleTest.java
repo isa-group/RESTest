@@ -200,4 +200,8 @@ public class IterativeExampleTest {
         assertTrue(checkIfExists("target/coverage-data/commentsTest"));
         assertTrue(checkIfExists("target/test-data/commentsTest"));
     }
+
+    // Test ARTE with Regex step
+
+
 }
