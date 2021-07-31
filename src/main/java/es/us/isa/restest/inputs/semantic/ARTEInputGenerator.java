@@ -29,20 +29,19 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static final String propertiesFilePath = "----";
+    private static  String propertiesFilePath = "src/test/resources/semanticAPITests/ClimaCell/climacell.properties";
     private static OpenAPISpecification specification;
     private static String confPath;
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
 
-
     // Parameters
     // Minimum support of a predicate
-    public static final Integer minSupport = 20;
+    public static Integer minSupport = 20;
     // Parameter minimum threshold of unique parameter values to obtain: default 100
-    public static final Integer THRESHOLD = 100;
+    public static Integer THRESHOLD = 100;
     // Limit
-    public static final Integer LIMIT = 30;
+    public static Integer LIMIT = 30;
     // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
     public static final String szEndpoint = "http://dbpedia.org/sparql";
 
@@ -50,6 +49,19 @@ public class ARTEInputGenerator {
     private static final Logger log = LogManager.getLogger(ARTEInputGenerator.class);
 
     public static void main(String[] args) throws IOException {
+
+        if (args.length > 0) {
+            propertiesFilePath = args[0];
+            minSupport = Integer.parseInt(args[1]);
+            THRESHOLD = Integer.parseInt(args[2]);
+
+            try {
+                LIMIT = Integer.parseInt(args[3]);
+            } catch(NumberFormatException nfe) {
+                LIMIT = null;
+            }
+
+        }
         
         // ONLY FOR LOCAL COPY OF DBPEDIA
 //        System.setProperty("http.maxConnections", "10000");
