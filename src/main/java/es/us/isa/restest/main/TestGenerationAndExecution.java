@@ -67,7 +67,7 @@ public class TestGenerationAndExecution {
 	// ARTE
 	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
 	private static boolean secondPredicateSearch;
-	private static int maxNumberOfPredicates;                // MaxNumberOfPredicates = AdditionalPredicates + 1
+	private static int maxNumberOfPredicates;                			// MaxNumberOfPredicates = AdditionalPredicates + 1
 	private static int minimumValidAndInvalidValues;
 	private static String metricToUse;
 	private static Double minimumValueOfMetric;

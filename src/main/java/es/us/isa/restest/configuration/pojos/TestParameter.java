@@ -2,7 +2,6 @@
 package es.us.isa.restest.configuration.pojos;
 
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

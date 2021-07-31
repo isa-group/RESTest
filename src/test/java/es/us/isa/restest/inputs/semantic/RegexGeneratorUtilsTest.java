@@ -40,8 +40,8 @@ public class RegexGeneratorUtilsTest {
 
         List<String> csvPaths = getCsvPaths(semanticParameterTitle.getTestParameter());
 
-        assertEquals("Wrong csvPaths size", csvPaths.size(), 1);
-        assertEquals("Wrong csvPaths", csvPaths.get(0), "src/main/resources/TestData/Generated/OMDb API/search_t.csv");
+        assertEquals("Wrong csvPaths size", 1, csvPaths.size());
+        assertEquals("Wrong csvPaths", "src/main/resources/TestData/Generated/OMDb API/search_t.csv", csvPaths.get(0));
 
     }
 

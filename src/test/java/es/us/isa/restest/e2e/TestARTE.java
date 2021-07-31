@@ -39,7 +39,8 @@ public class TestARTE {
         String testConfSemanticPath = basePath + "testConfSemantic.yaml";
         String swaggerPath = basePath + "swagger.yaml";
         String testConfOriginalPath = basePath + "testConf.yaml";
-        TestConfigurationObject testConfSemantic = loadConfiguration(testConfOriginalPath, new OpenAPISpecification(swaggerPath));
+
+        TestConfigurationObject testConfSemantic = loadConfiguration(testConfSemanticPath, new OpenAPISpecification(swaggerPath));
 
         // Existence of testConfSemantic
         assertTrue(checkIfExists(testConfSemanticPath));
@@ -89,11 +90,13 @@ public class TestARTE {
         String testConfSemanticPath = basePath + "testConfSemantic.yaml";
         String swaggerPath = basePath + "swagger.yaml";
         String testConfOriginalPath = basePath + "testConf.yaml";
-        TestConfigurationObject testConfSemantic = loadConfiguration(testConfOriginalPath, new OpenAPISpecification(swaggerPath));
+        TestConfigurationObject testConf = loadConfiguration(testConfOriginalPath, new OpenAPISpecification(swaggerPath));
 
         // Existence of testConfSemantic
+        assertTrue(checkIfExists(testConfOriginalPath));
         assertTrue(checkIfExists(testConfSemanticPath));
 
+        TestConfigurationObject testConfSemantic = loadConfiguration(testConfSemanticPath, new OpenAPISpecification(swaggerPath));
         // Size of the CSV files with TestData
         List<Operation> operationList = testConfSemantic.getTestConfiguration().getOperations();
 
