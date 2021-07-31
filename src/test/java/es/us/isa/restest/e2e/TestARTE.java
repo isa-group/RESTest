@@ -48,6 +48,8 @@ public class TestARTE {
 
         Set<SemanticOperation> semanticOperations = getSemanticOperationsWithValuesFromPreviousIterations(operationList, "ClimaCell");
 
+        assertEquals(2, semanticOperations.size());
+
         for(SemanticOperation semanticOperation: semanticOperations) {
 
             Set<SemanticParameter> semanticParameters = semanticOperation.getSemanticParameters();
@@ -95,6 +97,7 @@ public class TestARTE {
 
         Set<SemanticOperation> semanticOperations = getSemanticOperationsWithValuesFromPreviousIterations(operationList, "ClimaCell");
 
+        assertEquals(2, semanticOperations.size());
 
         for(SemanticOperation semanticOperation: semanticOperations) {
 

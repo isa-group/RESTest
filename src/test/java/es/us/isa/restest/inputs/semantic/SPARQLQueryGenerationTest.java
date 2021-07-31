@@ -24,7 +24,7 @@ public class SPARQLQueryGenerationTest {
 		TestConfigurationObject conf = loadConfiguration("src/test/resources/semanticAPITests/ClimaCell/testConf.yaml", specification);
 
 		Set<SemanticOperation> semanticOperations = getSemanticOperations(conf);
-		assertEquals("Incorrect number of semantic operations", 1, semanticOperations.size());
+		assertEquals("Incorrect number of semantic operations", 2, semanticOperations.size());
 
 		for(SemanticOperation semanticOperation: semanticOperations){
 			assertEquals("Incorrect number of semantic parameters", 2, semanticOperation.getSemanticParameters().size());
