@@ -2,7 +2,8 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
+  headerParams:
+    Authorization: Bearer BQDFNA_zCSdtPitARqd_WdOd0JYK42PNJO7-96S_bSq9wAH5NE7qzqnOehFqcjMjG79TAF-WBzPave-pDhCuXorIj6SAxLSdyaHOOGb9br2q-ryMPwRhGICxDgRZbQT0oNypFrcUgAiEgViX9Y-3RGL355QLmtJ6UOs_05SZUVph-oSEnsldrPzYW0agDsgmJI4Iq2bJ-6V9DFFyhzi1oddNLgqo0S6wcZHFZF9McHslZtd2Se3klTK2n5E4gtRr-pg0mYXvEusXTF7qGeispASVhAwtshReHeIj-ayW
   apiKeysPath: null
   headersPath: null
 testConfiguration:
@@ -62,10 +63,11 @@ testConfiguration:
         - name: predicates
           values:
           - http://dbpedia.org/ontology/countryCode
+          - http://dbpedia.org/property/country
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
-          - 0
+          - 2
           objectValues: null
         valid: true
     - name: locale
@@ -108,7 +110,7 @@ testConfiguration:
         valid: true
     - name: Accept
       in: header
-      weight: 0.5
+      weight: 0.0
       generators:
       - type: RandomEnglishWord
         genParameters:

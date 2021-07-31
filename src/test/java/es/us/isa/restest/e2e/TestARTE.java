@@ -75,6 +75,16 @@ public class TestARTE {
     }
 
     @Test
+    public void testRunARTEWithoutSemanticParameters() {
+
+        String propertiesPathSemantic = "src/test/resources/semanticAPITests/DHL/dhl_semantic.properties";
+        String[] argsARTE = {propertiesPathSemantic, "20", "50", "30"};
+
+        ARTEInputGenerator.main(argsARTE);
+
+    }
+
+    @Test
     public void testRunARTEWithoutParameterLimit() throws IOException {
 
         String basePath = "src/test/resources/semanticAPITests/ClimaCell/";

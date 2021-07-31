@@ -1,5 +1,6 @@
 package es.us.isa.restest.e2e;
 
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.inputs.semantic.ARTEInputGenerator;
 import es.us.isa.restest.main.TestGenerationAndExecution;
@@ -7,6 +8,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.RESTestException;
 
+import io.restassured.mapper.ObjectMapper;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -19,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
-import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConf;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static es.us.isa.restest.util.CSVManager.readValues;
 import static es.us.isa.restest.util.FileManager.*;
@@ -212,32 +213,31 @@ public class IterativeExampleTest {
 
     @Test
     public void testARTEWithRegex() throws RESTestException {
-        String propertiesFilePath = "src/test/resources/semanticAPITests/DHL/dhl_semantic.properties";
+
+        String semanticPropertiesFilePath = "src/test/resources/semanticAPITests/DHL/dhl_semantic.properties";
         String parameterValuesPath = "src/main/resources/TestData/Generated/DHL_e2e/findByAddress_countryCode.csv";
 
         Set<String> initialValues = new HashSet<>(readValues(parameterValuesPath));
 
-        String[] args = {propertiesFilePath};
+        String[] args = {semanticPropertiesFilePath};
 
         String confPathSemantic = "src/test/resources/semanticAPITests/DHL/testConfSemantic.yaml";
-        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/DHL/swagger.yaml");
-        TestConfigurationObject testConfSemantic = loadConfiguration(confPathSemantic, specification);
+
+        String testConfSemanticString = readFile(confPathSemantic);
 
         TestGenerationAndExecution.main(args);
 
-        assertTrue(checkIfExists("src/test/resources/semanticAPITests/DHL/dhl.properties"));
+        String propertiesPathOriginal = "src/test/resources/semanticAPITests/DHL/dhl.properties";
+
+        assertTrue(checkIfExists(propertiesPathOriginal));
         assertTrue(checkIfExists(parameterValuesPath));
 
-        String[] argsARTE = {
-                "src/test/resources/semanticAPITests/DHL/dhl.properties",
-                "20", "50", "30"
-        };
-
-        ARTEInputGenerator.main(argsARTE);
 
         deleteFile(parameterValuesPath);
         createFileIfNotExists(parameterValuesPath);
         collectionToCSV(parameterValuesPath, initialValues);
+        deleteFile(confPathSemantic);
+        writeFile(confPathSemantic, testConfSemanticString);
 
     }
 

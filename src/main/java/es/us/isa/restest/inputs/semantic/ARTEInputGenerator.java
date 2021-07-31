@@ -31,7 +31,7 @@ public class ARTEInputGenerator {
     // Properties file with configuration settings
     private static  String propertiesFilePath = "src/test/resources/semanticAPITests/DHL/dhl.properties";
     private static OpenAPISpecification specification;
-    private static String confPath;
+    private static String confPathOriginal;
     private static String semanticConfPath;
     private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
 
@@ -70,8 +70,8 @@ public class ARTEInputGenerator {
 
         setEvaluationParameters();
 
-        log.info(confPath);
-        TestConfigurationObject conf = loadConfiguration(confPath, specification);
+        log.info(confPathOriginal);
+        TestConfigurationObject conf = loadConfiguration(confPathOriginal, specification);
 
         // Key: OperationName       Value: Parameters
         log.info("Obtaining semantic operations");
@@ -147,7 +147,7 @@ public class ARTEInputGenerator {
     }
 
     private static void generateTimeReport() {
-        Path path = Paths.get(confPath);
+        Path path = Paths.get(confPathOriginal);
         Path dir = path.getParent();
         Path fn = path.getFileSystem().getPath("time_ARTE.csv");
         Path target = (dir == null) ? fn : dir.resolve(fn);
@@ -165,11 +165,11 @@ public class ARTEInputGenerator {
     private static void setEvaluationParameters() {
 
         String OAISpecPath = readProperty(propertiesFilePath, "oas.path");
-        confPath = readProperty(propertiesFilePath, "conf.path");
+        confPathOriginal = readProperty(propertiesFilePath, "conf.path");
         specification = new OpenAPISpecification(OAISpecPath);
         csvPath = csvPath + specification.getSpecification().getInfo().getTitle();
 
-        Path path = Paths.get(confPath);
+        Path path = Paths.get(confPathOriginal);
         Path dir = path.getParent();
         Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
         Path target = (dir == null) ? fn : dir.resolve(fn);
