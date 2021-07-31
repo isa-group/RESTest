@@ -82,6 +82,9 @@ public class TestARTE {
 
         ARTEInputGenerator.main(argsARTE);
 
+        // Assert it exists
+        assertTrue(checkIfExists(propertiesPathSemantic));
+
     }
 
     @Test

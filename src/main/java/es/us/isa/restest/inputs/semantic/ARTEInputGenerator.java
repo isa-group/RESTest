@@ -8,7 +8,6 @@ import es.us.isa.restest.util.Timer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -29,7 +28,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static  String propertiesFilePath = "src/test/resources/semanticAPITests/DHL/dhl.properties";
+    private static  String propertiesFilePath = "src/test/resources/semanticAPITests/ClimaCell/climacell.properties";
     private static OpenAPISpecification specification;
     private static String confPathOriginal;
     private static String semanticConfPath;
