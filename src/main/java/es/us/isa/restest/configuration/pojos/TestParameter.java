@@ -2,6 +2,7 @@
 package es.us.isa.restest.configuration.pojos;
 
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class TestParameter {
         this.generators = generators;
     }
 
-    public void addRegexToSemanticParameter(String regex){
+    public void addRegexToTestParameter(String regex){
 
         for(Generator generator: this.generators){
             if(Boolean.TRUE.equals(generator.isValid()) && generator.getType().equals(RANDOM_INPUT_VALUE)){

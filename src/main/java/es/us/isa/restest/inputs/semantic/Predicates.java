@@ -44,7 +44,7 @@ public class Predicates {
         String parameterName = testParameter.getName();
 
         // Add regex to semanticParameter
-        testParameter.addRegexToSemanticParameter(regex);
+        testParameter.addRegexToTestParameter(regex);
 
         PathItem pathItem = specification.getSpecification().getPaths().get(semanticOperation.getOperationPath());
         String parameterDescription = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());

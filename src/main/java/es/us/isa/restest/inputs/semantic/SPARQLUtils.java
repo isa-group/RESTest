@@ -383,7 +383,7 @@ public class SPARQLUtils {
         // We create a new Semantic parameter containing the new predicates
         TestParameter testParameter = oldSemanticParameter.getTestParameter();
         // Add regex to semanticParameter
-        testParameter.addRegexToSemanticParameter(regex);
+        testParameter.addRegexToTestParameter(regex);
         SemanticParameter newSemanticParameter = new SemanticParameter(testParameter);
         newSemanticParameter.setPredicates(predicates);
 

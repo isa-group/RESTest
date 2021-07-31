@@ -29,7 +29,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static  String propertiesFilePath = "src/test/resources/semanticAPITests/ClimaCell/climacell.properties";
+    private static  String propertiesFilePath = "src/test/resources/semanticAPITests/sampleSemanticAPI/sampleSemanticAPI.properties";
     private static OpenAPISpecification specification;
     private static String confPath;
     private static String semanticConfPath;
