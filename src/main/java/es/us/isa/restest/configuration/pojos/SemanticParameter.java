@@ -62,15 +62,11 @@ public class SemanticParameter {
 
     public int getNumberOfTriesToGenerateRegex() { return numberOfTriesToGenerateRegex; }
 
-    public void setNumberOfTriesToGenerateRegex(int numberOfTriesToGenerateRegex) { this.numberOfTriesToGenerateRegex = numberOfTriesToGenerateRegex; }
-
     public void increaseNumberOfTriesToGenerateRegex() { this.numberOfTriesToGenerateRegex = this.numberOfTriesToGenerateRegex + 1; }
 
     public Set<String> getValidValues() { return validValues; }
-    public void setValidValues(Set<String> validValues) { this.validValues = validValues; }
 
     public Set<String> getInvalidValues() { return invalidValues; }
-    public void setInvalidValues(Set<String> invalidValues) { this.invalidValues = invalidValues; }
 
     public static Set<SemanticParameter> generateSemanticParameters(Set<TestParameter> testParameters){
         Set<SemanticParameter> res = new HashSet<>();

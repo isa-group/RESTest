@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.PREDICATES;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 
-import java.io.IOException;
 import java.util.*;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
@@ -57,10 +56,6 @@ public class SemanticOperation {
 
     public Set<SemanticParameter> getSemanticParameters() {
         return semanticParameters;
-    }
-
-    public void setSemanticParameters(Set<SemanticParameter> semanticParameters) {
-        this.semanticParameters = semanticParameters;
     }
 
     public void updateSemanticParametersValues(Map<String, Set<String>> result){
