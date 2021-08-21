@@ -990,6 +990,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/CommentThreadListResponse"
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube.force-ssl
@@ -1035,6 +1041,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/CommentThread"
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube.force-ssl
@@ -1067,6 +1079,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/CommentThread"
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       tags:
         - youtube
   /youtube/v3/comments:
@@ -1082,6 +1100,12 @@ paths:
       responses:
         "200":
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube.force-ssl
@@ -1145,6 +1169,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/CommentListResponse"
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube.force-ssl
@@ -1190,6 +1220,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Comment"
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube.force-ssl
@@ -1223,6 +1259,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Comment"
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube.force-ssl
@@ -1260,6 +1302,12 @@ paths:
       responses:
         "200":
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube.force-ssl
@@ -1313,6 +1361,12 @@ paths:
       responses:
         "200":
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube.force-ssl
@@ -3165,8 +3219,6 @@ paths:
           description: Successful response
         "400":
           description: "400"
-        "401":
-          description: "401"
         "403":
           description: "403"
         "404":
