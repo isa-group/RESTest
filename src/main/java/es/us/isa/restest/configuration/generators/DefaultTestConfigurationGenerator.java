@@ -188,7 +188,7 @@ public class DefaultTestConfigurationGenerator {
 
 			// If it's a path or query parameter, get type to set a useful generator
 			if ((param.getIn().equals("query") || param.getIn().equals("path") || param.getIn().equals("header"))
-					&& schema.getType().equals("object")) {
+					&& "object".equals(schema.getType())) {
 				testParameters.addAll(generateObjectParameters(param.getSchema(), param.getName(), param.getIn(),
 						param.getRequired(), param.getStyle(), null, param.getExplode()));
 			} else {
@@ -262,8 +262,14 @@ public class DefaultTestConfigurationGenerator {
 		String paramType = schema.getType();
 		List<String> paramEnumValues = schema.getEnum();
 
+		// If it's a composed schema, we can't handle it. Set default generator
+		if (paramType == null) {
+			setDefaultGenerator(gen);
+			return;
+		}
+
 		// If the param type is array, get its item type
-		if (paramType.equals("array")) {
+		if ("array".equals(paramType)) {
 			paramType = ((ArraySchema) schema).getItems().getType();
 		}
 
@@ -442,7 +448,7 @@ public class DefaultTestConfigurationGenerator {
 				Schema parameterSchema = ((Entry<String, Schema>) entry).getValue();
 				String parameterName = ((Entry<String, Schema>) entry).getKey();
 
-				if (parameterSchema.getType().equals("object")) {
+				if ("object".equals(parameterSchema.getType())) {
 					Encoding encoding = mediaType.getEncoding() != null ? mediaType.getEncoding().get(parameterName)
 							: null;
 
@@ -468,7 +474,7 @@ public class DefaultTestConfigurationGenerator {
 						encoding = mediaType.getEncoding().get(parameterName);
 					}
 
-					if (parameterSchema.getType().equals("array") && encoding != null
+					if ("array".equals(parameterSchema.getType()) && encoding != null
 							&& encoding.getStyle().equals(Encoding.StyleEnum.DEEP_OBJECT)) {
 						testParam.setName(parameterName + "[]");
 					} else {

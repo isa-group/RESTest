@@ -186,4 +186,24 @@ public class DataMatchingTest {
         JsonNode statefulValue = getParameterValue(dict, "GET", "/youtube/v3/comments", "id");
         assertEquals("9", statefulValue.asText());
     }
+
+    @Test
+    public void paramNameIdCommentIdExactExistingWithGet() {
+        JsonNode statefulValue = getParameterValue(dict, "GET", "/youtube/v3/getExamples", "id");
+        assertEquals("0", statefulValue.asText());
+    }
+
+    @Test
+    public void paramNameIdCommentIdExactExistingWithSetCamelCase() {
+        JsonNode statefulValue = getParameterValue(dict, "GET", "/youtube/v3/setExamples", "id");
+        assertEquals("0", statefulValue.asText());
+    }
+
+    @Test
+    public void paramNameIdCommentIdExactExistingWithSetNoCamelCase() {
+        JsonNode statefulValue = getParameterValue(dict, "GET", "/youtube/v3/setexamples", "id");
+        assertTrue(Arrays.asList("UCgWHOqWzbZ0Brhy1xRx5W1g", "udj780oIaeI", "cLPIlCCQjfU", "UCyEGR4ZUT5tR9L0ite00tDQ",
+                "UCgWHOqWzbZ0Brhy1xRx5W1g", "PLhHUqrvxXXCZs5fkLYW_zguo5BeVdz9XQ", "PLatn_iwPkj2pT4HucLlKJDOqoc1xQDgWK",
+                "2", "3", "4", "8", "9", "10", "0").contains(statefulValue.asText()));
+    }
 }
