@@ -44,7 +44,6 @@ public class ParameterGenerator implements ITestDataGenerator {
 
         if (operationPath != null && checkIfExists(jsonPath)) {
             ObjectNode dict = (ObjectNode) readJSON(jsonPath);
-            // TODO: if parameterName == id => augment it
             valueNode = getParameterValue(dict, operationMethod, operationPath, parameterName);
         }
 
@@ -98,5 +97,9 @@ public class ParameterGenerator implements ITestDataGenerator {
 
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
+    }
+
+    public void setAltParamName(String altParamName) {
+        this.parameterName = altParamName;
     }
 }
