@@ -1,0 +1,208 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: "The spoonacular Nutrition, Recipe, and Food API allows you to access over 365,000 recipes and 86,000 food products. Our food ontology and semantic
+     recipe search engine makes it possible to search for recipes using natural language
+     queries, such as 'gluten free brownies without sugar' or 'low fat vegan cupcakes.'
+     You can automatically calculate the nutritional information for any recipe,
+     analyze recipe costs, visualize ingredient lists, find recipes for what's in
+     your fridge, find recipes based on special diets, nutritional requirements,
+     or favorite ingredients, classify recipes into types and cuisines, convert ingredient
+     amounts, or even compute an entire meal plan. With our powerful API, you can
+     create many kinds of food and especially nutrition apps.Special diets dietary
+     requirements currently available include: vegan, vegetarian, pescetarian, gluten
+     free, grain free, dairy free, high protein, low sodium, low carb, Paleo, Primal,
+     ketogenic, FODMAP, and Whole 30. We will soon be adding Weight Watcher points,
+     too."
+  title: RecipeFoodNutrition
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /food/images/analyze:
+    get:
+      description: Classify and analyze a food image by a given URL.
+      operationId: operations-Compute-Image_Analysis_URL
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: query
+        name: imageUrl
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /food/images/classify:
+    get:
+      description: Classify a food image.
+      operationId: operations-Compute-Image_Classification_URL
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: ''
+        in: query
+        name: imageUrl
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /food/ingredients/substitutes:
+    get:
+      description: Get ingredient substitutes by ingredient name.
+      operationId: operations-Search-Get_Ingredient_Substitutes
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The name of the ingredient you want to replace.
+        in: query
+        name: ingredientName
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /food/products/upc/{upc}/comparable:
+    get:
+      description: Find comparable products to the given one.
+      operationId: operations-Search-Get_Comparable_Products
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: "The UPC code of the product for that you want to find comparable products."
+        in: path
+        name: upc
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /food/wine/description:
+    get:
+      description: "Get the description of a certain wine, e.g. malbec, riesling, or merlot"
+      operationId: "operations-Search-Get-Wine-Description"
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: "The name of the wine, e.g. malbec, riesling, or merlot."
+        in: query
+        name: wine
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /food/wine/pairing:
+    get:
+      description: "Find a wine that goes well with a food. Food can be a dish name ('steak'), an ingredient name ('salmon'), or a cuisine ('italian')."
+      operationId: operations-Search-Get_Wine_Pairing
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The maximum price for the specific wine recommendation.
+        in: query
+        name: maxPrice
+        required: false
+        type: number
+      - description: "The food to get a pairing for. This can be a dish ('steak'), an ingredient ('salmon'), or a cuisine ('italian')."
+        in: query
+        name: food
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /recipes/extract:
+    get:
+      description: Extract recipe data from a recipe blog or Web page.
+      operationId: operations-Extract-Extract_Recipe_from_Website
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: "If true, the extraction will be triggered no matter whether we know the recipe already. Use that only if information is missing as this operation is slower. truefalse"
+        in: query
+        name: forceExtraction
+        required: false
+        type: boolean
+      - description: The URL of the recipe page.
+        in: query
+        name: url
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /recipes/guessNutrition:
+    get:
+      description: Guess the macro nutrients of a dish given its title.
+      operationId: operations-Compute-Guess_Nutrition_by_Dish_Name
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - spoonacular-recipe-food-nutrition-v1.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: The title of the dish.
+        in: query
+        name: title
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

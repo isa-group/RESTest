@@ -1,16 +1,15 @@
 package es.us.isa.restest.util;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import es.us.isa.restest.runners.RESTestRunner;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.LIMIT;
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
 import static es.us.isa.restest.util.FileManager.deleteFile;
 
@@ -113,6 +112,32 @@ public class CSVManager {
 		} catch (IOException e) {
 			logger.error("The line could not be written to the CSV: {}", path);
 			logger.error("Exception: ", e);
+		}
+
+	}
+
+	public static void collectionToCSV(String path, Collection<String> collection) {
+		try (FileWriter writer = new FileWriter(path)) {
+			String collect = collection.stream().collect(Collectors.joining("\n"));
+			writer.write(collect);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}
+
+	}
+
+	public static void setToCSVWithLimit(String path, Set<String> collection) {
+
+		try (FileWriter writer = new FileWriter(path)) {
+			List<String> collectionAsList = new ArrayList<>(collection);
+			Collections.shuffle(collectionAsList);
+
+			Set<String> subSet = collectionAsList.stream().limit(LIMIT).collect(Collectors.toSet());
+			String collect = subSet.stream().collect(Collectors.joining("\n"));
+			writer.write(collect);
+
+		} catch(IOException e) {
+			logger.error(e.getMessage());
 		}
 
 	}

@@ -1,0 +1,18 @@
+{
+    pattern:    (( ?$word1 [ {word: $NAME_RULE1} ]) (?$code1 [{word: /(?i)code|id/}] )),
+    result:     Concat($$word1.text, $$code1.text),
+    priority:   3
+}
+
+{
+    pattern:   (( ?$word2 [ {word: $NAME_RULE2 } ]) (?$code2 [{word: /(?i)code|id/}] )),
+    result:    Join( " ", Concat($$word2.text, $$code2.text), $$code2.text ),
+    priority:   2
+}
+
+
+{
+    pattern:   (( ?$word3  [ {pos: FW} | {pos: NN} | {pos: NNS} | {pos: NNP} | {pos: NNPS} | {pos: JJ} ] ) (?$code3 [{word: /(?i)code|id/}] )),
+    result:    Concat($$word3.text, $$code3.text),
+    priority:   1
+}

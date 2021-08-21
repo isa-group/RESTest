@@ -1,0 +1,359 @@
+swagger: '2.0'
+info:
+  description: Yelp API
+  version: 1.0.0
+  title: Yelp
+host: api.yelp.com
+basePath: /v3
+schemes:
+  - https
+paths:
+  /businesses/search:
+    get:
+      operationId: getBusinesses
+      summary: Get businesses
+      description: Get businesses
+      produces:
+        - application/json
+      parameters:
+        - name: term
+          in: query
+          type: string
+          required: false
+          description: "Search term, for example 'food' or 'restaurants'. The term may also be business names, such as 'Starbucks'. If term is not included the endpoint will default to searching across businesses from a small number of popular categories."
+        - name: location
+          in: query
+          type: string
+          required: false
+          description: "Required if either latitude or longitude is not provided. This string indicates the geographic area to be used when searching for businesses. Examples: 'New York City', 'NYC', '350 5th Ave, New York, NY 10118'. Businesses returned in the response may not be strictly within the specified location."
+        - name: latitude
+          in: query
+          type: string
+          required: false
+          description: "Required if location is not provided. Latitude of the location you want to search nearby."
+        - name: longitude
+          in: query
+          type: string
+          required: false
+          description: "Required if location is not provided. Longitude of the location you want to search nearby."
+        - name: radius
+          in: query
+          type: integer
+          required: false
+          maximum: 40000
+          description: "Optional. A suggested search radius in meters. This field is used as a suggestion to the search. The actual search radius may be lower than the suggested radius in dense urban areas, and higher in regions of less business density. If the specified value is too large, a AREA_TOO_LARGE error may be returned. The max value is 40000 meters (about 25 miles)."
+        - name: categories
+          in: query
+          type: array
+          required: false
+          description: "Optional. Categories to filter the search results with. See the list of supported categories. The category filter can be a list of comma delimited categories. For example, 'bars,french' will filter by Bars OR French. The category identifier should be used (for example 'discgolf', not 'Disc Golf')."
+          items:
+            type: string
+        - name: locale
+          in: query
+          type: string
+          required: false
+          description: "Optional. Specify the locale into which to localize the business information. See the list of supported locales. Defaults to en_US."
+        - name: limit
+          in: query
+          type: integer
+          required: false
+          maximum: 50
+          description: "Optional. Number of business results to return. By default, it will return 20. Maximum is 50."
+        - name: offset
+          in: query
+          type: integer
+          required: false
+          description: "Optional. Offset the list of returned business results by this amount."
+        - name: sort_by
+          in: query
+          type: string
+          required: false
+          description: "Optional. Suggestion to the search algorithm that the results be sorted by one of the these modes: best_match, rating, review_count or distance. The default is best_match. Note that specifying the sort_by is a suggestion (not strictly enforced) to Yelp's search, which considers multiple input parameters to return the most relevant results. For example, the rating sort is not strictly sorted by the rating value, but by an adjusted rating value that takes into account the number of ratings, similar to a Bayesian average. This is to prevent skewing results to businesses with a single review."
+          enum:
+            - best_match
+            - rating
+            - review_count
+            - distance
+        - name: price
+          in: query
+          type: array
+          required: false
+          description: "Optional. Pricing levels to filter the search result with: 1 = $, 2 = $$, 3 = $$$, 4 = $$$$. The price filter can be a list of comma delimited pricing levels. For example, '1, 2, 3' will filter the results to show the ones that are $, $$, or $$$."
+          items:
+            type: string
+            enum:
+              - "1"
+              - "2"
+              - "3"
+              - "4"
+        - name: open_now
+          in: query
+          type: boolean
+          required: false
+          description: "Optional. Default to false. When set to true, only return the businesses open now. Notice that open_at and open_now cannot be used together."
+        - name: open_at
+          in: query
+          type: integer
+          required: false
+          maximum: 2147483647
+          description: "Optional. An integer represending the Unix time in the same timezone of the search location. If specified, it will return business open at the given time. Notice that open_at and open_now cannot be used together."
+        - name: attributes
+          in: query
+          type: array
+          required: false
+          description: "You can combine multiple attributes by providing a comma separated like 'attribute1,attribute2'. If multiple attributes are used, only businesses that satisfy ALL attributes will be returned in search results. For example, the attributes 'hot_and_new,cashback' will return businesses that are Hot and New AND offer Cash Back."
+          items:
+            type: string
+            enum:
+              - hot_and_new
+              - request_a_quote
+              - reservation
+              - waitlist_reservation
+              - cashback
+              - deals
+              - gender_neutral_restrooms
+              - open_to_all
+              - wheelchair_accessible
+      x-dependencies:
+        - Or(location, latitude AND longitude);
+        - ZeroOrOne(open_now, open_at);
+        - IF offset AND limit THEN offset + limit <= 1000;
+        - IF offset AND NOT limit THEN offset <= 980;
+      responses:
+        200:
+          description: Returns all businesses
+          schema:
+            $ref: '#/definitions/BusinessesResult'
+        400:
+          description: bad request
+  /transactions/{transaction_type}/search:
+    get:
+      operationId: getTransactions
+      summary: Get transactions
+      description: Get transactions
+      produces:
+        - application/json
+      parameters:
+        - name: transaction_type
+          in: path
+          type: string
+          required: true
+        - name: location
+          in: query
+          type: string
+          required: false
+          description: "Required when latitude and longitude aren't provided. Address of the location you want to deliver to."
+        - name: latitude
+          in: query
+          type: string
+          required: false
+          description: "Required when latitude and longitude aren't provided. Address of the location you want to deliver to."
+        - name: longitude
+          in: query
+          type: string
+          required: false
+          description: "Required when location isn't provided. Longitude of the location you want to deliver to."
+      x-dependencies:
+        - Or(location, latitude AND longitude);
+      responses:
+        200:
+          description: Returns all businesses
+          schema:
+            $ref: '#/definitions/BusinessesResult'
+        400:
+          description: bad request
+#  /businesses/matches:
+#    get:
+#      operationId: getbusinessesMatches
+#      summary: Get businesses matches
+#      description: Get businesses matches
+#      produces:
+#        - application/json
+#      parameters:
+#        - name: name
+#          in: query
+#          type: string
+#          required: true
+#          description: "Required. The name of the business. Maximum length is 64; only digits, letters, spaces, and !#$%&+,./:?@'are allowed."
+#        - name: address1
+#          in: query
+#          type: string
+#          required: true
+#          description: "  Required. The first line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed. The empty string '' is allowed; this will specifically match certain service businesses that have no street address."
+#        - name: address2
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. The second line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed."
+#        - name: address3
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. The third line of the business’s address. Maximum length is 64; only digits, letters, spaces, and ’/#&,.: are allowed."
+#        - name: city
+#          in: query
+#          type: string
+#          required: true
+#          description: "Required. The city of the business. Maximum length is 64; only digits, letters, spaces, and ’.() are allowed."
+#        - name: state
+#          in: query
+#          type: string
+#          required: true
+#          description: "Required. The ISO 3166-2 (with a few exceptions) state code of this business. Maximum length is 3."
+#        - name: country
+#          in: query
+#          type: string
+#          required: true
+#          description: "Required. The ISO 3166-1 alpha-2 country code of this business. Maximum length is 2."
+#        - name: latitude
+#          in: query
+#          type: number
+#          required: false
+#          description: "Optional. The WGS84 latitude of the business in decimal degrees. Must be between ­-90 and +90."
+#        - name: longitude
+#          in: query
+#          type: number
+#          required: false
+#          description: "Optional. The WGS84 longitude of the business in decimal degrees. Must be between ­-180 and +180."
+#        - name: phone
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. The phone number of the business which can be submitted as (a) locally formatted with digits only (e.g., 016703080) or (b) internationally formatted with a leading + sign and digits only after (+35316703080). Maximum length is 32."
+#        - name: zip_code
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. The Zip code of this business."
+#        - name: yelp_business_id
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. Unique Yelp identifier of the business if available. Used as a hint when finding a matching business."
+#        - name: limit
+#          in: query
+#          type: integer
+#          required: false
+#          description: "Optional. Maximum number of business results to return. By default, it will return 3. Minimum is 1, maximum is 10."
+#        - name: match_threshold
+#          in: query
+#          type: string
+#          required: false
+#          description: "Optional. Specifies whether a match quality threshold should be applied to the matched businesses. Must be one of 'none', 'default' or 'strict'. none: Do not apply any match quality threshold; all potential business matches will be returned. default: Apply a match quality threshold such that only very closely matching businesses will be returned. strict: Apply a very strict match quality threshold."
+#      x-dependencies:
+#      responses:
+#        200:
+#          description: Returns all businesses
+#          schema:
+#            $ref: '#/definitions/BusinessesResult'
+#        400:
+#          description: bad request
+definitions:
+  BusinessesResult:
+    type: object
+    properties:
+      total:
+        type: integer
+      region:
+        type: object
+        properties:
+          center:
+            type: object
+            properties:
+              latitude:
+                type: number
+              longitude:
+                type: number
+      businesses:
+        type: array
+        items:
+          type: object
+          properties:
+            categories:
+              type: array
+              items:
+                type: object
+                properties:
+                  alias:
+                    type: string
+                  title:
+                    type: string
+            coordinates:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+            display_phone:
+              type: string
+            distance:
+              type: number
+            id:
+              type: string
+            alias:
+              type: string
+            image_url:
+              type: string
+            is_closed:
+              type: boolean
+            name:
+              type: string
+            phone:
+              type: string
+            price:
+              type: string
+              enum:
+                - $
+                - $$
+                - $$$
+                - $$$$
+                - £
+                - ££
+                - £££
+                - ££££
+                - €
+                - €€
+                - €€€
+                - €€€€
+            rating:
+              type: number
+              minimum: 1
+              maximum: 5
+            review_count:
+              type: integer
+            url:
+              type: string
+            transactions:
+              type: array
+              items:
+                type: string
+                enum:
+                  - pickup
+                  - delivery
+                  - restaurant_reservation
+            location:
+              type: object
+              properties:
+                address1:
+                  type: string
+                  x-nullable: true
+                address2:
+                  type: string
+                  x-nullable: true
+                address3:
+                  type: string
+                  x-nullable: true
+                city:
+                  type: string
+                country:
+                  type: string
+                display_address:
+                  type: array
+                  items:
+                    type: string
+                state:
+                  type: string
+                zip_code:
+                  type: string

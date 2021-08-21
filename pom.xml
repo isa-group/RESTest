@@ -3,7 +3,7 @@
 
 	<groupId>es.us.isa</groupId>
 	<artifactId>restest</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.1.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>RESTest</name>
@@ -73,7 +73,7 @@
 		<connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
 		<developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
 		<url>https://github.com/isa-group/RESTest/tree/master</url>
-		<tag>HEAD</tag>
+		<tag>restest-1.1.0</tag>
 	</scm>
 
 	<profiles>
@@ -223,12 +223,6 @@
 			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-inline</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
 
 
 		<!-- MISC DEPENDENCIES -->
@@ -336,11 +330,61 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<!-- RG++ -->
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>MaleRegexTree</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>RandomRegexTurtle</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<!-- Jena -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+			<version>3.17.0</version>
+			<type>pom</type>
+		</dependency>
+
+
 		<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp -->
+		<!-- Stanford NLP -->
 		<dependency>
 			<groupId>edu.stanford.nlp</groupId>
 			<artifactId>stanford-corenlp</artifactId>
-			<version>4.0.0</version>
+			<version>4.2.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models</classifier>
+		</dependency>
+		
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models-english</classifier>
+		</dependency>
+		
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models-english-kbp</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-parser</artifactId>
+			<version>3.9.2</version>
 		</dependency>
 
 	</dependencies>

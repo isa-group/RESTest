@@ -29,7 +29,8 @@ public class RESTestRunnerTest {
         createDir("src/generation/java/runnerTest");
 
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/YouTube/swagger_betty.yaml");
-        TestConfigurationObject conf = loadConfiguration("src/test/resources/YouTube/testConf_betty.yaml", spec);
+        String confPath = "src/test/resources/YouTube/testConf_betty.yaml";
+        TestConfigurationObject conf = loadConfiguration(confPath, spec);
         String testId = IDGenerator.generateId();
 
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
@@ -63,7 +64,7 @@ public class RESTestRunnerTest {
         StatsReportManager statsReportManager = new StatsReportManager(testDataDir, coverageDataDir);
         statsReportManager.setCoverageMeter(new CoverageMeter(new CoverageGatherer(spec)));
 
-        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", generator, writer, arm, statsReportManager);
+        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", false, false, spec, confPath, generator,writer, arm, statsReportManager);
         runner.setExecuteTestCases(true);
         runner.setTestId(testId);
 

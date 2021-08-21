@@ -14,6 +14,9 @@ import es.us.isa.restest.util.CSVManager;
 import es.us.isa.restest.util.DataType;
 import es.us.isa.restest.util.JSONManager;
 
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.NUMBER_OF_TRIES_TO_GENERATE_REGEX;
+import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.PREDICATES;
+
 public class TestDataGeneratorFactory {
 
 	public static final String VALUES = "values";
@@ -165,6 +168,10 @@ public class TestDataGeneratorFactory {
 				break;
 			case "separator":
 				gen.setSeparator(param.getValues().get(0));
+				break;
+			case PREDICATES:
+				break;
+			case NUMBER_OF_TRIES_TO_GENERATE_REGEX:
 				break;
 			default:
 				throw new IllegalArgumentException("Unexpected parameter for generator RandomInputValue: " + param.getName());

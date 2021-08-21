@@ -34,7 +34,8 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
+	private static String propertiesFilePath = "src/test/resources/SemanticAPIs/Spotify/spotify.properties";
+	
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
 	private static OpenAPISpecification spec; 							// OAS specification
@@ -63,9 +64,22 @@ public class TestGenerationAndExecution {
 	private static String similarityMetric;								// The algorithm to measure the similarity between test cases
 	private static Integer numberCandidates;							// Number of candidate test cases per AR iteration
 
+	// ARTE
+	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
+	private static boolean secondPredicateSearch;
+	private static int maxNumberOfPredicates;                			// MaxNumberOfPredicates = AdditionalPredicates + 1
+	private static int minimumValidAndInvalidValues;
+	private static String metricToUse;
+	private static Double minimumValueOfMetric;
+	private static int maxNumberOfTriesToGenerateRegularExpression;
+
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
 	public static void main(String[] args) throws RESTestException {
+
+		// ONLY FOR LOCAL COPY OF DBPEDIA
+		System.setProperty("http.maxConnections", "100000");
+
 		Timer.startCounting(ALL);
 
 		// Read .properties file path. This file contains the configuration parameter
@@ -84,9 +98,13 @@ public class TestGenerationAndExecution {
 		IWriter writer = createWriter(); // Test case writer
 		StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
 		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, generator, writer,
-					reportManager, statsReportManager);
+
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, learnRegex,
+				secondPredicateSearch, spec, confPath, generator, writer,
+				reportManager, statsReportManager);
+
 		runner.setExecuteTestCases(executeTestCases);
+
 
 
 		// Main loop
@@ -222,7 +240,9 @@ public class TestGenerationAndExecution {
 		}
 
 		return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
-				enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)));
+					enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)),
+					secondPredicateSearch, maxNumberOfPredicates, minimumValidAndInvalidValues,
+					metricToUse, minimumValueOfMetric, maxNumberOfTriesToGenerateRegularExpression);
 	}
 
 	private static void generateTimeReport(Integer iterations) {
@@ -335,7 +355,35 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("faulty.dependency.ratio") != null)
 			faultyDependencyRatio = Float.parseFloat(readParameterValue("faulty.dependency.ratio"));
 		logger.info("Faulty dependency ratio: {}", faultyDependencyRatio);
-		
+
+		// ARTE
+		if (readParameterValue("learnRegex") != null)
+			learnRegex = Boolean.parseBoolean(readParameterValue("learnRegex"));
+		logger.info("Learn Regular expressions: {}", learnRegex);
+
+		if (readParameterValue("secondPredicateSearch") != null)
+			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("secondPredicateSearch"));
+		logger.info("Second Predicate Search: {}", secondPredicateSearch);
+
+		if (readParameterValue("maxNumberOfPredicates") != null)
+			maxNumberOfPredicates = Integer.parseInt(readParameterValue("maxNumberOfPredicates"));
+		logger.info("Maximum number of predicates: {}", maxNumberOfPredicates);
+
+		if (readParameterValue("minimumValidAndInvalidValues") != null)
+			minimumValidAndInvalidValues = Integer.parseInt(readParameterValue("minimumValidAndInvalidValues"));
+		logger.info("Minimum valid and invalid values: {}", minimumValidAndInvalidValues);
+
+		if (readParameterValue("metricToUse") != null)
+			metricToUse = readParameterValue("metricToUse");
+		logger.info("Metric to use: {}", metricToUse);
+
+		if (readParameterValue("minimumValueOfMetric") != null)
+			minimumValueOfMetric = Double.parseDouble(readParameterValue("minimumValueOfMetric"));
+		logger.info("Minimum value of metric: {}", minimumValueOfMetric);
+
+		if (readParameterValue("maxNumberOfTriesToGenerateRegularExpression") != null)
+			maxNumberOfTriesToGenerateRegularExpression = Integer.parseInt(readParameterValue("maxNumberOfTriesToGenerateRegularExpression"));
+		logger.info("Maximum number of tries to generate a regular expression: {}", maxNumberOfTriesToGenerateRegularExpression);
 	
 	}
 
@@ -352,6 +400,13 @@ public class TestGenerationAndExecution {
 		return value;
 	}
 
+
+	public static TestConfigurationObject getTestConfigurationObject(){
+		return loadConfiguration(confPath, spec);
+	}
+
+	public static String getExperimentName(){ return experimentName; }
+
 	private static void setUpLogger() {
 		String logPath = readParameterValue("log.path");
 
@@ -361,4 +416,5 @@ public class TestGenerationAndExecution {
 		ctx.setConfigLocation(file.toURI());
 		ctx.reconfigure();
 	}
+
 }
