@@ -61,6 +61,11 @@ public class DefaultTestConfigurationGenerator {
 	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 
+	// ARTE
+	public static final String SEMANTIC_PARAMETER = "SemanticParameter";
+	public static final String PREDICATES = "predicates";
+	public static final String NUMBER_OF_TRIES_TO_GENERATE_REGEX = "numberOfTriesToGenerateRegex";
+
 	private static final Logger logger = LogManager.getLogger(DefaultTestConfigurationGenerator.class);
 
 	private OpenAPISpecification spec;

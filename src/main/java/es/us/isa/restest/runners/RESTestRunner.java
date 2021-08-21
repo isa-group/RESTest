@@ -2,6 +2,7 @@ package es.us.isa.restest.runners;
 
 import java.util.Collection;
 
+import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.*;
 import es.us.isa.restest.util.ClassLoader;
 import org.apache.logging.log4j.LogManager;
@@ -34,10 +35,15 @@ public class RESTestRunner {
 	protected StatsReportManager statsReportManager;	// Stats report manager
 	private boolean executeTestCases;
 	private int numTestCases = 0;						// Number of test cases generated so far
+
+	private boolean learnRegex;
+	private boolean secondPredicateSearch;
+	private OpenAPISpecification spec;
+	private String confPath;
+
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer,
-						 AllureReportManager reportManager, StatsReportManager statsReportManager) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, Boolean learnRegex, Boolean secondPredicateSearch, OpenAPISpecification spec, String confPath, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
@@ -45,8 +51,14 @@ public class RESTestRunner {
 		this.writer = writer;
 		this.allureReportManager = reportManager;
 		this.statsReportManager = statsReportManager;
-	}
 
+		this.learnRegex = learnRegex;
+		this.secondPredicateSearch = secondPredicateSearch;
+		this.spec = spec;
+		this.confPath = confPath;
+
+	}
+	  
 	public void run() throws RESTestException {
 
 		// Test generation and writing (RESTAssured)
@@ -60,6 +72,10 @@ public class RESTestRunner {
 		}
 
 		generateReports();
+
+		if(learnRegex){
+			statsReportManager.learn(testId, spec, confPath);
+		}
 	}
 
 	protected void generateReports() {
