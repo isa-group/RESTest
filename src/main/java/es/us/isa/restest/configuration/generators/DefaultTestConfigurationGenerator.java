@@ -443,7 +443,7 @@ public class DefaultTestConfigurationGenerator {
 				Schema parameterSchema = ((Entry<String, Schema>) entry).getValue();
 				String parameterName = ((Entry<String, Schema>) entry).getKey();
 
-				if (parameterSchema.getType().equals("object")) {
+				if ("object".equals(parameterSchema.getType())) {
 					Encoding encoding = mediaType.getEncoding() != null ? mediaType.getEncoding().get(parameterName)
 							: null;
 
@@ -469,7 +469,7 @@ public class DefaultTestConfigurationGenerator {
 						encoding = mediaType.getEncoding().get(parameterName);
 					}
 
-					if (parameterSchema.getType().equals("array") && encoding != null
+					if ("array".equals(parameterSchema.getType()) && encoding != null
 							&& encoding.getStyle().equals(Encoding.StyleEnum.DEEP_OBJECT)) {
 						testParam.setName(parameterName + "[]");
 					} else {
