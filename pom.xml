@@ -3,7 +3,7 @@
 
 	<groupId>es.us.isa</groupId>
 	<artifactId>restest</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>RESTest</name>
@@ -73,7 +73,7 @@
 		<connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
 		<developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
 		<url>https://github.com/isa-group/RESTest/tree/master</url>
-		<tag>restest-1.1.1</tag>
+		<tag>restest-1.1.0</tag>
 	</scm>
 
 	<profiles>
