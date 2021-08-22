@@ -73,7 +73,6 @@
 		<connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
 		<developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
 		<url>https://github.com/isa-group/RESTest/tree/master</url>
-		<tag>restest-1.1.0</tag>
 	</scm>
 
 	<profiles>
