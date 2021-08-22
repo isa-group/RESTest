@@ -78,7 +78,7 @@
 
 	<profiles>
 		<profile>
-			<id>deployment</id>
+			<id>sign</id>
 			<build>
 				<plugins>
 					<plugin>
@@ -94,10 +94,6 @@
 								</goals>
 							</execution>
 						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
 					</plugin>
 				</plugins>
 			</build>
