@@ -239,10 +239,12 @@ public class TestGenerationAndExecution {
 			createDir(coverageDataDir);
 		}
 
+		CoverageMeter coverageMeter = enableInputCoverage || enableOutputCoverage ? new CoverageMeter(new CoverageGatherer(spec)) : null;
+
 		return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
-					enableOutputCoverage, new CoverageMeter(new CoverageGatherer(spec)),
-					secondPredicateSearch, maxNumberOfPredicates, minimumValidAndInvalidValues,
-					metricToUse, minimumValueOfMetric, maxNumberOfTriesToGenerateRegularExpression);
+					enableOutputCoverage, coverageMeter, secondPredicateSearch, maxNumberOfPredicates,
+					minimumValidAndInvalidValues, metricToUse, minimumValueOfMetric,
+					maxNumberOfTriesToGenerateRegularExpression);
 	}
 
 	private static void generateTimeReport(Integer iterations) {
