@@ -18,9 +18,10 @@ public class OpenAPISpecification {
 	 */
 	public OpenAPISpecification(String location) {
 		ParseOptions parseOptions = new ParseOptions();
+		parseOptions.setResolve(true);
 		parseOptions.setResolveFully(true);
-		parseOptions.setFlatten(true);
-		this.specification = new OpenAPIV3Parser().read(location, null, parseOptions);
+		parseOptions.setResolveCombinators(true);
+		this.specification = new OpenAPIV3Parser().read(location, null, null);
 		this.path = location;
 	}
 
