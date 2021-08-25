@@ -1,11 +1,12 @@
 package es.us.isa.restest.mutation.rules;
 
-import es.us.isa.restest.util.SchemaManager;
-import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static es.us.isa.restest.util.SchemaManager.generateFullyResolvedSchema;
 
 public class DuplicateRule extends SingleRule {
 
@@ -23,16 +24,10 @@ public class DuplicateRule extends SingleRule {
     }
 
     @Override
-    protected void applyNodeFuzzingRule(Schema<?> schema) {
+    protected void applyNodeFuzzingRule(Schema<?> schema, OpenAPI spec) {
         List<String> propertyNames = new ArrayList<>(schema.getProperties().keySet());
         String duplicatedProperty = propertyNames.get(random.nextInt(propertyNames.size()));
-        Schema duplicatedSchema;
-        if (schema.getProperties().get(duplicatedProperty) instanceof ArraySchema) {
-            duplicatedSchema = SchemaManager.copyArraySchema((ArraySchema) schema.getProperties().get(duplicatedProperty));
-        } else {
-            duplicatedSchema = SchemaManager.copySchema(schema.getProperties().get(duplicatedProperty));
-        }
-
+        Schema duplicatedSchema = generateFullyResolvedSchema(schema.getProperties().get(duplicatedProperty), spec);
         schema.getProperties().put(duplicatedProperty + "-duplicated", duplicatedSchema);
     }
 }

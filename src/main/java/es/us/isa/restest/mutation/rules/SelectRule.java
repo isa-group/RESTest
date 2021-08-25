@@ -1,5 +1,6 @@
 package es.us.isa.restest.mutation.rules;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 
 import java.util.ArrayList;

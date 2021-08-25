@@ -24,6 +24,7 @@ import java.util.*;
 
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFuzzingValue;
 import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
+import static es.us.isa.restest.util.SchemaManager.resolveSchema;
 
 
 public class BodyGenerator implements ITestDataGenerator {
@@ -56,9 +57,9 @@ public class BodyGenerator implements ITestDataGenerator {
         MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
 
         if (requestBody != null) {
-            Schema mutatedSchema = mutate? new SchemaMutation(requestBody.getSchema()).mutate() : requestBody.getSchema();
+            Schema mutatedSchema = mutate? new SchemaMutation(requestBody.getSchema(), spec.getSpecification()).mutate() : resolveSchema(requestBody.getSchema(), spec.getSpecification());
             JsonNode rootNode = null;
-            if (mutatedSchema instanceof ArraySchema)
+            if ("array".equals(mutatedSchema.getType()))
                 rootNode = objectMapper.createArrayNode();
             else
                 rootNode = objectMapper.createObjectNode();

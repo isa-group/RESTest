@@ -21,6 +21,7 @@ public class OpenAPISpecification {
 		parseOptions.setResolve(true);
 		parseOptions.setResolveFully(true);
 		parseOptions.setResolveCombinators(true);
+//		parseOptions.setFlatten(true);
 		this.specification = new OpenAPIV3Parser().read(location, null, parseOptions);
 		this.path = location;
 	}

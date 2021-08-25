@@ -29,6 +29,7 @@ import java.util.*;
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getFuzzingValues;
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFromValue;
 import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
+import static es.us.isa.restest.util.SchemaManager.resolveSchema;
 
 /**
  * This class implements a generator of fuzzing test cases. It uses a customizable dictionary to obtain
@@ -104,11 +105,12 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
 
         if (requestBody != null) {
             JsonNode node = null;
-            if (requestBody.getSchema() instanceof ArraySchema)
+            Schema schema = resolveSchema(requestBody.getSchema(), spec.getSpecification());
+            if ("array".equals(schema.getType()))
                 node = objectMapper.createArrayNode();
             else
                 node = objectMapper.createObjectNode();
-            generateFuzzingBody(requestBody.getSchema(), node, requestBody.getSchema().getRequired());
+            generateFuzzingBody(schema, node, schema.getRequired());
             tc.addParameter(testParam, node.toString());
         } else {
             ITestDataGenerator generator = getRandomGenerator(nominalGenerators.get(Pair.with(testParam.getName(), testParam.getIn())));

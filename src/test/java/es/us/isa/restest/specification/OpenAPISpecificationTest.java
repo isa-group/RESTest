@@ -35,5 +35,11 @@ public class OpenAPISpecificationTest {
 		OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Spotify/spec.json");
 		assertEquals("Wrong number of paths", 27, spec.getSpecification().getPaths().size());
 	}
+
+	@Test
+	public void testReadDHLSpecification() {
+		OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/restest-test-resources/swagger-dhl.yaml");
+		// No assertions, the test passes as long as no exceptions thrown
+	}
 	
 }

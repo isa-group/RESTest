@@ -2,6 +2,7 @@ package es.us.isa.restest.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 
@@ -14,74 +15,114 @@ public class SchemaManager {
 
     private SchemaManager() {}
 
-    public static Schema copySchema(Schema schema) {
+    public static Schema<?> generateFullyResolvedObjectSchema(Schema<?> schema, OpenAPI spec) {
+        Schema<?> resolvedSchema = resolveSchema(schema, spec);
         Schema copy = new Schema();
-        copy.set$ref(schema.get$ref());
-        copy.setAdditionalProperties(schema.getAdditionalProperties());
-        copy.setDefault(schema.getDefault());
-        copy.setDeprecated(schema.getDeprecated());
-        copy.setDescription(schema.getDescription());
-        copy.setDiscriminator(schema.getDiscriminator());
-        copy.setEnum(schema.getEnum());
-        copy.setExample(schema.getExample());
-        copy.setExclusiveMaximum(schema.getExclusiveMaximum());
-        copy.setExclusiveMinimum(schema.getExclusiveMinimum());
-        copy.setExtensions(schema.getExtensions());
-        copy.setExternalDocs(schema.getExternalDocs());
-        copy.setFormat(schema.getFormat());
-        copy.setMaximum(schema.getMaximum());
-        copy.setMaxItems(schema.getMaxItems());
-        copy.setMaxLength(schema.getMaxLength());
-        copy.setMaxProperties(schema.getMaxProperties());
-        copy.setMinimum(schema.getMinimum());
-        copy.setMinItems(schema.getMinItems());
-        copy.setMinLength(schema.getMinLength());
-        copy.setMinProperties(schema.getMinProperties());
-        copy.setMultipleOf(schema.getMultipleOf());
-        copy.setName(schema.getName());
-        copy.setNot(schema.getNot());
-        copy.setNullable(schema.getNullable());
-        copy.setPattern(schema.getPattern());
-        copy.setReadOnly(schema.getReadOnly());
-        copy.setRequired(schema.getRequired());
-        copy.setTitle(schema.getTitle());
-        copy.setType(schema.getType());
-        copy.setUniqueItems(schema.getUniqueItems());
-        copy.setWriteOnly(schema.getWriteOnly());
-        copy.setXml(schema.getXml());
+
+        prePopulateSchema(resolvedSchema, copy);
 
         Map<String, Schema> properties = null;
-        if (schema.getProperties() != null) {
+        if (resolvedSchema.getProperties() != null) {
             properties = new HashMap<>();
 
-            for (Object o: schema.getProperties().entrySet()) {
-                Map.Entry<String, Schema> entry = (Map.Entry<String, Schema>) o;
+            for (Map.Entry<String, Schema> entry: resolvedSchema.getProperties().entrySet()) {
                 Schema copiedSchema;
-                if (entry.getValue().getType().equals("array")) {
-                    copiedSchema = copyArraySchema((ArraySchema) entry.getValue());
-                } else {
-                    copiedSchema = copySchema(entry.getValue());
+                Schema<?> entryResolvedSchema = resolveSchema(entry.getValue(), spec);
+                if (entryResolvedSchema.getType() != null) {
+                    if (entryResolvedSchema.getType().equals("array"))
+                        copiedSchema = generateFullyResolvedArraySchema((ArraySchema) entryResolvedSchema, spec);
+                    else
+                        copiedSchema = generateFullyResolvedSchema(entryResolvedSchema, spec);
+                    properties.put(entry.getKey(), copiedSchema);
                 }
-                properties.put(entry.getKey(), copiedSchema);
             }
         }
-
         copy.setProperties(properties);
 
         return copy;
     }
 
-    public static ArraySchema copyArraySchema(ArraySchema schema) {
+    /**
+     * No support for anyOf, oneOf. Possible support for allOf.
+     * <br>
+     * <br>
+     * Given a schema, it generates a duplicate with all properties resolved (i.e.,
+     * without "ref" attributes).
+     */
+    public static Schema<?> generateFullyResolvedSchema(Schema<?> schema, OpenAPI spec) {
+        Schema<?> resolvedSchema = resolveSchema(schema, spec);
+        if ("array".equals(resolvedSchema.getType()))
+            return generateFullyResolvedArraySchema((ArraySchema) resolvedSchema, spec);
+        else
+            return generateFullyResolvedObjectSchema(resolvedSchema, spec);
+    }
+
+    public static ArraySchema generateFullyResolvedArraySchema(ArraySchema schema, OpenAPI spec) {
+        ArraySchema resolvedSchema = (ArraySchema) resolveSchema(schema, spec);
         ArraySchema copy = new ArraySchema();
-        Schema itemsCopy;
-        if (schema.getItems().getType().equals("array")) {
-            itemsCopy = copyArraySchema((ArraySchema) schema.getItems());
-        } else {
-            itemsCopy = copySchema(schema.getItems());
+
+        prePopulateSchema(resolvedSchema, copy);
+
+        Schema copiedSchema;
+        Schema<?> itemsSchema = resolveSchema(resolvedSchema.getItems(), spec);
+        if (itemsSchema.getType() != null) {
+            if (itemsSchema.getType().equals("array"))
+                copiedSchema = generateFullyResolvedArraySchema((ArraySchema) itemsSchema, spec);
+            else
+                copiedSchema = generateFullyResolvedSchema(itemsSchema, spec);
+            copy.setItems(copiedSchema);
         }
 
-        copy.setItems(itemsCopy);
         return copy;
+    }
+
+    public static void prePopulateSchema(Schema resolvedSchema, Schema<?> copy) {
+        copy.set$ref(resolvedSchema.get$ref());
+        copy.setAdditionalProperties(resolvedSchema.getAdditionalProperties());
+        copy.setDefault(resolvedSchema.getDefault());
+        copy.setDeprecated(resolvedSchema.getDeprecated());
+        copy.setDescription(resolvedSchema.getDescription());
+        copy.setDiscriminator(resolvedSchema.getDiscriminator());
+        copy.setEnum(resolvedSchema.getEnum());
+        copy.setExample(resolvedSchema.getExample());
+        copy.setExclusiveMaximum(resolvedSchema.getExclusiveMaximum());
+        copy.setExclusiveMinimum(resolvedSchema.getExclusiveMinimum());
+        copy.setExtensions(resolvedSchema.getExtensions());
+        copy.setExternalDocs(resolvedSchema.getExternalDocs());
+        copy.setFormat(resolvedSchema.getFormat());
+        copy.setMaximum(resolvedSchema.getMaximum());
+        copy.setMaxItems(resolvedSchema.getMaxItems());
+        copy.setMaxLength(resolvedSchema.getMaxLength());
+        copy.setMaxProperties(resolvedSchema.getMaxProperties());
+        copy.setMinimum(resolvedSchema.getMinimum());
+        copy.setMinItems(resolvedSchema.getMinItems());
+        copy.setMinLength(resolvedSchema.getMinLength());
+        copy.setMinProperties(resolvedSchema.getMinProperties());
+        copy.setMultipleOf(resolvedSchema.getMultipleOf());
+        copy.setName(resolvedSchema.getName());
+        copy.setNot(resolvedSchema.getNot());
+        copy.setNullable(resolvedSchema.getNullable());
+        copy.setPattern(resolvedSchema.getPattern());
+        copy.setReadOnly(resolvedSchema.getReadOnly());
+        copy.setRequired(resolvedSchema.getRequired());
+        copy.setTitle(resolvedSchema.getTitle());
+        copy.setType(resolvedSchema.getType());
+        copy.setUniqueItems(resolvedSchema.getUniqueItems());
+        copy.setWriteOnly(resolvedSchema.getWriteOnly());
+        copy.setXml(resolvedSchema.getXml());
+    }
+
+    /**
+     * Given a schema, it returns the same schema if it is already resolved (i.e.,
+     * contains properties and has no ref attribute), or the resolved schema corresponding
+     * to the ref attribute.
+     */
+    public static Schema<?> resolveSchema(Schema<?> schema, OpenAPI spec) {
+        Schema resolvedSchema = schema;
+        while (resolvedSchema.get$ref() != null) {
+            resolvedSchema = spec.getComponents().getSchemas().get(resolvedSchema.get$ref().replace("#/components/schemas/", ""));
+        }
+        return resolvedSchema;
     }
 
     public static JsonNode createValueNode(Object value, ObjectMapper mapper) {
