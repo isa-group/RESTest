@@ -4,12 +4,11 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.SchemaManager;
 import io.swagger.v3.oas.models.media.Schema;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
-import java.util.Arrays;
 import java.util.Map;
 
+import static es.us.isa.restest.util.SchemaManager.generateFullyResolvedSchema;
+import static es.us.isa.restest.util.SchemaManager.resolveSchema;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -19,9 +18,10 @@ public class TypeRuleTest {
     public void applyTypeRuleCommentsPostCommentTest() {
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
         Schema originalSchema = spec.getSpecification().getPaths().get("/comments").getPost().getRequestBody().getContent().get("application/json").getSchema();
-        Schema mutatedSchema = SchemaManager.copySchema(originalSchema);
+        originalSchema = generateFullyResolvedSchema(originalSchema, spec.getSpecification());
+        Schema mutatedSchema = generateFullyResolvedSchema(originalSchema, spec.getSpecification());
 
-        TypeRule.getInstance().apply(mutatedSchema, false);
+        TypeRule.getInstance().apply(mutatedSchema, false, spec.getSpecification());
 
         assertEquals(1, getMutationsApplied(originalSchema, mutatedSchema));
     }
@@ -30,9 +30,10 @@ public class TypeRuleTest {
     public void applyTypeRulePetstorePostPetTest() {
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/specifications/petstore.yaml");
         Schema originalSchema = spec.getSpecification().getPaths().get("/pet").getPost().getRequestBody().getContent().get("application/json").getSchema();
-        Schema mutatedSchema = SchemaManager.copySchema(originalSchema);
+        originalSchema = generateFullyResolvedSchema(originalSchema, spec.getSpecification());
+        Schema mutatedSchema = generateFullyResolvedSchema(originalSchema, spec.getSpecification());
 
-        TypeRule.getInstance().apply(mutatedSchema, false);
+        TypeRule.getInstance().apply(mutatedSchema, false, spec.getSpecification());
 
         assertEquals(1, getMutationsApplied(originalSchema, mutatedSchema));
     }

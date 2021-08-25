@@ -1,6 +1,7 @@
 package es.us.isa.restest.mutation.rules;
 
 import com.google.common.collect.Lists;
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public class TypeRule extends SingleRule {
     }
 
     @Override
-    protected void applyNodeFuzzingRule(Schema<?> schema) {
+    protected void applyNodeFuzzingRule(Schema<?> schema, OpenAPI spec) {
         List<String> types = Lists.newArrayList("string", "integer", "boolean", "object", "array");
         String type = schema.getType();
         if (type.equals("number")) {

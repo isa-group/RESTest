@@ -37,7 +37,7 @@ public class TestARTE {
         ARTEInputGenerator.main(args);
 
         String testConfSemanticPath = basePath + "testConfSemantic.yaml";
-        String swaggerPath = basePath + "swagger.yaml";
+        String swaggerPath = basePath + "ClimaCell.yaml";
         String testConfOriginalPath = basePath + "testConf.yaml";
 
         TestConfigurationObject testConfSemantic = loadConfiguration(testConfSemanticPath, new OpenAPISpecification(swaggerPath));
@@ -88,7 +88,7 @@ public class TestARTE {
         ARTEInputGenerator.main(args);
 
         String testConfSemanticPath = basePath + "testConfSemantic.yaml";
-        String swaggerPath = basePath + "swagger.yaml";
+        String swaggerPath = basePath + "ClimaCell.yaml";
         String testConfOriginalPath = basePath + "testConf.yaml";
         TestConfigurationObject testConf = loadConfiguration(testConfOriginalPath, new OpenAPISpecification(swaggerPath));
 
