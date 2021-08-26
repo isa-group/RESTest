@@ -236,7 +236,7 @@ testConfiguration:
               valid: true
         - name: name
           in: formData
-          weight: 0.5
+          weight: null
           generators:
             - type: RandomEnglishWord
               genParameters:
@@ -354,12 +354,17 @@ testConfiguration:
           in: formData
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomString
               genParameters:
-                - name: maxWords
+                - name: minLength
                   values:
                     - 1
-                  objectValues: null
+                - name: maxLength
+                  values:
+                    - 12
+                - name: includeNumbers
+                  values:
+                    - true
               valid: true
         - name: url
           in: formData
@@ -593,13 +598,18 @@ testConfiguration:
         in: formData
         weight: 0.5
         generators:
-        - type: RandomEnglishWord
-          genParameters:
-          - name: maxWords
-            values:
-            - 1
-            objectValues: null
-          valid: true
+          - type: RandomString
+            genParameters:
+              - name: minLength
+                values:
+                  - 1
+              - name: maxLength
+                values:
+                  - 12
+              - name: includeNumbers
+                values:
+                  - true
+            valid: true
       - name: url
         in: formData
         weight: 0.5
