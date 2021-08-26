@@ -61,6 +61,7 @@ public abstract class AbstractTestCaseGenerator {
 	protected int nNominal;													// Number of nominal test cases generated for the current operation
 
 	protected boolean hasStatefulGenerators;
+	private boolean checkTestCases;
 
 
 	public AbstractTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
@@ -270,7 +271,7 @@ public abstract class AbstractTestCaseGenerator {
 		// Make sure the test case generated conforms to the specification. Otherwise, throw an exception and stop the execution
 		// There's an exception: if stateful generators are configured, we cannot assure that the test case will be valid,
 		// therefore we omit this
-		if (!hasStatefulGenerators) {
+		if (checkTestCases && !hasStatefulGenerators) {
 			List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
 			if (!errors.isEmpty()) {
 				throw new RESTestException("The test case generated does not conform to the specification: " + errors);
@@ -605,4 +606,11 @@ public abstract class AbstractTestCaseGenerator {
 		this.maxTriesPerTestCase = maxTriesPerTestCase;
 	}
 
+	public boolean isCheckTestCases() {
+		return checkTestCases;
+	}
+
+	public void setCheckTestCases(boolean checkTestCases) {
+		this.checkTestCases = checkTestCases;
+	}
 }

@@ -54,6 +54,7 @@ public class TestGenerationAndExecution {
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
+	private static boolean checkTestCases;								// If 'true', test cases will be checked with OASValidator before executing them
 
 	// For Constraint-based testing and AR Testing:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
@@ -136,7 +137,7 @@ public class TestGenerationAndExecution {
 	}
 
 	// Create a test case generator
-	private static AbstractTestCaseGenerator createGenerator() {
+	private static AbstractTestCaseGenerator createGenerator() throws RESTestException {
 		// Load specification
 		spec = new OpenAPISpecification(OAISpecPath);
 
@@ -183,7 +184,10 @@ public class TestGenerationAndExecution {
 			gen.setFaultyRatio(faultyRatio);
 			break;
 		default:
+			throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT' or 'ART'");
 		}
+
+		gen.setCheckTestCases(checkTestCases);
 
 		return gen;
 	}
@@ -302,6 +306,10 @@ public class TestGenerationAndExecution {
 			executeTestCases = Boolean.parseBoolean(readParameterValue("experiment.execute"));
 		}
 		logger.info("Experiment execution: {}", executeTestCases);
+
+		if (readParameterValue("testcases.check") != null)
+			checkTestCases = Boolean.parseBoolean(readParameterValue("testcases.check"));
+		logger.info("Check test cases: {}", checkTestCases);
 		
 		testClassName = readParameterValue("testclass.name");
 		logger.info("Test class name: {}", testClassName);
