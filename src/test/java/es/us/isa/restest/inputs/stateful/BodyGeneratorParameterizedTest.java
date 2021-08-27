@@ -63,8 +63,10 @@ public class BodyGeneratorParameterizedTest {
         BodyGenerator gen = (BodyGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
         gen.setSpec(spec);
         gen.setDataDirPath(dataDirPath);
+        gen.setOpenApiOperation(oasOperation);
+        gen.setOperation("GET", operationPath);
 
-        String value = gen.nextValueAsString(oasOperation, operationPath, mutate);
+        String value = gen.nextValueAsString(mutate);
 
         assertNotNull("The generator cannot create a body", value);
 

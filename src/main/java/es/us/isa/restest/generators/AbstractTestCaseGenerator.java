@@ -258,11 +258,8 @@ public abstract class AbstractTestCaseGenerator {
 						perturbation = true;
 					}
 					else if (generator instanceof BodyGenerator) {
-						test.addParameter(confParam, ((BodyGenerator) generator).nextValueAsString(testOperation.getOpenApiOperation(), testOperation.getTestPath(), false));
-					} else if (generator instanceof ParameterGenerator) {
-						test.addParameter(confParam, ((ParameterGenerator) generator).nextValueAsString(testOperation.getTestPath()));
-					}
-					else
+						test.addParameter(confParam, ((BodyGenerator) generator).nextValueAsString(false));
+					} else
 						test.addParameter(confParam, generator.nextValueAsString());
 				}
 			}
@@ -392,7 +389,7 @@ public abstract class AbstractTestCaseGenerator {
 			test = generateRandomValidTestCase(testOperation);
 			errors = new ArrayList<>();
 			for (int i = 0; i < maxTriesPerTestCase && errors.isEmpty(); i++) {
-				test.addParameter(bodyParam, ((BodyGenerator) bodyGenerator).nextValueAsString(testOperation.getOpenApiOperation(), testOperation.getTestPath(), true));
+				test.addParameter(bodyParam, ((BodyGenerator) bodyGenerator).nextValueAsString(true));
 				errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
 			}
 			// No invalid body generated. Return null and try to generate faulty test case in different way
@@ -511,10 +508,13 @@ public abstract class AbstractTestCaseGenerator {
 					if (gen instanceof BodyGenerator) {
 						((BodyGenerator) gen).setDataDirPath(spec.getPath().substring(0, spec.getPath().lastIndexOf('/')));
 						((BodyGenerator) gen).setSpec(spec);
+						((BodyGenerator) gen).setOpenApiOperation(operation.getOpenApiOperation());
+						((BodyGenerator) gen).setOperation("GET", operation.getTestPath());
 					}
 					if (gen instanceof ParameterGenerator) {
 						((ParameterGenerator) gen).setDataDirPath(spec.getPath().substring(0, spec.getPath().lastIndexOf('/')));
 						((ParameterGenerator) gen).setSpec(spec);
+						((ParameterGenerator) gen).setOperation("GET", operation.getTestPath());
 						((ParameterGenerator) gen).setParameterName(param.getName());
 						((ParameterGenerator) gen).setParameterType(SpecificationVisitor.findParameter(operation.getOpenApiOperation(), param.getName(), param.getIn()).getType());
 					}

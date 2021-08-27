@@ -585,7 +585,10 @@ public class TestDataGeneratorFactory {
 					gen.setDefaultValue(param.getValues().get(0));
 					break;
 				case "altParamName":
-					gen.setAltParamName(param.getValues().get(0));
+					gen.setAltParameterName(param.getValues().get(0));
+					break;
+				case "altOperationPath":
+					gen.setAltOperationPath(param.getValues().get(0));
 					break;
 				default:
 					throw new IllegalArgumentException("Unexpected parameter for stateful parameter generator: " + param.getName());

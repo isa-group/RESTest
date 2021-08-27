@@ -21,7 +21,9 @@ public class ParameterGenerator implements ITestDataGenerator {
 
     private String operationMethod;
     private String operationPath;
+    private String altOperationPath;
     private String parameterName;
+    private String altParameterName;
     private String parameterType;
 
     private String dataDirPath;
@@ -44,7 +46,10 @@ public class ParameterGenerator implements ITestDataGenerator {
 
         if (operationPath != null && checkIfExists(jsonPath)) {
             ObjectNode dict = (ObjectNode) readJSON(jsonPath);
-            valueNode = getParameterValue(dict, operationMethod, operationPath, parameterName);
+            valueNode = getParameterValue(dict, operationMethod,
+                    altOperationPath != null ? altOperationPath : operationPath,
+                    altParameterName != null ? altParameterName : parameterName
+            );
         }
 
         if (valueNode == null)
@@ -64,14 +69,6 @@ public class ParameterGenerator implements ITestDataGenerator {
             value = node.asText();
         }
         return value;
-    }
-
-    public String nextValueAsString(String operationPath) {
-        io.swagger.v3.oas.models.Operation getOperation = spec.getSpecification().getPaths().get(operationPath).getGet();
-        if (getOperation != null) {
-            setOperation("GET", operationPath);
-        }
-        return nextValueAsString();
     }
 
     public void setParameterName(String parameterName) {
@@ -99,7 +96,11 @@ public class ParameterGenerator implements ITestDataGenerator {
         this.defaultValue = defaultValue;
     }
 
-    public void setAltParamName(String altParamName) {
-        this.parameterName = altParamName;
+    public void setAltParameterName(String altParameterName) {
+        this.altParameterName = altParameterName;
+    }
+
+    public void setAltOperationPath(String altOperationPath) {
+        this.altOperationPath = altOperationPath;
     }
 }
