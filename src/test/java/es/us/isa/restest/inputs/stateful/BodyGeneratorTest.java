@@ -31,7 +31,7 @@ public class BodyGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite5.yaml");
         String operationPath = "/comments/{id}";
         Operation oasOperation = spec.getSpecification().getPaths().get(operationPath).getPut();
-        String dataDirPath = "src/test/resources/jsonData/stateful_bodies";
+        String dataDirPath = "src/test/resources/jsonData/stateful_body1";
 
         GenParameter defaultValue = new GenParameter();
         defaultValue.setName("defaultValue");
@@ -42,8 +42,10 @@ public class BodyGeneratorTest {
         BodyGenerator gen = (BodyGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
         gen.setSpec(spec);
         gen.setDataDirPath(dataDirPath);
+        gen.setOpenApiOperation(oasOperation);
+        gen.setOperation("GET", operationPath);
 
-        String value = gen.nextValueAsString(oasOperation, operationPath, false);
+        String value = gen.nextValueAsString(false);
 
         assertNotNull("The generator could not generate a body parameter", value);
 
@@ -62,7 +64,7 @@ public class BodyGeneratorTest {
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite6.yaml");
         String operationPath = "/comments/multiple";
         Operation oasOperation = spec.getSpecification().getPaths().get(operationPath).getPost();
-        String dataDirPath = "src/test/resources/jsonData/stateful_bodies";
+        String dataDirPath = "src/test/resources/jsonData/stateful_body1";
 
         GenParameter defaultValue = new GenParameter();
         defaultValue.setName("defaultValue");
@@ -73,8 +75,10 @@ public class BodyGeneratorTest {
         BodyGenerator gen = (BodyGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
         gen.setSpec(spec);
         gen.setDataDirPath(dataDirPath);
+        gen.setOpenApiOperation(oasOperation);
+        gen.setOperation("GET", operationPath);
 
-        String value = gen.nextValueAsString(oasOperation, operationPath, false);
+        String value = gen.nextValueAsString(false);
 
         assertNotNull("The generator could not generate a body parameter", value);
 

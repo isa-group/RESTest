@@ -203,10 +203,8 @@ public class BodyGenerator implements ITestDataGenerator {
         return value;
     }
 
-    public String nextValueAsString(Operation openApiOperation, String operationPath, boolean mutate) {
-        setOpenApiOperation(openApiOperation);
+    public String nextValueAsString(boolean mutate) {
         setMutate(mutate);
-        setOperation("GET", operationPath);
         return nextValueAsString();
     }
 
