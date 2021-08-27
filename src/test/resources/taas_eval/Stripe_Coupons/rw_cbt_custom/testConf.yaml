@@ -1,0 +1,181 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Stripe/headers.json
+testConfiguration:
+  operations:
+  - testPath: /v1/coupons
+    operationId: PostCoupons
+    method: post
+    testParameters:
+      - name: amount_off
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+            valid: true
+      - name: "applies_to[products][]"
+        in: formData
+        weight: 0
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - prod_K6km9ODzuP0tBz
+      - name: currency
+        in: formData
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - src/test/resources/taas_eval/Stripe_Coupons/currency_codes.csv
+                objectValues: null
+      - name: duration
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - forever
+                  - once
+                  - repeating
+                objectValues: null
+            valid: true
+      - name: duration_in_months
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+            valid: true
+      - name: "expand[]"
+        in: formData
+        weight: 0
+        generators:
+          - type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - data
+                objectValues: null
+            valid: true
+      - name: id
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomString
+            genParameters:
+              - name: minLength
+                values:
+                  - 10
+              - name: maxLength
+                values:
+                  - 20
+              - name: includeNumbers
+                values:
+                  - true
+            valid: true
+      - name: max_redemptions
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+            valid: true
+      - name: name
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+            valid: true
+      - name: percent_off
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+            valid: true
+      - name: redeem_by
+        in: formData
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1635003636
+                objectValues: null
+              - name: max
+                values:
+                  - 2147483647
+                objectValues: null
+    expectedResponse: 200
