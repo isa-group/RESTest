@@ -352,8 +352,9 @@ public class RESTAssuredWriter implements IWriter {
 		String content = "";
 		
 		for(Entry<String,String> param: t.getPathParameters().entrySet())
-			content += "\t\t\t\t.pathParam(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue()) + "\")\n";
-		
+			content += "\t\t\t\t.pathParam(\"" + param.getKey() + "\", \"" + escapeJava(param.getValue().replace("{", "")) + "\")\n";
+			// TODO: Once REST-Assured fixes the bug, stop removing "{" chars from path parameters
+
 		return content;
 	}
 
