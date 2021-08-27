@@ -353,6 +353,8 @@ paths:
               properties: {}
               type: object
         required: false
+      x-dependencies:
+        - ZeroOrOne(created, Or([created[gt]], [created[gte]], [created[lt]], [created[lte]]));
       responses:
         '200':
           content:
