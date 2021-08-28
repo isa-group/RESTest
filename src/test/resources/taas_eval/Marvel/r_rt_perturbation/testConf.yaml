@@ -1,0 +1,6481 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: Marvel/apikeys.json
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /v1/public/characters
+    operationId: getCreatorCollection
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.name
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/characters/{characterId}"
+    operationId: getCharacterIndividual
+    method: get
+    testParameters:
+    - name: characterId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    expectedResponse: 200
+  - testPath: "/v1/public/characters/{characterId}/comics"
+    operationId: getComicsCharacterCollection
+    method: get
+    testParameters:
+    - name: characterId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: format
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
+          objectValues: null
+        valid: true
+    - name: formatType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - collection
+          objectValues: null
+        valid: true
+    - name: noVariants
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: dateDescriptor
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - lastWeek
+          - thisWeek
+          - nextWeek
+          - thisMonth
+          objectValues: null
+        valid: true
+    - name: dateRange
+      in: query
+      weight: 0.1
+      generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - ((19\d\d)|(20[01]\d)),((20[01]\d)|2020)
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: issueNumber
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: diamondCode
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: digitalId
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: upc
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: isbn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: ean
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: issn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: hasDigitalIssue
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: sharedAppearances
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: collaborators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/characters/{characterId}/events"
+    operationId: getCharacterEventsCollection
+    method: get
+    testParameters:
+    - name: characterId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - startDate
+          - modified
+          - -name
+          - -modified
+          - -startDate
+          - "name,modified,startDate"
+          - "name,-modified,-startDate"
+          - "modified,name,startDate"
+          - "modified,-name,-startDate"
+          - "-name,startDate,modified"
+          - "-name,-startDate,-modified"
+          - "startDate,-modified,name"
+          - "-startDate,-modified,-name"
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/characters/{characterId}/series"
+    operationId: getCharacterSeriesCollection
+    method: get
+    testParameters:
+    - name: characterId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: seriesType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - collection
+          - one shot
+          - limited
+          - ongoing
+          objectValues: null
+        valid: true
+    - name: contains
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - title
+          - startYear
+          - modified
+          - -title
+          - -modified
+          - -startYear
+          - "title,modified,startYear"
+          - "title,-modified,-startYear"
+          - "modified,title,startYear"
+          - "modified,-title,-startYear"
+          - "-title,startYear,modified"
+          - "-title,-startYear,-modified"
+          - "startYear,-modified,title"
+          - "-startYear,-modified,-title"
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/characters/{characterId}/stories"
+    operationId: getCharacterStoryCollection
+    method: get
+    testParameters:
+    - name: characterId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/public/comics
+    operationId: getComicsCollection
+    method: get
+    testParameters:
+    - name: format
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
+          objectValues: null
+        valid: true
+    - name: formatType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - collection
+          objectValues: null
+        valid: true
+    - name: noVariants
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: dateDescriptor
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - lastWeek
+          - thisWeek
+          - nextWeek
+          - thisMonth
+          objectValues: null
+        valid: true
+    - name: dateRange
+      in: query
+      weight: 0.1
+      generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - ((19\d\d)|(20[01]\d)),((20[01]\d)|2020)
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: issueNumber
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: diamondCode
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: digitalId
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: upc
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: isbn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: ean
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: issn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: hasDigitalIssue
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: sharedAppearances
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: collaborators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/comics/{comicId}"
+    operationId: getComicIndividual
+    method: get
+    testParameters:
+    - name: comicId
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    expectedResponse: 200
+  - testPath: "/v1/public/comics/{comicId}/characters"
+    operationId: getComicCharacterCollection
+    method: get
+    testParameters:
+    - name: comicId
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.name
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/comics/{comicId}/creators"
+    operationId: getCreatorCollection
+    method: get
+    testParameters:
+    - name: comicId
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: firstName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: middleName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: lastName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: suffix
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: firstNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: middleNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lastNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/comics/{comicId}/events"
+    operationId: getIssueEventsCollection
+    method: get
+    testParameters:
+    - name: comicId
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/comics/{comicId}/stories"
+    operationId: getComicStoryCollection
+    method: get
+    testParameters:
+    - name: comicId
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/public/creators
+    operationId: getCreatorCollection
+    method: get
+    testParameters:
+    - name: firstName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: middleName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: lastName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: suffix
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: firstNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: middleNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lastNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/creators/{creatorId}"
+    operationId: getCreatorIndividual
+    method: get
+    testParameters:
+    - name: creatorId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    expectedResponse: 200
+  - testPath: "/v1/public/creators/{creatorId}/comics"
+    operationId: getComicsCollection
+    method: get
+    testParameters:
+    - name: creatorId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: format
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
+          objectValues: null
+        valid: true
+    - name: formatType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - collection
+          objectValues: null
+        valid: true
+    - name: noVariants
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: dateDescriptor
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - lastWeek
+          - thisWeek
+          - nextWeek
+          - thisMonth
+          objectValues: null
+        valid: true
+    - name: dateRange
+      in: query
+      weight: 0.1
+      generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - ((19\d\d)|(20[01]\d)),((20[01]\d)|2020)
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: issueNumber
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: diamondCode
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: digitalId
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: upc
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: isbn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: ean
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: issn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: hasDigitalIssue
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: sharedAppearances
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: collaborators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/creators/{creatorId}/events"
+    operationId: getCreatorEventsCollection
+    method: get
+    testParameters:
+    - name: creatorId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/creators/{creatorId}/series"
+    operationId: getCreatorSeriesCollection
+    method: get
+    testParameters:
+    - name: creatorId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: seriesType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - collection
+          - one shot
+          - limited
+          - ongoing
+          objectValues: null
+        valid: true
+    - name: contains
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/creators/{creatorId}/stories"
+    operationId: getCreatorStoryCollection
+    method: get
+    testParameters:
+    - name: creatorId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/public/events
+    operationId: getEventsCollection
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/events/{eventId}"
+    operationId: getEventIndividual
+    method: get
+    testParameters:
+    - name: eventId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    expectedResponse: 200
+  - testPath: "/v1/public/events/{eventId}/characters"
+    operationId: getEventCharacterCollection
+    method: get
+    testParameters:
+    - name: eventId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.name
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/events/{eventId}/comics"
+    operationId: getComicsCollection
+    method: get
+    testParameters:
+    - name: eventId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: format
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
+          objectValues: null
+        valid: true
+    - name: formatType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - collection
+          objectValues: null
+        valid: true
+    - name: noVariants
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: dateDescriptor
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - lastWeek
+          - thisWeek
+          - nextWeek
+          - thisMonth
+          objectValues: null
+        valid: true
+    - name: dateRange
+      in: query
+      weight: 0.1
+      generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - ((19\d\d)|(20[01]\d)),((20[01]\d)|2020)
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: issueNumber
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: diamondCode
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: digitalId
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: upc
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: isbn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: ean
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: issn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: hasDigitalIssue
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: sharedAppearances
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: collaborators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/events/{eventId}/creators"
+    operationId: getCreatorCollection
+    method: get
+    testParameters:
+    - name: eventId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: firstName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: middleName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: lastName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: suffix
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: firstNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: middleNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lastNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/events/{eventId}/series"
+    operationId: getEventSeriesCollection
+    method: get
+    testParameters:
+    - name: eventId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: seriesType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - collection
+          - one shot
+          - limited
+          - ongoing
+          objectValues: null
+        valid: true
+    - name: contains
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/events/{eventId}/stories"
+    operationId: getEventStoryCollection
+    method: get
+    testParameters:
+    - name: eventId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/public/series
+    operationId: getSeriesCollection
+    method: get
+    testParameters:
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: seriesType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - collection
+          - one shot
+          - limited
+          - ongoing
+          objectValues: null
+        valid: true
+    - name: contains
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/series/{seriesId}"
+    operationId: getSeriesIndividual
+    method: get
+    testParameters:
+    - name: seriesId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    expectedResponse: 200
+  - testPath: "/v1/public/series/{seriesId}/characters"
+    operationId: getSeriesCharacterWrapper
+    method: get
+    testParameters:
+    - name: seriesId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.name
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/series/{seriesId}/comics"
+    operationId: getComicsCollection
+    method: get
+    testParameters:
+    - name: seriesId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: format
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
+          objectValues: null
+        valid: true
+    - name: formatType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - collection
+          objectValues: null
+        valid: true
+    - name: noVariants
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: dateDescriptor
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - lastWeek
+          - thisWeek
+          - nextWeek
+          - thisMonth
+          objectValues: null
+        valid: true
+    - name: dateRange
+      in: query
+      weight: 0.1
+      generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - ((19\d\d)|(20[01]\d)),((20[01]\d)|2020)
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: issueNumber
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: diamondCode
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: digitalId
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: upc
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: isbn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: ean
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: issn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: hasDigitalIssue
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: sharedAppearances
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: collaborators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/series/{seriesId}/creators"
+    operationId: getCreatorCollection
+    method: get
+    testParameters:
+    - name: seriesId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: firstName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: middleName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: lastName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: suffix
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: firstNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: middleNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lastNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/series/{seriesId}/events"
+    operationId: getEventsCollection
+    method: get
+    testParameters:
+    - name: seriesId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: stories
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/series/{seriesId}/stories"
+    operationId: getSeriesStoryCollection
+    method: get
+    testParameters:
+    - name: seriesId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v1/public/stories
+    operationId: getStoryCollection
+    method: get
+    testParameters:
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/stories/{storyId}"
+    operationId: getStoryIndividual
+    method: get
+    testParameters:
+    - name: storyId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    expectedResponse: 200
+  - testPath: "/v1/public/stories/{storyId}/characters"
+    operationId: getCreatorCollection
+    method: get
+    testParameters:
+    - name: storyId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.name
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/stories/{storyId}/comics"
+    operationId: getComicsCollection
+    method: get
+    testParameters:
+    - name: storyId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: format
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - magazine
+          - trade paperback
+          - hardcover
+          - digest
+          - graphic novel
+          - digital comic
+          - infinite comic
+          objectValues: null
+        valid: true
+    - name: formatType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - comic
+          - collection
+          objectValues: null
+        valid: true
+    - name: noVariants
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: dateDescriptor
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - lastWeek
+          - thisWeek
+          - nextWeek
+          - thisMonth
+          objectValues: null
+        valid: true
+    - name: dateRange
+      in: query
+      weight: 0.1
+      generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - ((19\d\d)|(20[01]\d)),((20[01]\d)|2020)
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: issueNumber
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: diamondCode
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: digitalId
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: upc
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: isbn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: ean
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: issn
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: hasDigitalIssue
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: sharedAppearances
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: collaborators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/stories/{storyId}/creators"
+    operationId: getCreatorCollection
+    method: get
+    testParameters:
+    - name: storyId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: firstName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: middleName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: lastName
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: suffix
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: firstNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: middleNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lastNameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/stories/{storyId}/events"
+    operationId: getEventsCollection
+    method: get
+    testParameters:
+    - name: storyId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: name
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: nameStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: series
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v1/public/stories/{storyId}/series"
+    operationId: getStorySeriesCollection
+    method: get
+    testParameters:
+    - name: storyId
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/stories
+    - name: events
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/events
+    - name: title
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.title
+            - name: altOperationPath
+              values:
+                - /v1/public/series
+    - name: titleStartsWith
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: startYear
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2020
+          objectValues: null
+        valid: true
+    - name: modifiedSince
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: comics
+      in: query
+      weight: 0.1
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - data.results.id
+          - name: altOperationPath
+            values:
+              - /v1/public/comics
+    - name: creators
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/creators
+    - name: characters
+      in: query
+      weight: 0.1
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - data.results.id
+            - name: altOperationPath
+              values:
+                - /v1/public/characters
+    - name: seriesType
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - collection
+          - one shot
+          - limited
+          - ongoing
+          objectValues: null
+        valid: true
+    - name: contains
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomString
+        genParameters:
+        - name: maxLength
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: orderBy
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - name
+          - modified
+          - -name
+          - -modified
+          - "name,modified"
+          - "name,-modified"
+          - "modified,name"
+          - "modified,-name"
+          - "-name,modified"
+          - "-name,-modified"
+          - "-modified,name"
+          - "-modified,-name"
+    - name: limit
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.1
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
