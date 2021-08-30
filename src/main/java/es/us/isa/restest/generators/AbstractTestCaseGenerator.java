@@ -74,9 +74,12 @@ public abstract class AbstractTestCaseGenerator {
 		String authPath = conf.getAuth().getApiKeysPath();
 		if (authPath == null)
 			authPath = conf.getAuth().getHeadersPath();
-		if (authPath != null)
+		if (authPath == null)
+			authPath = conf.getAuth().getOauthPath();
+		if (authPath != null && conf.getAuth().getOauthPath() != null)
+			this.authManager = new AuthManager(authPath, true);
+		else if (authPath != null)
 			this.authManager = new AuthManager(authPath);
-
 
 		this.numberOfTests = nTests;
 
@@ -460,6 +463,10 @@ public abstract class AbstractTestCaseGenerator {
 			if (conf.getAuth().getHeadersPath()!=null)
 				for(String authProperty : authManager.getAuthPropertyNames())
 					test.addHeaderParameter(authProperty, authManager.getAuthProperty(authProperty));
+
+			// File containing OAuth details
+			if (conf.getAuth().getOauthPath()!=null)
+				test.addHeaderParameter("Authorization", authManager.getUpdatedOauthHeader());
 		}
 	}
 

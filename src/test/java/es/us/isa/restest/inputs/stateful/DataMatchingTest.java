@@ -206,4 +206,22 @@ public class DataMatchingTest {
                 "UCgWHOqWzbZ0Brhy1xRx5W1g", "PLhHUqrvxXXCZs5fkLYW_zguo5BeVdz9XQ", "PLatn_iwPkj2pT4HucLlKJDOqoc1xQDgWK",
                 "2", "3", "4", "8", "9", "10", "0").contains(statefulValue.asText()));
     }
+
+    @Test
+    public void paramNameFirstLevelSubPropertyOfExistingProperty() {
+        JsonNode statefulValue = getParameterValue(dict, "GET", "/youtube/v3/search", "nonExistingProperty.snippet.thumbnails.medium.height");
+        assertEquals("180", statefulValue.asText());
+    }
+
+    @Test
+    public void paramNameLastLevelSubPropertyOfExistingProperty() {
+        JsonNode statefulValue = getParameterValue(dict, "GET", "/youtube/v3/comments", "made.up.1.items.snippet.made.up.2.liveBroadcastContent");
+        assertTrue(statefulValue.asText().equals("none") || statefulValue.asText().equals("live"));
+    }
+
+    @Test
+    public void paramNameSubPropertyOfNonExistingProperty() {
+        JsonNode statefulValue = getParameterValue(dict, "GET", "/youtube/v3/comments", "made.up.1.items.snippet.made.up.2.liveBroadcastContent.madeUpProperty");
+        assertNull(statefulValue);
+    }
 }

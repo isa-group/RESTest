@@ -23,6 +23,9 @@ jMetal.log
 /src/test/resources/auth/Sample/*
 !/src/test/resources/auth/Sample/apikeys.json
 !/src/test/resources/auth/Sample/headers.json
+!/src/test/resources/auth/Sample/oauth.json
+!/src/test/resources/auth/Sample/oauth_wrong.json
+!/src/test/resources/auth/Sample/oauth_short_expiration.json
 
 /idl_aux_files
 src/test/resources/file-manager/*

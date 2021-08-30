@@ -1,0 +1,10 @@
+{
+  "refresh_endpoint": "https://restest-tests-server.herokuapp.com/oauth/token",
+  "refresh_body": "{\"client_id\":\"bad_credentials\",\"client_secret\":\"fake_client_secret\",\"grant_type\":\"refresh_token\",\"refresh_token\":\"fake_refresh_token\"}",
+  "refresh_headers": {
+    "Content-Type": "application/json"
+  },
+  "expires_in_property": "expires_in",
+  "response_token_property": "access_token",
+  "oauth_header_format": "Bearer response_token_property"
+}
