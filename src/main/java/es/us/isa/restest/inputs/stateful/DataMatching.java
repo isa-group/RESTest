@@ -56,6 +56,10 @@ public class DataMatching {
                 paramValue = paramValues.get(ThreadLocalRandom.current().nextInt(paramValues.size()));
         }
 
+        // 5th option: Repeat whole process with sub-property name (e.g., "data.comment.id" -> "comment.id")
+        if (paramValue == null && paramName.contains("."))
+            paramValue = getParameterValue(dict, operationMethod, operationPath, paramName.substring(paramName.indexOf('.')+1));
+
         return paramValue;
     }
 
