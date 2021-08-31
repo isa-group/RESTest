@@ -1,0 +1,80 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: YouTube/oauth.json
+testConfiguration:
+  operations:
+  - testPath: /youtube/v3/commentThreads
+    operationId: youtube.commentThreads.insert
+    method: post
+    testParameters:
+    - name: part
+      in: query
+      weight: null
+      generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: minValues
+              values:
+                - 1
+            - name: values
+              values:
+                - id,snippet,replies
+                - id,replies,snippet
+                - replies,id,snippet
+                - snippet,id,replies
+                - snippet,replies,id
+                - replies,snippet,id
+                - id,snippet
+                - snippet,id
+                - replies,snippet
+                - snippet,replies
+                - snippet
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: ObjectPerturbator
+        genParameters:
+        - name: stringObject
+          values:
+          - '{"kind":"youtube#commentThread","etag":"1671pWZuClGdTiFx7ht7vKn9Bpg","id":"UgzoGkQ-AA-hB7ejca14AaABAg","snippet":{"channelId":"UCvosUrZ7hXpzAyobhfztg4w","videoId":"zZa8PFYtWr4","topLevelComment":{"kind":"youtube#comment","etag":"BZCd9Y6eDHuUFmIUgOR4_s587CI","id":"UgzoGkQ-AA-hB7ejca14AaABAg","snippet":{"channelId":"UCvosUrZ7hXpzAyobhfztg4w","videoId":"zZa8PFYtWr4","textDisplay":"Test","textOriginal":"Test","authorDisplayName":"Restest Benchmark","authorProfileImageUrl":"https://yt3.ggpht.com/ytc/AKedOLTdXqRQLAM6gLA9SXNQJmZsRvcrd9boR24bcw=s48-c-k-c0x00ffffff-no-rj","authorChannelUrl":"http://www.youtube.com/channel/UCpoXuzwI2hUbLoLpetM_1uA","authorChannelId":{"value":"UCpoXuzwI2hUbLoLpetM_1uA"},"canRate":true,"viewerRating":"none","likeCount":0,"publishedAt":"2021-08-31T18:53:34Z","updatedAt":"2021-08-31T18:53:34Z"}},"canReply":true,"totalReplyCount":0,"isPublic":true}}'
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /youtube/v3/comments
+    operationId: youtube.comments.insert
+    method: post
+    testParameters:
+    - name: part
+      in: query
+      weight: null
+      generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: minValues
+              values:
+                - 1
+            - name: values
+              values:
+                - id,snippet
+                - snippet,id
+                - snippet
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: ObjectPerturbator
+        genParameters:
+        - name: stringObject
+          values:
+          - '{"kind":"youtube#comment","etag":"xNTNTiFxisLO5rP8Zbl1PO-QYQM","id":"UgxjoQSDRyHwcWSWY414AaABAg.95dCHj2fr3t9RiDWWyGR90","snippet":{"textDisplay":"Test","textOriginal":"Test","parentId":"UgxjoQSDRyHwcWSWY414AaABAg","authorDisplayName":"Restest Benchmark","authorProfileImageUrl":"https://yt3.ggpht.com/ytc/AKedOLTdXqRQLAM6gLA9SXNQJmZsRvcrd9boR24bcw=s48-c-k-c0x00ffffff-no-rj","authorChannelUrl":"http://www.youtube.com/channel/UCpoXuzwI2hUbLoLpetM_1uA","authorChannelId":{"value":"UCpoXuzwI2hUbLoLpetM_1uA"},"canRate":true,"viewerRating":"none","likeCount":0,"publishedAt":"2021-08-31T16:29:27Z","updatedAt":"2021-08-31T16:29:27Z"}}'
+          objectValues: null
+        valid: true
+    expectedResponse: 200

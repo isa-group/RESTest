@@ -224,13 +224,18 @@ testConfiguration:
             - name: minValues
               values:
                 - 1
-            - name: maxValues
-              values:
-                - 3
             - name: values
               values:
-                - id
-                - replies
+                - id,snippet,replies
+                - id,replies,snippet
+                - replies,id,snippet
+                - snippet,id,replies
+                - snippet,replies,id
+                - replies,snippet,id
+                - id,snippet
+                - snippet,id
+                - replies,snippet
+                - snippet,replies
                 - snippet
     - name: body
       in: body
