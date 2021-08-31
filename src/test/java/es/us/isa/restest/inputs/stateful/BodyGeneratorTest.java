@@ -27,6 +27,32 @@ public class BodyGeneratorTest {
     }
 
     @Test
+    public void bodyGenerationDefaultValueTest() {
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite5.yaml");
+        String operationPath = "/comments/{id}";
+        Operation oasOperation = spec.getSpecification().getPaths().get(operationPath).getPut();
+        String dataDirPath = "src/test/resources/jsonData/nonExistingPath";
+
+        String defaultJson = "{\"id\":\"c1\",\"text\":\"Test\"}";
+        GenParameter defaultValue = new GenParameter();
+        defaultValue.setName("defaultValue");
+        defaultValue.setValues(Collections.singletonList(defaultJson));
+
+        generator.getGenParameters().add(defaultValue);
+
+        BodyGenerator gen = (BodyGenerator) TestDataGeneratorFactory.createTestDataGenerator(generator);
+        gen.setSpec(spec);
+        gen.setDataDirPath(dataDirPath);
+        gen.setOpenApiOperation(oasOperation);
+        gen.setOperation("GET", operationPath);
+
+        String value = gen.nextValueAsString(false);
+
+        assertNotNull("The generator could not generate a body parameter", value);
+        assertEquals(defaultJson, value);
+    }
+
+    @Test
     public void bodyGenerationTest() {
         OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite5.yaml");
         String operationPath = "/comments/{id}";
