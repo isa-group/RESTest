@@ -1,5 +1,6 @@
 package es.us.isa.restest.inputs.stateful;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -24,6 +25,7 @@ import java.util.*;
 
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFuzzingValue;
 import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
+import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static es.us.isa.restest.util.SchemaManager.resolveSchema;
 
 
@@ -52,6 +54,14 @@ public class BodyGenerator implements ITestDataGenerator {
     public JsonNode nextValue() {
         JsonNode body = null;
         String jsonPath = this.dataDirPath + "/stateful_data.json";
+
+        if (!checkIfExists(jsonPath)) {
+            try {
+                return objectMapper.readTree(defaultValue);
+            } catch (JsonProcessingException e) {
+                logger.warn("The defaultValue used for the body of {}{} is not a valid JSON", operationMethod, operationPath);
+            }
+        }
 
         ObjectNode dictNode = operationPath != null && FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
         MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
