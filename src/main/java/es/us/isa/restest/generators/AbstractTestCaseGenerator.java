@@ -340,7 +340,7 @@ public abstract class AbstractTestCaseGenerator {
 				} else {
 					s = nominalGenerators.get(Pair.with(bodyParam.getName(), bodyParam.getIn())).stream();
 				}
-				bodyGenerator = s.filter(x -> x instanceof BodyGenerator)
+				bodyGenerator = s.filter(x -> x instanceof BodyGenerator || x instanceof ObjectPerturbator)
 						.findFirst()
 						.orElse(null);
 
@@ -392,7 +392,10 @@ public abstract class AbstractTestCaseGenerator {
 			test = generateRandomValidTestCase(testOperation);
 			errors = new ArrayList<>();
 			for (int i = 0; i < maxTriesPerTestCase && errors.isEmpty(); i++) {
-				test.addParameter(bodyParam, ((BodyGenerator) bodyGenerator).nextValueAsString(true));
+				if (bodyGenerator instanceof BodyGenerator)
+					test.addParameter(bodyParam, ((BodyGenerator) bodyGenerator).nextValueAsString(true));
+				else if (bodyGenerator instanceof ObjectPerturbator)
+					test.addParameter(bodyParam, bodyGenerator.nextValueAsString());
 				errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
 			}
 			// No invalid body generated. Return null and try to generate faulty test case in different way
