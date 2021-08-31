@@ -983,6 +983,13 @@ paths:
           name: videoId
           schema:
             type: string
+      x-dependencies:
+        - OnlyOne(allThreadsRelatedToChannelId, channelId, id, videoId);
+        - ZeroOrOne(id, maxResults);
+        - ZeroOrOne(id, moderationStatus);
+        - ZeroOrOne(id, order);
+        - ZeroOrOne(id, pageToken);
+        - ZeroOrOne(id, searchTerms);
       responses:
         "200":
           content:
@@ -1098,7 +1105,7 @@ paths:
           schema:
             type: string
       responses:
-        "200":
+        "204":
           description: Successful response
         "400":
           description: "400"
@@ -1162,6 +1169,10 @@ paths:
               - html
               - plainText
             type: string
+      x-dependencies:
+        - OnlyOne(id, parentId);
+        - ZeroOrOne(id, maxResults);
+        - ZeroOrOne(id, pageToken);
       responses:
         "200":
           content:
@@ -1300,7 +1311,7 @@ paths:
             type: array
           style: form
       responses:
-        "200":
+        "204":
           description: Successful response
         "400":
           description: "400"
@@ -1358,6 +1369,8 @@ paths:
           name: banAuthor
           schema:
             type: boolean
+      x-dependencies:
+        - IF banAuthor THEN moderationStatus=='rejected';
       responses:
         "200":
           description: Successful response
