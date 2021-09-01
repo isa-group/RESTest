@@ -407,8 +407,8 @@ public abstract class AbstractTestCaseGenerator {
 
 	    if (test != null) {
 			test.setFaulty(true);
-			String errorsMsg = errors.stream().collect(Collectors.joining("\n", "- ", ""));
-			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ':' + " invalid request body\n" + errorsMsg);
+			String errorsMsg = String.join(" --- ", errors);
+			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ':' + " invalid request body: " + errorsMsg);
 		}
 
 	    return test;
