@@ -55,10 +55,10 @@ public class BodyGenerator implements ITestDataGenerator {
         JsonNode body = null;
         String jsonPath = this.dataDirPath + "/stateful_data.json";
 
-        if (!checkIfExists(jsonPath)) {
+        if (!checkIfExists(jsonPath) && defaultValue != null) {
             try {
                 return objectMapper.readTree(defaultValue);
-            } catch (JsonProcessingException e) {
+            } catch (Exception e) {
                 logger.warn("The defaultValue used for the body of {}{} is not a valid JSON", operationMethod, operationPath);
             }
         }
