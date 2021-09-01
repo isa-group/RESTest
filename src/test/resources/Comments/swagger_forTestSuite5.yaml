@@ -167,6 +167,28 @@ paths:
           description: comment deleted
         "404":
           description: not found
+  /diverse/body/data:
+    post:
+      operationId: postDiverseBodyData
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - in: body
+          name: data
+          description: data to add
+          required: true
+          schema:
+            $ref: '#/definitions/DiverseData'
+      responses:
+        "201":
+          description: data created
+          schema:
+            $ref: '#/definitions/DiverseData'
+        "400":
+          description: invalid input, object invalid
 definitions:
   CommentReturned:
     type: object
@@ -332,3 +354,35 @@ definitions:
       text: I love Spotify
       date: "2013-04-16T20:44:53.950"
       type: Review
+  DiverseData:
+    type: object
+    required:
+      - numberParam
+      - numberParam2
+      - enumParam
+      - booleanParam
+      - booleanParam2
+      - stringParam
+    properties:
+      numberParam:
+        type: number
+        example: 1
+      numberParam2:
+        type: number
+        example: 1
+      booleanParam:
+        type: boolean
+        example: false
+      booleanParam2:
+        type: boolean
+        example: false
+      stringParam:
+        type: string
+        example: I love Spotify
+      enumParam:
+        type: string
+        example: Review
+        enum:
+          - Review
+          - Request
+          - Complain

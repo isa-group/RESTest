@@ -33,5 +33,32 @@
     "updates.last_updated": [
       "2013-04-16T20:44:53.950"
     ]
-  }
+  },
+  "GET/diverse/body/data": {
+    "numberParam": [
+      1,
+      2
+    ],
+    "numberParam2": [
+      "stringExample"
+    ],
+    "booleanParam": [
+      true,
+      false
+    ],
+    "booleanParam2": [
+      null
+    ],
+    "enumParam": [
+      "Review",
+      "Request"
+    ],
+    "stringParam": [
+      "Example 1",
+      "Example 2",
+      1,
+      false,
+      null
+    ]
+}
 }
