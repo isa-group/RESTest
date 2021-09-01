@@ -44,11 +44,11 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
         if (response.getStatusCode() < 400) {
             File jsonFile = new File(this.specDirPath + '/' + "stateful_data.json");
             String body = response.getBody().asString();
-            Map<String, Map<String, List<String>>> allValues = new HashMap<>();
+            Map<String, Map<String, List<JsonNode>>> allValues = new HashMap<>();
 
             try {
                 if (jsonFile.exists())
-                    allValues = objectMapper.readValue(jsonFile, new TypeReference<Map<String, Map<String, List<String>>>>() {});
+                    allValues = objectMapper.readValue(jsonFile, new TypeReference<Map<String, Map<String, List<JsonNode>>>>() {});
                 allValues.putIfAbsent(operationMethod + operationPath, new HashMap<>());
                 JsonNode bodyNode = objectMapper.readTree(body);
                 addResponseBodyValues(allValues.get(operationMethod + operationPath), bodyNode, "");
@@ -60,7 +60,7 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
         return response;
     }
 
-    private void addResponseBodyValues(Map<String, List<String>> allValues, JsonNode bodyNode, String prefix) {
+    private void addResponseBodyValues(Map<String, List<JsonNode>> allValues, JsonNode bodyNode, String prefix) {
         if (bodyNode.isObject()) {
             for (Iterator<Map.Entry<String, JsonNode>> it = bodyNode.fields(); it.hasNext(); ) {
                 Map.Entry<String, JsonNode> entry = it.next();
@@ -71,10 +71,10 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
             for (Iterator<JsonNode> it = bodyNode.elements(); it.hasNext(); ) {
                 addResponseBodyValues(allValues, it.next(), prefix);
             }
-        } else if (bodyNode.isValueNode() && !bodyNode.isNull()) {
+        } else if (bodyNode.isValueNode()) {
             allValues.putIfAbsent(prefix, new ArrayList<>());
-            if (!allValues.get(prefix).contains(bodyNode.asText()))
-                allValues.get(prefix).add(bodyNode.asText());
+            if (!allValues.get(prefix).contains(bodyNode))
+                allValues.get(prefix).add(bodyNode);
         }
 
     }
