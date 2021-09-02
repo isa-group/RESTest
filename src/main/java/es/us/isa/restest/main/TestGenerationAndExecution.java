@@ -15,6 +15,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
+import io.restassured.RestAssured;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -55,6 +56,7 @@ public class TestGenerationAndExecution {
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 	private static boolean checkTestCases;								// If 'true', test cases will be checked with OASValidator before executing them
+	private static String proxy;										// Proxy to use for all requests in format host:port
 
 	// For Constraint-based testing and AR Testing:
 	private static Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
@@ -93,6 +95,10 @@ public class TestGenerationAndExecution {
 
 		// Create target directory if it does not exists
 		createDir(targetDirJava);
+
+		// Set proxy for REST-Assured globally (if specified)
+		if (proxy != null)
+			RestAssured.proxy(proxy.split(":")[0], Integer.parseInt(proxy.split(":")[1]));
 
 		// RESTest runner
 		AbstractTestCaseGenerator generator = createGenerator(); // Test case generator
@@ -202,6 +208,7 @@ public class TestGenerationAndExecution {
 		writer.setEnableStats(enableCSVStats);
 		writer.setEnableOutputCoverage(enableOutputCoverage);
 		writer.setAPIName(experimentName);
+		writer.setProxy(proxy);
 		return writer;
 	}
 
@@ -306,6 +313,13 @@ public class TestGenerationAndExecution {
 			executeTestCases = Boolean.parseBoolean(readParameterValue("experiment.execute"));
 		}
 		logger.info("Experiment execution: {}", executeTestCases);
+
+		if (readParameterValue("proxy") != null) {
+			proxy = readParameterValue("proxy");
+			if ("null".equals(proxy) || proxy.split(":").length != 2)
+				proxy = null;
+		}
+		logger.info("Proxy: {}", proxy);
 
 		if (readParameterValue("testcases.check") != null)
 			checkTestCases = Boolean.parseBoolean(readParameterValue("testcases.check"));

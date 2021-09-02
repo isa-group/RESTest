@@ -42,6 +42,7 @@ public class RESTAssuredWriter implements IWriter {
 	private String baseURI;							// API base URI
 	private boolean logToFile;						// If 'true', REST-Assured requests and responses will be logged into external files
 	private boolean statefulFilter;					// If 'true', stateful filter will be used in written classes
+	private String proxy;							// Proxy to use for all requests in format host:port
 
 	private String APIName;							// API name (necessary for folder name of exported data)
 
@@ -197,6 +198,9 @@ public class RESTAssuredWriter implements IWriter {
 		content += "\t@BeforeClass\n "
 				+  "\tpublic static void setUp() {\n"
 			  	+  "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n";
+
+		if (proxy != null)
+			content += "\t\tRestAssured.proxy(\"" + proxy.split(":")[0] + "\", " + proxy.split(":")[1] + ");\n";
 
 		if (logToFile) {
 			content +=  "\t\tSystem.setProperty(\"logFilename\", \"" + System.getProperty("logFilename") + "\");"
@@ -630,5 +634,13 @@ public class RESTAssuredWriter implements IWriter {
 
 	public void setStatefulFilter(boolean statefulFilter) {
 		this.statefulFilter = statefulFilter;
+	}
+
+	public String getProxy() {
+		return proxy;
+	}
+
+	public void setProxy(String proxy) {
+		this.proxy = proxy;
 	}
 }
