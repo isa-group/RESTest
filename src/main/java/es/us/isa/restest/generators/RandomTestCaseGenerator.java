@@ -70,7 +70,11 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			return test;
 
 		// If no more faulty test cases need to be generated, or one could not be generated, generate one nominal
-		return generateRandomValidTestCase(testOperation);
+		test = generateRandomValidTestCase(testOperation);
+
+		checkTestCaseValidity(test);
+
+		return test;
 	}
 
 	// Returns true if there are more test cases to be generated

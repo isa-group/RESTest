@@ -148,7 +148,8 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		// If a faulty test case has not been created. Generate a valid test case.
 		if (test==null)
 			test = generateNextTestCase(testOperation, "none");
-		
+
+		checkTestCaseValidity(test);
 		
 		return test;
 	}
