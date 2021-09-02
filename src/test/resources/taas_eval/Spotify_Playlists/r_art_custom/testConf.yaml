@@ -1,0 +1,418 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: Spotify/oauth.json
+testConfiguration:
+  operations:
+  - testPath: /me/playlists
+    operationId: endpoint-get-a-list-of-current-users-playlists
+    method: get
+    testParameters:
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 0
+          objectValues: null
+        - name: max
+          values:
+          - 100000
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/users/{user_id}/playlists"
+    operationId: endpoint-get-list-users-playlists
+    method: get
+    testParameters:
+    - name: user_id
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - 89ikd1hi2obqc1215948c8zur
+              - w8eoywmz38piz7odr0p5vacm5
+              - 21mt7ei55r7dwir437l2lbscy
+              - johnsinclair.
+              - rianz
+              - zerillogabi1
+              - 21gq35t44zv6khfllghc6hgqy
+              - murguiamiguel760
+              - 21xvlnwtvj3is5tmpppb63gza
+              - daleyhotsince82
+              - 1159753860
+              - carmen_spears
+              - spotify
+              - 12136548177
+              - 12151438562
+              - mrzoginator
+              - kendallxw
+              - bparekh11
+              - chancetraveler
+              - johanna303
+              - magicmusicsquad
+              - 12123529279
+              - digster.fm
+              - 8yhynfnghyzf3octfdf72ky1o
+              - zrmvpumzim6u764wsic7327h0
+              - vitorinha_cv
+              - reddishishfungi
+              - 1125918443
+              - t4xfdywhdh6bq08wn9ul18u34
+              - 21rfndzbuzkxnrxezzz7pm5vq
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 0
+          objectValues: null
+        - name: max
+          values:
+          - 100000
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}"
+    operationId: endpoint-get-playlist
+    method: get
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - 6JEVn8BbeAx10MwLw25tfo
+              - 57VxVfRdjpE679MXQknJhd
+              - 4mHPdDULXhO3gjSR2HMWGC
+              - 3BHz7PZN4UzyinNaFTAf7s
+              - 3lBqBc4gEUcWpsfM5Ke8aF
+              - 6SRRfYYyLVVdR4PtLaT95C
+              - 2sjJqRpmXNQIvek2T1Y2I7
+              - 4bU60HuoT5lRP6VstCN2Ca
+              - 7ckIGzR8CNeajEMDhQWlaw
+              - 6IyNrD5Dz1EfHPgYlBJjMG
+              - 5qyJFBhQMb5CApHSvb3jkL
+              - 46FKhIbJilIMBJbHYYngRI
+              - 37i9dQZF1DWTn1j9Cerv04
+              - 1X2GFZqLltXZUxHSWD90ja
+              - 40A9WQGYiGoXNUJ1JihXGp
+              - 7C67FBDKjeYrnzyRNrYdiV
+              - 4P7aiEfy8dPMCTEXVMIsbr
+              - 67GFDMyMlwrcgmCTmmpfY0
+              - 342oV5o8Gs24ufp0ddKax6
+              - 781Dn7BBwDDZzn5mw8daXD
+              - 5Y9eVQ3u5rBAfL61OmsvDZ
+              - 7s3l2wSfDgkrEkcKiEvr1p
+              - 68q3IjJ17gHA7r9NdijiUU
+              - 7lzVJanQiGrZsbgZanA2pX
+              - 0eYsKHzhO3fArvXmvtfjZc
+              - 5eCbKLRmp5mCgE3jKIXeng
+              - 3kwCSKAns1yD7ONKMDFggG
+              - 6Tg7DMwJFWxZMAUfDtUvvP
+              - 7uMdoeI19L3THgHFVNV1Yt
+        valid: true
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - ES
+          - US
+          - FR
+          - DE
+          - FI
+          - PT
+          - JP
+          - IT
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - collaborative
+          - description
+          - external_urls
+          - followers
+          - href
+          - id
+          - images
+          - name
+          - owner
+          - public
+          - snapshot_id
+          - tracks
+          - type
+          - uri
+        - name: minValues
+          values:
+          - 1
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: additional_types
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - track
+              - episode
+          - name: maxValues
+            values:
+              - 2
+        valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}/tracks"
+    operationId: endpoint-get-playlists-tracks
+    method: get
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - 6JEVn8BbeAx10MwLw25tfo
+                - 57VxVfRdjpE679MXQknJhd
+                - 4mHPdDULXhO3gjSR2HMWGC
+                - 3BHz7PZN4UzyinNaFTAf7s
+                - 3lBqBc4gEUcWpsfM5Ke8aF
+                - 6SRRfYYyLVVdR4PtLaT95C
+                - 2sjJqRpmXNQIvek2T1Y2I7
+                - 4bU60HuoT5lRP6VstCN2Ca
+                - 7ckIGzR8CNeajEMDhQWlaw
+                - 6IyNrD5Dz1EfHPgYlBJjMG
+                - 5qyJFBhQMb5CApHSvb3jkL
+                - 46FKhIbJilIMBJbHYYngRI
+                - 37i9dQZF1DWTn1j9Cerv04
+                - 1X2GFZqLltXZUxHSWD90ja
+                - 40A9WQGYiGoXNUJ1JihXGp
+                - 7C67FBDKjeYrnzyRNrYdiV
+                - 4P7aiEfy8dPMCTEXVMIsbr
+                - 67GFDMyMlwrcgmCTmmpfY0
+                - 342oV5o8Gs24ufp0ddKax6
+                - 781Dn7BBwDDZzn5mw8daXD
+                - 5Y9eVQ3u5rBAfL61OmsvDZ
+                - 7s3l2wSfDgkrEkcKiEvr1p
+                - 68q3IjJ17gHA7r9NdijiUU
+                - 7lzVJanQiGrZsbgZanA2pX
+                - 0eYsKHzhO3fArvXmvtfjZc
+                - 5eCbKLRmp5mCgE3jKIXeng
+                - 3kwCSKAns1yD7ONKMDFggG
+                - 6Tg7DMwJFWxZMAUfDtUvvP
+                - 7uMdoeI19L3THgHFVNV1Yt
+          valid: true
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - ES
+                - US
+                - FR
+                - DE
+                - FI
+                - PT
+                - JP
+                - IT
+              objectValues: null
+          valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - href
+                - items
+                - limit
+                - next
+                - offset
+                - previous
+            - name: minValues
+              values:
+                - 1
+            - name: maxValues
+              values:
+                - 3
+              objectValues: null
+          valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100000
+          objectValues: null
+        valid: true
+    - name: additional_types
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - track
+                - episode
+            - name: maxValues
+              values:
+                - 2
+          valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}/images"
+    operationId: endpoint-get-playlist-cover
+    method: get
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - 6JEVn8BbeAx10MwLw25tfo
+                - 57VxVfRdjpE679MXQknJhd
+                - 4mHPdDULXhO3gjSR2HMWGC
+                - 3BHz7PZN4UzyinNaFTAf7s
+                - 3lBqBc4gEUcWpsfM5Ke8aF
+                - 6SRRfYYyLVVdR4PtLaT95C
+                - 2sjJqRpmXNQIvek2T1Y2I7
+                - 4bU60HuoT5lRP6VstCN2Ca
+                - 7ckIGzR8CNeajEMDhQWlaw
+                - 6IyNrD5Dz1EfHPgYlBJjMG
+                - 5qyJFBhQMb5CApHSvb3jkL
+                - 46FKhIbJilIMBJbHYYngRI
+                - 37i9dQZF1DWTn1j9Cerv04
+                - 1X2GFZqLltXZUxHSWD90ja
+                - 40A9WQGYiGoXNUJ1JihXGp
+                - 7C67FBDKjeYrnzyRNrYdiV
+                - 4P7aiEfy8dPMCTEXVMIsbr
+                - 67GFDMyMlwrcgmCTmmpfY0
+                - 342oV5o8Gs24ufp0ddKax6
+                - 781Dn7BBwDDZzn5mw8daXD
+                - 5Y9eVQ3u5rBAfL61OmsvDZ
+                - 7s3l2wSfDgkrEkcKiEvr1p
+                - 68q3IjJ17gHA7r9NdijiUU
+                - 7lzVJanQiGrZsbgZanA2pX
+                - 0eYsKHzhO3fArvXmvtfjZc
+                - 5eCbKLRmp5mCgE3jKIXeng
+                - 3kwCSKAns1yD7ONKMDFggG
+                - 6Tg7DMwJFWxZMAUfDtUvvP
+                - 7uMdoeI19L3THgHFVNV1Yt
+          valid: true
+    expectedResponse: 200
