@@ -233,11 +233,11 @@ public class TestCase implements Serializable {
 	}
 	
 	public void addPathParameter(String name, String value) {
-		pathParameters.put(name, value);
+		pathParameters.put(name, processPathParameter(value));
 	}
 
 	public void addPathParameters(Map<String,String> params) {
-		pathParameters.putAll(params);
+		pathParameters.putAll(processPathParameters(params));
 	}
 
 	public void addHeaderParameter(String name, String value) {
@@ -279,7 +279,7 @@ public class TestCase implements Serializable {
 	}
 
 	public void setPathParameters(Map<String, String> pathParameters) {
-		this.pathParameters = pathParameters;
+		this.pathParameters = processPathParameters(pathParameters);
 	}
 
 	public String getBodyParameter() {
@@ -333,6 +333,20 @@ public class TestCase implements Serializable {
 	private void setFormDataContentType() {
 		if (!inputFormat.equals("application/x-www-form-urlencoded") && formParameters.size() > 0)
 			inputFormat = "application/x-www-form-urlencoded";
+	}
+
+	private Map<String, String> processPathParameters(Map<String, String> pathParameters) {
+		pathParameters.forEach((k, v) -> v = processPathParameter(v));
+		return pathParameters;
+	}
+
+	/**
+	 * 	WARNING: Empty parameters cannot be used in path. If this happens, replace by "null"
+	 */
+	private String processPathParameter(String pathParamValue) {
+		if ("".equals(pathParamValue))
+			return "null";
+		return pathParamValue;
 	}
 
 	public String getFlatRepresentation() {
