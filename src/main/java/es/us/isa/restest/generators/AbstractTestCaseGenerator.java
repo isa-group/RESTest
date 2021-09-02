@@ -400,7 +400,7 @@ public abstract class AbstractTestCaseGenerator {
 			}
 			// No invalid body generated. Return null and try to generate faulty test case in different way
 			if (errors.isEmpty()) {
-				logger.error("Maximum number of tries reached when trying to generate invalid JSON body for the operation {}", testOperation.getOpenApiOperation().getOperationId());
+				logger.warn("Maximum number of tries reached when trying to generate invalid JSON body for the operation {}", testOperation.getOpenApiOperation().getOperationId());
 				test = null;
 			}
 		}
@@ -430,7 +430,7 @@ public abstract class AbstractTestCaseGenerator {
 				// No valid perturbations generated. Set original object
 				if (!valid) {
 					test.addParameter(confParam, ((ObjectPerturbator) generator).getRandomOriginalStringObject());
-					logger.error("Maximum number of tries reached when trying to perturbate the input object for the operation {}", testOperation.getOpenApiOperation().getOperationId());
+					logger.warn("Maximum number of tries reached when trying to perturbate the input object for the operation {}", testOperation.getOpenApiOperation().getOperationId());
 				}
 			}
 		}
