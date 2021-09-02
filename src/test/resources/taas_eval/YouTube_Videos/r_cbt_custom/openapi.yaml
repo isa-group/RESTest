@@ -3208,8 +3208,8 @@ paths:
         - IF videoLicense THEN type=='video';
         - IF videoSyndicated THEN type=='video';
         - IF videoType THEN type=='video';
-        - IF channelType THEN type=='channel'; # Unspecified dependency
-        - IF location THEN type=='video'; # Unspecified dependency
+#        - IF channelType THEN type=='channel'; # Unspecified dependency
+#        - IF location THEN type=='video'; # Unspecified dependency
       responses:
         "200":
           content:
@@ -3242,18 +3242,18 @@ paths:
             - https://www.googleapis.com/auth/youtubepartner
       tags:
         - search
-#    parameters:
-#      - $ref: "#/components/parameters/_.xgafv"
-#      - $ref: "#/components/parameters/access_token"
-#      - $ref: "#/components/parameters/alt"
-#      - $ref: "#/components/parameters/callback"
-#      - $ref: "#/components/parameters/fields"
-#      - $ref: "#/components/parameters/key"
-#      - $ref: "#/components/parameters/oauth_token"
-#      - $ref: "#/components/parameters/prettyPrint"
-#      - $ref: "#/components/parameters/quotaUser"
-#      - $ref: "#/components/parameters/upload_protocol"
-#      - $ref: "#/components/parameters/uploadType"
+    parameters:
+      - $ref: "#/components/parameters/_.xgafv"
+      - $ref: "#/components/parameters/access_token"
+      - $ref: "#/components/parameters/alt"
+      - $ref: "#/components/parameters/callback"
+      - $ref: "#/components/parameters/fields"
+      - $ref: "#/components/parameters/key"
+      - $ref: "#/components/parameters/oauth_token"
+      - $ref: "#/components/parameters/prettyPrint"
+      - $ref: "#/components/parameters/quotaUser"
+      - $ref: "#/components/parameters/upload_protocol"
+      - $ref: "#/components/parameters/uploadType"
   /youtube/v3/subscriptions:
     delete:
       description: Deletes a resource.
@@ -3988,6 +3988,12 @@ paths:
           name: videoCategoryId
           schema:
             type: string
+      x-dependencies:
+        - OnlyOne(chart, id, myRating);
+        - ZeroOrOne(maxResults, id);
+        - ZeroOrOne(pageToken, id);
+        - IF regionCode THEN chart;
+        - IF videoCategoryId THEN chart;
       responses:
         "200":
           content:
@@ -3995,6 +4001,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/VideoListResponse"
           description: Successful response
+        "400":
+          description: "400"
+        "403":
+          description: "403"
+        "404":
+          description: "404"
       security:
         - Oauth2:
             - https://www.googleapis.com/auth/youtube
@@ -4014,18 +4026,18 @@ paths:
             - https://www.googleapis.com/auth/youtubepartner
       tags:
         - videos
-    parameters:
-      - $ref: "#/components/parameters/_.xgafv"
-      - $ref: "#/components/parameters/access_token"
-      - $ref: "#/components/parameters/alt"
-      - $ref: "#/components/parameters/callback"
-      - $ref: "#/components/parameters/fields"
-      - $ref: "#/components/parameters/key"
-      - $ref: "#/components/parameters/oauth_token"
-      - $ref: "#/components/parameters/prettyPrint"
-      - $ref: "#/components/parameters/quotaUser"
-      - $ref: "#/components/parameters/upload_protocol"
-      - $ref: "#/components/parameters/uploadType"
+#    parameters:
+#      - $ref: "#/components/parameters/_.xgafv"
+#      - $ref: "#/components/parameters/access_token"
+#      - $ref: "#/components/parameters/alt"
+#      - $ref: "#/components/parameters/callback"
+#      - $ref: "#/components/parameters/fields"
+#      - $ref: "#/components/parameters/key"
+#      - $ref: "#/components/parameters/oauth_token"
+#      - $ref: "#/components/parameters/prettyPrint"
+#      - $ref: "#/components/parameters/quotaUser"
+#      - $ref: "#/components/parameters/upload_protocol"
+#      - $ref: "#/components/parameters/uploadType"
     post:
       description: Inserts a new resource into this collection.
       operationId: youtube.videos.insert
