@@ -221,7 +221,10 @@ public abstract class AbstractTestCaseGenerator {
 	/* Generate test cases for testOperation */
 	protected abstract Collection<TestCase> generateOperationTestCases(Operation testOperation) throws RESTestException;
 
-	// Generate the next test case and update the generation index. To be implemented on each subclass.
+	/**
+	 * Generate the next test case and update the generation index. To be implemented on each subclass.
+	 * This method MUST call the {@link #checkTestCaseValidity(TestCase)} method before returning the test case.
+	 */
 	public abstract TestCase generateNextTestCase(Operation testOperation) throws RESTestException;
 
 	/* Generate test cases for the operation defined by path/method */
@@ -268,21 +271,25 @@ public abstract class AbstractTestCaseGenerator {
 			}
 		}
 
-		// Make sure the test case generated conforms to the specification. Otherwise, throw an exception and stop the execution
-		// There's an exception: if stateful generators are configured, we cannot assure that the test case will be valid,
-		// therefore we omit this
-		if (checkTestCases && !hasStatefulGenerators) {
-			List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
-			if (!errors.isEmpty()) {
-				throw new RESTestException("The test case generated does not conform to the specification: " + errors);
-			}
-		}
-
 		// If a perturbation generator is included in the test configuration file, try to generate a new (valid) test case by perturbating a valid input object
 		if (perturbation)
 			perturbate(test, testOperation);
 
 		return test;
+	}
+
+	/**
+	 * Make sure the test case generated conforms to the specification. Otherwise, throw an exception and stop the execution
+	 * There's an exception: if stateful generators are configured, we cannot assure that the test case will be valid,
+	 * therefore we omit this
+	 */
+	protected void checkTestCaseValidity(TestCase test) throws RESTestException {
+		if (!test.getFaulty() && checkTestCases && !hasStatefulGenerators) {
+			List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
+			if (!errors.isEmpty()) {
+				throw new RESTestException("The test case generated does not conform to the specification: " + errors);
+			}
+		}
 	}
 
 	/**
