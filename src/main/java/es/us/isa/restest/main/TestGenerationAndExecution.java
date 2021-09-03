@@ -16,11 +16,13 @@ import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
 import io.restassured.RestAssured;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -432,6 +434,11 @@ public class TestGenerationAndExecution {
 	public static String getExperimentName(){ return experimentName; }
 
 	private static void setUpLogger() {
+		// Attach stdout and stderr to logger
+		System.setOut(new PrintStream(new LoggerStream(LogManager.getLogger("stdout"), Level.INFO, System.out)));
+		System.setErr(new PrintStream(new LoggerStream(LogManager.getLogger("stderr"), Level.ERROR, System.err)));
+
+		// Configure regular logger
 		String logPath = readParameterValue("log.path");
 
 		System.setProperty("logFilename", logPath);
