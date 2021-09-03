@@ -84,6 +84,7 @@ public class TestGenerationAndExecution {
 
 		// ONLY FOR LOCAL COPY OF DBPEDIA
 		System.setProperty("http.maxConnections", "100000");
+		// TODO: If specified, set proxy for DBpedia
 
 		Timer.startCounting(ALL);
 
