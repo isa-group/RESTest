@@ -58,14 +58,16 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
         resetOperation();
 
         // Set up generators for each parameter
-        for (TestParameter testParam: testOperation.getTestParameters()) {
-            if (!testParam.getIn().equals("body")) {
-                ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
-                List<String> fuzzingList = getFuzzingValues(param.getType());
-                if (param.getEnumValues() != null)
-                    fuzzingList.addAll(param.getEnumValues());
-                ITestDataGenerator generator = new RandomInputValueIterator<>(fuzzingList);
-                nominalGenerators.replace(Pair.with(testParam.getName(), testParam.getIn()), Arrays.asList(generator, commonFuzzingGenerator));
+        if (testOperation.getTestParameters() != null) {
+            for (TestParameter testParam : testOperation.getTestParameters()) {
+                if (!testParam.getIn().equals("body")) {
+                    ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
+                    List<String> fuzzingList = getFuzzingValues(param.getType());
+                    if (param.getEnumValues() != null)
+                        fuzzingList.addAll(param.getEnumValues());
+                    ITestDataGenerator generator = new RandomInputValueIterator<>(fuzzingList);
+                    nominalGenerators.replace(Pair.with(testParam.getName(), testParam.getIn()), Arrays.asList(generator, commonFuzzingGenerator));
+                }
             }
         }
 
