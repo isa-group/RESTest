@@ -32,6 +32,21 @@ testConfiguration:
           values:
           - tt(([0-1][0-9])|(2[0-3]))\d\d\d\d\d
           objectValues: null
+      - type: RandomString
+        genParameters:
+          - name: minLength
+            values:
+              - 10
+          - name: maxLength
+            values:
+              - 20
+          - name: includeNumbers
+            values:
+              - true
+          - name: includeSpecialCharacters
+            values:
+              - true
+        valid: false
     - name: s
       in: query
       weight: 0.5
@@ -81,6 +96,36 @@ testConfiguration:
           values:
           - 2021
           objectValues: null
+      - valid: false
+        type: RandomNumber
+        genParameters:
+          - name: type
+            values:
+              - integer
+            objectValues: null
+          - name: min
+            values:
+              - 2022
+            objectValues: null
+          - name: max
+            values:
+              - 2100
+            objectValues: null
+      - valid: false
+        type: RandomNumber
+        genParameters:
+          - name: type
+            values:
+              - integer
+            objectValues: null
+          - name: min
+            values:
+              - -100
+            objectValues: null
+          - name: max
+            values:
+              - 0
+            objectValues: null
     - name: type
       in: query
       weight: 0.5

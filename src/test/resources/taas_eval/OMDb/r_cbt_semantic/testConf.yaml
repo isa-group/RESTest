@@ -14,13 +14,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - valid: true
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
+        - type: SemanticParameter
+          genParameters: []
+          valid: true
     - name: i
       in: query
       weight: 0.5
@@ -36,13 +32,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - valid: true
-        type: RandomEnglishWord
-        genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
+        - type: SemanticParameter
+          genParameters: []
+          valid: true
     - name: page
       in: query
       weight: 0.5

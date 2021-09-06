@@ -15,22 +15,22 @@ testConfiguration:
       weight: 0.5
       generators:
       - valid: true
-        type: RandomEnglishWord
+        type: ParameterGenerator
         genParameters:
-        - name: maxWords
+        - name: altParamName
           values:
-          - 1
+          - Search.Title
           objectValues: null
     - name: i
       in: query
       weight: 0.5
       generators:
       - valid: true
-        type: RandomRegExp
+        type: ParameterGenerator
         genParameters:
-        - name: regExp
+        - name: altParamName
           values:
-          - tt(([0-1][0-9])|(2[0-3]))\d\d\d\d\d
+          - Search.imdbID
           objectValues: null
     - name: s
       in: query
