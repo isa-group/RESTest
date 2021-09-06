@@ -1,0 +1,641 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Stripe/headers.json
+testConfiguration:
+  operations:
+    - testPath: /v1/products
+      operationId: GetProducts
+      method: get
+      testParameters:
+        - name: active
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: created
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - 1627696669
+              valid: true
+        - name: created[gt]
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - 1627696669
+                - name: altParamName
+                  values:
+                    - created
+                  objectValues: null
+              valid: true
+        - name: created[gte]
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - 1627696669
+                - name: altParamName
+                  values:
+                    - created
+                  objectValues: null
+              valid: true
+        - name: created[lt]
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - 1627696669
+                - name: altParamName
+                  values:
+                    - created
+                  objectValues: null
+              valid: true
+        - name: created[lte]
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - 1627696669
+                - name: altParamName
+                  values:
+                    - created
+                  objectValues: null
+              valid: true
+        - name: ending_before
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - prod_JwBB8MfcLOxJEp
+                - name: altParamName
+                  values:
+                    - data.id
+                  objectValues: null
+              valid: true
+        - name: expand[]
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - data
+                  objectValues: null
+              valid: true
+        - name: ids[]
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - prod_JwBB8MfcLOxJEp
+                - name: altParamName
+                  values:
+                    - data.id
+                  objectValues: null
+              valid: true
+        - name: limit
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: shippable
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: starting_after
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - prod_JwBB8MfcLOxJEp
+                - name: altParamName
+                  values:
+                    - data.id
+                  objectValues: null
+              valid: true
+        - name: url
+          in: query
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - www.example.com
+      expectedResponse: 200
+    - testPath: /v1/products
+      operationId: PostProducts
+      method: post
+      testParameters:
+        - name: active
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: description
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: "expand[]"
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - tax_code
+                    - package_dimensions
+                  objectValues: null
+              valid: true
+        - name: id
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomString
+              genParameters:
+                - name: minLength
+                  values:
+                    - 10
+                - name: maxLength
+                  values:
+                    - 20
+                - name: includeNumbers
+                  values:
+                    - true
+              valid: true
+        - name: "images[]"
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: name
+          in: formData
+          weight: null
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: "package_dimensions[height]"
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: "package_dimensions[length]"
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: "package_dimensions[weight]"
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: "package_dimensions[width]"
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: shippable
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: statement_descriptor
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: tax_code
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/test/resources/taas_eval/Stripe_Products/tax_codes.csv
+                  objectValues: null
+              valid: true
+        - name: unit_label
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomString
+              genParameters:
+                - name: minLength
+                  values:
+                    - 1
+                - name: maxLength
+                  values:
+                    - 12
+                - name: includeNumbers
+                  values:
+                    - true
+              valid: true
+        - name: url
+          in: formData
+          weight: 0.5
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - www.example.com
+      expectedResponse: 200
+    - testPath: "/v1/products/{id}"
+      operationId: GetProductsId
+      method: get
+      testParameters:
+        - name: "expand[]"
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - tax_code
+                    - package_dimensions
+                  objectValues: null
+              valid: true
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: ParameterGenerator
+              genParameters:
+                - name: defaultValue
+                  values:
+                    - prod_JwBB8MfcLOxJEp
+                - name: altParamName
+                  values:
+                    - data.id
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/products/{id}"
+      operationId: PostProductsId
+      method: post
+      testParameters:
+      - name: id
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters:
+              - name: defaultValue
+                values:
+                  - prod_JwBB8MfcLOxJEp
+              - name: altParamName
+                values:
+                  - data.id
+                objectValues: null
+            valid: true
+      - name: active
+        in: formData
+        weight: 0.5
+        generators:
+        - type: RandomBoolean
+          genParameters: []
+          valid: true
+      - name: description
+        in: formData
+        weight: 0.5
+        generators:
+        - type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+          valid: true
+      - name: "expand[]"
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - tax_code
+                  - package_dimensions
+                objectValues: null
+            valid: true
+      - name: "images[]"
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+            valid: true
+#      - name: metadata
+#        in: formData
+#        weight: 0
+#        generators:
+#        - type: RandomInputValue
+#          genParameters:
+#          - name: values
+#            values:
+#            - value 1
+#            - value 2
+#            objectValues: null
+#          valid: true
+      - name: name
+        in: formData
+        weight: 0.5
+        generators:
+        - type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+          valid: true
+      - name: "package_dimensions[height]"
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+            valid: true
+      - name: "package_dimensions[length]"
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+            valid: true
+      - name: "package_dimensions[weight]"
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+            valid: true
+      - name: "package_dimensions[width]"
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+            valid: true
+      - name: shippable
+        in: formData
+        weight: 0.5
+        generators:
+        - type: RandomBoolean
+          genParameters: []
+          valid: true
+      - name: statement_descriptor
+        in: formData
+        weight: 0.5
+        generators:
+        - type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+          valid: true
+      - name: tax_code
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - src/test/resources/taas_eval/Stripe_Products/tax_codes.csv
+                objectValues: null
+            valid: true
+      - name: unit_label
+        in: formData
+        weight: 0.5
+        generators:
+          - type: RandomString
+            genParameters:
+              - name: minLength
+                values:
+                  - 1
+              - name: maxLength
+                values:
+                  - 12
+              - name: includeNumbers
+                values:
+                  - true
+            valid: true
+      - name: url
+        in: formData
+        weight: 0.5
+        generators:
+          - type: ParameterGenerator
+            genParameters:
+              - name: defaultValue
+                values:
+                  - www.example.com
+      expectedResponse: 200
+    - testPath: "/v1/products/{id}"
+      operationId: DeleteProductsId
+      method: delete
+      testParameters:
+      - name: id
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters:
+              - name: defaultValue
+                values:
+                  - prod_JwBB8MfcLOxJEp
+              - name: altParamName
+                values:
+                  - data.id
+                objectValues: null
+            valid: true
+      expectedResponse: 200
