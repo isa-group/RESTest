@@ -21,8 +21,8 @@
 		]
 	},
 	{
-		"name": "SEVERITY 2: Status 400 with valid request",
-		"messageRegex": "This test case's input was correct.*",
+		"name": "WARNING: Status 400 with (possibly) valid request",
+		"messageRegex": "This test case's input was \\(possibly\\) correct.*",
 		"matchedStatuses": [
 			"failed"
 		]
