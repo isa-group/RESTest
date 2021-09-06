@@ -132,12 +132,16 @@ public class RESTAssuredWriter implements IWriter {
 			content += 	"import es.us.isa.restest.testcases.restassured.filters.CSVFilter;\n";
 
 		if (logToFile) {
-			content +=  "import org.apache.logging.log4j.LogManager;\n"
+			content +=	"import java.io.PrintStream;\n"
+					+	"import org.apache.logging.log4j.LogManager;\n"
 					+   "import org.apache.logging.log4j.Logger;\n"
+					+ 	"import org.apache.logging.log4j.Level;\n"
 					+   "import org.apache.logging.log4j.io.IoBuilder;\n"
+					+	"import org.apache.logging.log4j.core.LoggerContext;\n"
 					+   "import io.restassured.filter.log.RequestLoggingFilter;\n"
 					+   "import io.restassured.filter.log.ResponseLoggingFilter;\n"
-					+   "import java.io.PrintStream;\n";
+					+	"import es.us.isa.restest.util.LoggerStream;\n";
+
 		}
 
 //		if (statefulFilter) {
@@ -170,7 +174,7 @@ public class RESTAssuredWriter implements IWriter {
 		if (logToFile) {
 			content +=  "\tprivate static RequestLoggingFilter requestLoggingFilter;\n"
 					+   "\tprivate static ResponseLoggingFilter responseLoggingFilter;\n"
-					+   "\tprivate static Logger logger;\n";
+					+   "\tprivate static Logger logger = LogManager.getLogger(" + className + ".class.getName());\n";
 		}
 
 
@@ -197,17 +201,22 @@ public class RESTAssuredWriter implements IWriter {
 
 		content += "\t@BeforeClass\n "
 				+  "\tpublic static void setUp() {\n"
-			  	+  "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n";
+			  	+  "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n\n";
 
 		if (proxy != null)
-			content += "\t\tRestAssured.proxy(\"" + proxy.split(":")[0] + "\", " + proxy.split(":")[1] + ");\n";
+			content += "\t\tRestAssured.proxy(\"" + proxy.split(":")[0] + "\", " + proxy.split(":")[1] + ");\n\n";
 
 		if (logToFile) {
-			content +=  "\t\tSystem.setProperty(\"logFilename\", \"" + System.getProperty("logFilename") + "\");"
+			content +=	"\t\t// Configure logging\n"
+					+	"\t\tSystem.setProperty(\"logFilename\", \"" + System.getProperty("logFilename") + "\");\n"
 					+   "\t\tlogger = LogManager.getLogger(" + className + ".class.getName());\n"
 					+   "\t\tPrintStream logStream = IoBuilder.forLogger(logger).buildPrintStream();\n"
 					+   "\t\trequestLoggingFilter = RequestLoggingFilter.logRequestTo(logStream);\n"
-					+   "\t\tresponseLoggingFilter = new ResponseLoggingFilter(logStream);\n";
+					+   "\t\tresponseLoggingFilter = new ResponseLoggingFilter(logStream);\n"
+					+	"\t\tLoggerContext ctx = (LoggerContext) LogManager.getContext(false);\n"
+					+	"\t\tFile file = new File(\"src/main/resources/log4j2-logToFile.properties\");\n"
+					+	"\t\tctx.setConfigLocation(file.toURI());\n"
+					+	"\t\tctx.reconfigure();\n\n";
 		}
 
 		if (enableStats || enableOutputCoverage) {
@@ -328,7 +337,7 @@ public class RESTAssuredWriter implements IWriter {
 			
 //		if (logging)
 //			content +="\t\t\t\t.log().ifValidationFails()\n";
-		if (logging)
+		if (logging && !logToFile)
 			content +="\t\t\t\t.log().all()\n";
 
 		return content;
@@ -433,9 +442,8 @@ public class RESTAssuredWriter implements IWriter {
 
 		content += "\n\t\t\tresponse.then()";
 
-		if (logging) {
+		if (logging && !logToFile)
 			content += ".log().all()";
-		}
 
 		content += ";\n";
 
