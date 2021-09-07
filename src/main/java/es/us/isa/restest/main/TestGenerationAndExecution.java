@@ -23,6 +23,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +39,8 @@ public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
 	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
+
+	private static List<String> argsList;								// List containing args
 	
 	private static Integer numTestCases; 								// Number of test cases per operation
 	private static String OAISpecPath; 									// Path to OAS specification file
@@ -81,6 +84,8 @@ public class TestGenerationAndExecution {
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
 	public static void main(String[] args) throws RESTestException {
+
+		argsList = Arrays.asList(args);
 
 		// ONLY FOR LOCAL COPY OF DBPEDIA
 		System.setProperty("http.maxConnections", "100000");
@@ -414,12 +419,16 @@ public class TestGenerationAndExecution {
 	
 	}
 
-	// Read the parameter value from the local .properties file. If the value is not found, it reads it form the global .properties file (config.properties)
+	// Read the parameter value from: 1) CLI; 2) the local .properties file; 3) the global .properties file (config.properties)
 	private static String readParameterValue(String propertyName) {
 
 		String value = null;
-		if (PropertyManager.readProperty(propertiesFilePath, propertyName) != null) // Read value from local .properties
-																					// file
+
+		if (argsList.contains(propertyName))
+			value = argsList.get(argsList.indexOf(propertyName) + 1);
+		else if (argsList.stream().anyMatch(arg -> arg.matches("^" + propertyName + "=.*")))
+			value = argsList.stream().filter(arg -> arg.matches("^" + propertyName + "=.*")).findFirst().get().split("=")[1];
+		else if (PropertyManager.readProperty(propertiesFilePath, propertyName) != null) // Read value from local .properties file
 			value = PropertyManager.readProperty(propertiesFilePath, propertyName);
 		else if (PropertyManager.readProperty(propertyName) != null) // Read value from global .properties file
 			value = PropertyManager.readProperty(propertyName);

@@ -128,6 +128,39 @@ public class IterativeExampleTest {
     }
 
     @Test
+    public void testIterativeExampleCliCommandsOption1() throws RESTestException, IOException {
+        deleteFile("target/log/external_logger/log.log");
+
+        String propertiesFilePath = "src/test/resources/restest-test-resources/external_logger.properties";
+        String cliOption1 = "logToFile=false";
+
+        String[] args = {propertiesFilePath, cliOption1};
+        try {
+            TestGenerationAndExecution.main(args);
+            fail("An exception should be thrown for the previous props file");
+        } catch(NullPointerException ignored) {}
+
+        assertFalse(checkIfExists("target/log/external_logger/log.log"));
+    }
+
+    @Test
+    public void testIterativeExampleCliCommandsOption2() throws RESTestException, IOException {
+        deleteFile("target/log/external_logger/log.log");
+
+        String propertiesFilePath = "src/test/resources/restest-test-resources/external_logger.properties";
+        String cliOption1Part1 = "logToFile";
+        String cliOption1Part2 = "false";
+
+        String[] args = {propertiesFilePath, cliOption1Part1, cliOption1Part2};
+        try {
+            TestGenerationAndExecution.main(args);
+            fail("An exception should be thrown for the previous props file");
+        } catch(NullPointerException ignored) {}
+
+        assertFalse(checkIfExists("target/log/external_logger/log.log"));
+    }
+
+    @Test
     public void testARTEWithRegex() throws RESTestException {
 
         String semanticPropertiesFilePath = "src/test/resources/semanticAPITests/DHL/dhl_semantic.properties";
