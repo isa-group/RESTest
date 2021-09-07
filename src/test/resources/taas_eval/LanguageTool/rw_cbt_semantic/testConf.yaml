@@ -169,8 +169,8 @@ testConfiguration:
                 - default
                 - picky
     expectedResponse: 200
-  - testPath: /languages
-    operationId: getLanguages
-    method: get
-    testParameters: null
-    expectedResponse: 200
+#  - testPath: /languages
+#    operationId: getLanguages
+#    method: get
+#    testParameters: null
+#    expectedResponse: 200
