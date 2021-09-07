@@ -28,11 +28,11 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static  String propertiesFilePath = "src/test/resources/semanticAPITests/ClimaCell/climacell.properties";
+    private static  String propertiesFilePath = "src/test/resources/taas_eval/OMDb/r_cbt_semantic/omdb.properties";
     private static OpenAPISpecification specification;
     private static String confPathOriginal;
     private static String semanticConfPath;
-    private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
+    private static String csvPath = "src/test/resources/taas_eval/OMDb/r_cbt_semantic/";           // Path in which the generated input values will be stored
 
     // Parameters
     // Minimum support of a predicate
@@ -40,7 +40,7 @@ public class ARTEInputGenerator {
     // Parameter minimum threshold of unique parameter values to obtain: default 100
     public static Integer THRESHOLD = 100;
     // Limit
-    public static Integer LIMIT = 30;
+    public static Integer LIMIT = null;
     // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
     public static final String szEndpoint = "http://dbpedia.org/sparql";
 
