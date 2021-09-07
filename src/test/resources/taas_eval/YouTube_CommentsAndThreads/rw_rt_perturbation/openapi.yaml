@@ -3221,8 +3221,8 @@ paths:
         - IF videoLicense THEN type=='video';
         - IF videoSyndicated THEN type=='video';
         - IF videoType THEN type=='video';
-        - IF channelType THEN type=='channel'; # Unspecified dependency
-        - IF location THEN type=='video'; # Unspecified dependency
+#        - IF channelType THEN type=='channel'; # Unspecified dependency
+#        - IF location THEN type=='video'; # Unspecified dependency
       responses:
         "200":
           content:
