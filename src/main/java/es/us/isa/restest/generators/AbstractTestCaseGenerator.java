@@ -27,6 +27,7 @@ import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 import static es.us.isa.restest.configuration.TestConfigurationVisitor.hasStatefulGenerators;
+import static es.us.isa.restest.configuration.TestConfigurationVisitor.isArteEnabled;
 
 /**
  * Abstract class to be implemented by test case generators
@@ -60,7 +61,8 @@ public abstract class AbstractTestCaseGenerator {
 	protected int nFaulty;													// Number of faulty test cases generated for the current operation
 	protected int nNominal;													// Number of nominal test cases generated for the current operation
 
-	protected boolean hasStatefulGenerators;
+	private boolean hasStatefulGenerators;
+	private boolean isArteEnabled;
 	private boolean checkTestCases;
 
 
@@ -236,8 +238,9 @@ public abstract class AbstractTestCaseGenerator {
 		// Create test data generators for each parameter
 		createGenerators(testOperation);
 
-		// Update this boolean, which may differ for every operation
+		// Update these booleans, which may differ for every operation
 		hasStatefulGenerators = hasStatefulGenerators(testOperation);
+		isArteEnabled = isArteEnabled(testOperation);
 
 		return generateOperationTestCases(testOperation);
 	}
@@ -280,11 +283,11 @@ public abstract class AbstractTestCaseGenerator {
 
 	/**
 	 * Make sure the test case generated conforms to the specification. Otherwise, throw an exception and stop the execution
-	 * There's an exception: if stateful generators are configured, we cannot assure that the test case will be valid,
-	 * therefore we omit this
+	 * There's an exception: if stateful generators are configured, or ARTE is enabled, we cannot assure that the test case
+	 * will be valid, therefore we omit this
 	 */
 	protected void checkTestCaseValidity(TestCase test) throws RESTestException {
-		if (!test.getFaulty() && checkTestCases && !hasStatefulGenerators) {
+		if (!test.getFaulty() && checkTestCases && !hasStatefulGenerators && !isArteEnabled) {
 			List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
 			if (!errors.isEmpty()) {
 				throw new RESTestException("The test case generated does not conform to the specification: " + errors);
