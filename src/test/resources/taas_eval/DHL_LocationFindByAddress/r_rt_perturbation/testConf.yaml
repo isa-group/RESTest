@@ -1,0 +1,220 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: DHL/headers.json
+testConfiguration:
+  operations:
+    - testPath: /find-by-address
+      operationId: findByAddress
+      method: get
+      testParameters:
+        - name: countryCode
+          in: query
+          weight: null
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/test/resources/taas_eval/DHL_LocationFindByAddress/countryCodes.csv
+                  objectValues: null
+              valid: true
+            - type: RandomString
+              genParameters:
+                - name: minLength
+                  values:
+                    - 10
+                - name: maxLength
+                  values:
+                    - 20
+                - name: includeNumbers
+                  values:
+                    - true
+                - name: includeSpecialCharacters
+                  values:
+                    - true
+              valid: false
+        - name: addressLocality
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - NYC
+                    - Seville, Spain
+                    - Milan, Italy
+                    - Melbourne
+                    - Tokyo
+                    - Egypt
+                    - Juarez, Mexico
+                    - Paris
+                    - San Francisco
+                    - Krakow
+                    - Daca, Bangladesh
+                    - Santa Fe
+                  objectValues: null
+              valid: true
+        - name: postalCode
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomRegExp
+              genParameters:
+                - name: regExp
+                  values:
+                    - '[1-9]\d\d\d\d'
+                  objectValues: null
+              valid: true
+            - type: RandomString
+              genParameters:
+                - name: minLength
+                  values:
+                    - 10
+                - name: maxLength
+                  values:
+                    - 20
+                - name: includeNumbers
+                  values:
+                    - true
+                - name: includeSpecialCharacters
+                  values:
+                    - true
+              valid: false
+        - name: streetAddress
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/test/resources/taas_eval/DHL_LocationFindByAddress/streetNames.csv
+                  objectValues: null
+              valid: true
+        - name: providerType
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - express
+                    - parcel
+                  objectValues: null
+              valid: true
+        - name: locationType
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - servicepoint
+                    - locker
+                    - postoffice
+                    - postbank
+                  objectValues: null
+              valid: true
+        - name: serviceType
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - "parcel:pick-up"
+                    - "parcel:drop-off"
+                    - "express:pick-up"
+                    - "express:drop-off"
+                    - "parcel:pick-up-registered"
+                    - "parcel:pick-up-unregistered"
+                    - "parcel:drop-off-unregistered"
+                    - letter-service
+                    - postbank
+                    - cash-on-delivery
+                    - franking
+                    - cash-service
+                    - packaging-material
+                    - postident
+                    - age-verification
+                    - handicapped-access
+                    - parking
+                  objectValues: null
+              valid: true
+        - name: radius
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 25000
+                  objectValues: null
+              valid: true
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - -25000
+                  objectValues: null
+                - name: max
+                  values:
+                    - -1
+                  objectValues: null
+              valid: false
+        - name: limit
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 50
+                  objectValues: null
+              valid: true
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - -51
+                  objectValues: null
+                - name: max
+                  values:
+                    - -1
+                  objectValues: null
+              valid: false
+      expectedResponse: 200
