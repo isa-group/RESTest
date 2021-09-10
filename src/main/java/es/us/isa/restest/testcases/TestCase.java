@@ -69,9 +69,10 @@ public class TestCase implements Serializable {
 		this.fulfillsDependencies = testCase.fulfillsDependencies;
 		this.enableOracles = testCase.enableOracles;
 		this.inputFormat = testCase.inputFormat;
+		this.outputFormat = testCase.outputFormat;
 		this.headerParameters.putAll(testCase.headerParameters);
-		this.queryParameters.putAll(testCase.queryParameters);
 		this.pathParameters.putAll(testCase.pathParameters);
+		this.queryParameters.putAll(testCase.queryParameters);
 		this.formParameters.putAll(testCase.formParameters);
 		this.bodyParameter = testCase.bodyParameter;
 	}
@@ -100,7 +101,7 @@ public class TestCase implements Serializable {
 		addParameter(parameter.getIn(), parameter.getName(), value);
 	}
 
-	private void addParameter(String in, String paramName, String paramValue) {
+	public void addParameter(String in, String paramName, String paramValue) {
 		switch (in) {
 			case "header":
 				addHeaderParameter(paramName, paramValue);

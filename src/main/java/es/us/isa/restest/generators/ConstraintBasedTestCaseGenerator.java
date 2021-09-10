@@ -137,7 +137,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 	// Generate the next test case and update the generation index
 	public TestCase generateNextTestCase(Operation testOperation) throws RESTestException {
 		
-		TestCase test = null;
+		TestCase test;
 
 		if (nFaultyTestDueToDependencyViolations < maxFaultyTestDueToDependencyViolations)		// Try generating a faulty test case violating one or more inter-parameter dependency
 			test = generateNextTestCase(testOperation, INTER_PARAMETER_DEPENDENCY);
@@ -145,8 +145,7 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 		else if (nFaultyTestsDueToIndividualConstraint < maxFaultyTestsDueToIndividualConstraints)		// Try generating a faulty test case violating an individual constraint
 			test = generateNextTestCase(testOperation, INDIVIDUAL_PARAMETER_CONSTRAINT);
 
-		// If a faulty test case has not been created. Generate a valid test case.
-		if (test==null)
+		else
 			test = generateNextTestCase(testOperation, "none");
 
 		checkTestCaseValidity(test);
@@ -178,8 +177,8 @@ public class ConstraintBasedTestCaseGenerator extends AbstractTestCaseGenerator 
 				break;
 				
 			case INDIVIDUAL_PARAMETER_CONSTRAINT:
-				test = generateFaultyTestCaseDueToIndividualConstraints(testOperation);
-				if (test != null)
+				test = generateValidTestCase(testOperation);
+				if (makeTestCaseFaultyDueToIndividualConstraints(test, testOperation))
 					nFaultyTestsDueToIndividualConstraint++;
 				break;
 			default:
