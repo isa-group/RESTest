@@ -4,6 +4,7 @@ import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.*;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.Timer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,8 +42,8 @@ public class ARTEInputGenerator {
     public static Integer THRESHOLD = 100;
     // Limit
     public static Integer LIMIT = null;
-    // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
-    public static final String szEndpoint = "http://dbpedia.org/sparql";
+    // DBPedia Endpoint
+    public static final String szEndpoint = PropertyManager.readProperty("arte.endpoint");
 
 
     private static final Logger log = LogManager.getLogger(ARTEInputGenerator.class);
