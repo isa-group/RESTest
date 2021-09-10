@@ -296,45 +296,43 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	/**
-	 * Generate a request using a invalid data generator for one parameter.
-	 * @return The invalid test case, null if no invalid generators are configured
+	 * Tries to make a test case faulty by using an invalid generator for a random parameter
+	 * @param testCase The test case to modify
+	 * @param testOperation The operation the test case refers to
+	 * @return {@code true} if the test case was modified, {@code false} otherwise
 	 */
-	protected TestCase generateRandomInvalidTestCase(Operation testOperation) {
+	protected boolean makeTestCaseFaultyDueToInvalidGenerator(TestCase testCase, Operation testOperation) {
 
 		if (faultyGenerators.isEmpty())
-			return null;
+			return false;
 
-		// Get random parameter which will contain an invalid value
+		// Get random parameter (and faulty generator) which will contain an invalid value
 		Object[] possibleFaultyParams = faultyGenerators.keySet().toArray();
 		Pair<String, String> faultyParam = (Pair<String, String>)possibleFaultyParams[rand.nextInt(possibleFaultyParams.length)];
-		String faultyValue = null;
+		ITestDataGenerator generator = getRandomGenerator(faultyGenerators.get(faultyParam));
 
-		TestCase test = createTestCaseTemplate(testOperation);
+		// Modify test case by adding invalid value
+		String faultyValue = generator.nextValueAsString();
+		testCase.addParameter(faultyParam.getValue1(), faultyParam.getValue0(), faultyValue);
 
-		// Set parameters and values
-		if(testOperation.getTestParameters() != null) {
-			for (TestParameter confParam : testOperation.getTestParameters()) {
-				if (confParam.getName().equals(faultyParam.getValue0()) && confParam.getIn().equals(faultyParam.getValue1())) {
-					ITestDataGenerator generator = getRandomGenerator(faultyGenerators.get(faultyParam));
-					faultyValue = generator.nextValueAsString();
-					test.addParameter(confParam, faultyValue);
-				} else if (confParam.getWeight() == null || rand.nextFloat() <= confParam.getWeight()) {
-					ITestDataGenerator generator = getRandomGenerator(nominalGenerators.get(Pair.with(confParam.getName(), confParam.getIn())));
-					test.addParameter(confParam, generator.nextValueAsString());
-				}
-			}
-		}
+		// Update faulty and faulty reason
+		testCase.setFaulty(true);
+		testCase.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":Set parameter " + faultyParam.getValue0() + " with invalid value " + faultyValue);
 
-		test.setFaulty(true);
-		test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":Set parameter " + faultyParam.getValue0() + " with invalid value " + faultyValue);
-
-		return test;
+		return true;
 	}
 
-	/* Returns a faulty test case violating an individual constraint (ex. excluding a required parameter) */
-	protected TestCase generateFaultyTestCaseDueToIndividualConstraints(Operation testOperation) throws RESTestException {
+	/**
+	 * Tries to make a test case faulty by violating an individual constraint (ex. excluding a required parameter)
+	 * @param testCase The test case to modify
+	 * @param testOperation The operation the test case refers to
+	 * @return {@code true} if the test case was modified, {@code false} otherwise
+	 * @throws RESTestException
+	 */
+	protected boolean makeTestCaseFaultyDueToIndividualConstraints(TestCase testCase, Operation testOperation) throws RESTestException {
 
-		TestCase test = null;
+		TestCase originalTest = new TestCase(testCase);
+		originalTest.equals(testCase);
 		ITestDataGenerator bodyGenerator = null;
 		List<String> generationAlternatives = new ArrayList<>();
 		generationAlternatives.add("mutation");
@@ -359,6 +357,7 @@ public abstract class AbstractTestCaseGenerator {
 				}
 			}
 		}
+
 		if (!faultyGenerators.isEmpty()) {
 			generationAlternatives.add("invalid_generator");
 		}
@@ -366,63 +365,65 @@ public abstract class AbstractTestCaseGenerator {
 		Collections.shuffle(generationAlternatives);
 
 		int i = 0;
-		while (i < generationAlternatives.size() && test == null) {
-            if (generationAlternatives.get(i).equals("invalid_generator")) {// Request with invalid generator
-                test = generateRandomInvalidTestCase(testOperation);
-            }
-            if (test == null && generationAlternatives.get(i).equals("request_body_mutation")) { //Request with invalid
-                test = generateFaultyTestDueToInvalidRequestBody(testOperation, bodyGenerator);
-            }
-            if (test == null) { // Valid request and mutate it
-				test = generateRandomValidTestCase(testOperation);
-				if(test != null) {
-					String mutationDescription = TestCaseMutation.mutate(test, testOperation.getOpenApiOperation());
-					if (!mutationDescription.equals("")) { // A mutation has been applied
-						test.setFaulty(true);
-						test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
-					} else {
-						test = null;
-					}
+		while (i < generationAlternatives.size() && originalTest.equals(testCase)) {
+			if (generationAlternatives.get(i).equals("invalid_generator")) {// Test case with invalid generator
+				makeTestCaseFaultyDueToInvalidGenerator(testCase, testOperation);
+			}
+			if (originalTest.equals(testCase) && generationAlternatives.get(i).equals("request_body_mutation")) { // Test case with invalid body
+				makeTestCaseFaultyDueToInvalidRequestBody(testCase, testOperation, bodyGenerator);
+			}
+			if (originalTest.equals(testCase)) { // Valid test case and mutate it
+				String mutationDescription = TestCaseMutation.mutate(testCase, testOperation.getOpenApiOperation());
+				if (!mutationDescription.equals("")) { // A mutation has been applied
+					testCase.setFaulty(true);
+					testCase.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ":" + mutationDescription);
 				}
 			}
 
 			i++;
 		}
 
-		return test;
+		return !originalTest.equals(testCase);
 	}
 
-	/* Works only if there's a body and a BodyGenerator configured, otherwise returns null */
-    protected TestCase generateFaultyTestDueToInvalidRequestBody(Operation testOperation, ITestDataGenerator bodyGenerator) throws RESTestException {
-	    TestCase test = null;
-	    TestParameter bodyParam = testOperation.getTestParameters().stream().filter(x -> x.getName().equals("body")).findFirst().orElse(null);
+	/**
+	 * Tries to make a test case faulty by generating an invalid body. Works only if there's a body and a
+	 * BodyGenerator or ObjectPerturbator configured
+	 * @param testCase The test case to modify
+	 * @param testOperation The operation the test case refers to
+	 * @param bodyGenerator The generator configured for the body parameter
+	 * @return {@code true} if the test case was modified, {@code false} otherwise
+	 * @throws RESTestException
+	 */
+	protected boolean makeTestCaseFaultyDueToInvalidRequestBody(TestCase testCase, Operation testOperation, ITestDataGenerator bodyGenerator) throws RESTestException {
+		TestCase originalTest = new TestCase(testCase);
+		TestParameter bodyParam = testOperation.getTestParameters().stream().filter(x -> x.getName().equals("body")).findFirst().orElse(null);
 		List<String> errors = new ArrayList<>();
 
 		if (bodyGenerator != null && bodyParam != null) {
-			test = generateRandomValidTestCase(testOperation);
 			errors = new ArrayList<>();
 			for (int i = 0; i < maxTriesPerTestCase && errors.isEmpty(); i++) {
 				if (bodyGenerator instanceof BodyGenerator)
-					test.addParameter(bodyParam, ((BodyGenerator) bodyGenerator).nextValueAsString(true));
+					testCase.addParameter(bodyParam, ((BodyGenerator) bodyGenerator).nextValueAsString(true));
 				else if (bodyGenerator instanceof ObjectPerturbator)
-					test.addParameter(bodyParam, bodyGenerator.nextValueAsString());
-				errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
+					testCase.addParameter(bodyParam, bodyGenerator.nextValueAsString());
+				errors = testCase.getValidationErrors(OASAPIValidator.getValidator(spec));
 			}
 			// No invalid body generated. Return null and try to generate faulty test case in different way
 			if (errors.isEmpty()) {
 				logger.warn("Maximum number of tries reached when trying to generate invalid JSON body for the operation {}", testOperation.getOpenApiOperation().getOperationId());
-				test = null;
+				testCase = originalTest;
 			}
 		}
 
-	    if (test != null) {
-			test.setFaulty(true);
+		if (!originalTest.equals(testCase)) {
+			testCase.setFaulty(true);
 			String errorsMsg = String.join(" --- ", errors);
-			test.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ':' + " invalid request body: " + errorsMsg);
+			testCase.setFaultyReason(INDIVIDUAL_PARAMETER_CONSTRAINT + ':' + " invalid request body: " + errorsMsg);
 		}
 
-	    return test;
-    }
+		return !originalTest.equals(testCase);
+	}
 
 
     /* Try to perturbate input objects using the ObjectPerturbator. If not possible, set the parameter to the original object provided in the test configuration file */

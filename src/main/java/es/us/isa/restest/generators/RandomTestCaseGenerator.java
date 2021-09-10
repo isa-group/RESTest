@@ -61,16 +61,11 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	// Generate the next test case
 	public TestCase generateNextTestCase(Operation testOperation) throws RESTestException {
 
-		TestCase test = null;
+		TestCase test = generateRandomValidTestCase(testOperation);
 
 		// If more faulty test cases need to be generated, try generating one
 		if (nFaulty < (int) (faultyRatio * numberOfTests))
-			test = generateFaultyTestCaseDueToIndividualConstraints(testOperation);
-		if (test != null)
-			return test;
-
-		// If no more faulty test cases need to be generated, or one could not be generated, generate one nominal
-		test = generateRandomValidTestCase(testOperation);
+			makeTestCaseFaultyDueToIndividualConstraints(test, testOperation);
 
 		checkTestCaseValidity(test);
 
