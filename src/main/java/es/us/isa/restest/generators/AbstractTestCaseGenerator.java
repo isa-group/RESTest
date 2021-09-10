@@ -267,7 +267,7 @@ public abstract class AbstractTestCaseGenerator {
 						perturbation = true;
 					}
 					else if (generator instanceof BodyGenerator) {
-						test.addParameter(confParam, ((BodyGenerator) generator).nextValueAsString(false));
+						test.addParameter(confParam, ((BodyGenerator) generator).nextValueAsString(false));			// Objects are not mutated yet
 					} else
 						test.addParameter(confParam, generator.nextValueAsString());
 				}
