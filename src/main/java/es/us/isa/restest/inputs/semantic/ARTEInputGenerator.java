@@ -4,6 +4,7 @@ import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.*;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.Timer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,9 +41,9 @@ public class ARTEInputGenerator {
     // Parameter minimum threshold of unique parameter values to obtain: default 100
     public static Integer THRESHOLD = 100;
     // Limit
-    public static Integer LIMIT = 30;
-    // DBPedia Endpoint     http://dbpedia.org/sparql       http://localhost:8890/sparql
-    public static final String szEndpoint = "http://dbpedia.org/sparql";
+    public static Integer LIMIT = null;
+    // DBPedia Endpoint
+    public static final String szEndpoint = PropertyManager.readProperty("arte.endpoint");
 
 
     private static final Logger log = LogManager.getLogger(ARTEInputGenerator.class);
