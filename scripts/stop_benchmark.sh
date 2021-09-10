@@ -16,8 +16,8 @@ pkill_fn()
     # shellcheck disable=2086
     # shellcheck disable=2009
     # Get the list of PIDs. Be careful to exclude grep and the script itself
-    pid_list="$(ps $ps_options | grep -w "$program" | grep -v -w "$script" |
-        grep -v -w  grep | awk '{print $1}')"
+    pid_list="$(ps $ps_options | grep "$program" | grep -v -w "$script" |
+        grep -v -w grep | awk '{print $1}')"
     if [ -z "$pid_list" ]
     then
         # No process found
@@ -29,23 +29,27 @@ pkill_fn()
     fi
 }
 
+# Commented the following, since we actually want to match processes
+# by partial name, not whole names. Example: "/bin/java"
+#######################################################################
 # See if we have pkill available or use our version
-pkill=$(type -p pkill)
-[ -z "$pkill" ] && pkill=pkill_fn
+# pkill=$(type -p pkill)
+# [ -z "$pkill" ] && pkill=pkill_fn
+#######################################################################
 
 killprocs()
 {
     count=0
-    if $pkill -TERM "$1"
+    if pkill_fn -TERM "$1"
     then
         # Wait for up to 10 seconds for the process(es) to exit.
         while ((count<10))
         do
-            $pkill -0 "$1" || return
+            pkill_fn -0 "$1" || return
             sleep 1
             ((count+=1))
         done
-        $pkill -KILL "$1"
+        pkill_fn -KILL "$1"
     fi
 }
 
