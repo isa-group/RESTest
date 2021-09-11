@@ -42,6 +42,8 @@ public class ARTEInputGenerator {
     public static Integer THRESHOLD = 100;
     // Limit
     public static Integer LIMIT = null;
+    // Proxy
+    public static String proxy = null;
     // DBPedia Endpoint
     public static final String szEndpoint = PropertyManager.readProperty("arte.endpoint");
 
@@ -49,6 +51,8 @@ public class ARTEInputGenerator {
     private static final Logger log = LogManager.getLogger(ARTEInputGenerator.class);
 
     public static void main(String[] args) {
+
+        Timer.startCounting(ALL);
 
         if (args.length > 0) {
             propertiesFilePath = args[0];
@@ -61,12 +65,22 @@ public class ARTEInputGenerator {
                 LIMIT = null;
             }
 
+            if (args.length <= 4 || "null".equals(args[4]) || args[4].split(":").length != 2)
+                proxy = null;
+            else
+                proxy = args[4];
         }
         
         // ONLY FOR LOCAL COPY OF DBPEDIA
 //        System.setProperty("http.maxConnections", "10000");
 
-        Timer.startCounting(ALL);
+        // ONLY FOR WHEN PROXY IS REQUIRED
+        if (proxy != null) {
+            System.setProperty("http.proxyHost", proxy.split(":")[0]);
+            System.setProperty("http.proxyPort", proxy.split(":")[1]);
+            System.setProperty("https.proxyHost", proxy.split(":")[0]);
+            System.setProperty("https.proxyPort", proxy.split(":")[1]);
+        }
 
         setEvaluationParameters();
 
