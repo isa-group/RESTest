@@ -199,12 +199,17 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateSetUp(String baseURI) {
 		String content = "";
 
-		content += "\t@BeforeClass\n "
-				+  "\tpublic static void setUp() {\n"
-			  	+  "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n\n";
+		content += "\t@BeforeClass\n"
+				+  "\tpublic static void setUp() {\n";
 
-		if (proxy != null)
-			content += "\t\tRestAssured.proxy(\"" + proxy.split(":")[0] + "\", " + proxy.split(":")[1] + ");\n\n";
+		if (proxy != null) {
+			content +=  "\t\tSystem.setProperty(\"http.proxyHost\", \"" + proxy.split(":")[0] + "\");\n"
+					+	"\t\tSystem.setProperty(\"http.proxyPort\", \"" + proxy.split(":")[1] + "\");\n"
+					+	"\t\tSystem.setProperty(\"https.proxyHost\", \"" + proxy.split(":")[0] + "\");\n"
+					+	"\t\tSystem.setProperty(\"https.proxyPort\", \"" + proxy.split(":")[1] + "\");\n\n";
+		}
+
+		content += "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n\n";
 
 		if (logToFile) {
 			content +=	"\t\t// Configure logging\n"
