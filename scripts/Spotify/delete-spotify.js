@@ -1,19 +1,18 @@
 const axios = require('axios').default
 const fs = require('fs')
 
-axios.defaults.baseURL = 'https://api.stripe.com'
-axios.defaults.headers.common['Authorization'] = JSON.parse(fs.readFileSync('../../src/test/resources/auth/Stripe/headers.json')).Authorization[0]
+axios.defaults.baseURL = 'https://api.spotify.com'
+axios.defaults.headers.common['Authorization'] = 'Bearer XXX'
 
-const timer = 35
+const timer = 90
 const limit = 100
-const service = 'products'
 
 for (let i=0; i<limit; i++) {
     setTimeout(
         function() {
-            axios.get(`/v1/${service}?limit=100`)
+            axios.get(`/v1/me/playlists?limit=50`)
             .then(function (response) {
-                const ids = response.data.data.map(item => item.id)
+                const ids = response.data.items.map(item => item.id)
                 console.log(ids)
 
 
@@ -21,7 +20,8 @@ for (let i=0; i<limit; i++) {
                 ids.forEach(id => {
                     setTimeout(
                         function() {
-                            axios.delete(`/v1/${service}/${id}`).then(() => console.log(`Deleted id ${id}`))
+                            axios.delete(`/v1/playlists/${id}/followers`).then(() => console.log(`Deleted id ${id}`))
+                                // .catch((error) => console.log(error.response.data))
                         },
                         timer*j
                     )
@@ -29,6 +29,6 @@ for (let i=0; i<limit; i++) {
                 });
             })
         },
-        (timer-10)*i*100*2
+        (timer-50)*i*100*2
     )
 }
