@@ -34,6 +34,7 @@ public class RESTestRunner {
 	protected AllureReportManager allureReportManager;	// Allure report manager
 	protected StatsReportManager statsReportManager;	// Stats report manager
 	private boolean executeTestCases;
+	private boolean allureReports;						// Whether to actually generate reports or not (folder "allure-reports")
 	private int numTestCases = 0;						// Number of test cases generated so far
 
 	private boolean learnRegex;
@@ -79,14 +80,14 @@ public class RESTestRunner {
 	}
 
 	protected void generateReports() {
-		if(executeTestCases) {
+		if(executeTestCases && allureReports) {
 			// Generate test report
 			logger.info("Generating test report");
 			allureReportManager.generateReport();
 		}
 
 		// Generate coverage report
-		logger.info("Generating coverage report");
+		logger.info("Generating CSV data");
 		statsReportManager.generateReport(testId, executeTestCases);
 	}
 
@@ -160,5 +161,9 @@ public class RESTestRunner {
 
 	public void setExecuteTestCases(Boolean executeTestCases) {
 		this.executeTestCases = executeTestCases;
+	}
+
+	public void setAllureReport(boolean allureReports) {
+		this.allureReports = allureReports;
 	}
 }
