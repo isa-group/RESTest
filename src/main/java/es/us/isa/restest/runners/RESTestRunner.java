@@ -33,8 +33,8 @@ public class RESTestRunner {
 	protected IWriter writer;							// RESTAssured writer
 	protected AllureReportManager allureReportManager;	// Allure report manager
 	protected StatsReportManager statsReportManager;	// Stats report manager
-	private boolean executeTestCases;
-	private boolean allureReports;						// Whether to actually generate reports or not (folder "allure-reports")
+	private boolean executeTestCases = true;			// Whether to execute test cases
+	private boolean allureReports = true;				// Whether to actually generate reports or not (folder "allure-reports")
 	private int numTestCases = 0;						// Number of test cases generated so far
 
 	private boolean learnRegex;
