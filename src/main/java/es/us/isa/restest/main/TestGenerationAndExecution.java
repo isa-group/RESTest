@@ -60,6 +60,7 @@ public class TestGenerationAndExecution {
 	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
+	private static boolean allureReports;								// If 'true', Allure reports will be generated
 	private static boolean checkTestCases;								// If 'true', test cases will be checked with OASValidator before executing them
 	private static String proxy;										// Proxy to use for all requests in format host:port
 
@@ -119,6 +120,7 @@ public class TestGenerationAndExecution {
 				reportManager, statsReportManager);
 
 		runner.setExecuteTestCases(executeTestCases);
+		runner.setAllureReport(allureReports);
 
 
 
@@ -321,6 +323,11 @@ public class TestGenerationAndExecution {
 			executeTestCases = Boolean.parseBoolean(readParameterValue("experiment.execute"));
 		}
 		logger.info("Experiment execution: {}", executeTestCases);
+
+		if (readParameterValue("allure.report") != null) {
+			allureReports = Boolean.parseBoolean(readParameterValue("allure.report"));
+		}
+		logger.info("Allure reports: {}", allureReports);
 
 		if (readParameterValue("proxy") != null) {
 			proxy = readParameterValue("proxy");
