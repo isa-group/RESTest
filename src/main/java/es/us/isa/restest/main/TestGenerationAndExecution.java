@@ -86,28 +86,29 @@ public class TestGenerationAndExecution {
 
 	public static void main(String[] args) throws RESTestException {
 
-		argsList = Arrays.asList(args);
+		Timer.startCounting(ALL);
 
 		// ONLY FOR LOCAL COPY OF DBPEDIA
 		System.setProperty("http.maxConnections", "100000");
-		// TODO: If specified, set proxy for DBpedia
 
-		Timer.startCounting(ALL);
-
-		// Read .properties file path. This file contains the configuration parameter
-		// for the generation
+		// Read .properties file path. This file contains the configuration parameters for the generation
 		if (args.length > 0)
 			propertiesFilePath = args[0];
 
-		// Read parameter values from .properties file
+		// Populate configuration parameters, either from arguments or from .properties file
+		argsList = Arrays.asList(args);
 		readParameterValues();
+
+		// Set proxy globally, if specified
+		if (proxy != null) {
+			System.setProperty("http.proxyHost", proxy.split(":")[0]);
+			System.setProperty("http.proxyPort", proxy.split(":")[1]);
+			System.setProperty("https.proxyHost", proxy.split(":")[0]);
+			System.setProperty("https.proxyPort", proxy.split(":")[1]);
+		}
 
 		// Create target directory if it does not exists
 		createDir(targetDirJava);
-
-		// Set proxy for REST-Assured globally (if specified)
-		if (proxy != null)
-			RestAssured.proxy(proxy.split(":")[0], Integer.parseInt(proxy.split(":")[1]));
 
 		// RESTest runner
 		AbstractTestCaseGenerator generator = createGenerator(); // Test case generator
