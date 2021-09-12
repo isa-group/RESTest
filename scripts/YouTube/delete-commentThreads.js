@@ -22,14 +22,14 @@ for (let i=0; i<limit; i++) {
                         function() {
                             axios.delete(`/v3/comments?id=${id}`)
                             .then(() => console.log(`Deleted id ${id}`))
-                            .catch((error) => console.log(error.response.data))
+                            .catch((error) => console.log(JSON.stringify(error.response.data)))
                         },
                         timer*j
                     )
                     j++;
                 });
             })
-            .catch((error) => console.log(error.response.data))
+            .catch((error) => console.log(JSON.stringify(error.response.data)))
         },
         (timer-10)*i*100*2
     )
