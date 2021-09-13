@@ -15,7 +15,6 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
-import io.restassured.RestAssured;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +37,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
+	private static String propertiesFilePath = "src/test/resources/taas_eval/LanguageTool/rw_rt_custom/props.properties";
 
 	private static List<String> argsList;								// List containing args
 	
@@ -452,12 +451,19 @@ public class TestGenerationAndExecution {
 	public static String getExperimentName(){ return experimentName; }
 
 	private static void setUpLogger() {
+		// Recreate log directory if necessary
+		if (Boolean.parseBoolean(readParameterValue("deletepreviousresults"))) {
+			String logDataDir = readParameterValue("data.log.dir") + "/" + readParameterValue("experiment.name");
+			deleteDir(logDataDir);
+			createDir(logDataDir);
+		}
+
 		// Attach stdout and stderr to logger
 		System.setOut(new PrintStream(new LoggerStream(LogManager.getLogger("stdout"), Level.INFO, System.out)));
 		System.setErr(new PrintStream(new LoggerStream(LogManager.getLogger("stderr"), Level.ERROR, System.err)));
 
 		// Configure regular logger
-		String logPath = readParameterValue("log.path");
+		String logPath = readParameterValue("data.log.dir") + "/" + readParameterValue("experiment.name") + "/" + readParameterValue("data.log.file");
 
 		System.setProperty("logFilename", logPath);
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
