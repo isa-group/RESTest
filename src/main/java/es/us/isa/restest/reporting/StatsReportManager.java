@@ -206,7 +206,7 @@ public class StatsReportManager {
 
     // Generate CVS statistics (test cases to CSV)
     private void generateCSVStats(String testId) {
-        logger.info("Exporting test cases coverage to CSV");
+        logger.info("Exporting test cases to CSV");
         String csvTcPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testcases.file") + "_" + testId + ".csv";
         testCases.forEach(tc -> tc.exportToCSV(csvTcPath));
     }
