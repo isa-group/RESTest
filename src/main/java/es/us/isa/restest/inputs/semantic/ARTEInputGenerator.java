@@ -72,7 +72,7 @@ public class ARTEInputGenerator {
         }
         
         // ONLY FOR LOCAL COPY OF DBPEDIA
-        if (szEndpoint.contains("localhost"))
+        if (szEndpoint.contains("localhost") || szEndpoint.contains("127.0.0.1"))
             System.setProperty("http.maxConnections", "10000");
 
         // ONLY FOR WHEN PROXY IS REQUIRED
