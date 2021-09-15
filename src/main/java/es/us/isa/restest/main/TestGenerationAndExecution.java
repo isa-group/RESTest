@@ -89,7 +89,7 @@ public class TestGenerationAndExecution {
 		Timer.startCounting(ALL);
 
 		// ONLY FOR LOCAL COPY OF DBPEDIA
-		if (szEndpoint.contains("localhost"))
+		if (szEndpoint.contains("localhost") || szEndpoint.contains("127.0.0.1"))
 			System.setProperty("http.maxConnections", "10000");
 
 		// Read .properties file path. This file contains the configuration parameters for the generation
