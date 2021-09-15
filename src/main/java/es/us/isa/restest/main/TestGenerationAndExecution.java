@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
+import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
 import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.util.FileManager.deleteDir;
 import static es.us.isa.restest.util.Timer.TestStep.ALL;
@@ -88,7 +89,8 @@ public class TestGenerationAndExecution {
 		Timer.startCounting(ALL);
 
 		// ONLY FOR LOCAL COPY OF DBPEDIA
-		System.setProperty("http.maxConnections", "100000");
+		if (szEndpoint.contains("localhost"))
+			System.setProperty("http.maxConnections", "10000");
 
 		// Read .properties file path. This file contains the configuration parameters for the generation
 		if (args.length > 0)
