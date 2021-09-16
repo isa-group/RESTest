@@ -6,9 +6,16 @@
 # ./launch_benchmark.sh deletepreviousresults=false
 # ./launch_benchmark.sh deletepreviousresults false logToFile=true
 
+ps_options='a'
+if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "darwin"* || "$OSTYPE" == "freebsd"* ]]; then
+  ps_options='-A'
+fi
+
 n_props=0
 n_java=0
-n_java_command="ps a | grep java | grep -v -w "$(basename "$0")" | grep -v -w grep | wc -l"
+n_java_command="ps $ps_options | grep java | grep -v -w "$(basename "$0")" | grep -v -w grep | wc -l"
+
+echo $n_java_command
 
 for propsFile in `find src/test/resources/taas_eval -name props.properties`
 do
