@@ -38,7 +38,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/taas_eval/LanguageTool/rw_rt_custom/props.properties";
+	private static String propertiesFilePath = "src/test/resources/Folder/api.properties";
 
 	private static List<String> argsList;								// List containing args
 	
