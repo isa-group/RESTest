@@ -1,5 +1,12 @@
 #! /bin/bash
 
+# CAREFUL! This script will likely kill any process running Java
+
+ps_options='a'
+if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "darwin"* || "$OSTYPE" == "freebsd"* ]]; then
+  ps_options='-A'
+fi
+
 # Modified version of pkill: kills all processes CONTAINING a string
 pkill_modif()
 {
@@ -10,7 +17,7 @@ pkill_modif()
     # shellcheck disable=2086
     # shellcheck disable=2009
     # Get the list of PIDs. Be careful to exclude grep and the script itself
-    pid_list="$(ps a | grep "$program" | grep -v -w "$script" |
+    pid_list="$(ps $ps_options | grep "$program" | grep -v -w "$script" |
         grep -v -w grep | awk '{print $1}')"
     if [ -z "$pid_list" ]
     then
