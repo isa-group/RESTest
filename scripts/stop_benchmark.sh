@@ -30,7 +30,7 @@ pkill_fn()
 }
 
 # Commented the following, since we actually want to match processes
-# by partial name, not whole names. Example: "/bin/java"
+# by partial name, not whole names. Example: "java"
 #######################################################################
 # See if we have pkill available or use our version
 # pkill=$(type -p pkill)
@@ -53,5 +53,5 @@ killprocs()
     fi
 }
 
-killprocs /bin/java
+killprocs java
 # killprocs "$1" # Uncomment this if you want to kill other processes than Java
