@@ -21,13 +21,16 @@ for (let i=0; i<limit; i++) {
                 ids.forEach(id => {
                     setTimeout(
                         function() {
-                            axios.delete(`/v1/${service}/${id}`).then(() => console.log(`Deleted id ${id}`))
+                            axios.delete(`/v1/${service}/${id}`)
+                            .then(() => console.log(`Deleted id ${id}`))
+                            .catch((error) => console.log(JSON.stringify(error.response.data)))
                         },
                         timer*j
                     )
                     j++;
                 });
             })
+            .catch((error) => console.log(JSON.stringify(error.response.data)))
         },
         (timer-10)*i*100*2
     )
