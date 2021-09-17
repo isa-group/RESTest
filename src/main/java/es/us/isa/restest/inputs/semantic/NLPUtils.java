@@ -29,8 +29,8 @@ public class NLPUtils {
 
     private static final Logger log = LogManager.getLogger(NLPUtils.class);
 
-    private static String stopwordsPath = "src/main/java/es/us/isa/restest/inputs/semantic/englishStopWords.txt";
-    private static String rules = "src/main/java/es/us/isa/restest/inputs/semantic/rules.txt";
+    private static String stopwordsPath = "src/main/resources/arte/englishStopWords.txt";
+    private static String rules = "src/main/resources/arte/rules.txt";
 
     private static String annotatorName = "annotators";
     private static String annotatorValue = "tokenize,ssplit,pos,lemma";
