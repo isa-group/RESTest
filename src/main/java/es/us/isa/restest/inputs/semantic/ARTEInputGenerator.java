@@ -211,13 +211,15 @@ public class ARTEInputGenerator {
 
         Set<TestParameter> res = new HashSet<>();
 
-        for(TestParameter testParameter: operation.getTestParameters()){
-            int numberOfSemanticParameters = (int) testParameter.getGenerators().stream().filter(y -> y.getType().equalsIgnoreCase(SEMANTIC_PARAMETER)).count();
+        if (operation.getTestParameters() != null) {
+            for (TestParameter testParameter : operation.getTestParameters()) {
+                int numberOfSemanticParameters = (int) testParameter.getGenerators().stream().filter(y -> y.getType().equalsIgnoreCase(SEMANTIC_PARAMETER)).count();
 
-            if(numberOfSemanticParameters == 1){
-                res.add(testParameter);
-            }else if(numberOfSemanticParameters > 1){
-                throw new IllegalArgumentException("There can only be one " + "'" + SEMANTIC_PARAMETER + "'" + " generator per parameter");
+                if (numberOfSemanticParameters == 1) {
+                    res.add(testParameter);
+                } else if (numberOfSemanticParameters > 1) {
+                    throw new IllegalArgumentException("There can only be one " + "'" + SEMANTIC_PARAMETER + "'" + " generator per parameter");
+                }
             }
         }
 

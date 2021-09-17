@@ -7,11 +7,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import es.us.isa.restest.inputs.fuzzing.FuzzingDictionary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.stream.IntStream;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.*;
+import static es.us.isa.restest.util.SpecificationVisitor.findParameterFeatures;
 
 
 public class TestConfUpdate {
@@ -67,8 +70,27 @@ public class TestConfUpdate {
 
         testParameter.setGenerators(generators);
 
-        if(semanticParameter.getValues().isEmpty()){
+        // If no values were generated AND the parameter is not required, we set its weight to 0
+        if(semanticParameter.getValues().isEmpty() && testParameter.getWeight() != null && testParameter.getWeight() != 1){
             testParameter.setWeight(0.0f);
+        } else if (semanticParameter.getValues().isEmpty()) { // If that was the case, we set a default fuzzing generator
+            log.warn("Warning: no values were generated for the required parameter {}. A fuzzing dictionary will be used instead, which may make test cases invalid", testParameter.getName());
+
+            Generator fuzzingGenerator = new Generator();
+            fuzzingGenerator.setValid(true);
+            fuzzingGenerator.setType(RANDOM_INPUT_VALUE);
+
+            List<GenParameter> fuzzingGenParameterList = new ArrayList<>();
+            GenParameter valuesGenParameter = new GenParameter();
+            valuesGenParameter.setName("values");
+            String paramType = findParameterFeatures(newConf.getTestConfiguration().getOperations().get(opIndex).getOpenApiOperation(), testParameter.getName(), testParameter.getIn()).getType();
+            valuesGenParameter.setValues(FuzzingDictionary.getFuzzingValues(paramType));
+            fuzzingGenParameterList.add(valuesGenParameter);
+            fuzzingGenerator.setGenParameters(fuzzingGenParameterList);
+
+            generators.clear();
+            generators.add(fuzzingGenerator);
+            testParameter.setGenerators(generators);
         }
 
     }

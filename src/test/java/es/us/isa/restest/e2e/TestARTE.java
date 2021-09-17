@@ -121,4 +121,36 @@ public class TestARTE {
 
     }
 
+    @Test
+    public void testRunARTEOpsWithoutParametersAndRequiredParamsWithoutValues() throws IOException {
+
+        String basePath = "src/test/resources/restest-test-resources/";
+        String propertiesPath = basePath + "restcountries_arte_props.properties";
+        String minSupport = "20";
+        String threshold = "100";
+        String limit = "30";
+
+        String[] args = {propertiesPath, minSupport, threshold, limit};
+
+        ARTEInputGenerator.main(args);
+
+        String testConfSemanticPath = basePath + "testConfSemantic.yaml";
+        String swaggerPath = basePath + "restcountries_arte_openapi.yaml";
+        String testConfOriginalPath = basePath + "restcountries_arte_testConf.yaml";
+
+        // Existence of testConfSemantic
+        assertTrue(checkIfExists(testConfOriginalPath));
+        assertTrue(checkIfExists(testConfSemanticPath));
+
+        // Assertions on parameter regionalBloc of testConfSemantic, which should contain fuzzing values
+        TestConfigurationObject testConfSemantic = loadConfiguration(testConfSemanticPath, new OpenAPISpecification(swaggerPath));
+        List<Operation> operationList = testConfSemantic.getTestConfiguration().getOperations();
+        Generator fuzzingGenerator = operationList.get(operationList.size()-1).getTestParameters().get(1).getGenerators().get(0);
+
+        assertEquals("RandomInputValue", fuzzingGenerator.getType());
+        assertEquals("values", fuzzingGenerator.getGenParameters().get(0).getName());
+        assertEquals(5, fuzzingGenerator.getGenParameters().get(0).getValues().size());
+        assertTrue(fuzzingGenerator.getGenParameters().get(0).getValues().containsAll(Arrays.asList("null", "", "\\0", "one space", "randomString")));
+    }
+
 }
