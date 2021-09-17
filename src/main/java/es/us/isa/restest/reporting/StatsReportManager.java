@@ -115,8 +115,9 @@ public class StatsReportManager {
                         .findFirst()
                         .orElseThrow(() -> new NullPointerException("Associated test result not found")).getStatusCode();
 
-                // Add parameter value to valid or invalid values depending on the response code
-                updateValidAndInvalidValues(semanticOperations, testCase, responseCode);
+                // Add parameter value to valid or invalid values depending on the response code, ONLY if this is a SemanticOperation
+                if (semanticOperations.stream().anyMatch(so -> so.getOperationId().equals(testCase.getOperationId())))
+                    updateValidAndInvalidValues(semanticOperations, testCase, responseCode);
             }
         }
 

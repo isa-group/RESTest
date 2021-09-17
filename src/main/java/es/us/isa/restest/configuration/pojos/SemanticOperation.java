@@ -74,22 +74,24 @@ public class SemanticOperation {
         for(Operation operation: operations) {
             // For each test parameter
             List<SemanticParameter> semanticParameters = new ArrayList<>();
-            for(TestParameter testParameter: operation.getTestParameters()) {
-                List<Generator> generatorList = testParameter.getGenerators();
-                for(Generator generator: generatorList){
-                    if(generator.getType().equals(RANDOM_INPUT_VALUE)){
-                        List<GenParameter> genParameters = generator.getGenParameters();
-                        for(GenParameter genParameter: genParameters){
-                            // If the test parameter contains a "predicates" genParameter (i.e., It is a SemanticParameter)
-                            if(genParameter.getName().equals(PREDICATES)){
-                                // Add the SemanticParameter to the list
-                                // Includes valid and invalid values from previous iterations (if any)
-                                SemanticParameter semanticParameter = new SemanticParameter(testParameter, genParameters, genParameter.getValues(), experimentName, operation.getOperationId());
-                                semanticParameters.add(semanticParameter);
+            if (operation.getTestParameters() != null) {
+                for(TestParameter testParameter: operation.getTestParameters()) {
+                    List<Generator> generatorList = testParameter.getGenerators();
+                    for (Generator generator : generatorList) {
+                        if (generator.getType().equals(RANDOM_INPUT_VALUE)) {
+                            List<GenParameter> genParameters = generator.getGenParameters();
+                            for (GenParameter genParameter : genParameters) {
+                                // If the test parameter contains a "predicates" genParameter (i.e., It is a SemanticParameter)
+                                if (genParameter.getName().equals(PREDICATES)) {
+                                    // Add the SemanticParameter to the list
+                                    // Includes valid and invalid values from previous iterations (if any)
+                                    SemanticParameter semanticParameter = new SemanticParameter(testParameter, genParameters, genParameter.getValues(), experimentName, operation.getOperationId());
+                                    semanticParameters.add(semanticParameter);
 
+                                }
                             }
-                        }
 
+                        }
                     }
                 }
             }
