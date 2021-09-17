@@ -15,6 +15,7 @@ import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanti
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.getCsvPaths;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.readCsv;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
+import static es.us.isa.restest.util.FileManager.deleteFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -149,6 +150,9 @@ public class TestARTE {
         assertEquals("values", fuzzingGenerator.getGenParameters().get(0).getName());
         assertEquals(5, fuzzingGenerator.getGenParameters().get(0).getValues().size());
         assertTrue(fuzzingGenerator.getGenParameters().get(0).getValues().containsAll(Arrays.asList("null", "", "\\0", "one space", "randomString")));
+
+        deleteFile(testConfSemanticPath);
+        deleteFile(basePath + "time_ARTE.csv");
     }
 
 }
