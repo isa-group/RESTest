@@ -5,6 +5,7 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
+  oauthPath: null
 testConfiguration:
   operations:
   - testPath: "/article/{term}"

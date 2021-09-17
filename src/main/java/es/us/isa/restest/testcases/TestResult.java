@@ -4,6 +4,7 @@ package es.us.isa.restest.testcases;
 import static es.us.isa.restest.util.CSVManager.createCSVwithHeader;
 import static es.us.isa.restest.util.CSVManager.writeCSVRow;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
+import static org.apache.commons.text.StringEscapeUtils.escapeCsv;
 
 /**
  * Domain-independent test result
@@ -103,9 +104,8 @@ public class TestResult {
         if (!checkIfExists(filePath)) // If the file doesn't exist, create it (only once)
             createCSVwithHeader(filePath, "testResultId,statusCode,responseBody,outputContentType,passed,failReason");
 
-        // Generate row
-        String csvResponseBody = "\"" + responseBody.replaceAll("\n", "\\\n").replaceAll("\"", "\"\"") + "\"";
-        String row = id + "," + statusCode + "," + csvResponseBody + "," + outputFormat + "," + passed + "," + failReason;
+        // Generate row, we need to escape all fields susceptible to contain characters such as ',', '\n', '"', etc.
+        String row = id + "," + statusCode + "," + escapeCsv(responseBody) + "," + outputFormat + "," + passed + "," + escapeCsv(failReason);
         writeCSVRow(filePath, row);
     }
 }

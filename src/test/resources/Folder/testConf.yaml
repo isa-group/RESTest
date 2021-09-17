@@ -5,6 +5,7 @@ auth:
   headerParams: {}
   apiKeysPath: Sample/apikeys.json
   headersPath: null
+  oauthPath: null
 testConfiguration:
   operations:
   - testPath: /v2/incidents

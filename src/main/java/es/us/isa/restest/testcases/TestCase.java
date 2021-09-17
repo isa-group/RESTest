@@ -21,6 +21,7 @@ import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static java.net.URLEncoder.encode;
+import static org.apache.commons.text.StringEscapeUtils.escapeCsv;
 
 /** Domain-independent test case
  * 
@@ -389,8 +390,8 @@ public class TestCase implements Serializable {
 			createCSVwithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
 					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter");
 
-		// Generate row
-		String rowBeginning = id + "," + faulty + "," + faultyReason + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		// Generate row, we need to escape all fields susceptible to contain characters such as ',', '\n', '"', etc.
+		String rowBeginning = id + "," + faulty + "," + escapeCsv(faultyReason) + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
 		StringBuilder rowEnding = new StringBuilder();
 		try {
 			for (Map.Entry<String, String> h: headerParameters.entrySet()) {
@@ -410,10 +411,10 @@ public class TestCase implements Serializable {
 			}
 		} catch (UnsupportedEncodingException e) {
 			rowEnding = new StringBuilder(",,,");
-			LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
-			LogManager.getLogger(TestCase.class.getName()).warn(e);
+			logger.warn("Parameters of test case could not be encoded. Stack trace:");
+			logger.warn(e);
 		}
-		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter);
+		rowEnding.append(",").append(bodyParameter == null ? "" : escapeCsv(bodyParameter));
 
 		writeCSVRow(filePath, rowBeginning + rowEnding);
 	}
