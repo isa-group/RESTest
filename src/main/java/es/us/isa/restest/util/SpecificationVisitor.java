@@ -35,20 +35,20 @@ public class SpecificationVisitor {
 	 * @param in Parameter's type (header, path, query, body or formData)
 	 * @return the operation's parameter
 	 */
-	public static ParameterFeatures findParameter(Operation operation, String paramName, String in) {
+	public static ParameterFeatures findParameterFeatures(Operation operation, String paramName, String in) {
 		ParameterFeatures param;
 
 		switch(in) {
 			case "header":
 			case "path":
 			case "query":
-				param = findQueryHeaderPathParameter(operation, paramName);
+				param = findQueryHeaderPathParameterFeatures(operation, paramName);
 				break;
 			case "body":
-				param = findBodyParameter(operation);
+				param = findBodyParameterFeatures(operation);
 				break;
 			case "formData":
-				param = findFormDataParameter(operation, paramName);
+				param = findFormDataParameterFeatures(operation, paramName);
 				break;
 			default:
 				throw new IllegalArgumentException("Parameter type not supported: " + in);
@@ -57,7 +57,7 @@ public class SpecificationVisitor {
 		return param;
 	}
 
-	private static ParameterFeatures findQueryHeaderPathParameter(Operation operation, String paramName) {
+	private static ParameterFeatures findQueryHeaderPathParameterFeatures(Operation operation, String paramName) {
 		ParameterFeatures param = null;
 		boolean found = false;
 		Iterator<Parameter> it = operation.getParameters().iterator();
@@ -71,7 +71,7 @@ public class SpecificationVisitor {
 		return param;
 	}
 
-	private static ParameterFeatures findBodyParameter(Operation operation) {
+	private static ParameterFeatures findBodyParameterFeatures(Operation operation) {
 		ParameterFeatures param = null;
 		if(operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
 			param = new ParameterFeatures("body", "body", operation.getRequestBody().getRequired());
@@ -79,7 +79,7 @@ public class SpecificationVisitor {
 		return param;
 	}
 
-	private static ParameterFeatures findFormDataParameter(Operation operation, String paramName) {
+	private static ParameterFeatures findFormDataParameterFeatures(Operation operation, String paramName) {
 		ParameterFeatures param = null;
 		MediaType mediaType = operation.getRequestBody().getContent().containsKey(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) ?
 				operation.getRequestBody().getContent().get(MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED) :
@@ -114,7 +114,7 @@ public class SpecificationVisitor {
 	 * @param operation Operation in the specification
 	 * @return the required parameters
 	 */
-	public static List<ParameterFeatures> getRequiredParameters(Operation operation) {
+	public static List<ParameterFeatures> getRequiredParametersFeatures(Operation operation) {
 
 		List<ParameterFeatures> requiredParameters = new ArrayList<>();
 		if(operation.getParameters() != null) {
@@ -154,8 +154,8 @@ public class SpecificationVisitor {
 	 * @param operation Operation in the specification
 	 * @return the required parameters
 	 */
-	public static List<ParameterFeatures> getRequiredNotPathParameters(Operation operation) {
-		return getRequiredParameters(operation).stream()
+	public static List<ParameterFeatures> getRequiredNotPathParametersFeatures(Operation operation) {
+		return getRequiredParametersFeatures(operation).stream()
 				.filter(p -> !p.getIn().equals("path"))
 				.collect(Collectors.toList());
 	}
@@ -177,7 +177,7 @@ public class SpecificationVisitor {
 	 * @param operation Operation in the specification
 	 * @return the parameters whose values can be changed for invalid ones
 	 */
-	public static List<ParameterFeatures> getParametersSubjectToInvalidValueChange(Operation operation) {
+	public static List<ParameterFeatures> getParametersFeaturesSubjectToInvalidValueChange(Operation operation) {
 		List<ParameterFeatures> result = new ArrayList<>();
 
 		if(operation.getParameters() != null) {

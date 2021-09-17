@@ -4,15 +4,11 @@ import es.us.isa.restest.mutation.operators.AbstractMutationOperator;
 import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.Operation;
-import org.apache.commons.lang3.RandomStringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static es.us.isa.restest.util.SpecificationVisitor.getParametersSubjectToInvalidValueChange;
+import static es.us.isa.restest.util.SpecificationVisitor.getParametersFeaturesSubjectToInvalidValueChange;
 
 /**
  * @author Alberto Martin-Lopez
@@ -36,7 +32,7 @@ public class InvalidParameterValue extends AbstractMutationOperator {
      * @return Description of the mutation applied, "" if none applied.
      */
     public static String mutate(TestCase tc, Operation specOperation) {
-        List<ParameterFeatures> candidateParameters = getParametersSubjectToInvalidValueChange(specOperation); // Parameters that can be mutated to create a faulty test case
+        List<ParameterFeatures> candidateParameters = getParametersFeaturesSubjectToInvalidValueChange(specOperation); // Parameters that can be mutated to create a faulty test case
         
         if (candidateParameters.isEmpty())
         	return "";

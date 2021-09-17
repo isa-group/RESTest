@@ -14,7 +14,6 @@ import es.us.isa.restest.inputs.random.RandomStringGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.specification.ParameterFeatures;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.util.SpecificationVisitor;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.MediaType;
@@ -28,7 +27,6 @@ import java.util.*;
 
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getFuzzingValues;
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFromValue;
-import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
 import static es.us.isa.restest.util.SchemaManager.resolveSchema;
 
 /**
@@ -61,7 +59,7 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
         if (testOperation.getTestParameters() != null) {
             for (TestParameter testParam : testOperation.getTestParameters()) {
                 if (!testParam.getIn().equals("body")) {
-                    ParameterFeatures param = SpecificationVisitor.findParameter(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
+                    ParameterFeatures param = SpecificationVisitor.findParameterFeatures(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
                     List<String> fuzzingList = getFuzzingValues(param.getType());
                     if (param.getEnumValues() != null)
                         fuzzingList.addAll(param.getEnumValues());
