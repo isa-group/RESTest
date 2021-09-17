@@ -1,14 +1,12 @@
 package es.us.isa.restest.e2e;
 
-import es.us.isa.restest.configuration.pojos.Operation;
-import es.us.isa.restest.configuration.pojos.SemanticOperation;
-import es.us.isa.restest.configuration.pojos.SemanticParameter;
-import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
+import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.semantic.ARTEInputGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
