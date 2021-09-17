@@ -155,4 +155,48 @@ public class TestARTE {
         deleteFile(basePath + "time_ARTE.csv");
     }
 
+    @Test
+    public void testRunARTEFormDataParameters() throws IOException {
+
+        String basePath = "src/test/resources/restest-test-resources/";
+        String propertiesPath = basePath + "languagetool_arte_props.properties";
+        String minSupport = "20";
+        String threshold = "100";
+        String limit = "30";
+
+        String[] args = {propertiesPath, minSupport, threshold, limit};
+
+        ARTEInputGenerator.main(args);
+
+        String testConfSemanticPath = basePath + "testConfSemantic.yaml";
+        String swaggerPath = basePath + "languagetool_arte_openapi.json";
+        String testConfOriginalPath = basePath + "languagetool_arte_testConf.yaml";
+
+        // Existence of testConfSemantic
+        assertTrue(checkIfExists(testConfOriginalPath));
+        assertTrue(checkIfExists(testConfSemanticPath));
+
+        // Existence of time_ARTE.csv and CSV files
+        assertTrue(checkIfExists(basePath + "time_ARTE.csv"));
+
+        TestConfigurationObject testConfSemantic = loadConfiguration(testConfSemanticPath, new OpenAPISpecification(swaggerPath));
+        Operation operation = testConfSemantic.getTestConfiguration().getOperations().get(0);
+        TestParameter languageParam = operation.getTestParameters().get(2);
+        TestParameter motherTongueParam = operation.getTestParameters().get(3);
+        TestParameter preferredVariantsParam = operation.getTestParameters().get(4);
+        String languageCsvPath = languageParam.getGenerators().get(0).getGenParameters().get(0).getValues().get(0);
+        String motherTongueCsvPath = motherTongueParam.getGenerators().get(0).getGenParameters().get(0).getValues().get(0);
+        String preferredVariantsCsvPath = preferredVariantsParam.getGenerators().get(0).getGenParameters().get(0).getValues().get(0);
+
+        assertTrue(checkIfExists(languageCsvPath));
+        assertTrue(checkIfExists(motherTongueCsvPath));
+        assertTrue(checkIfExists(preferredVariantsCsvPath));
+
+        deleteFile(testConfSemanticPath);
+        deleteFile(basePath + "time_ARTE.csv");
+        deleteFile(languageCsvPath);
+        deleteFile(motherTongueCsvPath);
+        deleteFile(preferredVariantsCsvPath);
+    }
+
 }
