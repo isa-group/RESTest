@@ -4,6 +4,7 @@ import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import org.javatuples.Pair;
 import org.apache.jena.query.QuerySolution;
@@ -47,7 +48,7 @@ public class Predicates {
         testParameter.addRegexToTestParameter(regex);
 
         PathItem pathItem = specification.getSpecification().getPaths().get(semanticOperation.getOperationPath());
-        String parameterDescription = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
+        String parameterDescription = getParameterDescription(specification, semanticOperation, semanticParameter);
 
         // If the paramater name is only a character, compare with description
         if(parameterName.length() == 1 && parameterDescription!=null){
@@ -91,8 +92,7 @@ public class Predicates {
             log.info("Obtaining predicates of parameter {}", parameterName);
 
             // Get description
-            PathItem pathItem = spec.getSpecification().getPaths().get(semanticOperation.getOperationPath());
-            String parameterDescription = getParameterDescription(pathItem, parameterName, semanticOperation.getOperationMethod());
+            String parameterDescription = getParameterDescription(spec, semanticOperation, p);
 
             // If the paramater name is only a character, compare with description
             if(parameterName.length() == 1 && parameterDescription!=null){
@@ -273,47 +273,57 @@ public class Predicates {
 
     }
 
+    private static String getParameterDescription(OpenAPISpecification specification, SemanticOperation operation, SemanticParameter parameter) {
+        PathItem pathItem = specification.getSpecification().getPaths().get(operation.getOperationPath());
+        Operation oasOperation = null;
 
-    private static String getParameterDescription(PathItem pathItem, String parameterName, String method){
-
-        Operation operation = null;
-
-        switch(method) {
+        switch(operation.getOperationMethod().toLowerCase()) {
             case "get":
-                operation = pathItem.getGet();
+                oasOperation = pathItem.getGet();
                 break;
             case "put":
-                operation = pathItem.getPut();
+                oasOperation = pathItem.getPut();
                 break;
             case "post":
-                operation = pathItem.getPost();
+                oasOperation = pathItem.getPost();
                 break;
             case "delete":
-                operation = pathItem.getDelete();
+                oasOperation = pathItem.getDelete();
                 break;
             case "options":
-                operation = pathItem.getOptions();
+                oasOperation = pathItem.getOptions();
                 break;
             case "head":
-                operation = pathItem.getHead();
+                oasOperation = pathItem.getHead();
                 break;
             case "patch":
-                operation = pathItem.getPatch();
+                oasOperation = pathItem.getPatch();
                 break;
             default:        // "trace"
-                operation = pathItem.getTrace();
+                oasOperation = pathItem.getTrace();
                 break;
         }
 
-        List<Parameter> parameters = operation.getParameters();
+        List<Parameter> oasParameters = oasOperation.getParameters();
 
-        for(Parameter parameter: parameters){
-            if(parameter.getName().equals(parameterName)){
-                return  parameter.getDescription();
+        if (oasParameters != null && !oasParameters.isEmpty()) {
+            for (Parameter oasParameter : oasParameters) {
+                if (oasParameter.getName().equals(parameter.getTestParameter().getName()))
+                    return oasParameter.getDescription();
+            }
+        } else { // The parameter may be a formData parameter, found in the body:
+            try {
+               Map<String, Schema> formDataParameters = oasOperation.getRequestBody().getContent().get("application/x-www-form-urlencoded").getSchema().getProperties();
+               for (Map.Entry<String, Schema> formDataParam: formDataParameters.entrySet()) {
+                    if (formDataParam.getKey().equals(parameter.getTestParameter().getName()))
+                        return formDataParam.getValue().getDescription();
+               }
+            } catch (NullPointerException e) {
+                log.warn("No description found for parameter {}", parameter.getTestParameter().getName());
             }
         }
 
-        return parameterName;
+        return null;
     }
 
 }
