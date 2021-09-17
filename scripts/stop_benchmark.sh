@@ -1,6 +1,8 @@
 #! /bin/bash
 
 # CAREFUL! This script will likely kill any process running Java
+processContains='java'
+# We have a script called 'monitor_java.sh', whose process will also be killed by this script
 
 ps_options='a'
 if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "darwin"* || "$OSTYPE" == "freebsd"* ]]; then
@@ -46,5 +48,5 @@ killprocs()
     fi
 }
 
-killprocs java
+killprocs $processContains
 # killprocs "$1" # Uncomment this if you want to kill other processes than Java
