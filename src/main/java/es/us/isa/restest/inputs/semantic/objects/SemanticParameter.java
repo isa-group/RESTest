@@ -1,5 +1,7 @@
-package es.us.isa.restest.configuration.pojos;
+package es.us.isa.restest.inputs.semantic.objects;
 
+import es.us.isa.restest.configuration.pojos.GenParameter;
+import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.util.PropertyManager;
 
 import java.util.HashSet;

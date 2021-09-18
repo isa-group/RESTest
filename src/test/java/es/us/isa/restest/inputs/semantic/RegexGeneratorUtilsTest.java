@@ -1,6 +1,8 @@
 package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.*;
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import org.junit.Test;
 
@@ -10,14 +12,12 @@ import java.util.regex.Pattern;
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.PREDICATES;
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
-import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
+import static es.us.isa.restest.inputs.semantic.objects.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.LIMIT;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getExperimentName;
 import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import static org.junit.Assert.*;
-
-import org.junit.Test;
 
 public class RegexGeneratorUtilsTest {
 

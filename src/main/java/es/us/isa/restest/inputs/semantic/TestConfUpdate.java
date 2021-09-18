@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Set;
 
 import es.us.isa.restest.inputs.fuzzing.FuzzingDictionary;
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.util.stream.IntStream;

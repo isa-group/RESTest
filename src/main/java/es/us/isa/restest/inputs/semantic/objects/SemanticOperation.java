@@ -1,5 +1,9 @@
-package es.us.isa.restest.configuration.pojos;
+package es.us.isa.restest.inputs.semantic.objects;
 
+import es.us.isa.restest.configuration.pojos.GenParameter;
+import es.us.isa.restest.configuration.pojos.Generator;
+import es.us.isa.restest.configuration.pojos.Operation;
+import es.us.isa.restest.configuration.pojos.TestParameter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,7 +13,7 @@ import static es.us.isa.restest.util.CSVManager.collectionToCSV;
 import java.util.*;
 
 import static es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator.RANDOM_INPUT_VALUE;
-import static es.us.isa.restest.configuration.pojos.SemanticParameter.generateSemanticParameters;
+import static es.us.isa.restest.inputs.semantic.objects.SemanticParameter.generateSemanticParameters;
 
 public class SemanticOperation {
     private String operationName = null;

@@ -1,6 +1,8 @@
 package es.us.isa.restest.inputs.semantic.regexGenerator;
 
 import es.us.isa.restest.configuration.pojos.*;
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.testcases.TestCase;
 import it.units.inginf.male.configuration.Configuration;
 import it.units.inginf.male.inputs.DataSet;

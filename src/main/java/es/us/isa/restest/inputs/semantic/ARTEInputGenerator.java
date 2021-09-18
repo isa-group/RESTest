@@ -3,6 +3,8 @@ package es.us.isa.restest.inputs.semantic;
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.*;
 
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.Timer;
