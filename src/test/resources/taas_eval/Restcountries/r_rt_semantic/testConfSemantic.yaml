@@ -30,7 +30,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - http://dbpedia.org/ontology/countryCode
+          - http://dbpedia.org/property/countryCode
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
@@ -55,11 +55,11 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - http://dbpedia.org/ontology/countryCode
+          - http://dbpedia.org/property/countryCode
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
-          - 2
+          - 0
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -80,12 +80,11 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - http://dbpedia.org/ontology/currencyCode
           - http://dbpedia.org/property/currencyCode
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
-          - 2
+          - 0
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -142,7 +141,7 @@ testConfiguration:
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
-          - 1
+          - 0
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -242,7 +241,7 @@ testConfiguration:
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
-          - 2
+          - 0
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -308,7 +307,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - http://dbpedia.org/ontology/countryCode
+          - http://dbpedia.org/property/countryCode
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
@@ -353,11 +352,11 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - http://dbpedia.org/ontology/countryCode
+          - http://dbpedia.org/property/countryCode
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
-          - 2
+          - 0
           objectValues: null
         valid: true
     expectedResponse: 200
@@ -398,7 +397,7 @@ testConfiguration:
           objectValues: null
         - name: predicates
           values:
-          - http://dbpedia.org/ontology/currencyCode
+          - http://dbpedia.org/property/currencyCode
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
