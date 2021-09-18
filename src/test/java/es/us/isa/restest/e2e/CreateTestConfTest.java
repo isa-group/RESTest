@@ -51,9 +51,9 @@ public class CreateTestConfTest {
     private void check() throws NoSuchFieldException, IllegalAccessException {
         Field openApiSpecPathField = CreateTestConf.class.getDeclaredField("openApiSpecPath");
         openApiSpecPathField.setAccessible(true);
-        String confPath = (String) openApiSpecPathField.get(null);
+        String openApiSpecPath = (String) openApiSpecPathField.get(null);
 
-        if (!confPath.equals("src/test/resources/Folder/swagger.yaml"))
+        if (!openApiSpecPath.equals("src/test/resources/Folder/swagger.yaml"))
             fail("The CreateTestConf class should have 'src/test/resources/Folder/swagger.yaml' as the default Swagger path.\n" +
                     "This is to avoid testConf files being changed inadvertently when running the test suite.\n" +
                     "You may have changed it and forgot to set it back to its default value. Please, do so.");
