@@ -3,9 +3,12 @@ package es.us.isa.restest.e2e;
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.semantic.ARTEInputGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.util.PropertyManager;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -21,7 +24,21 @@ import static org.junit.Assert.assertTrue;
 
 public class TestARTE {
 
-    //     private static final String propertiesFilePath = "src/test/resources/semanticAPITests/ClimaCell/climacell.properties";
+    @Before
+    public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field properties = PropertyManager.class.getDeclaredField("properties");
+        properties.setAccessible(true);
+        properties.set(null, null);
+
+        Field experimentProperties = PropertyManager.class.getDeclaredField("experimentProperties");
+        experimentProperties.setAccessible(true);
+        experimentProperties.set(null, null);
+
+        Field csvPath = ARTEInputGenerator.class.getDeclaredField("csvPath");
+        csvPath.setAccessible(true);
+        csvPath.set(null, null);
+    }
+
     @Test
     public void testRunARTE() throws IOException {
 

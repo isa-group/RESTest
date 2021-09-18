@@ -189,8 +189,6 @@ public class ARTEInputGenerator {
         Path fn = path.getFileSystem().getPath("testConfSemantic.yaml");
         Path target = (dir == null) ? fn : dir.resolve(fn);
 
-        log.info("testConfSemantic.yaml will be saved to {}", target.toString());
-
         semanticConfPath = target.toString();
 
     }
