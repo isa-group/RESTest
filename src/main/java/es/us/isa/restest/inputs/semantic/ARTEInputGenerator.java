@@ -35,7 +35,7 @@ public class ARTEInputGenerator {
     private static OpenAPISpecification specification;
     private static String confPathOriginal;
     private static String semanticConfPath;
-    private static String csvPath = "src/main/resources/TestData/Generated/";           // Path in which the generated input values will be stored
+    private static String csvPath;           // Path in which the generated input values will be stored
 
     // Parameters
     // Minimum support of a predicate
@@ -184,7 +184,7 @@ public class ARTEInputGenerator {
         String OAISpecPath = readProperty(propertiesFilePath, "oas.path");
         confPathOriginal = readProperty(propertiesFilePath, "conf.path");
         specification = new OpenAPISpecification(OAISpecPath);
-        csvPath = csvPath + specification.getSpecification().getInfo().getTitle();
+        csvPath = PropertyManager.readProperty("arte.generatedInputValuesPath") + specification.getSpecification().getInfo().getTitle();
 
         Path path = Paths.get(confPathOriginal);
         Path dir = path.getParent();
