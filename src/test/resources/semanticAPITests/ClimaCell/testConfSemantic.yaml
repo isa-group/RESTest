@@ -5,6 +5,7 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
+  oauthPath: null
 testConfiguration:
   operations:
   - testPath: /weather/forecast/hourly
@@ -52,7 +53,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/Generated/climaCellclimaCellclimaCell/apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4_lat.csv
+          - src/main/resources/TestData/Generated/climaCell/apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4_lat.csv
           objectValues: null
         - name: predicates
           values:
@@ -83,7 +84,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/Generated/climaCellclimaCellclimaCell/apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4_lon.csv
+          - src/main/resources/TestData/Generated/climaCell/apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4_lon.csv
           objectValues: null
         - name: predicates
           values:
@@ -118,7 +119,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/Generated/climaCellclimaCellclimaCell/apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491_lat.csv
+          - src/main/resources/TestData/Generated/climaCell/apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491_lat.csv
           objectValues: null
         - name: predicates
           values:
@@ -137,7 +138,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/Generated/climaCellclimaCellclimaCell/apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491_lon.csv
+          - src/main/resources/TestData/Generated/climaCell/apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491_lon.csv
           objectValues: null
         - name: predicates
           values:
