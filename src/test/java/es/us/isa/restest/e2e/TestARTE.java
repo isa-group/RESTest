@@ -7,7 +7,6 @@ import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.PropertyManager;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -27,15 +26,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestARTE {
 
-    private static String defaultCsvPath;
-
-    @BeforeClass
-    public static void setUp() throws NoSuchFieldException, IllegalAccessException {
-        Field csvPath = ARTEInputGenerator.class.getDeclaredField("csvPath");
-        csvPath.setAccessible(true);
-        defaultCsvPath = (String) csvPath.get(null);
-    }
-
     @Before
     public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         Field properties = PropertyManager.class.getDeclaredField("properties");
@@ -48,7 +38,7 @@ public class TestARTE {
 
         Field csvPath = ARTEInputGenerator.class.getDeclaredField("csvPath");
         csvPath.setAccessible(true);
-        csvPath.set(null, defaultCsvPath);
+        csvPath.set(null, null);
     }
 
     @Test
