@@ -25,7 +25,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/alphacodes.csv'
+          - 'src/test/resources/taas_eval/Restcountries/alphacodes.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -54,7 +54,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/alphacodes.csv'
+          - 'src/test/resources/taas_eval/Restcountries/alphacodes.csv'
           objectValues: null
         - name: minValues
           values:
@@ -79,7 +79,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/currencies.csv'
+          - 'src/test/resources/taas_eval/Restcountries/currencies.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -108,7 +108,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/names.csv'
+          - 'src/test/resources/taas_eval/Restcountries/names.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -142,7 +142,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/callingcodes.csv'
+          - 'src/test/resources/taas_eval/Restcountries/callingcodes.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -171,7 +171,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/capitals.csv'
+          - 'src/test/resources/taas_eval/Restcountries/capitals.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -202,7 +202,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/regions.csv'
+          - 'src/test/resources/taas_eval/Restcountries/regions.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -227,7 +227,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/subregions.csv'
+          - 'src/test/resources/taas_eval/Restcountries/subregions.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -252,7 +252,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/languages.csv'
+          - 'src/test/resources/taas_eval/Restcountries/languages.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -284,7 +284,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -309,7 +309,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -329,7 +329,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/alphacodes.csv'
+          - 'src/test/resources/taas_eval/Restcountries/alphacodes.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -358,7 +358,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -378,7 +378,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-            - 'src/test/resources/Restcountries/alphacodes.csv'
+            - 'src/test/resources/taas_eval/Restcountries/alphacodes.csv'
           objectValues: null
         - name: minValues
           values:
@@ -403,7 +403,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -423,7 +423,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/currencies.csv'
+          - 'src/test/resources/taas_eval/Restcountries/currencies.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -452,7 +452,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -472,7 +472,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/names.csv'
+          - 'src/test/resources/taas_eval/Restcountries/names.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -506,7 +506,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -526,7 +526,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/callingcodes.csv'
+          - 'src/test/resources/taas_eval/Restcountries/callingcodes.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -555,7 +555,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -575,7 +575,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/capitals.csv'
+          - 'src/test/resources/taas_eval/Restcountries/capitals.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -606,7 +606,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -626,7 +626,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/regions.csv'
+          - 'src/test/resources/taas_eval/Restcountries/regions.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -651,7 +651,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -671,7 +671,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/subregions.csv'
+          - 'src/test/resources/taas_eval/Restcountries/subregions.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -696,7 +696,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -716,7 +716,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/languages.csv'
+          - 'src/test/resources/taas_eval/Restcountries/languages.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -748,7 +748,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -768,7 +768,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/demonyms.csv'
+          - 'src/test/resources/taas_eval/Restcountries/demonyms.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -799,7 +799,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
           objectValues: null
         - name: minValues
           values:
