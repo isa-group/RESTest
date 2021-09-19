@@ -3,6 +3,8 @@ package es.us.isa.restest.inputs.semantic;
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.*;
 
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.Timer;
@@ -29,11 +31,11 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class ARTEInputGenerator {
 
     // Properties file with configuration settings
-    private static  String propertiesFilePath = "src/test/resources/taas_eval/OMDb/r_cbt_semantic/omdb.properties";
+    private static  String propertiesFilePath = "src/test/resources/semanticAPITests/ClimaCell/climacell.properties";
     private static OpenAPISpecification specification;
     private static String confPathOriginal;
     private static String semanticConfPath;
-    private static String csvPath = "src/test/resources/taas_eval/OMDb/r_cbt_semantic/";           // Path in which the generated input values will be stored
+    private static String csvPath;           // Path in which the generated input values will be stored
 
     // Parameters
     // Minimum support of a predicate
@@ -182,7 +184,7 @@ public class ARTEInputGenerator {
         String OAISpecPath = readProperty(propertiesFilePath, "oas.path");
         confPathOriginal = readProperty(propertiesFilePath, "conf.path");
         specification = new OpenAPISpecification(OAISpecPath);
-        csvPath = csvPath + specification.getSpecification().getInfo().getTitle();
+        csvPath = PropertyManager.readProperty("arte.generatedInputValuesPath") + specification.getSpecification().getInfo().getTitle();
 
         Path path = Paths.get(confPathOriginal);
         Path dir = path.getParent();

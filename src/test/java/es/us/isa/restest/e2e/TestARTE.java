@@ -2,10 +2,11 @@ package es.us.isa.restest.e2e;
 
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.inputs.semantic.ARTEInputGenerator;
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.PropertyManager;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
-import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
+import static es.us.isa.restest.inputs.semantic.objects.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.getCsvPaths;
 import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUtils.readCsv;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
@@ -24,15 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestARTE {
-
-    private static String defaultCsvPath;
-
-    @BeforeClass
-    public static void setUp() throws NoSuchFieldException, IllegalAccessException {
-        Field csvPath = ARTEInputGenerator.class.getDeclaredField("csvPath");
-        csvPath.setAccessible(true);
-        defaultCsvPath = (String) csvPath.get(null);
-    }
 
     @Before
     public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -46,7 +38,7 @@ public class TestARTE {
 
         Field csvPath = ARTEInputGenerator.class.getDeclaredField("csvPath");
         csvPath.setAccessible(true);
-        csvPath.set(null, defaultCsvPath);
+        csvPath.set(null, null);
     }
 
     @Test

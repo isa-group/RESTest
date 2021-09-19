@@ -1,9 +1,8 @@
 package es.us.isa.restest.inputs.semantic;
 
-import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.Operation;
-import es.us.isa.restest.configuration.pojos.SemanticOperation;
-import es.us.isa.restest.configuration.pojos.SemanticParameter;
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import org.junit.Test;
@@ -11,10 +10,9 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
-import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
+import static es.us.isa.restest.inputs.semantic.objects.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.*;
 import static es.us.isa.restest.main.TestGenerationAndExecution.getExperimentName;
 import static org.junit.Assert.assertEquals;

@@ -1,6 +1,6 @@
 package es.us.isa.restest.inputs.semantic;
 
-import es.us.isa.restest.configuration.pojos.SemanticParameter;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import org.javatuples.Pair;
 import org.apache.jena.query.*;

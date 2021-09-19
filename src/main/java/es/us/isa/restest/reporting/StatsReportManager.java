@@ -3,6 +3,8 @@ package es.us.isa.restest.reporting;
 import es.us.isa.restest.configuration.pojos.*;
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.coverage.CoverageResults;
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
@@ -16,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
-import static es.us.isa.restest.configuration.pojos.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
+import static es.us.isa.restest.inputs.semantic.objects.SemanticOperation.getSemanticOperationsWithValuesFromPreviousIterations;
 import static es.us.isa.restest.inputs.semantic.Predicates.*;
 import static es.us.isa.restest.inputs.semantic.SPARQLUtils.getNewValues;
 import static es.us.isa.restest.inputs.semantic.TestConfUpdate.updateTestConfWithIncreasedNumberOfTries;

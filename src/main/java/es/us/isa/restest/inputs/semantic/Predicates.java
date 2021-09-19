@@ -1,6 +1,8 @@
 package es.us.isa.restest.inputs.semantic;
 
 import es.us.isa.restest.configuration.pojos.*;
+import es.us.isa.restest.inputs.semantic.objects.SemanticOperation;
+import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -47,7 +49,6 @@ public class Predicates {
         // Add regex to semanticParameter
         testParameter.addRegexToTestParameter(regex);
 
-        PathItem pathItem = specification.getSpecification().getPaths().get(semanticOperation.getOperationPath());
         String parameterDescription = getParameterDescription(specification, semanticOperation, semanticParameter);
 
         // If the paramater name is only a character, compare with description
