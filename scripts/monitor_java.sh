@@ -22,7 +22,7 @@ while [ true ]; do
   current_date_time=`date +%s`
 
   # Save memory and CPU info with command 'top'
-  top -o -PID -c -b -n 1 | grep -e 'top -' -e 'Tasks:' -e '%Cpu(s):' -e 'MiB Mem :' \
+  top -o -PID -c -b -n 1 -w 512 | grep -e 'top -' -e 'Tasks:' -e '%Cpu(s):' -e 'MiB Mem :' \
     -e 'MiB Swap:' -e '.*PID.*USER' -e 'java -jar restest.jar' | grep -v "top -o -PID -c -b -n 1" |
     grep -v -w "$(basename "$0")" | grep -v -w grep > $folder/mem_cpu_"$current_date_time".txt
 
