@@ -15,9 +15,6 @@ else
   ps_options+='a'
 fi
 
-# First we save a file linking the PIDs to the RESTest instances
-ps $ps_options | grep "java -jar restest.jar" | grep -v -w "$(basename "$0")" | grep -v -w grep > $folder/pids_restest.txt
-
 while [ true ]; do
   current_date_time=`date +%s`
 

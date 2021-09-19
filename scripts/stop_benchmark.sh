@@ -2,6 +2,7 @@
 
 # CAREFUL! This script will likely kill any process running Java
 processContains='java'
+processNotContains='allure'
 # We have a script called 'monitor_java.sh', whose process will also be killed by this script
 
 ps_options='a'
@@ -19,8 +20,8 @@ pkill_modif()
     # shellcheck disable=2086
     # shellcheck disable=2009
     # Get the list of PIDs. Be careful to exclude grep and the script itself
-    pid_list="$(ps $ps_options | grep "$program" | grep -v -w "$script" |
-        grep -v -w grep | awk '{print $1}')"
+    pid_list="$(ps $ps_options | grep "$program" | grep -v "$processNotContains" |
+        grep -v -w "$script" | grep -v -w grep | awk '{print $1}')"
     if [ -z "$pid_list" ]
     then
         # No process found
