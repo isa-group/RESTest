@@ -41,4 +41,4 @@ else
 fi
 
 # Save a file linking the PIDs to the RESTest instances
-ps $ps_options | grep "java -jar restest.jar" | grep -v -w "$(basename "$0")" | grep -v -w grep > $folder/pids_restest.txt
+ps $ps_options | grep "java -jar restest.jar" | grep -v -w "$(basename "$0")" | grep -v -w grep > pids_restest.txt
