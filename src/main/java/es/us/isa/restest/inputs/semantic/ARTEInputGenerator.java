@@ -81,8 +81,10 @@ public class ARTEInputGenerator {
         if (proxy != null) {
             System.setProperty("http.proxyHost", proxy.split(":")[0]);
             System.setProperty("http.proxyPort", proxy.split(":")[1]);
+            System.setProperty("http.nonProxyHosts", "localhost|127.0.0.1");
             System.setProperty("https.proxyHost", proxy.split(":")[0]);
             System.setProperty("https.proxyPort", proxy.split(":")[1]);
+            System.setProperty("https.nonProxyHosts", "localhost|127.0.0.1");
         }
 
         setEvaluationParameters();
