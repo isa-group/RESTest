@@ -26,7 +26,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/alphacodes.csv'
+          - 'src/test/resources/Folder/test_data/alphacodes.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -55,7 +55,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/alphacodes.csv'
+          - 'src/test/resources/Folder/test_data/alphacodes.csv'
           objectValues: null
         - name: minValues
           values:
@@ -80,7 +80,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/currencies.csv'
+          - 'src/test/resources/Folder/test_data/currencies.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -109,7 +109,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/names.csv'
+          - 'src/test/resources/Folder/test_data/names.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -143,7 +143,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/callingcodes.csv'
+          - 'src/test/resources/Folder/test_data/callingcodes.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -172,7 +172,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/capitals.csv'
+          - 'src/test/resources/Folder/test_data/capitals.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -203,7 +203,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/regions.csv'
+          - 'src/test/resources/Folder/test_data/regions.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -228,7 +228,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/subregions.csv'
+          - 'src/test/resources/Folder/test_data/subregions.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -253,7 +253,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/languages.csv'
+          - 'src/test/resources/Folder/test_data/languages.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -285,7 +285,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -310,7 +310,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -330,7 +330,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/alphacodes.csv'
+          - 'src/test/resources/Folder/test_data/alphacodes.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -359,7 +359,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -379,7 +379,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-            - 'src/test/resources/Restcountries/alphacodes.csv'
+            - 'src/test/resources/Folder/test_data/alphacodes.csv'
           objectValues: null
         - name: minValues
           values:
@@ -404,7 +404,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -424,7 +424,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/currencies.csv'
+          - 'src/test/resources/Folder/test_data/currencies.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -453,7 +453,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -473,7 +473,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/names.csv'
+          - 'src/test/resources/Folder/test_data/names.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -507,7 +507,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -527,7 +527,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/callingcodes.csv'
+          - 'src/test/resources/Folder/test_data/callingcodes.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -556,7 +556,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -576,7 +576,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/capitals.csv'
+          - 'src/test/resources/Folder/test_data/capitals.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -607,7 +607,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -627,7 +627,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/regions.csv'
+          - 'src/test/resources/Folder/test_data/regions.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -652,7 +652,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -672,7 +672,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/subregions.csv'
+          - 'src/test/resources/Folder/test_data/subregions.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -697,7 +697,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -717,7 +717,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/languages.csv'
+          - 'src/test/resources/Folder/test_data/languages.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -749,7 +749,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
@@ -769,7 +769,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/demonyms.csv'
+          - 'src/test/resources/Folder/test_data/demonyms.csv'
           objectValues: null
       - valid: false
         type: RandomInputValue
@@ -800,7 +800,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/Restcountries/fields.csv'
+          - 'src/test/resources/Folder/test_data/fields.csv'
           objectValues: null
         - name: minValues
           values:
