@@ -1,0 +1,358 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /v1/all
+    operationId: v1All
+    method: get
+    testParameters: null
+    expectedResponse: 200
+  - testPath: "/v1/alpha/{alphacode}"
+    operationId: v1Alphacode
+    method: get
+    testParameters:
+    - name: alphacode
+      in: path
+      weight: null
+      generators:
+      - type: SemanticParameter
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+#  - testPath: /v1/alpha
+#    operationId: v1Alphacodes
+#    method: get
+#    testParameters:
+#    - name: codes
+#      in: query
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v1/currency/{currency}"
+#    operationId: v1Currency
+#    method: get
+#    testParameters:
+#    - name: currency
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v1/name/{name}"
+#    operationId: v1Name
+#    method: get
+#    testParameters:
+#    - name: name
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: fullText
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomBoolean
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v1/callingcode/{callingcode}"
+#    operationId: v1Callingcode
+#    method: get
+#    testParameters:
+#    - name: callingcode
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v1/capital/{capital}"
+#    operationId: v1Capital
+#    method: get
+#    testParameters:
+#    - name: capital
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v1/region/{region}"
+#    operationId: v1Region
+#    method: get
+#    testParameters:
+#    - name: region
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v1/subregion/{subregion}"
+#    operationId: v1Subregion
+#    method: get
+#    testParameters:
+#    - name: subregion
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v1/lang/{lang}"
+#    operationId: v1Lang
+#    method: get
+#    testParameters:
+#    - name: lang
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: /v2/all
+#    operationId: v2All
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/alpha/{alphacode}"
+#    operationId: v2Alphacode
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: alphacode
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: /v2/alpha
+#    operationId: v2Alphacodes
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: codes
+#      in: query
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/currency/{currency}"
+#    operationId: v2Currency
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: currency
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/name/{name}"
+#    operationId: v2Name
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: name
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: fullText
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomBoolean
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/callingcode/{callingcode}"
+#    operationId: v2Callingcode
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: callingcode
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/capital/{capital}"
+#    operationId: v2Capital
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: capital
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/region/{region}"
+#    operationId: v2Region
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: region
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/subregion/{subregion}"
+#    operationId: v2Subregion
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: subregion
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/lang/{lang}"
+#    operationId: v2Lang
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: lang
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+#  - testPath: "/v2/demonym/{demonym}"
+#    operationId: v2Demonym
+#    method: get
+#    testParameters:
+#    - name: fields
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    - name: demonym
+#      in: path
+#      weight: null
+#      generators:
+#      - type: SemanticParameter
+#        genParameters: []
+#        valid: true
+#    expectedResponse: 200
+  - testPath: "/v2/regionalbloc/{regionalbloc}"
+    operationId: v2Regionalbloc
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: SemanticParameter
+        genParameters: []
+        valid: true
+    - name: regionalbloc
+      in: path
+      weight: null
+      generators:
+      - type: SemanticParameter
+        genParameters: []
+        valid: true
+    expectedResponse: 200

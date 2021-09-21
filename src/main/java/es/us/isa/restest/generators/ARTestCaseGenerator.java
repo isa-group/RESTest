@@ -47,10 +47,12 @@ public class ARTestCaseGenerator extends ConstraintBasedTestCaseGenerator {
 
         if (test != null) {
             testCases.add(test);
-            if (test.getFaulty() && faultyReason.equals(INTER_PARAMETER_DEPENDENCY)) {
-                nFaultyTestDueToDependencyViolations++;
-            } else if (test.getFaulty() && faultyReason.equals(INDIVIDUAL_PARAMETER_CONSTRAINT)) {
-                nFaultyTestsDueToIndividualConstraint++;
+            if (test.getFaulty() != null) {
+                if (test.getFaulty() && faultyReason.equals(INTER_PARAMETER_DEPENDENCY)) {
+                    nFaultyTestDueToDependencyViolations++;
+                } else if (test.getFaulty() && faultyReason.equals(INDIVIDUAL_PARAMETER_CONSTRAINT)) {
+                    nFaultyTestsDueToIndividualConstraint++;
+                }
             }
         }
 
@@ -67,7 +69,8 @@ public class ARTestCaseGenerator extends ConstraintBasedTestCaseGenerator {
                 test = generateFaultyTestCaseDueToViolatedDependencies(testOperation);
                 break;
             case INDIVIDUAL_PARAMETER_CONSTRAINT:
-                test = generateFaultyTestCaseDueToIndividualConstraints(testOperation);
+                test = generateValidTestCase(testOperation);
+                makeTestCaseFaultyDueToIndividualConstraints(test, testOperation);
                 break;
             default:
                 throw new IllegalArgumentException("The faulty reason '" + faultyReason + "' is not supported.");

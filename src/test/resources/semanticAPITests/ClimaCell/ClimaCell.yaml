@@ -1,0 +1,153 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: "MicroWeather API \u2013 An all-in-one weather API: Get the most accurate\
+    \ information, generate invaluable insights, and drive actions \u2013 in just\
+    \ a few lines of code."
+  title: climaCell
+  version: 5b801ddee4b0b497acc1c2d4
+schemes:
+  - https
+swagger: '2.0'
+paths:
+  /weather/forecast/hourly:
+    get:
+      description: The hourly call provides a global hourly forecast, up to 96 hours
+        (4 days) out, for a specific location.
+      operationId: apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - climacell-microweather-v1.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: ' '
+          in: query
+          name: end_time
+          required: false
+          type: string
+        - description: The fields you want to fetch from the API. for the full list
+            go to https://www.climacell.co/weather-api/docs/
+          in: query
+          name: fields
+          required: false
+          type: string
+        - description: latitude
+          in: query
+          name: lat
+          required: true
+          type: number
+        - description: ' '
+          in: query
+          name: unit_system
+          required: false
+          enum:
+            - si
+            - us
+          type: string
+        - description: longitude
+          in: query
+          name: lon
+          required: true
+          type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /weather/nowcast:
+    get:
+      description: "The nowcast call provides forecasting data on a minute-\xADby-\xAD\
+        minute basis, based on ClimaCell\u2019s proprietary sensing technology and\
+        \ model."
+      operationId: apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - climacell-microweather-v1.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: latitude
+          in: query
+          name: lat
+          required: true
+          type: number
+        - description: longitude
+          in: query
+          name: lon
+          required: true
+          type: number
+        - description: The fields you want to fetch from the API. for the full list
+            go to https://www.climacell.co/weather-api/docs/
+          in: query
+          name: fields
+          required: false
+          type: string
+        - description: ' '
+          in: query
+          name: end_time
+          required: false
+          type: string
+        - description: ' '
+          in: query
+          name: unit_system
+          required: false
+          type: string
+          enum:
+            - ' si'
+            - us
+
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''
+  /weather/realtime:
+    get:
+      description: Current Weather Conditions - The Realtime Call Provides Weather
+        Information At The Present Time,
+      operationId: apiendpoint_d775527a-c5c0-44f6-9c34-9c943f7b8131
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - climacell-microweather-v1.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: latitude
+          in: query
+          name: lat
+          required: true
+          type: number
+        - description: longitude
+          in: query
+          name: lon
+          required: true
+          type: number
+        - description: ' '
+          in: query
+          name: unit_system
+          required: false
+          enum:
+            - si
+            - us
+          type: string
+        - description: The fields you want to fetch from the API. for the full list
+            go to https://www.climacell.co/weather-api/docs/
+          in: query
+          name: fields
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''

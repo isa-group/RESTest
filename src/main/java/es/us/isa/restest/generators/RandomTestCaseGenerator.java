@@ -8,7 +8,6 @@ import java.util.List;
 
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
@@ -43,13 +42,13 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 			TestCase test = generateNextTestCase(testOperation);
 			test.setFulfillsDependencies(fulfillsDependencies);
 			//Timer.stopCounting(TEST_CASE_GENERATION);
-			
+
 			// Set authentication data (if any)
 			authenticateTestCase(test);
 
 			// Add test case to the collection
 			testCases.add(test);
-			
+
 			// Update indexes
 			updateIndexes(test);
 
@@ -62,16 +61,15 @@ public class RandomTestCaseGenerator extends AbstractTestCaseGenerator {
 	// Generate the next test case
 	public TestCase generateNextTestCase(Operation testOperation) throws RESTestException {
 
-		TestCase test = null;
+		TestCase test = generateRandomValidTestCase(testOperation);
 
 		// If more faulty test cases need to be generated, try generating one
 		if (nFaulty < (int) (faultyRatio * numberOfTests))
-			test = generateFaultyTestCaseDueToIndividualConstraints(testOperation);
-		if (test != null)
-			return test;
+			makeTestCaseFaultyDueToIndividualConstraints(test, testOperation);
 
-		// If no more faulty test cases need to be generated, or one could not be generated, generate one nominal
-		return generateRandomValidTestCase(testOperation);
+		checkTestCaseValidity(test);
+
+		return test;
 	}
 
 	// Returns true if there are more test cases to be generated

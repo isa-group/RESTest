@@ -5,15 +5,15 @@ axios.defaults.baseURL = 'https://api.stripe.com'
 axios.defaults.headers.common['Authorization'] = JSON.parse(fs.readFileSync('../../src/test/resources/auth/Stripe/headers.json')).Authorization[0]
 
 const timer = 35
-const limit = 10
-const service = 'coupons'
+const limit = 100
+const service = 'products'
 
 for (let i=0; i<limit; i++) {
     setTimeout(
         function() {
-            axios.get(`/v1/${service}?limit=100&offset=${i*100}`)
+            axios.get(`/v1/${service}?limit=100`)
             .then(function (response) {
-                const ids = response.data.data.map(i => i.id)
+                const ids = response.data.data.map(item => item.id)
                 console.log(ids)
 
 
@@ -21,14 +21,17 @@ for (let i=0; i<limit; i++) {
                 ids.forEach(id => {
                     setTimeout(
                         function() {
-                            axios.delete(`/v1/${service}/${id}`).then(() => console.log(`Deleted id ${id}`))
+                            axios.delete(`/v1/${service}/${id}`)
+                            .then(() => console.log(`Deleted id ${id}`))
+                            .catch((error) => console.log(JSON.stringify(error.response.data)))
                         },
                         timer*j
                     )
                     j++;
                 });
             })
+            .catch((error) => console.log(JSON.stringify(error.response.data)))
         },
-        timer*i*100*2
+        (timer-10)*i*100*2
     )
 }

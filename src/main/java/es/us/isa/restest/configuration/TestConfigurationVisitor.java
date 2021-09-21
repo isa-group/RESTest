@@ -155,4 +155,47 @@ public class TestConfigurationVisitor {
 		return parameter;
 	}
 
+	/**
+	 * Analyzes the whole testConf to look for either ParameterGenerator or BodyGenerator.
+	 * If there's any of those, returns true, otherwise returns false.
+	 */
+	public static boolean hasStatefulGenerators(TestConfigurationObject conf) {
+		return conf.getTestConfiguration().getOperations().stream().anyMatch(TestConfigurationVisitor::hasStatefulGenerators);
+	}
+
+	public static boolean hasStatefulGenerators(Operation operation) {
+		try {
+			return operation.getTestParameters().stream().anyMatch(p ->
+					p.getGenerators().stream().anyMatch(g ->
+							g.getType().equals("BodyGenerator") || g.getType().equals("ParameterGenerator")
+					)
+			);
+		} catch (NullPointerException e) { // Parameters could be "null"
+			return false;
+		}
+	}
+
+	/**
+	 * Analyzes the whole testConf to look for RandomInputValue generators using
+	 * ARTE parameters (i.e., predicates or numberOfTriesToGenerateRegex). If there's
+	 * any of those, returns true, otherwise returns false.
+	 */
+	public static boolean isArteEnabled(TestConfigurationObject conf) {
+		return conf.getTestConfiguration().getOperations().stream().anyMatch(TestConfigurationVisitor::isArteEnabled);
+	}
+
+	public static boolean isArteEnabled(Operation operation) {
+		try {
+			return operation.getTestParameters().stream().anyMatch(p ->
+					p.getGenerators().stream().filter(g -> g.getType().equals("RandomInputValue")).anyMatch(g ->
+							g.getGenParameters().stream().anyMatch(gp ->
+									gp.getName().equals("predicates") || gp.getName().equals("numberOfTriesToGenerateRegex")
+							)
+					)
+			);
+		} catch (NullPointerException e) { // Parameters or genParameters could be "null"
+			return false;
+		}
+	}
+
 }

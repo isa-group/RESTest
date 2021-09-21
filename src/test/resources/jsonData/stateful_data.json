@@ -1,0 +1,29 @@
+{
+  "GET/comments": {
+    "id": [
+      "c8",
+      "c3",
+      "c6"
+    ],
+    "userName": [
+      "markSpecter",
+      "oliviaClark",
+      "markSpecter"
+    ],
+    "text": [
+      "Too bad, too late.",
+      "I would love to see this product in pocket size",
+      "Adding a sim card slot would be a winner point!"
+    ],
+    "date": [
+      "2018-04-16T20:44:53.950",
+      "2015-01-16T20:44:53.950",
+      "1998-01-16T20:44:53.950"
+    ],
+    "type": [
+      "Complain",
+      "Request",
+      "Request"
+    ]
+  }
+}

@@ -30,7 +30,7 @@ public class SpecificationVisitorTest {
         Operation op = travelApiOas.getSpecification().getPaths().get("/trips").getGet();
         String paramName = "offset";
         String paramType = "query";
-        ParameterFeatures param = findParameter(op, paramName, paramType);
+        ParameterFeatures param = findParameterFeatures(op, paramName, paramType);
 
         assertEquals("The parameter's name should be 'offset', but its name is" + param.getName(), "offset", param.getName());
         assertEquals("'offset' should be a query parameter, but it is a " + param.getIn() + " parameter", "query", param.getIn());
@@ -41,7 +41,7 @@ public class SpecificationVisitorTest {
     @Test
     public void shouldGetRequiredParametersGetOperation() {
         Operation op = travelApiOas.getSpecification().getPaths().get("/trips/user").getGet();
-        List<ParameterFeatures> required = getRequiredParameters(op);
+        List<ParameterFeatures> required = getRequiredParametersFeatures(op);
 
         MatcherAssert.assertThat(required.stream().map(ParameterFeatures::getName).collect(Collectors.toList()), contains("username", "password"));
     }
@@ -49,7 +49,7 @@ public class SpecificationVisitorTest {
     @Test
     public void shouldGetRequiredParametersPostOperation() {
         Operation op = travelApiOas.getSpecification().getPaths().get("/users").getPost();
-        List<ParameterFeatures> required = getRequiredParameters(op);
+        List<ParameterFeatures> required = getRequiredParametersFeatures(op);
 
         MatcherAssert.assertThat(required.stream().map(ParameterFeatures::getName).collect(Collectors.toList()), contains("body"));
     }
@@ -57,7 +57,7 @@ public class SpecificationVisitorTest {
     @Test
     public void shouldGetParametersSubjectToInvalidValueChangeTravelAPI() {
         Operation op = travelApiOas.getSpecification().getPaths().get("/trips/user").getGet();
-        List<ParameterFeatures> parameters = getParametersSubjectToInvalidValueChange(op);
+        List<ParameterFeatures> parameters = getParametersFeaturesSubjectToInvalidValueChange(op);
 
         MatcherAssert.assertThat(parameters.stream().map(ParameterFeatures::getName).collect(Collectors.toList()), contains("isAdmin", "maxPriceAirbnb", "includeTripsWithUnsetAirbnbPrice", "sort"));
     }

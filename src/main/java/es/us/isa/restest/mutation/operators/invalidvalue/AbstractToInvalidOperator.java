@@ -89,7 +89,7 @@ public abstract class AbstractToInvalidOperator extends AbstractMutationOperator
                     }
                     break;
                 case VIOLATE_FORMAT_CONSTRAINT:
-                    if (param.getFormat() != null) {
+                    if (param.getFormat() != null || param.getPattern() != null) {
                         mutationApplied = getMutationMessage(mutationsList.get(index), param, tc, null);
                         tc.addParameter(param, RandomStringUtils.randomAlphabetic(10, 20));
                     }
@@ -130,7 +130,7 @@ public abstract class AbstractToInvalidOperator extends AbstractMutationOperator
             case VIOLATE_MIN_CONSTRAINT:
                 return "Violated 'min' constraint of " + param.getType() + " parameter " + param.getName();
             case VIOLATE_FORMAT_CONSTRAINT:
-                return "Violated 'format' constraint of string parameter " + param.getName();
+                return "Violated 'format/pattern' constraint of string parameter " + param.getName();
             case VIOLATE_MAX_LENGTH_CONSTRAINT:
                 return "Violated 'max_length' constraint of string parameter " + param.getName();
             case VIOLATE_MIN_LENGTH_CONSTRAINT:

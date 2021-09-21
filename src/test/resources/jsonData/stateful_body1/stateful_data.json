@@ -1,0 +1,64 @@
+{
+  "GET/comments": {
+    "id": [
+      "c8",
+      "c3",
+      "c6"
+    ],
+    "userName": [
+      "markSpecter"
+    ],
+    "text": [
+      "Too bad, too late."
+    ],
+    "date": [
+      "2018-04-16T20:44:53.950",
+      "2015-01-16T20:44:53.950",
+      "1998-01-16T20:44:53.950"
+    ],
+    "type": [
+      "Complain",
+      "Request",
+      "Request"
+    ],
+    "tags.name": [
+      "name1", "name2"
+    ],
+    "tags.category": [
+      "category1"
+    ],
+    "updates.created": [
+      "2013-04-16T20:44:53.950"
+    ],
+    "updates.last_updated": [
+      "2013-04-16T20:44:53.950"
+    ]
+  },
+  "GET/diverse/body/data": {
+    "numberParam": [
+      1,
+      2
+    ],
+    "numberParam2": [
+      "stringExample"
+    ],
+    "booleanParam": [
+      true,
+      false
+    ],
+    "booleanParam2": [
+      null
+    ],
+    "enumParam": [
+      "Review",
+      "Request"
+    ],
+    "stringParam": [
+      "Example 1",
+      "Example 2",
+      1,
+      false,
+      null
+    ]
+}
+}

@@ -33,9 +33,9 @@ public class StatusCode5XXFilter extends RESTestFilter implements OrderedFilter 
     // If 5XX status code is found, throw exception
     public void filterValidation(Response response) {
         if (response.getStatusCode() >= 500) {
-            if (testCaseIsFaulty)
+            if (testCaseIsFaulty != null && testCaseIsFaulty)
                 saveTestResultAndThrowException(response, "Status code 5XX with invalid request: " + faultyReason);
-            else if (dependenciesFulfilled)
+            else if (dependenciesFulfilled != null && dependenciesFulfilled)
                 saveTestResultAndThrowException(response, "Status code 5XX with valid request.");
             else // This occurs when using RT (nominal test case but dependencies may not be fulfilled)
                 saveTestResultAndThrowException(response, "Status code 5XX.");

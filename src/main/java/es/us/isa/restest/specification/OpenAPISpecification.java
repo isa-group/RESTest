@@ -17,9 +17,12 @@ public class OpenAPISpecification {
 	 * @param location The location of the file
 	 */
 	public OpenAPISpecification(String location) {
-		ParseOptions options = new ParseOptions();
-		options.setResolveFully(true);
-		this.specification = new OpenAPIV3Parser().read(location);
+		ParseOptions parseOptions = new ParseOptions();
+		parseOptions.setResolve(true);
+		parseOptions.setResolveFully(true);
+		parseOptions.setResolveCombinators(true);
+//		parseOptions.setFlatten(true);
+		this.specification = new OpenAPIV3Parser().read(location, null, parseOptions);
 		this.path = location;
 	}
 

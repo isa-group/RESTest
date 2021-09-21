@@ -10,6 +10,20 @@
 
 RESTest is a framework for automated black-box testing of RESTful web APIs. It follows a model-based approach, where test cases are automatically derived from the [OpenAPI Specification (OAS)](https://www.openapis.org/) of the API under test. No access to the source code is required, which makes it possible to test APIs written in any programming language, running in local or remote servers.
 
+## Index
+1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
+1. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
+1. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
+1. [Quickstart guide](https://github.com/isa-group/RESTest#quickstart-guide)
+    1. [Setting up RESTest](https://github.com/isa-group/RESTest#setting-up-restest)
+    1. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
+1. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
+    1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
+    1. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
+1. [Citing RESTest](https://github.com/isa-group/RESTest#citing-restest)
+1. [License](https://github.com/isa-group/RESTest#license)
+    1. [Icon credits](https://github.com/isa-group/RESTest#icon-credits)
+
 ## RESTest Wiki
 In this page you can find a brief description of how RESTest works and an illustrating example. If you want to read the full documentation, please visit the [Wiki](https://github.com/isa-group/RESTest/wiki). 
 
@@ -39,6 +53,12 @@ To get started with RESTest, download the code and move to the parent directory:
 git clone https://github.com/isa-group/RESTest.git
 cd RESTest
 ````
+
+### Installing local dependencies
+RESTest relies on two libraries located in the `lib/` folder. To install them, simply run the following command from the parent directory (i.e., `RESTest/`):
+```
+./scripts/install_dependencies.sh
+```
 
 ### Setting up RESTest
 
@@ -189,12 +209,26 @@ Go to the [releases page](https://github.com/isa-group/RESTest/releases) and dow
 java -jar restest.jar src/test/resources/Folder/api.properties
 ```
 
+## Citing RESTest
+
+If you want to cite RESTest in your research, please use the BibTeX entry below. [Here's a link to a preprint of the paper](https://www.researchgate.net/publication/352835570_RESTest_Automated_Black-Box_Testing_of_RESTful_Web_APIs).
+
+
+```bibtex
+@inproceedings{MartinLopez2021Restest,
+	title= {{RESTest: Automated Black-Box Testing of RESTful Web APIs}},
+	author= {Alberto Martin-Lopez and Sergio Segura and Antonio Ruiz-Cort\'{e}s},
+	booktitle= {Proceedings of the 30th ACM SIGSOFT International Symposium on Software Testing and Analysis},
+	series= {ISSTA '21},
+	publisher= {Association for Computing Machinery},
+	year= {2021}
+}
+```
+
 ## License
 RESTest is distributed under the [GNU Lesser General Public License v3.0](LICENSE).
 
 RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
-
-RESTest also includes MiniZinc &copy; 2014-2020 Monash University and Data61, CSIRO. Its source code is available from [GitHub](https://github.com/MiniZinc/libminizinc) under the MPL 2.0 License, which can be obtained from https://www.mozilla.org/en-US/MPL/2.0.
 
 ### Icon credits
 This README and some pages of the Wiki use icons provided by [Freepik](https://www.flaticon.com/authors/freepik), available at [Flaticon](https://www.flaticon.com/).

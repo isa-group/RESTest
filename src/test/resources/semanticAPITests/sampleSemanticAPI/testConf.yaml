@@ -1,0 +1,25 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /sampleEndpoint
+    operationId: sampleEndpoint
+    method: get
+    testParameters:
+    - name: currency
+      in: query
+      weight: null
+      generators:
+      - type: SemanticParameter
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

@@ -8,6 +8,7 @@ import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
+import es.us.isa.restest.util.IDGenerator;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.RESTestException;
 
@@ -24,17 +25,21 @@ public class RESTestRunnerTest {
 
     @Test
     public void testRunner() throws RESTestException {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/YouTube/swagger_betty.yaml");
-        TestConfigurationObject conf = loadConfiguration("src/test/resources/YouTube/testConf_betty.yaml", spec);
-
+        deleteDir("src/generation/java/runnerTest");
         createDir("src/generation/java/runnerTest");
 
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/YouTube/swagger_betty.yaml");
+        String confPath = "src/test/resources/YouTube/testConf_betty.yaml";
+        TestConfigurationObject conf = loadConfiguration(confPath, spec);
+        String testId = IDGenerator.generateId();
+
         String basePath = spec.getSpecification().getServers().get(0).getUrl();
-        RESTAssuredWriter writer = new RESTAssuredWriter("src/test/resources/YouTube/swagger_betty.yaml", "src/generation/java/runnerTest", "RunnerTest", "runnerTest", basePath, false);
+        RESTAssuredWriter writer = new RESTAssuredWriter("src/test/resources/YouTube/swagger_betty.yaml", "src/test/resources/YouTube/testConf_betty.yaml", "src/generation/java/runnerTest", "RunnerTest", "runnerTest", basePath, false);
         writer.setLogging(true);
         writer.setAllureReport(true);
         writer.setEnableStats(true);
         writer.setAPIName("RunnerTest");
+        writer.setTestId(testId);
 
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, 2);
 
@@ -59,8 +64,9 @@ public class RESTestRunnerTest {
         StatsReportManager statsReportManager = new StatsReportManager(testDataDir, coverageDataDir);
         statsReportManager.setCoverageMeter(new CoverageMeter(new CoverageGatherer(spec)));
 
-        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", generator, writer, arm, statsReportManager);
+        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", false, false, spec, confPath, generator,writer, arm, statsReportManager);
         runner.setExecuteTestCases(true);
+        runner.setTestId(testId);
 
         runner.run();
 

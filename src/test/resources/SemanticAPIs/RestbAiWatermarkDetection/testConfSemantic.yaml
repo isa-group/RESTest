@@ -1,0 +1,40 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /wmdetect
+    operationId: restbaiWatermarkDetection-wmdetect
+    method: post
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - restb-ai-watermark-detection.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: image_url
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Restb.ai Watermark Detection/restbaiWatermarkDetection-wmdetect_image_url.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/wizardsImageUrl
+          objectValues: null
+        valid: true
+    expectedResponse: 200

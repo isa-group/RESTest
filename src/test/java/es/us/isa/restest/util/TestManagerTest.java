@@ -28,7 +28,18 @@ public class TestManagerTest {
         String path = "src/test/resources/csvData/testCasesManagerSample.csv";
         List<TestCase> testCases = getTestCases(path);
         for (TestCase tc: testCases) {
-            assertNull("The body should be null", tc.getBodyParameter());
+            if (testCases.indexOf(tc) != 9 && testCases.indexOf(tc) != 10)
+                assertNull("The body should be null", tc.getBodyParameter());
+            else if (testCases.indexOf(tc) == 9)
+                assertEquals("The request body does not match", "{\"businesses\": [], \"total\": 0, \"region\": {\"center\": {\"longitude\": -104.36144, \"latitude\": 41.22686}}}", tc.getBodyParameter());
+            else if (testCases.indexOf(tc) == 10)
+                assertEquals("The request body does not match", "{\n" +
+                        " \"error\": {\n" +
+                        "   \"message\": \"Received both percent_off and amount_off parameters. Please pass in only one.\",\n" +
+                        "   \"type\": \"invalid_request_error\"\n" +
+                        " }\n" +
+                        "}\n" +
+                        "", tc.getBodyParameter());
             assertEquals("The content type should be 'application/json'", "application/json", tc.getInputFormat());
             assertEquals("The faulty should be false", false, tc.getFaulty());
         }

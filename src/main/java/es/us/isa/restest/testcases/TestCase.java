@@ -9,16 +9,19 @@ import java.util.stream.Collectors;
 import com.atlassian.oai.validator.OpenApiInteractionValidator;
 import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.report.ValidationReport;
-import es.us.isa.idlreasoner.analyzer.Analyzer;
+import es.us.isa.idlreasonerchoco.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.idlreasonerchoco.configuration.IDLException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static java.net.URLEncoder.encode;
+import static org.apache.commons.text.StringEscapeUtils.escapeCsv;
 
 /** Domain-independent test case
  * 
@@ -43,6 +46,8 @@ public class TestCase implements Serializable {
 	private Map<String, String> formParameters;				// Form-data parameters
 	private String bodyParameter;							// Body parameter
 
+	private static Logger logger = LogManager.getLogger(TestCase.class.getName());
+
 	public TestCase(String id, Boolean faulty, String operationId, String path, HttpMethod method) {
 		this.id = id;
 		this.faulty = faulty;
@@ -65,9 +70,10 @@ public class TestCase implements Serializable {
 		this.fulfillsDependencies = testCase.fulfillsDependencies;
 		this.enableOracles = testCase.enableOracles;
 		this.inputFormat = testCase.inputFormat;
+		this.outputFormat = testCase.outputFormat;
 		this.headerParameters.putAll(testCase.headerParameters);
-		this.queryParameters.putAll(testCase.queryParameters);
 		this.pathParameters.putAll(testCase.pathParameters);
+		this.queryParameters.putAll(testCase.queryParameters);
 		this.formParameters.putAll(testCase.formParameters);
 		this.bodyParameter = testCase.bodyParameter;
 	}
@@ -96,7 +102,7 @@ public class TestCase implements Serializable {
 		addParameter(parameter.getIn(), parameter.getName(), value);
 	}
 
-	private void addParameter(String in, String paramName, String paramValue) {
+	public void addParameter(String in, String paramName, String paramValue) {
 		switch (in) {
 			case "header":
 				addHeaderParameter(paramName, paramValue);
@@ -229,11 +235,11 @@ public class TestCase implements Serializable {
 	}
 	
 	public void addPathParameter(String name, String value) {
-		pathParameters.put(name, value);
+		pathParameters.put(name, processPathParameter(value));
 	}
 
 	public void addPathParameters(Map<String,String> params) {
-		pathParameters.putAll(params);
+		pathParameters.putAll(processPathParameters(params));
 	}
 
 	public void addHeaderParameter(String name, String value) {
@@ -275,7 +281,7 @@ public class TestCase implements Serializable {
 	}
 
 	public void setPathParameters(Map<String, String> pathParameters) {
-		this.pathParameters = pathParameters;
+		this.pathParameters = processPathParameters(pathParameters);
 	}
 
 	public String getBodyParameter() {
@@ -331,6 +337,20 @@ public class TestCase implements Serializable {
 			inputFormat = "application/x-www-form-urlencoded";
 	}
 
+	private Map<String, String> processPathParameters(Map<String, String> pathParameters) {
+		pathParameters.forEach((k, v) -> v = processPathParameter(v));
+		return pathParameters;
+	}
+
+	/**
+	 * 	WARNING: Empty parameters cannot be used in path. If this happens, replace by "null"
+	 */
+	private String processPathParameter(String pathParamValue) {
+		if ("".equals(pathParamValue))
+			return "null";
+		return pathParamValue;
+	}
+
 	public String getFlatRepresentation() {
 		StringBuilder tcRepresentation = new StringBuilder(300);
 
@@ -370,8 +390,8 @@ public class TestCase implements Serializable {
 			createCSVwithHeader(filePath, "testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType," +
 					"headerParameters,pathParameters,queryParameters,formParameters,bodyParameter");
 
-		// Generate row
-		String rowBeginning = id + "," + faulty + "," + faultyReason + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
+		// Generate row, we need to escape all fields susceptible to contain characters such as ',', '\n', '"', etc.
+		String rowBeginning = id + "," + faulty + "," + escapeCsv(faultyReason) + "," + fulfillsDependencies + "," + operationId + "," + path + "," + method.toString() + "," + inputFormat + "," + outputFormat + ",";
 		StringBuilder rowEnding = new StringBuilder();
 		try {
 			for (Map.Entry<String, String> h: headerParameters.entrySet()) {
@@ -391,10 +411,10 @@ public class TestCase implements Serializable {
 			}
 		} catch (UnsupportedEncodingException e) {
 			rowEnding = new StringBuilder(",,,");
-			LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
-			LogManager.getLogger(TestCase.class.getName()).warn(e);
+			logger.warn("Parameters of test case could not be encoded. Stack trace:");
+			logger.warn(e);
 		}
-		rowEnding.append(",").append(bodyParameter == null ? "" : bodyParameter);
+		rowEnding.append(",").append(bodyParameter == null ? "" : escapeCsv(bodyParameter));
 
 		writeCSVRow(filePath, rowBeginning + rowEnding);
 	}
@@ -451,7 +471,12 @@ public class TestCase implements Serializable {
 	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
 		if (idlReasoner == null)
 			return true;
-		return idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
+		try {
+			return idlReasoner.isValidRequest(restest2idlTestCase(tc)); // Previous version of IDLReasoner: idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
+		} catch (IDLException e) {
+			logger.warn("There was an error generating an invalid request with IDLReasoner: {}", e.getMessage());
+			return false;
+		}
 	}
 
 	public String toString() {

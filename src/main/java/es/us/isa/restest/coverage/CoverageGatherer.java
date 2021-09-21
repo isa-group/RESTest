@@ -362,16 +362,17 @@ public class CoverageGatherer {
         if(mediaTypeSchema instanceof ComposedSchema) {
 //            addResponseBodyPropertiesCriterion(((ComposedSchema) mediaTypeSchema).getAnyOf().get(0), criteria, baseRootPath);
             // TODO: Handle anyOf, oneOf and allOf
+            // TODO: Handle better when type == null, which seems to be with allOf
         } else {
             if (mediaTypeSchema.get$ref() != null) { // the response is an object and its schema is defined in the OpenAPI 'ref' tag
                 currentResponseRef = mediaTypeSchema.get$ref();
                 rootPathSuffix += "{"; // update rootPathSuffix
-            } else if (mediaTypeSchema.getType().equals("array") && mediaTypeSchema instanceof ArraySchema) { // the response is an array
+            } else if (mediaTypeSchema instanceof ArraySchema && "array".equals(mediaTypeSchema.getType())) { // the response is an array
                 if (((ArraySchema)mediaTypeSchema).getItems().get$ref() != null) { // each item of the array has the schema of the OpenAPI 'ref' tag
                     currentResponseRef = ((ArraySchema)mediaTypeSchema).getItems().get$ref();
                     rootPathSuffix += "[{"; // update rootPathSuffix to reflect depth level inside the response body
                 }
-            } else if (mediaTypeSchema.getType().equals("object") && mediaTypeSchema.getProperties() != null) { // the response is an object and its schema is defined right after
+            } else if (mediaTypeSchema.getProperties() != null && "object".equals(mediaTypeSchema.getType())) { // the response is an object and its schema is defined right after
                 openApiProperties = mediaTypeSchema.getProperties();
                 rootPathSuffix += "{"; // update rootPathSuffix
             }

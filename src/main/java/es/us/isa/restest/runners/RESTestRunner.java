@@ -2,6 +2,7 @@ package es.us.isa.restest.runners;
 
 import java.util.Collection;
 
+import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.*;
 import es.us.isa.restest.util.ClassLoader;
 import org.apache.logging.log4j.LogManager;
@@ -33,13 +34,19 @@ public class RESTestRunner {
 	protected IWriter writer;							// RESTAssured writer
 	protected AllureReportManager allureReportManager;	// Allure report manager
 	protected StatsReportManager statsReportManager;	// Stats report manager
-	private boolean executeTestCases;
 	private String inputTestCasesPath;					// Path to input test cases. If null, test cases will be generated
+	private boolean executeTestCases = true;			// Whether to execute test cases
+	private boolean allureReports = true;				// Whether to actually generate reports or not (folder "allure-reports")
 	private int numTestCases = 0;						// Number of test cases generated so far
+
+	private boolean learnRegex;
+	private boolean secondPredicateSearch;
+	private OpenAPISpecification spec;
+	private String confPath;
+
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 
-	public RESTestRunner(String testClassName, String targetDir, String packageName, AbstractTestCaseGenerator generator, IWriter writer,
-						 AllureReportManager reportManager, StatsReportManager statsReportManager) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, Boolean learnRegex, Boolean secondPredicateSearch, OpenAPISpecification spec, String confPath, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
@@ -47,6 +54,12 @@ public class RESTestRunner {
 		this.writer = writer;
 		this.allureReportManager = reportManager;
 		this.statsReportManager = statsReportManager;
+
+		this.learnRegex = learnRegex;
+		this.secondPredicateSearch = secondPredicateSearch;
+		this.spec = spec;
+		this.confPath = confPath;
+
 	}
 
 	public void run() throws RESTestException {
@@ -64,17 +77,21 @@ public class RESTestRunner {
 		}
 
 		generateReports();
+
+		if(learnRegex){
+			statsReportManager.learn(testId, spec, confPath);
+		}
 	}
 
 	protected void generateReports() {
-		if(executeTestCases) {
+		if(executeTestCases && allureReports) {
 			// Generate test report
 			logger.info("Generating test report");
 			allureReportManager.generateReport();
 		}
 
 		// Generate coverage report
-		logger.info("Generating coverage report");
+		logger.info("Generating CSV data");
 		statsReportManager.generateReport(testId, executeTestCases);
 	}
 
@@ -126,7 +143,7 @@ public class RESTestRunner {
 	public String getTargetDir() {
 		return targetDir;
 	}
-
+	
 	public void setTargetDir(String targetDir) {
 		this.targetDir = targetDir;
 	}
@@ -157,5 +174,9 @@ public class RESTestRunner {
 
 	public void setExecuteTestCases(Boolean executeTestCases) {
 		this.executeTestCases = executeTestCases;
+	}
+
+	public void setAllureReport(boolean allureReports) {
+		this.allureReports = allureReports;
 	}
 }

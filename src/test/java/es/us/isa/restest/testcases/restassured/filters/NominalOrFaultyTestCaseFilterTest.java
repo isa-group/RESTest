@@ -1,6 +1,5 @@
 package es.us.isa.restest.testcases.restassured.filters;
 
-import es.us.isa.restest.testcases.restassured.filters.NominalOrFaultyTestCaseFilter;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.BeforeClass;
@@ -8,11 +7,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.fail;
 
+// The parameters used in the HTTP requests correspond to Bikewise
 public class NominalOrFaultyTestCaseFilterTest {
 
     @BeforeClass
     public static void setUp() {
-        RestAssured.baseURI = "HTTPS://bikewise.org/api";
+        RestAssured.baseURI = "https://restest-tests-server.herokuapp.com";
     }
 
     @Test
@@ -30,7 +30,7 @@ public class NominalOrFaultyTestCaseFilterTest {
                     .queryParam("proximity_square", "33")
                     .filter(nominalOrFaultyTestCaseFilter)
                     .when()
-                    .get("/v2/incidents");
+                    .get("/statuscodes/200");
 
             response.then().log().all();
             System.out.println("Test passed.");
@@ -55,7 +55,7 @@ public class NominalOrFaultyTestCaseFilterTest {
                     .queryParam("proximity_square", "33")
                     .filter(nominalOrFaultyTestCaseFilter)
                     .when()
-                    .get("/v2/incidents");
+                    .get("/statuscodes/400");
 
             response.then().log().all();
             System.out.println("Test passed.");
@@ -79,7 +79,7 @@ public class NominalOrFaultyTestCaseFilterTest {
                 .queryParam("proximity_square", "33")
                 .filter(nominalOrFaultyTestCaseFilter)
                 .when()
-                .get("/v2/incidents");
+                .get("/statuscodes/400");
 
         response.then().log().all();
         fail("This test shouldn't be nominal");
@@ -99,7 +99,7 @@ public class NominalOrFaultyTestCaseFilterTest {
                 .queryParam("proximity_square", "33")
                 .filter(nominalOrFaultyTestCaseFilter)
                 .when()
-                .get("/v2/incidents");
+                .get("/statuscodes/200");
 
         response.then().log().all();
         fail("This test shouldn't be faulty");

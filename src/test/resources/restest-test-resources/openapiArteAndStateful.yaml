@@ -1,0 +1,54 @@
+---
+openapi: 3.0.1
+info:
+  title: TestConfigurationMetamodel
+  version: '1.0'
+paths:
+  "/find-by-address":
+    get:
+      description: Get something
+      operationId: Operation ID
+      parameters: []
+      responses:
+        '200':
+          description: Ok
+  "/find-by-address2":
+    get:
+      description: Get something
+      operationId: Operation ID
+      parameters: []
+      responses:
+        '200':
+          description: Ok
+  "/find-by-address3":
+    get:
+      description: Get something
+      operationId: Operation ID
+      parameters: []
+      responses:
+        '200':
+          description: Ok
+  "/find-by-address4":
+    get:
+      description: Get something
+      operationId: Operation ID
+      parameters: []
+      responses:
+        '200':
+          description: Ok
+  "/find-by-address5":
+    get:
+      description: Get something
+      operationId: Operation ID
+      parameters: []
+      responses:
+        '200':
+          description: Ok
+  "/find-by-address6":
+    post:
+      description: Get something
+      operationId: Operation ID
+      parameters: []
+      responses:
+        '200':
+          description: Ok

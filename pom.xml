@@ -3,7 +3,7 @@
 
 	<groupId>es.us.isa</groupId>
 	<artifactId>restest</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.1.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>RESTest</name>
@@ -73,8 +73,32 @@
 		<connection>scm:git:https://github.com/isa-group/RESTest.git</connection>
 		<developerConnection>scm:git:https://github.com/isa-group/RESTest.git</developerConnection>
 		<url>https://github.com/isa-group/RESTest/tree/master</url>
-		<tag>HEAD</tag>
-	</scm>
+	  <tag>HEAD</tag>
+  </scm>
+
+	<profiles>
+		<profile>
+			<id>sign</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -95,8 +119,9 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<aspectj.version>1.9.5</aspectj.version>
 		<jmetal.version>5.9</jmetal.version>
-		<swagger.version>2.1.7</swagger.version>
-		<openapivalidator.version>2.11.0</openapivalidator.version>
+		<swagger.version>2.1.10</swagger.version>
+<!--		<swaggerparser.version>2.0.27</swaggerparser.version>-->
+		<openapivalidator.version>2.18.1</openapivalidator.version>
 		<restassured.version>4.2.0</restassured.version>
 		<jackson.version>2.11.4</jackson.version>
 		<allure.version>2.13.3</allure.version>
@@ -116,6 +141,12 @@
 			<artifactId>swagger-core</artifactId>
 			<version>${swagger.version}</version>
 		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>io.swagger.parser.v3</groupId>-->
+<!--			<artifactId>swagger-parser</artifactId>-->
+<!--			<version>${swaggerparser.version}</version>-->
+<!--		</dependency>-->
 
 
 		<!-- OPENAPI VALIDATOR DEPENDENCIES -->
@@ -301,15 +332,72 @@
 		<!-- IDLreasoner dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idl-reasoner</artifactId>
-			<version>0.0.1</version>
+			<artifactId>idlreasoner-choco</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 		<!-- IDL dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idl</artifactId>
-			<version>0.0.1</version>
+			<artifactId>idl-choco</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<!-- RG++ -->
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>MaleRegexTree</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>RandomRegexTurtle</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<!-- Jena -->
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+			<version>3.17.0</version>
+			<type>pom</type>
+		</dependency>
+
+
+		<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp -->
+		<!-- Stanford NLP -->
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models</classifier>
+		</dependency>
+		
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models-english</classifier>
+		</dependency>
+		
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models-english-kbp</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-parser</artifactId>
+			<version>3.9.2</version>
 		</dependency>
 
 	</dependencies>
@@ -385,7 +473,7 @@
 				<artifactId>allure-maven</artifactId>
 				<version>2.10.0</version>
 				<configuration>
-					<reportVersion>2.13.3</reportVersion>
+					<reportVersion>{allure.version}</reportVersion>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -444,31 +532,17 @@
 					</execution>
 				</executions>
 			</plugin>
-<!--			<plugin>-->
-<!--				<groupId>org.apache.maven.plugins</groupId>-->
-<!--				<artifactId>maven-gpg-plugin</artifactId>-->
-<!--				<version>1.6</version>-->
-<!--				<executions>-->
-<!--					<execution>-->
-<!--						<id>sign-artifacts</id>-->
-<!--						<phase>verify</phase>-->
-<!--						<goals>-->
-<!--							<goal>sign</goal>-->
-<!--						</goals>-->
-<!--					</execution>-->
-<!--				</executions>-->
-<!--			</plugin>-->
-<!--			<plugin>-->
-<!--				<groupId>org.apache.maven.plugins</groupId>-->
-<!--				<artifactId>maven-release-plugin</artifactId>-->
-<!--				<version>3.0.0-M1</version>-->
-<!--				<configuration>-->
-<!--					<autoVersionSubmodules>true</autoVersionSubmodules>-->
-<!--					<useReleaseProfile>false</useReleaseProfile>-->
-<!--					<releaseProfiles>release</releaseProfiles>-->
-<!--					<goals>deploy</goals>-->
-<!--				</configuration>-->
-<!--			</plugin>-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>3.0.0-M1</version>
+				<configuration>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<useReleaseProfile>false</useReleaseProfile>
+					<releaseProfiles>release,deployment</releaseProfiles>
+					<goals>deploy</goals>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

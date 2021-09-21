@@ -16,6 +16,7 @@ public class ParameterFeatures {
     String in;                      // query, path, etc.
     String type;                    // string, integer, etc.
     String format;                  // If parameter is string, its format (email, uuid, etc.)
+    String pattern;                 // If parameter is string and regex is included
     List<String> enumValues;        // Set of possible value if parameter is an enum
     BigDecimal min;                 // If parameter is number, min value allowed
     BigDecimal max;                 // If parameter is number, max value allowed
@@ -28,6 +29,7 @@ public class ParameterFeatures {
         in = p.getIn();
         type = p.getSchema().getType();
         format = p.getSchema().getFormat();
+        pattern = p.getSchema().getPattern();
         enumValues = p.getSchema().getEnum();
         if ("array".equals(type))
             enumValues = (List<String>) ((ArraySchema)p.getSchema()).getItems().getEnum();
@@ -48,6 +50,7 @@ public class ParameterFeatures {
         this.name = name;
         type = s.getType();
         format = s.getFormat();
+        pattern = s.getPattern();
         enumValues = s.getEnum();
         if ("array".equals(type))
             enumValues = (List<String>) ((ArraySchema)s).getItems().getEnum();
@@ -91,6 +94,14 @@ public class ParameterFeatures {
 
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public String getPattern() {
+        return pattern;
+    }
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
     }
 
     public List<String> getEnumValues() {
@@ -150,6 +161,7 @@ public class ParameterFeatures {
                 Objects.equals(in, that.in) &&
                 Objects.equals(type, that.type) &&
                 Objects.equals(format, that.format) &&
+                Objects.equals(pattern, that.pattern) &&
                 Objects.equals(enumValues, that.enumValues) &&
                 Objects.equals(min, that.min) &&
                 Objects.equals(max, that.max) &&
@@ -160,6 +172,6 @@ public class ParameterFeatures {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, in, type, format, enumValues, min, max, minLength, maxLength, required);
+        return Objects.hash(name, in, type, format, pattern, enumValues, min, max, minLength, maxLength, required);
     }
 }
