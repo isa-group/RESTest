@@ -3,11 +3,7 @@ package es.us.isa.restest.main;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
-import es.us.isa.restest.generators.ARTestCaseGenerator;
-import es.us.isa.restest.generators.AbstractTestCaseGenerator;
-import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
-import es.us.isa.restest.generators.FuzzingTestCaseGenerator;
-import es.us.isa.restest.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.generators.*;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.runners.RESTestRunner;
@@ -186,29 +182,33 @@ public class TestGenerationAndExecution {
 		AbstractTestCaseGenerator gen = null;
 
 		switch (generator) {
-		case "FT":
-			gen = new FuzzingTestCaseGenerator(spec, conf, numTestCases);
-			break;
-		case "RT":
-			gen = new RandomTestCaseGenerator(spec, conf, numTestCases);
-			((RandomTestCaseGenerator) gen).setFaultyRatio(faultyRatio);
-			break;
-		case "CBT":
-			gen = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
-			((ConstraintBasedTestCaseGenerator) gen).setFaultyDependencyRatio(faultyDependencyRatio);
-			((ConstraintBasedTestCaseGenerator) gen).setInputDataMaxValues(inputDataMaxValues);
-			((ConstraintBasedTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
-			gen.setFaultyRatio(faultyRatio);
-			break;
-		case "ART":
-			gen = new ARTestCaseGenerator(spec, conf, numTestCases);
-			((ARTestCaseGenerator) gen).setFaultyDependencyRatio(faultyDependencyRatio);
-			((ARTestCaseGenerator) gen).setInputDataMaxValues(inputDataMaxValues);
-			((ARTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
-			((ARTestCaseGenerator) gen).setDiversity(similarityMetric);
-			((ARTestCaseGenerator) gen).setNumberOfCandidates(numberCandidates);
-			gen.setFaultyRatio(faultyRatio);
-			break;
+			case "FT":
+				gen = new FuzzingTestCaseGenerator(spec, conf, numTestCases);
+				break;
+			case "RT":
+				gen = new RandomTestCaseGenerator(spec, conf, numTestCases);
+				((RandomTestCaseGenerator) gen).setFaultyRatio(faultyRatio);
+				break;
+			case "CBT":
+				gen = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
+				((ConstraintBasedTestCaseGenerator) gen).setFaultyDependencyRatio(faultyDependencyRatio);
+				((ConstraintBasedTestCaseGenerator) gen).setInputDataMaxValues(inputDataMaxValues);
+				((ConstraintBasedTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
+				gen.setFaultyRatio(faultyRatio);
+				break;
+			case "ART":
+				gen = new ARTestCaseGenerator(spec, conf, numTestCases);
+				((ARTestCaseGenerator) gen).setFaultyDependencyRatio(faultyDependencyRatio);
+				((ARTestCaseGenerator) gen).setInputDataMaxValues(inputDataMaxValues);
+				((ARTestCaseGenerator) gen).setReloadInputDataEvery(reloadInputDataEvery);
+				((ARTestCaseGenerator) gen).setDiversity(similarityMetric);
+				((ARTestCaseGenerator) gen).setNumberOfCandidates(numberCandidates);
+				gen.setFaultyRatio(faultyRatio);
+				break;
+			case "MLT":
+				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
+				String csvTmpTcPath = readParameterValue("data.tests.dir") + "/" + experimentName + "/" + PropertyManager.readProperty("data.tests.testcases.file") + "_tmp.csv";
+				((MLDrivenTestCaseGenerator) gen).setCsvTmpTcPath(csvTmpTcPath);
 		default:
 			throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT' or 'ART'");
 		}

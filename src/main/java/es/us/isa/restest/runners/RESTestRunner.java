@@ -67,8 +67,6 @@ public class RESTestRunner {
 		// Test generation and writing (RESTAssured)
 		testGeneration();
 
-		statsReportManager.generateCSVStats(testId);
-
 		if(executeTestCases) {
 			// Test execution
 			logger.info("Running tests");

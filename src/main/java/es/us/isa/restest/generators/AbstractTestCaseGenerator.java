@@ -484,7 +484,7 @@ public abstract class AbstractTestCaseGenerator {
 	}
 
 	// Returns true if there are more test cases to be generated. To be implemented on each subclass.
-	protected abstract boolean hasNext() throws RESTestException;
+	protected abstract boolean hasNext();
 
 	// Create an empty test case with a random name.
 	protected TestCase createTestCaseTemplate(Operation testOperation) {
