@@ -38,7 +38,7 @@ The figure below shows how RESTest works:
 
 1. **Test case execution**: The test cases are executed and a set of reports and stats are generated. Stats are machine-readable, and the test reports can be graphically visualized thanks to [Allure](http://allure.qatools.ru/).
 
-1. **Feedback collection**: [Test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators) can react to the test outputs (i.e., the stats generated in the previous step) to create more sophisticated test cases. An example of this is the [search-based module of the RESTest framework](https://github.com/isa-group/RESTest-search-based), currently in beta.
+1. **Feedback collection**: [Test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators) and other components can react to the test outputs (i.e., the stats generated in the previous step) to create more sophisticated test cases. Examples of this are the stateful data generators (e.g., the [BodyGenerator](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/inputs/stateful/BodyGenerator.java)) and the [StatsReportManager](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/reporting/StatsReportManager.java), both of which generate new test data based on previous API responses.
 
 ![RESTest](docs/RESTest_v3.png)
 
@@ -62,39 +62,51 @@ RESTest relies on two libraries located in the `lib/` folder. To install them, s
 
 ### Setting up RESTest
 
-Let's try RESTest with some API, for example, [Bikewise](https://bikewise.org/). Follow these steps:
+Let's try RESTest with some API, for example, [RESTCountries](https://restcountries.eu/). Follow these steps:
 
-1. **Get the OAS specification of the API under test**. For Bikewise, it is available at the following path: `src/test/resources/Bikewise/swagger.yaml`.
+1. **Get the OAS specification of the API under test**. For RESTCountries, it is available at the following path: `src/test/resources/Restcountries/openapi.yaml`.
 
-1. **Generate the test configuration file**. From the OAS spec, we can automatically generate the [test configuration file](https://github.com/isa-group/RESTest/wiki/Test-configuration-files). To do so, run the [CreateTestConf](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/CreateTestConf.java) class, located under the `es.us.isa.restest.main` package. The test configuration file will be generated at the location `src/test/resources/Bikewise/testConf.yaml`.
+2. **Generate the test configuration file**. From the OAS spec, we can automatically generate the [test configuration file](https://github.com/isa-group/RESTest/wiki/Test-configuration-files). To do so, edit [the following line of CreateTestConf](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/CreateTestConf.java#L22) to set the path to the OAS spec. Then, run the [CreateTestConf](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/CreateTestConf.java) class, located under the `es.us.isa.restest.main` package.
 
-1. **(Optional) Modify the test configuration file to tailor your needs**. For example, you can remove some operations you are not interested to test. For more info, visit the [Wiki](https://github.com/isa-group/RESTest/wiki/Test-configuration-files).
+````java
+private static String openApiSpecPath = "src/test/resources/Restcountries/openapi.yaml"; // OAS file path
+````
 
-1. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/RESTest-configuration-files). You can find the RESTest configuration file for the Bikewise API at `src/test/resources/Bikewise/bikewise.properties`. With this configuration, a total of 60 test cases will be generated in three iterations, without delay between them, and the test outputs and reports will be stored under the folders `target/<type_of_data>/bikewise`:
+3. **(Optional) Modify the test configuration file to tailor your needs**. For example, you can remove some operations you are not interested to test. For more info, visit the [Wiki](https://github.com/isa-group/RESTest/wiki/Test-configuration-files). **NOTE: An already set up test configuration file can be found at `src/test/resources/Restcountries/fullConf.yaml`.**
+
+4. **Configure RESTest execution**. To set things like number of test cases to generate, testing technique, etc., you need to create a [RESTest configuration file](https://github.com/isa-group/RESTest/wiki/RESTest-configuration-files). You can find the RESTest configuration file for the RESTCountries API at `src/test/resources/Restcountries/restcountries_demo.properties`. With this configuration, a total of 132 test cases will be generated in three iterations, without delay between them, and the test outputs and reports will be stored under the folders `target/<type_of_data>/restcountries`. **NOTE: If you set `generator=FT`, you can completely omit steps 2. and 3., as you will be performing *fuzzing*, which does not require setup at all.**
 
 ```properties
+# ADD HERE ANY EXTRA INFORMATION TO BE DISPLAY IN THE TEST REPORT
+
+# API name
+api=Restcountries
+
 # CONFIGURATION PARAMETERS
 
 # Test case generator
 generator=CBT
 
 # Number of test cases to be generated per operation on each iteration
-testsperoperation=5
+testsperoperation=2
 
 # OAS specification
-oas.path=src/test/resources/Bikewise/swagger.yaml
+oas.path=src/test/resources/Restcountries/openapi.yaml
 
 # Test configuration file
-conf.path=src/test/resources/Bikewise/fullConf.yaml
+conf.path=src/test/resources/Restcountries/fullConf.yaml
 
-# Directory where the test cases will be generated  
-test.target.dir=src/generation/java/bikewise
+# Directory where the test cases will be generated
+test.target.dir=src/generation/java/restcountries
+
+# Package name
+test.target.package=restcountries
 
 # Experiment name (for naming related folders and files)
-experiment.name=bikewise
+experiment.name=restcountries
 
 # Name of the test class to be generated
-testclass.name=BikewiseTest
+testclass.name=RestcountriesTest
 
 # Measure input coverage
 coverage.input=true
@@ -106,18 +118,18 @@ coverage.output=true
 stats.csv=true
 
 # Maximum number of test cases to be generated
-numtotaltestcases=60
+numtotaltestcases=132
 
 # Optional delay between each iteration (in seconds)
 delay=-1
 
 # Ratio of faulty test cases to be generated (negative testing)
-faulty.ratio=0.4
+faulty.ratio=0.5
 
 # CONFIGURATION SETTINGS FOR CONSTRAINT-BASED TESTING
 
 # Ratio of faulty test cases to be generated due to broken dependencies.
-faulty.dependency.ratio=0.5
+faulty.dependency.ratio=0
 
 # Number of test cases after which new test data will be loaded.
 reloadinputdataevery=100
@@ -126,10 +138,10 @@ reloadinputdataevery=100
 inputdatamaxvalues=1000
 ```
 
-5. **Run RESTest**. Edit [the following line of TestGenerationAndExecution](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/TestGenerationAndExecution.java#L36) to set the path to the RESTest configuration file. Then, run the [TestGenerationAndExecution](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/TestGenerationAndExecution.java) class, located under the `es.us.isa.restest.main` package.
+5. **Run RESTest**. Edit [the following line of TestGenerationAndExecution](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/TestGenerationAndExecution.java#L41) to set the path to the RESTest configuration file. Then, run the [TestGenerationAndExecution](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/main/TestGenerationAndExecution.java) class, located under the `es.us.isa.restest.main` package.
 
 ````java
-setEvaluationParameters("src/test/resources/Bikewise/bikewise.properties");
+private static String propertiesFilePath = "src/test/resources/Restcountries/restcountries_demo.properties";
 ````
 
 ### Generated test cases and test reports
@@ -138,10 +150,11 @@ RESTest generates REST Assured test cases like the following one:
 
 ```java
 @Test
-public void test_s4p3ksipllk1_GETversionincidentsformat() {
-	String testResultId = "test_s4p3ksipllk1_GETversionincidentsformat";
+public void test_1jidbvas4d6ph_v2Name() {
+	String testResultId = "test_1jidbvas4d6ph_v2Name";
 
 	nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+	statusCode5XXFilter.updateFaultyData(false, true, "none");
 	csvFilter.setTestResultId(testResultId);
 	statusCode5XXFilter.setTestResultId(testResultId);
 	nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
@@ -151,20 +164,16 @@ public void test_s4p3ksipllk1_GETversionincidentsformat() {
 		Response response = RestAssured
 		.given()
 			.log().all()
-			.queryParam("per_page", "67")
-			.queryParam("incident_type", "crash")
-			.queryParam("apikey_2", "ghi")
-			.queryParam("occurred_before", "76")
-			.queryParam("occurred_after", "8")
-			.queryParam("page", "12")
-			.queryParam("apikey_1", "abc")
+			.queryParam("fullText", "true")
+			.queryParam("fields", "subregion")
+			.pathParam("name", "Qatar")
 			.filter(allureFilter)
 			.filter(statusCode5XXFilter)
 			.filter(nominalOrFaultyTestCaseFilter)
 			.filter(validationFilter)
 			.filter(csvFilter)
 		.when()
-			.get("/v2/incidents");
+			.get("/v2/name/{name}");
 
 		response.then().log().all();
 		System.out.println("Test passed.");
@@ -175,12 +184,12 @@ public void test_s4p3ksipllk1_GETversionincidentsformat() {
 }
 ```
 
-This test case makes a GET request to the endpoint `/v2/incidents` with several query parameters. Then it asserts that:
-  - The status code is not 500 or higher (server error).
-  - The status code is in the range 2XX if the request is valid or 4XX if the request is faulty.
-  - The response conforms to the OAS specification of the API.
+This test case makes a GET request to the endpoint `/v2/name/{name}` with several query and path parameters. Then it asserts that:
+  - The status code is not 500 or higher, which would reveal a server error (`statusCode5XXFilter`).
+  - The status code is in the range 2XX if the request is valid or 4XX if the request is faulty (`nominalOrFaultyTestCaseFilter`).
+  - The response conforms to the OAS specification of the API (`validationFilter`).
 
-Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `target/allure-reports/bikewise/index.html` in your browser:
+Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `target/allure-reports/restcountries/index.html` in your browser:
 
 ![Allure](docs/Allure.png)
 
@@ -198,7 +207,7 @@ mvn clean install -DskipTests
 Then, run the JAR file passing as argument the path to the properties file, for example:
 
 ```
-java -jar target/restest-full.jar src/test/resources/Bikewise/bikewise.properties
+java -jar target/restest-full.jar src/test/resources/Restcountries/restcountries_demo.properties
 ```
 
 ### Option 2: Download the latest release
