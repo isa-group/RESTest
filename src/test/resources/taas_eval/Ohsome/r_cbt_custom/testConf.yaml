@@ -278,7 +278,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -424,7 +424,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -570,7 +570,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -716,7 +716,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -862,7 +862,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -1037,7 +1037,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -1212,7 +1212,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -1387,7 +1387,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -1562,7 +1562,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -1708,7 +1708,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -1854,7 +1854,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -2000,7 +2000,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -2146,7 +2146,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -2321,7 +2321,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -2496,7 +2496,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -2659,7 +2659,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -2822,7 +2822,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -2997,7 +2997,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -3172,7 +3172,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -3318,7 +3318,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -3464,7 +3464,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -3632,7 +3632,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -3822,7 +3822,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -4012,7 +4012,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -4202,7 +4202,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -4370,7 +4370,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -4516,7 +4516,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -4662,7 +4662,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -4808,7 +4808,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -4954,7 +4954,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -5100,7 +5100,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -5275,7 +5275,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -5450,7 +5450,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -5625,7 +5625,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -5800,7 +5800,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -5946,7 +5946,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -6092,7 +6092,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -6238,7 +6238,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -6384,7 +6384,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -6559,7 +6559,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -6734,7 +6734,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -6897,7 +6897,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -7060,7 +7060,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -7235,7 +7235,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -7410,7 +7410,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -7556,7 +7556,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -7702,7 +7702,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -7870,7 +7870,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -8060,7 +8060,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -8250,7 +8250,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -8440,7 +8440,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -8608,7 +8608,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -8754,7 +8754,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -8900,7 +8900,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -9046,7 +9046,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -9192,7 +9192,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -9338,7 +9338,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -9513,7 +9513,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -9688,7 +9688,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -9863,7 +9863,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -10038,7 +10038,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -10184,7 +10184,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -10330,7 +10330,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -10476,7 +10476,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -10622,7 +10622,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -10797,7 +10797,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -10972,7 +10972,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -11135,7 +11135,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -11298,7 +11298,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -11473,7 +11473,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -11648,7 +11648,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -11794,7 +11794,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -11940,7 +11940,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -12108,7 +12108,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -12298,7 +12298,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -12488,7 +12488,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -12678,7 +12678,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -12846,7 +12846,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -12992,7 +12992,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -13138,7 +13138,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -13284,7 +13284,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -13430,7 +13430,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -13576,7 +13576,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -13751,7 +13751,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -13926,7 +13926,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -14101,7 +14101,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -14276,7 +14276,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -14422,7 +14422,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -14568,7 +14568,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -14714,7 +14714,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -14860,7 +14860,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -15035,7 +15035,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -15210,7 +15210,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -15373,7 +15373,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -15536,7 +15536,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -15711,7 +15711,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -15886,7 +15886,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -16032,7 +16032,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -16178,7 +16178,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -16346,7 +16346,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -16536,7 +16536,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -16726,7 +16726,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -16916,7 +16916,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -17076,7 +17076,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -17214,7 +17214,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -17352,7 +17352,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -17490,7 +17490,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -17628,7 +17628,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -17766,7 +17766,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -17933,7 +17933,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -18100,7 +18100,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -18238,7 +18238,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -18376,7 +18376,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -18514,7 +18514,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -18652,7 +18652,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -18807,7 +18807,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -18962,7 +18962,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -19129,7 +19129,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -19296,7 +19296,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -19434,7 +19434,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp
@@ -19572,7 +19572,7 @@ testConfiguration:
           objectValues: null
     - name: types
       in: query
-      weight: 0
+      weight: 0.5
       generators:
       - valid: true
         type: RandomRegExp

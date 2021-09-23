@@ -14,7 +14,7 @@
       "url": "https://ohsome.org/copyrights"
     }
   },
-  "host": "api.ohsome.org",
+  "host": "api-test.ohsome.org",
   "schemes": [
     "https"
   ],
