@@ -5,138 +5,8 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
-  oauthPath: null
 testConfiguration:
   operations:
-  - testPath: /v1/all
-    operationId: v1All
-    method: get
-    testParameters: null
-    expectedResponse: 200
-  - testPath: "/v1/alpha/{alphacode}"
-    operationId: v1Alphacode
-    method: get
-    testParameters:
-    - name: alphacode
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters:
-          - name: altParamName
-            values:
-              - alpha2Code
-        valid: true
-    expectedResponse: 200
-  - testPath: /v1/alpha
-    operationId: v1Alphacodes
-    method: get
-    testParameters:
-    - name: codes
-      in: query
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters:
-          - name: altParamName
-            values:
-              - alpha2Code
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/currency/{currency}"
-    operationId: v1Currency
-    method: get
-    testParameters:
-    - name: currency
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/name/{name}"
-    operationId: v1Name
-    method: get
-    testParameters:
-    - name: name
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    - name: fullText
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomBoolean
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/callingcode/{callingcode}"
-    operationId: v1Callingcode
-    method: get
-    testParameters:
-    - name: callingcode
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/capital/{capital}"
-    operationId: v1Capital
-    method: get
-    testParameters:
-    - name: capital
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/region/{region}"
-    operationId: v1Region
-    method: get
-    testParameters:
-    - name: region
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/subregion/{subregion}"
-    operationId: v1Subregion
-    method: get
-    testParameters:
-    - name: subregion
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/lang/{lang}"
-    operationId: v1Lang
-    method: get
-    testParameters:
-    - name: lang
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters:
-          - name: altParamName
-            values:
-              - languages
-        valid: true
-    expectedResponse: 200
   - testPath: /v2/all
     operationId: v2All
     method: get
@@ -145,9 +15,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     expectedResponse: 200
   - testPath: "/v2/alpha/{alphacode}"
     operationId: v2Alphacode
@@ -157,9 +27,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: alphacode
       in: path
       weight: null
@@ -179,9 +49,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: codes
       in: query
       weight: null
@@ -201,15 +71,18 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: currency
       in: path
       weight: null
       generators:
       - type: ParameterGenerator
-        genParameters: []
+        genParameters:
+          - name: altParamName
+            values:
+              - currencies.code
         valid: true
     expectedResponse: 200
   - testPath: "/v2/name/{name}"
@@ -220,9 +93,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: name
       in: path
       weight: null
@@ -234,9 +107,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomBoolean
+      - valid: true
+        type: RandomBoolean
         genParameters: []
-        valid: true
     expectedResponse: 200
   - testPath: "/v2/callingcode/{callingcode}"
     operationId: v2Callingcode
@@ -246,9 +119,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: callingcode
       in: path
       weight: null
@@ -265,9 +138,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: capital
       in: path
       weight: null
@@ -276,7 +149,7 @@ testConfiguration:
         genParameters: []
         valid: true
     expectedResponse: 200
-  - testPath: "/v2/region/{region}"
+  - testPath: "/v2/continent/{region}"
     operationId: v2Region
     method: get
     testParameters:
@@ -284,29 +157,10 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: region
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v2/subregion/{subregion}"
-    operationId: v2Subregion
-    method: get
-    testParameters:
-    - name: fields
-      in: query
-      weight: 0.5
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    - name: subregion
       in: path
       weight: null
       generators:
@@ -322,9 +176,9 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: lang
       in: path
       weight: null
@@ -333,26 +187,7 @@ testConfiguration:
         genParameters:
           - name: altParamName
             values:
-              - languages
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v2/demonym/{demonym}"
-    operationId: v2Demonym
-    method: get
-    testParameters:
-    - name: fields
-      in: query
-      weight: 0.5
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
-        valid: true
-    - name: demonym
-      in: path
-      weight: null
-      generators:
-      - type: ParameterGenerator
-        genParameters: []
+              - iso639_1
         valid: true
     expectedResponse: 200
   - testPath: "/v2/regionalbloc/{regionalbloc}"
@@ -363,17 +198,360 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: ParameterGenerator
+      - valid: true
+        type: ParameterGenerator
         genParameters: []
-        valid: true
     - name: regionalbloc
       in: path
       weight: null
       generators:
       - type: ParameterGenerator
         genParameters:
-          - name: altParamName
-            values:
-              - regionalBlocs.acronym
+        - name: altParamName
+          values:
+          - regionalBlocs.acronym
+          objectValues: null
         valid: true
+      - valid: false
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - Galactic Empire
+            - Galactic Republic
+            - BENELUX
+            - ABC
+            - DEF
+            - GHIJK
+    expectedResponse: 200
+  - testPath: /v3/all
+    operationId: v3All
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+    expectedResponse: 200
+  - testPath: "/v3/alpha/{alphacode}"
+    operationId: v3Alphacode
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: alphacode
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters:
+              - name: altParamName
+                values:
+                  - cca2
+                objectValues: null
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ABC
+                  - DEF
+                  - YZ
+                  - NAR
+                  - GHI
+                  - JK
+                  - LM
+                  - NOP
+    expectedResponse: 200
+  - testPath: /v3/alpha
+    operationId: v3Alphacodes
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: codes
+        in: query
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters:
+              - name: altParamName
+                values:
+                  - cca2
+                objectValues: null
+            valid: true
+    expectedResponse: 200
+  - testPath: "/v3/currency/{currency}"
+    operationId: v3Currency
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: currency
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters: []
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ABC
+                  - DEF
+                  - YZA
+                  - NAR
+                  - GHI
+                  - JKL
+                  - MNO
+                  - PQR
+    expectedResponse: 200
+  - testPath: "/v3/name/{name}"
+    operationId: v3Name
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: name
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters:
+              - name: altParamName
+                values:
+                  - name.common
+                objectValues: null
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Gilead
+                  - Lilliput
+                  - Narnia
+                  - Panem
+                  - Pacific States of America
+                  - Genovia
+      - name: fullText
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomBoolean
+            genParameters: []
+    expectedResponse: 200
+  - testPath: "/v3/capital/{capital}"
+    operationId: v3Capital
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: capital
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters: []
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Sevilla
+                  - Lyon
+                  - Los Angeles
+                  - New York
+                  - Teruel
+                  - Vladivostok
+                  - Faro
+                  - Barcelona
+                  - Milan
+                  - Bonn
+    expectedResponse: 200
+  - testPath: "/v3/region/{region}"
+    operationId: v3Region
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: region
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters: []
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Westeros
+                  - Essos
+                  - Middle-earth
+                  - Atlantis
+    expectedResponse: 200
+  - testPath: "/v3/subregion/{subregion}"
+    operationId: v3Subregion
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: subregion
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters: []
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Westeros
+                  - Essos
+                  - Middle-earth
+                  - Atlantis
+    expectedResponse: 200
+  - testPath: "/v3/lang/{lang}"
+    operationId: v3Lang
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: lang
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters: []
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ab
+                  - cd
+                  - ef
+                  - gh
+                  - ij
+                  - lk
+                  - nm
+                  - op
+                  - qr
+                  - tv
+                  - su
+    expectedResponse: 200
+  - testPath: "/v3/demonym/{demonym}"
+    operationId: v3Demonym
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: demonym
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters: []
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ofrainard
+                  - uwhusiot
+                  - spuosiaeno
+                  - slosteinasque
+                  - webroin
+                  - gesluriote
+                  - usnasqeno
+                  - qasweasque
+                  - skeianian
+                  - smuyjian
+    expectedResponse: 200
+  - testPath: "/v3/translation/{translation}"
+    operationId: v3Translation
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: ParameterGenerator
+            genParameters: []
+      - name: translation
+        in: path
+        weight: null
+        generators:
+          - type: ParameterGenerator
+            genParameters: []
+            valid: true
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Westeros
+                  - Essos
+                  - Middle-earth
+                  - Atlantis
     expectedResponse: 200

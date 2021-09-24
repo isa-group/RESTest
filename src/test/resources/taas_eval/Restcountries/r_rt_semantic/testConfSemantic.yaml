@@ -8,243 +8,6 @@ auth:
   oauthPath: null
 testConfiguration:
   operations:
-  - testPath: /v1/all
-    operationId: v1All
-    method: get
-    testParameters: null
-    expectedResponse: 200
-  - testPath: "/v1/alpha/{alphacode}"
-    operationId: v1Alphacode
-    method: get
-    testParameters:
-    - name: alphacode
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Alphacode_alphacode.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/countryCode
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: /v1/alpha
-    operationId: v1Alphacodes
-    method: get
-    testParameters:
-    - name: codes
-      in: query
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Alphacodes_codes.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/countryCode
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/currency/{currency}"
-    operationId: v1Currency
-    method: get
-    testParameters:
-    - name: currency
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Currency_currency.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/currencyCode
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/name/{name}"
-    operationId: v1Name
-    method: get
-    testParameters:
-    - name: name
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Name_name.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/name
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    - name: fullText
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomBoolean
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/callingcode/{callingcode}"
-    operationId: v1Callingcode
-    method: get
-    testParameters:
-    - name: callingcode
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Callingcode_callingcode.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/callingCode
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/capital/{capital}"
-    operationId: v1Capital
-    method: get
-    testParameters:
-    - name: capital
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Capital_capital.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/capital
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/region/{region}"
-    operationId: v1Region
-    method: get
-    testParameters:
-    - name: region
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Region_region.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/region
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/subregion/{subregion}"
-    operationId: v1Subregion
-    method: get
-    testParameters:
-    - name: subregion
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Subregion_subregion.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/subregion
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/lang/{lang}"
-    operationId: v1Lang
-    method: get
-    testParameters:
-    - name: lang
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v1Lang_lang.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/langcode
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
   - testPath: /v2/all
     operationId: v2All
     method: get
@@ -547,7 +310,7 @@ testConfiguration:
           objectValues: null
         valid: true
     expectedResponse: 200
-  - testPath: "/v2/region/{region}"
+  - testPath: "/v2/continent/{region}"
     operationId: v2Region
     method: get
     testParameters:
@@ -585,51 +348,6 @@ testConfiguration:
         - name: predicates
           values:
           - http://dbpedia.org/property/region
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v2/subregion/{subregion}"
-    operationId: v2Subregion
-    method: get
-    testParameters:
-    - name: fields
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v2Subregion_fields.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/fields
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    - name: subregion
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v2Subregion_subregion.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/subregion
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
@@ -682,51 +400,6 @@ testConfiguration:
           objectValues: null
         valid: true
     expectedResponse: 200
-  - testPath: "/v2/demonym/{demonym}"
-    operationId: v2Demonym
-    method: get
-    testParameters:
-    - name: fields
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v2Demonym_fields.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/fields
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    - name: demonym
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
-            API/v2Demonym_demonym.csv
-          objectValues: null
-        - name: predicates
-          values:
-          - http://dbpedia.org/property/demonym
-          objectValues: null
-        - name: numberOfTriesToGenerateRegex
-          values:
-          - 0
-          objectValues: null
-        valid: true
-    expectedResponse: 200
   - testPath: "/v2/regionalbloc/{regionalbloc}"
     operationId: v2Regionalbloc
     method: get
@@ -764,6 +437,488 @@ testConfiguration:
           - \0
           - randomString
           - one space
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v3/all
+    operationId: v3All
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3All_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/alpha/{alphacode}"
+    operationId: v3Alphacode
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Alphacode_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: alphacode
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Alphacode_alphacode.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/countryCode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /v3/alpha
+    operationId: v3Alphacodes
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Alphacodes_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: codes
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Alphacodes_codes.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/countryCode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/currency/{currency}"
+    operationId: v3Currency
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Currency_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: currency
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Currency_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/currencyCode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/name/{name}"
+    operationId: v3Name
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Name_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: name
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Name_name.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/name
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: fullText
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/capital/{capital}"
+    operationId: v3Capital
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Capital_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: capital
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Capital_capital.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/capital
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/region/{region}"
+    operationId: v3Region
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Region_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: region
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Region_region.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/region
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/subregion/{subregion}"
+    operationId: v3Subregion
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Subregion_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: subregion
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Subregion_subregion.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/subregion
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/lang/{lang}"
+    operationId: v3Lang
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Lang_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: lang
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Lang_lang.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/langcode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/demonym/{demonym}"
+    operationId: v3Demonym
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Demonym_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: demonym
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Demonym_demonym.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/demonym
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/v3/translation/{translation}"
+    operationId: v3Translation
+    method: get
+    testParameters:
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Translation_fields.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/fields
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: translation
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/Restcountries/r_rt_semantic/REST countries
+            API/v3Translation_translation.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/translation
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
           objectValues: null
         valid: true
     expectedResponse: 200

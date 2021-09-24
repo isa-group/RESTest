@@ -7,270 +7,6 @@ auth:
   headersPath: null
 testConfiguration:
   operations:
-  - testPath: /v1/all
-    operationId: v1All
-    method: get
-    testParameters: null
-    expectedResponse: 200
-  - testPath: "/v1/alpha/{alphacode}"
-    operationId: v1Alphacode
-    method: get
-    testParameters:
-    - name: alphacode
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/alphacodes.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-            - ABC
-            - DEF
-            - YZ
-            - NAR
-            - GHI
-            - JK
-            - LM
-            - NOP
-    expectedResponse: 200
-  - testPath: /v1/alpha
-    operationId: v1Alphacodes
-    method: get
-    testParameters:
-    - name: codes
-      in: query
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/alphacodes.csv'
-          objectValues: null
-        - name: minValues
-          values:
-            - 1
-        - name: maxValues
-          values:
-            - 3
-        - name: separator
-          values:
-            - ';'
-    expectedResponse: 200
-  - testPath: "/v1/currency/{currency}"
-    operationId: v1Currency
-    method: get
-    testParameters:
-    - name: currency
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/currencies.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-            - ABC
-            - DEF
-            - YZA
-            - NAR
-            - GHI
-            - JKL
-            - MNO
-            - PQR
-    expectedResponse: 200
-  - testPath: "/v1/name/{name}"
-    operationId: v1Name
-    method: get
-    testParameters:
-    - name: name
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/names.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-            - Gilead
-            - Lilliput
-            - Narnia
-            - Panem
-            - Pacific States of America
-            - Genovia
-    - name: fullText
-      in: query
-      weight: 0.5
-      generators:
-      - valid: true
-        type: RandomBoolean
-        genParameters: []
-    expectedResponse: 200
-  - testPath: "/v1/callingcode/{callingcode}"
-    operationId: v1Callingcode
-    method: get
-    testParameters:
-    - name: callingcode
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/callingcodes.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-            - 210
-            - 21
-            - 254
-            - 296
-            - 540
-            - 322
-            - 89
-            - 999
-    expectedResponse: 200
-  - testPath: "/v1/capital/{capital}"
-    operationId: v1Capital
-    method: get
-    testParameters:
-    - name: capital
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/capitals.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-            - Sevilla
-            - Lyon
-            - Los Angeles
-            - New York
-            - Teruel
-            - Vladivostok
-            - Faro
-            - Barcelona
-            - Milan
-            - Bonn
-    expectedResponse: 200
-  - testPath: "/v1/region/{region}"
-    operationId: v1Region
-    method: get
-    testParameters:
-    - name: region
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/regions.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-            - Westeros
-            - Essos
-            - Middle-earth
-            - Atlantis
-    expectedResponse: 200
-  - testPath: "/v1/subregion/{subregion}"
-    operationId: v1Subregion
-    method: get
-    testParameters:
-    - name: subregion
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/subregions.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-            - Westeros
-            - Essos
-            - Middle-earth
-            - Atlantis
-    expectedResponse: 200
-  - testPath: "/v1/lang/{lang}"
-    operationId: v1Lang
-    method: get
-    testParameters:
-    - name: lang
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/languages.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-            - ab
-            - cd
-            - ef
-            - gh
-            - ij
-            - lk
-            - nm
-            - op
-            - qr
-            - tv
-            - su
-    expectedResponse: 200
   - testPath: /v2/all
     operationId: v2All
     method: get
@@ -294,7 +30,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     expectedResponse: 200
   - testPath: "/v2/alpha/{alphacode}"
     operationId: v2Alphacode
@@ -319,7 +55,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: alphacode
       in: path
       weight: null
@@ -368,7 +104,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: codes
       in: query
       weight: null
@@ -388,7 +124,7 @@ testConfiguration:
             - 3
         - name: separator
           values:
-            - ';'
+            - ','
     expectedResponse: 200
   - testPath: "/v2/currency/{currency}"
     operationId: v2Currency
@@ -413,7 +149,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: currency
       in: path
       weight: null
@@ -462,7 +198,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: name
       in: path
       weight: null
@@ -516,7 +252,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: callingcode
       in: path
       weight: null
@@ -535,7 +271,6 @@ testConfiguration:
           values:
             - 210
             - 21
-            - 254
             - 296
             - 540
             - 322
@@ -565,7 +300,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: capital
       in: path
       weight: null
@@ -593,7 +328,7 @@ testConfiguration:
             - Milan
             - Bonn
     expectedResponse: 200
-  - testPath: "/v2/region/{region}"
+  - testPath: "/v2/continent/{region}"
     operationId: v2Region
     method: get
     testParameters:
@@ -616,7 +351,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: region
       in: path
       weight: null
@@ -633,51 +368,6 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-            - Westeros
-            - Essos
-            - Middle-earth
-            - Atlantis
-    expectedResponse: 200
-  - testPath: "/v2/subregion/{subregion}"
-    operationId: v2Subregion
-    method: get
-    testParameters:
-    - name: fields
-      in: query
-      weight: 0.5
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
-          objectValues: null
-        - name: minValues
-          values:
-            - 1
-        - name: maxValues
-          values:
-            - 5
-        - name: separator
-          values:
-            - ';'
-    - name: subregion
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/subregions.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-          - name: values
-            values:
             - Westeros
             - Essos
             - Middle-earth
@@ -706,7 +396,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: lang
       in: path
       weight: null
@@ -735,57 +425,6 @@ testConfiguration:
             - tv
             - su
     expectedResponse: 200
-  - testPath: "/v2/demonym/{demonym}"
-    operationId: v2Demonym
-    method: get
-    testParameters:
-    - name: fields
-      in: query
-      weight: 0.5
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
-          objectValues: null
-        - name: minValues
-          values:
-            - 1
-        - name: maxValues
-          values:
-            - 5
-        - name: separator
-          values:
-            - ';'
-    - name: demonym
-      in: path
-      weight: null
-      generators:
-      - valid: true
-        type: RandomInputValue
-        genParameters:
-        - name: csv
-          values:
-          - 'src/test/resources/taas_eval/Restcountries/demonyms.csv'
-          objectValues: null
-      - valid: false
-        type: RandomInputValue
-        genParameters:
-          - name: values
-            values:
-              - ofrainard
-              - uwhusiot
-              - spuosiaeno
-              - slosteinasque
-              - webroin
-              - gesluriote
-              - usnasqeno
-              - qasweasque
-              - skeianian
-              - smuyjian
-    expectedResponse: 200
   - testPath: "/v2/regionalbloc/{regionalbloc}"
     operationId: v2Regionalbloc
     method: get
@@ -809,7 +448,7 @@ testConfiguration:
             - 5
         - name: separator
           values:
-            - ';'
+            - ','
     - name: regionalbloc
       in: path
       weight: null
@@ -833,7 +472,7 @@ testConfiguration:
           - NAFTA
           - SAARC
           objectValues: null
-      - valid: true
+      - valid: false
         type: RandomInputValue
         genParameters:
         - name: values
@@ -844,4 +483,515 @@ testConfiguration:
             - ABC
             - DEF
             - GHIJK
+    expectedResponse: 200
+  - testPath: /v3/all
+    operationId: v3All
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+    expectedResponse: 200
+  - testPath: "/v3/alpha/{alphacode}"
+    operationId: v3Alphacode
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: alphacode
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/alphacodes_v3.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ABC
+                  - DEF
+                  - YZ
+                  - NAR
+                  - GHI
+                  - JK
+                  - LM
+                  - NOP
+    expectedResponse: 200
+  - testPath: /v3/alpha
+    operationId: v3Alphacodes
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: codes
+        in: query
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/alphacodes_v3.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 3
+              - name: separator
+                values:
+                  - ','
+    expectedResponse: 200
+  - testPath: "/v3/currency/{currency}"
+    operationId: v3Currency
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: currency
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/currencies_v3.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ABC
+                  - DEF
+                  - YZA
+                  - NAR
+                  - GHI
+                  - JKL
+                  - MNO
+                  - PQR
+    expectedResponse: 200
+  - testPath: "/v3/name/{name}"
+    operationId: v3Name
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: name
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/names.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Gilead
+                  - Lilliput
+                  - Narnia
+                  - Panem
+                  - Pacific States of America
+                  - Genovia
+      - name: fullText
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomBoolean
+            genParameters: []
+    expectedResponse: 200
+  - testPath: "/v3/capital/{capital}"
+    operationId: v3Capital
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: capital
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/capitals.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Sevilla
+                  - Lyon
+                  - Los Angeles
+                  - New York
+                  - Teruel
+                  - Vladivostok
+                  - Faro
+                  - Barcelona
+                  - Milan
+                  - Bonn
+    expectedResponse: 200
+  - testPath: "/v3/region/{region}"
+    operationId: v3Region
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: region
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/regions.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Westeros
+                  - Essos
+                  - Middle-earth
+                  - Atlantis
+    expectedResponse: 200
+  - testPath: "/v3/subregion/{subregion}"
+    operationId: v3Subregion
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: subregion
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/subregions.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Westeros
+                  - Essos
+                  - Middle-earth
+                  - Atlantis
+    expectedResponse: 200
+  - testPath: "/v3/lang/{lang}"
+    operationId: v3Lang
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: lang
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/languages_v3.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ab
+                  - cd
+                  - ef
+                  - gh
+                  - ij
+                  - lk
+                  - nm
+                  - op
+                  - qr
+                  - tv
+                  - su
+    expectedResponse: 200
+  - testPath: "/v3/demonym/{demonym}"
+    operationId: v3Demonym
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: demonym
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/demonyms.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ofrainard
+                  - uwhusiot
+                  - spuosiaeno
+                  - slosteinasque
+                  - webroin
+                  - gesluriote
+                  - usnasqeno
+                  - qasweasque
+                  - skeianian
+                  - smuyjian
+    expectedResponse: 200
+  - testPath: "/v3/translation/{translation}"
+    operationId: v3Translation
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: translation
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/translations.csv'
+                objectValues: null
+          - valid: false
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - Westeros
+                  - Essos
+                  - Middle-earth
+                  - Atlantis
     expectedResponse: 200

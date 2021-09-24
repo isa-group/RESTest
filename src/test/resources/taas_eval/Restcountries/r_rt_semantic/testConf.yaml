@@ -5,129 +5,8 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
-  oauthPath: null
 testConfiguration:
   operations:
-  - testPath: /v1/all
-    operationId: v1All
-    method: get
-    testParameters: null
-    expectedResponse: 200
-  - testPath: "/v1/alpha/{alphacode}"
-    operationId: v1Alphacode
-    method: get
-    testParameters:
-    - name: alphacode
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: /v1/alpha
-    operationId: v1Alphacodes
-    method: get
-    testParameters:
-    - name: codes
-      in: query
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/currency/{currency}"
-    operationId: v1Currency
-    method: get
-    testParameters:
-    - name: currency
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/name/{name}"
-    operationId: v1Name
-    method: get
-    testParameters:
-    - name: name
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    - name: fullText
-      in: query
-      weight: 0.5
-      generators:
-      - type: RandomBoolean
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/callingcode/{callingcode}"
-    operationId: v1Callingcode
-    method: get
-    testParameters:
-    - name: callingcode
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/capital/{capital}"
-    operationId: v1Capital
-    method: get
-    testParameters:
-    - name: capital
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/region/{region}"
-    operationId: v1Region
-    method: get
-    testParameters:
-    - name: region
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/subregion/{subregion}"
-    operationId: v1Subregion
-    method: get
-    testParameters:
-    - name: subregion
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v1/lang/{lang}"
-    operationId: v1Lang
-    method: get
-    testParameters:
-    - name: lang
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
   - testPath: /v2/all
     operationId: v2All
     method: get
@@ -136,9 +15,22 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     expectedResponse: 200
   - testPath: "/v2/alpha/{alphacode}"
     operationId: v2Alphacode
@@ -148,16 +40,33 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: alphacode
       in: path
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/alphacodes.csv'
+          objectValues: null
     expectedResponse: 200
   - testPath: /v2/alpha
     operationId: v2Alphacodes
@@ -167,16 +76,42 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: codes
       in: query
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+            - 'src/test/resources/taas_eval/Restcountries/alphacodes.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 3
+        - name: separator
+          values:
+            - ','
     expectedResponse: 200
   - testPath: "/v2/currency/{currency}"
     operationId: v2Currency
@@ -186,16 +121,33 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: currency
       in: path
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/currencies.csv'
+          objectValues: null
     expectedResponse: 200
   - testPath: "/v2/name/{name}"
     operationId: v2Name
@@ -205,23 +157,40 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: name
       in: path
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/names.csv'
+          objectValues: null
     - name: fullText
       in: query
       weight: 0.5
       generators:
-      - type: RandomBoolean
+      - valid: true
+        type: RandomBoolean
         genParameters: []
-        valid: true
     expectedResponse: 200
   - testPath: "/v2/callingcode/{callingcode}"
     operationId: v2Callingcode
@@ -231,16 +200,33 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: callingcode
       in: path
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/callingcodes.csv'
+          objectValues: null
     expectedResponse: 200
   - testPath: "/v2/capital/{capital}"
     operationId: v2Capital
@@ -250,18 +236,35 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: capital
       in: path
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/capitals.csv'
+          objectValues: null
     expectedResponse: 200
-  - testPath: "/v2/region/{region}"
+  - testPath: "/v2/continent/{region}"
     operationId: v2Region
     method: get
     testParameters:
@@ -269,35 +272,33 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: region
       in: path
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v2/subregion/{subregion}"
-    operationId: v2Subregion
-    method: get
-    testParameters:
-    - name: fields
-      in: query
-      weight: 0.5
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    - name: subregion
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/regions.csv'
+          objectValues: null
     expectedResponse: 200
   - testPath: "/v2/lang/{lang}"
     operationId: v2Lang
@@ -307,35 +308,33 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: lang
       in: path
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    expectedResponse: 200
-  - testPath: "/v2/demonym/{demonym}"
-    operationId: v2Demonym
-    method: get
-    testParameters:
-    - name: fields
-      in: query
-      weight: 0.5
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
-    - name: demonym
-      in: path
-      weight: null
-      generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/languages.csv'
+          objectValues: null
     expectedResponse: 200
   - testPath: "/v2/regionalbloc/{regionalbloc}"
     operationId: v2Regionalbloc
@@ -345,14 +344,444 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 5
+        - name: separator
+          values:
+            - ','
     - name: regionalbloc
       in: path
       weight: null
       generators:
-      - type: SemanticParameter
-        genParameters: []
-        valid: true
+      - valid: true
+        type: SemanticParameter
+        genParameters:
+        - name: values
+          values:
+          - EU
+          - EFTA
+          - CARICOM
+          - PA
+          - AU
+          - USAN
+          - EEU
+          - AL
+          - ASEAN
+          - CAIS
+          - CEFTA
+          - NAFTA
+          - SAARC
+          objectValues: null
+    expectedResponse: 200
+  - testPath: /v3/all
+    operationId: v3All
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+    expectedResponse: 200
+  - testPath: "/v3/alpha/{alphacode}"
+    operationId: v3Alphacode
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: alphacode
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/alphacodes_v3.csv'
+                objectValues: null
+    expectedResponse: 200
+  - testPath: /v3/alpha
+    operationId: v3Alphacodes
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: codes
+        in: query
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/alphacodes_v3.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 3
+              - name: separator
+                values:
+                  - ','
+    expectedResponse: 200
+  - testPath: "/v3/currency/{currency}"
+    operationId: v3Currency
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: currency
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/currencies_v3.csv'
+                objectValues: null
+    expectedResponse: 200
+  - testPath: "/v3/name/{name}"
+    operationId: v3Name
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: name
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/names.csv'
+                objectValues: null
+      - name: fullText
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomBoolean
+            genParameters: []
+    expectedResponse: 200
+  - testPath: "/v3/capital/{capital}"
+    operationId: v3Capital
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: capital
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/capitals.csv'
+                objectValues: null
+    expectedResponse: 200
+  - testPath: "/v3/region/{region}"
+    operationId: v3Region
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: region
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/regions.csv'
+                objectValues: null
+    expectedResponse: 200
+  - testPath: "/v3/subregion/{subregion}"
+    operationId: v3Subregion
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: subregion
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/subregions.csv'
+                objectValues: null
+    expectedResponse: 200
+  - testPath: "/v3/lang/{lang}"
+    operationId: v3Lang
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: lang
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/languages_v3.csv'
+                objectValues: null
+    expectedResponse: 200
+  - testPath: "/v3/demonym/{demonym}"
+    operationId: v3Demonym
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: demonym
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/demonyms.csv'
+                objectValues: null
+    expectedResponse: 200
+  - testPath: "/v3/translation/{translation}"
+    operationId: v3Translation
+    method: get
+    testParameters:
+      - name: fields
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/fields.csv'
+                objectValues: null
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 5
+              - name: separator
+                values:
+                  - ','
+      - name: translation
+        in: path
+        weight: null
+        generators:
+          - valid: true
+            type: SemanticParameter
+            genParameters:
+              - name: csv
+                values:
+                  - 'src/test/resources/taas_eval/Restcountries/translations.csv'
+                objectValues: null
     expectedResponse: 200
