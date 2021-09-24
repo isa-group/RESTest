@@ -205,8 +205,10 @@ public class RESTAssuredWriter implements IWriter {
 		if (proxy != null) {
 			content +=  "\t\tSystem.setProperty(\"http.proxyHost\", \"" + proxy.split(":")[0] + "\");\n"
 					+	"\t\tSystem.setProperty(\"http.proxyPort\", \"" + proxy.split(":")[1] + "\");\n"
+					+	"\t\tSystem.setProperty(\"http.nonProxyHosts\", \"localhost|127.0.0.1\");\n"
 					+	"\t\tSystem.setProperty(\"https.proxyHost\", \"" + proxy.split(":")[0] + "\");\n"
-					+	"\t\tSystem.setProperty(\"https.proxyPort\", \"" + proxy.split(":")[1] + "\");\n\n";
+					+	"\t\tSystem.setProperty(\"https.proxyPort\", \"" + proxy.split(":")[1] + "\");\n"
+					+	"\t\tSystem.setProperty(\"https.nonProxyHosts\", \"localhost|127.0.0.1\");\n\n";
 		}
 
 		content += "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n\n";
