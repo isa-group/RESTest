@@ -8,6 +8,7 @@ import es.us.isa.restest.inputs.semantic.objects.SemanticParameter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.Timer;
+import org.apache.jena.query.ARQ;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,6 +52,20 @@ public class ARTEInputGenerator {
 
 
     private static final Logger log = LogManager.getLogger(ARTEInputGenerator.class);
+
+    /*
+     * There seems to be a problem with using Apache Jena when packaged into a fat JAR
+     * (e.g., when running RESTest as a JAR). This is somehow related with the Maven
+     * Shade plugin [1]. A workaround [2] is to initialize org.apache.jena.query.ARQ
+     * before any query (org.apache.jena.query.QueryFactory.create), so we do it here
+     * statically to make sure that it always happens.
+     *
+     * [1] https://jena.apache.org/documentation/notes/jena-repack.html
+     * [2] https://stackoverflow.com/questions/54905185/how-to-debug-nullpointerexception-at-apache-jena-queryexecutionfactory-during-cr
+     */
+    static {
+        ARQ.init();
+    }
 
     public static void main(String[] args) {
 
