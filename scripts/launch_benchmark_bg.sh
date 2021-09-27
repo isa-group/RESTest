@@ -1,3 +1,3 @@
 #! /bin/bash
 
-./launch_benchmark.sh &
+./launch_benchmark.sh $@ &
