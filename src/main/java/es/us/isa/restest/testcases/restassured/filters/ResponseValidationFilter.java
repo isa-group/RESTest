@@ -5,6 +5,7 @@ import com.atlassian.oai.validator.model.Request;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.atlassian.oai.validator.restassured.RestAssuredRequest;
 import com.atlassian.oai.validator.restassured.RestAssuredResponse;
+import es.us.isa.restest.util.PropertyManager;
 import io.restassured.filter.FilterContext;
 import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
@@ -27,6 +28,9 @@ import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;
  */
 public class ResponseValidationFilter extends RESTestFilter implements OrderedFilter {
     private final OpenApiInteractionValidator validator;
+    private final Boolean enabled = Boolean.parseBoolean(PropertyManager.readProperty("response.body.analysis"));
+    private final Boolean limit = Boolean.parseBoolean(PropertyManager.readProperty("response.body.limit"));
+    private final Long bodySizeLimit = Long.parseLong(PropertyManager.readProperty("response.body.size"));
 
     public ResponseValidationFilter(final String specUrlOrDefinition) {
         requireNonEmpty(specUrlOrDefinition, "A spec is required");
@@ -39,7 +43,8 @@ public class ResponseValidationFilter extends RESTestFilter implements OrderedFi
         final Response response = ctx.next(requestSpec, responseSpec);
         final Request restAssuredRequest = RestAssuredRequest.of(requestSpec);
 
-        filterValidation(response, restAssuredRequest.getPath(), restAssuredRequest.getMethod().toString());
+        if (enabled && (!limit || response.getBody().asString().length() < bodySizeLimit))
+            filterValidation(response, restAssuredRequest.getPath(), restAssuredRequest.getMethod().toString());
 
         return response;
     }
