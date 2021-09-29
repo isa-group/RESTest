@@ -33,14 +33,14 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		if (os.contains("Windows"))
 			mlPredictorCommand = PropertyManager.readProperty("mlPredictor.command.windows");
 		else
-			mlPredictorCommand = PropertyManager.readProperty("mlPredictor.command.unix");
+			mlPredictorCommand = PropertyManager.readProperty("predictor");
 	}
 
 	/**
 	 * This generator works by iterations. In every iteration, the desired number of test cases
 	 * are generated. Then, the predictor is executed on such test cases, which are labeled
 	 * accordingly in "nominal" and "faulty". New iterations are run until the desired number of
-	 * both nominal and faulty test cases are generated
+	 * both expected nominal and faulty test cases are generated
 	 * @param testOperation
 	 * @return
 	 * @throws RESTestException
@@ -70,7 +70,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			boolean commandOk = false;
 			try {
-				Process proc = rt.exec(mlPredictorCommand + " XXX"); // TODO: program arguments (e.g., CSV path)
+				Process proc = rt.exec(mlPredictorCommand + " " + csvTmpTcPath + " " + ); // TODO: program arguments (e.g., CSV path)
 				proc.waitFor();
 				commandOk = true;
 			} catch (IOException e) {
