@@ -70,7 +70,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			boolean commandOk = false;
 			try {
-				Process proc = rt.exec(mlPredictorCommand + " " + csvTmpTcPath + " " + ); // TODO: program arguments (e.g., CSV path)
+				Process proc = rt.exec(mlPredictorCommand + " " + csvTmpTcPath); // TODO: program arguments (e.g., CSV path)
 				proc.waitFor();
 				commandOk = true;
 			} catch (IOException e) {
