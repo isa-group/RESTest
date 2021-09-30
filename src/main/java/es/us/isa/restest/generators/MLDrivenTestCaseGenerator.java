@@ -33,7 +33,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		if (os.contains("Windows"))
 			mlPredictorCommand = PropertyManager.readProperty("mlPredictor.command.windows");
 		else
-			mlPredictorCommand = PropertyManager.readProperty("predictor");
+			mlPredictorCommand = PropertyManager.readProperty("mlPredictor.command.unix");
 	}
 
 	/**
