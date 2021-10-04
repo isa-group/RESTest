@@ -21,7 +21,8 @@ import static es.us.isa.restest.util.TestManager.getTestCases;
 public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	private String mlPredictorCommand;
-	private String csvTmpTcPath; // Path where to import/export temporary test cases (the ones analyzed/output by the predictor)
+	private String resourcesPath; // Path to the experiment folder
+	private String csvTmpTcPath;  // Path where to import/export temporary test cases (the ones analyzed/output by the predictor)
 
 	private static Logger logger = LogManager.getLogger(MLDrivenTestCaseGenerator.class.getName());
 
@@ -70,7 +71,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			boolean commandOk = false;
 			try {
-				Process proc = rt.exec(mlPredictorCommand + " " + csvTmpTcPath); // TODO: program arguments (e.g., CSV path)
+				Process proc = rt.exec(mlPredictorCommand + " " + resourcesPath); // TODO: program arguments (e.g., CSV path)
 				proc.waitFor();
 				commandOk = true;
 			} catch (IOException e) {
@@ -129,6 +130,10 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	private boolean hasNextNominal() {
 		return nNominal < (int) ((1 - faultyRatio) * numberOfTests);
 	}
+
+	public void setResourcesPath(String resourcesPath) { this.resourcesPath = resourcesPath; }
+
+	public String getResourcesPath() { return resourcesPath; }
 
 	public String getCsvTmpTcPath() {
 		return csvTmpTcPath;

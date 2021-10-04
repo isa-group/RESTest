@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/YouTube/youtube_search.properties";
+	private static String propertiesFilePath = "src/test/resources/GitHub/github_getUserRepos.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -205,12 +205,14 @@ public class TestGenerationAndExecution {
 				((ARTestCaseGenerator) gen).setNumberOfCandidates(numberCandidates);
 				gen.setFaultyRatio(faultyRatio);
 				break;
-			case "MLT":
+			case "MLD":
 				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
-				String csvTmpTcPath = readParameterValue("data.tests.dir") + "/" + experimentName + "/" + PropertyManager.readProperty("data.tests.testcases.file") + "_tmp.csv";
-				((MLDrivenTestCaseGenerator) gen).setCsvTmpTcPath(csvTmpTcPath);
+				String resourcesPath = readParameterValue("data.tests.dir") + "/" + experimentName + "/";
+				((MLDrivenTestCaseGenerator) gen).setResourcesPath(resourcesPath);
+				((MLDrivenTestCaseGenerator) gen).setCsvTmpTcPath(resourcesPath + PropertyManager.readProperty("data.tests.testcases.file") + "_tmp.csv");
+				break;
 		default:
-			throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT' or 'ART'");
+			throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART' or 'MLD'");
 		}
 
 		gen.setCheckTestCases(checkTestCases);
