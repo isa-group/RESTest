@@ -53,8 +53,8 @@ public class CreateTestConfTest {
         openApiSpecPathField.setAccessible(true);
         String openApiSpecPath = (String) openApiSpecPathField.get(null);
 
-        if (!openApiSpecPath.equals("src/test/resources/Folder/swagger.yaml"))
-            fail("The CreateTestConf class should have 'src/test/resources/Folder/swagger.yaml' as the default Swagger path.\n" +
+        if (!openApiSpecPath.equals("src/test/resources/Folder/openapi.yaml"))
+            fail("The CreateTestConf class should have 'src/test/resources/Folder/openapi.yaml' as the default Swagger path.\n" +
                     "This is to avoid testConf files being changed inadvertently when running the test suite.\n" +
                     "You may have changed it and forgot to set it back to its default value. Please, do so.");
     }
