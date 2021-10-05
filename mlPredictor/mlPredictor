@@ -1,4 +1,7 @@
 #! /bin/bash
-
-echo "Hello, World!"
+printf "\n\n\n"
+pwd
+dist/main/main $1 $2
+printf "\n\n\n"
+#echo "Hello, World!"
 #date > tmp.txt

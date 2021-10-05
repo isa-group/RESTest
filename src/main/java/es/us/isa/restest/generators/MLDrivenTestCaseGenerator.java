@@ -71,7 +71,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			boolean commandOk = false;
 			try {
-				ProcessBuilder pb = new ProcessBuilder(mlPredictorCommand, "arg1", "arg2", "..."); // TODO: program arguments (e.g., CSV path)
+				ProcessBuilder pb = new ProcessBuilder(mlPredictorCommand, "/home/giuliano/MLT-utils/GitHub/", csvTmpTcPath);
 				pb.inheritIO(); // Print output of program to stdout
 				Process proc = pb.start();
 				proc.waitFor();
