@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
@@ -21,8 +20,9 @@ import static es.us.isa.restest.util.TestManager.getTestCases;
 public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	private String mlPredictorCommand;
-	private String resourcesPath; // Path to the experiment folder
-	private String csvTmpTcPath;  // Path where to import/export temporary test cases (the ones analyzed/output by the predictor)
+	private String resourcesFolderPath; // Path to the folder containing resources shared between RESTest and predictor
+	private static final String CSV_NAME = "test-cases_tmp.csv";  // CSV of temporary test cases (the ones analyzed/output by the predictor)
+	private String csvTmpTcPath; // resourcesFolderPath + "/" + CSV_NAME
 
 	private static Logger logger = LogManager.getLogger(MLDrivenTestCaseGenerator.class.getName());
 
@@ -71,7 +71,9 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			boolean commandOk = false;
 			try {
-				Process proc = rt.exec(mlPredictorCommand + " " + resourcesPath); // TODO: program arguments (e.g., CSV path)
+				ProcessBuilder pb = new ProcessBuilder(mlPredictorCommand, "arg1", "arg2", "..."); // TODO: program arguments (e.g., CSV path)
+				pb.inheritIO(); // Print output of program to stdout
+				Process proc = pb.start();
 				proc.waitFor();
 				commandOk = true;
 			} catch (IOException e) {
@@ -131,16 +133,17 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		return nNominal < (int) ((1 - faultyRatio) * numberOfTests);
 	}
 
-	public void setResourcesPath(String resourcesPath) { this.resourcesPath = resourcesPath; }
+	public void setResourcesFolderPath(String resourcesFolderPath) {
+		this.resourcesFolderPath = resourcesFolderPath;
+		this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME;
+	}
 
-	public String getResourcesPath() { return resourcesPath; }
+	public String getResourcesFolderPath() {
+		return resourcesFolderPath;
+	}
 
 	public String getCsvTmpTcPath() {
 		return csvTmpTcPath;
-	}
-
-	public void setCsvTmpTcPath(String csvTmpTcPath) {
-		this.csvTmpTcPath = csvTmpTcPath;
 	}
 }
 

@@ -42,7 +42,7 @@ public class MLDrivenTestCaseGeneratorTest {
 
         // Create generator and filter
         AbstractTestCaseGenerator generator = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
-        ((MLDrivenTestCaseGenerator) generator).setCsvTmpTcPath(csvTmpTcDirPath + csvTmpTcFilePath);
+        ((MLDrivenTestCaseGenerator) generator).setResourcesFolderPath(csvTmpTcDirPath);
 
 
         Collection<TestCase> testCases = generator.generate();
@@ -109,7 +109,7 @@ public class MLDrivenTestCaseGeneratorTest {
         // Create generator and filter
         AbstractTestCaseGenerator generator = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
         generator.setFaultyRatio(faultyRatio);
-        ((MLDrivenTestCaseGenerator) generator).setCsvTmpTcPath(csvTmpTcDirPath + csvTmpTcFilePath);
+        ((MLDrivenTestCaseGenerator) generator).setResourcesFolderPath(csvTmpTcDirPath);
 
         Collection<TestCase> testCases = generator.generate();
         

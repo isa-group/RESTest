@@ -205,14 +205,12 @@ public class TestGenerationAndExecution {
 				((ARTestCaseGenerator) gen).setNumberOfCandidates(numberCandidates);
 				gen.setFaultyRatio(faultyRatio);
 				break;
-			case "MLD":
+			case "MLT":
 				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
-				String resourcesPath = readParameterValue("data.tests.dir") + "/" + experimentName + "/";
-				((MLDrivenTestCaseGenerator) gen).setResourcesPath(resourcesPath);
-				((MLDrivenTestCaseGenerator) gen).setCsvTmpTcPath(resourcesPath + PropertyManager.readProperty("data.tests.testcases.file") + "_tmp.csv");
+				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
 				break;
-		default:
-			throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART' or 'MLD'");
+			default:
+				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART' or 'MLT'");
 		}
 
 		gen.setCheckTestCases(checkTestCases);
