@@ -57,6 +57,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 		// Repeat iterations until the desired number of faulty and nominal test cases have been generated
 		while (hasNext()) {
+			iterationTestCases.clear();
 			while (iterationTestCases.size() < numberOfTests) {
 				TestCase test = generateNextTestCase(testOperation);
 				iterationTestCases.add(test);
@@ -67,11 +68,9 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			iterationTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
 
 			// Feed test cases to predictor, which updates them
-			Runtime rt = Runtime.getRuntime();
-
 			boolean commandOk = false;
 			try {
-				ProcessBuilder pb = new ProcessBuilder(mlPredictorCommand, "/home/giuliano/MLT-utils/GitHub/", csvTmpTcPath);
+				ProcessBuilder pb = new ProcessBuilder(mlPredictorCommand, "MLT-utils/GitHub/", csvTmpTcPath);
 				pb.inheritIO(); // Print output of program to stdout
 				Process proc = pb.start();
 				proc.waitFor();
