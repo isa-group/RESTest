@@ -45,5 +45,5 @@ src/test/resources/restest-test-resources/test_collection_urlencoded.postman_col
 stateful_data.json
 
 restest-full.jar
-dist
+predictor
 MLT-utils
