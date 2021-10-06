@@ -208,6 +208,7 @@ public class TestGenerationAndExecution {
 			case "MLT":
 				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
 				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
+				((MLDrivenTestCaseGenerator) gen).setFaultyRatio(faultyRatio);
 				break;
 			default:
 				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART' or 'MLT'");
