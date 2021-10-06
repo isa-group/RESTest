@@ -79,6 +79,9 @@ public class TestGenerationAndExecution {
 	private static Double minimumValueOfMetric;
 	private static int maxNumberOfTriesToGenerateRegularExpression;
 
+	// For ML Testing only:
+	private static String mlResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the ML predictor
+
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
 	public static void main(String[] args) throws RESTestException {
@@ -207,8 +210,8 @@ public class TestGenerationAndExecution {
 				break;
 			case "MLT":
 				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
-				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
-				((MLDrivenTestCaseGenerator) gen).setFaultyRatio(faultyRatio);
+				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(mlResourcesFolderPath);
+				gen.setFaultyRatio(faultyRatio);
 				break;
 			default:
 				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART' or 'MLT'");
@@ -410,6 +413,10 @@ public class TestGenerationAndExecution {
 			inputTestCasesPath = readParameterValue("testcases.input");
 		logger.info("Test cases path: {}", inputTestCasesPath);
 
+		// MLT
+		if (readParameterValue("ml.resources.folder") != null)
+			mlResourcesFolderPath = readParameterValue("ml.resources.folder");
+		logger.info("ML predictor resources folder: {}", mlResourcesFolderPath);
 
 		// ARTE
 		if (readParameterValue("learnRegex") != null)

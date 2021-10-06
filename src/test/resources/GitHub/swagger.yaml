@@ -35133,35 +35133,13 @@ paths:
           enum:
           - asc
           - desc
-      - name: per_page
-        description: Results per page (max 100).
-        in: query
-        schema:
-          type: integer
-          default: 30
-      - name: page
-        description: Page number of the results to fetch.
-        in: query
-        schema:
-          type: integer
-          default: 1
-      - name: since
-        description: 'Only show notifications updated after the given time. This is
-          a timestamp in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format:
-          `YYYY-MM-DDTHH:MM:SSZ`.'
-        in: query
-        required: false
-        schema:
-          type: string
-      - name: before
-        description: 'Only show notifications updated before the given time. This is
-          a timestamp in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) format:
-          `YYYY-MM-DDTHH:MM:SSZ`.'
-        in: query
-        required: false
-        schema:
-          type: string
-
+      - "$ref": "#/components/parameters/per_page"
+      - "$ref": "#/components/parameters/page"
+      - "$ref": "#/components/parameters/since"
+      - "$ref": "#/components/parameters/before"
+      x-dependencies:
+      - ZeroOrOne(type, visibility);
+      - ZeroOrOne(type, affiliation);
       responses:
         '200':
           description: response

@@ -20,9 +20,9 @@ import static es.us.isa.restest.util.TestManager.getTestCases;
 public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	private String mlPredictorCommand;
-	private String resourcesFolderPath; // Path to the folder containing resources shared between RESTest and predictor
-	private static final String CSV_NAME = "test-cases_tmp.csv";  // CSV of temporary test cases (the ones analyzed/output by the predictor)
-	private String csvTmpTcPath; // resourcesFolderPath + "/" + CSV_NAME
+	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and predictor
+	private static final String CSV_NAME = "test-cases_tmp.csv";	// CSV of temporary test cases (the ones analyzed/output by the predictor)
+	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
 
 	private static Logger logger = LogManager.getLogger(MLDrivenTestCaseGenerator.class.getName());
 
@@ -70,7 +70,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			// Feed test cases to predictor, which updates them
 			boolean commandOk = false;
 			try {
-				ProcessBuilder pb = new ProcessBuilder(mlPredictorCommand, "MLT-utils/GitHub/", csvTmpTcPath);
+				ProcessBuilder pb = new ProcessBuilder(mlPredictorCommand, resourcesFolderPath, csvTmpTcPath);
 				pb.inheritIO(); // Print output of program to stdout
 				Process proc = pb.start();
 				proc.waitFor();

@@ -1,7 +1,4 @@
 #! /bin/bash
-printf "\n\n\n"
-pwd
+printf "\n Executing predictor..."
 dist/main/main $1 $2
-printf "\n\n\n"
-#echo "Hello, World!"
-#date > tmp.txt
+printf "\n"
