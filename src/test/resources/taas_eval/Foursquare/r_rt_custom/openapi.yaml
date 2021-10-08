@@ -1,0 +1,329 @@
+openapi: 3.0.0
+info:
+  description: The Places API offers real-time access to Foursquare’s global database of
+    rich venue data and user content to power your location-based experiences in
+    your app or website.
+  version: 1.0.0
+  title: Places API Foursquare
+tags:
+  - name: Venues
+    description: Foursquare Venues
+paths:
+  /venues/search:
+    get:
+      tags:
+        - Venues
+      summary: Search for Venues
+      description: Returns a list of venues near the current location, optionally matching
+        a search term. To ensure the best possible results, pay attention to the
+        intent parameter below. Note that most of the fields returned inside a
+        venue can be optional. The user may create a venue that has no address,
+        city, or state (the venue is created instead at the lat/long specified).
+        Your client should handle these conditions safely. For more robust venue
+        information (photos/tips/etc.), please see our venue details endpoint.
+      operationId: searchVenues
+      parameters:
+        - in: query
+          required: true
+          name: v
+          description: date in YYYYMMDD format that represents the 'version' of the API for
+            which you expect from Foursquare.
+          schema:
+            type: string
+        - in: query
+          required: false
+          name: locale
+          description: locale
+          schema:
+            type: string
+            enum:
+              - en
+              - es
+              - fr
+              - de
+              - it
+              - ja
+              - th
+              - tr
+              - ko
+              - ru
+              - pt
+              - id
+            default: en
+        - in: query
+          name: ll
+          description: Required unless near is provided. Latitude and longitude of the
+            user’s location. Optional if using intent=global
+          required: false
+          schema:
+            type: string
+        - in: query
+          required: false
+          name: near
+          description: required unless ll is provided. A string naming a place in the
+            world. If the near string is not geocodable, returns a
+            failed_geocode error. Otherwise, searches within the bounds of the
+            geocode and adds a geocode object to the response.
+          schema:
+            type: string
+#        - in: query
+#          name: name
+#          required: false
+#          description: Name of the venue
+#          schema:
+#            type: string
+#        - in: query
+#          required: false
+#          name: intent
+#          description: One of the values below, indicating your intent in performing the
+#            search. If no value is specified, defaults to checkin.
+#          schema:
+#            type: string
+#            enum:
+#              - checkin
+#              - global
+#              - browse
+#              - match
+#            default: checkin
+        - in: query
+          required: false
+          name: radius
+          description: Limit results to venues within this many meters of the specified
+            location. Defaults to a city-wide area. Only valid for requests with
+            intent=browse, or requests with intent=checkin and categoryId or
+            query. Does not apply to intent=match requests. The maximum
+            supported radius is currently 100,000 meters.
+          schema:
+            type: integer
+            maximum: 100000
+#        - in: query
+#          required: false
+#          name: sw
+#          description: With ne, limits results to the bounding box defined by the latitude
+#            and longitude given by sw as its south-west corner, and ne as its
+#            north-east corner. The bounding box is only supported for
+#            intent=browse searches. Not valid with ll or radius. Bounding boxes
+#            with an area up to approximately 10,000 square kilometers are
+#            supported.
+#          schema:
+#            type: string
+#        - in: query
+#          required: false
+#          name: ne
+#          description: See sw
+#          schema:
+#            type: string
+        - in: query
+          required: false
+          name: query
+          description: A search term to be applied against venue names.
+          schema:
+            type: string
+        - in: query
+          required: false
+          name: limit
+          description: Number of results to return, up to 50.
+          schema:
+            type: integer
+            maximum: 50
+        - in: query
+          required: false
+          name: categoryId
+          description: A comma separated list of categories to limit results to. If you
+            specify categoryId. Specifying a radius may improve results. If
+            specifying a top-level category, all sub-categories will also match
+            the query. Does not apply to intent=match requests.
+          schema:
+            type: array
+            items:
+              type: string
+        - in: query
+          required: false
+          name: llAcc
+          description: Accuracy of latitude and longitude, in meters.
+          schema:
+            type: number
+        - in: query
+          required: false
+          name: alt
+          description: Altitude of the user’s location, in meters.
+          schema:
+            type: integer
+        - in: query
+          required: false
+          name: altAcc
+          description: Accuracy of the user’s altitude, in meters.
+          schema:
+            type: number
+        - in: query
+          required: false
+          name: url
+          description: A third-party URL which we will attempt to match against our map of
+            venues to URLs.
+          schema:
+            type: string
+        - in: query
+          required: false
+          name: providerId
+          description: Identifier for a known third party that is part of our map of venues
+            to URLs, used in conjunction with linkedId.
+          schema:
+            type: string
+        - in: query
+          required: false
+          name: linkedId
+          description: Identifier used by third party specified in providerId, which we
+            will attempt to match against our map of venues to URLs.
+          schema:
+            type: string
+      x-dependencies:
+        - Or(ll, near);
+        - IF radius THEN categoryId OR query;
+        - AllOrNone(providerId, linkedId);
+        # Alternative version of dependencies
+#        - IF ZeroOrOne(providerId, linkedId) THEN Or(intent, ll, near);
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='global' THEN query;
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='match' THEN (name OR query) AND (ll OR near);
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='checkin' THEN ll OR near;
+#        - IF ZeroOrOne(providerId, linkedId) AND intent=='browse' THEN OnlyOne(sw AND ne, near OR (ll AND radius)) AND ZeroOrOne(sw AND ne, radius) AND AllOrNone(sw, ne);
+        # Old dependencies
+#        - Or(ll, near);
+#        - IF intent=='browse' THEN OnlyOne(ll AND radius, sw AND ne);
+#        - IF intent=='match' THEN name AND ll;
+#        - IF radius THEN intent=='browse' OR (intent=='checkin' AND (categoryId OR query));
+#        - AllOrNone(sw, ne);
+#        - IF sw OR ne THEN intent=='browse';
+#        - IF sw OR ne THEN NOT (ll OR radius);
+#        - AllOrNone(providerId, linkedId);
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VenueSearchResponse"
+        "400":
+          description: Bad request
+servers:
+  - url: https://api.foursquare.com/v2
+components:
+  schemas:
+    Venue:
+      type: object
+      properties:
+        id:
+          type: string
+          description: A unique string identifier for this venue.
+        name:
+          type: string
+          description: The best known name for this venue.
+        location:
+          $ref: "#/components/schemas/Location"
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        venuePage:
+          type: object
+          properties:
+            id:
+              type: string
+    Location:
+      type: object
+      properties:
+        address:
+          type: string
+        crossStreet:
+          type: string
+        cc:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+        isFuzzed:
+          type: boolean
+        labeledLatLngs:
+          type: array
+          items:
+            $ref: "#/components/schemas/LabeledLatLng"
+        distance:
+          type: integer
+          format: int32
+        formattedAddress:
+          type: array
+          items:
+            type: string
+    LabeledLatLng:
+      type: object
+      properties:
+        label:
+          type: string
+        lat:
+          type: number
+          format: double
+        lng:
+          type: number
+          format: double
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          description: A unique identifier for this category.
+        name:
+          type: string
+          description: Name of the category.
+        pluralName:
+          type: string
+          description: Pluralized version of the category name.
+        shortName:
+          type: string
+          description: Shorter version of the category name.
+        icon:
+          $ref: "#/components/schemas/Icon"
+        primary:
+          type: boolean
+          description: If this is the primary category for parent venue object.
+    Icon:
+      type: object
+      properties:
+        prefix:
+          type: string
+        suffix:
+          type: string
+    VenueSearchResponse:
+      type: object
+      properties:
+        meta:
+          $ref: "#/components/schemas/Meta"
+        response:
+          $ref: "#/components/schemas/Response"
+    Meta:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        requestId:
+          type: string
+    Response:
+      type: object
+      properties:
+        venues:
+          type: array
+          items:
+            $ref: "#/components/schemas/Venue"
+#        geocode:
+#          type: object
+#          additionalProperties: true
