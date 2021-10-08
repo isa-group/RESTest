@@ -55,7 +55,7 @@ testConfiguration:
                     - Paris
                     - San Francisco
                     - Krakow
-                    - Daca, Bangladesh
+                    - Dhaka, Bangladesh
                     - Santa Fe
                   objectValues: null
               valid: true
