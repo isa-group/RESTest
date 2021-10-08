@@ -16,15 +16,33 @@ testConfiguration:
           weight: null
           generators:
             - valid: true
-              type: SemanticParameter
-              genParameters: []
+              type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - float
+                - name: max
+                  values:
+                    - 47.392337
+                - name: min
+                  values:
+                    - 33.125898
         - name: longitude
           in: query
           weight: null
           generators:
             - valid: true
-              type: SemanticParameter
-              genParameters: []
+              type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - float
+                - name: min
+                  values:
+                    - -119.205793
+                - name: max
+                  values:
+                    - -79.958475
         - name: providerType
           in: query
           weight: 0.5

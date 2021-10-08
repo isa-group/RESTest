@@ -8,11 +8,11 @@ auth:
   oauthPath: null
 testConfiguration:
   operations:
-  - testPath: /find-by-geo
-    operationId: findByGeo
+  - testPath: /find-by-address
+    operationId: findByAddress
     method: get
     testParameters:
-    - name: latitude
+    - name: countryCode
       in: query
       weight: null
       generators:
@@ -20,32 +20,73 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/test/resources/taas_eval/DHL_LocationFindByGeo/r_rt_semantic/DHL Location
-            Finder API/findByGeo_latitude.csv
+          - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_rt_semantic/DHL
+            Location Finder API/findByAddress_countryCode.csv
           objectValues: null
         - name: predicates
           values:
-          - http://dbpedia.org/property/latitude
+          - http://dbpedia.org/property/countryCode
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
           - 0
           objectValues: null
         valid: true
-    - name: longitude
+    - name: addressLocality
       in: query
-      weight: null
+      weight: 0.5
       generators:
       - type: RandomInputValue
         genParameters:
         - name: csv
           values:
-          - src/test/resources/taas_eval/DHL_LocationFindByGeo/r_rt_semantic/DHL Location
-            Finder API/findByGeo_longitude.csv
+          - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_rt_semantic/DHL
+            Location Finder API/findByAddress_addressLocality.csv
           objectValues: null
         - name: predicates
           values:
-          - http://dbpedia.org/property/longitude
+          - http://dbpedia.org/property/locality
+          - http://dbpedia.org/ontology/address
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: postalCode
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_rt_semantic/DHL
+            Location Finder API/findByAddress_postalCode.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/postalCode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: streetAddress
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_rt_semantic/DHL
+            Location Finder API/findByAddress_streetAddress.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/streetAddress
           objectValues: null
         - name: numberOfTriesToGenerateRegex
           values:
