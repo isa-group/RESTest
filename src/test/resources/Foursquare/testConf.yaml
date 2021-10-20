@@ -20,7 +20,7 @@ testConfiguration:
             genParameters:
               - name: values
                 values:
-                  - 20210309
+                  - 20210908
         - name: ll
           in: query
           weight: 0.5
@@ -63,7 +63,7 @@ testConfiguration:
                   - Paris
                   - San Francisco
                   - Krakow
-                  - Daca, Bangladesh
+                  - Dhaka, Bangladesh
                   - Santa Fe
 #        - name: name
 #          in: query
@@ -190,7 +190,7 @@ testConfiguration:
             genParameters:
               - name: csv
                 values:
-                  - "src/test/resources/Foursquare/foursquare-categories.csv"
+                  - "src/test/resources/taas_eval/Foursquare/foursquare-categories.csv"
               - name: minValues
                 values:
                   - 1
@@ -207,7 +207,7 @@ testConfiguration:
             genParameters:
               - name: type
                 values:
-                  - integer
+                  - float
                 objectValues: null
               - name: min
                 values:
@@ -245,7 +245,7 @@ testConfiguration:
             genParameters:
               - name: type
                 values:
-                  - integer
+                  - float
                 objectValues: null
               - name: min
                 values:

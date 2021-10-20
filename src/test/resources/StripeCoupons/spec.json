@@ -1,0 +1,16 @@
+{
+    "api_keys": [],
+    "types": {
+        "amount_off": "number",
+        "applies_to[products][]": "text",
+        "currency": "text",
+        "duration": "enum",
+        "duration_in_months": "number",
+        "expand[]": "text",
+        "id": "text",
+        "max_redemptions": "number",
+        "name": "text",
+        "percent_off": "number",
+        "redeem_by": "number"
+    }
+}

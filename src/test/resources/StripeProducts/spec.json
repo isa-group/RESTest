@@ -1,0 +1,20 @@
+{
+    "api_keys": [],
+    "types": {
+        "active": "number",
+        "description": "text",
+        "expand[]": "text",
+        "id": "text",
+        "images[]": "text",
+        "name": "text",
+        "package_dimensions[height]": "number",
+        "package_dimensions[length]": "number",
+        "package_dimensions[weight]": "number",
+        "package_dimensions[width]": "number",
+        "shippable": "number",
+        "statement_descriptor": "text",
+        "tax_code": "text",
+        "unit_label": "text",
+        "url": "text"
+    }
+}

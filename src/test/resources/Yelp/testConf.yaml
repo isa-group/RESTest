@@ -49,7 +49,7 @@ testConfiguration:
             - Paris
             - San Francisco
             - Krakow
-            - Daca, Bangladesh
+            - Dhaka, Bangladesh
             - Santa Fe
       - name: latitude
         in: query
@@ -111,7 +111,7 @@ testConfiguration:
           genParameters:
           - name: csv
             values:
-            - src/main/resources/TestData/yelp-categories.csv
+            - src/test/resources/taas_eval/Yelp_Businesses/yelp-categories.csv
           - name: minValues
             values:
             - 1
@@ -127,7 +127,7 @@ testConfiguration:
           genParameters:
             - name: csv
               values:
-                - src/main/resources/TestData/yelp-locales.csv
+                - src/test/resources/taas_eval/Yelp_Businesses/yelp-locales.csv
       - name: limit
         in: query
         weight: 0.5
@@ -225,6 +225,36 @@ testConfiguration:
             values:
             - 2147483647
             objectValues: null
+        - valid: false
+          type: RandomNumber
+          genParameters:
+            - name: type
+              values:
+                - long
+              objectValues: null
+            - name: min
+              values:
+                - -2147483647
+              objectValues: null
+            - name: max
+              values:
+                - 0
+              objectValues: null
+        - valid: false
+          type: RandomNumber
+          genParameters:
+            - name: type
+              values:
+                - long
+              objectValues: null
+            - name: min
+              values:
+                - 2147483648
+              objectValues: null
+            - name: max
+              values:
+                - 21474836480000000
+              objectValues: null
       - name: attributes
         in: query
         weight: 0.5

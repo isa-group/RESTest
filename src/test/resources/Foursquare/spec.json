@@ -1,0 +1,22 @@
+{
+    "api_keys": [
+        "client_secret",
+        "client_id"
+    ],
+    "types": {
+        "v": "text",
+        "locale": "enum",
+        "ll": "text",
+        "near": "text",
+        "radius": "number",
+        "query": "text",
+        "limit": "number",
+        "categoryId": "text",
+        "llAcc": "number",
+        "alt": "number",
+        "altAcc": "number",
+        "url": "text",
+        "providerId": "text",
+        "linkedId": "text"
+    }
+}

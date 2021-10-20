@@ -1,0 +1,14 @@
+{
+    "api_keys": [],
+    "types": {
+        "before": "text",
+        "per_page": "number",
+        "page": "number",
+        "since": "text",
+        "visibility": "enum",
+        "affiliation": "text",
+        "type": "enum",
+        "sort": "enum",
+        "direction": "enum"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "api_keys": [
+        "key"
+    ],
+    "types": {
+        "part": "text",
+        "allThreadsRelatedToChannelId": "text",
+        "channelId": "text",
+        "id": "text",
+        "maxResults": "number",
+        "moderationStatus": "enum",
+        "order": "enum",
+        "pageToken": "text",
+        "searchTerms": "text",
+        "textFormat": "enum",
+        "videoId": "text"
+    }
+}

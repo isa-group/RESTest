@@ -1,2 +1,0 @@
-User: restfulmt
-Password: metamorphic_test1ng

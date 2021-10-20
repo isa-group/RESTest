@@ -1,0 +1,38 @@
+{
+    "api_keys": [
+        "key"
+    ],
+    "types": {
+        "part": "text",
+        "channelId": "text",
+        "channelType": "enum",
+        "eventType": "enum",
+        "forContentOwner": "enum",
+        "forDeveloper": "enum",
+        "forMine": "enum",
+        "location": "text",
+        "locationRadius": "text",
+        "maxResults": "number",
+        "onBehalfOfContentOwner": "text",
+        "order": "enum",
+        "pageToken": "text",
+        "publishedAfter": "text",
+        "publishedBefore": "text",
+        "q": "text",
+        "regionCode": "text",
+        "relatedToVideoId": "text",
+        "relevanceLanguage": "text",
+        "safeSearch": "enum",
+        "topicId": "text",
+        "type": "text",
+        "videoCaption": "enum",
+        "videoCategoryId": "text",
+        "videoDefinition": "enum",
+        "videoDimension": "enum",
+        "videoDuration": "enum",
+        "videoEmbeddable": "enum",
+        "videoLicense": "enum",
+        "videoSyndicated": "enum",
+        "videoType": "enum"
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "api_keys": [
+        "key"
+    ],
+    "types": {
+        "part": "text",
+        "chart": "enum",
+        "hl": "text",
+        "id": "text",
+        "locale": "text",
+        "maxHeight": "number",
+        "maxResults": "number",
+        "maxWidth": "number",
+        "myRating": "enum",
+        "onBehalfOfContentOwner": "text",
+        "pageToken": "text",
+        "regionCode": "text",
+        "videoCategoryId": "text"
+    }
+}
