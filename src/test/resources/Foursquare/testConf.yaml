@@ -190,7 +190,7 @@ testConfiguration:
             genParameters:
               - name: csv
                 values:
-                  - "src/test/resources/taas_eval/Foursquare/foursquare-categories.csv"
+                  - "src/test/resources/Foursquare/aux/foursquare-categories.csv"
               - name: minValues
                 values:
                   - 1

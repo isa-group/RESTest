@@ -150,7 +150,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area
@@ -296,7 +296,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density
@@ -442,7 +442,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density
@@ -588,7 +588,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density/groupBy/boundary
@@ -734,7 +734,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density/groupBy/boundary
@@ -880,7 +880,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density/groupBy/boundary/groupBy/tag
@@ -965,7 +965,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -1055,7 +1055,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density/groupBy/boundary/groupBy/tag
@@ -1140,7 +1140,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -1230,7 +1230,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density/groupBy/tag
@@ -1315,7 +1315,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -1405,7 +1405,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density/groupBy/tag
@@ -1490,7 +1490,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -1580,7 +1580,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density/groupBy/type
@@ -1726,7 +1726,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/density/groupBy/type
@@ -1872,7 +1872,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/boundary
@@ -2018,7 +2018,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/boundary
@@ -2164,7 +2164,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/boundary/groupBy/tag
@@ -2249,7 +2249,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -2339,7 +2339,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/boundary/groupBy/tag
@@ -2424,7 +2424,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -2514,7 +2514,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/key
@@ -2587,7 +2587,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -2677,7 +2677,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/key
@@ -2750,7 +2750,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -2840,7 +2840,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/tag
@@ -2925,7 +2925,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -3015,7 +3015,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/tag
@@ -3100,7 +3100,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -3190,7 +3190,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/type
@@ -3336,7 +3336,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/groupBy/type
@@ -3482,7 +3482,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/ratio
@@ -3661,7 +3661,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -3672,7 +3672,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/ratio
@@ -3851,7 +3851,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -3862,7 +3862,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/ratio/groupBy/boundary
@@ -4041,7 +4041,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -4052,7 +4052,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/area/ratio/groupBy/boundary
@@ -4231,7 +4231,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -4242,7 +4242,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count
@@ -4388,7 +4388,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count
@@ -4534,7 +4534,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density
@@ -4680,7 +4680,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density
@@ -4826,7 +4826,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density/groupBy/boundary
@@ -4972,7 +4972,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density/groupBy/boundary
@@ -5118,7 +5118,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density/groupBy/boundary/groupBy/tag
@@ -5203,7 +5203,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -5293,7 +5293,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density/groupBy/boundary/groupBy/tag
@@ -5378,7 +5378,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -5468,7 +5468,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density/groupBy/tag
@@ -5553,7 +5553,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -5643,7 +5643,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density/groupBy/tag
@@ -5728,7 +5728,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -5818,7 +5818,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density/groupBy/type
@@ -5964,7 +5964,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/density/groupBy/type
@@ -6110,7 +6110,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/boundary
@@ -6256,7 +6256,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/boundary
@@ -6402,7 +6402,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/boundary/groupBy/tag
@@ -6487,7 +6487,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -6577,7 +6577,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/boundary/groupBy/tag
@@ -6662,7 +6662,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -6752,7 +6752,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/key
@@ -6825,7 +6825,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -6915,7 +6915,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/key
@@ -6988,7 +6988,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -7078,7 +7078,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/tag
@@ -7163,7 +7163,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -7253,7 +7253,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/tag
@@ -7338,7 +7338,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -7428,7 +7428,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/type
@@ -7574,7 +7574,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/groupBy/type
@@ -7720,7 +7720,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/ratio
@@ -7899,7 +7899,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -7910,7 +7910,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/ratio
@@ -8089,7 +8089,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -8100,7 +8100,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/ratio/groupBy/boundary
@@ -8279,7 +8279,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -8290,7 +8290,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/count/ratio/groupBy/boundary
@@ -8469,7 +8469,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -8480,7 +8480,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length
@@ -8626,7 +8626,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length
@@ -8772,7 +8772,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density
@@ -8918,7 +8918,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density
@@ -9064,7 +9064,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density/groupBy/boundary
@@ -9210,7 +9210,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density/groupBy/boundary
@@ -9356,7 +9356,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density/groupBy/boundary/groupBy/tag
@@ -9441,7 +9441,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -9531,7 +9531,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density/groupBy/boundary/groupBy/tag
@@ -9616,7 +9616,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -9706,7 +9706,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density/groupBy/tag
@@ -9791,7 +9791,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -9881,7 +9881,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density/groupBy/tag
@@ -9966,7 +9966,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -10056,7 +10056,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density/groupBy/type
@@ -10202,7 +10202,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/density/groupBy/type
@@ -10348,7 +10348,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/boundary
@@ -10494,7 +10494,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/boundary
@@ -10640,7 +10640,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/boundary/groupBy/tag
@@ -10725,7 +10725,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -10815,7 +10815,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/boundary/groupBy/tag
@@ -10900,7 +10900,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -10990,7 +10990,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/key
@@ -11063,7 +11063,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -11153,7 +11153,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/key
@@ -11226,7 +11226,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -11316,7 +11316,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/tag
@@ -11401,7 +11401,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -11491,7 +11491,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/tag
@@ -11576,7 +11576,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -11666,7 +11666,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/type
@@ -11812,7 +11812,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/groupBy/type
@@ -11958,7 +11958,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/ratio
@@ -12137,7 +12137,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -12148,7 +12148,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/ratio
@@ -12327,7 +12327,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -12338,7 +12338,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/ratio/groupBy/boundary
@@ -12517,7 +12517,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -12528,7 +12528,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/length/ratio/groupBy/boundary
@@ -12707,7 +12707,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -12718,7 +12718,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter
@@ -12864,7 +12864,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter
@@ -13010,7 +13010,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density
@@ -13156,7 +13156,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density
@@ -13302,7 +13302,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density/groupBy/boundary
@@ -13448,7 +13448,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density/groupBy/boundary
@@ -13594,7 +13594,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density/groupBy/boundary/groupBy/tag
@@ -13679,7 +13679,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -13769,7 +13769,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density/groupBy/boundary/groupBy/tag
@@ -13854,7 +13854,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -13944,7 +13944,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density/groupBy/tag
@@ -14029,7 +14029,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -14119,7 +14119,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density/groupBy/tag
@@ -14204,7 +14204,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -14294,7 +14294,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density/groupBy/type
@@ -14440,7 +14440,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/density/groupBy/type
@@ -14586,7 +14586,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/boundary
@@ -14732,7 +14732,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/boundary
@@ -14878,7 +14878,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/boundary/groupBy/tag
@@ -14963,7 +14963,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -15053,7 +15053,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/boundary/groupBy/tag
@@ -15138,7 +15138,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -15228,7 +15228,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/key
@@ -15301,7 +15301,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -15391,7 +15391,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/key
@@ -15464,7 +15464,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -15554,7 +15554,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/tag
@@ -15639,7 +15639,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -15729,7 +15729,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/tag
@@ -15814,7 +15814,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -15904,7 +15904,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/type
@@ -16050,7 +16050,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/groupBy/type
@@ -16196,7 +16196,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/ratio
@@ -16375,7 +16375,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -16386,7 +16386,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/ratio
@@ -16565,7 +16565,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -16576,7 +16576,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/ratio/groupBy/boundary
@@ -16755,7 +16755,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -16766,7 +16766,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /elements/perimeter/ratio/groupBy/boundary
@@ -16945,7 +16945,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     - name: values2
       in: query
@@ -16956,7 +16956,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count
@@ -17094,7 +17094,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count
@@ -17232,7 +17232,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/density
@@ -17370,7 +17370,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/density
@@ -17508,7 +17508,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/density/groupBy/boundary
@@ -17646,7 +17646,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/density/groupBy/boundary
@@ -17784,7 +17784,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/density/groupBy/tag
@@ -17869,7 +17869,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -17951,7 +17951,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/density/groupBy/tag
@@ -18036,7 +18036,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -18118,7 +18118,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/density/groupBy/type
@@ -18256,7 +18256,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/density/groupBy/type
@@ -18394,7 +18394,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/groupBy/boundary
@@ -18532,7 +18532,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/groupBy/boundary
@@ -18670,7 +18670,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/groupBy/key
@@ -18743,7 +18743,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -18825,7 +18825,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/groupBy/key
@@ -18898,7 +18898,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/keys.csv'
+          - 'src/test/resources/Ohsome/aux/keys.csv'
         - name: minValues
           values:
           - 1
@@ -18980,7 +18980,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/groupBy/tag
@@ -19065,7 +19065,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -19147,7 +19147,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/groupBy/tag
@@ -19232,7 +19232,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_building_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_building_values.csv'
         - name: minValues
           values:
           - 1
@@ -19314,7 +19314,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/groupBy/type
@@ -19452,7 +19452,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200
   - testPath: /users/count/groupBy/type
@@ -19590,6 +19590,6 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/Ohsome/highway_values.csv'
+          - 'src/test/resources/Ohsome/aux/highway_values.csv'
           objectValues: null
     expectedResponse: 200

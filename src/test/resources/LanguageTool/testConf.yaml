@@ -74,7 +74,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - 'src/test/resources/taas_eval/LanguageTool/languagetool-codes-with-auto.csv'
+          - 'src/test/resources/LanguageTool/aux/languagetool-codes-with-auto.csv'
           objectValues: null
     - name: motherTongue
       in: formData
@@ -85,7 +85,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/test/resources/taas_eval/LanguageTool/languagetool-codes.csv'
+              - 'src/test/resources/LanguageTool/aux/languagetool-codes.csv'
             objectValues: null
     - name: preferredVariants
       in: formData
@@ -96,7 +96,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/test/resources/taas_eval/LanguageTool/languagetool-codes-variants.csv'
+              - 'src/test/resources/LanguageTool/aux/languagetool-codes-variants.csv'
           - name: minValues
             values:
               - 1
@@ -112,7 +112,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/test/resources/taas_eval/LanguageTool/languagetool-rules-2.csv'
+              - 'src/test/resources/LanguageTool/aux/languagetool-rules-2.csv'
           - name: minValues
             values:
               - 1
@@ -128,7 +128,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/test/resources/taas_eval/LanguageTool/languagetool-rules-2.csv'
+              - 'src/test/resources/LanguageTool/aux/languagetool-rules-2.csv'
           - name: minValues
             values:
               - 1
@@ -144,7 +144,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/test/resources/taas_eval/LanguageTool/languagetool-categories.csv'
+              - 'src/test/resources/LanguageTool/aux/languagetool-categories.csv'
           - name: minValues
             values:
               - 1
@@ -160,7 +160,7 @@ testConfiguration:
         genParameters:
           - name: csv
             values:
-              - 'src/test/resources/taas_eval/LanguageTool/languagetool-categories.csv'
+              - 'src/test/resources/LanguageTool/aux/languagetool-categories.csv'
           - name: minValues
             values:
               - 1
