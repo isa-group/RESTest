@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Ohsome/props.properties";
+	private static String propertiesFilePath = "src/test/resources/Foursquare/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
