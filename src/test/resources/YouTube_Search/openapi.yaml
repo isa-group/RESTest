@@ -1,6 +1,6 @@
 openapi: 3.0.0
 servers:
-  - url: https://youtube.googleapis.com/
+  - url: http://localhost:8080/api/
 info:
   contact:
     name: Google

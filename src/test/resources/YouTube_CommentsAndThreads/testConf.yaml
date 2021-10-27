@@ -3,9 +3,9 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
-  apiKeysPath: null
+  apiKeysPath: YouTube/apikeys.json
   headersPath: null
-  oauthPath: YouTube/oauth.json
+  oauthPath: null
 testConfiguration:
   operations:
   - testPath: /youtube/v3/commentThreads
