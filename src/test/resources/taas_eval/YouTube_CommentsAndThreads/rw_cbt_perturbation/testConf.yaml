@@ -1,0 +1,966 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: YouTube/oauth.json
+testConfiguration:
+  operations:
+  - testPath: /youtube/v3/commentThreads
+    operationId: youtube.commentThreads.list
+    method: get
+    testParameters:
+    - name: part
+      in: query
+      weight: null
+      generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: minValues
+              values:
+                - 1
+            - name: maxValues
+              values:
+                - 3
+            - name: values
+              values:
+                - id
+                - replies
+                - snippet
+    - name: allThreadsRelatedToChannelId
+      in: query
+      weight: 0.5
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - UCCj956IF62FbT7Gouszaj9w
+        - name: altParamName
+          values:
+          - items.snippet.channelId
+        - name: altOperationPath
+          values:
+            - /youtube/v3/search
+          objectValues: null
+        valid: true
+    - name: channelId
+      in: query
+      weight: 0.5
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: defaultValue
+              values:
+                - UCCj956IF62FbT7Gouszaj9w
+              objectValues: null
+            - name: altParamName
+              values:
+                - items.snippet.channelId
+            - name: altOperationPath
+              values:
+                - /youtube/v3/search
+          valid: true
+    - name: id
+      in: query
+      weight: 0.5
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - UgzpGEv2qaBYODKZ2vp4AaABAg
+        - name: altParamName
+          values:
+          - items.id
+          objectValues: null
+        valid: true
+    - name: maxResults
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: moderationStatus
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - published
+          - heldForReview
+          - likelySpam
+          - rejected
+          objectValues: null
+        valid: true
+    - name: order
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - orderUnspecified
+          - time
+          - relevance
+          objectValues: null
+        valid: true
+    - name: pageToken
+      in: query
+      weight: 0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: searchTerms
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: textFormat
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - textFormatUnspecified
+          - html
+          - plainText
+          objectValues: null
+        valid: true
+    - name: videoId
+      in: query
+      weight: 0.5
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - OXW_1i1pA0w
+          objectValues: null
+        - name: altParamName
+          values:
+            - items.id.videoId
+        - name: altOperationPath
+          values:
+            - /youtube/v3/search
+        valid: true
+    expectedResponse: 200
+#  - testPath: /youtube/v3/commentThreads
+#    operationId: youtube.youtube.v3.updateCommentThreads
+#    method: put
+#    testParameters:
+#    - name: part
+#      in: query
+#      weight: 0.5
+#      generators:
+#        - valid: true
+#          type: RandomInputValue
+#          genParameters:
+#            - name: minValues
+#              values:
+#                - 1
+#            - name: maxValues
+#              values:
+#                - 2
+#            - name: values
+#              values:
+#                - id
+#                - snippet
+#    - name: body
+#      in: body
+#      weight: null
+#      generators:
+#      - type: BodyGenerator
+#        genParameters:
+#        - name: defaultValue
+#          values:
+#          -
+#          objectValues: null
+#        valid: true
+#    expectedResponse: 200
+  - testPath: /youtube/v3/commentThreads
+    operationId: youtube.commentThreads.insert
+    method: post
+    testParameters:
+    - name: part
+      in: query
+      weight: null
+      generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: minValues
+              values:
+                - 1
+            - name: values
+              values:
+                - id,snippet,replies
+                - id,replies,snippet
+                - replies,id,snippet
+                - snippet,id,replies
+                - snippet,replies,id
+                - replies,snippet,id
+                - id,snippet
+                - snippet,id
+                - replies,snippet
+                - snippet,replies
+                - snippet
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - '{"snippet":{"channelId":"UCCj956IF62FbT7Gouszaj9w","videoId":"OXW_1i1pA0w","topLevelComment":{"snippet":{"textOriginal":"Random text 2"}}}}'
+          objectValues: null
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: stringObject
+            values:
+              - '{"kind":"youtube#commentThread","etag":"1671pWZuClGdTiFx7ht7vKn9Bpg","id":"UgxMAJ4csOEz4V3OIwZ4AaABAg","snippet":{"videoId":"OXW_1i1pA0w","topLevelComment":{"kind":"youtube#comment","etag":"BZCd9Y6eDHuUFmIUgOR4_s587CI","id":"UgxMAJ4csOEz4V3OIwZ4AaABAg","snippet":{"channelId":"UCCj956IF62FbT7Gouszaj9w","videoId":"OXW_1i1pA0w","textDisplay":"Test","textOriginal":"Test","authorDisplayName":"Restest Benchmark","authorProfileImageUrl":"https://yt3.ggpht.com/ytc/AKedOLTdXqRQLAM6gLA9SXNQJmZsRvcrd9boR24bcw=s48-c-k-c0x00ffffff-no-rj","authorChannelUrl":"http://www.youtube.com/channel/UCpoXuzwI2hUbLoLpetM_1uA","authorChannelId":{"value":"UCpoXuzwI2hUbLoLpetM_1uA"},"canRate":true,"viewerRating":"none","likeCount":0,"publishedAt":"2021-08-31T18:53:34Z","updatedAt":"2021-08-31T18:53:34Z"}},"canReply":true,"totalReplyCount":0,"isPublic":true}}'
+            objectValues: null
+        valid: false
+    expectedResponse: 200
+  - testPath: /youtube/v3/comments
+    operationId: youtube.comments.list
+    method: get
+    testParameters:
+    - name: part
+      in: query
+      weight: null
+      generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: minValues
+              values:
+                - 1
+            - name: maxValues
+              values:
+                - 2
+            - name: values
+              values:
+                - id
+                - snippet
+    - name: id
+      in: query
+      weight: 0.5
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - UgzpGEv2qaBYODKZ2vp4AaABAg.8rKxtyiYPcR9TFxTeKA2CU
+          objectValues: null
+        - name: altParamName
+          values:
+          - items.id
+        valid: true
+    - name: maxResults
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: pageToken
+      in: query
+      weight: 0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: parentId
+      in: query
+      weight: 0.5
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - UgzpGEv2qaBYODKZ2vp4AaABAg
+          objectValues: null
+        - name: altParamName
+          values:
+          - items.snippet.topLevelComment.id
+        - name: altOperationPath
+          values:
+          - /youtube/v3/commentThreads
+        valid: true
+    - name: textFormat
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - textFormatUnspecified
+          - html
+          - plainText
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /youtube/v3/comments
+    operationId: youtube.comments.update
+    method: put
+    testParameters:
+    - name: part
+      in: query
+      weight: null
+      generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: minValues
+              values:
+                - 1
+            - name: values
+              values:
+                - id,snippet
+                - snippet,id
+                - snippet
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - '{"id":"UgzpGEv2qaBYODKZ2vp4AaABAg.8rKxtyiYPcR9TFxTeKA2CU","snippet":{"textOriginal":"Test","channelId":"UCCj956IF62FbT7Gouszaj9w","videoId":"OXW_1i1pA0w"}}'
+          objectValues: null
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: stringObject
+            values:
+              - '{"kind":"youtube#comment","etag":"xNTNTiFxisLO5rP8Zbl1PO-QYQM","id":"UgzpGEv2qaBYODKZ2vp4AaABAg.8rKxtyiYPcR9TFxTeKA2CU","snippet":{"textDisplay":"Test","parentId":"UgzpGEv2qaBYODKZ2vp4AaABAg","authorDisplayName":"Restest Benchmark","authorProfileImageUrl":"https://yt3.ggpht.com/ytc/AKedOLTdXqRQLAM6gLA9SXNQJmZsRvcrd9boR24bcw=s48-c-k-c0x00ffffff-no-rj","authorChannelUrl":"http://www.youtube.com/channel/UCpoXuzwI2hUbLoLpetM_1uA","authorChannelId":{"value":"UCpoXuzwI2hUbLoLpetM_1uA"},"canRate":true,"viewerRating":"none","likeCount":0,"publishedAt":"2021-08-31T16:29:27Z","updatedAt":"2021-08-31T16:29:27Z"}}'
+            objectValues: null
+        valid: false
+    expectedResponse: 200
+  - testPath: /youtube/v3/comments
+    operationId: youtube.comments.insert
+    method: post
+    testParameters:
+    - name: part
+      in: query
+      weight: null
+      generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: minValues
+              values:
+                - 1
+            - name: values
+              values:
+                - id,snippet
+                - snippet,id
+                - snippet
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - '{"snippet":{"parentId":"UgzpGEv2qaBYODKZ2vp4AaABAg","textOriginal":"Test"}}'
+          objectValues: null
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: stringObject
+            values:
+              - '{"kind":"youtube#comment","etag":"xNTNTiFxisLO5rP8Zbl1PO-QYQM","id":"UgzpGEv2qaBYODKZ2vp4AaABAg.8rKxtyiYPcR9TFxTeKA2CU","snippet":{"textDisplay":"Test","textOriginal":"Test","authorDisplayName":"Restest Benchmark","authorProfileImageUrl":"https://yt3.ggpht.com/ytc/AKedOLTdXqRQLAM6gLA9SXNQJmZsRvcrd9boR24bcw=s48-c-k-c0x00ffffff-no-rj","authorChannelUrl":"http://www.youtube.com/channel/UCpoXuzwI2hUbLoLpetM_1uA","authorChannelId":{"value":"UCpoXuzwI2hUbLoLpetM_1uA"},"canRate":true,"viewerRating":"none","likeCount":0,"publishedAt":"2021-08-31T16:29:27Z","updatedAt":"2021-08-31T16:29:27Z"}}'
+            objectValues: null
+        valid: false
+    expectedResponse: 200
+  - testPath: /youtube/v3/comments
+    operationId: youtube.comments.delete
+    method: delete
+    testParameters:
+    - name: id
+      in: query
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - UgzpGEv2qaBYODKZ2vp4AaABAg.8rKxtyiYPcR9TFxTeKA2CU
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /youtube/v3/comments/markAsSpam
+    operationId: youtube.comments.markAsSpam
+    method: post
+    testParameters:
+    - name: id
+      in: query
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+        - name: defaultValue
+          values:
+          - UgzpGEv2qaBYODKZ2vp4AaABAg.8rKxtyiYPcR9TFxTeKA2CU
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /youtube/v3/comments/setModerationStatus
+    operationId: youtube.comments.setModerationStatus
+    method: post
+    testParameters:
+    - name: id
+      in: query
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: defaultValue
+              values:
+                - UgzpGEv2qaBYODKZ2vp4AaABAg.8rKxtyiYPcR9TFxTeKA2CU
+              objectValues: null
+          valid: true
+    - name: moderationStatus
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - published
+          - heldForReview
+          - likelySpam
+          - rejected
+          objectValues: null
+        valid: true
+    - name: banAuthor
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: /youtube/v3/search
+    operationId: youtube.search.list
+    method: get
+    testParameters:
+      - name: channelId
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - UCCj956IF62FbT7Gouszaj9w
+                  - UCvosUrZ7hXpzAyobhfztg4w
+                  - UCMtFAi84ehTSYSE9XoHefig
+                  - UClzCn8DxRSCuMFv_WfzkcrQ
+                  - UCJ0uqCI0Vqr2Rrt1HseGirg
+                  - UCDwjiSF4qEb3aeT3ZLkPc_Q
+                  - UC-9-kyTW8ZkZNDHQJ6FgpwQ
+                  - UCEgdi0XIXXZ-qJOFPf4JSKw
+                  - UClgRkhTL3_hImCAmdLfDE4g
+                  - UCYfdidRxbB8Qhf0Nx7ioOYw
+                objectValues: null
+      - name: channelType
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - any
+                  - show
+                  - channelTypeUnspecified
+                objectValues: null
+      - name: eventType
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - none
+                  - completed
+                  - live
+                  - upcoming
+                objectValues: null
+      - name: forContentOwner
+        in: query
+        weight: 0
+        generators:
+          - valid: true
+            type: RandomBoolean
+            genParameters: [ ]
+      - name: forDeveloper
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomBoolean
+            genParameters: [ ]
+      - name: forMine
+        in: query
+        weight: 0
+        generators:
+          - valid: true
+            type: RandomBoolean
+            genParameters: [ ]
+      - name: location
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - 37.42307,-122.08427
+                  - 37.392191,-5.995193
+                  - 35.681999,139.769254
+                  - -33.924278,18.424572
+                  - -37.812746,144.961832
+                  - 39.925412, 32.834169
+                  - 50.447273, 30.520903
+                  - 39.904325, 116.405302
+                  - 13.753789, 100.501572
+                  - 19.430849, -99.135857
+                  - 23.999919, 90.418527
+                  - -33.301720, -66.335946
+                objectValues: null
+      - name: locationRadius
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomRegExp
+            genParameters:
+              - name: regExp
+                values:
+                  - ((1000|[1-9]\d\d)(m|km|ft))|((600|[1-5]\d\d)(mi))
+                objectValues: null
+      - name: maxResults
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 0
+                objectValues: null
+              - name: max
+                values:
+                  - 50
+                objectValues: null
+      - name: onBehalfOfContentOwner
+        in: query
+        weight: 0
+        generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      - name: order
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - searchSortUnspecified
+                  - date
+                  - rating
+                  - relevance
+                  - title
+                  - videoCount
+                  - viewCount
+                objectValues: null
+      - name: pageToken
+        in: query
+        weight: 0
+        generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      - name: part
+        in: query
+        weight: null
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - snippet
+                objectValues: null
+      - name: publishedAfter
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomDate
+            genParameters:
+              - name: startDate
+                values:
+                  - 2010-01-01
+                objectValues: null
+              - name: endDate
+                values:
+                  - 2015-12-31
+                objectValues: null
+              - name: format
+                values:
+                  - yyyy-MM-dd'T'HH:mm:ss'Z'
+      - name: publishedBefore
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomDate
+            genParameters:
+              - name: startDate
+                values:
+                  - 2016-01-01
+                objectValues: null
+              - name: endDate
+                values:
+                  - 2022-12-31
+                objectValues: null
+              - name: format
+                values:
+                  - yyyy-MM-dd'T'HH:mm:ss'Z'
+      - name: q
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+          - valid: true
+            type: RandomRegExp
+            genParameters:
+              - name: regExp
+                values:
+                  - ((time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will)\|){0,4}(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will)( -(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will)){0,4}
+          - valid: false
+            type: RandomString
+            genParameters:
+              - name: minLength
+                values:
+                  - 10
+              - name: maxLength
+                values:
+                  - 20
+              - name: includeNumbers
+                values:
+                  - true
+              - name: includeSpecialCharacters
+                values:
+                  - true
+      - name: regionCode
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ES
+                  - US
+                  - DE
+                  - FR
+                  - IT
+                  - PT
+                  - FI
+                  - NO
+                  - JP
+      #          - name: csv
+      #            values:
+      #            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+      - name: relatedToVideoId
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - zZa8PFYtWr4
+                  - TUJWx7vo44c
+                  - eVIozKR9p50
+                  - 7m-NPuXPBqM
+                  - yDgLFOxnQ8Y
+                  - 9bZkp7q19f0
+                  - yuD34tEpRFw
+                  - n8I-YVuaSR0
+                  - t22flliJLTQ
+                  - 5kUu97Vkwj4
+                objectValues: null
+      - name: relevanceLanguage
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - ES
+                  - EN
+                  - DE
+                  - FR
+                  - IT
+                  - PT
+                  - FI
+                  - NO
+                  - JA
+      #          - name: csv
+      #            values:
+      #            - src/main/resources/TestData/ISO-639-LangCodes.csv
+      - name: safeSearch
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - moderate
+                  - none
+                  - strict
+                  - safeSearchSettingUnspecified
+                objectValues: null
+      - name: topicId
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - src/main/resources/TestData/youtube-topic-ids.csv
+                objectValues: null
+      - name: type
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - video
+                  - channel
+                  - playlist
+              - name: minValues
+                values:
+                  - 1
+              - name: maxValues
+                values:
+                  - 3
+                objectValues: null
+      - name: videoCaption
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - any
+                  - closedCaption
+                  - none
+                  - videoCaptionUnspecified
+                objectValues: null
+      - name: videoCategoryId
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - src/main/resources/TestData/youtube-video-category-ids.csv
+      - name: videoDefinition
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - any
+                  - high
+                  - standard
+                objectValues: null
+      - name: videoDimension
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - 2d
+                  - 3d
+                  - any
+                objectValues: null
+      - name: videoDuration
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - any
+                  - long
+                  - medium
+                  - short
+                  - videoDurationUnspecified
+                objectValues: null
+      - name: videoEmbeddable
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - any
+                  - true
+                  - videoEmbeddableUnspecified
+                objectValues: null
+      - name: videoLicense
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - any
+                  - creativeCommon
+                  - youtube
+                objectValues: null
+      - name: videoSyndicated
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - any
+                  - true
+                  - videoSyndicatedUnspecified
+                objectValues: null
+      - name: videoType
+        in: query
+        weight: 0.5
+        generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - any
+                  - episode
+                  - movie
+                  - videoTypeUnspecified
+                objectValues: null
+    expectedResponse: 200

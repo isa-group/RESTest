@@ -5,7 +5,7 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
-  oauthPath: AmadeusHotel/oauth3.json
+  oauthPath: AmadeusHotel/oauth4.json
 testConfiguration:
   operations:
     - testPath: /shopping/hotel-offers
