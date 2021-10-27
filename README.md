@@ -14,7 +14,7 @@ RESTest is a framework for automated black-box testing of RESTful web APIs. It f
 
 The RESTest testing ecosystem comprehends a complete suite of tools for automatically testing and monitoring your APIs. Still testing your APIs manually? Stop it. Let our robots do the work.
 
-<a href="https://youtu.be/-rydj3T_YjA"><img src="https://raw.githubusercontent.com/isa-group/RESTest/master/docs/restest-video.png" alt="RESTest: Your RESTful APIs. Tested. By robots." /></a>
+<a href="https://youtu.be/-rydj3T_YjA" target="_blank"><img src="https://raw.githubusercontent.com/isa-group/RESTest/master/docs/restest-video.png" alt="RESTest: Your RESTful APIs. Tested. By robots." /></a>
 
 ## Index
 1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
@@ -51,7 +51,7 @@ The figure below shows how RESTest works:
 ## What can I do with RESTest?
 Check out the following demo video, where we discuss some of the things that you can do with RESTest, both from the user and the developer point of view. The showcase shown in the video is available at http://betty.us.es/restest-showcase-demo/.
 
-<a href="https://youtu.be/TnGkwMDBDt4"><img src="docs/play_video.png" alt="RESTest demo video" width="300" /></a>
+<a href="https://youtu.be/TnGkwMDBDt4" target="_blank"><img src="docs/play_video.png" alt="RESTest demo video" width="300" /></a>
 
 ## Quickstart guide
 To get started with RESTest, download the code and move to the parent directory:
