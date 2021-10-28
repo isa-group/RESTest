@@ -5,6 +5,7 @@ package es.us.isa.restest.util;
  * @author Sergio Segura
  */
 import java.nio.ByteBuffer;
+import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 
@@ -23,6 +24,10 @@ public class IDGenerator {
 		UUID uuid = UUID.nameUUIDFromBytes(bytes);
 		long l = ByteBuffer.wrap(uuid.toString().getBytes()).getLong();
 		return Long.toString(l, Character.MAX_RADIX);
+	}
+
+	public static String generateTimeId() {
+		return String.valueOf(new Date().getTime());
 	}
 	
 	public static void setSeed(long s) {
