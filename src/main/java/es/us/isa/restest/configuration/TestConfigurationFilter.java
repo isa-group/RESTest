@@ -66,6 +66,14 @@ public class TestConfigurationFilter {
 
 	}
 
+	public void addPatchMethod() {
+		if (methods == null)
+			methods = new ArrayList<>();
+
+		methods.add(HttpMethod.PATCH);
+
+	}
+
 	public void addDeleteMethod() {
 		if (methods == null)
 			methods = new ArrayList<>();
@@ -78,6 +86,7 @@ public class TestConfigurationFilter {
 		this.addGetMethod();
 		this.addPostMethod();
 		this.addPutMethod();
+		this.addPatchMethod();
 		this.addDeleteMethod();
 	}
 }
