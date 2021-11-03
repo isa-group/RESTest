@@ -26,7 +26,7 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static es.us.isa.restest.util.SpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
+import static es.us.isa.restest.util.SpecificationVisitor.*;
 
 /**
  * TestConfiguration objects are key in RESTest. They include all the
@@ -58,9 +58,6 @@ public class DefaultTestConfigurationGenerator {
 	public static final String GEN_PARAM_TYPE = "type";
 	public static final String GEN_PARAM_MIN = "min";
 	public static final String GEN_PARAM_MAX = "max";
-
-	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 
 	// ARTE
 	public static final String SEMANTIC_PARAMETER = "SemanticParameter";

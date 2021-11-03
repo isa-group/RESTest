@@ -24,8 +24,8 @@ public class SpecificationVisitor {
 	}
 
 	public static final String MEDIA_TYPE_APPLICATION_JSON_REGEX = "^((application/.*(\\\\+)?json.*)|(\\*/\\*))$";
-	private static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-	private static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
+	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
+	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 	private static final String BOOLEAN_TYPE = "boolean";
 
 	/**
