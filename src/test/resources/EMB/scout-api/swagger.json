@@ -8,6 +8,8 @@
       "name": "/dev/scout"
     }
   },
+  "host": "localhost:8080",
+  "schemes": ["http"],
   "basePath": "/api",
   "tags": [
     {
@@ -132,7 +134,7 @@
         ],
         "summary": "Read a specific activity",
         "description": "",
-        "operationId": "get",
+        "operationId": "get1",
         "produces": [
           "application/json"
         ],
@@ -164,7 +166,7 @@
         ],
         "summary": "Update an activity with new information. Activity properties not specified in the request will be cleared.",
         "description": "",
-        "operationId": "update",
+        "operationId": "update1",
         "produces": [
           "application/json"
         ],
@@ -200,7 +202,7 @@
         ],
         "summary": "Delete an activity",
         "description": "",
-        "operationId": "delete",
+        "operationId": "delete1",
         "produces": [
           "application/json"
         ],
@@ -263,7 +265,7 @@
         ],
         "summary": "Search for activities",
         "description": "",
-        "operationId": "all",
+        "operationId": "all_1",
         "produces": [
           "application/json"
         ],
@@ -383,7 +385,7 @@
         ],
         "summary": "Create a new activity",
         "description": "",
-        "operationId": "create",
+        "operationId": "create1",
         "produces": [
           "application/json"
         ],
@@ -447,7 +449,7 @@
         "tags": [
           "media files"
         ],
-        "operationId": "get",
+        "operationId": "get2",
         "produces": [
           "application/json"
         ],
@@ -477,7 +479,7 @@
         "tags": [
           "media files"
         ],
-        "operationId": "update",
+        "operationId": "update2",
         "produces": [
           "application/json"
         ],
@@ -514,7 +516,7 @@
         ],
         "summary": "Delete a media file. By default, deletes even if referenced by activities.",
         "description": "",
-        "operationId": "delete",
+        "operationId": "delete2",
         "produces": [
           "application/json"
         ],
@@ -549,7 +551,7 @@
         ],
         "summary": "List all media files referenced in activities.",
         "description": "",
-        "operationId": "all",
+        "operationId": "all_2",
         "produces": [
           "application/json"
         ],
@@ -581,7 +583,7 @@
         ],
         "summary": "Add a media file to the system. Specify URL of media file or use 'data URI' to upload base64-encoded file.",
         "description": "",
-        "operationId": "create",
+        "operationId": "create2",
         "consumes": [
           "application/json"
         ],
@@ -613,7 +615,7 @@
         "tags": [
           "system messages"
         ],
-        "operationId": "get",
+        "operationId": "get3",
         "produces": [
           "application/json"
         ],
@@ -643,7 +645,7 @@
         "tags": [
           "system messages"
         ],
-        "operationId": "update",
+        "operationId": "update3",
         "produces": [
           "application/json"
         ],
@@ -678,7 +680,7 @@
         "tags": [
           "system messages"
         ],
-        "operationId": "delete",
+        "operationId": "delete3",
         "produces": [
           "application/json"
         ],
@@ -703,7 +705,7 @@
         "tags": [
           "system messages"
         ],
-        "operationId": "all",
+        "operationId": "all_3",
         "produces": [
           "application/json"
         ],
@@ -742,7 +744,7 @@
         "tags": [
           "system messages"
         ],
-        "operationId": "create",
+        "operationId": "create3",
         "produces": [
           "application/json"
         ],
@@ -810,7 +812,7 @@
         "tags": [
           "tags or categories"
         ],
-        "operationId": "get",
+        "operationId": "get4",
         "produces": [
           "application/json"
         ],
@@ -840,7 +842,7 @@
         "tags": [
           "tags or categories"
         ],
-        "operationId": "update",
+        "operationId": "update4",
         "produces": [
           "application/json"
         ],
@@ -875,7 +877,7 @@
         "tags": [
           "tags or categories"
         ],
-        "operationId": "delete",
+        "operationId": "delete4",
         "produces": [
           "application/json"
         ],
@@ -900,7 +902,7 @@
         "tags": [
           "tags or categories"
         ],
-        "operationId": "all",
+        "operationId": "all_4",
         "produces": [
           "application/json"
         ],
@@ -945,7 +947,7 @@
         "tags": [
           "tags or categories"
         ],
-        "operationId": "create",
+        "operationId": "create4",
         "produces": [
           "application/json"
         ],
@@ -975,7 +977,7 @@
         "tags": [
           "users"
         ],
-        "operationId": "get",
+        "operationId": "get5",
         "produces": [
           "application/json"
         ],
@@ -1005,7 +1007,7 @@
         "tags": [
           "users"
         ],
-        "operationId": "update",
+        "operationId": "update5",
         "produces": [
           "application/json"
         ],
@@ -1040,7 +1042,7 @@
         "tags": [
           "users"
         ],
-        "operationId": "delete",
+        "operationId": "delete5",
         "produces": [
           "application/json"
         ],
@@ -1069,15 +1071,7 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "format": "int64"
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -1094,7 +1088,7 @@
         "tags": [
           "users"
         ],
-        "operationId": "all",
+        "operationId": "all_5",
         "produces": [
           "application/json"
         ],
@@ -1123,7 +1117,7 @@
         "tags": [
           "users"
         ],
-        "operationId": "create",
+        "operationId": "create5",
         "produces": [
           "application/json"
         ],
@@ -1378,7 +1372,7 @@
         ],
         "summary": "Search for activities",
         "description": "",
-        "operationId": "all",
+        "operationId": "all_6",
         "produces": [
           "application/json"
         ],
@@ -1625,7 +1619,7 @@
         "tags": [
           "tags or categories"
         ],
-        "operationId": "all_1",
+        "operationId": "all_7",
         "produces": [
           "application/json"
         ],
@@ -1700,19 +1694,11 @@
         "tags": [
           "user content"
         ],
-        "operationId": "get",
+        "operationId": "get6",
         "produces": [
           "application/json"
         ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "format": "int64"
-          }
-        ],
+        "parameters": [],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -1736,13 +1722,6 @@
           "application/json"
         ],
         "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "integer",
-            "format": "int64"
-          },
           {
             "in": "body",
             "name": "body",
