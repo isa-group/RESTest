@@ -1,14 +1,25 @@
 package es.us.isa.restest.mutation.rules;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.util.SchemaManager;
 import io.swagger.v3.oas.models.media.Schema;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.reflect.Field;
 
 import static es.us.isa.restest.util.SchemaManager.generateFullyResolvedSchema;
 import static es.us.isa.restest.util.SchemaManager.resolveSchema;
 import static org.junit.Assert.assertEquals;
 
 public class SelectRuleTest {
+
+    @Before
+    public void resetSchemaManager() throws NoSuchFieldException, IllegalAccessException {
+        Field currentRefPath = SchemaManager.class.getDeclaredField("currentRefPath");
+        currentRefPath.setAccessible(true);
+        currentRefPath.set(null, "");
+    }
 
     @Test
     public void applySelectRuleCommentsPostCommentTest() {
