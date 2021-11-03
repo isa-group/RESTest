@@ -58,4 +58,15 @@ public class DropRuleTest {
 
         assertEquals(4, ((ArraySchema)postCommentSchema).getItems().getProperties().size());
     }
+
+    @Test
+    public void applyDropRuleCommentsObjectWithoutPropertiesTest() {
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite7.yaml");
+        Schema postCommentSchema = spec.getSpecification().getPaths().get("/comments").getPost().getRequestBody().getContent().get("application/json").getSchema();
+        postCommentSchema = generateFullyResolvedSchema(postCommentSchema, spec.getSpecification());
+
+        DropRule.getInstance().apply(postCommentSchema, spec.getSpecification());
+
+        assertEquals(5, postCommentSchema.getProperties().size());
+    }
 }

@@ -22,8 +22,10 @@ public class DropRule extends PathRule {
     protected void applyNodeFuzzingRule(Schema<?> schema, String objectChild) {
         List<String> propertyNames = new ArrayList<>(schema.getProperties().keySet());
         propertyNames.remove(objectChild);
-        String dropProperty = propertyNames.get(random.nextInt(propertyNames.size()));
-        schema.getProperties().remove(dropProperty);
+        if (propertyNames.size() > 0) {
+            String dropProperty = propertyNames.get(random.nextInt(propertyNames.size()));
+            schema.getProperties().remove(dropProperty);
+        }
     }
 
 }

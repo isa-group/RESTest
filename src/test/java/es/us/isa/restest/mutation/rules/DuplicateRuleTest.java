@@ -63,6 +63,18 @@ public class DuplicateRuleTest {
         assertTrue(checkMutationIsValid(originalSchema, mutatedSchema));
     }
 
+    @Test
+    public void applyDropRuleCommentsObjectWithoutPropertiesTest() {
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite7.yaml");
+        Schema originalSchema = spec.getSpecification().getPaths().get("/comments").getPost().getRequestBody().getContent().get("application/json").getSchema();
+        originalSchema = generateFullyResolvedSchema(originalSchema, spec.getSpecification());
+        Schema mutatedSchema = generateFullyResolvedSchema(originalSchema, spec.getSpecification());
+
+        DuplicateRule.getInstance().apply(mutatedSchema, true, spec.getSpecification());
+
+        assertTrue(checkMutationIsValid(originalSchema, mutatedSchema));
+    }
+
     private boolean checkMutationIsValid(Schema originalSchema, Schema mutatedSchema) {
         boolean valid = false;
 
