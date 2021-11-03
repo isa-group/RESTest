@@ -199,11 +199,14 @@ public abstract class AbstractTestCaseGenerator {
 				case "put":
 					filter.addPutMethod();
 					break;
+				case "patch":
+					filter.addPatchMethod();
+					break;
 				case "delete":
 					filter.addDeleteMethod();
 					break;
 				default:
-					throw new RESTestException("Methods other than GET, POST, PUT and DELETE are not " +
+					throw new RESTestException("Methods other than GET, POST, PUT, PATCH and DELETE are not " +
 							"allowed in the test configuration file");
 			}
 

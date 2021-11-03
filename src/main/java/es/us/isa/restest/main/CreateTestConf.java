@@ -88,6 +88,9 @@ public class CreateTestConf {
                     case "put":
                         filter.addPutMethod();
                         break;
+                    case "patch":
+                        filter.addPatchMethod();
+                        break;
                     case "delete":
                         filter.addDeleteMethod();
                         break;
