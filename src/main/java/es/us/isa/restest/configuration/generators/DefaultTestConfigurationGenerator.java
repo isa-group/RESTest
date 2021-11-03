@@ -430,13 +430,10 @@ public class DefaultTestConfigurationGenerator {
 				testParam.setWeight(0.5f);
 			}
 
-			Generator gen = new Generator();
-			gen.setGenParameters(new ArrayList<>());
+			List<Generator> gens = new ArrayList<>();
 			Entry<String, MediaType> mediaTypeEntry = requestBody.getContent().entrySet().stream().filter(x -> x.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)).findFirst().orElse(null);
 			if (mediaTypeEntry != null)
-				generateBodyGenerator(gen, mediaTypeEntry.getValue());
-			List<Generator> gens = new ArrayList<>();
-			gens.add(gen);
+				addObjectPerturbatorIfPossible(gens, mediaTypeEntry.getValue());
 
 			// Regardless of whether an ObjectPerturbator generator was set or not, add a BodyGenerator:
 			Generator bodyGeneratorGen = new Generator();
@@ -511,7 +508,7 @@ public class DefaultTestConfigurationGenerator {
 		return testParameters;
 	}
 
-	private void generateBodyGenerator(Generator gen, MediaType mediaType) {
+	private void addObjectPerturbatorIfPossible(List<Generator> gens, MediaType mediaType) {
 		GenParameter stringObject = new GenParameter();
 
 		String bodyParam = null;
@@ -549,6 +546,8 @@ public class DefaultTestConfigurationGenerator {
 		}
 
 		if (bodyParam != null && !bodyParam.equals("null")) {
+			Generator gen = new Generator();
+			gen.setGenParameters(new ArrayList<>());
 			gen.setType(OBJECT_PERTURBATOR);
 			stringObject.setName(GEN_PARAM_STRING_OBJECTS);
 			stringObject.setValues(Collections.singletonList(bodyParam));
