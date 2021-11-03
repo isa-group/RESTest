@@ -28,6 +28,7 @@ import java.util.*;
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getFuzzingValues;
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFromValue;
 import static es.us.isa.restest.util.SchemaManager.resolveSchema;
+import static es.us.isa.restest.util.SpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
 
 /**
  * This class implements a generator of fuzzing test cases. It uses a customizable dictionary to obtain
@@ -101,9 +102,11 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
     }
 
     private void generateFuzzingBody(TestCase tc, TestParameter testParam, Operation testOperation) {
-        MediaType requestBody = testOperation.getOpenApiOperation().getRequestBody().getContent().get("application/json");
-        if (requestBody == null)
-            requestBody = testOperation.getOpenApiOperation().getRequestBody().getContent().get("*/*");
+        Map.Entry<String, MediaType> mediaTypeEntry = testOperation.getOpenApiOperation().getRequestBody().getContent().entrySet()
+                .stream().filter(x -> x.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)).findFirst().orElse(null);
+        MediaType requestBody = null;
+        if (mediaTypeEntry != null)
+            requestBody = mediaTypeEntry.getValue();
 
         if (requestBody != null) {
             JsonNode node = null;
