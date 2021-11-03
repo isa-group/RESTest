@@ -26,6 +26,8 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static es.us.isa.restest.util.SpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
+
 /**
  * TestConfiguration objects are key in RESTest. They include all the
  * information required to test an API (data dictionaries, authentication data,
@@ -57,7 +59,6 @@ public class DefaultTestConfigurationGenerator {
 	public static final String GEN_PARAM_MIN = "min";
 	public static final String GEN_PARAM_MAX = "max";
 
-	public static final String MEDIA_TYPE_APPLICATION_JSON = "application/json";
 	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
 	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 
@@ -419,7 +420,7 @@ public class DefaultTestConfigurationGenerator {
 		// headers or form-data)
 		List<TestParameter> testParameters = new ArrayList<>();
 
-		if (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON) || requestBody.getContent().containsKey("*/*")) {
+		if (requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
 
 			TestParameter testParam = new TestParameter();
 			testParam.setName("body");
@@ -431,12 +432,17 @@ public class DefaultTestConfigurationGenerator {
 
 			Generator gen = new Generator();
 			gen.setGenParameters(new ArrayList<>());
-			MediaType mediaType = requestBody.getContent().get(MEDIA_TYPE_APPLICATION_JSON);
-			if (mediaType == null)
-				mediaType = requestBody.getContent().get("*/*");
-			generateBodyGenerator(gen, mediaType);
+			Entry<String, MediaType> mediaTypeEntry = requestBody.getContent().entrySet().stream().filter(x -> x.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)).findFirst().orElse(null);
+			if (mediaTypeEntry != null)
+				generateBodyGenerator(gen, mediaTypeEntry.getValue());
 			List<Generator> gens = new ArrayList<>();
 			gens.add(gen);
+
+			// Regardless of whether an ObjectPerturbator generator was set or not, add a BodyGenerator:
+			Generator bodyGeneratorGen = new Generator();
+			bodyGeneratorGen.setType("BodyGenerator");
+			gens.add(bodyGeneratorGen);
+
 			testParam.setGenerators(gens);
 			testParameters.add(testParam);
 
@@ -547,8 +553,6 @@ public class DefaultTestConfigurationGenerator {
 			stringObject.setName(GEN_PARAM_STRING_OBJECTS);
 			stringObject.setValues(Collections.singletonList(bodyParam));
 			gen.getGenParameters().add(stringObject);
-		} else {
-			setDefaultGenerator(gen);
 		}
 	}
 
