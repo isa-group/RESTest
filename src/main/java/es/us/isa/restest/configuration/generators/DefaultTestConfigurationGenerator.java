@@ -417,7 +417,8 @@ public class DefaultTestConfigurationGenerator {
 		// headers or form-data)
 		List<TestParameter> testParameters = new ArrayList<>();
 
-		if (requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
+		if (requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)) ||
+				requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_TEXT_PLAIN_REGEX))) {
 
 			TestParameter testParam = new TestParameter();
 			testParam.setName("body");
@@ -428,14 +429,26 @@ public class DefaultTestConfigurationGenerator {
 			}
 
 			List<Generator> gens = new ArrayList<>();
-			Entry<String, MediaType> mediaTypeEntry = requestBody.getContent().entrySet().stream().filter(x -> x.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)).findFirst().orElse(null);
-			if (mediaTypeEntry != null)
-				addObjectPerturbatorIfPossible(gens, mediaTypeEntry.getValue());
+			Generator gen = new Generator();
+			gen.setGenParameters(new ArrayList<>());
 
-			// Regardless of whether an ObjectPerturbator generator was set or not, add a BodyGenerator:
-			Generator bodyGeneratorGen = new Generator();
-			bodyGeneratorGen.setType("BodyGenerator");
-			gens.add(bodyGeneratorGen);
+			if (requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
+				Entry<String, MediaType> mediaTypeEntry = requestBody.getContent().entrySet().stream().filter(x -> x.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)).findFirst().orElse(null);
+				if (mediaTypeEntry != null)
+					addObjectPerturbatorIfPossible(gens, mediaTypeEntry.getValue());
+
+				// Regardless of whether an ObjectPerturbator generator was set or not, add a BodyGenerator:
+				gen.setType("BodyGenerator");
+			} else { // Content-Type = text/plain
+				Map.Entry<String, MediaType> mediaTypeEntry = requestBody.getContent().entrySet()
+						.stream().filter(x -> x.getKey().matches(MEDIA_TYPE_TEXT_PLAIN_REGEX)).findFirst().orElse(null);
+				if (mediaTypeEntry != null)
+					generateGenerator(gen, mediaTypeEntry.getValue().getSchema());
+				else // should never happen
+					setDefaultGenerator(gen);
+			}
+
+			gens.add(gen);
 
 			testParam.setGenerators(gens);
 			testParameters.add(testParam);
