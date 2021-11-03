@@ -167,7 +167,7 @@
             "name": "id",
             "in": "path",
             "description": "The numeric id of the news",
-            "required": false,
+            "required": true,
             "type": "string"
           }
         ],
@@ -217,7 +217,7 @@
             "name": "id",
             "in": "path",
             "description": "The numeric id of the news",
-            "required": false,
+            "required": true,
             "type": "string"
           }
         ],
@@ -258,7 +258,7 @@
             "name": "id",
             "in": "path",
             "description": "The numeric id of the news",
-            "required": false,
+            "required": true,
             "type": "string"
           }
         ],
@@ -301,7 +301,7 @@
             "name": "id",
             "in": "path",
             "description": "The numeric id of the news",
-            "required": false,
+            "required": true,
             "type": "integer",
             "format": "int64"
           },
