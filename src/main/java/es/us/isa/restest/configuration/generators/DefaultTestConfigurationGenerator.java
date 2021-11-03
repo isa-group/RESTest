@@ -419,7 +419,7 @@ public class DefaultTestConfigurationGenerator {
 		// headers or form-data)
 		List<TestParameter> testParameters = new ArrayList<>();
 
-		if (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON)) {
+		if (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON) || requestBody.getContent().containsKey("*/*")) {
 
 			TestParameter testParam = new TestParameter();
 			testParam.setName("body");
@@ -431,7 +431,10 @@ public class DefaultTestConfigurationGenerator {
 
 			Generator gen = new Generator();
 			gen.setGenParameters(new ArrayList<>());
-			generateBodyGenerator(gen, requestBody.getContent().get(MEDIA_TYPE_APPLICATION_JSON));
+			MediaType mediaType = requestBody.getContent().get(MEDIA_TYPE_APPLICATION_JSON);
+			if (mediaType == null)
+				mediaType = requestBody.getContent().get("*/*");
+			generateBodyGenerator(gen, mediaType);
 			List<Generator> gens = new ArrayList<>();
 			gens.add(gen);
 			testParam.setGenerators(gens);

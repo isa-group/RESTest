@@ -102,6 +102,8 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
 
     private void generateFuzzingBody(TestCase tc, TestParameter testParam, Operation testOperation) {
         MediaType requestBody = testOperation.getOpenApiOperation().getRequestBody().getContent().get("application/json");
+        if (requestBody == null)
+            requestBody = testOperation.getOpenApiOperation().getRequestBody().getContent().get("*/*");
 
         if (requestBody != null) {
             JsonNode node = null;

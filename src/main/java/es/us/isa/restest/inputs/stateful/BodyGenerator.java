@@ -65,6 +65,8 @@ public class BodyGenerator implements ITestDataGenerator {
 
         ObjectNode dictNode = operationPath != null && FileManager.checkIfExists(jsonPath)? (ObjectNode) JSONManager.readJSON(jsonPath) : objectMapper.createObjectNode();
         MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
+        if (requestBody == null)
+            requestBody = openApiOperation.getRequestBody().getContent().get("*/*");
 
         if (requestBody != null) {
             Schema mutatedSchema = mutate? new SchemaMutation(requestBody.getSchema(), spec.getSpecification()).mutate() : resolveSchema(requestBody.getSchema(), spec.getSpecification());
@@ -138,6 +140,8 @@ public class BodyGenerator implements ITestDataGenerator {
     private JsonNode createNodeFromExample(Schema<?> schema, String prefix) {
         JsonNode node = objectMapper.getNodeFactory().nullNode();
         MediaType requestBody = openApiOperation.getRequestBody().getContent().get("application/json");
+        if (requestBody == null)
+            requestBody = openApiOperation.getRequestBody().getContent().get("*/*");
 
         //Looking for parameter example
         if (schema.getExample() != null) {
