@@ -1,0 +1,229 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /countries
+    operationId: getUsingGET
+    method: get
+    testParameters: null
+    expectedResponse: 200
+  - testPath: /news
+    operationId: getUsingGET_1
+    method: get
+    testParameters:
+    - name: authorId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: ParameterGenerator
+        genParameters: []
+        valid: true
+    - name: country
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+          - name: maxWords
+            values:
+              - 1
+            objectValues: null
+        valid: false
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/EMB/Rest-News/data/countries.csv
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /news
+    operationId: createNewsUsingPOST
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: 0.9
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+        - name: stringObject
+          values:
+            - '{"authorId":"string","country":"Spain","creationTime":"2021-11-03T16:10:31.918Z","id":"1","newsId":"1","text":"string"}'
+        valid: false
+      - type: ObjectPerturbator
+        genParameters:
+        - name: stringObject
+          values:
+            - '{"authorId":"string","country":"Italy","text":"string"}'
+        valid: true
+    expectedResponse: 200
+  - testPath: "/news/{id}"
+    operationId: getNewsUsingGET
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+          - name: maxWords
+            values:
+              - 1
+            objectValues: null
+        valid: false
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int64
+        - name: min
+          values:
+          - 1
+        - name: max
+          values:
+          - 5
+          objectValues: null
+        valid: true
+      - type: ParameterGenerator
+        genParameters:
+          - name: altOperationPath
+            values:
+              - /news
+        valid: true
+    expectedResponse: 200
+  - testPath: "/news/{id}"
+    operationId: updateUsingPUT
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: false
+        - type: RandomNumber
+          genParameters:
+            - name: type
+              values:
+                - int64
+            - name: min
+              values:
+                - 1
+            - name: max
+              values:
+                - 5
+              objectValues: null
+          valid: true
+    - name: body
+      in: body
+      weight: 0.9
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: stringObject
+            values:
+              - '{"authorId":"string","country":"Spain","creationTime":"2021-11-03T16:10:31.918Z","id":"1","newsId":"1","text":"string"}'
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: stringObject
+            values:
+              - '{"authorId":"string","country":"Italy","text":"string"}'
+        valid: false
+    expectedResponse: 200
+  - testPath: "/news/{id}"
+    operationId: deleteUsingDELETE
+    method: delete
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: false
+        - type: RandomNumber
+          genParameters:
+            - name: type
+              values:
+                - int64
+            - name: min
+              values:
+                - 5
+            - name: max
+              values:
+                - 2000
+              objectValues: null
+          valid: true
+    expectedResponse: 200
+  - testPath: "/news/{id}/text"
+    operationId: updateTextUsingPUT
+    method: put
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int64
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 5
+          objectValues: null
+        valid: true
+      - type: ParameterGenerator
+        genParameters:
+          - name: altOperationPath
+            values:
+              - /news
+        valid: true
+    - name: body
+      in: body
+      weight: 0.9
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
