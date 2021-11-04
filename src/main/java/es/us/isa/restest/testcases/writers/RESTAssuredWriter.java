@@ -398,10 +398,11 @@ public class RESTAssuredWriter implements IWriter {
 		String content = "";
 		String bodyParameter = escapeJava(t.getBodyParameter());
 		if ((t.getFormParameters() == null || t.getFormParameters().size() == 0) &&
-				t.getBodyParameter() != null &&
+//				t.getBodyParameter() != null &&
 				(t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
-				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE)))
-			content += "\t\t\t\t.contentType(\"application/json\")\n";
+				|| t.getMethod().equals(HttpMethod.PATCH) ||
+				(t.getBodyParameter() != null && t.getMethod().equals(HttpMethod.DELETE))))
+			content += "\t\t\t\t.contentType(\"" + t.getInputFormat() + "\")\n";
 		if (t.getBodyParameter() != null) {
 			content += "\t\t\t\t.body(\"" + bodyParameter + "\")\n";
 		}
