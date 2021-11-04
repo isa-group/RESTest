@@ -1,0 +1,11 @@
+testResultId,statusCode,responseBody,outputContentType,passed,failReason
+test_r1a123wo44s9_findByAddress,200,"{""locations"":[]}",application/json,true,none
+test_s1jhac24xxdg_findByAddress,400,"{""status"":400,""title"":""Unknown Country"",""detail"":""Provided country 'DC' is not known.""}",application/json,false,This test case's input was correct, but received a 400 (Bad Request) status code.
+test_skxuww1ogd46_findByAddress,200,"{""locations"":[]}",application/json,true,none
+test_socbpayh2v6u_findByAddress,400,"{""status"":400,""title"":""Unknown Country"",""detail"":""Provided country 'TB' is not known.""}",application/json,false,This test case's input was correct, but received a 400 (Bad Request) status code.
+test_t4f3d3no8ler_findByAddress,200,"{""locations"":[]}",application/json,true,none
+test_to4jb6nlipup_findByAddress,400,"{""status"":400,""title"":""Unknown Country"",""detail"":""Provided country 'DC' is not known.""}",application/json,false,This test case's input was correct, but received a 400 (Bad Request) status code.
+test_todfaey38wmr_findByAddress,200,"{""locations"":[]}",application/json,true,none
+test_trrbt0mxza76_findByAddress,400,"{""status"":400,""title"":""Unknown Country"",""detail"":""Provided country 'TB' is not known.""}",application/json,false,This test case's input was correct, but received a 400 (Bad Request) status code.
+test_uv95py5bgoyu_findByAddress,400,"{""status"":400,""title"":""Unknown Country"",""detail"":""Provided country 'PB' is not known.""}",application/json,false,This test case's input was correct, but received a 400 (Bad Request) status code.
+test_vevvisjzdqgj_findByAddress,200,"{""locations"":[]}",application/json,true,none
