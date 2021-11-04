@@ -99,8 +99,9 @@ public class DataMatching {
     }
 
     private static String getIdParameterName(String paramName, String operationPath) {
-        return m.stem(operationPath
-                .substring(operationPath.lastIndexOf('/') + 1)
+        String lastResourceOperationPath = operationPath.replaceAll("(/\\{[^/]*\\})+$", "");
+        return m.stem(lastResourceOperationPath
+                .substring(lastResourceOperationPath.lastIndexOf('/') + 1)
                 .replaceAll("^([gG]et|[sS]et|[pP]ost|[pP]ut|[dD]elete|[pP]atch|[oO]btain|[rR]etrieve|[cC]reate|[uU]pdate|[rR]emove)([A-Z])", "$2"))
                 + ("ID".equals(paramName) ? "ID" : "Id");
     }
