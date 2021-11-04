@@ -6,7 +6,7 @@
     "title": "API for REST News"
   },
   "host": "localhost:8080",
-  "basePath": "/",
+  "schemes": ["http"],
   "tags": [
     {
       "name": "country-api",
