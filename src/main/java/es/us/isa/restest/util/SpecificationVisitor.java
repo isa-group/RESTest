@@ -74,7 +74,8 @@ public class SpecificationVisitor {
 
 	private static ParameterFeatures findBodyParameterFeatures(Operation operation) {
 		ParameterFeatures param = null;
-		if(operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
+		if(operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)) ||
+				operation.getRequestBody().getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_TEXT_PLAIN_REGEX))) {
 			param = new ParameterFeatures("body", "body", operation.getRequestBody().getRequired());
 		}
 		return param;
