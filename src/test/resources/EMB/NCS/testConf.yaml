@@ -1,0 +1,366 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: "/api/bessj/{n}/{x}"
+    operationId: bessjUsingGET
+    method: get
+    testParameters:
+    - name: "n"
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: x
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -100
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/expint/{n}/{x}"
+    operationId: expintUsingGET
+    method: get
+    testParameters:
+    - name: "n"
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: x
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/fisher/{m}/{n}/{x}"
+    operationId: fisherUsingGET
+    method: get
+    testParameters:
+    - name: m
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+      - type: RandomNumber
+        genParameters:
+          - name: type
+            values:
+              - int32
+            objectValues: null
+          - name: min
+            values:
+              - 1000
+            objectValues: null
+          - name: max
+            values:
+              - 10000
+            objectValues: null
+        valid: false
+    - name: "n"
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+      - type: RandomNumber
+        genParameters:
+          - name: type
+            values:
+              - int32
+            objectValues: null
+          - name: min
+            values:
+              - 1000
+            objectValues: null
+          - name: max
+            values:
+              - 10000
+            objectValues: null
+        valid: false
+    - name: x
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/gammq/{a}/{x}"
+    operationId: gammqUsingGET
+    method: get
+    testParameters:
+    - name: a
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: x
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/remainder/{a}/{b}"
+    operationId: remainderUsingGET
+    method: get
+    testParameters:
+    - name: a
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -10
+          objectValues: null
+        - name: max
+          values:
+          - 10
+          objectValues: null
+        valid: true
+      - type: RandomNumber
+        genParameters:
+          - name: type
+            values:
+              - int32
+            objectValues: null
+          - name: min
+            values:
+              - 10000
+            objectValues: null
+          - name: max
+            values:
+              - 100000
+            objectValues: null
+        valid: false
+    - name: b
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -10
+          objectValues: null
+        - name: max
+          values:
+          - 10
+          objectValues: null
+        valid: true
+      - type: RandomNumber
+        genParameters:
+          - name: type
+            values:
+              - int32
+            objectValues: null
+          - name: min
+            values:
+              - 10000
+            objectValues: null
+          - name: max
+            values:
+              - 100000
+            objectValues: null
+        valid: false
+    expectedResponse: 200
+  - testPath: "/api/triangle/{a}/{b}/{c}"
+    operationId: checkTriangleUsingGET
+    method: get
+    testParameters:
+    - name: a
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 10
+          objectValues: null
+        valid: true
+    - name: b
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 10
+          objectValues: null
+        valid: true
+    - name: c
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1
+          objectValues: null
+        - name: max
+          values:
+          - 10
+          objectValues: null
+        valid: true
+    expectedResponse: 200
