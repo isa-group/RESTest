@@ -1,0 +1,546 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: "/api/calc/{op}/{arg1}/{arg2}"
+    operationId: calcUsingGET
+    method: get
+    testParameters:
+    - name: arg1
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - double
+          objectValues: null
+        - name: min
+          values:
+          - -1000
+          objectValues: null
+        - name: max
+          values:
+          - 1000
+          objectValues: null
+        valid: true
+    - name: arg2
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - double
+          objectValues: null
+        - name: min
+          values:
+          - -1000
+          objectValues: null
+        - name: max
+          values:
+          - 1000
+          objectValues: null
+        valid: true
+    - name: op
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - pi
+            - e
+            - sqrt
+            - log
+            - sine
+            - cosine
+            - tangent
+            - plus
+            - subtract
+            - multiply
+            - divide
+          objectValues: null
+        valid: true
+      - type: RandomEnglishWord
+        genParameters:
+          - name: maxWords
+            values:
+              - 1
+            objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/cookie/{name}/{val}/{site}"
+    operationId: cookieUsingGET
+    method: get
+    testParameters:
+    - name: name
+      in: path
+      weight: null
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - userid
+                - session
+              objectValues: null
+          valid: true
+    - name: site
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - abc.com
+            objectValues: null
+        valid: true
+    - name: val
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - am
+              - user123
+            objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/costfuns/{i}/{s}"
+    operationId: costfunsUsingGET
+    method: get
+    testParameters:
+    - name: i
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - -1000
+          objectValues: null
+        - name: max
+          values:
+          - 1000
+          objectValues: null
+        valid: true
+    - name: s
+      in: path
+      weight: null
+      generators:
+      - type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '[a-b]{4}'
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/dateparse/{dayname}/{monthname}"
+    operationId: dateParseUsingGET
+    method: get
+    testParameters:
+    - name: dayname
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - mon
+              - tue
+              - wed
+              - thur
+              - fri
+              - sat
+              - sun
+            objectValues: null
+        valid: true
+    - name: monthname
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - jan
+              - feb
+              - mar
+              - apr
+              - may
+              - jun
+              - jul
+              - aug
+              - sep
+              - oct
+              - nov
+              - dec
+            objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/filesuffix/{directory}/{file}"
+    operationId: fileSuffixUsingGET
+    method: get
+    testParameters:
+    - name: directory
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - text
+              - acrobat
+              - word
+              - bin
+              - lib
+            objectValues: null
+        valid: true
+    - name: file
+      in: path
+      weight: null
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '[a-z]{2,10}\.(txt|pdf|doc|exe|dll)'
+              objectValues: null
+          valid: true
+    expectedResponse: 200
+  - testPath: "/api/notypevar/{i}/{s}"
+    operationId: notyPevarUsingGET
+    method: get
+    testParameters:
+    - name: i
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: s
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/ordered4/{w}/{x}/{z}/{y}"
+    operationId: ordered4UsingGET
+    method: get
+    testParameters:
+    - name: w
+      in: path
+      weight: null
+      generators:
+      - type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '[a-z]{4,7}'
+          objectValues: null
+        valid: true
+    - name: x
+      in: path
+      weight: null
+      generators:
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '[a-z]{4,7}'
+              objectValues: null
+          valid: true
+    - name: "y"
+      in: path
+      weight: null
+      generators:
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '[a-z]{4,7}'
+              objectValues: null
+          valid: true
+    - name: z
+      in: path
+      weight: null
+      generators:
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '[a-z]{4,7}'
+              objectValues: null
+          valid: true
+    expectedResponse: 200
+  - testPath: "/api/pat/{txt}"
+    operationId: regexUsingGET
+    method: get
+    testParameters:
+    - name: txt
+      in: path
+      weight: null
+      generators:
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '\d{2,10}\.\d{2,10}e(\+|-)\d{2}'
+              objectValues: null
+          valid: true
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '(http|ftp|afs|gopher)//:[a-z_\-][a-z0-9_\-]{0,10}/[a-z_\-][a-z0-9_\-]{0,10}'
+              objectValues: null
+          valid: true
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '(mon|tue|wed|thur|fri|sat|sun)[0-9]{2}(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)'
+              objectValues: null
+          valid: true
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    expectedResponse: 200
+  - testPath: "/api/pat/{txt}/{pat}"
+    operationId: patUsingGET
+    method: get
+    testParameters:
+    - name: pat
+      in: path
+      weight: null
+      generators:
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '[ab]{2,4}'
+              objectValues: null
+          valid: true
+    - name: txt
+      in: path
+      weight: null
+      generators:
+        - type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '[ab]{4,8}'
+              objectValues: null
+          valid: true
+    expectedResponse: 200
+  - testPath: "/api/text2txt/{word1}/{word2}/{word3}"
+    operationId: text2txtUsingGET
+    method: get
+    testParameters:
+    - name: word1
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - two
+              - for
+              - you
+              - and
+              - are
+              - see
+              - by
+            objectValues: null
+        valid: true
+    - name: word2
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - you
+              - the
+            objectValues: null
+        valid: true
+    - name: word3
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - way
+            objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/api/title/{sex}/{title}"
+    operationId: titleUsingGET
+    method: get
+    testParameters:
+    - name: sex
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - male
+              - female
+              - none
+            objectValues: null
+        valid: true
+    - name: title
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - mr
+              - dr
+              - sir
+              - rev
+              - rthon
+              - prof
+              - mrs
+              - miss
+              - ms
+              - lady
+            objectValues: null
+        valid: true
+    expectedResponse: 200
