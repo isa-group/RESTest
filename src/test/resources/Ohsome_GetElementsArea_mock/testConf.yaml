@@ -1,0 +1,155 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+    - testPath: /elements/area
+      operationId: area
+      method: get
+      testParameters:
+        - name: bboxes
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomRegExp
+              genParameters:
+                - name: regExp
+                  values:
+                    - '([a-zA-Z]{1,5}:8\.6[56789]\d{1,4},49\.4[012]\d{1,4},8\.7[012345]\d{1,4},49\.3[89]\d{1,4}(\|[a-zA-Z]{1,5}:8\.6[56789]\d{1,4},49\.4[012]\d{1,4},8\.7[012345]\d{1,4},49\.3[89]\d{1,4}){0,3})|(8\.6[56789]\d{1,4},49\.4[012]\d{1,4},8\.7[012345]\d{1,4},49\.3[89]\d{1,4}(\|8\.6[56789]\d{1,4},49\.4[012]\d{1,4},8\.7[012345]\d{1,4},49\.3[89]\d{1,4}){0,3})'
+                  objectValues: null
+        - name: bcircles
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomRegExp
+              genParameters:
+                - name: regExp
+                  values:
+                    - '([a-zA-Z]{1,5}:8\.7[01234]\d{1,4},49\.4[0123]\d{1,4},(([1-9]\d{0,2})|([1-9]\d{8,11}))(\|[a-zA-Z]{1,5}:8\.7[01234]\d{1,4},49\.4[0123]\d{1,4},(([1-9]\d{0,2})|([1-9]\d{8,11}))){0,3})|(8\.7[01234]\d{1,4},49\.4[0123]\d{1,4},(([1-9]\d{0,2})|([1-9]\d{8,11}))(\|8\.7[01234]\d{1,4},49\.4[0123]\d{1,4},(([1-9]\d{0,2})|([1-9]\d{8,11}))){0,3})'
+                  objectValues: null
+        - name: bpolys
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomRegExp
+              genParameters:
+                - name: regExp
+                  values:
+                    - '([a-zA-Z]{1,5}:8\.704561,49\.403252(,8\.7[01234]\d{1,4},49\.4[0123]\d{1,4}){1,3},8\.704561,49\.403252(\|[a-zA-Z]{1,5}:8\.704561,49\.403252(,8\.7[01234]\d{1,4},49\.4[0123]\d{1,4}){1,3},8\.704561,49\.403252){0,2})|(8\.704561,49\.403252(,8\.7[01234]\d{1,4},49\.4[0123]\d{1,4}){1,3},8\.704561,49\.403252(\|8\.704561,49\.403252(,8\.7[01234]\d{1,4},49\.4[0123]\d{1,4}){1,3},8\.704561,49\.403252){0,2})|(\{\"type\":\"FeatureCollection\",\"features\":\[\{\"type\":\"Feature\",\"properties\":\{\"id\":\"[a-zA-Z]{1,5}\"\},\"geometry\":\{\"type\":\"Polygon\",\"coordinates\":\[\[\[8\.704561,49\.403252\](,\[8\.7[01234]\d{1,4},49\.4[0123]\d{1,4}\]){1,3},\[8\.704561,49\.403252\]\]\]\}\}(,\{\"type\":\"Feature\",\"properties\":\{\"id\":\"[a-zA-Z]{1,5}\"\},\"geometry\":\{\"type\":\"Polygon\",\"coordinates\":\[\[\[8\.704561,49\.403252\](,\[8\.7[01234]\d{1,4},49\.4[0123]\d{1,4}\]){1,3},\[8\.704561,49\.403252\]\]\]\}\}){0,2}\]\})'
+                  objectValues: null
+        - name: filter
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomRegExp
+              genParameters:
+                - name: regExp
+                  values:
+                    - '((((highway)|(lanes)|(lanes:backward)|(lanes:forward)|(lit)|(maxspeed)|(name)|(ref)|(sidewalk)|(smoothness)|(surface)|(turn)|(network)|(tracktype)|(type)|(building)|(destination)|(oneway)|(turn:lanes)|(landuse)|(source:maxspeed)|(barrier)|(bicycle)|(foot)|(addr:city)|(addr:country)|(addr:housenumber)|(addr:postcode)|(addr:street))!?=\*)|(natural=wood)|(service=driveway)|(highway in \(secondary,path,unclassified,track,primary,residential,cycleway,service,footway\)))( (and|or)( not)? ((type:(node|way|relation))|(geometry:(point|line|polygon))))?( (and|or)( not)? ((id:\(1 \.\. 9999\))|(area:\(1\.0 \.\. 1E6\)|(length:\( \.\. 100\)))))?'
+                  objectValues: null
+        - name: format
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - json
+                    - csv
+                    - geojson
+                  objectValues: null
+        - name: keys
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - highway
+                  objectValues: null
+        - name: showMetadata
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - true
+                    - yes
+                    - false
+                    - no
+        - name: time
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomDate
+              genParameters:
+                - name: startDate
+                  values:
+                    - 2007-10-08
+                  objectValues: null
+                - name: endDate
+                  values:
+                    - 2018-05-10
+                  objectValues: null
+                - name: format
+                  values:
+                    - yyyy-MM-dd
+                  objectValues: null
+        - name: timeout
+          in: query
+          weight: 1
+          generators:
+            - valid: true
+              type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 20
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+        - name: types
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomRegExp
+              genParameters:
+                - name: regExp
+                  values:
+                    - '((node,)?(way,)?(relation)?)|((point,)?(line,)?(polygon,)?(other)?)'
+                  objectValues: null
+        - name: values
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Ohsome_GetElementsArea/aux/highway_values.csv'
+                  objectValues: null
+      expectedResponse: 200
