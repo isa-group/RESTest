@@ -1,4 +1,4 @@
 #! /bin/bash
 printf "\n Executing predictor..."
-/home/giuliano/anaconda3/envs/testing/bin/python predictor/main.py $1 $2
+/home/giuliano/anaconda3/envs/testing/bin/python /home/giuliano/Desktop/emse/workspace/predictor.py $1 $2
 printf "\n"

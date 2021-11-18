@@ -1,0 +1,4 @@
+#! /bin/bash
+printf "\n Executing selector..."
+/home/giuliano/anaconda3/envs/testing/bin/python /home/giuliano/Desktop/emse/workspace/selector.py $1 $2 $3 $4
+printf "\n"

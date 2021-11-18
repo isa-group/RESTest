@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Ohsome_GetElementsArea/props.properties";
+	private static String propertiesFilePath = "src/test/resources/GitHub/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -82,6 +82,10 @@ public class TestGenerationAndExecution {
 	// For ML Testing only:
 	private static String mlResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the ML predictor
 
+	// For AL Testing only:
+	private static String alResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the AL selector
+	private static Integer numberOfCandidates;							    // Number of test cases to generate before AL-driven selection
+	private static String queryStrategy; 									// Strategy to query best test cases among candidates
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
 	public static void main(String[] args) throws RESTestException {
@@ -213,8 +217,14 @@ public class TestGenerationAndExecution {
 				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(mlResourcesFolderPath);
 				gen.setFaultyRatio(faultyRatio);
 				break;
+			case "ALT":
+				gen = new ALDrivenTestCaseGenerator(spec, conf, numTestCases);
+				((ALDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
+				((ALDrivenTestCaseGenerator) gen).setQueryStrategy(queryStrategy);
+				((ALDrivenTestCaseGenerator) gen).setNumberOfCandidates(numberOfCandidates);
+				break;
 			default:
-				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART' or 'MLT'");
+				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART', 'ALT' or 'MLT'");
 		}
 
 		gen.setCheckTestCases(checkTestCases);
@@ -417,6 +427,17 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("ml.resources.folder") != null)
 			mlResourcesFolderPath = readParameterValue("ml.resources.folder");
 		logger.info("ML predictor resources folder: {}", mlResourcesFolderPath);
+
+		// ALT
+		if (readParameterValue("al.resources.folder") != null)
+			alResourcesFolderPath = readParameterValue("al.resources.folder");
+		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
+		if (readParameterValue("al.query.strategy") != null)
+			queryStrategy = readParameterValue("al.query.strategy");
+		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
+		if (readParameterValue("al.number.of.candidates") != null)
+			numberOfCandidates = Integer.parseInt(readParameterValue("al.number.of.candidates"));
+		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
 
 		// ARTE
 		if (readParameterValue("learnRegex") != null)
