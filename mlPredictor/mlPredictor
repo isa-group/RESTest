@@ -1,4 +1,4 @@
 #! /bin/bash
 printf "\n Executing ML predictor..."
-/home/giuliano/anaconda3/envs/testing/bin/python /home/giuliano/Desktop/emse/workspace/predictor.py $1 $2
+~/anaconda3/envs/testing/bin/python ../emse/predictor.py $1 $2
 printf "\n"

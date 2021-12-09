@@ -86,6 +86,7 @@ public class TestGenerationAndExecution {
 	private static String alResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the AL selector
 	private static Integer numberOfCandidates;							    // Number of test cases to generate before AL-driven selection
 	private static String queryStrategy; 									// Strategy to query best test cases among candidates
+
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
 	public static void main(String[] args) throws RESTestException {
@@ -254,10 +255,10 @@ public class TestGenerationAndExecution {
 			String allureReportDir = readParameterValue("allure.report.dir") + "/" + experimentName;
 
 			// Delete previous results (if any)
-			if (deletePreviousResults) {
-				deleteDir(allureResultsDir);
-				deleteDir(allureReportDir);
-			}
+//			if (deletePreviousResults) { // for ALT experiments
+//				deleteDir(allureResultsDir);
+//				deleteDir(allureReportDir);
+//			}
 
 			//Find auth property names (if any)
 			List<String> authProperties = AllureAuthManager.findAuthProperties(spec, confPath);
