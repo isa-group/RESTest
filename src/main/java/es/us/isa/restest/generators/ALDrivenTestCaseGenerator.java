@@ -34,9 +34,9 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Predictor command
 		String os = System.getProperty("os.name");
 		if (os.contains("Windows"))
-			alSelectorCommand = PropertyManager.readProperty("alSelector.command.windows");
+			alSelectorCommand = PropertyManager.readProperty("al.predictor.command.windows");
 		else
-			alSelectorCommand = PropertyManager.readProperty("alSelector.command.unix");
+			alSelectorCommand = PropertyManager.readProperty("al.predictor.command.unix");
 	}
 
 	/**
