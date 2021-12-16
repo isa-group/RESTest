@@ -79,13 +79,11 @@ public class TestGenerationAndExecution {
 	private static Double minimumValueOfMetric;
 	private static int maxNumberOfTriesToGenerateRegularExpression;
 
-	// For ML Testing only:
-	private static String mlResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the ML predictor
-
-	// For AL Testing only:
+	// For Active Learning-Driven Testing only:
 	private static String alResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the AL selector
+	private static Boolean heedFaultyRatio;									// Whether to pay attention to the faulty ratio or not
 	private static Integer numberOfCandidates;							    // Number of test cases to generate before AL-driven selection
-	private static String queryStrategy; 									// Strategy to query best test cases among candidates
+	private static String queryStrategy; 									// Strategy to query best test cases among candidates. Supported query strategies are: 'random', 'entropy', 'margin', and 'uncertainty'.
 
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
@@ -213,19 +211,16 @@ public class TestGenerationAndExecution {
 				((ARTestCaseGenerator) gen).setNumberOfCandidates(numberCandidates);
 				gen.setFaultyRatio(faultyRatio);
 				break;
-			case "MLT":
-				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
-				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(mlResourcesFolderPath);
-				gen.setFaultyRatio(faultyRatio);
-				break;
 			case "ALT":
 				gen = new ALDrivenTestCaseGenerator(spec, conf, numTestCases);
 				((ALDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
 				((ALDrivenTestCaseGenerator) gen).setQueryStrategy(queryStrategy);
 				((ALDrivenTestCaseGenerator) gen).setNumberOfCandidates(numberOfCandidates);
+				((ALDrivenTestCaseGenerator) gen).setHeedFaultyRatio(heedFaultyRatio);
+				gen.setFaultyRatio(faultyRatio);
 				break;
 			default:
-				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART', 'ALT' or 'MLT'");
+				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART' or 'ALT'");
 		}
 
 		gen.setCheckTestCases(checkTestCases);
@@ -255,10 +250,10 @@ public class TestGenerationAndExecution {
 			String allureReportDir = readParameterValue("allure.report.dir") + "/" + experimentName;
 
 			// Delete previous results (if any)
-//			if (deletePreviousResults) { // for ALT experiments
-//				deleteDir(allureResultsDir);
-//				deleteDir(allureReportDir);
-//			}
+			if (deletePreviousResults) {
+				deleteDir(allureResultsDir);
+				deleteDir(allureReportDir);
+			}
 
 			//Find auth property names (if any)
 			List<String> authProperties = AllureAuthManager.findAuthProperties(spec, confPath);
@@ -270,7 +265,7 @@ public class TestGenerationAndExecution {
 		return arm;
 	}
 
-	// Create an statistics report manager
+	// Create a statistics report manager
 	private static StatsReportManager createStatsReportManager() {
 		String testDataDir = readParameterValue("data.tests.dir") + "/" + experimentName;
 		String coverageDataDir = readParameterValue("data.coverage.dir") + "/" + experimentName;
@@ -424,22 +419,6 @@ public class TestGenerationAndExecution {
 			inputTestCasesPath = readParameterValue("testcases.input");
 		logger.info("Test cases path: {}", inputTestCasesPath);
 
-		// MLT
-		if (readParameterValue("ml.resources.folder") != null)
-			mlResourcesFolderPath = readParameterValue("ml.resources.folder");
-		logger.info("ML predictor resources folder: {}", mlResourcesFolderPath);
-
-		// ALT
-		if (readParameterValue("al.resources.folder") != null)
-			alResourcesFolderPath = readParameterValue("al.resources.folder");
-		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
-		if (readParameterValue("al.query.strategy") != null)
-			queryStrategy = readParameterValue("al.query.strategy");
-		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
-		if (readParameterValue("al.number.of.candidates") != null)
-			numberOfCandidates = Integer.parseInt(readParameterValue("al.number.of.candidates"));
-		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
-
 		// ARTE
 		if (readParameterValue("learnRegex") != null)
 			learnRegex = Boolean.parseBoolean(readParameterValue("learnRegex"));
@@ -469,6 +448,18 @@ public class TestGenerationAndExecution {
 			maxNumberOfTriesToGenerateRegularExpression = Integer.parseInt(readParameterValue("maxNumberOfTriesToGenerateRegularExpression"));
 		logger.info("Maximum number of tries to generate a regular expression: {}", maxNumberOfTriesToGenerateRegularExpression);
 
+		// ALT
+		if (readParameterValue("al.resources.folder") != null)
+			alResourcesFolderPath = readParameterValue("al.resources.folder");
+		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
+		if (readParameterValue("al.query.strategy") != null)
+			queryStrategy = readParameterValue("al.query.strategy");
+		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
+		if (readParameterValue("al.number.of.candidates") != null)
+			numberOfCandidates = Integer.parseInt(readParameterValue("al.number.of.candidates"));
+		if (readParameterValue("al.heed.faulty.ratio") != null)
+			heedFaultyRatio = Boolean.parseBoolean(readParameterValue("al.heed.faulty.ratio"));
+		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
 	}
 
 	// Read the parameter value from: 1) CLI; 2) the local .properties file; 3) the global .properties file (config.properties)

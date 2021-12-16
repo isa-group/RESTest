@@ -1,4 +1,0 @@
-#! /bin/bash
-printf "\n Executing AL selector..."
-~/anaconda3/envs/testing/bin/python ../emse/selector.py $1 $2 $3 $4
-printf "\n"

@@ -10,16 +10,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import static es.us.isa.restest.util.FileManager.deleteFile;
 import static es.us.isa.restest.util.TestManager.getTestCases;
 
 public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
-	private String alSelectorCommand;
+	private String alPredictorCommand;
+	private Boolean heedFaultyRatio;
 	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and selector
 	private static final String CSV_NAME = "test-cases_pool.csv";	// CSV of temporary test cases (the ones analyzed/output by the selector)
 	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
@@ -34,9 +33,9 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Predictor command
 		String os = System.getProperty("os.name");
 		if (os.contains("Windows"))
-			alSelectorCommand = PropertyManager.readProperty("al.predictor.command.windows");
+			alPredictorCommand = PropertyManager.readProperty("al.predictor.command.windows");
 		else
-			alSelectorCommand = PropertyManager.readProperty("al.predictor.command.unix");
+			alPredictorCommand = PropertyManager.readProperty("al.predictor.command.unix");
 	}
 
 	/**
@@ -69,10 +68,10 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			deleteFile(csvTmpTcPath); // Delete file first, so as to consider only test cases from this iteration
 			queriedTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
 
-			// Feed test cases to predictor, which updates them
+			// Feed test cases to predictor, which queries and labels the best ones
 			boolean commandOk = false;
 			try {
-				ProcessBuilder pb = new ProcessBuilder(alSelectorCommand, resourcesFolderPath, csvTmpTcPath, queryStrategy, ((Integer) numberOfTests).toString());
+				ProcessBuilder pb = new ProcessBuilder(alPredictorCommand, resourcesFolderPath, csvTmpTcPath, queryStrategy, ((Integer) numberOfTests).toString(), heedFaultyRatio.toString(), faultyRatio.toString());
 				pb.inheritIO(); // Print output of program to stdout
 				Process proc = pb.start();
 				proc.waitFor();
@@ -89,19 +88,37 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
 				queriedTestCases = getTestCases(csvTmpTcPath);
-				queriedTestCases.forEach(tc ->{
-					// Set authentication data (if any)
-					authenticateTestCase(tc);
 
-					// Add test case to the collection
-					testCases.add(tc);
+				if (heedFaultyRatio) {
+					// Add test cases one by one until desired number is reached both for nominal and faulty
+					queriedTestCases.forEach(tc -> {
+						if ((Boolean.TRUE.equals(tc.getFaulty()) && hasNextFaulty()) ||
+								(Boolean.FALSE.equals(tc.getFaulty()) && hasNextNominal())) {
+							// Set authentication data (if any)
+							authenticateTestCase(tc);
 
-					// Update indexes
-					updateIndexes(tc);
-				});
+							// Add test case to the collection
+							testCases.add(tc);
+
+							// Update indexes
+							updateIndexes(tc);
+							Integer a = 1;
+						}
+					});
+				} else {
+					queriedTestCases.forEach(tc ->{
+						// Set authentication data (if any)
+						authenticateTestCase(tc);
+
+						// Add test case to the collection
+						testCases.add(tc);
+
+						// Update indexes
+						updateIndexes(tc);
+					});
+				}
 			}
 		}
-		
 		return testCases;
 	}
 	
@@ -117,29 +134,30 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		return test;
 	}
 
-	protected boolean hasNext() {
-		return nTests < numberOfTests;
+	protected boolean hasNext() { return nTests < numberOfTests; }
+
+	private boolean hasNextFaulty() {
+		return nFaulty < (int) (faultyRatio * numberOfTests);
 	}
 
-	public void setQueryStrategy(String queryStrategy) {
-		this.queryStrategy = queryStrategy;
+	private boolean hasNextNominal() {
+		return nNominal < (int) ((1 - faultyRatio) * numberOfTests);
 	}
 
-	public void setNumberOfCandidates(Integer numberOfCandidates) {
-		this.numberOfCandidates = numberOfCandidates;
-	}
+	public String getResourcesFolderPath() { return resourcesFolderPath; }
 
-	public void setResourcesFolderPath(String resourcesFolderPath) {
-		this.resourcesFolderPath = resourcesFolderPath;
-		this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME;
-	}
+	public void setResourcesFolderPath(String resourcesFolderPath) { this.resourcesFolderPath = resourcesFolderPath; this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME; }
 
-	public String getResourcesFolderPath() {
-		return resourcesFolderPath;
-	}
+	public Boolean getHeedFaultyRatio() { return heedFaultyRatio; }
 
-	public String getCsvTmpTcPath() {
-		return csvTmpTcPath;
-	}
+	public void setHeedFaultyRatio(Boolean heedFaultyRatio) { this.heedFaultyRatio = heedFaultyRatio; }
+
+	public String getQueryStrategy() { return queryStrategy; }
+
+	public void setQueryStrategy(String queryStrategy) { this.queryStrategy = queryStrategy; }
+
+	public String getCsvTmpTcPath() { return csvTmpTcPath; }
+
+	public void setNumberOfCandidates(Integer numberOfCandidates) { this.numberOfCandidates = numberOfCandidates; }
 }
 
