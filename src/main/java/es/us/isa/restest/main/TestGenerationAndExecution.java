@@ -81,9 +81,10 @@ public class TestGenerationAndExecution {
 
 	// For Active Learning-Driven Testing only:
 	private static String alResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the AL selector
-	private static Boolean heedFaultyRatio;									// Whether to pay attention to the faulty ratio or not
-	private static Integer numberOfCandidates;							    // Number of test cases to generate before AL-driven selection
 	private static String queryStrategy; 									// Strategy to query best test cases among candidates. Supported query strategies are: 'random', 'entropy', 'margin', and 'uncertainty'.
+	private static Integer numberOfCandidates;							    // Number of test cases to generate before AL-driven selection
+	private static Boolean heedFaultyRatio;									// Whether to pay attention to the faulty ratio or not
+	private static Integer alMaxNumberOfTries; 								// Number of iterations when to stop ALT (when heedFaultyRatio is true, and no new request is labelled with the desired validity)
 
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
@@ -217,6 +218,7 @@ public class TestGenerationAndExecution {
 				((ALDrivenTestCaseGenerator) gen).setQueryStrategy(queryStrategy);
 				((ALDrivenTestCaseGenerator) gen).setNumberOfCandidates(numberOfCandidates);
 				((ALDrivenTestCaseGenerator) gen).setHeedFaultyRatio(heedFaultyRatio);
+				((ALDrivenTestCaseGenerator) gen).setAlMaxNumberOfTries(alMaxNumberOfTries);
 				gen.setFaultyRatio(faultyRatio);
 				break;
 			default:
@@ -460,6 +462,8 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("al.heed.faulty.ratio") != null)
 			heedFaultyRatio = Boolean.parseBoolean(readParameterValue("al.heed.faulty.ratio"));
 		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
+		if (readParameterValue("al.max.number.of.tries") != null)
+			alMaxNumberOfTries = Integer.parseInt(readParameterValue("al.max.number.of.tries"));
 	}
 
 	// Read the parameter value from: 1) CLI; 2) the local .properties file; 3) the global .properties file (config.properties)
