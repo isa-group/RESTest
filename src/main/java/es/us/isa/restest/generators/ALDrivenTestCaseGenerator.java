@@ -18,14 +18,11 @@ import static es.us.isa.restest.util.TestManager.getTestCases;
 public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	private String alPredictorCommand;
-	private Boolean heedFaultyRatio;
 	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and selector
 	private static final String CSV_NAME = "test-cases_pool.csv";	// CSV of temporary test cases (the ones analyzed/output by the selector)
 	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
 	private Integer numberOfCandidates; 							// number of candidates to perform ALT
 	private String queryStrategy; 									// Strategy to query best test cases among candidates
-	private Integer alMaxNumberOfTries;
-	private Integer iteration = 0;
 
 	private static Logger logger = LogManager.getLogger(ALDrivenTestCaseGenerator.class.getName());
 
@@ -66,53 +63,30 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 				queriedTestCases.add(test);
 			}
 
-			if (iteration<alMaxNumberOfTries) {
-				// Max number of iterations not reached yet, execute the AL predictor
-				// Export test cases to temporary CSV
-				deleteFile(csvTmpTcPath); // Delete file first, so as to consider only test cases from this iteration
-				queriedTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
+			// Export test cases to temporary CSV
+			deleteFile(csvTmpTcPath); // Delete file first, so as to consider only test cases from this iteration
+			queriedTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
 
-				// Feed test cases to predictor, which queries and labels the best ones
-				boolean commandOk = false;
-				try {
-					ProcessBuilder pb = new ProcessBuilder(alPredictorCommand, resourcesFolderPath, csvTmpTcPath, queryStrategy, ((Integer) numberOfTests).toString(), heedFaultyRatio.toString(), faultyRatio.toString());
-					pb.inheritIO(); // Print output of program to stdout
-					Process proc = pb.start();
-					proc.waitFor();
-					commandOk = true;
-				} catch (IOException e) {
-					logger.error("Error running AL selector");
-					logger.error("Exception: ", e);
-				} catch (InterruptedException e) {
-					logger.error("Error running AL selector");
-					logger.error("Exception: ", e);
-					Thread.currentThread().interrupt();
-				}
-				if (commandOk) {
-					// Read back test cases from CSV and update objects
-					queriedTestCases = getTestCases(csvTmpTcPath);
-				}
-			} else {
-				heedFaultyRatio = false;
+			// Feed test cases to predictor, which queries and labels the best ones
+			boolean commandOk = false;
+			try {
+				ProcessBuilder pb = new ProcessBuilder(alPredictorCommand, resourcesFolderPath, csvTmpTcPath, queryStrategy, ((Integer) numberOfTests).toString(), faultyRatio.toString());
+				pb.inheritIO(); // Print output of program to stdout
+				Process proc = pb.start();
+				proc.waitFor();
+				commandOk = true;
+			} catch (IOException e) {
+				logger.error("Error running AL selector");
+				logger.error("Exception: ", e);
+			} catch (InterruptedException e) {
+				logger.error("Error running AL selector");
+				logger.error("Exception: ", e);
+				Thread.currentThread().interrupt();
 			}
+			if (commandOk) {
+				// Read back test cases from CSV and update objects
+				queriedTestCases = getTestCases(csvTmpTcPath);
 
-			if (heedFaultyRatio) {
-				// Add test cases one by one until desired number is reached both for nominal and faulty
-				queriedTestCases.forEach(tc -> {
-					if ((Boolean.TRUE.equals(tc.getFaulty()) && hasNextFaulty()) ||
-							(Boolean.FALSE.equals(tc.getFaulty()) && hasNextNominal())) {
-						// Set authentication data (if any)
-						authenticateTestCase(tc);
-
-						// Add test case to the collection
-						testCases.add(tc);
-
-						// Update indexes
-						updateIndexes(tc);
-						Integer a = 1;
-					}
-				});
-			} else {
 				queriedTestCases.forEach(tc ->{
 					if (hasNext()) {
 						// Set authentication data (if any)
@@ -126,7 +100,6 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 					}
 				});
 			}
-			iteration ++;
 		}
 		return testCases;
 	}
@@ -157,10 +130,6 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	public void setResourcesFolderPath(String resourcesFolderPath) { this.resourcesFolderPath = resourcesFolderPath; this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME; }
 
-	public Boolean getHeedFaultyRatio() { return heedFaultyRatio; }
-
-	public void setHeedFaultyRatio(Boolean heedFaultyRatio) { this.heedFaultyRatio = heedFaultyRatio; }
-
 	public String getQueryStrategy() { return queryStrategy; }
 
 	public void setQueryStrategy(String queryStrategy) { this.queryStrategy = queryStrategy; }
@@ -169,6 +138,5 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	public void setNumberOfCandidates(Integer numberOfCandidates) { this.numberOfCandidates = numberOfCandidates; }
 
-	public void setAlMaxNumberOfTries(Integer alMaxNumberOfTries) { this.alMaxNumberOfTries = alMaxNumberOfTries; }
 }
 
