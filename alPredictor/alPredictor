@@ -1,4 +1,4 @@
 #! /bin/bash
 echo "Command parameters"
-~/anaconda3/envs/testing/bin/python ../Desktop/emse/predictor.py $1 $2 $3 $4 $5 $6
+~/anaconda3/envs/testing/bin/python ../Desktop/emse/al_predictor.py $1 $2 $3 $4 $5 $6
 printf "\n"

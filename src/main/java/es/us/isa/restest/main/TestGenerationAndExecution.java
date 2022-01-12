@@ -79,8 +79,10 @@ public class TestGenerationAndExecution {
 	private static Double minimumValueOfMetric;
 	private static int maxNumberOfTriesToGenerateRegularExpression;
 
-	// For Active Learning-Driven Testing only:
+	// For Machine Learning-Driven Testing only:
 	private static String alResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the AL selector
+
+	// For Active Learning-Driven Testing only:
 	private static String queryStrategy; 									// Strategy to query best test cases among candidates. Supported query strategies are: 'random', 'entropy', 'margin', and 'uncertainty'.
 	private static Integer numberOfCandidates;							    // Number of test cases to generate before AL-driven selection
 
@@ -210,6 +212,10 @@ public class TestGenerationAndExecution {
 				((ARTestCaseGenerator) gen).setNumberOfCandidates(numberCandidates);
 				gen.setFaultyRatio(faultyRatio);
 				break;
+			case "MLT":
+				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
+				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
+				gen.setFaultyRatio(faultyRatio);
 			case "ALT":
 				gen = new ALDrivenTestCaseGenerator(spec, conf, numTestCases);
 				((ALDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
@@ -218,7 +224,7 @@ public class TestGenerationAndExecution {
 				gen.setFaultyRatio(faultyRatio);
 				break;
 			default:
-				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART' or 'ALT'");
+				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART', 'MLT' or 'ALT'");
 		}
 
 		gen.setCheckTestCases(checkTestCases);
