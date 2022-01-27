@@ -1,4 +1,3 @@
 #! /bin/bash
-echo "Command parameters"
-~/anaconda3/envs/testing/bin/python ../Desktop/emse/ml_predictor.py $1 $2
+~/anaconda3/envs/testing/bin/python ../Desktop/mldriventesting/ml_predictor.py $1 $2
 printf "\n"

@@ -19,7 +19,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	private String alPredictorCommand;
 	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and selector
-	private static final String CSV_NAME = "test-cases_pool.csv";	// CSV of temporary test cases (the ones analyzed/output by the selector)
+	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the selector)
 	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
 	private Integer numberOfCandidates; 							// number of candidates to perform ALT
 	private String queryStrategy; 									// Strategy to query best test cases among candidates
@@ -70,7 +70,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			// Feed test cases to predictor, which queries and labels the best ones
 			boolean commandOk = false;
 			try {
-				ProcessBuilder pb = new ProcessBuilder(alPredictorCommand, resourcesFolderPath, csvTmpTcPath, queryStrategy, ((Integer) numberOfTests).toString(), faultyRatio.toString());
+				ProcessBuilder pb = new ProcessBuilder(alPredictorCommand, resourcesFolderPath, csvTmpTcPath, queryStrategy, ((Integer) numberOfTests).toString());
 				pb.inheritIO(); // Print output of program to stdout
 				Process proc = pb.start();
 				proc.waitFor();
@@ -101,6 +101,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 				});
 			}
 		}
+		deleteFile(csvTmpTcPath); // Delete pool file
 		return testCases;
 	}
 
@@ -118,23 +119,9 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	protected boolean hasNext() { return nTests < numberOfTests; }
 
-	private boolean hasNextFaulty() {
-		return nFaulty < (int) (faultyRatio * numberOfTests);
-	}
-
-	private boolean hasNextNominal() {
-		return nNominal < (int) ((1 - faultyRatio) * numberOfTests);
-	}
-
-	public String getResourcesFolderPath() { return resourcesFolderPath; }
-
 	public void setResourcesFolderPath(String resourcesFolderPath) { this.resourcesFolderPath = resourcesFolderPath; this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME; }
 
-	public String getQueryStrategy() { return queryStrategy; }
-
 	public void setQueryStrategy(String queryStrategy) { this.queryStrategy = queryStrategy; }
-
-	public String getCsvTmpTcPath() { return csvTmpTcPath; }
 
 	public void setNumberOfCandidates(Integer numberOfCandidates) { this.numberOfCandidates = numberOfCandidates; }
 

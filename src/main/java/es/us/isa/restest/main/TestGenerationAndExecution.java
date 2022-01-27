@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/GitHub/props.properties";
+	private static String propertiesFilePath = "src/test/resources/YouTube_Search_local/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -216,12 +216,12 @@ public class TestGenerationAndExecution {
 				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
 				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
 				gen.setFaultyRatio(faultyRatio);
+				break;
 			case "ALT":
 				gen = new ALDrivenTestCaseGenerator(spec, conf, numTestCases);
 				((ALDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
 				((ALDrivenTestCaseGenerator) gen).setQueryStrategy(queryStrategy);
 				((ALDrivenTestCaseGenerator) gen).setNumberOfCandidates(numberOfCandidates);
-				gen.setFaultyRatio(faultyRatio);
 				break;
 			default:
 				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART', 'MLT' or 'ALT'");

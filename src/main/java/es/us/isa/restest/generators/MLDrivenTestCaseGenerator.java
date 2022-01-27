@@ -21,7 +21,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	private String mlPredictorCommand;
 	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and predictor
-	private static final String CSV_NAME = "test-cases_tmp.csv";	// CSV of temporary test cases (the ones analyzed/output by the predictor)
+	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the predictor)
 	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
 
 	private static Logger logger = LogManager.getLogger(MLDrivenTestCaseGenerator.class.getName());
@@ -32,9 +32,9 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Predictor command
 		String os = System.getProperty("os.name");
 		if (os.contains("Windows"))
-			mlPredictorCommand = PropertyManager.readProperty("mlPredictor.command.windows");
+			mlPredictorCommand = PropertyManager.readProperty("ml.predictor.command.windows");
 		else
-			mlPredictorCommand = PropertyManager.readProperty("mlPredictor.command.unix");
+			mlPredictorCommand = PropertyManager.readProperty("ml.predictor.command.unix");
 	}
 
 	/**
@@ -105,6 +105,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			}
 		}
 
+		deleteFile(csvTmpTcPath); // Delete pool file
 		return testCases;
 	}
 
@@ -135,13 +136,5 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	public void setResourcesFolderPath(String resourcesFolderPath) {
 		this.resourcesFolderPath = resourcesFolderPath;
 		this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME;
-	}
-
-	public String getResourcesFolderPath() {
-		return resourcesFolderPath;
-	}
-
-	public String getCsvTmpTcPath() {
-		return csvTmpTcPath;
 	}
 }
