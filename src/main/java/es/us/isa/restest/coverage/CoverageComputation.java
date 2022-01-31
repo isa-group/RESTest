@@ -46,7 +46,7 @@ public class CoverageComputation {
                     "coverage (optional, but improve performance for very large test suites, e.g., >100K test cases.");
         }
 
-        if (args.length == 2) {
+        if (args.length == 2 || args.length == 3) {
             specPath = args[0];
             testDirPath = args[1];
         }
@@ -116,7 +116,7 @@ public class CoverageComputation {
         logger.info("Generating coverage a priori");
         exportCoverageReport(coverageMeter, aPrioriCoveragePath);
         logger.info("Generating coverage a posteriori");
-        exportCoverageReport(coverageMeter.getAPosteriorCoverageMeter(5005), aPosterioriCoveragePath);
+        exportCoverageReport(coverageMeter.getAPosteriorCoverageMeter(batchSize), aPosterioriCoveragePath);
         logger.info("Coverage files generated in path {}", testDirPath);
     }
 

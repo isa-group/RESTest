@@ -417,6 +417,27 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>3.3.0</version>
 				<executions>
+<!--					<execution>-->
+<!--						<id>make-assembly</id>-->
+<!--						<phase>package</phase>-->
+<!--						<goals>-->
+<!--							<goal>single</goal>-->
+<!--						</goals>-->
+<!--						<configuration>-->
+<!--							<archive>-->
+<!--								<manifest>-->
+<!--									<mainClass>es.us.isa.restest.main.TestGenerationAndExecution</mainClass>-->
+<!--									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>-->
+<!--									<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>-->
+<!--								</manifest>-->
+<!--							</archive>-->
+<!--							<finalName>restest-full</finalName>-->
+<!--							<appendAssemblyId>false</appendAssemblyId>-->
+<!--							<descriptorRefs>-->
+<!--								<descriptorRef>jar-with-dependencies</descriptorRef>-->
+<!--							</descriptorRefs>-->
+<!--						</configuration>-->
+<!--					</execution>-->
 					<execution>
 						<id>make-assembly</id>
 						<phase>package</phase>
@@ -426,12 +447,12 @@
 						<configuration>
 							<archive>
 								<manifest>
-									<mainClass>es.us.isa.restest.main.TestGenerationAndExecution</mainClass>
+									<mainClass>es.us.isa.restest.coverage.CoverageComputation</mainClass>
 									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 									<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 								</manifest>
 							</archive>
-							<finalName>restest-full</finalName>
+							<finalName>restest-coverage</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
