@@ -3,7 +3,6 @@ package es.us.isa.restest.coverage;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.testcases.TestResult;
-import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.TestManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -107,8 +106,8 @@ public class CoverageComputation {
         }
 
         // Export coverage to CSV (both a priori and a posteriori)
-        String aPrioriCoveragePath = testDir.getPath() + "/" + PropertyManager.readProperty("data.coverage.computation.priori.file") + ".csv";
-        String aPosterioriCoveragePath = testDir.getPath() + "/" + PropertyManager.readProperty("data.coverage.computation.posteriori.file") + ".csv";
+        String aPrioriCoveragePath = testDir.getPath() + "/test-coverage-priori.csv";
+        String aPosterioriCoveragePath = testDir.getPath() + "/test-coverage-posteriori.csv";
 
         deleteFile(aPrioriCoveragePath);
         deleteFile(aPosterioriCoveragePath);

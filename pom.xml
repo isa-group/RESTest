@@ -120,7 +120,7 @@
 		<aspectj.version>1.9.5</aspectj.version>
 		<jmetal.version>5.9</jmetal.version>
 		<swagger.version>2.1.10</swagger.version>
-<!--		<swaggerparser.version>2.0.27</swaggerparser.version>-->
+		<swaggerparser.version>2.0.27</swaggerparser.version>
 		<openapivalidator.version>2.18.1</openapivalidator.version>
 		<restassured.version>4.2.0</restassured.version>
 		<jackson.version>2.11.4</jackson.version>
@@ -142,116 +142,116 @@
 			<version>${swagger.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>io.swagger.parser.v3</groupId>
+			<artifactId>swagger-parser</artifactId>
+			<version>${swaggerparser.version}</version>
+		</dependency>
+
+
+<!--		&lt;!&ndash; OPENAPI VALIDATOR DEPENDENCIES &ndash;&gt;-->
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/com.atlassian.oai/swagger-request-validator &ndash;&gt;-->
 <!--		<dependency>-->
-<!--			<groupId>io.swagger.parser.v3</groupId>-->
-<!--			<artifactId>swagger-parser</artifactId>-->
-<!--			<version>${swaggerparser.version}</version>-->
+<!--			<groupId>com.atlassian.oai</groupId>-->
+<!--			<artifactId>swagger-request-validator-core</artifactId>-->
+<!--			<version>${openapivalidator.version}</version>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>com.atlassian.oai</groupId>-->
+<!--			<artifactId>swagger-request-validator-restassured</artifactId>-->
+<!--			<version>${openapivalidator.version}</version>-->
 <!--		</dependency>-->
 
 
-		<!-- OPENAPI VALIDATOR DEPENDENCIES -->
-		<!-- https://mvnrepository.com/artifact/com.atlassian.oai/swagger-request-validator -->
-		<dependency>
-			<groupId>com.atlassian.oai</groupId>
-			<artifactId>swagger-request-validator-core</artifactId>
-			<version>${openapivalidator.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.atlassian.oai</groupId>
-			<artifactId>swagger-request-validator-restassured</artifactId>
-			<version>${openapivalidator.version}</version>
-		</dependency>
+<!--		&lt;!&ndash; REST ASSURED DEPENDENCIES &ndash;&gt;-->
+<!--		&lt;!&ndash; REST Assured &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>io.rest-assured</groupId>-->
+<!--			<artifactId>rest-assured</artifactId>-->
+<!--			<version>${restassured.version}</version>-->
+<!--		</dependency>-->
 
 
-		<!-- REST ASSURED DEPENDENCIES -->
-		<!-- REST Assured -->
-		<dependency>
-			<groupId>io.rest-assured</groupId>
-			<artifactId>rest-assured</artifactId>
-			<version>${restassured.version}</version>
-		</dependency>
+<!--		&lt;!&ndash; JACKSON DEPENDENCIES &ndash;&gt;-->
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>com.fasterxml.jackson.core</groupId>-->
+<!--			<artifactId>jackson-core</artifactId>-->
+<!--			<version>${jackson.version}</version>-->
+<!--		</dependency>-->
 
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>com.fasterxml.jackson.core</groupId>-->
+<!--			<artifactId>jackson-databind</artifactId>-->
+<!--			<version>${jackson.version}</version>-->
+<!--		</dependency>-->
 
-		<!-- JACKSON DEPENDENCIES -->
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>com.fasterxml.jackson.dataformat</groupId>-->
+<!--			<artifactId>jackson-dataformat-yaml</artifactId>-->
+<!--			<version>${jackson.version}</version>-->
+<!--		</dependency>-->
 
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>com.fasterxml.jackson.datatype</groupId>-->
+<!--			<artifactId>jackson-datatype-jsr310</artifactId>-->
+<!--			<version>${jackson.version}</version>-->
+<!--		</dependency>-->
 
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-yaml</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
+<!--		&lt;!&ndash; TEST DEPENDENCIES &ndash;&gt;-->
+<!--		&lt;!&ndash; JUnit 4 &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>junit</groupId>-->
+<!--			<artifactId>junit</artifactId>-->
+<!--			<version>4.13.1</version>-->
+<!--		</dependency>-->
 
-		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
+<!--		&lt;!&ndash; Allure Junit 4 &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>io.qameta.allure</groupId>-->
+<!--			<artifactId>allure-junit4</artifactId>-->
+<!--			<version>${allure.version}</version>-->
+<!--		</dependency>-->
 
-		<!-- TEST DEPENDENCIES -->
-		<!-- JUnit 4 -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.13.1</version>
-		</dependency>
-
-		<!-- Allure Junit 4 -->
-		<dependency>
-			<groupId>io.qameta.allure</groupId>
-			<artifactId>allure-junit4</artifactId>
-			<version>${allure.version}</version>
-		</dependency>
-
-		<!-- Allure RESTAsured -->
-		<dependency>
-			<groupId>io.qameta.allure</groupId>
-			<artifactId>allure-rest-assured</artifactId>
-			<version>${allure.version}</version>
-		</dependency>
-		<!-- Mockito -->
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-inline</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
+<!--		&lt;!&ndash; Allure RESTAsured &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>io.qameta.allure</groupId>-->
+<!--			<artifactId>allure-rest-assured</artifactId>-->
+<!--			<version>${allure.version}</version>-->
+<!--		</dependency>-->
+<!--		&lt;!&ndash; Mockito &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>org.mockito</groupId>-->
+<!--			<artifactId>mockito-core</artifactId>-->
+<!--			<version>${mockito.version}</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.mockito</groupId>-->
+<!--			<artifactId>mockito-inline</artifactId>-->
+<!--			<version>${mockito.version}</version>-->
+<!--			<scope>test</scope>-->
+<!--		</dependency>-->
 
 
 		<!-- MISC DEPENDENCIES -->
 		<!-- Apache Common IO -->
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.7</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>commons-io</groupId>-->
+<!--			<artifactId>commons-io</artifactId>-->
+<!--			<version>2.7</version>-->
+<!--		</dependency>-->
 
-		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.10</version>
-		</dependency>
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>org.apache.commons</groupId>-->
+<!--			<artifactId>commons-lang3</artifactId>-->
+<!--			<version>3.10</version>-->
+<!--		</dependency>-->
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
 		<dependency>
@@ -260,33 +260,33 @@
 			<version>1.8</version>
 		</dependency>
 
-		<!-- Apache Commongs Math -->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-			<version>3.6.1</version>
-		</dependency>
+<!--		&lt;!&ndash; Apache Commongs Math &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>org.apache.commons</groupId>-->
+<!--			<artifactId>commons-math3</artifactId>-->
+<!--			<version>3.6.1</version>-->
+<!--		</dependency>-->
 
-		<!-- Library to generate random strings from regular expressions -->
-		<dependency>
-			<groupId>com.github.mifmif</groupId>
-			<artifactId>generex</artifactId>
-			<version>1.0.2</version>
-		</dependency>
+<!--		&lt;!&ndash; Library to generate random strings from regular expressions &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>com.github.mifmif</groupId>-->
+<!--			<artifactId>generex</artifactId>-->
+<!--			<version>1.0.2</version>-->
+<!--		</dependency>-->
 
-		<!-- Extended Java WordNet Library -->
-		<dependency>
-			<groupId>net.sf.extjwnl</groupId>
-			<artifactId>extjwnl</artifactId>
-			<version>1.9.4</version>
-		</dependency>
+<!--		&lt;!&ndash; Extended Java WordNet Library &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>net.sf.extjwnl</groupId>-->
+<!--			<artifactId>extjwnl</artifactId>-->
+<!--			<version>1.9.4</version>-->
+<!--		</dependency>-->
 
-		<!-- Princeton WordNet 3.1 -->
-		<dependency>
-			<groupId>net.sf.extjwnl</groupId>
-			<artifactId>extjwnl-data-wn31</artifactId>
-			<version>1.2</version>
-		</dependency>
+<!--		&lt;!&ndash; Princeton WordNet 3.1 &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>net.sf.extjwnl</groupId>-->
+<!--			<artifactId>extjwnl-data-wn31</artifactId>-->
+<!--			<version>1.2</version>-->
+<!--		</dependency>-->
 
 		<!-- CSV library -->
 		<dependency>
@@ -322,83 +322,83 @@
 			<version>1.2</version>
 		</dependency>
 
-		<!-- JSONmutator dependency -->
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>json-mutator</artifactId>
-			<version>0.0.1</version>
-		</dependency>
+<!--		&lt;!&ndash; JSONmutator dependency &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>es.us.isa</groupId>-->
+<!--			<artifactId>json-mutator</artifactId>-->
+<!--			<version>0.0.1</version>-->
+<!--		</dependency>-->
 
-		<!-- IDLreasoner dependency -->
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>idlreasoner-choco</artifactId>
-			<version>1.0.0</version>
-		</dependency>
+<!--		&lt;!&ndash; IDLreasoner dependency &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>es.us.isa</groupId>-->
+<!--			<artifactId>idlreasoner-choco</artifactId>-->
+<!--			<version>1.0.0</version>-->
+<!--		</dependency>-->
 
-		<!-- IDL dependency -->
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>idl-choco</artifactId>
-			<version>1.0.0</version>
-		</dependency>
+<!--		&lt;!&ndash; IDL dependency &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>es.us.isa</groupId>-->
+<!--			<artifactId>idl-choco</artifactId>-->
+<!--			<version>1.0.0</version>-->
+<!--		</dependency>-->
 
-		<!-- RG++ -->
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>MaleRegexTree</artifactId>
-			<version>1.0.0</version>
-		</dependency>
+<!--		&lt;!&ndash; RG++ &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>es.us.isa</groupId>-->
+<!--			<artifactId>MaleRegexTree</artifactId>-->
+<!--			<version>1.0.0</version>-->
+<!--		</dependency>-->
 
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>RandomRegexTurtle</artifactId>
-			<version>1.0.0</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>es.us.isa</groupId>-->
+<!--			<artifactId>RandomRegexTurtle</artifactId>-->
+<!--			<version>1.0.0</version>-->
+<!--		</dependency>-->
 
-		<!-- Jena -->
-		<dependency>
-			<groupId>org.apache.jena</groupId>
-			<artifactId>apache-jena-libs</artifactId>
-			<version>3.17.0</version>
-			<type>pom</type>
-		</dependency>
+<!--		&lt;!&ndash; Jena &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>org.apache.jena</groupId>-->
+<!--			<artifactId>apache-jena-libs</artifactId>-->
+<!--			<version>3.17.0</version>-->
+<!--			<type>pom</type>-->
+<!--		</dependency>-->
 
 
-		<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp -->
-		<!-- Stanford NLP -->
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models</classifier>
-		</dependency>
-		
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models-english</classifier>
-		</dependency>
-		
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models-english-kbp</classifier>
-		</dependency>
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp &ndash;&gt;-->
+<!--		&lt;!&ndash; Stanford NLP &ndash;&gt;-->
+<!--		<dependency>-->
+<!--			<groupId>edu.stanford.nlp</groupId>-->
+<!--			<artifactId>stanford-corenlp</artifactId>-->
+<!--			<version>4.2.2</version>-->
+<!--		</dependency>-->
 
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-parser</artifactId>
-			<version>3.9.2</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>edu.stanford.nlp</groupId>-->
+<!--			<artifactId>stanford-corenlp</artifactId>-->
+<!--			<version>4.2.2</version>-->
+<!--			<classifier>models</classifier>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>edu.stanford.nlp</groupId>-->
+<!--			<artifactId>stanford-corenlp</artifactId>-->
+<!--			<version>4.2.2</version>-->
+<!--			<classifier>models-english</classifier>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>edu.stanford.nlp</groupId>-->
+<!--			<artifactId>stanford-corenlp</artifactId>-->
+<!--			<version>4.2.2</version>-->
+<!--			<classifier>models-english-kbp</classifier>-->
+<!--		</dependency>-->
+
+<!--		<dependency>-->
+<!--			<groupId>edu.stanford.nlp</groupId>-->
+<!--			<artifactId>stanford-parser</artifactId>-->
+<!--			<version>3.9.2</version>-->
+<!--		</dependency>-->
 
 	</dependencies>
 

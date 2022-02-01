@@ -1,7 +1,6 @@
 package es.us.isa.restest.coverage;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import es.us.isa.restest.util.PropertyManager;
 
 import java.io.File;
 import java.io.IOException;

@@ -236,16 +236,20 @@ public class CoverageMeter {
         CoverageMeter aPosterioriCoverageMeter = new CoverageMeter(new CoverageGatherer(coverageGatherer.getSpec()));
 
         if(testResults != null) {
+            List<String> tcIds = testSuite.stream().map(TestCase::getId).collect(Collectors.toList());
+            List<String> trIds = testResults.stream().map(TestResult::getId).collect(Collectors.toList());
             List<TestCase> orderedTestSuite = new ArrayList<>(testSuite).stream()
+                    .filter(tc -> trIds.contains(tc.getId()))
                     .sorted(Comparator.comparing(TestCase::getId))
                     .collect(Collectors.toList());
             List<TestResult> orderedTestResults = new ArrayList<>(testResults).stream()
+                    .filter(tr -> tcIds.contains(tr.getId()))
                     .sorted(Comparator.comparing(TestResult::getId))
                     .collect(Collectors.toList());
 
-            aPosterioriCoverageMeter.testSuite = testSuite;
-            aPosterioriCoverageMeter.testResults = testResults;
-            int totalSize = testSuite.size();
+            aPosterioriCoverageMeter.testSuite = orderedTestSuite;
+            aPosterioriCoverageMeter.testResults = orderedTestResults;
+            int totalSize = orderedTestSuite.size();
 
             for (int i=0; i*maxTestSuiteSize < totalSize; i++) {
                 int upperLimit = Math.min((i + 1) * maxTestSuiteSize, totalSize);

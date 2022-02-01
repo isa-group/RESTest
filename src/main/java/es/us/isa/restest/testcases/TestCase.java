@@ -6,20 +6,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.atlassian.oai.validator.OpenApiInteractionValidator;
-import com.atlassian.oai.validator.model.SimpleRequest;
-import com.atlassian.oai.validator.report.ValidationReport;
-import es.us.isa.idlreasonerchoco.analyzer.Analyzer;
+//import com.atlassian.oai.validator.OpenApiInteractionValidator;
+//import com.atlassian.oai.validator.model.SimpleRequest;
+//import com.atlassian.oai.validator.report.ValidationReport;
+//import es.us.isa.idlreasonerchoco.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.specification.ParameterFeatures;
-import es.us.isa.idlreasonerchoco.configuration.IDLException;
+//import es.us.isa.idlreasonerchoco.configuration.IDLException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
-import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
+//import static es.us.isa.restest.util.IDLAdapter.restest2idlTestCase;
 import static java.net.URLEncoder.encode;
 import static org.apache.commons.text.StringEscapeUtils.escapeCsv;
 
@@ -421,63 +421,63 @@ public class TestCase implements Serializable {
 	
 	
 	
-	public List<String> getValidationErrors(OpenApiInteractionValidator validator) {
-		String fullPath = this.getPath();
-		for (Map.Entry<String, String> pathParam : this.getPathParameters().entrySet())
-			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
-
-		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(this.getMethod().toString(), fullPath)
-				.withBody(this.getBodyParameter())
-				.withContentType(this.getInputFormat());
-		this.getQueryParameters().forEach(requestBuilder::withQueryParam);
-		this.getHeaderParameters().forEach(requestBuilder::withHeader);
-
-		if (this.getFormParameters().size() > 0) {
-			StringBuilder formDataBody = new StringBuilder();
-			try {
-				for (Map.Entry<String, String> formParam : this.getFormParameters().entrySet()) {
-					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(formParam.getValue(), StandardCharsets.UTF_8.toString())).append("&");
-				}
-			} catch (UnsupportedEncodingException e) {
-				LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
-				LogManager.getLogger(TestCase.class.getName()).warn(e);
-			}
-			requestBuilder.withBody(formDataBody.toString());
-			requestBuilder.withContentType("application/x-www-form-urlencoded");
-		}
-
-		return validator.validateRequest(requestBuilder.build()).getMessages().stream()
-				.filter(m -> m.getLevel() != ValidationReport.Level.IGNORE)
-				.map(m -> m.getKey() + ": " + m.getMessage()).collect(Collectors.toList());
-	}
-	
-
-	/**
-	 * Returns true if the test case is valid according to the specification, false otherwise.
-	 * @param validator the OpenAPI validator
-	 * @return true if the test case is valid, false otherwise
-	 */
-	public Boolean isValid(OpenApiInteractionValidator validator) {
-		
-		return getValidationErrors(validator).isEmpty();
-	}
-
-	/**
-	 * Returns true if the test case fulfills inter-parameter dependencies, false otherwise
-	 * @param tc a test case
-	 * @param idlReasoner the IDLReasoner analyzer
-	 * @return true if the test case fulfills inter-parameter dependencies, false otherwise
-	 */
-	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
-		if (idlReasoner == null)
-			return true;
-		try {
-			return idlReasoner.isValidRequest(restest2idlTestCase(tc)); // Previous version of IDLReasoner: idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
-		} catch (IDLException e) {
-			logger.warn("There was an error generating an invalid request with IDLReasoner: {}", e.getMessage());
-			return false;
-		}
-	}
+//	public List<String> getValidationErrors(OpenApiInteractionValidator validator) {
+//		String fullPath = this.getPath();
+//		for (Map.Entry<String, String> pathParam : this.getPathParameters().entrySet())
+//			fullPath = fullPath.replace("{" + pathParam.getKey() + "}", pathParam.getValue());
+//
+//		SimpleRequest.Builder requestBuilder = new SimpleRequest.Builder(this.getMethod().toString(), fullPath)
+//				.withBody(this.getBodyParameter())
+//				.withContentType(this.getInputFormat());
+//		this.getQueryParameters().forEach(requestBuilder::withQueryParam);
+//		this.getHeaderParameters().forEach(requestBuilder::withHeader);
+//
+//		if (this.getFormParameters().size() > 0) {
+//			StringBuilder formDataBody = new StringBuilder();
+//			try {
+//				for (Map.Entry<String, String> formParam : this.getFormParameters().entrySet()) {
+//					formDataBody.append(encode(formParam.getKey(), StandardCharsets.UTF_8.toString())).append("=").append(encode(formParam.getValue(), StandardCharsets.UTF_8.toString())).append("&");
+//				}
+//			} catch (UnsupportedEncodingException e) {
+//				LogManager.getLogger(TestCase.class.getName()).warn("Parameters of test case could not be encoded. Stack trace:");
+//				LogManager.getLogger(TestCase.class.getName()).warn(e);
+//			}
+//			requestBuilder.withBody(formDataBody.toString());
+//			requestBuilder.withContentType("application/x-www-form-urlencoded");
+//		}
+//
+//		return validator.validateRequest(requestBuilder.build()).getMessages().stream()
+//				.filter(m -> m.getLevel() != ValidationReport.Level.IGNORE)
+//				.map(m -> m.getKey() + ": " + m.getMessage()).collect(Collectors.toList());
+//	}
+//
+//
+//	/**
+//	 * Returns true if the test case is valid according to the specification, false otherwise.
+//	 * @param validator the OpenAPI validator
+//	 * @return true if the test case is valid, false otherwise
+//	 */
+//	public Boolean isValid(OpenApiInteractionValidator validator) {
+//
+//		return getValidationErrors(validator).isEmpty();
+//	}
+//
+//	/**
+//	 * Returns true if the test case fulfills inter-parameter dependencies, false otherwise
+//	 * @param tc a test case
+//	 * @param idlReasoner the IDLReasoner analyzer
+//	 * @return true if the test case fulfills inter-parameter dependencies, false otherwise
+//	 */
+//	public static Boolean checkFulfillsDependencies(TestCase tc, Analyzer idlReasoner) {
+//		if (idlReasoner == null)
+//			return true;
+//		try {
+//			return idlReasoner.isValidRequest(restest2idlTestCase(tc)); // Previous version of IDLReasoner: idlReasoner.isValidRequest(restest2idlTestCase(tc), true);
+//		} catch (IDLException e) {
+//			logger.warn("There was an error generating an invalid request with IDLReasoner: {}", e.getMessage());
+//			return false;
+//		}
+//	}
 
 	public String toString() {
 		return id;

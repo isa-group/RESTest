@@ -9,7 +9,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.LIMIT;
+//import static es.us.isa.restest.inputs1.semantic.ARTEInputGenerator.LIMIT;
 import static es.us.isa.restest.util.FileManager.createFileIfNotExists;
 import static es.us.isa.restest.util.FileManager.deleteFile;
 
@@ -126,19 +126,19 @@ public class CSVManager {
 
 	}
 
-	public static void setToCSVWithLimit(String path, Set<String> collection) {
-
-		try (FileWriter writer = new FileWriter(path)) {
-			List<String> collectionAsList = new ArrayList<>(collection);
-			Collections.shuffle(collectionAsList);
-
-			Set<String> subSet = collectionAsList.stream().limit(LIMIT).collect(Collectors.toSet());
-			String collect = subSet.stream().collect(Collectors.joining("\n"));
-			writer.write(collect);
-
-		} catch(IOException e) {
-			logger.error(e.getMessage());
-		}
-
-	}
+//	public static void setToCSVWithLimit(String path, Set<String> collection) {
+//
+//		try (FileWriter writer = new FileWriter(path)) {
+//			List<String> collectionAsList = new ArrayList<>(collection);
+//			Collections.shuffle(collectionAsList);
+//
+//			Set<String> subSet = collectionAsList.stream().limit(LIMIT).collect(Collectors.toSet());
+//			String collect = subSet.stream().collect(Collectors.joining("\n"));
+//			writer.write(collect);
+//
+//		} catch(IOException e) {
+//			logger.error(e.getMessage());
+//		}
+//
+//	}
 }

@@ -1,3 +1,0 @@
-criterionType,rootPath,element,isCovered
-RESPONSE_BODY_PROPERTIES,pets->GET->200,name,true
-criterionType,rootPath,element,isCovered
