@@ -1881,6 +1881,9 @@ definitions:
       id:
         description: The Spotify ID for the track.
         type: string
+      is_local:   # Added
+        description: 'Is local'
+        type: boolean
       is_playable:
         description: 'Part of the response when Track Relinking is applied. If true, the track is playable in the given market. Otherwise false.'
         type: boolean
@@ -1909,9 +1912,15 @@ definitions:
       name:
         description: The name of the track.
         type: string
-      preview_url:
+      preview_url:  # nullable added
         description: A URL to a 30 second preview (MP3 format) of the track.
         type: string
+        x-nullable: true
+      restrictions: # Added
+        type: object
+        properties:
+          reason:
+            type: string
       track_number:
         description: 'The number of the track. If an album has several discs, the track number is the number on the specified disc.'
         type: integer
@@ -1935,15 +1944,17 @@ definitions:
       limit:
         description: The maximum number of items in the response (as set in the query or by default).
         type: integer
-      next:
+      next: # nullable added
         description: URL to the next page of items. (null if none)
         type: string
+        x-nullable: true
       offset:
         description: The offset of the items returned (as set in the query or by default).
         type: integer
-      previous:
+      previous: # nullable added
         description: URL to the previous page of items. (null if none)
         type: string
+        x-nullable: true
       total:
         description: The total number of items available to return.
         type: integer

@@ -1,0 +1,72 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams:
+    Authorization: Bearer BQBnwpcq2vpvQRfhQWwUaleDeXNnN_PBX3bE8sQ_x8oMU9PATUki6cnIG6UFBo0nNrEq4iCfBFrxFpUGu4P-mlzX8ftUNUa4atb6a3eTm6LKFKfFMjPG9fFGvjbcL96ZxyR20iJW88jNkCI5y5qPe6MGScfeqbnLXm4F-mlOI2G7YYXyAQEdoID4Aa8vvKU3utcvgKtWpsGlZlbcL7e0yABqVEmw0PX0
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: "/users/{user_id}/playlists"
+    operationId: createPlaylist
+    method: post
+    testParameters:
+    - name: user_id
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+#          - f7r7r4wp6bk4t2dazcbsf3b6h # benchmark
+#          - 314p6dat3wsraktwd2tawz6vzr3q # benchmark1
+#          - 31q3hnw36axarvbryjncmdxod7bu # benchmark2
+#          - 31hae73dc27cjg75derzdd3vvcja # benchmark3
+          - 31a3nain5ou3gvple56vxquxayhe # benchmark 4
+          objectValues: null
+        valid: true
+    - name: Accept
+      in: header
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "{\"name\":\"Playlist1\",\"description\":\"Playlist description 1\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist2\",\"description\":\"Playlist description 2\",\"public\": false,\"collaborative\": false}"
+          - "{\"name\":\"Playlist3\",\"description\":\"Playlist description 3\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist4\",\"description\":\"Playlist description 4\",\"public\": false,\"collaborative\": false}"
+          - "{\"name\":\"Playlist5\",\"description\":\"Playlist description 5\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist6\",\"description\":\"Playlist description 6\",\"public\": false,\"collaborative\": false}"
+          - "{\"name\":\"Playlist7\",\"description\":\"Playlist description 7\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist8\",\"description\":\"Playlist description 8\",\"public\": false,\"collaborative\": false}"
+          - "{\"name\":\"Playlist9\",\"description\":\"Playlist description 9\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist10\",\"description\":\"Playlist description 10\",\"public\": false,\"collaborative\": false}"
+          - "{\"name\":\"Playlist11\",\"description\":\"Playlist description 11\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist12\",\"description\":\"Playlist description 12\",\"public\": false,\"collaborative\": true}"
+          - "{\"name\":\"Playlist13\",\"description\":\"Playlist description 13\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist14\",\"description\":\"Playlist description 14\",\"public\": false,\"collaborative\": true}"
+          - "{\"name\":\"Playlist15\",\"description\":\"Playlist description 15\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist16\",\"description\":\"Playlist description 16\",\"public\": false,\"collaborative\": true}"
+          - "{\"name\":\"Playlist17\",\"description\":\"Playlist description 17\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist18\",\"description\":\"Playlist description 18\",\"public\": false,\"collaborative\": true}"
+          - "{\"name\":\"Playlist19\",\"description\":\"Playlist description 19\",\"public\": true,\"collaborative\": false}"
+          - "{\"name\":\"Playlist20\",\"description\":\"Playlist description 20\",\"public\": false,\"collaborative\": true}"
+          objectValues: null
+        valid: true
+    expectedResponse: 200

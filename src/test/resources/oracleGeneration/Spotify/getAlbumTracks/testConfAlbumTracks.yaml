@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer ---
+    Authorization: Bearer BQC8sCsAiO5JeEFyyc2b8sLy-gZICnaO_LLq-nbNAjnKDkeR72NhwmjOQDuAFBUjTKkCIxSNN039Wq4e8yJatOL_8cX7eeQL9ekubGrdsbQQc9Cqa2mvjJGVhxSByElOxQ4RNj02tfLXdFo-_EZN6i_LKgWBWlcApCWX6emSoTI5GnEMv4xry4rlvJ8TrvAeDX7GuhA9iX3dSN9_RJJQPRs8SScokbMMb-uueGEY60ORmsRjmzOYYkhZGFY5LCoLCfEtwdMvTPy5ugQvVK4vb2klmvK3wn9fA_uxmr8g
   apiKeysPath: null
   headersPath: null
   oauthPath: null
@@ -56,7 +56,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 0
+          - 1
           objectValues: null
         - name: max
           values:
@@ -86,7 +86,7 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomInputValues
+      - type: RandomInputValue
         genParameters:
         - name: values
           values:
