@@ -13,36 +13,32 @@ paths:
         - name: term
           in: query
           required: false
-          schema:
-            type: string
+          type: string
         - name: location
           in: query
           required: false
-          schema:
-            type: string
+          type: string
         - name: latitude
           in: query
           required: false
-          schema:
-            type: string
+          type: number
         - name: longitude
           in: query
           required: false
-          schema:
-            type: string
+          type: number
         - name: radius
           in: query
           required: false
-          schema:
-            type: integer
-            maximum: 40000
+          type: integer
+          maximum: 40000
         - name: categories
           in: query
           required: false
-          schema:
-            type: array
-            items:
-              type: string
+          type: string # Convert to array?
+#          schema:
+#            type: array
+#            items:
+#              type: string
         - name: locale
           in: query
           required: false
