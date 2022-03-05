@@ -351,7 +351,7 @@ definitions:
       name:
         description: the stations name
         type: string
-      mailingAdress:
+      mailingAddress: # Modified, original: mailingAdress (only one d)
         description: mailing address of the railway station
         $ref: '#/definitions/Address'
       category:
@@ -421,12 +421,12 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/EVANumber'
-      riL100Identifiers:
+      ril100Identifiers: # Modified, original: riL100Identifiers (uppercase L)
         description: station related Ril100s
         type: array
         items:
           $ref: '#/definitions/RiL100Identifier'
-      timetableOffice:
+      timeTableOffice:  # Modified, original: timetableOffice (Lowercase t)
         $ref: '#/definitions/TimetableOffice'
       stationManagement:
         $ref: '#/definitions/StationManagementRef'
@@ -449,7 +449,7 @@ definitions:
       isMain:
         description: station related EVA-Numbers
         type: boolean
-      geographicCoordinate:
+      geographicCoordinates: # Modified, original: geographicCoordinate (Singular)
         $ref: '#/definitions/GeographicPoint'
   SZentraleRef:
     type: object
@@ -502,7 +502,7 @@ definitions:
       houseNumber:
         type: string
       zipcode:
-        type: integer
+        type: string # Modified, original: integer (But the API returns a string)
       city:
         type: string
   TimetableOffice:
@@ -561,7 +561,7 @@ definitions:
       hasSteamPermission:
         description: permission for steam engines y/n
         type: boolean
-      geographicCoordinate:
+      geographicCoordinates: # Modified, original: geographicCoordinate (Singular)
         $ref: '#/definitions/GeographicPoint'
   OpeningHours:
     type: object
@@ -569,30 +569,34 @@ definitions:
     properties:
       fromTime:
         type: string
-        format: date
+#        format: date     // The responses do not match this format
       toTime:
         type: string
-        format: date
+#        format: date   // The responses do not match this format
   Schedule:
     type: object
     description: a weekly schedule
     properties:
-      monday:
-        $ref: '#/definitions/OpeningHours'
-      tuesday:
-        $ref: '#/definitions/OpeningHours'
-      wednesday:
-        $ref: '#/definitions/OpeningHours'
-      thursday:
-        $ref: '#/definitions/OpeningHours'
-      friday:
-        $ref: '#/definitions/OpeningHours'
-      saturday:
-        $ref: '#/definitions/OpeningHours'
-      sunday:
-        $ref: '#/definitions/OpeningHours'
-      holiday:
-        $ref: '#/definitions/OpeningHours'
+      availability:
+        type: object
+        description: a weekly schedule
+        properties:
+          monday:
+            $ref: '#/definitions/OpeningHours'
+          tuesday:
+            $ref: '#/definitions/OpeningHours'
+          wednesday:
+            $ref: '#/definitions/OpeningHours'
+          thursday:
+            $ref: '#/definitions/OpeningHours'
+          friday:
+            $ref: '#/definitions/OpeningHours'
+          saturday:
+            $ref: '#/definitions/OpeningHours'
+          sunday:
+            $ref: '#/definitions/OpeningHours'
+          holiday:
+            $ref: '#/definitions/OpeningHours'
   RegionalBereichRef:
     type: object
     description: >-
@@ -629,7 +633,7 @@ definitions:
       local public sector entity, responsible for short distance public
       transport in a specific area
     properties:
-      shortname:
+      shortName:  # Modified, original: shortname (Lowercase N)
         description: unique identifier
         type: string
       name:

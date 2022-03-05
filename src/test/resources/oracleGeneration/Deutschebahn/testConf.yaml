@@ -58,7 +58,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - (\*?(berlin|hamburg|munich|cologne|frankfurt|stuttgart|dusseldorf|dortmund|essen|leipzig)\*?,){0,3}\*?(berlin|hamburg|munich|cologne|frankfurt|stuttgart|dusseldorf|dortmund|essen|leipzig)\*?
+          - (\*(berlin|hamburg|frankfurt|stuttgart|dortmund|essen|leipzig|mannheim|leipzig|heidelberg|augsburg|jena)\*,){0,3}\*(berlin|hamburg|frankfurt|stuttgart|dortmund|essen|leipzig|mannheim|leipzig|heidelberg|augsburg|jena)\*
           objectValues: null
         valid: true
     - name: category
