@@ -169,7 +169,7 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 10
+          - 5
           objectValues: null
         valid: true
     - name: sort_by
@@ -225,7 +225,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1645326910
+          - 1645815009
           objectValues: null
         - name: max
           values:

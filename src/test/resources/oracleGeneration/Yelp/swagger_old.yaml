@@ -1,48 +1,48 @@
-openapi: 3.0.0
+swagger: 2.0
 info:
   description: Yelp API
   version: 1.0.0
-  title: Yelp API
+  title: Yelp
+host: api.yelp.com
+basePath: /v3
+schemes:
+  - https
 paths:
   /businesses/search:
     get:
       operationId: getBusinesses
       summary: Get businesses
       description: Get businesses
+      produces:
+        - application/json
       parameters:
         - name: term
           in: query
           required: false
-          schema:
-            type: string
+          type: string
         - name: location
           in: query
           required: false
-          schema:
-            type: string
+          type: string
         - name: latitude
           in: query
           required: false
-          schema:
-            type: string
+          type: number
         - name: longitude
           in: query
           required: false
-          schema:
-            type: string
+          type: number
         - name: radius
           in: query
           required: false
-          schema:
-            type: integer
-            maximum: 40000
+          type: integer
+          maximum: 40000
         - name: categories
           in: query
           required: false
-          schema:
-            type: array
-            items:
-              type: string
+          type: array
+          items:
+            type: string
         - name: locale
           in: query
           required: false
@@ -51,72 +51,62 @@ paths:
         - name: limit
           in: query
           required: false
-          schema:
-            type: integer
-            maximum: 50
+          type: integer
+          maximum: 50
         - name: offset
           in: query
           required: false
-          schema:
-            type: integer
+          type: integer
         - name: sort_by
           in: query
           required: false
-          schema:
-            type: string
-            enum:
-              - best_match
-              - rating
-              - review_count
-              - distance
+          type: string
+          enum:
+            - best_match
+            - rating
+            - review_count
+            - distance
         - name: price
           in: query
           required: false
           style: form
           explode: false
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - 1
-                - 2
-                - 3
-                - 4
+          type: array
+          items:
+            type: string
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
         - name: open_now
           in: query
           required: false
-          schema:
-            type: boolean
+          type: boolean
         - name: open_at
           in: query
           required: false
-          schema:
-            type: integer
-#            maximum: 2147483647
+          type: integer
         - name: attributes
           in: query
           required: false
-          style: form
-          explode: false
-          schema:
-            type: array
-            items:
-              type: string
-              enum:
-                - hot_and_new
-                - request_a_quote
-                - reservation
-                - waitlist_reservation
-                - deals
-                - gender_neutral_restrooms
-                - open_to_all
-                - wheelchair_accessible
-      x-dependencies:
-        - Or(location, latitude AND longitude);
-        - ZeroOrOne(open_now, open_at);
-        - offset + limit <= 1000;
-        - IF offset AND NOT limit THEN offset <= 980;
+          type: array
+          items:
+            type: string
+            enum:
+              - hot_and_new
+              - request_a_quote
+              - reservation
+              - waitlist_reservation
+              - deals
+              - gender_neutral_restrooms
+              - open_to_all
+              - wheelchair_accessible
+#      x-dependencies:
+#        - Or(location, latitude AND longitude);
+#        - ZeroOrOne(open_now, open_at);
+#        - offset + limit <= 1000;
+#        - IF offset AND NOT limit THEN offset <= 980;
       responses:
         "200":
           description: Returns all businesses
@@ -229,14 +219,6 @@ components:
                   - $$
                   - $$$
                   - $$$$
-                  - £
-                  - ££
-                  - £££
-                  - ££££
-                  - €
-                  - €€
-                  - €€€
-                  - €€€€
               rating:
                 type: number
                 minimum: 1
