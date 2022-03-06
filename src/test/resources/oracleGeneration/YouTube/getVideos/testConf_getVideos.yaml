@@ -1,0 +1,226 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: YouTube/oauth.json
+testConfiguration:
+  operations:
+  - testPath: /youtube/v3/videos
+    operationId: getVideos
+    method: get
+    testParameters:
+    - name: part
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
+          objectValues: null
+        - name: values
+          values:
+            - contentDetails
+#            - fileDetails
+            - id
+            - liveStreamingDetails
+            - localizations
+            - player
+#            - processingDetails
+            - recordingDetails
+            - snippet
+            - statistics
+            - status
+#            - suggestions
+            - topicDetails
+        valid: true
+    - name: chart
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+#          - chartUnspecified
+          - mostPopular
+          objectValues: null
+        valid: true
+    - name: hl
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - es
+          - en
+          - fr
+          - it
+          - de
+          - pt
+          - no
+          - fi
+          - ja
+          objectValues: null
+        valid: true
+    - name: id
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - zZa8PFYtWr4
+            - TUJWx7vo44c
+            - eVIozKR9p50
+            - 7m-NPuXPBqM
+            - yDgLFOxnQ8Y
+            - 9bZkp7q19f0
+            - yuD34tEpRFw
+            - t22flliJLTQ
+            - 5kUu97Vkwj4
+            - TH7m9c72TKA
+            - lL-RfE-ioJ8
+          objectValues: null
+        valid: true
+    - name: maxHeight
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 72
+          objectValues: null
+        - name: max
+          values:
+          - 8192
+          objectValues: null
+        valid: true
+    - name: maxResults
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: maxWidth
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 72
+          objectValues: null
+        - name: max
+          values:
+          - 8192
+          objectValues: null
+        valid: true
+    - name: myRating
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+#          - none
+          - like
+          - dislike
+          objectValues: null
+        valid: true
+    - name: onBehalfOfContentOwner
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: pageToken
+      in: query
+      weight: 0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: regionCode
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - ES
+          - US
+          - DE
+          - FR
+          - IT
+          - PT
+          - FI
+          - NO
+          - JP
+          objectValues: null
+        valid: true
+    - name: videoCategoryId
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - 0
+          - 1
+          - 2
+          - 10
+          - 15
+          - 17
+          - 19
+          - 20
+          objectValues: null
+        valid: true
+    expectedResponse: 200
