@@ -58,7 +58,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Repeat iterations until the desired number of faulty and nominal test cases have been generated
 		while (hasNext()) {
 			iterationTestCases.clear();
-			while (iterationTestCases.size() < numberOfTests) {
+			while (iterationTestCases.size() < (numberOfTests-nTests)*100) { // TO DO: ml.candidates.ratio=100
 				TestCase test = generateNextTestCase(testOperation);
 				iterationTestCases.add(test);
 			}
