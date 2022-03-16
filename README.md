@@ -10,12 +10,6 @@
 
 RESTest is a framework for automated black-box testing of RESTful web APIs. It follows a model-based approach, where test cases are automatically derived from the [OpenAPI Specification (OAS)](https://www.openapis.org/) of the API under test. No access to the source code is required, which makes it possible to test APIs written in any programming language, running in local or remote servers.
 
-## RESTest: Your RESTful APIs. Tested. By robots.
-
-The RESTest testing ecosystem comprehends a complete suite of tools for automatically testing and monitoring your APIs. Still testing your APIs manually? Stop it. Let our robots do the work.
-
-<a href="https://youtu.be/-rydj3T_YjA" target="_blank"><img src="https://raw.githubusercontent.com/isa-group/RESTest/master/docs/restest-video.png" alt="RESTest: Your RESTful APIs. Tested. By robots." /></a>
-
 ## Index
 1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
 1. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
