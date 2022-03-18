@@ -121,7 +121,7 @@ testConfiguration:
                   objectValues: null
         - name: myRating
           in: query
-          weight: 0.5
+          weight: 0
           generators:
             - valid: true
               type: RandomInputValue
@@ -170,17 +170,17 @@ testConfiguration:
                 - name: values
                   values:
                     - contentDetails
-                    - fileDetails
+#                    - fileDetails
                     - id
                     - liveStreamingDetails
                     - localizations
                     - player
-                    - processingDetails
+#                    - processingDetails
                     - recordingDetails
                     - snippet
                     - statistics
                     - status
-                    - suggestions
+#                    - suggestions
                     - topicDetails
                   objectValues: null
         - name: regionCode

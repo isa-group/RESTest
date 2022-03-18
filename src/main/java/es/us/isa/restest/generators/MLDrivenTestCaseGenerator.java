@@ -19,7 +19,8 @@ import static es.us.isa.restest.util.TestManager.getTestCases;
 
 public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
-	private String mlPredictorCommand;
+	private String mlPredictorCommand;								// TODO
+	private Integer mlCandidatesRatio;								// TODO
 	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and predictor
 	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the predictor)
 	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
@@ -58,7 +59,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Repeat iterations until the desired number of faulty and nominal test cases have been generated
 		while (hasNext()) {
 			iterationTestCases.clear();
-			while (iterationTestCases.size() < (numberOfTests-nTests)*100) { // TO DO: ml.candidates.ratio=100
+			while (iterationTestCases.size() < (numberOfTests-nTests)*mlCandidatesRatio) { // TO DO: ml.candidates.ratio=100
 				TestCase test = generateNextTestCase(testOperation);
 				iterationTestCases.add(test);
 			}
@@ -137,4 +138,9 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.resourcesFolderPath = resourcesFolderPath;
 		this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME;
 	}
+
+	public void setMlCandidatesRatio(Integer mlCandidatesRatio) {
+		this.mlCandidatesRatio = mlCandidatesRatio;
+	}
+
 }

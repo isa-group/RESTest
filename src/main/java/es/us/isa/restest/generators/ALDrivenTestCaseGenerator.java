@@ -17,12 +17,11 @@ import static es.us.isa.restest.util.TestManager.getTestCases;
 
 public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
-	private String alPredictorCommand;
+	private String alPredictorCommand;								// TODO
+	private Integer alCandidatesRatio;								// TODO
 	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and selector
 	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the selector)
 	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
-	private Integer numberOfCandidates; 							// number of candidates to perform ALT
-	private String queryStrategy; 									// Strategy to query best test cases among candidates
 
 	private static Logger logger = LogManager.getLogger(ALDrivenTestCaseGenerator.class.getName());
 
@@ -58,7 +57,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Repeat iterations until the desired number of test cases have been generated
 		while (hasNext()) {
 			queriedTestCases.clear();
-			while (queriedTestCases.size() < numberOfCandidates) {
+			while (queriedTestCases.size() < (numberOfTests-nTests)*alCandidatesRatio) {
 				TestCase test = generateNextTestCase(testOperation);
 				queriedTestCases.add(test);
 			}
@@ -70,7 +69,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			// Feed test cases to predictor, which queries and labels the best ones
 			boolean commandOk = false;
 			try {
-				ProcessBuilder pb = new ProcessBuilder(alPredictorCommand, resourcesFolderPath, csvTmpTcPath, queryStrategy, ((Integer) numberOfTests).toString());
+				ProcessBuilder pb = new ProcessBuilder(alPredictorCommand, resourcesFolderPath, csvTmpTcPath, ((Integer) numberOfTests).toString());
 				pb.inheritIO(); // Print output of program to stdout
 				Process proc = pb.start();
 				proc.waitFor();
@@ -121,9 +120,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	public void setResourcesFolderPath(String resourcesFolderPath) { this.resourcesFolderPath = resourcesFolderPath; this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME; }
 
-	public void setQueryStrategy(String queryStrategy) { this.queryStrategy = queryStrategy; }
-
-	public void setNumberOfCandidates(Integer numberOfCandidates) { this.numberOfCandidates = numberOfCandidates; }
+	public void setAlCandidatesRatio(Integer numberOfCandidates) { this.alCandidatesRatio = numberOfCandidates; }
 
 }
 

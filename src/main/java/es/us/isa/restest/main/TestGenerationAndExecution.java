@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/YouTube_Search/props.properties";
+	private static String propertiesFilePath = "src/test/resources/YouTube_Videos/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -81,10 +81,10 @@ public class TestGenerationAndExecution {
 
 	// For Machine Learning-Driven Testing only:
 	private static String alResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the AL selector
+	private static Integer mlCandidatesRatio;								// TODO
 
 	// For Active Learning-Driven Testing only:
-	private static String queryStrategy; 									// Strategy to query best test cases among candidates. Supported query strategies are: 'random', 'entropy', 'margin', and 'uncertainty'.
-	private static Integer numberOfCandidates;							    // Number of test cases to generate before AL-driven selection
+	private static Integer alCandidatesRatio;							    // TODO
 
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
@@ -215,13 +215,13 @@ public class TestGenerationAndExecution {
 			case "MLT":
 				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
 				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
+				((MLDrivenTestCaseGenerator) gen).setMlCandidatesRatio(mlCandidatesRatio);
 				gen.setFaultyRatio(faultyRatio);
 				break;
 			case "ALT":
 				gen = new ALDrivenTestCaseGenerator(spec, conf, numTestCases);
 				((ALDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
-				((ALDrivenTestCaseGenerator) gen).setQueryStrategy(queryStrategy);
-				((ALDrivenTestCaseGenerator) gen).setNumberOfCandidates(numberOfCandidates);
+				((ALDrivenTestCaseGenerator) gen).setAlCandidatesRatio(alCandidatesRatio);
 				break;
 			default:
 				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART', 'MLT' or 'ALT'");
@@ -452,16 +452,18 @@ public class TestGenerationAndExecution {
 			maxNumberOfTriesToGenerateRegularExpression = Integer.parseInt(readParameterValue("maxNumberOfTriesToGenerateRegularExpression"));
 		logger.info("Maximum number of tries to generate a regular expression: {}", maxNumberOfTriesToGenerateRegularExpression);
 
+		// MLT
+		if (readParameterValue("ml.candidates.ratio") != null)
+			mlCandidatesRatio = Integer.parseInt(readParameterValue("ml.candidates.ratio"));
+		logger.info("AL number of candidates: {}", mlCandidatesRatio);
+
 		// ALT
 		if (readParameterValue("al.resources.folder") != null)
 			alResourcesFolderPath = readParameterValue("al.resources.folder");
 		logger.info("AL selector resources folder: {}", alResourcesFolderPath);
-		if (readParameterValue("al.query.strategy") != null)
-			queryStrategy = readParameterValue("al.query.strategy");
-		logger.info("AL selector query strategy folder: {}", queryStrategy);
-		if (readParameterValue("al.number.of.candidates") != null)
-			numberOfCandidates = Integer.parseInt(readParameterValue("al.number.of.candidates"));
-		logger.info("AL number of candidates: {}", numberOfCandidates);
+		if (readParameterValue("al.candidates.ratio") != null)
+			alCandidatesRatio = Integer.parseInt(readParameterValue("al.candidates.ratio"));
+		logger.info("AL number of candidates: {}", alCandidatesRatio);
 	}
 
 	// Read the parameter value from: 1) CLI; 2) the local .properties file; 3) the global .properties file (config.properties)
