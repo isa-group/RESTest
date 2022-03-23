@@ -825,6 +825,7 @@ paths:
 '
     post:
       description: "[Create a Playlist](https://developer.spotify.com/web-api/create-playlist/)\n"
+      operationId: createPlaylist
       parameters:
       - description: The user's Spotify user ID.
         in: path
