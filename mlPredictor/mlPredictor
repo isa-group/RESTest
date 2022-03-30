@@ -1,4 +1,3 @@
 #! /bin/bash
-conda activate testing
-python ../tse_experiments/mldriventesting/ml_predictor.py $1 $2
+/home/giuliano/anaconda3/envs/testing/bin/python /home/giuliano/tse_experiments/mldriventesting/ml_predictor.py $1 $2
 printf "\n"
