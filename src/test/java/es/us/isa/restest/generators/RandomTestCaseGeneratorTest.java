@@ -1068,4 +1068,54 @@ public class RandomTestCaseGeneratorTest {
 		writer.write(testCases);
 	}
 
+	@Test
+	public void scoutApiTestCaseGenerator() throws RESTestException {
+
+		// Load specification
+		String OAISpecPath = "src/test/resources/restest-test-resources/swagger-scout.json";
+		String testConf = "src/test/resources/restest-test-resources/testConf-scout.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
+
+		// Load configuration
+		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(testConf,
+				spec);
+
+		// Set number of test cases to be generated on each path
+		int numTestCases = 10;
+
+		// Faulty ratio
+		float faultyRatio = 0f;
+
+		// Create generator and filter
+		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
+		generator.setFaultyRatio(faultyRatio);
+
+		Collection<TestCase> testCases = generator.generate();
+
+
+		// Expected results
+		int expectedNumberOfTestCases = 490;
+		int expectedNumberOfInvalidTestCases = (int) (faultyRatio * expectedNumberOfTestCases);
+		int expectedNumberOfValidTestCases = expectedNumberOfTestCases - expectedNumberOfInvalidTestCases;
+
+		// Total number of test cases
+		assertEquals("Incorrect number of test cases", expectedNumberOfTestCases, testCases.size());
+
+		// Valid test cases
+		assertEquals("Incorrect number of valid test cases generated (according to the generator counter)", expectedNumberOfValidTestCases, generator.getnNominal());
+		assertEquals("Incorrect number of valid test cases (according to the attribute 'faulty')", expectedNumberOfValidTestCases, testCases.stream().filter(c -> !c.getFaulty()).count());
+//		assertEquals("Incorrect number of valid test cases (according to the OAS validator)", expectedNumberOfValidTestCases, GeneratorTestHelper.numberOfValidTestCases(testCases, spec));
+
+		// Invalid test cases
+		assertEquals("Incorrect number of faulty test cases generated (according to the generator counter)", expectedNumberOfInvalidTestCases, generator.getnFaulty());
+		assertEquals("Incorrect number of faulty test cases (according to the attribute 'faulty')", expectedNumberOfInvalidTestCases, testCases.stream().filter(c -> c.getFaulty()).count());
+//		assertEquals("Incorrect number of faulty test cases (according to the OAS validator)", expectedNumberOfInvalidTestCases, GeneratorTestHelper.numberOfInvalidTestCases(testCases, spec));
+
+		// Write test cases
+		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, testConf, "src/generation/java/restassured", "ScoutTest",
+				"restassured", basePath, false);
+		writer.setOAIValidation(true);
+		writer.write(testCases);
+	}
 }
