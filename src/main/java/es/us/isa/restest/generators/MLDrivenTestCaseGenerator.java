@@ -14,6 +14,7 @@ import es.us.isa.restest.util.RESTestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static es.us.isa.restest.util.CommandRunner.runCommand;
 import static es.us.isa.restest.util.FileManager.deleteFile;
 import static es.us.isa.restest.util.TestManager.getTestCases;
 
@@ -69,21 +70,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			iterationTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
 
 			// Feed test cases to predictor, which updates them
-			boolean commandOk = false;
-			try {
-				ProcessBuilder pb = new ProcessBuilder(mlPredictorCommand, resourcesFolderPath, csvTmpTcPath);
-				pb.inheritIO(); // Print output of program to stdout
-				Process proc = pb.start();
-				proc.waitFor();
-				commandOk = true;
-			} catch (IOException e) {
-				logger.error("Error running ML predictor");
-				logger.error("Exception: ", e);
-			} catch (InterruptedException e) {
-				logger.error("Error running ML predictor");
-				logger.error("Exception: ", e);
-				Thread.currentThread().interrupt();
-			}
+			boolean commandOk = runCommand(mlPredictorCommand, new String[]{resourcesFolderPath, csvTmpTcPath});
 
 			if (commandOk) {
 				// Read back test cases from CSV and update objects

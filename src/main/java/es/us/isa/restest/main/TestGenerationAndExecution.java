@@ -15,8 +15,10 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.regexp.RE;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
@@ -24,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
-import static es.us.isa.restest.util.FileManager.createDir;
-import static es.us.isa.restest.util.FileManager.deleteDir;
+import static es.us.isa.restest.util.CommandRunner.runCommand;
+import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.Timer.TestStep.ALL;
 
 /*
@@ -47,13 +49,13 @@ public class TestGenerationAndExecution {
 	private static String experimentName; 								// Used as identifier for folders, etc.
 	private static String testClassName; 								// Name prefix of the class to be generated
 	private static Boolean enableInputCoverage; 						// Set to 'true' if you want the input coverage report.
-	private static Boolean enableOutputCoverage; 						// Set to 'true' if you want the input coverage report.
+	private static Boolean enableOutputCoverage; 						// Set to 'true' if you want the output coverage report.
 	private static Boolean enableCSVStats; 								// Set to 'true' if you want statistics in a CSV file.
 	private static Boolean deletePreviousResults; 						// Set to 'true' if you want previous CSVs and Allure reports.
 	private static Float faultyRatio; 									// Percentage of faulty test cases to generate. Defaults to 0.1
 	private static Integer totalNumTestCases; 							// Total number of test cases to be generated (-1 for infinite loop)
 	private static Integer timeDelay; 									// Delay between requests in seconds (-1 for no delay)
-	private static String generator; 									// Generator (RT: Random testing, CBT:Constraint-based testing)
+	private static String generatorType; 								// Generator (RT: Random testing, CBT:Constraint-based testing)
 	private static Boolean logToFile;									// If 'true', log messages will be printed to external files
 	private static boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 	private static String inputTestCasesPath;							// If not null, test cases will not be generated, but read from inputTestCasesPath CSV file
@@ -80,8 +82,11 @@ public class TestGenerationAndExecution {
 	private static int maxNumberOfTriesToGenerateRegularExpression;
 
 	// For Machine Learning-Driven Testing only:
-	private static String alResourcesFolderPath;							// Path to the folder containing resources shared between RESTest and the AL selector
-	private static Integer mlCandidatesRatio;								// TODO
+	private static String alResourcesFolderPath;						// Path to the folder containing resources shared between RESTest and the AL selector
+	private static Integer mlCandidatesRatio;							// TODO
+	private static Boolean mlInitialData;								// If true, train the predictor with the test cases contained in 'test-data/experimentName/'
+	private static Boolean mlKeepLearning;								// If true, after every iteration, retrain the predictor with the generated test cases
+	private static String mlTrainCommand;								// Command to train mlPredictor with test cases data
 
 	// For Active Learning-Driven Testing only:
 	private static Integer alCandidatesRatio;							    // TODO
@@ -131,6 +136,16 @@ public class TestGenerationAndExecution {
 		runner.setAllureReport(allureReports);
 
 
+		// Only for ML generator: check if there is initial data to train the predictor model, or if a model already exists
+		if (generatorType.equals("MLT") && mlInitialData) {
+			boolean commandOk = runCommand(mlTrainCommand, new String[0]); // TODO: Update command and arguments
+			if (!commandOk)
+				throw new RESTestException("Error when training ML predictor with initial data.");
+		} else if (generatorType.equals("MLT")) {
+			boolean modelExists = checkIfExists(readParameterValue("data.tests.dir") + "/" + experimentName + "/predictor.joblib");
+			if (!modelExists)
+				throw new RESTestException("Error: the predictor model (predictor.joblib) is not present in the test-data folder");
+		}
 
 		// Main loop
 		int iteration = 1;
@@ -156,6 +171,10 @@ public class TestGenerationAndExecution {
 			// Test case generation + execution + test report generation
 			runner.run();
 
+			// Only for ML generator: if keepLearning is enabled, retrain the model with newly generated test cases
+			if (generatorType.equals("MLT") && mlKeepLearning)
+				runCommand(mlTrainCommand, new String[0]); // TODO: Update command and arguments
+
 			logger.info("Iteration {}. {} test cases generated.", iteration, runner.getNumTestCases());
 			iteration++;
 		}
@@ -173,7 +192,7 @@ public class TestGenerationAndExecution {
 		// Load configuration
 		TestConfigurationObject conf;
 
-		if(generator.equals("FT") && confPath == null) {
+		if(generatorType.equals("FT") && confPath == null) {
 			logger.info("No testConf specified. Generating one");
 			String[] args = {OAISpecPath};
 			CreateTestConf.main(args);
@@ -188,7 +207,7 @@ public class TestGenerationAndExecution {
 		// Create generator
 		AbstractTestCaseGenerator gen = null;
 
-		switch (generator) {
+		switch (generatorType) {
 			case "FT":
 				gen = new FuzzingTestCaseGenerator(spec, conf, numTestCases);
 				break;
@@ -327,8 +346,8 @@ public class TestGenerationAndExecution {
 
 		logger.info("Loading configuration parameter values");
 		
-		generator = readParameterValue("generator");
-		logger.info("Generator: {}", generator);
+		generatorType = readParameterValue("generator");
+		logger.info("Generator: {}", generatorType);
 		
 		OAISpecPath = readParameterValue("oas.path");
 		logger.info("OAS path: {}", OAISpecPath);
@@ -456,6 +475,20 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("ml.candidates.ratio") != null)
 			mlCandidatesRatio = Integer.parseInt(readParameterValue("ml.candidates.ratio"));
 		logger.info("AL number of candidates: {}", mlCandidatesRatio);
+
+		if (readParameterValue("ml.initialdata") != null)
+			mlInitialData = Boolean.parseBoolean(readParameterValue("ml.initialdata"));
+		logger.info("ML initial data: {}", mlInitialData);
+
+		if (readParameterValue("ml.keeplearning") != null)
+			mlKeepLearning = Boolean.parseBoolean(readParameterValue("ml.keeplearning"));
+		logger.info("ML keep learning: {}", mlKeepLearning);
+
+		String os = System.getProperty("os.name");
+		if (os.contains("Windows"))
+			mlTrainCommand = PropertyManager.readProperty("ml.train.command.windows");
+		else
+			mlTrainCommand = PropertyManager.readProperty("ml.train.command.unix");
 
 		// ALT
 		if (readParameterValue("al.resources.folder") != null)

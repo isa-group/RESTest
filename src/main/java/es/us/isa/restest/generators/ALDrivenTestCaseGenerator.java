@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.*;
 
+import static es.us.isa.restest.util.CommandRunner.runCommand;
 import static es.us.isa.restest.util.FileManager.deleteFile;
 import static es.us.isa.restest.util.TestManager.getTestCases;
 
@@ -67,21 +68,8 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			queriedTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
 
 			// Feed test cases to predictor, which queries and labels the best ones
-			boolean commandOk = false;
-			try {
-				ProcessBuilder pb = new ProcessBuilder(alPredictorCommand, resourcesFolderPath, csvTmpTcPath, ((Integer) numberOfTests).toString());
-				pb.inheritIO(); // Print output of program to stdout
-				Process proc = pb.start();
-				proc.waitFor();
-				commandOk = true;
-			} catch (IOException e) {
-				logger.error("Error running AL selector");
-				logger.error("Exception: ", e);
-			} catch (InterruptedException e) {
-				logger.error("Error running AL selector");
-				logger.error("Exception: ", e);
-				Thread.currentThread().interrupt();
-			}
+			boolean commandOk = runCommand(alPredictorCommand, new String[]{resourcesFolderPath, csvTmpTcPath, Integer.toString(numberOfTests)});
+
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
 				queriedTestCases = getTestCases(csvTmpTcPath);
