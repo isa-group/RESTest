@@ -1,0 +1,84 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Spotify/headers.json
+testConfiguration:
+  operations:
+    - testPath: /browse/categories
+      operationId: browseCategories
+      method: get
+      testParameters:
+        - name: limit
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 50
+                  objectValues: null
+              valid: true
+        - name: offset
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: country
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+                  objectValues: null
+              valid: true
+        - name: locale
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - es_ES
+                    - es_MX
+                    - en_US
+                    - en_GB
+                    - de_DE
+                    - fr_FR
+                    - it_IT
+                    - pt_PT
+                    - pt_BR
+                    - fi_FI
+                    - no_NO
+                  objectValues: null
+              valid: true
+      expectedResponse: 200

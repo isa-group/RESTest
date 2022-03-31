@@ -1,0 +1,294 @@
+---
+swagger: '2.0'
+info:
+  description: This is a simple documentation showcase for AISS
+  version: 1.0.0
+  title: Simple AISS API
+  contact:
+    email: docencia.aiss@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: localhost:8095
+basePath: "/api"
+schemes:
+- http
+paths:
+  "/songs/{id}":
+    get:
+      tags:
+      - songs
+      summary: Get a song by id
+      operationId: getSong
+      parameters:
+      - name: id
+        in: path
+        description: ID of song to return
+        required: true
+        type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            "$ref": "#/definitions/Song"
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+    delete:
+      tags:
+      - songs
+      summary: Delete a song by id
+      operationId: deleteSong
+      parameters:
+      - name: id
+        in: path
+        description: ID of song to delete
+        required: true
+        type: string
+      responses:
+        '200':
+          description: successful operation
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+  "/songs":
+    get:
+      tags:
+      - songs
+      summary: Get all songs
+      operationId: getAllSongs
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/Song"
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      tags:
+      - songs
+      summary: Post a song
+      operationId: postSong
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Song object
+        required: true
+        schema:
+          "$ref": "#/definitions/Song"
+      responses:
+        '200':
+          description: successful operation
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+    put:
+      tags:
+      - songs
+      summary: Put a song
+      operationId: putSong
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: Song object
+        required: true
+        schema:
+          "$ref": "#/definitions/Song"
+      responses:
+        '200':
+          description: successful operation
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+  "/lists/{id}":
+    get:
+      tags:
+      - lists
+      summary: Get a list by id
+      operationId: getList
+      parameters:
+      - name: id
+        in: path
+        description: ID of list to return
+        required: true
+        type: string
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/List"
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+    delete:
+      tags:
+      - lists
+      summary: Delete a list by id
+      operationId: deleteList
+      parameters:
+      - name: id
+        in: path
+        description: ID of list to delete
+        required: true
+        type: string
+      responses:
+        '200':
+          description: successful operation
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+  "/lists":
+    get:
+      tags:
+      - lists
+      summary: Get all lists
+      operationId: getAllLists
+      parameters: []
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/List"
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+    post:
+      tags:
+      - lists
+      summary: Post a list
+      operationId: postList
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: List object
+        required: true
+        schema:
+          "$ref": "#/definitions/List"
+      responses:
+        '200':
+          description: successful operation
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+    put:
+      tags:
+      - lists
+      summary: Put a list
+      operationId: putList
+      consumes:
+        - application/json
+      parameters:
+      - in: body
+        name: body
+        description: List object
+        required: true
+        schema:
+          "$ref": "#/definitions/List"
+      responses:
+        '200':
+          description: successful operation
+        default:
+          description: unexpected error
+          schema:
+            "$ref": "#/definitions/error"
+definitions:
+  Song:
+    type: object
+    required:
+    - id
+    - title
+    - artist
+    - album
+    - year
+    properties:
+      id:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      title:
+        type: string
+        example: Smell Like Teen Spirit
+      artist:
+        type: string
+        example: Nirvana
+      album:
+        type: string
+        example: Nevermind
+      year:
+        type: string
+        example: '1991'
+    example:
+      artist: Nirvana
+      year: '1991'
+      album: Nevermind
+      id: d290f1ee-6c54-4b01-90e6-d701748f0851
+      title: Smell Like Teen Spirit
+  List:
+    type: object
+    required:
+    - description
+    - name
+    - songs
+    properties:
+      id:
+        type: string
+        example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      name:
+        type: string
+        example: Smell Like Teen Spirit
+      description:
+        type: string
+        example: Nirvana
+      songs:
+        type: array
+        items:
+          "$ref": "#/definitions/Song"
+    example:
+      songs:
+      - artist: Nirvana
+        year: '1991'
+        album: Nevermind
+        id: d290f1ee-6c54-4b01-90e6-d701748f0851
+        title: Smell Like Teen Spirit
+      - artist: Nirvana
+        year: '1991'
+        album: Nevermind
+        id: d290f1ee-6c54-4b01-90e6-d701748f0851
+        title: Smell Like Teen Spirit
+      name: Smell Like Teen Spirit
+      description: Nirvana
+      id: d290f1ee-6c54-4b01-90e6-d701748f0851
+  error:
+    type: object
+    properties:
+      status:
+        type: integer
+        format: int32
+        example: 404
+        description: The HTTP status code.
+      message:
+        type: string
+        example: Not found
+        description: A short description of the cause of the error

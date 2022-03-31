@@ -1,0 +1,55 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Spotify/headers.json
+testConfiguration:
+  operations:
+    - testPath: "/albums/{id}"
+      operationId: GetAlbum
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - 382ObEPsp2rxGrnsizN5TX
+                    - 1A2GTWGtFfWp7KSQTwWOyo
+                    - 2noRn2Aes5aoNVsU6iWThc
+                    - 4PgleR09JVnm3zY1fW3XBA
+                    - 58ufpQsJ1DS5kq4hhzQDiI
+                    - 6J84szYCnMfzEcvIcfWMFL
+                    - 4YzNjecIvmLFEby13NOBmj
+                    - 21GSy4UKShEpEfrojAEK9U
+                    - 0swM8EuQkgYV2knrZ8rFl2
+                    - 2B4G3D8pCGzk3ryWVPD6ga
+                    - 2AW6HCRfGox94vO7GMQSLD
+                    - 5FVNWYM95qgM8Wkzksnszy
+                    - 3yaQNz5hglJrlaVJTLcUCb
+                    - 6ajdXlPMknejXW5TxqTMr0
+                    - 5XWqGM9qDxw3KjQCBgewAV
+                    - 4s096NcPZeqXsj8gQ1R1aT
+                    - 0T3RVlrWzids265ebYOkDq
+                    - 6ixZvq546olo2LumeG66UW
+                    - 3qrqWaQBRtiDvKnVgi2Jhk
+                    - 6NnxUxgj1FlneEPzSaRflN
+                  objectValues: null
+              valid: true
+        - name: market
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+                  objectValues: null
+              valid: true
+      expectedResponse: 200

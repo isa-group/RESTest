@@ -1,0 +1,122 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams:
+    Authorization: Bearer BQAXKaEVZNw-wN24Mz-Bdv4LwOwgn32JlNiKesGRkA5_mdWY5oqUONKtH7EgoC9KIcvC1DDGXflJg8w9scJ-bQN5tlc1hVmX-LiB7PHvS_mZvQ9TOjCwhn8xMODfdIZFCVdNDrKPyB7hCyoEslOHsOlr7dhAF8qzp4K0AUiJWwyj8M-M9tCMd8Baas1eLRm4klvo14eLU1af8Y3U8TyE0qBP7o5KAyyK2lwaBH01uFCvyk9HwEaJI_r3u0CskKxAFn-G1C1yti0vIHSxgvZQfluC6-WzNYILezeKost_
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /browse/featured-playlists
+    operationId: browseFeaturedPlaylists
+    method: get
+    testParameters:
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 0
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: country
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_country.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/countryCode
+          - http://dbpedia.org/property/country
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 2
+          objectValues: null
+        valid: true
+    - name: locale
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_locale.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/countryCode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: timestamp
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Spotify/browseFeaturedPlaylists_timestamp.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/timestamp
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: Accept
+      in: header
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

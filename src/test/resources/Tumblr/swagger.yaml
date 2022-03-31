@@ -1,0 +1,313 @@
+swagger: "2.0"
+info:
+  description: "Welcome to the Tumblr API! There isn't anything we enjoy more than seeing talented designers and engineers using Tumblr to invent whole new forms of creative expression. We've put a tremendous amount of care into making this API functional and flexible enough for any projects you throw at it. Join us in our discussion group to talk about how to use it, what could be better, and all the amazing things you're going to build with it. Follow our Engineering Blog for important news and announcements. Please use the API responsibly, and send us your feedback. Enjoy!"
+  version: "v2"
+  title: "Tumblr API"
+host: "api.tumblr.com"
+basePath: "/v2"
+tags:
+  - name: Blogs
+    description: Tumblr Blogs
+schemes:
+  - "https"
+paths:
+  /blog/{blog-identifier}/likes:
+    get:
+      tags:
+        - Blogs
+      summary: Retrieve Blog's Likes
+      description: This method can be used to retrieve the publicly exposed likes from a blog.
+      operationId: getBlogLikes
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          type: string
+          required: true
+          name: blog-identifier
+          description: Any blog identifier
+        - in: query
+          type: integer
+          required: false
+          name: limit
+          description: "The number of results to return: 1–20, inclusive"
+          default: 20
+        - in: query
+          type: integer
+          required: false
+          name: offset
+          description: Liked post number to start at
+          default: 0
+        - in: query
+          type: integer
+          required: false
+          name: before
+          description: Retrieve posts liked before the specified timestamp
+        - in: query
+          type: integer
+          required: false
+          name: after
+          description: Retrieve posts liked after the specified timestamp
+      x-dependencies:
+        - ZeroOrOne(before, after, offset);
+      responses:
+        200:
+          description: "OK"
+          schema:
+            $ref: "#/definitions/Response"
+        400:
+          description: "Bad request"
+        404:
+          description: "Not found"
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: api_key
+    in: query
+definitions:
+  Response:
+    type: object
+    properties:
+      meta:
+        $ref: "#/definitions/Meta"
+      response:
+        $ref: "#/definitions/LikesResponse"
+    xml:
+      name: "Response"
+  LikesResponse:
+    type: object
+    properties:
+      liked_posts:
+        type: array
+        items:
+          $ref: "#/definitions/Post"
+      liked_count:
+        type: integer
+        format: int32
+    xml:
+      name: "LikesResponse"
+  Post:
+    type: object
+    properties:
+      blog_name:
+        type: string
+      id:
+        type: integer
+        format: int64
+      post_url:
+        type: string
+        format: uri
+      type:
+        type: string
+      timestamp:
+        type: integer
+        format: int32
+      date:
+        type: string
+        pattern: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} GMT'
+      format:
+        type: string
+      reblog_key:
+        type: string
+      tags:
+        type: array
+        items:
+          type: string
+      bookmarklet:
+        type: boolean
+      mobile:
+        type: boolean
+      source_url:
+        type: string
+        format: uri
+      source_title:
+        type: string
+      state:
+        type: string
+      total_posts:
+        type: integer
+        format: int32
+      title:
+        type: string
+      body:
+        type: string
+      caption:
+        type: string
+      width:
+        type: integer
+        format: int32
+      height:
+        type: integer
+        format: int32
+      photos:
+        type: array
+        items:
+          $ref: "#/definitions/LegacyPhoto"
+      text:
+        type: string
+      source:
+        type: string
+      description:
+        type: string
+      url:
+        type: string
+        format: uri
+      author:
+        type: string
+      excerpt:
+        type: string
+      publisher:
+        type: string
+      dialogue:
+        type: array
+        items:
+          $ref: "#/definitions/Dialogue"
+      embed:
+        type: string
+      plays:
+        type: integer
+        format: int64
+      album_art:
+        type: string
+      artist:
+        type: string
+      album:
+        type: string
+      track_name:
+        type: string
+      track_number:
+        type: integer
+        format: int32
+      year:
+        type: integer
+        format: int32
+      player:
+        type: array
+        items:
+          $ref: "#/definitions/Player"
+      asking_name:
+        type: string
+      asking_url:
+        type: string
+      question:
+        type: string
+      answer:
+        type: string
+      content:
+        type: array
+        items:
+          type: object
+      layout:
+        type: array
+        items:
+          type: object
+      trail:
+        type: array
+        items:
+          type: object
+      can_like:
+        type: boolean
+      can_reblog:
+        type: boolean
+      can_reply:
+        type: boolean
+      can_send_in_message:
+        type: boolean
+      display_avatar:
+        type: boolean
+      liked_timestamp:
+        type: integer
+        format: int32
+      note_count:
+        type: integer
+        format: int32
+      reblog:
+        type: object
+      short_url:
+        type: string
+        format: uri
+      should_open_in_legacy:
+        type: boolean
+      slug:
+        type: string
+      summary:
+        type: string
+      image_permalink:
+        type: string
+        format: uri
+    xml:
+      name: "Post"
+  LegacyPhoto:
+    type: object
+    properties:
+      caption:
+        type: string
+      original_size:
+        type: object
+      width:
+        type: integer
+        format: int32
+      height:
+        type: integer
+        format: int32
+      url:
+        type: string
+        format: uri
+      alt_sizes:
+        type: array
+        items:
+          $ref: "#/definitions/AltSizes"
+    xml:
+      name: "LegacyPhoto"
+  AltSizes:
+    type: object
+    properties:
+      caption:
+        type: string
+      original_size:
+        type: object
+      width:
+        type: integer
+        format: int32
+      height:
+        type: integer
+        format: int32
+      url:
+        type: string
+        format: uri
+    xml:
+      name: "AltSizes"
+  Dialogue:
+    type: object
+    properties:
+      name:
+        type: string
+      label:
+        type: string
+      phrase:
+        type: string
+    xml:
+      name: "Dialogue"
+  Player:
+    type: object
+    properties:
+      width:
+        type: integer
+        format: int32
+      embed_code:
+        type: string
+    xml:
+      name: "Player"
+  Meta:
+    type: "object"
+    properties:
+      status:
+        type: integer
+        format: int32
+      msg:
+        type: string
+    xml:
+      name: "Meta"
+
+
+

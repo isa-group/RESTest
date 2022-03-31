@@ -1,0 +1,186 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: YouTube/apikeys.json
+testConfiguration:
+  operations:
+  - testPath: /youtube/v3/commentThreads
+    operationId: youtube.commentThreads.list
+    method: get
+    testParameters:
+    - name: allThreadsRelatedToChannelId
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - UCCj956IF62FbT7Gouszaj9w
+          - UCvosUrZ7hXpzAyobhfztg4w
+          - UCMtFAi84ehTSYSE9XoHefig
+          - UClzCn8DxRSCuMFv_WfzkcrQ
+          - UCJ0uqCI0Vqr2Rrt1HseGirg
+          - UCDwjiSF4qEb3aeT3ZLkPc_Q
+          - UC-9-kyTW8ZkZNDHQJ6FgpwQ
+          - UCEgdi0XIXXZ-qJOFPf4JSKw
+          - UClgRkhTL3_hImCAmdLfDE4g
+          - UCYfdidRxbB8Qhf0Nx7ioOYw
+    - name: channelId
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - UCCj956IF62FbT7Gouszaj9w
+          - UCvosUrZ7hXpzAyobhfztg4w
+          - UCMtFAi84ehTSYSE9XoHefig
+          - UClzCn8DxRSCuMFv_WfzkcrQ
+          - UCJ0uqCI0Vqr2Rrt1HseGirg
+          - UCDwjiSF4qEb3aeT3ZLkPc_Q
+          - UC-9-kyTW8ZkZNDHQJ6FgpwQ
+          - UCEgdi0XIXXZ-qJOFPf4JSKw
+          - UClgRkhTL3_hImCAmdLfDE4g
+          - UCYfdidRxbB8Qhf0Nx7ioOYw
+    - name: id
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - UgxTcmK3y_EbkhECsWZ4AaABAg
+          - UgyyScM63hUgS_x7IXp4AaABAg
+          - UgyYYGDYZhxKuiCkSSx4AaABAg
+          - UgzhMIgtuhjemzfoObp4AaABAg
+          - UgxTbR839IUuzmAe8XJ4AaABAg
+          - Ugx0dK2I1wPHnQoLx6V4AaABAg
+          - UgyR8TjvAmSACMJZyH14AaABAg
+          - Ugx1AZtPUKL7ZAxswUB4AaABAg
+          - UgxV04sD52Jtp3rdyPt4AaABAg
+          - Ugw7orsAQ51p8dJD5Bx4AaABAg
+    - name: maxResults
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: moderationStatus
+      in: query
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - heldForReview
+          - likelySpam
+          - published
+          objectValues: null
+    - name: order
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - relevance
+          - time
+          objectValues: null
+    - name: pageToken
+      in: query
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: part
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 3
+        - name: values
+          values:
+            - id
+            - replies
+            - snippet
+          objectValues: null
+    - name: searchTerms
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: textFormat
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - html
+          - plainText
+          objectValues: null
+    - name: videoId
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - zZa8PFYtWr4
+          - TUJWx7vo44c
+          - eVIozKR9p50
+          - 7m-NPuXPBqM
+          - yDgLFOxnQ8Y
+          - 9bZkp7q19f0
+          - yuD34tEpRFw
+          - n8I-YVuaSR0
+          - t22flliJLTQ
+          - 5kUu97Vkwj4
+    expectedResponse: 200

@@ -1,0 +1,213 @@
+---
+swagger: "2.0"
+info:
+  description: "This is a custom API built with the purpose of comparing different\
+    \ input generation techniques for APIs testing. The tests are to be performed\
+    \ over very simple operations, hence the presence of only GET operations with\
+    \ few parameters."
+  version: "1.0.0"
+  title: "Simple API"
+  termsOfService: ""
+  contact:
+    email: "amarlop@us.es"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:8800"
+basePath: "/api/v1"
+tags:
+- name: "search"
+  description: "Perform a search over songs, artists, albums and playlists"
+- name: "artist"
+  description: "Get information about an artist"
+schemes:
+- "http"
+- "https"
+paths:
+  /search:
+    get:
+      tags:
+      - "search"
+      summary: "Search songs, artists, albums and playlists"
+      description: "Search songs, artists, albums and playlists"
+      operationId: "search"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "query"
+        in: "query"
+        description: "The name of the thing you are looking for (artist's name, album\
+          \ title, etc.)"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "query"
+        description: "Type of result wanted: any, song, artist, album or playlist"
+        required: false
+        type: "string"
+        default: "all"
+        enum:
+        - "all"
+        - "song"
+        - "artist"
+        - "album"
+        - "playlist"
+      - name: "market"
+        in: "query"
+        description: "The country where it is available (must be a country code)"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/SearchResult"
+        400:
+          description: "Query parameter required"
+        404:
+          description: "Result not found"
+      x-swagger-router-controller: "Search"
+  /artists/{artistId}:
+    get:
+      tags:
+      - "artist"
+      summary: "Finds artist by ID"
+      description: "Finds artist by ID"
+      operationId: "findArtistById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "artistId"
+        in: "path"
+        description: "ID of the artist searched"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Artist"
+        400:
+          description: "Invalid artistId"
+        404:
+          description: "Artist not found"
+      x-swagger-router-controller: "Artist"
+  /artists:
+    get:
+      tags:
+      - "artist"
+      summary: "Find artists"
+      description: "Returns all artists fulfilling the filters specified"
+      operationId: "getArtists"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "query"
+        description: "Artist's name"
+        required: false
+        type: "string"
+      - name: "isAlive"
+        in: "query"
+        description: "Whether the artist is currently alive"
+        required: false
+        type: "boolean"
+      - name: "nationality"
+        in: "query"
+        description: "The country where the artist comes from (must be a country code)"
+        required: false
+        type: "string"
+      - name: "age"
+        in: "query"
+        description: "Age of the artist. If it's present, neither ageUnder nor ageOver\
+              \ can be included in the request"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "ageUnder"
+        in: "query"
+        description: "Maximum age of the artist. Must be higher than ageOver if it's\
+          \ present"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "ageOver"
+        in: "query"
+        description: "Minimum age of the artist. Must be lower than ageUnder if it's\
+          \ present"
+        required: false
+        type: "integer"
+        format: "int32"
+      x-parameter-dependencies:
+        - '!(age && ageOver)'
+        - '!(age && ageUnder)'
+        - 'ageOver <= ageUnder'
+        - 'name || isAlive || nationality || ageOver || ageUnder'
+        - 'IF isAlive == true THEN !nationality'
+        - 'IF !name THEN (ageUnder && ageOver)'
+        - 'IF age>150 THEN isAlive=false'
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Artist"
+        400:
+          description: "One of the following problems related to parameter\
+            \ dependencies occured: a) no parameter was included in the request,\
+            \ b) ageOver higher than ageUnder, c) age included together with\
+            \ ageUnder or ageOver."
+        404:
+          description: "Artist not found"
+      x-swagger-router-controller: "Artist"
+definitions:
+  SearchResult:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      uri:
+        type: "string"
+        format: "uri"
+      type:
+        type: "string"
+        enum:
+        - "song"
+        - "artist"
+        - "album"
+        - "playlist"
+      name:
+        type: "string"
+    example:
+      name: "name"
+      id: 0
+      type: "song"
+      uri: "http://example.com/aeiou"
+  Artist:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        format: "int64"
+      uri:
+        type: "string"
+        format: "uri"
+      name:
+        type: "string"
+      followers:
+        type: "integer"
+        format: "int64"
+      imageUrl:
+        type: "string"
+        format: "url"
+    example:
+      followers: 6
+      imageUrl: "http://example.com/aeiou"
+      name: "name"
+      id: 0
+      uri: "http://example.com/aeiou"

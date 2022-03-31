@@ -1,0 +1,160 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Stripe/headers.json
+testConfiguration:
+  operations:
+  - testPath: /v1/coupons
+    operationId: PostCoupons
+    method: post
+    testParameters:
+    - name: amount_off
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: currency
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Stripe-currency-codes.csv
+          objectValues: null
+    - name: duration
+      in: formData
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - forever
+          - once
+          - repeating
+          objectValues: null
+    - name: duration_in_months
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: id
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomString
+        genParameters:
+        - name: minLength
+          values:
+            - 15
+        - name: maxLength
+          values:
+            - 20
+        - name: includeNumbers
+          values:
+            - true
+    - name: max_redemptions
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: name
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: percent_off
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: redeem_by
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+            - integer
+          objectValues: null
+        - name: min
+          values:
+            - 1639459200
+          objectValues: null
+        - name: max
+          values:
+            - 1649030400
+          objectValues: null
+    expectedResponse: 200

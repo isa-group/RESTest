@@ -1,0 +1,176 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /check
+    operationId: check
+    method: post
+    testParameters:
+    - name: text
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 3
+          objectValues: null
+        - name: minWords
+          values:
+          - 1
+          objectValues: null
+    - name: data
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '\{\"annotation\": \[((\{\"text\": \"(time|be|good|to|the|person|have|new|of|and|year|do|first|in|a|way|say|last|for|that|day|get|long|on|I|thing|make|great|with|it|man|go|little|at|not|world|know|own|by|he|life|take|other|from|as|hand|see|old|up|you|part|come|right|about|this|child|think|big|into|but|eye|look|high|over|his|woman|want|different|after|they|place|give|small|her|work|use|large|she|week|find|next|or|case|tell|early|an|point|ask|young|will) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
+          objectValues: null
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '\{\"annotation\": \[((\{\"text\": \"(y|viéndole|de|aquella|manera|con|muestras|de|tanta|tristeza|le|dijo|sábete|que|no|es|un|hombre|más|que|otro|si|no|hace|más|que|otro|todas|estas|borrascas|que|nos|suceden|son|señales|de|que|presto|ha|de|serenar|el|tiempo|y|han|de|sucedernos|una|mañana|tras|un|sueño|intranquilo|se|despertó|convertido|en|un|monstruoso|insecto|estaba|echado|de|espaldas|sobre|un|duro|caparazón|y|al) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
+          objectValues: null
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '\{\"annotation\": \[((\{\"text\": \"(comme|même|et|paf|le|chien|manger|apéro|grève|à|la|son|ouais|ainsi|saucisson|car|grève|apéro|baguette|trouver|bière|et|paf|le|chien|frenchtech|manger|révolution|demander|à|la|et|aussi|ouais|faire|du|coup|révolution|putain|frenchtech|nouveau|omelette|camembert|on|à|la|et|aussi|mon|guillotine|ainsi|disruptif|carrément|bière|du|coup|bon|baguette|croissant|disruptif|révolution) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
+          objectValues: null
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '\{\"annotation\": \[((\{\"text\": \"(la|mia|anima|è|pervasa|da|una|mirabile|serenità|simile|a|queste|belle|mattinate|di|maggio|che|io|godo|con|tutto|il|cuore|sono|solo|e|mi|rallegro|di|vivere|in|questo|luogo|che|sembra|esser|creato|per|anime|simili|alla|mia|sono|così|felice|mio|caro|così|immerso|nel|ciao|grazie|venti|fratello|vino|bianco|giorno|padre|tutti|grotta|bambino|primo|ragazza|oro|latte|molto|signore|canto|forte|mille|donna|cavallo|benvenuto|duce) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
+          objectValues: null
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - '\{\"annotation\": \[((\{\"text\": \"(es|gibt|im|moment|in|diese|mannschaft|oh|einige|spieler|vergessen|ihnen|profi|was|sie|sind|ich|lese|nicht|sehr|viele|zeitungen|aber|ich|habe|gehört|viele|situationen|erstens|wir|haben|nicht|offensiv|gespielt|es|gibt|keine|deutsche|mannschaft|spielt|offensiv|und|die|name|offensiv|wie|bayern|letzte|spiel|hatten|eine|wunderbare|heiterkeit|hat|meine|ganze|seele|eingenommen|gleich|den|süßen|frühlingsmorgen|die|ich|mit|ganzem|herzen|genieße|ich|bin|allein|und|freue|mich|meines|lebens|in|dieser|gegend|die) \"}, )?({\"markup\": \"\<(br|h1|h2|h3|h4|h5|p|pre|em|b|i|small|u)\>\"(, \"interpretAs\": \"\\(t|n|r)\")?}, )?){1,10} \{\"text\": \"\.\"\} \]\}'
+          objectValues: null
+    - name: language
+      in: formData
+      weight: null
+      generators:
+        - type: SemanticParameter
+          genParameters: []
+          valid: true
+    - name: motherTongue
+      in: formData
+      weight: 0.5
+      generators:
+        - type: SemanticParameter
+          genParameters: []
+          valid: true
+    - name: preferredVariants
+      in: formData
+      weight: 0.5
+      generators:
+        - type: SemanticParameter
+          genParameters: []
+          valid: true
+    - name: enabledRules
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/test/resources/taas_eval/LanguageTool/languagetool-rules-2.csv'
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
+    - name: disabledRules
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/test/resources/taas_eval/LanguageTool/languagetool-rules-2.csv'
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
+    - name: enabledCategories
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/test/resources/taas_eval/LanguageTool/languagetool-categories.csv'
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
+    - name: disabledCategories
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - 'src/test/resources/taas_eval/LanguageTool/languagetool-categories.csv'
+          - name: minValues
+            values:
+              - 1
+          - name: maxValues
+            values:
+              - 3
+    - name: enabledOnly
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomBoolean
+        genParameters: []
+    - name: level
+      in: formData
+      weight: 0.5
+      generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - default
+                - picky
+    expectedResponse: 200
+#  - testPath: /languages
+#    operationId: getLanguages
+#    method: get
+#    testParameters: null
+#    expectedResponse: 200

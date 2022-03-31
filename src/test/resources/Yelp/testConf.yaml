@@ -1,0 +1,250 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Yelp/headers.json
+testConfiguration:
+  operations:
+    - operationId: getBusinesses
+      testPath: /businesses/search
+      method: get
+      testParameters:
+      - name: term
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - food
+                - cinema
+                - open
+                - cheap
+                - public
+                - exciting
+                - cafe
+                - ok
+                - the
+                - watch
+      - name: location
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - NYC
+            - Seville, Spain
+            - Milan, Italy
+            - Melbourne
+            - Tokyo
+            - Egypt
+            - Juarez, Mexico
+            - Paris
+            - San Francisco
+            - Krakow
+            - Daca, Bangladesh
+            - Santa Fe
+      - name: latitude
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - float
+          - name: max
+            values:
+            - 47.392337
+          - name: min
+            values:
+            - 33.125898
+      - name: longitude
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - float
+          - name: min
+            values:
+            - -119.205793
+          - name: max
+            values:
+            - -79.958475
+      - name: radius
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 0
+            objectValues: null
+          - name: max
+            values:
+            - 40000
+            objectValues: null
+      - name: categories
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: csv
+            values:
+            - src/main/resources/TestData/yelp-categories.csv
+          - name: minValues
+            values:
+            - 1
+          - name: maxValues
+            values:
+            - 5
+      - name: locale
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: csv
+              values:
+                - src/main/resources/TestData/yelp-locales.csv
+      - name: limit
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 50
+            objectValues: null
+      - name: offset
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 0
+            objectValues: null
+          - name: max
+            values:
+            - 1000
+            objectValues: null
+      - name: sort_by
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - best_match
+            - rating
+            - review_count
+            - distance
+            objectValues: null
+      - name: price
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - 1
+                - 2
+                - 3
+                - 4
+            - name: minValues
+              values:
+                - 1
+            - name: maxValues
+              values:
+                - 4
+      - name: open_now
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: open_at
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1626797212
+            objectValues: null
+          - name: max
+            values:
+            - 2147483647
+            objectValues: null
+      - name: attributes
+        in: query
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - hot_and_new
+                - request_a_quote
+                - reservation
+                - waitlist_reservation
+                - deals
+                - gender_neutral_restrooms
+                - open_to_all
+                - wheelchair_accessible
+            - name: minValues
+              values:
+                - 1
+            - name: maxValues
+              values:
+                - 3

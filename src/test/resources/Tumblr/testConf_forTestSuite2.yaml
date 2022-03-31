@@ -1,0 +1,101 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+    - testPath: "/blog/{blog-identifier}/likes"
+      operationId: getBlogLikes
+      method: get
+      testParameters:
+        - name: blog-identifier
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - "restestbenchmark.tumblr.com"
+                objectValues: null
+        - name: limit
+          in: query
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 20
+                objectValues: null
+        - name: offset
+          in: query
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 0
+                objectValues: null
+              - name: max
+                values:
+                  - 10
+                objectValues: null
+        - name: before
+          in: query
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 0
+                objectValues: null
+              - name: max
+                values:
+                  - 2147483647
+                objectValues: null
+        - name: after
+          in: query
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 0
+                objectValues: null
+              - name: max
+                values:
+                  - 2147483647
+                objectValues: null
+      expectedResponse: 200

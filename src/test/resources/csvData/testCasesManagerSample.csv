@@ -1,0 +1,18 @@
+testCaseId,faulty,faultyReason,fulfillsDependencies,operationId,path,httpMethod,inputContentType,outputContentType,headerParameters,pathParameters,queryParameters,formParameters,bodyParameter
+test_skmr16n7rb5k_GETversionincidentsformat,false,none,true,GET--version-incidents---format-,/v2/incidents,GET,application/json,application/json,,,per_page=74;proximity_square=12;page=13;,,
+test_sof3v1x2l1yu_GETversionincidentsformat,false,none,true,GET--version-incidents---format-,/v2/incidents,GET,application/json,application/json,,,proximity=unfit;proximity_square=33;page=60;,,
+test_ubu6nbo7tqat_GETversionincidentsidformat,false,none,true,GET--version-incidents--id---format-,/v2/incidents/{id},GET,application/json,application/json,,id=38;,,,
+test_sobtrzuv10s9_GETversionincidentsidformat,false,none,true,GET--version-incidents--id---format-,/v2/incidents/{id},GET,application/json,application/json,,id=76;,,,
+test_qhnbslxstyyd_GETversionlocationsformat,false,none,true,GET--version-locations---format-,/v2/locations,GET,application/json,application/json,,,all=true;incident_type=chop_shop;proximity=immaturely;occurred_before=32;,,
+test_vbsgzdkq3hb8_GETversionlocationsformat,false,none,true,GET--version-locations---format-,/v2/locations,GET,application/json,application/json,,,all=true;incident_type=theft;occurred_after=1;query=unlock;proximity_square=44;limit=81;,,
+test_qhnuf86vum28_GETversionlocationsmarkersformat,false,none,true,GET--version-locations-markers---format-,/v2/locations/markers,GET,application/json,application/json,,,all=false;proximity=outwear;occurred_after=41;proximity_square=94;limit=87;,,
+test_t8f6uw1epmqs_GETversionlocationsmarkersformat,false,none,true,GET--version-locations-markers---format-,/v2/locations/markers,GET,application/json,application/json,,,all=true;proximity=clinker;limit=24;,,
+test_t8f6uw1epmqs_GETversionlocationsmarkersformat,false,none,true,GET--version-locations-markers---format-,/v2/locations/markers,GET,application/json,application/json,,,all=true;proximity=clinker%2Chey%2Chay;limit=24;,,
+test_t8f6uw1epmqs_GETversionlocationsmarkersformat,false,none,true,GET--version-locations-markers---format-,/v2/locations/markers,GET,application/json,application/json,,,all=true;proximity=clinker%2Chey%2Chay;limit=24;,,"{""businesses"": [], ""total"": 0, ""region"": {""center"": {""longitude"": -104.36144, ""latitude"": 41.22686}}}"
+test_t8f6uw1epmqs_GETversionlocationsmarkersformat,false,none,true,GET--version-locations-markers---format-,/v2/locations/markers,GET,application/json,application/json,,,all=true;proximity=clinker%2Chey%2Chay;limit=24;,,"{
+ ""error"": {
+   ""message"": ""Received both percent_off and amount_off parameters. Please pass in only one."",
+   ""type"": ""invalid_request_error""
+ }
+}
+"

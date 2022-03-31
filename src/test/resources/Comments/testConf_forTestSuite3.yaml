@@ -1,0 +1,60 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+testConfiguration:
+  operations:
+  - operationId: putComment
+    testPath: /comments
+    method: put
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: ObjectPerturbator
+        genParameters:
+        - name: stringObject
+          values:
+          - '{"id":"c1","userName":"josedelpino","text":"I love Spotify","date":"2013-04-16T20:44:53.950+0000","type":"Review"}'
+          objectValues: null
+    expectedResponse: 200
+  - operationId: postComment
+    testPath: /comments
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: ObjectPerturbator
+        genParameters:
+        - name: object
+          values: null
+          objectValues:
+          - id: c2
+            userName: amarlop
+            text: I want more features!
+            date: 2020-02-14T14:13:21.827+0000
+            type: Request
+    expectedResponse: 200
+  - operationId: postComment
+    testPath: /comments
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: ObjectPerturbator
+        genParameters:
+        - name: file
+          values:
+          - src/test/resources/Comments/sample-object.json
+          objectValues: null
+    expectedResponse: 200

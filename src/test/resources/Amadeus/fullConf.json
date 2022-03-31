@@ -1,0 +1,1952 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+testConfiguration:
+  testPaths:
+  - testPath: /airports/autocomplete
+    operations:
+    - operationId: Airport Autocomplete
+      method: get
+      testParameters:
+      - name: term
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: country
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: all_airports
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /airports/nearest-relevant
+    operations:
+    - operationId: Nearest Relevant Airport
+      method: get
+      testParameters:
+      - name: latitude
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: longitude
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /cars/search-airport
+    operations:
+    - operationId: Car Rental Airport Search
+      method: get
+      testParameters:
+      - name: location
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: pick_up
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: drop_off
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: provider
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: rate_class
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: rate_plan
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: rate_filter
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - AVAILABLE
+            - ESTIMATED
+            - ALL
+            objectValues: null
+      - name: vehicle
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /cars/search-circle
+    operations:
+    - operationId: Car Rental Geosearch
+      method: get
+      testParameters:
+      - name: latitude
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: longitude
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: radius
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: pick_up
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: drop_off
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: provider
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: rate_class
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: rate_plan
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: rate_filter
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - AVAILABLE
+            - ESTIMATED
+            - ALL
+            objectValues: null
+      - name: vehicle
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /flights/affiliate-search
+    operations:
+    - operationId: Flight Affiliate Search
+      method: get
+      testParameters:
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: destination
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: departure_date
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: return_date
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: adults
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: children
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: infants
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: include_merchants
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: exclude_merchants
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: max_price
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: mobile
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /flights/extensive-search
+    operations:
+    - operationId: Flight Extensive Search
+      method: get
+      testParameters:
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: destination
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: departure_date
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: one-way
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: duration
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: direct
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: max_price
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: aggregation_mode
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /flights/inspiration-search
+    operations:
+    - operationId: Flight Inspiration Search
+      method: get
+      testParameters:
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: destination
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: departure_date
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: one-way
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: duration
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: direct
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: max_price
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: aggregation_mode
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /flights/low-fare-search
+    operations:
+    - operationId: Flight Low-Fare Search
+      method: get
+      testParameters:
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: destination
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: departure_date
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: return_date
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: arrive_by
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: return_by
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: adults
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: children
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: infants
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: include_airlines
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: exclude_airlines
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: nonstop
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: max_price
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: travel_class
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: number_of_results
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /hotels/search-airport
+    operations:
+    - operationId: Hotel Airport Search
+      method: get
+      testParameters:
+      - name: location
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: check_in
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: check_out
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: radius
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: chain
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: max_rate
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: number_of_results
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: all_rooms
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: show_sold_out
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: amenity
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /hotels/search-box
+    operations:
+    - operationId: Hotel Geosearch by box
+      method: get
+      testParameters:
+      - name: south_west_corner
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: north_east_corner
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: check_in
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: check_out
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: chain
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: max_rate
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: number_of_results
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: all_rooms
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: show_sold_out
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: amenity
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /hotels/search-circle
+    operations:
+    - operationId: Hotel Geosearch by circle
+      method: get
+      testParameters:
+      - name: latitude
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: longitude
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: radius
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: check_in
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: check_out
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: chain
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: max_rate
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: number_of_results
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: all_rooms
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: show_sold_out
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: amenity
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /hotels/{property_code}
+    operations:
+    - operationId: Hotel Property Code Search
+      method: get
+      testParameters:
+      - name: property_code
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: check_in
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: check_out
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: currency
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: all_rooms
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: show_sold_out
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /location/{code}
+    operations:
+    - operationId: Location Information
+      method: get
+      testParameters:
+      - name: code
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /points-of-interest/yapq-search-circle
+    operations:
+    - operationId: YapQ Geosearch
+      method: get
+      testParameters:
+      - name: latitude
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: longitude
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: radius
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - DE
+            - EN
+            - ES
+            - FR
+            - HE
+            - IT
+            - JA
+            - KO
+            - NL
+            - PL
+            - RU
+            - ZH
+            objectValues: null
+      - name: category
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: geonames
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: vibes
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: social_media
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: image_size
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - SMALL
+            - MEDIUM
+            - LARGE
+            - HD
+            objectValues: null
+      - name: number_of_images
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: number_of_results
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /points-of-interest/yapq-search-text
+    operations:
+    - operationId: YapQ City Name Search
+      method: get
+      testParameters:
+      - name: city_name
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: lang
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - DE
+            - EN
+            - ES
+            - FR
+            - HE
+            - IT
+            - JA
+            - KO
+            - NL
+            - PL
+            - RU
+            - ZH
+            objectValues: null
+      - name: category
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: geonames
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: vibes
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: social_media
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomBoolean
+          genParameters: []
+      - name: image_size
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - SMALL
+            - MEDIUM
+            - LARGE
+            - HD
+            objectValues: null
+      - name: number_of_images
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: number_of_results
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /rail-station/{id}
+    operations:
+    - operationId: Rail-Station Information
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /rail-stations/autocomplete
+    operations:
+    - operationId: Rail-Station Autocomplete
+      method: get
+      testParameters:
+      - name: term
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /trains/extensive-search
+    operations:
+    - operationId: Train Extensive Search
+      method: get
+      testParameters:
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: destination
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: departure_date
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /trains/schedule-search
+    operations:
+    - operationId: Train Schedule Search
+      method: get
+      testParameters:
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: departure_date
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /travel-intelligence/flight-traffic
+    operations:
+    - operationId: Flight Traffic API
+      method: get
+      testParameters:
+      - name: period
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: destination
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: number_of_results_per_period
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /travel-intelligence/top-destinations
+    operations:
+    - operationId: Top Flight Destinations
+      method: get
+      testParameters:
+      - name: period
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: number_of_results
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /travel-intelligence/top-searches
+    operations:
+    - operationId: Top Flight Searches
+      method: get
+      testParameters:
+      - name: period
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: origin
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: destination
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: country
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: number_of_results
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /travel-record/{record_locator}
+    operations:
+    - operationId: Travel Record Retrieve
+      method: get
+      testParameters:
+      - name: record_locator
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: last_name
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: env
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200

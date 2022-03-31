@@ -1,0 +1,23 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+testConfiguration:
+  testPaths:
+  - testPath: /songs/{id}
+    operations:
+    - operationId: getSong
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - value 1
+            - value 2
+      expectedResponse: 200

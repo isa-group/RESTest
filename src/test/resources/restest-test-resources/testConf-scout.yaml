@@ -1,0 +1,1643 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+    - testPath: "/v2/activities/{id}/rating"
+      operationId: getRating
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v2/activities/{id}/rating"
+      operationId: postRating
+      method: post
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v2/activities/{id}/rating"
+      operationId: deleteRating
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v2/activities/{id}"
+      operationId: get1
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v2/activities/{id}"
+      operationId: update1
+      method: put
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v2/activities/{id}"
+      operationId: delete1
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v2/activities/{id}"
+      operationId: patch
+      method: patch
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: /v2/activities
+      operationId: all_1
+      method: get
+      testParameters:
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: name
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: text
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: featured
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: categories
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: ages
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: participants
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: durations
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: id
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: my_favourites
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: ratings_count_min
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: ratings_average_min
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - double
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: random
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int32
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: favourites
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int32
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v2/activities
+      operationId: create1
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/media_files/{id}/file"
+      operationId: downloadFile
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: size
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int32
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/media_files/{id}"
+      operationId: get2
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/media_files/{id}"
+      operationId: update2
+      method: put
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/media_files/{id}"
+      operationId: delete2
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: verify_unused
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/media_files
+      operationId: all_2
+      method: get
+      testParameters:
+        - name: uri
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/media_files
+      operationId: create2
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/system_messages/{id}"
+      operationId: get3
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/system_messages/{id}"
+      operationId: update3
+      method: put
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/system_messages/{id}"
+      operationId: delete3
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/system_messages
+      operationId: all_3
+      method: get
+      testParameters:
+        - name: key
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: valid
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - now
+                    - now_and_future
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/system_messages
+      operationId: create3
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/system/ping
+      operationId: ping
+      method: get
+      testParameters: null
+      expectedResponse: 200
+    - testPath: /v1/system/roles
+      operationId: roles
+      method: get
+      testParameters: null
+      expectedResponse: 200
+    - testPath: "/v2/tags/{id}"
+      operationId: get4
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v2/tags/{id}"
+      operationId: update4
+      method: put
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v2/tags/{id}"
+      operationId: delete4
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v2/tags
+      operationId: all_4
+      method: get
+      testParameters:
+        - name: group
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: name
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: min_activities_count
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v2/tags
+      operationId: create4
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/users/{id}"
+      operationId: get5
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/users/{id}"
+      operationId: update5
+      method: put
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/users/{id}"
+      operationId: delete5
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/users/profile
+      operationId: profile
+      method: get
+      testParameters: null
+      expectedResponse: 200
+    - testPath: /v1/users
+      operationId: all_5
+      method: get
+      testParameters:
+        - name: name
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/users
+      operationId: create5
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/activities/{id}/rating"
+      operationId: getRating_1
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/activities/{id}/rating"
+      operationId: postRating_1
+      method: post
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/activities/{id}/rating"
+      operationId: deleteRating_1
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/activities/{id}"
+      operationId: get_1
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/activities/{id}"
+      operationId: update_1
+      method: put
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/activities/{id}"
+      operationId: delete_1
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/activities/{id}"
+      operationId: patch_1
+      method: patch
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/activities
+      operationId: all_6
+      method: get
+      testParameters:
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: name
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: text
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: featured
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: categories
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: age_1
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: age_2
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: participants
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: time_1
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: time_2
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: id
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: my_favourites
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: ratings_count_min
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: ratings_average_min
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - double
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: random
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int32
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: favourites
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int32
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/activities
+      operationId: create_1
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/categories/{id}"
+      operationId: get_2
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/categories/{id}"
+      operationId: update_2
+      method: put
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: "/v1/categories/{id}"
+      operationId: delete_2
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/categories
+      operationId: all_7
+      method: get
+      testParameters:
+        - name: group
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: name
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: min_activities_count
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: attrs
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/categories
+      operationId: create_2
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200
+    - testPath: /v1/favourites
+      operationId: get6
+      method: get
+      testParameters: null
+      expectedResponse: 200
+    - testPath: /v1/favourites
+      operationId: put
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: 0.5
+          generators:
+            - type: BodyGenerator
+              genParameters: []
+              valid: true
+      expectedResponse: 200

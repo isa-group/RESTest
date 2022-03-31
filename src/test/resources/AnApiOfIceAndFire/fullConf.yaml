@@ -1,0 +1,380 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /api
+    operationId: getRoot
+    method: get
+    testParameters: null
+    expectedResponse: 200
+#  - testPath: /api/books
+#    operationId: getBooks
+#    method: get
+#    testParameters:
+#    - name: name
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: fromReleaseDate
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: toReleaseDate
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: page
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomNumber
+#        genParameters:
+#        - name: type
+#          values:
+#          - integer
+#          objectValues: null
+#        - name: min
+#          values:
+#          - 1
+#          objectValues: null
+#        - name: max
+#          values:
+#          - 100
+#          objectValues: null
+#        valid: true
+#    - name: pageSize
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomNumber
+#        genParameters:
+#        - name: type
+#          values:
+#          - integer
+#          objectValues: null
+#        - name: min
+#          values:
+#          - 1
+#          objectValues: null
+#        - name: max
+#          values:
+#          - 50
+#          objectValues: null
+#        valid: true
+#    expectedResponse: 200
+  - testPath: "/api/books/{book-id}"
+    operationId: findBookById
+    method: get
+    testParameters:
+    - name: book-id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+#  - testPath: /api/characters
+#    operationId: getCharacters
+#    method: get
+#    testParameters:
+#    - name: name
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: gender
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomInputValue
+#        genParameters:
+#        - name: values
+#          values:
+#          - Male
+#          - Female
+#          - Unknown
+#          objectValues: null
+#        valid: true
+#    - name: culture
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: born
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: died
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: isAlive
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomBoolean
+#        genParameters: []
+#        valid: true
+#    - name: page
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomNumber
+#        genParameters:
+#        - name: type
+#          values:
+#          - integer
+#          objectValues: null
+#        - name: min
+#          values:
+#          - 1
+#          objectValues: null
+#        - name: max
+#          values:
+#          - 100
+#          objectValues: null
+#        valid: true
+#    - name: pageSize
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomNumber
+#        genParameters:
+#        - name: type
+#          values:
+#          - integer
+#          objectValues: null
+#        - name: min
+#          values:
+#          - 1
+#          objectValues: null
+#        - name: max
+#          values:
+#          - 50
+#          objectValues: null
+#        valid: true
+#    expectedResponse: 200
+  - testPath: "/api/characters/{character-id}"
+    operationId: findCharacterById
+    method: get
+    testParameters:
+    - name: character-id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+#  - testPath: /api/houses
+#    operationId: getHouses
+#    method: get
+#    testParameters:
+#    - name: name
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: region
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: words
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomEnglishWord
+#        genParameters:
+#        - name: maxWords
+#          values:
+#          - 1
+#          objectValues: null
+#        valid: true
+#    - name: hasWords
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomBoolean
+#        genParameters: []
+#        valid: true
+#    - name: hasTitles
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomBoolean
+#        genParameters: []
+#        valid: true
+#    - name: hasSeats
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomBoolean
+#        genParameters: []
+#        valid: true
+#    - name: hasDiedOut
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomBoolean
+#        genParameters: []
+#        valid: true
+#    - name: hasAncestralWeapons
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomBoolean
+#        genParameters: []
+#        valid: true
+#    - name: page
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomNumber
+#        genParameters:
+#        - name: type
+#          values:
+#          - integer
+#          objectValues: null
+#        - name: min
+#          values:
+#          - 1
+#          objectValues: null
+#        - name: max
+#          values:
+#          - 100
+#          objectValues: null
+#        valid: true
+#    - name: pageSize
+#      in: query
+#      weight: 0.5
+#      generators:
+#      - type: RandomNumber
+#        genParameters:
+#        - name: type
+#          values:
+#          - integer
+#          objectValues: null
+#        - name: min
+#          values:
+#          - 1
+#          objectValues: null
+#        - name: max
+#          values:
+#          - 50
+#          objectValues: null
+#        valid: true
+#    expectedResponse: 200
+  - testPath: "/api/houses/{house-id}"
+    operationId: findHouseById
+    method: get
+    testParameters:
+    - name: house-id
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200

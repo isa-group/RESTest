@@ -1,0 +1,203 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+testConfiguration:
+  testPaths:
+  - testPath: /events
+    operations:
+    - operationId: getAllEvents
+      method: get
+      testParameters:
+      - name: name
+        weight: 0.1
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: creator
+        weight: 0.1
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 5
+            objectValues: null
+      - name: area
+        weight: 0.1
+        generators:
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+          - name: regExp
+            values:
+            - -?([1-8]?\d(\.\d\d?\d?\d?\d?\d?)?|90),( )?-?(180|((1[0-7]\d)|([1-9]?\d))(\.\d\d?\d?\d?\d?\d?)?),( )?([1-9]\d\d\d\d?\d?\d?\d?\d?)
+            objectValues: null
+      - name: tag
+        weight: 0.1
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - beach
+            - food
+            - music
+            - none
+            objectValues: null
+      - name: day
+        weight: 0.1
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 10000
+            objectValues: null
+      - name: date_minimum
+        weight: 0.1
+        generators:
+        - valid: true
+          type: RandomDate
+          genParameters:
+          - name: startDate
+            values:
+              - 2010-01-01
+            objectValues: null
+          - name: endDate
+            values:
+              - 2025-12-31
+            objectValues: null
+          - name: format
+            values:
+              - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+      - name: type
+        weight: 0.1
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - meeting
+            - holidays
+            - unspecified
+            - all
+            objectValues: null
+      - name: order
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomInputValue
+          genParameters:
+          - name: values
+            values:
+            - date+
+            - date
+            - date-
+            - creator+
+            - creator
+            - creator-
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+    - operationId: updateEvent
+      method: put
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 20
+            objectValues: null
+      - name: event
+        weight: null
+        generators:
+        - valid: true
+          type: ObjectPerturbator
+          genParameters:
+          - name: stringObject
+            values:
+            - '{"id_creator":2,"name":"Random event","description":"This is
+              a completely random event","name_creator":"Sergio","date_start":"2020-07-15T12:00:00.000-01:00","date_end":"2020-07-15T16:00:00.000-01:00","tags":"food,music","latitude":1.1,"longitude":2.2,"type":"meeting"}'
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+    - operationId: createEvent
+      method: post
+      testParameters:
+      - name: event
+        weight: null
+        generators:
+        - valid: true
+          type: ObjectPerturbator
+          genParameters:
+          - name: stringObject
+            values:
+            - '{"id_creator":2,"name":"Random event","description":"This is
+              a completely random event","name_creator":"Sergio","date_start":"2020-07-15T12:00:00.000-01:00","date_end":"2020-07-15T16:00:00.000-01:00","tags":"food,music","latitude":1.1,"longitude":2.2,"type":"meeting"}'
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /events/{id}
+    operations:
+    - operationId: getEvent
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 15
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200

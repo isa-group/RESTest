@@ -1,0 +1,148 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Deutschebahn/headers.json
+testConfiguration:
+  operations:
+    - testPath: /stations
+      operationId: getStations
+      method: get
+      testParameters:
+        - name: offset
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 0
+                  objectValues: null
+                - name: max
+                  values:
+                    - 1000
+                  objectValues: null
+              valid: true
+        - name: limit
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - int64
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 10000
+                  objectValues: null
+              valid: true
+        - name: searchstring
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomRegExp
+              genParameters:
+                - name: regExp
+                  values:
+                    - (\*?(berlin|hamburg|munich|cologne|frankfurt|stuttgart|dusseldorf|dortmund|essen|leipzig)\*?,){0,3}\*?(berlin|hamburg|munich|cologne|frankfurt|stuttgart|dusseldorf|dortmund|essen|leipzig)\*?
+                  objectValues: null
+              valid: true
+        - name: category
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                    - 6
+                    - 7
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                  objectValues: null
+                - name: maxValues
+                  values:
+                    - 7
+                  objectValues: null
+              valid: true
+        - name: federalstate
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - src/test/resources/Deutschebahn/federalState.csv
+                  objectValues: null
+              valid: true
+        - name: eva
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - 1
+                    - 2
+                    - 3
+                    - 4
+                    - 5
+                    - 6
+                    - 7
+                    - 8
+                    - 9
+                  objectValues: null
+              valid: true
+        - name: ril
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - BOSS
+                    - BAS
+                    - BAF
+                    - BALE
+                    - BAGL
+                    - BATS
+                    - BHF
+                    - BJLB
+                  objectValues: null
+              valid: true
+        - name: logicaloperator
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - and
+                    - or
+                  objectValues: null
+              valid: true
+      expectedResponse: 200

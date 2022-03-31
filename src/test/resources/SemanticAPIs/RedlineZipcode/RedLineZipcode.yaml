@@ -1,0 +1,225 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: 'The Zip Code API provides the following functions: Distance Between
+    Zip Code API - The API allows you to quickly and easily figure out the distance
+    between zip codes.Zip Codes in Radius API - You can use this API to find all zip
+    codes within a given radius from another zip code.Zip Code to City and State API
+    and Zip Code to Latitude/Longitude API - The API can convert a zip code to the
+    primary location for the zip code. This includes the city, state, latitude, and
+    longitude for the primary location.City to Zip Code - This API looks up the Zip
+    Code based on the City and State.'
+  title: RedLine Zipcode
+  version: '1.0'
+schemes:
+- https
+swagger: '2.0'
+paths:
+  /rest/city-zips.json/{city}/{state}:
+    get:
+      description: Returns zip codes for a given city.
+      operationId: operations-Location_Info-Location_to_Zip_Code
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - redline-redline-zipcode.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: State
+        in: path
+        name: state
+        required: true
+        type: string
+      - description: City
+        in: path
+        name: city
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /rest/distance.json/{zipcode1}/{zipcode2}/{units}:
+    get:
+      description: Determine the distance between two zip codes.
+      operationId: operations-Distance-Distance_Between_Zip_Codes
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - redline-redline-zipcode.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Distance units: mile or km'
+        in: path
+        name: units
+        required: true
+        type: string
+      - description: Second zip code
+        in: path
+        name: zipcode2
+        required: true
+        type: number
+      - description: First zip code
+        in: path
+        name: zipcode1
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /rest/info.json/{zipcode}/{units}:
+    get:
+      description: Returns location information for a zip code.  This information
+        includes city, state, latitude, longitude, and time zone information.  It
+        also contains a list of other acceptable city names for the location.
+      operationId: operations-Location_Info-Zip_Code_to_Location_Information
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - redline-redline-zipcode.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Units: degrees or radians'
+        in: path
+        name: units
+        required: true
+        type: string
+      - description: Zipcode
+        in: path
+        name: zipcode
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /rest/multi-info.json/{zipcodes}/{units}:
+    get:
+      description: 'Returns location information for multiple zip codes. This information includes city, state, latitude, longitude, and time zone information. It also contains a list of other acceptable city names for the locations. Each zip code provided will count as a separate request. For example, if you send 5 zip codes, you will be charged for 5 requests.'
+      operationId: operations-default-Multiple_Zip_Codes_to_Location_Information
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - redline-redline-zipcode.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: 'Units: degrees or radians'
+        in: path
+        name: units
+        required: true
+        type: string
+      - description: 'Zip Codes (Comma separated) - 100 Max'
+        in: path
+        name: zipcodes
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /rest/radius.json/{zipcode}/{radius}/{units}:
+    get:
+      description: Returns all zip codes within a radius of the given zip code.
+      operationId: operations-Distance-Zip_Codes_within_Radius
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - redline-redline-zipcode.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: Radius (in appropriate units)
+        in: path
+        name: radius
+        required: true
+        type: number
+      - description: 'Distance units: mile or km'
+        in: path
+        name: units
+        required: true
+        type: string
+      - description: Zipcode
+        in: path
+        name: zipcode
+        required: true
+        type: number
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /rest/state-zips.json/{state}:
+    get:
+      description: Get all zip codes for a state.  Each 10 zip codes returns are charged
+        as separate request. For example, if the state you select returns 200 zip
+        codes, you will be charged for 20 requests.
+      operationId: operations-Location_Info-State_to_Zip_Codes
+      parameters:
+      - description: X-RapidAPI-Host
+        enum:
+        - redline-redline-zipcode.p.rapidapi.com
+        in: header
+        name: X-RapidAPI-Host
+        required: true
+        type: string
+      - description: State Abbreviation (e.g. RI)
+        in: path
+        name: state
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+  /rest/multi-radius.json/{distance}/{units}:
+    post:
+      description: Use this API to find all zip codes within a given radius of multiple zip codes. Each line is charged as a separate request.
+      operationId: multiple-zip-codes-by-radius
+      parameters:
+        - description: X-RapidAPI-Host
+          enum:
+            - redline-redline-zipcode.p.rapidapi.com
+          in: header
+          name: X-RapidAPI-Host
+          required: true
+          type: string
+        - description: 'Distance units: mile or km'
+          in: path
+          name: units
+          required: true
+          type: string
+        - description: Radius (In appropiate units)
+          in: path
+          name: distance
+          required: true
+          type: number
+        - description: Zip codes (one per line; max 100). You may only send one of zip_codes or addrs.
+          in: query
+          name: zip_codes
+          required: false
+          type: string
+        - description: "Addresses (one per line; max 100). E.g. '123 Main St. Moorestown NJ 08057'. Each line is charged as a separate request."
+          in: query
+          name: addrs
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error

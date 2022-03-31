@@ -1,0 +1,223 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: Sample/headers.json
+testConfiguration:
+  operations:
+  - operationId: PostProducts
+    testPath: /v1/products
+    method: post
+    testParameters:
+    - name: active
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomBoolean
+        genParameters: []
+    - name: attributes[]
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomString
+        genParameters:
+          - name: minLength
+            values:
+              - 5
+          - name: maxLength
+            values:
+              - 20
+          - name: includeNumbers
+            values:
+              - false
+    - name: caption
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: deactivate_on[]
+      in: formData
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: description
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: expand[]
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - package_dimensions
+          objectValues: null
+    - name: id
+      in: formData
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomString
+        genParameters:
+        - name: minLength
+          values:
+          - 15
+        - name: maxLength
+          values:
+          - 20
+        - name: includeNumbers
+          values:
+          - true
+    - name: images[]
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: name
+      in: formData
+      weight: null
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: package_dimensions[height]
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+          - name: regExp
+            values:
+              - ([0-9]|[1-9]\d)(\.\d\d?)?
+    - name: package_dimensions[length]
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+          - name: regExp
+            values:
+              - ([0-9]|[1-9]\d)(\.\d\d?)?
+    - name: package_dimensions[weight]
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+          - name: regExp
+            values:
+              - ([0-9]|[1-9]\d)(\.\d\d?)?
+    - name: package_dimensions[width]
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+          - name: regExp
+            values:
+              - ([0-9]|[1-9]\d)(\.\d\d?)?
+    - name: shippable
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomBoolean
+        genParameters: []
+    - name: statement_descriptor
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomString
+        genParameters:
+          - name: minLength
+            values:
+              - 5
+          - name: maxLength
+            values:
+              - 20
+          - name: includeNumbers
+            values:
+              - false
+    - name: type
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - good
+          - service
+          objectValues: null
+    - name: unit_label
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomString
+        genParameters:
+        - name: minLength
+          values:
+            - 1
+        - name: maxLength
+          values:
+            - 12
+        - name: includeNumbers
+          values:
+            - true
+        - name: includeAlphabetic
+          values:
+            - false
+    - name: url
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null

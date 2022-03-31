@@ -1,0 +1,34 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /sampleEndpoint
+    operationId: sampleEndpoint
+    method: get
+    testParameters:
+    - name: currency
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/sampleSemanticAPI/sampleEndpoint_currency.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/currencyCode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200

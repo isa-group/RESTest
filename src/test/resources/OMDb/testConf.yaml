@@ -1,0 +1,132 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: OMDb/apikeys.json
+testConfiguration:
+  operations:
+  - testPath: /
+    operationId: search
+    method: get
+    testParameters:
+    - name: t
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: i
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+        - name: regExp
+          values:
+          - tt(([0-1][0-9])|(2[0-3]))\d\d\d\d\d
+          objectValues: null
+    - name: s
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: page
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+    - name: y
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1950
+          objectValues: null
+        - name: max
+          values:
+          - 2021
+          objectValues: null
+    - name: type
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - movie
+          - series
+          - episode
+          objectValues: null
+    - name: plot
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - short
+          - full
+          objectValues: null
+    - name: r
+      in: query
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - json
+          - xml
+          objectValues: null
+    - name: callback
+      in: query
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    expectedResponse: 200

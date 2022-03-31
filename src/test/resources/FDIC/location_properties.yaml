@@ -1,0 +1,408 @@
+type: object
+properties:
+  data:
+    type: object
+    properties:
+      # LOCN_PHY_CNTY_NUM:
+      #   type: number
+      #   title: TBD
+      #   description: TBD
+      #   x-source-mapping:
+      #     - file: VINST_FIN_CUR_SDC
+      #       field: LOCN_PHY_CNTY_NUM
+      #     - file: VINST_BR_CUR_SDC
+      #       field: LOCN_CNTY_NUM
+      # LOCN_PHY_ST_NUM:
+      #   type: number
+      #   title: TBD
+      #   description: A unique number identifying the state in which a physical address is located.  This number is provided by the Federal Information Processing System (FIPS).
+      #   x-source-mapping:
+      #     - file: VINST_FIN_CUR_SDC
+      #       field: LOCN_PHY_ST_NUM   
+      #     - file: VINST_BR_CUR_SDC
+      #       field: LOCN_ST_NUM
+      # ESTYMD_RAW:
+      #   type: string
+      #   format: date-time
+      #   title: TBD
+      #   description: TBD
+      #   x-source-mapping:
+      #     - file: VINST_FIN_CUR_SDC
+      #       field: INST_FIN_ESTB_DTE
+      #     - file: VINST_BR_CUR_SDC
+      #       field: INST_BR_ESTB_DTE
+      # ZIP_RAW:
+      #   type: string
+      #   title: 5-Digit Zip Code
+      #   description: The postal code (e.g. ZIP Code for the U.S.) associated with the physical address of the institution's main office.
+      #   x-source-mapping:
+      #     - file: VINST_FIN_CUR_SDC 
+      #       field: LOCN_PHY_POST_CDE
+      #     - file: VINST_BR_CUR_SDC
+      #       field: LOCN_POST_CDE
+      ADDRESS:
+        type: string
+        title: Street Address
+        description: The street address in which an institution or branch office is physically located.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC 
+            field: LOCN_PHY_LNE1_TXT
+          - file: VINST_BR_CUR_SDC
+            field: LOCN_ADDR_LNE1_TXT
+      BKCLASS:
+        type: string
+        title: Institution Class
+        description: >-
+          A classification code assigned by the FDIC based on the institution's charter type (commercial bank or savings institution), charter agent (state or federal), Federal Reserve membership status (Fed member, Fed non-member) and its primary federal regulator (state chartered institutions are subject to both federal and state supervision). N - Commercial bank, national (federal) charter, Fed member, and supervised by the Office of the Comptroller of the Currency (OCC); NM - Commercial bank, state charter, Fed non-member, and supervised by the Federal Deposit Insurance Corporation (FDIC); OI - Insured U.S. branch of a foreign chartered institution (IBA) and supervised by the OCC or FDIC; SB – Federal savings banks, federal charter, supervised by the OCC or before July 21,2011 the Office of Thrift Supervision (OTS); SI - State chartered stock savings banks, supervised by the FDIC; SL - State chartered stock savings and loan associations, supervised by the FDIC or before July 21,2011 the OTS; SM - Commercial bank, state charter, Fed member, and supervised by the Federal Reserve Bank (FRB); NC – Noninsured non-deposit commercial banks and/or trust companies regulated by the OCC, a state, or a territory; NS - Noninsured stock savings bank supervised by a state or territory; CU - state or federally chartered credit unions supervised by the National Credit Union Association (NCUA).
+        enum:
+          - 'N'
+          - NM
+          - OI
+          - SA
+          - SB
+          - SM
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: INST_CLASS_CDE
+          - file: VINST_BR_CUR_SDC
+            field: INST_CLASS_CDE
+      CBSA:
+        type: string
+        title: Core Based Statistical Area Name
+        description: Name of the Core Based Statistical Area (CBSA) as defined by the US Census Bureau Office of Management and Budget.
+        x-source-mapping:
+          - file: RELATION
+            field: CBSANAME
+      CBSA_DIV:
+        type: string
+        title: Metropolitan Divisions Name
+        description: Name of the Core Based Statistical Division as defined by the US Census Bureau Office of Management and Budget.
+        x-source-mapping:
+          - file: RELATION
+            field: CBSA_DIV_NAME
+      CBSA_DIV_FLG:
+        type: string
+        title: Metropolitan Divisions Flag
+        description: >-
+          A flag (1=Yes) indicating member of a Core Based Statistical Division as defined by the US Census Bureau Office of Management and Budget.
+        enum:
+          - 0
+          - 1
+        x-source-mapping:
+          - file: RELATION
+            field: DIVISION_FLAG
+      CBSA_DIV_NO:
+        type: string
+        title: Metropolitan Divisions Number
+        description: Numeric code of the Core Based Statistical Division as defined by the US Census Bureau Office of Management and Budget.
+        x-source-mapping:
+          - file: RELATION
+            field: CBSA_DIVISION
+      CBSA_METRO:
+        type: string
+        title: Metropolitan Division Number
+        description: Numeric code of the Metropolitan Statistical Area as defined by the US Census Bureau Office of Management and Budget
+        x-source-mapping:
+          - formula:
+              type: raw
+              parameters:
+                script: |
+                  if(ctx.CBSA_METRO_FLG == "1") {
+                    ctx.CBSA_METRO = ctx.CBSA_NO;
+                  } else {
+                    ctx.CBSA_METRO = 0;
+                  }      
+      CBSA_METRO_FLG:
+        type: string
+        title: Metropolitan Division Flag
+        description: >-
+          A flag (1=Yes) used to indicate whether an branch is in a Metropolitan Statistical Area as defined by the US Census Bureau Office of Management and Budget
+        x-source-mapping:
+          - file: RELATION
+            field: METRO_FLAG
+      CBSA_METRO_NAME:
+        type: string
+        title: Metropolitan Division Name
+        description: Name of the Metropolitan Statistical Area as defined by the US Census Bureau Office of Management and Budget
+        x-source-mapping:
+          - formula:
+              type: raw
+              parameters:
+                script: |
+                  if(ctx.CBSA_METRO_FLG == "1") {
+                    ctx.CBSA_METRO_NAME = ctx.CBSA;
+                  } else {
+                    ctx.CBSA_METRO_NAME = 0;
+                  }
+      CBSA_MICRO_FLG:
+        type: string
+        title: Micropolitan Division Flag
+        description: >-
+          A flag (1=Yes) used to indicate whether an branch is in a Metropolitan Statistical Area as defined by the US Census Bureau Office of Management and Budget
+        enum:
+          - 0
+          - 1
+        x-source-mapping:
+          - file: RELATION
+            field: MICRO_FLAG
+      CBSA_NO:
+        type: string
+        title: Core Based Statistical Areas
+        description: Numeric code of the Core Based Statistical Area (CBSA) as defined by the US Census Bureau Office of Management and Budget.
+        x-source-mapping:
+          - file: RELATION
+            field: CBSA
+      CERT:
+        type: string
+        title: 'FDIC Certificate #'
+        description: A unique number assigned by the FDIC used to identify institutions and for the issuance of insurance certificates.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: ORG_CERT_NUM
+          - file: VINST_BR_CUR_SDC
+            field: ORG_CERT_NUM
+      CITY:
+        type: string
+        title: City
+        description: The city in which an institution or branch office is physically located.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: LOCN_PHY_CTY_NME
+          - file: VINST_BR_CUR_SDC
+            field: LOCN_CTY_NME
+      COUNTY:
+        type: string
+        title: County
+        description: The county name in which an institution or branch office is physically located.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: LOCN_PHY_CNTY_NME
+          - file: VINST_BR_CUR_SDC
+            field: LOCN_CNTY_NME
+      CSA:
+        type: string
+        title: Combined Statistical Area Name
+        description: Name of the Combined Statistical Area (CSA) as defined by the US Census Bureau.
+        x-source-mapping:
+          - file: RELATION
+            field: CSANAME
+      CSA_FLG:
+        type: string
+        title: Combined Statistical Area Flag  (Branch)
+        description: Flag (1=Yes) indicating member of a Combined Statistical Area (CSA) as defined by the US Census Bureau Office of Management and Budget
+        enum:
+          - 0
+          - 1
+        x-source-mapping:
+          - file: RELATION
+            field: CSA_FLAG
+      CSA_NO:
+        type: string
+        title: Combined Statistical Area Number  (Branch)
+        description: Numeric code of the Combined Statistical Area (CSA) as defined by the US Census Bureau Office of Management and Budget
+        x-source-mapping:
+          - file: RELATION
+            field: CSA
+      ESTYMD:
+        type: string
+        format: date-time
+        title: Branch Established Date
+        description: The date on which the branch began operations.
+        x-source-mapping:
+          - formula:
+              type: date
+              parameters:
+                inputFormat: "yyyy-MM-dd'T'HH:mm:ss"
+                outputFormat: "MM/dd/yyyy"
+                inputField: ESTYMD_RAW
+                outputField: ESTYMD
+      FI_UNINUM:
+        type: string
+        title: FDIC's unique number
+        description: >-
+          FDIC's unique identifier number for holding companies, banks, branches and nondeposit subsidiaries. This value maps the branch back to the parent financial institution.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: ORG_UNIQ_NUM
+          - file: VINST_BR_CUR_SDC
+            field: FI_ORG_UNIQ_NUM  
+      LATITUDE:
+        type: number
+        title: Location Address Latitude
+        description: The latitude of the physical address.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: LOCN_PHY_LATD_TXT
+          - file: VINST_BR_CUR_SDC
+            field: LOCN_ADDR_LATD_TXT
+      LONGITUDE:
+        type: number
+        title: Location Address Latitude
+        description: The longitude of the physical address.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: LOCN_PHY_LNGT_TXT
+          - file: VINST_BR_CUR_SDC
+            field: LOCN_ADDR_LNGT_TXT 
+      MDI_STATUS_CODE:
+        type: string
+        title: Minority Status Code
+        description: >-
+          A numeric flag used to indicate whether an institution is primarily a minority owned institution.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: DMG_MNRTY_STAT_CDE
+          - file: VINST_BR_CUR_SDC
+            field: DMG_MNRTY_STAT_CDE
+      MDI_STATUS_DESC:
+        type: string
+        title: Minority Status Description
+        description: >-
+          A descriptive flag used to indicate type of minority owned institution.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: DMG_MNRTY_STAT_DSC
+          - file: VINST_BR_CUR_SDC
+            field: DMG_MNRTY_STAT_DSC
+      MAINOFF:
+        type: number
+        title: Main Office
+        description: Flag (1=Yes) indicating this location is the main office for the institution.
+        enum:
+          - 0
+          - 1
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: MAINOFF
+          - file: VINST_BR_CUR_SDC
+            field: MAINOFF
+      NAME:
+        type: string
+        x-elastic-type: keyword
+        title: Institution Name
+        description: The legal title or name of the institution.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: INST_FIN_LGL_NME
+          - file: VINST_BR_CUR_SDC
+            field: INST_FIN_LGL_NME
+      OFFNAME:
+        type: string
+        title: Office Name
+        description: Branch office name.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: INST_FIN_LGL_NME
+          - file: VINST_BR_CUR_SDC
+            field: INST_BR_NME 
+      OFFNUM:
+        type: string
+        title: Branch Number
+        description: An institution's branch office number used internally by FDIC.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: OFFNUM
+          - file: VINST_BR_CUR_SDC
+            field: INST_BR_OFC_NUM
+      RUNDATE:
+        type: string
+        format: date-time
+        title: Run Date
+        description: The day the institution information was updated.
+        x-source-mapping:
+          - formula:
+              type: simpleSetScript
+              parameters:
+                setField: 'RUNDATE'
+                script: 'new SimpleDateFormat("MM/dd/yyyy").format(new Date())'
+      SERVTYPE:
+        type: number
+        title: Service Type Code
+        description: >-
+          Define the various types of offices of FDIC-insured institutions. 11 - Full Service - Brick and Mortar; 12 - Full Service - Retail; 13 - Full Service - Home Banking; 14 - Full Service Mobile Office; 15 - Full Service Home/Phone Banking; 16 - Full Service Seasonal Office; 21 - Limited Service - Administrative; 22 - Limited Service - Military Facility; 23 - Limited Service - Drive Thru/Detached Facility; 24 - Limited Service - Loan Production; 25 - Limited Service - Consumer Credit; 26 - Limited Service - Contractual; 27 - Limited Service - Messenger; 28 - Limited Service - Retail; 29 - Limited Service - Mobile/Seasonal; 30 - Limited Service - Trust; 99 - Limited Service - Other Office/Branch
+        enum:
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 26
+          - 27
+          - 28
+          - 29
+          - 30
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: SERVTYPE
+          - file: VINST_BR_CUR_SDC
+            field: INST_BR_SVC_NUM
+      SERVTYPE_DESC:
+        type: string
+        x-elastic-type: keyword
+        title: Service Type Code Description
+        description: >-
+          Define the various types of offices of FDIC-insured institutions. 11 - Full Service - Brick and Mortar; 12 - Full Service - Retail; 13 - Full Service - Home Banking; 14 - Full Service Mobile Office; 15 - Full Service Home/Phone Banking; 16 - Full Service Seasonal Office; 21 - Limited Service - Administrative; 22 - Limited Service - Military Facility; 23 - Limited Service - Drive Thru/Detached Facility; 24 - Limited Service - Loan Production; 25 - Limited Service - Consumer Credit; 26 - Limited Service - Contractual; 27 - Limited Service - Messenger; 28 - Limited Service - Retail; 29 - Limited Service - Mobile/Seasonal; 30 - Limited Service - Trust; 99 - Limited Service - Other Office/Branch
+        x-source-mapping:
+          - file: VINST_BR_CUR_SDC
+            field: INST_BR_SVC_DESC
+      STALP:
+        type: string
+        title: State Alpha Code
+        description: >-
+          The state abbreviation of the location of the institution's main office.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: LOCN_PHY_ST_ABNME
+          - file: VINST_BR_CUR_SDC
+            field: LOCN_ST_ABBV_NME
+      STCNTY:
+        type: string
+        title: State and County Number
+        description: >-
+          A five digit number representing the state and county in which the institution is physically located.  The first two digits represent the FIPS state numeric code and the last three digits represent the FIPS county numeric code.
+        x-source-mapping:
+          - file: CALCULATED_IN_PIPELINE
+            field: N/A      
+      STNAME:
+        type: string
+        title: Branch State
+        description: >-
+          State in which the  branch is physically located. The FDIC Act defines state as any State of the United States, the District of Columbia, and any territory of the United States, Puerto Rico, Guam, American Samoa, the Trust Territory of the Pacific Islands, the Virgin Island, and the Northern Mariana Islands.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC
+            field: LOCN_PHY_ST_NME
+          - file: VINST_BR_CUR_SDC
+            field: LOCN_ST_NME
+      UNINUM:
+        type: string
+        title: FDIC's Unique Number
+        description: FDIC's unique identifier number for holding companies, banks, branches and nondeposit subsidiaries.
+        x-source-mapping:
+          - file: VINST_FIN_CUR_SDC 
+            field: ORG_UNIQ_NUM
+          - file: VINST_BR_CUR_SDC
+            field: ORG_UNIQ_NUM
+      ZIP:
+        type: string
+        title: Zip Code
+        description: The first three, four, or five digits of the full postal zip code representing physical location of the institution or one of its branch offices.
+        x-source-mapping:
+          - formula:
+              type: raw
+              parameters:
+                script: |
+                  if (ctx.ZIP_RAW != null && ctx.ZIP_RAW?.length() < 5){
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < 5; i++) {
+                      sb.append('0');
+                    }
+                    ctx.ZIP = sb.substring(ctx.ZIP_RAW.length()) + ctx.ZIP_RAW;
+                  } else {
+                    ctx.ZIP = ctx.ZIP_RAW;
+                  }

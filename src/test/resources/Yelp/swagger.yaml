@@ -1,0 +1,271 @@
+openapi: 3.0.0
+info:
+  description: Yelp API
+  version: 1.0.0
+  title: Yelp API
+paths:
+  /businesses/search:
+    get:
+      operationId: getBusinesses
+      summary: Get businesses
+      description: Get businesses
+      parameters:
+        - name: term
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: location
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: latitude
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: longitude
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 40000
+        - name: categories
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: locale
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: sort_by
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - best_match
+              - rating
+              - review_count
+              - distance
+        - name: price
+          in: query
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - 1
+                - 2
+                - 3
+                - 4
+        - name: open_now
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: open_at
+          in: query
+          required: false
+          schema:
+            type: integer
+            maximum: 2147483647
+        - name: attributes
+          in: query
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - hot_and_new
+                - request_a_quote
+                - reservation
+                - waitlist_reservation
+                - deals
+                - gender_neutral_restrooms
+                - open_to_all
+                - wheelchair_accessible
+      x-dependencies:
+        - Or(location, latitude AND longitude);
+        - ZeroOrOne(open_now, open_at);
+        - offset + limit <= 1000;
+        - IF offset AND NOT limit THEN offset <= 980;
+      responses:
+        "200":
+          description: Returns all businesses
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessesResult"
+        "400":
+          description: bad request
+  /transactions/{transaction_type}/search:
+    get:
+      operationId: getTransactions
+      summary: Get transactions
+      description: Get transactions
+      parameters:
+        - name: transaction_type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: location
+          in: query
+          required: false
+          description: "Required when latitude and longitude aren't provided. Address of the location you want to deliver to."
+          schema:
+            type: string
+        - name: latitude
+          in: query
+          required: false
+          description: "Required when latitude and longitude aren't provided. Address of the location you want to deliver to."
+          schema:
+            type: string
+        - name: longitude
+          in: query
+          required: false
+          description: "Required when location isn't provided. Longitude of the location you want to deliver to."
+          schema:
+            type: string
+      x-dependencies:
+        - Or(location, latitude AND longitude);
+      responses:
+        200:
+          description: Returns all businesses
+          content:
+            application/json:
+              schema:
+                $ref: '#/definitions/BusinessesResult'
+        400:
+          description: bad request
+servers:
+  - url: https://api.yelp.com/v3
+components:
+  schemas:
+    BusinessesResult:
+      type: object
+      properties:
+        total:
+          type: integer
+        region:
+          type: object
+          properties:
+            center:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+        businesses:
+          type: array
+          items:
+            type: object
+            properties:
+              categories:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    alias:
+                      type: string
+                    title:
+                      type: string
+              coordinates:
+                type: object
+                properties:
+                  latitude:
+                    type: number
+                  longitude:
+                    type: number
+              display_phone:
+                type: string
+              distance:
+                type: number
+              id:
+                type: string
+              alias:
+                type: string
+              image_url:
+                type: string
+              is_closed:
+                type: boolean
+              name:
+                type: string
+              phone:
+                type: string
+              price:
+                type: string
+                enum:
+                  - $
+                  - $$
+                  - $$$
+                  - $$$$
+              rating:
+                type: number
+                minimum: 1
+                maximum: 5
+              review_count:
+                type: integer
+              url:
+                type: string
+              transactions:
+                type: array
+                items:
+                  type: string
+                  enum:
+                    - pickup
+                    - delivery
+                    - restaurant_reservation
+              location:
+                type: object
+                properties:
+                  address1:
+                    type: string
+                    nullable: true
+                  address2:
+                    type: string
+                    nullable: true
+                  address3:
+                    type: string
+                    nullable: true
+                  city:
+                    type: string
+                  country:
+                    type: string
+                  display_address:
+                    type: array
+                    items:
+                      type: string
+                  state:
+                    type: string
+                  zip_code:
+                    type: string

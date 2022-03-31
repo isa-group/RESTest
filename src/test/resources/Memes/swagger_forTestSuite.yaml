@@ -1,0 +1,221 @@
+---
+swagger: "2.0"
+info:
+  description: This is a simple Gallery API
+  version: 1.0.0
+  title: Gallery API
+host: localhost:8083
+basePath: /MemesAPI/api
+tags:
+  - name: MemeID
+    description: Meme's memes
+schemes:
+  - http
+paths:
+  /gallery:
+    get:
+      tags:
+        - MemeID
+      summary: searches memes
+      description: |
+        The API returns all the system memes
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - name: reverse
+          type: boolean
+          in: query
+          required: false
+          description: order results by rarity or not
+        - name: upperlimit
+          type: integer
+          in: query
+          required: false
+          description: filter memes with this rarity as maximum
+        - name: lowerlimit
+          type: integer
+          in: query
+          required: false
+          description: filter memes with this rarity as minimum
+        - name: category
+          type: string
+          in: query
+          required: false
+          description: filter memes with this category
+          enum:
+            - Sport
+            - Food
+            - Social
+            - Undefined
+            - All
+      x-dependencies:
+        - lowerlimit < upperlimit;
+      responses:
+        "200":
+          description: search results
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MemeID'
+        "400":
+          description: bad input parameter
+    post:
+      tags:
+        - MemeID
+      summary: adds a meme meme to the system
+      description: Adds a meme meme to the system
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - in: query
+          name: urlString
+          description: meme meme image url
+          required: true
+          type: string
+      responses:
+        "200":
+          description: MemeID created
+          schema:
+            $ref: '#/definitions/MemeID'
+        "400":
+          description: Invalid input (URL)
+    put:
+      tags:
+        - MemeID
+      summary: edit a meme meme to the system
+      description: Edit a meme meme to the system
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - name: id
+          in: query
+          required: true
+          type: string
+          description: id of the meme to change
+        - in: query
+          name: rarity
+          description: rarity of the meme
+          required: true
+          type: number
+          format: double
+      responses:
+        "200":
+          description: MemeID edited correctly
+          schema:
+            $ref: '#/definitions/MemeID'
+        "400":
+          description: invalid input, object invalid
+        "404":
+          description: Meme not found
+  /gallery/{id}:
+    get:
+      tags:
+        - MemeID
+      summary: search a meme
+      description: |
+        The API returns a meme by an id
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          description: id of the meme
+      responses:
+        "200":
+          description: search results
+          schema:
+            $ref: '#/definitions/MemeID'
+        "400":
+          description: bad input parameter
+        "404":
+          description: Meme not found
+    delete:
+      tags:
+        - MemeID
+      summary: search a meme
+      description: |
+        The API returns a meme by an id
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          description: id of the meme
+      responses:
+        "204":
+          description: no content
+        "400":
+          description: bad input parameter
+        "404":
+          description: Meme not found
+  /meme/rarity:
+    post:
+      tags:
+        - MemeID
+      summary: adds a meme (but does not save it to memory)
+      description: adds a meme (but does not save it to memory)
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - in: query
+          name: urlString
+          description: meme meme image url
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Ok
+        "400":
+          description: Invalid input (URL)
+definitions:
+  MemeID:
+    type: object
+    required:
+      - id
+      - meme
+    properties:
+      id:
+        type: string
+        example: KkuizZDRVu2bmV8nOGO
+      meme:
+        $ref: '#/definitions/Meme'
+  Meme:
+    required:
+      - date
+      - rarity
+      - url
+      - category
+    properties:
+      url:
+        type: string
+        format: url
+        example: "http://i.imgur.com/2iiyA0K.jpg"
+      rarity:
+        type: number
+        example: 5.0
+      date:
+        type: string
+        example: "2017/05/24 13:53:35"
+      category:
+        type: string
+        enum:
+          - Sport
+          - Food
+          - Social
+          - Undefined
+        example: Sport
+    example:
+      - url: "http://i.imgur.com/2iiyA0K.jpg"
+        rarity: 5.0
+        date: "2017/05/24 13:53:35"
+        category: Sport

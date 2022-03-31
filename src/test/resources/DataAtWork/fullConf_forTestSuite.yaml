@@ -1,0 +1,338 @@
+---
+auth:
+  required: true
+  queryParams: []
+  headerParams: []
+testConfiguration:
+  testPaths:
+  - testPath: /jobs
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: offset
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: limit
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /jobs/autocomplete
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: begins_with
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: contains
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: ends_with
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /jobs/normalize
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: job_title
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: limit
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /jobs/unusual_titles
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters: []
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /jobs/{id}
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: fips
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /jobs/{id}/related_jobs
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /jobs/{id}/related_skills
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /skills
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: offset
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      - name: limit
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomNumber
+          genParameters:
+          - name: type
+            values:
+            - integer
+            objectValues: null
+          - name: min
+            values:
+            - 1
+            objectValues: null
+          - name: max
+            values:
+            - 100
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /skills/autocomplete
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: begins_with
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: contains
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      - name: ends_with
+        weight: 0.5
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /skills/normalize
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: skill_name
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /skills/{id}
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /skills/{id}/related_jobs
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200
+  - testPath: /skills/{id}/related_skills
+    operations:
+    - operationId: <SET OPERATION ID>
+      method: get
+      testParameters:
+      - name: id
+        weight: null
+        generators:
+        - valid: true
+          type: RandomEnglishWord
+          genParameters:
+          - name: maxWords
+            values:
+            - 1
+            objectValues: null
+      paramDependencies: null
+      expectedResponse: 200

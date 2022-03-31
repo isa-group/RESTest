@@ -1,0 +1,115 @@
+testConf:
+  paths:
+    /hotels:
+      operations:
+        get:
+          operationId: getHotels
+          parameters:
+            - name: maxPricePerNight
+              generators: # each parameter can be generated with several different generators
+                - id: 1
+                  type: RandomInputValue
+                  genParameters:
+                    - name: csv
+                      values:
+                        - src/main/resources/TestData/HotelPrices.csv
+                - id: 2
+                  type: RandomNumber
+                  genParameters:
+                    - name: type
+                      values:
+                        - integer
+                    - name: min
+                      values:
+                        - 0
+                    - name: max
+                      values:
+                        - 1000
+            - name: name
+              generators:
+                - id: 1
+                  type: RandomEnglishWord
+                  genParameters:
+                    - name: minWords
+                      values:
+                        - 1
+                    - name: maxWords
+                      values:
+                        - 3
+                - id: 2
+                  type: RandomString
+                  genParameters:
+                    - name: minChar
+                      values:
+                        - 2
+                    - name: maxChar
+                      values:
+                        - 4
+            - name: id
+              generators:
+                - id: 1
+                  type: RandomNumber
+                  genParameters:
+                    - name: type
+                      values:
+                        - integer
+                    - name: min
+                      values:
+                        - 0
+                    - name: max
+                      values:
+                        - 1000000
+          parameterDependencies:
+            - param1: name
+              param2: id
+              type: exclusive
+            - param1: maxPricePerNight
+              param2: id
+              type: exclusive
+          responses:
+            - 200
+            - 400
+        post:
+          operationId: postHotel
+          parameters:
+            - name: name
+              generators:
+                - id: 1
+                type: RandomEnglishWord
+                genParameters:
+                  - name: minWords
+                    values:
+                      - 1
+                  - name: maxWords
+                    values:
+                      - 3
+                - id: 2
+                type: RandomString
+                genParameters:
+                  - name: minChar
+                    values:
+                      - 2
+                  - name: maxChar
+                    values:
+                      - 4
+          responses:
+            - 201
+            - 400
+  testCases:                    # array of test cases. Each element is an object
+    - 1:                        # the key represents the order of the API request in the whole test case
+        operation: getHotels
+        parameters:
+          maxPricePerNight: 1   # the number references the generator id
+          name: 1
+        expectedResponse: 200
+    - 1:                        # another test case
+        operation: postHotel
+        parameters:
+          name: 2
+        expectedResponse: 201
+      2:                        # this test case is composed of two API requests (a POST and a GET)
+        operation: getHotels
+        parameters:
+          maxPricePerNight: 2
+          name: 1
+        expectedResponse: 200

@@ -1,0 +1,26 @@
+basePath: /
+host: rapidapi.p.rapidapi.com
+info:
+  description: "Sample Semantic API"
+  title: sampleSemanticAPI
+  version: "1"
+schemes:
+  - https
+swagger: '2.0'
+paths:
+  /sampleEndpoint:
+    get:
+      description: This is a sample endpoint.
+      operationId: sampleEndpoint
+      parameters:
+        - description: 'Currency code'
+          in: query
+          name: currency
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+        default:
+          description: Unexpected error
+      summary: ''

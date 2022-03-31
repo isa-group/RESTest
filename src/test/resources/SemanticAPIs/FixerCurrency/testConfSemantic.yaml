@@ -1,0 +1,204 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /convert
+    operationId: operations-default-Convert
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - fixer-fixer-currency-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: date
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: amount
+      in: query
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: to
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Fixer Currency/operations-default-Convert_to.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/currencyCode
+          objectValues: null
+        valid: true
+    - name: from
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Fixer Currency/operations-default-Convert_from.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/currencyCode
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /latest
+    operationId: operations-default-Latest_Rates
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - fixer-fixer-currency-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: symbols
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Fixer Currency/operations-default-Latest_Rates_symbols.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/currencyCode
+          objectValues: null
+        valid: true
+    - name: base
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Fixer Currency/operations-default-Latest_Rates_base.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/currencyCode
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /symbols
+    operationId: operations-default-Supported_Symbols
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - fixer-fixer-currency-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/{date}"
+    operationId: operations-default-Historical_Rates
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - fixer-fixer-currency-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: symbols
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Fixer Currency/operations-default-Historical_Rates_symbols.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/currencyCode
+          objectValues: null
+        valid: true
+    - name: base
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/Fixer Currency/operations-default-Historical_Rates_base.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/currencyCode
+          objectValues: null
+        valid: true
+    - name: date
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200

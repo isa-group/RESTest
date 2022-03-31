@@ -1,0 +1,277 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: DHL/headers.json
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /find-by-address
+    operationId: findByAddress
+    method: get
+    testParameters:
+    - name: countryCode
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_art_semantic/DHL
+            Location Finder API/findByAddress_countryCode.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/ontology/countryCode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: addressLocality
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_art_semantic/DHL
+            Location Finder API/findByAddress_addressLocality.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/locality
+          - http://dbpedia.org/property/address
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: postalCode
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_art_semantic/DHL
+            Location Finder API/findByAddress_postalCode.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/postalcode
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: streetAddress
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_art_semantic/DHL
+            Location Finder API/findByAddress_streetAddress.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/streetAddress
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: providerType
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - express
+          - parcel
+          objectValues: null
+        valid: true
+    - name: locationType
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - servicepoint
+          - locker
+          - postoffice
+          - postbank
+          objectValues: null
+        valid: true
+    - name: serviceType
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - parcel:pick-up
+          - parcel:drop-off
+          - express:pick-up
+          - express:drop-off
+          - parcel:pick-up-registered
+          - parcel:pick-up-unregistered
+          - parcel:drop-off-unregistered
+          - letter-service
+          - postbank
+          - cash-on-delivery
+          - franking
+          - cash-service
+          - packaging-material
+          - postident
+          - age-verification
+          - handicapped-access
+          - parking
+          objectValues: null
+        valid: true
+    - name: radius
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 25000
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /find-by-address2
+    operationId: findByAddress2
+    method: get
+    testParameters: null
+  - testPath: /find-by-address3
+    operationId: findByAddress3
+    method: get
+    testParameters: []
+  - testPath: /find-by-address4
+    operationId: findByAddress4
+    method: get
+    testParameters:
+      - name: streetAddress
+        in: query
+        weight: 0.5
+        generators:
+          - type: RandomInputValue
+            genParameters:
+              - name: csv
+                values:
+                  - src/test/resources/taas_eval/DHL_LocationFindByAddress/r_art_semantic/DHL
+                    Location Finder API/findByAddress_streetAddress.csv
+                objectValues: null
+              - name: predicates
+                values:
+                  - http://dbpedia.org/property/streetAddress
+                objectValues: null
+              - name: numberOfTriesToGenerateRegex
+                values:
+                  - 0
+                objectValues: null
+            valid: true
+      - name: providerType
+        in: query
+        weight: 0.5
+        generators:
+          - type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - express
+                  - parcel
+                objectValues: null
+            valid: true
+  - testPath: /find-by-address5
+    operationId: findByAddress5
+    method: get
+    testParameters:
+      - name: providerType
+        in: query
+        weight: 0.5
+        generators:
+          - type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - express
+                  - parcel
+                objectValues: null
+            valid: true
+      - name: streetAddress
+        in: query
+        weight: 0.5
+        generators:
+          - type: ParameterGenerator
+            genParameters: []
+            valid: true
+  - testPath: /find-by-address6
+    operationId: findByAddress6
+    method: post
+    testParameters:
+      - name: providerType
+        in: query
+        weight: 0.5
+        generators:
+          - type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - express
+                  - parcel
+                objectValues: null
+            valid: true
+      - name: streetAddress
+        in: body
+        weight: null
+        generators:
+          - type: BodyGenerator
+            genParameters: []
+            valid: true

@@ -1,0 +1,186 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /weather/forecast/hourly
+    operationId: apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - climacell-microweather-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: end_time
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: lat
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/climaCell/apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4_lat.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/lat
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: unit_system
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - si
+          - us
+          objectValues: null
+        valid: true
+    - name: lon
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/climaCell/apiendpoint_8e382cbc-04a4-4d79-8054-e7f77f5b39d4_lon.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/lon
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /weather/nowcast
+    operationId: apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491
+    method: get
+    testParameters:
+    - name: X-RapidAPI-Host
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - climacell-microweather-v1.p.rapidapi.com
+          objectValues: null
+        valid: true
+    - name: lat
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/climaCell/apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491_lat.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/lat
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: lon
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/Generated/climaCell/apiendpoint_1788f7e5-2a1e-4683-9b84-c434b9a52491_lon.csv
+          objectValues: null
+        - name: predicates
+          values:
+          - http://dbpedia.org/property/lon
+          objectValues: null
+        - name: numberOfTriesToGenerateRegex
+          values:
+          - 0
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: end_time
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: unit_system
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - ' si'
+          - us
+          objectValues: null
+        valid: true
+    expectedResponse: 200

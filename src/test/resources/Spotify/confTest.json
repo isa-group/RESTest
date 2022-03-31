@@ -1,0 +1,114 @@
+{
+  "auth" : {
+    "required" : true,
+    "headerParams" : [ 
+	    {
+	    	"name": "Authorization",
+	    	"value": "Bearer BQDD7a8YrMuRD5HaveKTKt6KgQ2FMKnwvWyTHBldCmTT9zll3RYSYIadFxAzVvCVo8XFtXO4ryphexjx2_tk8TE3_arjeVHJUlcShMXybqYJFGDWYPbEgSMYpucKXGe8HGM3v0DNoNdY"
+	    }
+    ]
+  },
+  "testConfiguration" : {
+    "testPaths" : [ {
+      "testPath" : "/albums",
+      "operations" : [{
+        "operationId" : "GetAlbums",
+        "method": "get",
+        "testParameters" : [ {
+          "name" : "ids",
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ 
+	              "4PgleR09JVnm3zY1fW3XBA", 
+	              "58ufpQsJ1DS5kq4hhzQDiI",
+	              "6J84szYCnMfzEcvIcfWMFL",
+	              "4YzNjecIvmLFEby13NOBmj",
+	              "21GSy4UKShEpEfrojAEK9U",
+	              "4phGZZrJZRo4ElhRtViYdl",
+	              "0swM8EuQkgYV2knrZ8rFl2" 
+	              ]
+            } ]
+          }
+        }, {
+          "name" : "market",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : ["AD", "AR", "AT", "AU", "BE", "BG", "BO", "BR", "CA", "CH", "CL", "CO", "CR", "CY", "CZ", "DE", "DK", "DO", "EC", "EE", "ES", "FI", "FR", "GB", "GR", "GT", "HK", "HN", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MC", "MT", "MX", "MY", "NI", "NL", "NO", "NZ", "PA", "PE", "PH", "PT", "PY", "RO", "SE", "SG", "SI", "SK", "SV", "TW", "UY"]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      }]
+    }, {
+      "testPath" : "/search",
+      "operations" : [ {
+        "operationId" : "Search",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "limit",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomNumber",
+            "genParameters" : [ {
+              "name" : "type",
+              "values" : [ "integer"]
+            }, {
+              "name" : "min",
+              "values" : [ "0"]
+            }, {
+              "name" : "max",
+              "values" : [ "50"]
+            }   ]
+          }
+        }, {
+          "name" : "offset",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomNumber",
+            "genParameters" : [ {
+              "name" : "type",
+              "values" : [ "integer"]
+            }, {
+              "name" : "min",
+              "values" : [ "0"]
+            }, {
+              "name" : "max",
+              "values" : [ "5"]
+            }  ]
+          }
+        }, {
+          "name" : "q",
+          "generator" : {
+            "type" : "RandomEnglishWord",
+            "genParameters" : []
+          }
+        }, {
+          "name" : "type",
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "album", "artist", "track", "playlist", "track,playlist", "album,track", "album,artist", "artist,album,track", "artist,album,track,playlist" ]
+            } ]
+          }
+        }, {
+          "name" : "market",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : ["AD", "AR", "AT", "AU", "BE", "BG", "BO", "BR", "CA", "CH", "CL", "CO", "CR", "CY", "CZ", "DE", "DK", "DO", "EC", "EE", "ES", "FI", "FR", "GB", "GR", "GT", "HK", "HN", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MC", "MT", "MX", "MY", "NI", "NL", "NO", "NZ", "PA", "PE", "PH", "PT", "PY", "RO", "SE", "SG", "SI", "SK", "SV", "TW", "UY"]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    }]
+  }
+}

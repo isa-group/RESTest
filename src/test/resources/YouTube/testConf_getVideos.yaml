@@ -1,0 +1,221 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: YouTube/apikeys.json
+testConfiguration:
+  operations:
+  - testPath: /youtube/v3/videos
+    operationId: youtube.videos.list
+    method: get
+    testParameters:
+    - name: chart
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - mostPopular
+          objectValues: null
+    - name: hl
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - es
+          - en
+          - fr
+          - it
+          - de
+          - pt
+          - no
+          - fi
+          - ja
+    - name: id
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - zZa8PFYtWr4
+          - TUJWx7vo44c
+          - eVIozKR9p50
+          - 7m-NPuXPBqM
+          - yDgLFOxnQ8Y
+          - 9bZkp7q19f0
+          - yuD34tEpRFw
+          - n8I-YVuaSR0
+          - t22flliJLTQ
+          - 5kUu97Vkwj4
+          objectValues: null
+    - name: maxHeight
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 72
+          objectValues: null
+        - name: max
+          values:
+          - 8192
+          objectValues: null
+    - name: maxResults
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+    - name: maxWidth
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 72
+          objectValues: null
+        - name: max
+          values:
+          - 8192
+          objectValues: null
+    - name: myRating
+      in: query
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - dislike
+          - like
+          objectValues: null
+    - name: onBehalfOfContentOwner
+      in: query
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: pageToken
+      in: query
+      weight: 0
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+    - name: part
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: minValues
+          values:
+          - 1
+        - name: maxValues
+          values:
+          - 10
+        - name: values
+          values:
+          - contentDetails
+#            - fileDetails
+          - id
+          - liveStreamingDetails
+          - localizations
+          - player
+#            - processingDetails
+          - recordingDetails
+          - snippet
+          - statistics
+          - status
+#            - suggestions
+          - topicDetails
+          objectValues: null
+    - name: regionCode
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - ES
+          - US
+          - DE
+          - FR
+          - IT
+          - PT
+          - FI
+          - NO
+          - JP
+#          - name: csv
+#            values:
+#            - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+    - name: videoCategoryId
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - 0
+          - 1
+          - 2
+          - 10
+          - 15
+          - 17
+          - 19
+          - 20
+          objectValues: null
+    expectedResponse: 200

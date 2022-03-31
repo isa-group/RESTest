@@ -1,0 +1,434 @@
+---
+auth:
+  required: true
+  queryParams: { }
+  headerParams: { }
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+    - testPath: /pet
+      operationId: updatePet
+      method: put
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"id":1000,"category":{"id":1000000,"name":"category1"},"name":"Toby","photoUrls":["www","xxx"],"tags":[{"id":999,"name":"puppy"},{"id":888,"name":"brown"}]}'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /pet
+      operationId: addPet
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"id":1000,"category":{"id":1000000,"name":"category1"},"name":"Toby","photoUrls":["www","xxx"],"tags":[{"id":999,"name":"puppy"},{"id":888,"name":"brown"}]}'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /pet/findByStatus
+      operationId: findPetsByStatus
+      method: get
+      testParameters:
+        - name: status
+          in: query
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - available
+                  - pending
+                  - sold
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /pet/findByTags
+      operationId: findPetsByTags
+      method: get
+      testParameters:
+        - name: tags
+          in: query
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/pet/{petId}"
+      operationId: getPetById
+      method: get
+      testParameters:
+        - name: petId
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/pet/{petId}"
+      operationId: updatePetWithForm
+      method: post
+      testParameters:
+        - name: petId
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+        - name: name
+          in: formData
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+        - name: status
+          in: formData
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/pet/{petId}"
+      operationId: deletePet
+      method: delete
+      testParameters:
+        - name: api_key
+          in: header
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+        - name: petId
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/pet/{petId}/uploadImage"
+      operationId: uploadFile
+      method: post
+      testParameters:
+        - name: petId
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+        - name: additionalMetadata
+          in: formData
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+        - name: file
+          in: formData
+          weight: 0.5
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - src/test/resources/Petstore/pet.jpg
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /store/inventory
+      operationId: getInventory
+      method: get
+      testParameters: []
+      expectedResponse: 200
+    - testPath: /store/order
+      operationId: placeOrder
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"id":100,"petId":200,"quantity":3,"shipDate":"2018-12-23T15:21:30Z","status":"placed","complete":true}'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/store/order/{orderId}"
+      operationId: getOrderById
+      method: get
+      testParameters:
+        - name: orderId
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 10
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/store/order/{orderId}"
+      operationId: deleteOrder
+      method: delete
+      testParameters:
+        - name: orderId
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomNumber
+            genParameters:
+              - name: type
+                values:
+                  - integer
+                objectValues: null
+              - name: min
+                values:
+                  - 1
+                objectValues: null
+              - name: max
+                values:
+                  - 100
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /user
+      operationId: createUser
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"id":425354,"username":"thfjntn","firstName":"dghrtghewtg","lastName":"dgdgestg","email":"dfsgrthryj","password":"sghrthrth","phone":"hn43643hg4w","userStatus":435}'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /user/createWithArray
+      operationId: createUsersWithArrayInput
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '[{"id":425354,"username":"thfjntn","firstName":"dghrtghewtg","lastName":"dgdgestg","email":"dfsgrthryj","password":"sghrthrth","phone":"hn43643hg4w","userStatus":435}]'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /user/createWithList
+      operationId: createUsersWithListInput
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '[{"id":425354,"username":"thfjntn","firstName":"dghrtghewtg","lastName":"dgdgestg","email":"dfsgrthryj","password":"sghrthrth","phone":"hn43643hg4w","userStatus":435}]'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /user/login
+      operationId: loginUser
+      method: get
+      testParameters:
+        - name: username
+          in: query
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+        - name: password
+          in: query
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /user/logout
+      operationId: logoutUser
+      method: get
+      testParameters: []
+      expectedResponse: 200
+    - testPath: "/user/{username}"
+      operationId: getUserByName
+      method: get
+      testParameters:
+        - name: username
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/user/{username}"
+      operationId: updateUser
+      method: put
+      testParameters:
+        - name: username
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"id":425354,"username":"thfjntn","firstName":"dghrtghewtg","lastName":"dgdgestg","email":"dfsgrthryj","password":"sghrthrth","phone":"hn43643hg4w","userStatus":435}'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/user/{username}"
+      operationId: deleteUser
+      method: delete
+      testParameters:
+        - name: username
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200

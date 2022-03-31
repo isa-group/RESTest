@@ -1,0 +1,452 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+  - testPath: /products
+    operationId: getAllProducts
+    method: get
+    testParameters: []
+    expectedResponse: 200
+  - testPath: "/products/{productName}"
+    operationId: getProductByName
+    method: get
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}"
+    operationId: addProduct
+    method: post
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}"
+    operationId: deleteProductByName
+    method: delete
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/constraints/{constraintId}"
+    operationId: deleteConstraint
+    method: delete
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: constraintId
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int64
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 30
+          objectValues: null
+    expectedResponse: 200
+  - testPath: "/products/{productName}/constraints/requires"
+    operationId: addRequiresConstraintToProduct
+    method: post
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: sourceFeature
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    - name: requiredFeature
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/constraints/excludes"
+    operationId: addExcludesConstraintToProduct
+    method: post
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: sourceFeature
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    - name: excludedFeature
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/configurations/{configurationName}"
+    operationId: getConfigurationWithNameForProduct
+    method: get
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: configurationName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-configurations.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/configurations/{configurationName}"
+    operationId: addConfiguration
+    method: post
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: configurationName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-configurations.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/configurations/{configurationName}"
+    operationId: deleteConfiguration
+    method: delete
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: configurationName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-configurations.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/configurations/{configurationName}/features/{featureName}"
+    operationId: addFeatureToConfiguration
+    method: post
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: configurationName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-configurations.csv
+    - name: featureName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/configurations/{configurationName}/features/{featureName}"
+    operationId: deleteFeature
+    method: delete
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: configurationName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-configurations.csv
+    - name: featureName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/configurations/{configurationName}/features"
+    operationId: getConfigurationActivedFeatures
+    method: get
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: configurationName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-configurations.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/configurations"
+    operationId: getConfigurationsForProduct
+    method: get
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/features"
+    operationId: getFeaturesForProduct
+    method: get
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    expectedResponse: 200
+  - testPath: "/products/{productName}/features/{featureName}"
+    operationId: updateFeatureOfProduct
+    method: put
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: featureName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    - name: description
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomString
+        genParameters: []
+    expectedResponse: 200
+  - testPath: "/products/{productName}/features/{featureName}"
+    operationId: addFeatureToProduct
+    method: post
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: featureName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    - name: description
+      in: formData
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomString
+        genParameters: []
+    expectedResponse: 200
+  - testPath: "/products/{productName}/features/{featureName}"
+    operationId: deleteFeatureOfProduct
+    method: delete
+    testParameters:
+    - name: productName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-products.csv
+    - name: featureName
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+          - name: csv
+            values:
+              - src/main/resources/TestData/features-service-features.csv
+    expectedResponse: 200

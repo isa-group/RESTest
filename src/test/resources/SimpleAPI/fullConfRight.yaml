@@ -1,0 +1,132 @@
+---
+auth:
+  required: false
+testConfiguration:
+  operations:
+  - operationId: search
+    testPath: /search
+    method: get
+    testParameters:
+    - name: query
+      in: query
+      weight: null
+      generators:
+      - valid: true
+        type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+    - name: type
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+            - all
+            - song
+            - artist
+            - album
+            - playlist
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+    expectedResponse: 200
+  - operationId: findArtistById
+    testPath: /artists/{artistId}
+    method: get
+    testParameters:
+    - name: artistId
+      in: path
+      weight: null
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - 0
+        - name: max
+          values:
+          - 1000000000
+    expectedResponse: 200
+  - operationId: getArtists
+    testPath: /artists
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - John
+          - Carlos
+          - Halley
+          - The
+    - name: isAlive
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomBoolean
+        genParameters: []
+    - name: nationality
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/TestData/CountryCodes-ISO-3166-1-alpha-2.csv
+    - name: ageUnder
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - 1
+        - name: max
+          values:
+          - 100
+    - name: ageOver
+      in: query
+      weight: 0.5
+      generators:
+      - valid: true
+        type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+        - name: min
+          values:
+          - 0
+        - name: max
+          values:
+          - 100
+    expectedResponse: 200

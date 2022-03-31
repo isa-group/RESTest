@@ -1,0 +1,36 @@
+{
+  "auth" : {
+    "required" : true,
+    "queryParams" : [ ],
+    "headerParams" : [ ]
+  },
+  "testConfiguration" : {
+    "testPaths" : [ {
+      "testPath" : "/songs/{id}",
+      "operations" : [ {
+        "operationId" : "getSong",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "id",
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "s0", "s1", "s2", "s3", "s4"]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    },
+    {
+      "testPath" : "/songs",
+      "operations" : [ {
+        "operationId" : "getAllSongs",
+        "method" : "get",
+        "testParameters" : [ ],
+        "expectedResponse" : "200"
+      }]
+    }]
+  }
+}

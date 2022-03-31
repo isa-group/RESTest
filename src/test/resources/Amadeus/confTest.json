@@ -1,0 +1,170 @@
+{
+  "auth" : {
+    "required" : true,
+    "queryParams" : [
+    	    {
+	    	"name": "apikey",
+	    	"value": "I2qNUgAGpqAU9WCoVg5CcDElhJgpbGaF"
+	    }
+     ],
+    "headerParams" : [ ]
+  },
+  "testConfiguration" : {
+    "testPaths" : [ {
+      "testPath" : "/hotels/search-airport",
+      "operations" : [ {
+        "operationId" : "HotelAirportSearch",
+        "method" : "get",
+        "testParameters" : [ {
+          "name" : "location",
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/IATACodes.csv"]
+            } ]
+          }
+        }, {
+          "name" : "check_in",
+          "generator" : {
+            "type" : "RandomDate",
+            "genParameters" : [ {
+              "name" : "format",
+              "values" : [ "yyyy-MM-dd" ]
+            }, {
+              "name" : "startDays",
+              "values" : [ "15" ]
+            }, {
+              "name" : "endDays",
+              "values" : [ "30" ]
+            } ]
+          }
+        }, {
+          "name" : "check_out",
+          "generator" : {
+            "type" : "RandomDate",
+              "genParameters" : [ {
+              "name" : "format",
+              "values" : [ "yyyy-MM-dd" ]
+            }, {
+              "name" : "startDays",
+              "values" : [ "31" ]
+            }, {
+              "name" : "endDays",
+              "values" : [ "45" ]
+            } ]
+          }
+        }, {
+          "name" : "radius",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomNumber",
+            "genParameters" : [ {
+              "name" : "type",
+              "values" : [ "integer"]
+            }, {
+              "name" : "min",
+              "values" : [ "5"]
+            }, {
+              "name" : "max",
+              "values" : [ "50"]
+            }   ]
+          }
+        }, {
+          "name" : "lang",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : ["BS", "DE", "EL", "EN", "ES", "FR", "IT", "JA", "KO", "NL", "PT", "ZH"]
+            } ]
+          }
+        }, {
+          "name" : "currency",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : ["AED", "AFN", "AMD", "ARS", "AUD", "BRL", "BWP", "CAD", "CHF", "CNY", "COP", "CZK", "DKK", "EUR", "GBP", "HKD", "IDR", "INR", "JOD", "JPY", "MAD", "MRO", "MXN", "MYR", "NOK", "PHP", "PLN", "QAR", "RUB", "SAR", "SEK", "THB", "TND", "TWD", "UAH", "UNK", "USD", "ZAR", "KWD", "KRW", "BHD", "LTL", "LVL", "TZS", "XPF"]
+            } ]
+          }
+        }, {
+          "name" : "chain",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/HotelChainCodes.csv"]
+            } ]
+          }
+        }, {
+          "name" : "max_rate",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomNumber",
+            "genParameters" : [ {
+              "name" : "type",
+              "values" : [ "integer"]
+            }, {
+              "name" : "min",
+              "values" : [ "150"]
+            }, {
+              "name" : "max",
+              "values" : [ "500"]
+            }   ]
+          }
+        }, {
+          "name" : "number_of_results",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomNumber",
+            "genParameters" : [ {
+              "name" : "type",
+              "values" : [ "integer"]
+            }, {
+              "name" : "min",
+              "values" : [ "10"]
+            }, {
+              "name" : "max",
+              "values" : [ "30"]
+            }   ]
+          }
+        }, {
+          "name" : "all_rooms",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "true", "false" ]
+            } ]
+          }
+        }, {
+          "name" : "show_sold_out",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "values",
+              "values" : [ "true", "false" ]
+            } ]
+          }
+        }, {
+          "name" : "amenity",
+          "weight" : 0.5,
+          "generator" : {
+            "type" : "RandomInputValue",
+            "genParameters" : [ {
+              "name" : "csv",
+              "values" : [ "src/main/resources/TestData/HotelAmenities.csv"]
+            } ]
+          }
+        } ],
+        "expectedResponse" : "200"
+      } ]
+    } ]
+  }
+}

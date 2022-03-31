@@ -1,0 +1,153 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+testConfiguration:
+  operations:
+    - testPath: "/songs/{id}"
+      operationId: getSong
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/songs/{id}"
+      operationId: deleteSong
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /songs
+      operationId: getAllSongs
+      method: get
+      testParameters: null
+      expectedResponse: 200
+    - testPath: /songs
+      operationId: putSong
+      method: put
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
+                             Like Teen Spirit"}'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /songs
+      operationId: postSong
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
+                                          Like Teen Spirit"}'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/lists/{id}"
+      operationId: getList
+      method: get
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: "/lists/{id}"
+      operationId: deleteList
+      method: delete
+      testParameters:
+        - name: id
+          in: path
+          weight: null
+          generators:
+          - valid: true
+            type: RandomEnglishWord
+            genParameters:
+              - name: maxWords
+                values:
+                  - 1
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /lists
+      operationId: getAllLists
+      method: get
+      testParameters: null
+      expectedResponse: 200
+    - testPath: /lists
+      operationId: putList
+      method: put
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"songs":[{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
+                             Like Teen Spirit"},{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
+                             Like Teen Spirit"}],"name":"Smell Like Teen Spirit","description":"Nirvana","id":"d290f1ee-6c54-4b01-90e6-d701748f0851"}'
+                objectValues: null
+      expectedResponse: 200
+    - testPath: /lists
+      operationId: postList
+      method: post
+      testParameters:
+        - name: body
+          in: body
+          weight: null
+          generators:
+          - valid: true
+            type: RandomInputValue
+            genParameters:
+              - name: values
+                values:
+                  - '{"songs":[{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
+                                          Like Teen Spirit"},{"artist":"Nirvana","year":"1991","album":"Nevermind","id":"d290f1ee-6c54-4b01-90e6-d701748f0851","title":"Smell
+                                          Like Teen Spirit"}],"name":"Smell Like Teen Spirit","description":"Nirvana","id":"d290f1ee-6c54-4b01-90e6-d701748f0851"}'
+                objectValues: null
+      expectedResponse: 200
