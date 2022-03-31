@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   maven_test:
     docker:
-      - image: cimg/openjdk:11.0
+      - image: 'cimg/openjdk:11.0@sha256:b50bf132993960b2e515a2baa273297945d3725893c6e345f5fd95a253e5b841'
     steps:
       - checkout
       - run:

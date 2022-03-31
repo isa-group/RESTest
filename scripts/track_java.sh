@@ -24,7 +24,7 @@ while [ true ]; do
     grep -v -w "$(basename "$0")" | grep -v -w grep > $folder/mem_cpu_"$current_date_time".txt
 
   # Save disk info
-  du -sh .. > $folder/disk_"$current_date_time".txt
+  du -sh > $folder/disk_"$current_date_time".txt
   for propsFile in `ls target/allure-results`
   do
     du -sh `find -name $propsFile -type d` >> $folder/disk_"$current_date_time".txt

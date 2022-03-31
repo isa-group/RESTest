@@ -526,5 +526,23 @@ public class DefaultTestConfigurationGeneratorTest {
 		deleteFile(confPath);
 	}
 
+	@Test
+	public void testScoutApiTestConfigurationGeneration() {
+		String specPath="src/test/resources/restest-test-resources/swagger-scout.json";
+		String confPath="src/test/resources/restest-test-resources/testConf-scout_test.yaml";
+		OpenAPISpecification spec = new OpenAPISpecification(specPath);
+
+		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+		TestConfigurationFilter filter = new TestConfigurationFilter();
+		filter.setPath(null);		// null = All paths
+		filter.addAllMethods();
+		filters.add(filter);
+
+		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
+		gen.generate(confPath, filters);
+		assertTrue(checkIfExists(confPath));
+		deleteFile(confPath);
+	}
+
 
 }

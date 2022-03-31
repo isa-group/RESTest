@@ -59,7 +59,7 @@ public class CoverageMeterTest {
         testResults.add(testResult2);
         testResults.add(testResult3);
 
-        covMeter.setTestResults(testResults);
+        covMeter.setTestResults(testResults, testSuite);
     }
 
     @Test

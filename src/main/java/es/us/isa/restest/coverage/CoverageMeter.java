@@ -41,15 +41,15 @@ public class CoverageMeter {
     public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite) {
         this.coverageGatherer = coverageGatherer;
         this.testSuite = testSuite;
-        setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+        setCoveredInputElements(testSuite); // after setting testSuite, update covered input elements from all criteria
     }
 
     public CoverageMeter(CoverageGatherer coverageGatherer, Collection<TestCase> testSuite, Collection<TestResult> testResults) {
         this.coverageGatherer = coverageGatherer;
         this.testSuite = testSuite;
-        setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+        setCoveredInputElements(testSuite); // after setting testSuite, update covered input elements from all criteria
         this.testResults = testResults;
-        setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
+        setCoveredOutputElements(testResults, testSuite); // after setting testResults, update covered output elements from all criteria
     }
 
     public CoverageGatherer getCoverageGatherer() {
@@ -66,12 +66,12 @@ public class CoverageMeter {
 
     public void addTestSuite(Collection<TestCase> testSuite) {
         this.testSuite.addAll(testSuite);
-        setCoveredInputElements();
+        setCoveredInputElements(testSuite);
     }
 
     public void setTestSuite(Collection<TestCase> testSuite) {
         this.testSuite = testSuite;
-        setCoveredInputElements(); // after setting testSuite, update covered input elements from all criteria
+        setCoveredInputElements(testSuite); // after setting testSuite, update covered input elements from all criteria
     }
 
     public void resetCoverage() {
@@ -82,14 +82,14 @@ public class CoverageMeter {
         return this.testResults;
     }
 
-    public void addTestResults(Collection<TestResult> testResults) {
+    public void addTestResults(Collection<TestResult> testResults, Collection<TestCase> testSuite) {
         this.testResults.addAll(testResults);
-        setCoveredOutputElements();
+        setCoveredOutputElements(testResults, testSuite);
     }
 
-    public void setTestResults(Collection<TestResult> testResults) {
+    public void setTestResults(Collection<TestResult> testResults, Collection<TestCase> testSuite) {
         this.testResults = testResults;
-        setCoveredOutputElements(); // after setting testResults, update covered output elements from all criteria
+        setCoveredOutputElements(testResults, testSuite); // after setting testResults, update covered output elements from all criteria
     }
 
     public long getAllTotalElements() {
@@ -229,21 +229,47 @@ public class CoverageMeter {
      * @return A modified CoverageMeter object
      */
     public CoverageMeter getAPosteriorCoverageMeter() {
+        return getAPosteriorCoverageMeter(Integer.MAX_VALUE);
+    }
+
+    public CoverageMeter getAPosteriorCoverageMeter(int maxTestSuiteSize) {
         CoverageMeter aPosterioriCoverageMeter = new CoverageMeter(new CoverageGatherer(coverageGatherer.getSpec()));
 
         if(testResults != null) {
-            List<String> invalidResponseResultsIds = new ArrayList<>(testResults).stream()
-                    .filter(testResult -> Integer.parseInt(testResult.getStatusCode()) >= 400)
-                    .map(TestResult::getId)
+            List<String> tcIds = testSuite.stream().map(TestCase::getId).collect(Collectors.toList());
+            List<String> trIds = testResults.stream().map(TestResult::getId).collect(Collectors.toList());
+            List<TestCase> orderedTestSuite = new ArrayList<>(testSuite).stream()
+                    .filter(tc -> trIds.contains(tc.getId()))
+                    .sorted(Comparator.comparing(TestCase::getId))
+                    .collect(Collectors.toList());
+            List<TestResult> orderedTestResults = new ArrayList<>(testResults).stream()
+                    .filter(tr -> tcIds.contains(tr.getId()))
+                    .sorted(Comparator.comparing(TestResult::getId))
                     .collect(Collectors.toList());
 
-            aPosterioriCoverageMeter.testSuite = testSuite;
-            aPosterioriCoverageMeter.testResults = testResults;
-            aPosterioriCoverageMeter.setCoveredOutputElements();
-            aPosterioriCoverageMeter.testSuite = testSuite.stream()
-                    .filter(testCase -> !invalidResponseResultsIds.contains(testCase.getId()))
-                    .collect(Collectors.toList());
-            aPosterioriCoverageMeter.setCoveredInputElements();
+            aPosterioriCoverageMeter.testSuite = orderedTestSuite;
+            aPosterioriCoverageMeter.testResults = orderedTestResults;
+            int totalSize = orderedTestSuite.size();
+
+            for (int i=0; i*maxTestSuiteSize < totalSize; i++) {
+                int upperLimit = Math.min((i + 1) * maxTestSuiteSize, totalSize);
+                Collection<TestCase> testSuiteFragment = orderedTestSuite.subList(i*maxTestSuiteSize, upperLimit);
+                Collection<TestResult> testResultsFragment = orderedTestResults.subList(i*maxTestSuiteSize, upperLimit);
+
+                List<String> invalidResponseResultsIds = new ArrayList<>(testResultsFragment).stream()
+                        .filter(testResult -> Integer.parseInt(testResult.getStatusCode()) >= 400)
+                        .map(TestResult::getId)
+                        .collect(Collectors.toList());
+
+                aPosterioriCoverageMeter.setCoveredOutputElements(testResultsFragment, testSuiteFragment);
+                testSuiteFragment = testSuiteFragment.stream()
+                        .filter(testCase -> !invalidResponseResultsIds.contains(testCase.getId()))
+                        .collect(Collectors.toList());
+                aPosterioriCoverageMeter.setCoveredInputElements(testSuiteFragment);
+
+                if (maxTestSuiteSize != Integer.MAX_VALUE)
+                    log.info("Creating a posteriori coverage meter. Progress: {}/{}", upperLimit, totalSize);
+            }
         }
 
         return aPosterioriCoverageMeter;
@@ -251,8 +277,9 @@ public class CoverageMeter {
 
     /**
      * Set 'coveredElements' field of every input CoverageCriterion
+     * @param testSuite
      */
-    private void setCoveredInputElements() {
+    private void setCoveredInputElements(Collection<TestCase> testSuite) {
         // Traverse all test cases and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestCase testCase: testSuite) {
             updateCriterion(PATH, "", testCase.getPath(), coverageGatherer);
@@ -280,7 +307,7 @@ public class CoverageMeter {
         }
     }
 
-    private void setCoveredOutputElements() {
+    private void setCoveredOutputElements(Collection<TestResult> testResults, Collection<TestCase> testSuite) {
         // Traverse all test results and, for each one, modify the coverage criteria it affects, by adding new covered elements
         for (TestResult testResult: testResults) {
 
@@ -292,16 +319,16 @@ public class CoverageMeter {
             }
 
             if (statusCodeClass != null)
-                updateCriterion(STATUS_CODE_CLASS, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), statusCodeClass, coverageGatherer);
-            updateCriterion(STATUS_CODE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), testResult.getStatusCode(), coverageGatherer);
-            updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId()).getPath() + "->" + findTestCase(testResult.getId()).getMethod().toString(), outputContentTypeTranslator(testResult.getOutputFormat()), coverageGatherer);
+                updateCriterion(STATUS_CODE_CLASS, findTestCase(testResult.getId(), testSuite).getPath() + "->" + findTestCase(testResult.getId(), testSuite).getMethod().toString(), statusCodeClass, coverageGatherer);
+            updateCriterion(STATUS_CODE, findTestCase(testResult.getId(), testSuite).getPath() + "->" + findTestCase(testResult.getId(), testSuite).getMethod().toString(), testResult.getStatusCode(), coverageGatherer);
+            updateCriterion(OUTPUT_CONTENT_TYPE, findTestCase(testResult.getId(), testSuite).getPath() + "->" + findTestCase(testResult.getId(), testSuite).getMethod().toString(), outputContentTypeTranslator(testResult.getOutputFormat()), coverageGatherer);
 
             // Response body properties criteria
             ObjectMapper objectMapper = new ObjectMapper();
             try {
                 JsonNode jsonResponse = objectMapper.readTree(testResult.getResponseBody());
-                String baseRootPath = findTestCase(testResult.getId()).getPath() +
-                        "->" + findTestCase(testResult.getId()).getMethod().toString() +
+                String baseRootPath = findTestCase(testResult.getId(), testSuite).getPath() +
+                        "->" + findTestCase(testResult.getId(), testSuite).getMethod().toString() +
                         "->" + testResult.getStatusCode() + "->"; // note the final arrow, since new elements will be added to the rootPath
                 iterateOverJsonNode(jsonResponse, baseRootPath, coverageGatherer, null, null, null);
             } catch (IOException e) {
@@ -424,9 +451,10 @@ public class CoverageMeter {
     /**
      * Given a test case ID (or test result ID), return the test case
      * @param id ID of the test case
+     * @param testSuite collection of test cases where to look for the ID
      * @return Test case matching the ID passed in
      */
-    private TestCase findTestCase(String id) {
+    private TestCase findTestCase(String id, Collection<TestCase> testSuite) {
         return testSuite.stream()
                 .filter(tc -> Objects.equals(tc.getId(), id))
                 .findFirst()

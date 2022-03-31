@@ -15,11 +15,11 @@ public class TestConfigurationTest {
 	@Test
 	public void testLoadConfiguration() {
 		deleteFile("src/test/resources/Folder/testConf.yaml");
-		String specPath = "src/test/resources/Folder/swagger.yaml";
+		String specPath = "src/test/resources/Folder/openapi.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 		String path = "src/test/resources/Folder/";
 		TestConfigurationObject conf = TestConfigurationIO.loadConfiguration(path + "fullConf.yaml", spec);
-		assertEquals("Wrong deseralization", 8, conf.getTestConfiguration().getOperations().get(1).getTestParameters().get(0).getGenerators().get(1).getGenParameters().get(0).getValues().size());
+		assertEquals("Wrong deseralization", 8, conf.getTestConfiguration().getOperations().get(1).getTestParameters().get(1).getGenerators().get(1).getGenParameters().get(0).getValues().size());
 		//System.out.println(TestConfigurationIO.toString(conf)); // Print to String
 		TestConfigurationIO.toFile(conf, path + "testConf.yaml");
 		assertTrue(checkIfExists("src/test/resources/Folder/testConf.yaml"));

@@ -110,7 +110,7 @@ public class TestManager {
             String[] pairs = stringParameters.split(";");
             for (String pair : pairs) {
                 String[] keyValue = pair.split("=");
-                parameters.put(decode(keyValue[0], StandardCharsets.UTF_8.toString()), decode(keyValue[1], StandardCharsets.UTF_8.toString()));
+                parameters.put(decode(keyValue[0], StandardCharsets.UTF_8.toString()), keyValue.length==2 ? decode(keyValue[1], StandardCharsets.UTF_8.toString()) : "");
             }
         } catch (UnsupportedEncodingException e) {
             parameters.clear();

@@ -1,0 +1,998 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: Sample/apikeys.json
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+    - testPath: /v2/all
+      operationId: v2All
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+      expectedResponse: 200
+    - testPath: "/v2/alpha/{alphacode}"
+      operationId: v2Alphacode
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: alphacode
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/alphacodes.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - ABC
+                    - DEF
+                    - YZ
+                    - NAR
+                    - GHI
+                    - JK
+                    - LM
+                    - NOP
+      expectedResponse: 200
+    - testPath: /v2/alpha
+      operationId: v2Alphacodes
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: codes
+          in: query
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/alphacodes.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 3
+                - name: separator
+                  values:
+                    - ','
+      expectedResponse: 200
+    - testPath: "/v2/currency/{currency}"
+      operationId: v2Currency
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: currency
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/currencies.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - ABC
+                    - DEF
+                    - YZA
+                    - NAR
+                    - GHI
+                    - JKL
+                    - MNO
+                    - PQR
+      expectedResponse: 200
+    - testPath: "/v2/name/{name}"
+      operationId: v2Name
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: name
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/names.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Gilead
+                    - Lilliput
+                    - Narnia
+                    - Panem
+                    - Pacific States of America
+                    - Genovia
+        - name: fullText
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomBoolean
+              genParameters: []
+      expectedResponse: 200
+    - testPath: "/v2/callingcode/{callingcode}"
+      operationId: v2Callingcode
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: callingcode
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/callingcodes.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - 210
+                    - 21
+                    - 296
+                    - 540
+                    - 322
+                    - 89
+                    - 999
+      expectedResponse: 200
+    - testPath: "/v2/capital/{capital}"
+      operationId: v2Capital
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: capital
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/capitals.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Sevilla
+                    - Lyon
+                    - Los Angeles
+                    - New York
+                    - Teruel
+                    - Vladivostok
+                    - Faro
+                    - Barcelona
+                    - Milan
+                    - Bonn
+      expectedResponse: 200
+    - testPath: "/v2/continent/{region}"
+      operationId: v2Region
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: region
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/regions.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Westeros
+                    - Essos
+                    - Middle-earth
+                    - Atlantis
+      expectedResponse: 200
+    - testPath: "/v2/lang/{lang}"
+      operationId: v2Lang
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: lang
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/languages.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - ab
+                    - cd
+                    - ef
+                    - gh
+                    - ij
+                    - lk
+                    - nm
+                    - op
+                    - qr
+                    - tv
+                    - su
+      expectedResponse: 200
+    - testPath: "/v2/regionalbloc/{regionalbloc}"
+      operationId: v2Regionalbloc
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: regionalbloc
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - EU
+                    - EFTA
+                    - CARICOM
+                    - PA
+                    - AU
+                    - USAN
+                    - EEU
+                    - AL
+                    - ASEAN
+                    - CAIS
+                    - CEFTA
+                    - NAFTA
+                    - SAARC
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Galactic Empire
+                    - Galactic Republic
+                    - BENELUX
+                    - ABC
+                    - DEF
+                    - GHIJK
+      expectedResponse: 200
+    - testPath: /v3/all
+      operationId: v3All
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+      expectedResponse: 200
+    - testPath: "/v3/alpha/{alphacode}"
+      operationId: v3Alphacode
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: alphacode
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/alphacodes_v3.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - ABC
+                    - DEF
+                    - YZ
+                    - NAR
+                    - GHI
+                    - JK
+                    - LM
+                    - NOP
+      expectedResponse: 200
+    - testPath: /v3/alpha
+      operationId: v3Alphacodes
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: codes
+          in: query
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/alphacodes_v3.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 3
+                - name: separator
+                  values:
+                    - ','
+      expectedResponse: 200
+    - testPath: "/v3/currency/{currency}"
+      operationId: v3Currency
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: currency
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/currencies_v3.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - ABC
+                    - DEF
+                    - YZA
+                    - NAR
+                    - GHI
+                    - JKL
+                    - MNO
+                    - PQR
+      expectedResponse: 200
+    - testPath: "/v3/name/{name}"
+      operationId: v3Name
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: name
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/names.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Gilead
+                    - Lilliput
+                    - Narnia
+                    - Panem
+                    - Pacific States of America
+                    - Genovia
+        - name: fullText
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomBoolean
+              genParameters: []
+      expectedResponse: 200
+    - testPath: "/v3/capital/{capital}"
+      operationId: v3Capital
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: capital
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/capitals.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Sevilla
+                    - Lyon
+                    - Los Angeles
+                    - New York
+                    - Teruel
+                    - Vladivostok
+                    - Faro
+                    - Barcelona
+                    - Milan
+                    - Bonn
+      expectedResponse: 200
+    - testPath: "/v3/region/{region}"
+      operationId: v3Region
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: region
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/regions.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Westeros
+                    - Essos
+                    - Middle-earth
+                    - Atlantis
+      expectedResponse: 200
+    - testPath: "/v3/subregion/{subregion}"
+      operationId: v3Subregion
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: subregion
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/subregions.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Westeros
+                    - Essos
+                    - Middle-earth
+                    - Atlantis
+      expectedResponse: 200
+    - testPath: "/v3/lang/{lang}"
+      operationId: v3Lang
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: lang
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/languages_v3.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - ab
+                    - cd
+                    - ef
+                    - gh
+                    - ij
+                    - lk
+                    - nm
+                    - op
+                    - qr
+                    - tv
+                    - su
+      expectedResponse: 200
+    - testPath: "/v3/demonym/{demonym}"
+      operationId: v3Demonym
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: demonym
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/demonyms.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - ofrainard
+                    - uwhusiot
+                    - spuosiaeno
+                    - slosteinasque
+                    - webroin
+                    - gesluriote
+                    - usnasqeno
+                    - qasweasque
+                    - skeianian
+                    - smuyjian
+      expectedResponse: 200
+    - testPath: "/v3/translation/{translation}"
+      operationId: v3Translation
+      method: get
+      testParameters:
+        - name: fields
+          in: query
+          weight: 0.5
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/fields.csv'
+                  objectValues: null
+                - name: minValues
+                  values:
+                    - 1
+                - name: maxValues
+                  values:
+                    - 5
+                - name: separator
+                  values:
+                    - ','
+        - name: translation
+          in: path
+          weight: null
+          generators:
+            - valid: true
+              type: RandomInputValue
+              genParameters:
+                - name: csv
+                  values:
+                    - 'src/test/resources/Restcountries/translations.csv'
+                  objectValues: null
+            - valid: false
+              type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - Westeros
+                    - Essos
+                    - Middle-earth
+                    - Atlantis
+      expectedResponse: 200

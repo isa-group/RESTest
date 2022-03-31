@@ -13,19 +13,18 @@ RESTest is a framework for automated black-box testing of RESTful web APIs. It f
 ## Index
 1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
 1. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
-1. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
 1. [Quickstart guide](https://github.com/isa-group/RESTest#quickstart-guide)
-    1. [Setting up RESTest](https://github.com/isa-group/RESTest#setting-up-restest)
-    1. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
+   1. [Setting up RESTest](https://github.com/isa-group/RESTest#setting-up-restest)
+   1. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
 1. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
-    1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
-    1. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
+   1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
+   1. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
 1. [Citing RESTest](https://github.com/isa-group/RESTest#citing-restest)
 1. [License](https://github.com/isa-group/RESTest#license)
-    1. [Icon credits](https://github.com/isa-group/RESTest#icon-credits)
+   1. [Icon credits](https://github.com/isa-group/RESTest#icon-credits)
 
 ## RESTest Wiki
-In this page you can find a brief description of how RESTest works and an illustrating example. If you want to read the full documentation, please visit the [Wiki](https://github.com/isa-group/RESTest/wiki). 
+In this page you can find a brief description of how RESTest works and an illustrating example. If you want to read the full documentation, please visit the [Wiki](https://github.com/isa-group/RESTest/wiki).
 
 ## How does it work?
 The figure below shows how RESTest works:
@@ -36,16 +35,11 @@ The figure below shows how RESTest works:
 
 1. **Test case generation**: The abstract test cases are instantiated into a specific programming language or testing framework using a [test writer](https://github.com/isa-group/RESTest/wiki/Test-writers). RESTest currently supports the generation of [REST Assured](http://rest-assured.io/) and [Postman](https://www.postman.com/) test cases.
 
-1. **Test case execution**: The test cases are executed and a set of reports and stats are generated. Stats are machine-readable, and the test reports can be graphically visualized thanks to [Allure](http://allure.qatools.ru/).
+1. **Test case execution**: The test cases are executed and a set of reports and stats are generated. Stats are machine-readable, and the test reports can be graphically visualized..
 
 1. **Feedback collection**: [Test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators) and other components can react to the test outputs (i.e., the stats generated in the previous step) to create more sophisticated test cases. Examples of this are the stateful data generators (e.g., the [BodyGenerator](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/inputs/stateful/BodyGenerator.java)) and the [StatsReportManager](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/reporting/StatsReportManager.java), both of which generate new test data based on previous API responses.
 
 ![RESTest](docs/RESTest_v3.png)
-
-## What can I do with RESTest?
-Check out the following demo video, where we discuss some of the things that you can do with RESTest, both from the user and the developer point of view. The showcase shown in the video is available at http://betty.us.es/restest-showcase-demo/.
-
-<a href="https://youtu.be/TnGkwMDBDt4"><img src="docs/play_video.png" alt="RESTest demo video" width="300" /></a>
 
 ## Quickstart guide
 To get started with RESTest, download the code and move to the parent directory:
@@ -167,7 +161,6 @@ public void test_1jidbvas4d6ph_v2Name() {
 			.queryParam("fullText", "true")
 			.queryParam("fields", "subregion")
 			.pathParam("name", "Qatar")
-			.filter(allureFilter)
 			.filter(statusCode5XXFilter)
 			.filter(nominalOrFaultyTestCaseFilter)
 			.filter(validationFilter)
@@ -185,13 +178,11 @@ public void test_1jidbvas4d6ph_v2Name() {
 ```
 
 This test case makes a GET request to the endpoint `/v2/name/{name}` with several query and path parameters. Then it asserts that:
-  - The status code is not 500 or higher, which would reveal a server error (`statusCode5XXFilter`).
-  - The status code is in the range 2XX if the request is valid or 4XX if the request is faulty (`nominalOrFaultyTestCaseFilter`).
-  - The response conforms to the OAS specification of the API (`validationFilter`).
+- The status code is not 500 or higher, which would reveal a server error (`statusCode5XXFilter`).
+- The status code is in the range 2XX if the request is valid or 4XX if the request is faulty (`nominalOrFaultyTestCaseFilter`).
+- The response conforms to the OAS specification of the API (`validationFilter`).
 
-Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `target/allure-reports/restcountries/index.html` in your browser:
-
-![Allure](docs/Allure.png)
+Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI.
 
 ## Running RESTest as a JAR
 Instead of from an IDE like IntelliJ IDEA, you can also run RESTest as a fat JAR. You have two options:
@@ -236,8 +227,6 @@ If you want to cite RESTest in your research, please use the BibTeX entry below.
 
 ## License
 RESTest is distributed under the [GNU Lesser General Public License v3.0](LICENSE).
-
-RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
 
 ### Icon credits
 This README and some pages of the Wiki use icons provided by [Freepik](https://www.flaticon.com/authors/freepik), available at [Flaticon](https://www.flaticon.com/).

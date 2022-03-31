@@ -224,7 +224,7 @@ public class StatsReportManager {
             // Update CoverageMeter with the test results
             String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
             List<TestResult> trs = TestManager.getTestResults(csvTrPath);
-            coverageMeter.addTestResults(trs);
+            coverageMeter.addTestResults(trs, testCases);
         }
 
         if (enableInputCoverage || enableOutputCoverage) {

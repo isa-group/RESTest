@@ -39,7 +39,7 @@ public class StatusCode5XXFilterTest {
 
     @Test(expected= RuntimeException.class)
     public void shouldBeStatus5XX() {
-        RestAssured.baseURI = "http://the-internet.herokuapp.com/";
+        RestAssured.baseURI = "https://the-internet.herokuapp.com";
         Response response = RestAssured
                 .given()
                 .log().all()

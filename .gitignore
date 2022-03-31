@@ -1,6 +1,5 @@
 /.idea/
 /.settings/
-/.ese-files/
 /.vscode/
 /.classpath/
 /.project/
@@ -49,3 +48,4 @@ predictor
 MLT-utils
 
 src/generation/java
+/src/main/resources/TestData/Generated/

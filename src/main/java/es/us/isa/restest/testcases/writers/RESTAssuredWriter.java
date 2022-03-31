@@ -205,8 +205,10 @@ public class RESTAssuredWriter implements IWriter {
 		if (proxy != null) {
 			content +=  "\t\tSystem.setProperty(\"http.proxyHost\", \"" + proxy.split(":")[0] + "\");\n"
 					+	"\t\tSystem.setProperty(\"http.proxyPort\", \"" + proxy.split(":")[1] + "\");\n"
+					+	"\t\tSystem.setProperty(\"http.nonProxyHosts\", \"localhost|127.0.0.1\");\n"
 					+	"\t\tSystem.setProperty(\"https.proxyHost\", \"" + proxy.split(":")[0] + "\");\n"
-					+	"\t\tSystem.setProperty(\"https.proxyPort\", \"" + proxy.split(":")[1] + "\");\n\n";
+					+	"\t\tSystem.setProperty(\"https.proxyPort\", \"" + proxy.split(":")[1] + "\");\n"
+					+	"\t\tSystem.setProperty(\"https.nonProxyHosts\", \"localhost|127.0.0.1\");\n\n";
 		}
 
 		content += "\t\tRestAssured.baseURI = " + "\"" + baseURI + "\";\n\n";
@@ -396,10 +398,11 @@ public class RESTAssuredWriter implements IWriter {
 		String content = "";
 		String bodyParameter = escapeJava(t.getBodyParameter());
 		if ((t.getFormParameters() == null || t.getFormParameters().size() == 0) &&
-				t.getBodyParameter() != null &&
+//				t.getBodyParameter() != null &&
 				(t.getMethod().equals(HttpMethod.POST) || t.getMethod().equals(HttpMethod.PUT)
-				|| t.getMethod().equals(HttpMethod.PATCH) || t.getMethod().equals(HttpMethod.DELETE)))
-			content += "\t\t\t\t.contentType(\"application/json\")\n";
+				|| t.getMethod().equals(HttpMethod.PATCH) ||
+				(t.getBodyParameter() != null && t.getMethod().equals(HttpMethod.DELETE))))
+			content += "\t\t\t\t.contentType(\"" + t.getInputFormat() + "\")\n";
 		if (t.getBodyParameter() != null) {
 			content += "\t\t\t\t.body(\"" + bodyParameter + "\")\n";
 		}

@@ -141,7 +141,7 @@ public class TestGenerationAndExecution {
 				delay(timeDelay);
 
 			// Generate unique test class name to avoid the same class being loaded everytime
-			String id = IDGenerator.generateId();
+			String id = IDGenerator.generateTimeId();
 			String className = testClassName + "_" + id;
 			((RESTAssuredWriter) writer).setClassName(className);
 			((RESTAssuredWriter) writer).setTestId(id);
