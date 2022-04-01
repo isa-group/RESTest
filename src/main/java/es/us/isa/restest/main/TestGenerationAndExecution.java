@@ -15,10 +15,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.regexp.RE;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
@@ -36,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/YouTube_CommentsAndThreads/props.properties";
+	private static String propertiesFilePath = "src/test/resources/GitHub/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -87,9 +85,10 @@ public class TestGenerationAndExecution {
 	private static Boolean mlInitialData;								// If true, train the predictor with the test cases contained in 'test-data/experimentName/'
 	private static Boolean mlKeepLearning;								// If true, after every iteration, retrain the predictor with the generated test cases
 	private static String mlTrainCommand;								// Command to train mlPredictor with test cases data
+	private static Float mlSamplingRatio;								// Desired balance of valid/faulty requests after sampling
 
 	// For Active Learning-Driven Testing only:
-	private static Integer alCandidatesRatio;							    // TODO
+	private static Integer alCandidatesRatio;							// TODO
 
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
@@ -138,12 +137,12 @@ public class TestGenerationAndExecution {
 
 		// Only for ML generator: check if there is initial data to train the predictor model, or if a model already exists
 		if (generatorType.equals("MLT") && mlInitialData) {
-			boolean commandOk = runCommand(mlTrainCommand, new String[0]); // TODO: Update command and arguments
+			boolean commandOk = runCommand(mlTrainCommand, new String[] {propertiesFilePath, mlSamplingRatio.toString()});
 			if (!commandOk)
 				throw new RESTestException("Error when training ML predictor with initial data.");
 		} else if (generatorType.equals("MLT")) {
-			boolean modelExists = checkIfExists(readParameterValue("data.tests.dir") + "/" + experimentName + "/predictor.joblib");
-			if (!modelExists)
+			boolean predictorExists = checkIfExists(readParameterValue("data.tests.dir") + "/" + experimentName + "/predictor.joblib");
+			if (!predictorExists)
 				throw new RESTestException("Error: the predictor model (predictor.joblib) is not present in the test-data folder");
 		}
 
@@ -173,7 +172,7 @@ public class TestGenerationAndExecution {
 
 			// Only for ML generator: if keepLearning is enabled, retrain the model with newly generated test cases
 			if (generatorType.equals("MLT") && mlKeepLearning)
-				runCommand(mlTrainCommand, new String[0]); // TODO: Update command and arguments
+				runCommand(mlTrainCommand, new String[] {propertiesFilePath, mlSamplingRatio.toString()});
 
 			logger.info("Iteration {}. {} test cases generated.", iteration, runner.getNumTestCases());
 			iteration++;
@@ -233,17 +232,13 @@ public class TestGenerationAndExecution {
 				break;
 			case "MLT":
 				gen = new MLDrivenTestCaseGenerator(spec, conf, numTestCases);
-				((MLDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
+				((MLDrivenTestCaseGenerator) gen).setPropertiesFile(propertiesFilePath);
+				((MLDrivenTestCaseGenerator) gen).setCsvTmpTcPath(readParameterValue("data.tests.dir") + "/" + experimentName + "/pool.csv");
 				((MLDrivenTestCaseGenerator) gen).setMlCandidatesRatio(mlCandidatesRatio);
 				gen.setFaultyRatio(faultyRatio);
 				break;
-			case "ALT":
-				gen = new ALDrivenTestCaseGenerator(spec, conf, numTestCases);
-				((ALDrivenTestCaseGenerator) gen).setResourcesFolderPath(alResourcesFolderPath);
-				((ALDrivenTestCaseGenerator) gen).setAlCandidatesRatio(alCandidatesRatio);
-				break;
 			default:
-				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART', 'MLT' or 'ALT'");
+				throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT', 'ART', or 'MLT'");
 		}
 
 		gen.setCheckTestCases(checkTestCases);
@@ -295,7 +290,9 @@ public class TestGenerationAndExecution {
 
 		// Delete previous results (if any)
 		if (deletePreviousResults) {
-			deleteDir(testDataDir);
+			if (!(generatorType.equals("MLT") && mlInitialData)) {
+				deleteDir(testDataDir);
+			}
 			deleteDir(coverageDataDir);
 
 			// Recreate directories
@@ -483,6 +480,10 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("ml.keeplearning") != null)
 			mlKeepLearning = Boolean.parseBoolean(readParameterValue("ml.keeplearning"));
 		logger.info("ML keep learning: {}", mlKeepLearning);
+
+		if (readParameterValue("ml.sampling.ratio") != null)
+			mlSamplingRatio = Float.parseFloat(readParameterValue("ml.sampling.ratio"));
+		logger.info("ML sampling ratio: {}", mlSamplingRatio);
 
 		String os = System.getProperty("os.name");
 		if (os.contains("Windows"))

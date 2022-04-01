@@ -1,6 +1,5 @@
 package es.us.isa.restest.generators;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -22,8 +21,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	private String mlPredictorCommand;								// TODO
 	private Integer mlCandidatesRatio;								// TODO
-	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and predictor
-	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the predictor)
+	private String propertiesFile; 									// Path to the folder containing resources shared between RESTest and predictor
 	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
 
 	private static Logger logger = LogManager.getLogger(MLDrivenTestCaseGenerator.class.getName());
@@ -70,7 +68,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			iterationTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
 
 			// Feed test cases to predictor, which updates them
-			boolean commandOk = runCommand(mlPredictorCommand, new String[]{resourcesFolderPath, csvTmpTcPath});
+			boolean commandOk = runCommand(mlPredictorCommand, new String[]{propertiesFile});
 
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
@@ -121,13 +119,16 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		return nNominal < (int) ((1 - faultyRatio) * numberOfTests);
 	}
 
-	public void setResourcesFolderPath(String resourcesFolderPath) {
-		this.resourcesFolderPath = resourcesFolderPath;
-		this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME;
+	public void setPropertiesFile(String propertiesFile) {
+		this.propertiesFile = propertiesFile;
 	}
 
 	public void setMlCandidatesRatio(Integer mlCandidatesRatio) {
 		this.mlCandidatesRatio = mlCandidatesRatio;
+	}
+
+	public void setCsvTmpTcPath(String csvTmpTcPath) {
+		this.csvTmpTcPath = csvTmpTcPath;
 	}
 
 }
