@@ -20,23 +20,16 @@ import static es.us.isa.restest.util.TestManager.getTestCases;
 
 public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
-	private String mlPredictorCommand;								// TODO
+	private String propertiesFilePath;
+	private String mlValidityPredictorCommand;						// TODO
 	private Integer mlCandidatesRatio;								// TODO
-	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and predictor
-	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the predictor)
-	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
+	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the selector)
+	private String poolFolderPath;
 
 	private static Logger logger = LogManager.getLogger(MLDrivenTestCaseGenerator.class.getName());
 
 	public MLDrivenTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
-
-		// Predictor command
-		String os = System.getProperty("os.name");
-		if (os.contains("Windows"))
-			mlPredictorCommand = PropertyManager.readProperty("ml.predictor.command.windows");
-		else
-			mlPredictorCommand = PropertyManager.readProperty("ml.predictor.command.unix");
 	}
 
 	/**
@@ -66,15 +59,20 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			}
 
 			// Export test cases to temporary CSV
-			deleteFile(csvTmpTcPath); // Delete file first, so as to consider only test cases from this iteration
-			iterationTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
+			deleteFile(getPoolDataPath()); // Delete file first, so as to consider only test cases from this iteration
+			iterationTestCases.forEach(tc -> tc.exportToCSV(getPoolDataPath()));
 
 			// Feed test cases to predictor, which updates them
-			boolean commandOk = runCommand(mlPredictorCommand, new String[]{resourcesFolderPath, csvTmpTcPath});
+			boolean commandOk = true;
+			try {
+				runCommand(mlValidityPredictorCommand, new String[]{propertiesFilePath});
+			} catch(RESTestException e) {
+				commandOk = false;
+			}
 
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
-				iterationTestCases = getTestCases(csvTmpTcPath);
+				iterationTestCases = getTestCases(getPoolDataPath());
 
 				// Add test cases one by one until desired number is reached both for nominal and faulty
 				iterationTestCases.forEach(tc -> {
@@ -93,7 +91,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			}
 		}
 
-		deleteFile(csvTmpTcPath); // Delete pool file
+		deleteFile(getPoolDataPath()); // Delete pool file
 		return testCases;
 	}
 
@@ -121,13 +119,39 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		return nNominal < (int) ((1 - faultyRatio) * numberOfTests);
 	}
 
-	public void setResourcesFolderPath(String resourcesFolderPath) {
-		this.resourcesFolderPath = resourcesFolderPath;
-		this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME;
+	public String getPropertiesFilePath() {
+		return propertiesFilePath;
+	}
+
+	public void setPropertiesFilePath(String propertiesFilePath) {
+		this.propertiesFilePath = propertiesFilePath;
+	}
+
+	public String getMlValidityPredictorCommand() {
+		return mlValidityPredictorCommand;
+	}
+
+	public void setMlValidityPredictorCommand(String mlValidityPredictorCommand) {
+		this.mlValidityPredictorCommand = mlValidityPredictorCommand;
+	}
+
+	public Integer getMlCandidatesRatio() {
+		return mlCandidatesRatio;
 	}
 
 	public void setMlCandidatesRatio(Integer mlCandidatesRatio) {
 		this.mlCandidatesRatio = mlCandidatesRatio;
 	}
 
+	public String getPoolFolderPath() {
+		return poolFolderPath;
+	}
+
+	public void setPoolFolderPath(String poolFolderPath) {
+		this.poolFolderPath = poolFolderPath;
+	}
+
+	private String getPoolDataPath() {
+		return poolFolderPath + "/" + CSV_NAME;
+	}
 }

@@ -34,7 +34,6 @@ public class RESTestRunner {
 	protected IWriter writer;							// RESTAssured writer
 	protected AllureReportManager allureReportManager;	// Allure report manager
 	protected StatsReportManager statsReportManager;	// Stats report manager
-	private String inputTestCasesPath;					// Path to input test cases. If null, test cases will be generated
 	private boolean executeTestCases = true;			// Whether to execute test cases
 	private boolean allureReports = true;				// Whether to actually generate reports or not (folder "allure-reports")
 	private int numTestCases = 0;						// Number of test cases generated so far
@@ -106,12 +105,7 @@ public class RESTestRunner {
 		// Generate test cases
 		logger.info("Generating tests");
 		Timer.startCounting(TEST_SUITE_GENERATION);
-		Collection<TestCase> testCases;
-		if (this.inputTestCasesPath==null) {
-			testCases = generator.generate();
-		} else {
-			testCases = getTestCases(this.inputTestCasesPath);
-		}
+		Collection<TestCase> testCases = generator.generate();
 		Timer.stopCounting(TEST_SUITE_GENERATION);
         this.numTestCases += testCases.size();
 
@@ -146,10 +140,6 @@ public class RESTestRunner {
 		this.targetDir = targetDir;
 	}
 
-	public void setInputTestCasesPath(String inputTestCasesPath) {
-		this.inputTestCasesPath = inputTestCasesPath;
-	}
-
 	public String getTestClassName() {
 		return testClassName;
 	}
@@ -176,5 +166,9 @@ public class RESTestRunner {
 
 	public void setAllureReport(boolean allureReports) {
 		this.allureReports = allureReports;
+	}
+
+	public void setGenerator(AbstractTestCaseGenerator generator) {
+		this.generator = generator;
 	}
 }

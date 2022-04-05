@@ -65,6 +65,10 @@ public class ARTEInputGenerator {
      */
     static {
         ARQ.init();
+
+        // ONLY FOR LOCAL COPY OF DBPEDIA
+        if (szEndpoint.contains("localhost") || szEndpoint.contains("127.0.0.1"))
+            System.setProperty("http.maxConnections", "10000");
     }
 
     public static void main(String[] args) {

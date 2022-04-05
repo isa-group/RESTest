@@ -18,23 +18,19 @@ import static es.us.isa.restest.util.TestManager.getTestCases;
 
 public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
-	private String alPredictorCommand;								// TODO
-	private Integer alCandidatesRatio;								// TODO
-	private String resourcesFolderPath; 							// Path to the folder containing resources shared between RESTest and selector
+	private String propertiesFilePath;
+	private String mlUncertaintyPredictorCommand;					// TODO
+	private Integer mlCandidatesRatio;								// TODO
+	private Integer mlTrainingRequestsPerIteration;
+	private Integer mlTrainingMaxIterationsNotLearning;
+	private Float mlTrainingPrecisionThreshold;
 	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the selector)
-	private String csvTmpTcPath; 									// resourcesFolderPath + "/" + CSV_NAME
+	private String poolFolderPath;
 
 	private static Logger logger = LogManager.getLogger(ALDrivenTestCaseGenerator.class.getName());
 
 	public ALDrivenTestCaseGenerator(OpenAPISpecification spec, TestConfigurationObject conf, int nTests) {
 		super(spec, conf, nTests);
-
-		// Predictor command
-		String os = System.getProperty("os.name");
-		if (os.contains("Windows"))
-			alPredictorCommand = PropertyManager.readProperty("al.predictor.command.windows");
-		else
-			alPredictorCommand = PropertyManager.readProperty("al.predictor.command.unix");
 	}
 
 	/**
@@ -50,31 +46,36 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) throws RESTestException {
 
 		List<TestCase> testCases = new ArrayList<>();
-		List<TestCase> queriedTestCases = new ArrayList<>();
+		List<TestCase> testCasesPool = new ArrayList<>();
 
 		// Reset counters for the current operation
 		resetOperation();
 
 		// Repeat iterations until the desired number of test cases have been generated
 		while (hasNext()) {
-			queriedTestCases.clear();
-			while (queriedTestCases.size() < (numberOfTests-nTests)*alCandidatesRatio) {
+			testCasesPool.clear();
+			while (testCasesPool.size() < (numberOfTests-nTests)*mlCandidatesRatio) {
 				TestCase test = generateNextTestCase(testOperation);
-				queriedTestCases.add(test);
+				testCasesPool.add(test);
 			}
 
 			// Export test cases to temporary CSV
-			deleteFile(csvTmpTcPath); // Delete file first, so as to consider only test cases from this iteration
-			queriedTestCases.forEach(tc -> tc.exportToCSV(csvTmpTcPath));
+			deleteFile(getPoolDataPath()); // Delete file first, so as to consider only test cases from this iteration
+			testCasesPool.forEach(tc -> tc.exportToCSV(getPoolDataPath()));
 
 			// Feed test cases to predictor, which queries and labels the best ones
-			boolean commandOk = runCommand(alPredictorCommand, new String[]{resourcesFolderPath, csvTmpTcPath, Integer.toString(numberOfTests)});
+			boolean commandOk = true;
+			try {
+				runCommand(mlUncertaintyPredictorCommand, new String[]{propertiesFilePath, Integer.toString(mlTrainingRequestsPerIteration)});
+			} catch(RESTestException e) {
+				commandOk = false;
+			}
 
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
-				queriedTestCases = getTestCases(csvTmpTcPath);
+				testCasesPool = getTestCases(getPoolDataPath());
 
-				queriedTestCases.forEach(tc ->{
+				testCasesPool.forEach(tc ->{
 					if (hasNext()) {
 						// Set authentication data (if any)
 						authenticateTestCase(tc);
@@ -88,7 +89,9 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 				});
 			}
 		}
-		deleteFile(csvTmpTcPath); // Delete pool file
+
+		deleteFile(getPoolDataPath()); // Delete pool file
+
 		return testCases;
 	}
 
@@ -106,9 +109,64 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 	protected boolean hasNext() { return nTests < numberOfTests; }
 
-	public void setResourcesFolderPath(String resourcesFolderPath) { this.resourcesFolderPath = resourcesFolderPath; this.csvTmpTcPath = resourcesFolderPath + "/" + CSV_NAME; }
+	public String getPropertiesFilePath() {
+		return propertiesFilePath;
+	}
 
-	public void setAlCandidatesRatio(Integer numberOfCandidates) { this.alCandidatesRatio = numberOfCandidates; }
+	public void setPropertiesFilePath(String propertiesFilePath) {
+		this.propertiesFilePath = propertiesFilePath;
+	}
 
+	public String getMlUncertaintyPredictorCommand() {
+		return mlUncertaintyPredictorCommand;
+	}
+
+	public void setMlUncertaintyPredictorCommand(String mlUncertaintyPredictorCommand) {
+		this.mlUncertaintyPredictorCommand = mlUncertaintyPredictorCommand;
+	}
+
+	public Integer getMlCandidatesRatio() {
+		return mlCandidatesRatio;
+	}
+
+	public void setMlCandidatesRatio(Integer mlCandidatesRatio) {
+		this.mlCandidatesRatio = mlCandidatesRatio;
+	}
+
+	public Integer getMlTrainingRequestsPerIteration() {
+		return mlTrainingRequestsPerIteration;
+	}
+
+	public void setMlTrainingRequestsPerIteration(Integer mlTrainingRequestsPerIteration) {
+		this.mlTrainingRequestsPerIteration = mlTrainingRequestsPerIteration;
+	}
+
+	public Integer getMlTrainingMaxIterationsNotLearning() {
+		return mlTrainingMaxIterationsNotLearning;
+	}
+
+	public void setMlTrainingMaxIterationsNotLearning(Integer mlTrainingMaxIterationsNotLearning) {
+		this.mlTrainingMaxIterationsNotLearning = mlTrainingMaxIterationsNotLearning;
+	}
+
+	public Float getMlTrainingPrecisionThreshold() {
+		return mlTrainingPrecisionThreshold;
+	}
+
+	public void setMlTrainingPrecisionThreshold(Float mlTrainingPrecisionThreshold) {
+		this.mlTrainingPrecisionThreshold = mlTrainingPrecisionThreshold;
+	}
+
+	public String getPoolFolderPath() {
+		return poolFolderPath;
+	}
+
+	public void setPoolFolderPath(String poolFolderPath) {
+		this.poolFolderPath = poolFolderPath;
+	}
+
+	private String getPoolDataPath() {
+		return poolFolderPath + "/" + CSV_NAME;
+	}
 }
 
