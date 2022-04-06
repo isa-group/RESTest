@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/YouTube_CommentsAndThreads/props.properties";
+	private static String propertiesFilePath = "src/test/resources/GitHub/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -178,7 +178,7 @@ public class TestGenerationAndExecution {
 	private static Float trainMlModel() {
 		try {
 			Process mlTrainCommandProcess = runCommand(mlTrainCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
-//			mlTrainCommandProcess.getOutputStream() // TODO
+			mlTrainCommandProcess.getOutputStream(); // TODO
 		} catch (RESTestException e) {
 			logger.warn("Error when training the ML model. The model will be retrained in the next iteration.");
 		}
@@ -211,6 +211,7 @@ public class TestGenerationAndExecution {
 
 		ALDrivenTestCaseGenerator alTestGenerator = new ALDrivenTestCaseGenerator(spec, testConf, mlTrainingRequestsPerIteration);
 		alTestGenerator.setPropertiesFilePath(propertiesFilePath);
+		alTestGenerator.setMlTrainingRequestsPerIteration(mlTrainingRequestsPerIteration);
 		alTestGenerator.setMlUncertaintyPredictorCommand(mlUncertaintyPredictorCommand);
 		alTestGenerator.setMlTrainingMaxIterationsNotLearning(mlTrainingMaxIterationsNotLearning);
 		alTestGenerator.setMlTrainingPrecisionThreshold(mlTrainingPrecisionThreshold);
