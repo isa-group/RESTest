@@ -177,13 +177,14 @@ public class TestGenerationAndExecution {
 
 	private static Float trainMlModel() {
 		try {
-			Process mlTrainCommandProcess = runCommand(mlTrainCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
-			mlTrainCommandProcess.getOutputStream(); // TODO
+			String mlTrainProcessOutput = runCommand(mlTrainCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
+			Float score = Float.parseFloat(mlTrainProcessOutput);
+			System.out.println("SCORE");
+			return score;
 		} catch (RESTestException e) {
 			logger.warn("Error when training the ML model. The model will be retrained in the next iteration.");
+			return 0f;
 		}
-
-		return 0f;
 	}
 
 	private static void testIteration() throws RESTestException {

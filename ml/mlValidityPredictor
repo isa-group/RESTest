@@ -1,3 +1,2 @@
 #! /bin/bash
-/home/giuliano/anaconda3/envs/testing/bin/python python-scripts/ml_predictor.py $1
-printf "\n"
+/home/giuliano/anaconda3/envs/testing/bin/python /home/giuliano/RESTest/ml/python-scripts/ml_predictor.py $1

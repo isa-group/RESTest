@@ -63,19 +63,22 @@ y_train = train_data.obt_validities
 # select features_names to later save them into predictor
 features_names = X_train.columns.tolist()
 
-# perform sampling
+# compute number of valid and faulty requests
 n_valid  = y_train.tolist().count(True)
 n_faulty = y_train.tolist().count(False)
+n = n_valid + n_faulty
+
+# perform sampling
 if n_valid/n_faulty < sampling_ratio or n_faulty/n_valid < sampling_ratio:
 
     # define and execute sampler
-    sampler = NearMiss(sampling_strategy=sampling_ratio)
+    sampler = NearMiss(sampling_strategy=sampling_ratio, n_neighbors=max(1, int(0.1*n)))
     X_train, y_train = sampler.fit_resample(X_train, y_train)
-    print(f'x_train has {y_train.tolist().count(True)} valid and {y_train.tolist().count(False)} faulty requests.')
+    # print(f'X_train has {y_train.tolist().count(True)} valid and {y_train.tolist().count(False)} faulty requests.')
 
 # compute certainty threshold
 certainty_threshold = max(0.6, 0.75 - abs(0.25 - 0.25*(n_valid/n_faulty)))
-print(f'certainty_threshold: {certainty_threshold}')
+# print(f'certainty_threshold: {certainty_threshold}')
 
 # scale data
 scaler  = SCALER
@@ -103,5 +106,5 @@ else:
 
 score = min(accuracy, roc_auc)
 
-# print output to be parsed by RESTest
+# print score to be parsed by RESTest
 print(score)
