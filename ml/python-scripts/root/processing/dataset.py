@@ -8,9 +8,6 @@ from root.processing.helpers import raw2preprocessed, read_raw
 
 def read_dataset(path, properties_file):
 
-    # get service specification
-    spec = get_spec(properties_file)
-
     # read test cases and results
     if os.path.exists(path + "/requests.csv") and os.path.exists(path + "/responses.csv"):
         requests  = read_raw(path + "/requests.csv")
@@ -28,13 +25,13 @@ def read_dataset(path, properties_file):
     responses = clean_status_codes(responses)
     requests = requests.loc[responses.index.values]
 
-    return Dataset(requests, responses, spec)
+    return Dataset(requests, responses, properties_file)
 
 class Dataset:
-    def __init__(self, requests, responses, spec):
-        self.requests  = requests
-        self.responses = responses
-        self.spec      = spec
+    def __init__(self, requests, responses, properties_file):
+        self.requests        = requests
+        self.responses       = responses
+        self.properties_file = properties_file
 
     ### validities:
     @property
@@ -101,7 +98,7 @@ class Dataset:
 
     ### raw2preprocessed interface
     def preprocess_requests(self):
-        return raw2preprocessed(self.requests, self.spec)
+        return raw2preprocessed(self.requests, self.properties_file)
 
     # def get_simplified_test_cases(self):
     #     simplified_test_cases = self.responses.copy()

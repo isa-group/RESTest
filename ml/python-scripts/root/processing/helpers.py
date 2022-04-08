@@ -4,7 +4,10 @@ from urllib.parse import unquote
 from root.helpers.spec import get_spec
 from root.processing.encodings import encode_boolean, encode_date, encode_enum, encode_number, encode_text, is_boolean_serie
 
-def raw2preprocessed(raw, spec):
+def raw2preprocessed(raw, properties_file):
+
+    # get the service specification
+    spec = get_spec(properties_file)
 
     # get service api keys and parameters types
     api_keys = spec['api_keys']

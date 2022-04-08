@@ -45,7 +45,7 @@ except FileNotFoundError:
     raise Exception("pool data '"+target+"' not found.")
 
 # transform train/pool data to tree form
-X_pool = raw2preprocessed(pool, spec)
+X_pool = raw2preprocessed(pool, properties_file)
 
 # load predictor
 predictor_path = experiment_folder + '/predictor.joblib'

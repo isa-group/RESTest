@@ -49,7 +49,7 @@ except FileNotFoundError:
     raise Exception("pool data '"+target+"' not found.")
 
 # transform train/pool data to tree form
-X_pool = raw2preprocessed(pool, spec)
+X_pool = raw2preprocessed(pool, properties_file)
 
 # subselect common features (todo: augment enum columns with missing values)
 common_features = [f for f in predictor.features_names if f in X_pool.columns]
