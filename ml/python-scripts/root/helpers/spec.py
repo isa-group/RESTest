@@ -1,15 +1,32 @@
 import json
 import yaml
 
-def get_spec(spec_path, endpoint, operation):
+from root.constants import RESTEST_PATH
+from root.helpers.properties import PropertiesFile
+
+def get_spec(properties_file):
+
+    # define the properties object
+    try:
+        properties = PropertiesFile(properties_file)
+    except FileNotFoundError:
+        raise Exception('Properties file '+ properties_file + 'does not exist.')
+
+    # get endpoint and http method
+    with open(RESTEST_PATH + '/' + properties.get('conf.path'), 'r') as f:
+        conf = yaml.safe_load(f)
+    endpoint    = conf['testConfiguration']['operations'][0]['testPath']
+    http_method = conf['testConfiguration']['operations'][0]['method']
+
+    # get the path to oas
+    oas_path = RESTEST_PATH + '/' + properties.get('oas.path')
 
     # load the service specification
-    with open(spec_path, 'r') as f:
-        if spec_path.endswith('json'):
+    with open(oas_path, 'r') as f:
+        if oas_path.endswith('json'):
             spec = json.load(f)
-        elif spec_path.endswith('yaml'):
+        elif oas_path.endswith('yaml'):
             spec = yaml.safe_load(f)
-
 
     types = {}
     descriptions = {}
@@ -17,7 +34,7 @@ def get_spec(spec_path, endpoint, operation):
     
     # version 2.0
     if not 'openapi' in spec.keys():
-        parameters = spec['paths'][endpoint][operation]['parameters']
+        parameters = spec['paths'][endpoint][http_method]['parameters']
         parameters = __correct_ref(parameters)
 
         for parameter in parameters:
@@ -39,7 +56,7 @@ def get_spec(spec_path, endpoint, operation):
     # version 3.0
     else:
         try:
-            parameters = spec['paths'][endpoint][operation]['parameters']
+            parameters = spec['paths'][endpoint][http_method]['parameters']
             parameters = __correct_ref(spec, parameters)
 
             # types
@@ -61,7 +78,7 @@ def get_spec(spec_path, endpoint, operation):
     
         except Exception as e:
 
-            parameters = spec['paths'][endpoint][operation]['requestBody']['content']['application/x-www-form-urlencoded']['schema']['properties']
+            parameters = spec['paths'][endpoint][http_method]['requestBody']['content']['application/x-www-form-urlencoded']['schema']['properties']
 
             # types
             for name, values in parameters.items():
@@ -116,7 +133,7 @@ def __preprocess_description(description):
 #             return service
 
 # def write_spec(service, out_dir=SPECS_PATH):
-#     endpoint, operation = OAS_KEYS[service]
+#     endpoint, http_method = OAS_KEYS[service]
 
 #     try:
 #         api_keys = API_KEYS[service]
@@ -126,7 +143,7 @@ def __preprocess_description(description):
 #     a_yaml_file = open(THIS_PATH + '/resources/openapis/'+service+'.yaml')
 #     spec = yaml.safe_load(a_yaml_file)
 #     if not 'openapi' in spec.keys():
-#         parameters = spec['paths'][endpoint][operation]['parameters']
+#         parameters = spec['paths'][endpoint][http_method]['parameters']
 #         types = {}
 #         for parameter in parameters:
 #             if parameter['type'] in ['enum', 'boolean'] or 'enum' in parameter.keys():
@@ -143,7 +160,7 @@ def __preprocess_description(description):
 #             }
 #     else:
 #         try:
-#             parameters = spec['paths'][endpoint][operation]['parameters']
+#             parameters = spec['paths'][endpoint][http_method]['parameters']
 #             parameters = correct_ref(parameters)
 
 #             types = {}
@@ -163,7 +180,7 @@ def __preprocess_description(description):
 #                 for parameter in parameters
 #             }
 #         except Exception:
-#             parameters = spec['paths'][endpoint][operation]['requestBody']['content'][
+#             parameters = spec['paths'][endpoint][http_method]['requestBody']['content'][
 #                 'application/x-www-form-urlencoded'
 #             ]['schema']['properties']
 #             types = {}

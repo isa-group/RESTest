@@ -15,8 +15,10 @@ public class CommandRunner {
             Process proc = pb.start();
             proc.getOutputStream();
             String stdout = IOUtils.toString(proc.getInputStream(), Charset.defaultCharset());
+            String stderr = IOUtils.toString(proc.getErrorStream(), Charset.defaultCharset());
             proc.waitFor();
             System.out.println(stdout); // For debugging
+            System.out.println(stderr); // For debugging
             return stdout;
         } catch (IOException|InterruptedException e) {
             if (e instanceof InterruptedException)

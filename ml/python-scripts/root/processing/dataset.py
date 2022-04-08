@@ -1,11 +1,17 @@
 import os
 import pandas as pd
 from sklearn.metrics import accuracy_score, roc_auc_score
+from root.helpers.spec import get_spec
 
 # from root.processing.idl.dependencies import DEPENDENCIES
 from root.processing.helpers import raw2preprocessed, read_raw
 
-def read_dataset(path, spec):
+def read_dataset(path, properties_file):
+
+    # get service specification
+    spec = get_spec(properties_file)
+
+    # read test cases and results
     if os.path.exists(path + "/requests.csv") and os.path.exists(path + "/responses.csv"):
         requests  = read_raw(path + "/requests.csv")
         responses = read_raw(path + "/responses.csv")

@@ -1,12 +1,10 @@
 import sys
 import json
-import yaml
 import joblib
 import numpy as np
 from sklearn.model_selection import cross_val_score
 
-from root.constants import DEBUG_PATH, RESTEST_PATH, RESTEST_RESULTS_PATH
-from root.helpers.spec import get_spec
+from root.constants import RESTEST_RESULTS_PATH
 from root.processing.dataset import read_dataset
 from root.helpers.properties import PropertiesFile
 
@@ -20,24 +18,14 @@ if len(sys.argv) > 1:
 
 else: # debug mode
     print('debug mode...')
-    properties_file = '/home/giuliano/tse_experiments/RESTest/src/test/resources/GitHub/props.properties'
+    properties_file = '/home/giuliano/RESTest/src/test/resources/GitHub/props.properties'
     sampling_ratio = 1
 
+# define the properties object
 try:
-    # get info from .properties file
     properties = PropertiesFile(properties_file)
 except FileNotFoundError:
     raise Exception('Properties file '+ properties_file + 'does not exist.')
-
-# get endpoint and http method
-with open(RESTEST_PATH + '/' + properties.get('conf.path'), 'r') as f:
-    conf = yaml.safe_load(f)
-endpoint    = conf['testConfiguration']['operations'][0]['testPath']
-http_method = conf['testConfiguration']['operations'][0]['method']
-
-# get the service parameters types and apikeys
-oas_path = RESTEST_PATH + '/' + properties.get('oas.path')
-spec = get_spec(oas_path, endpoint, http_method)
 
 # path where to label test cases
 experiment_folder = RESTEST_RESULTS_PATH + '/' + properties.get('experiment.name')
@@ -51,15 +39,12 @@ except Exception as e:
     raise Exception('Predictor not found in ' + predictor_path)
 
 print("Validating predictor...")
-print('Specification path:    ' + oas_path)
-print('Endpoint:              ' + endpoint)
-print('Operation:             ' + http_method)
 print('Predictor path:        ' + predictor_path)
 print('Validation data:       ' + validation_data_path)
 
 try:
     # get train data
-    train_data = read_dataset(validation_data_path, spec)
+    train_data = read_dataset(validation_data_path, properties_file)
 except Exception as e:
     raise Exception('training data folder "'+validation_data_path+'" not found.')
 

@@ -1,12 +1,10 @@
 import sys
-import yaml
 import joblib
 import numpy as np
 from imblearn.under_sampling import NearMiss
 from sklearn.model_selection import cross_val_score
 
-from root.constants import PREDICTOR, RESTEST_PATH, RESTEST_RESULTS_PATH, SCALER
-from root.helpers.spec import get_spec
+from root.constants import PREDICTOR, RESTEST_RESULTS_PATH, SCALER
 from root.processing.dataset import read_dataset
 from root.helpers.properties import PropertiesFile
 
@@ -20,24 +18,14 @@ if len(sys.argv) > 1:
 
 else: # debug mode
     print('debug mode...')
-    properties_file = '/home/giuliano/tse_experiments/RESTest/src/test/resources/GitHub/props.properties'
-    sampling_ratio = 1
+    properties_file = '/home/giuliano/RESTest/src/test/resources/GitHub/props.properties'
+    sampling_ratio = 0.8
 
+# define the properties object
 try:
-    # get info from .properties file
     properties = PropertiesFile(properties_file)
 except FileNotFoundError:
     raise Exception('Properties file '+ properties_file + 'does not exist.')
-
-# get endpoint and http method
-with open(RESTEST_PATH + '/' + properties.get('conf.path'), 'r') as f:
-    conf = yaml.safe_load(f)
-endpoint    = conf['testConfiguration']['operations'][0]['testPath']
-http_method = conf['testConfiguration']['operations'][0]['method']
-
-# get the service parameters types and apikeys
-oas_path = RESTEST_PATH + '/' + properties.get('oas.path')
-spec = get_spec(oas_path, endpoint, http_method)
 
 # path where to find training data
 experiment_folder = RESTEST_RESULTS_PATH + '/' + properties.get('experiment.name')
@@ -52,7 +40,7 @@ training_data_path = experiment_folder
 
 try:
     # get train data
-    train_data = read_dataset(training_data_path, spec)
+    train_data = read_dataset(training_data_path, properties_file)
 except FileNotFoundError:
     raise Exception('training data folder "'+training_data_path+'" not found.')
 
@@ -97,8 +85,8 @@ predictor.scaler = scaler
 joblib.dump(predictor, training_data_path + '/predictor.joblib')
 
 # kfold cross validation of the predictor:
-if train_data.size < 20:
-    accuracy = 0 
+if train_data.size < 50:
+    accuracy = 0
     roc_auc  = 0
 else:
     accuracy = np.mean(cross_val_score(predictor, X_train, y_train, cv=5, scoring='accuracy'))
