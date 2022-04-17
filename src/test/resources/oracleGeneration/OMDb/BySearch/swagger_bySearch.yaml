@@ -1,0 +1,247 @@
+swagger: '2.0'
+info:
+  description: >-
+    This API requires authorization, you can get a free key here:
+    [http://omdbapi.com/apikey.aspx](http://omdbapi.com/apikey.aspx)
+  version: '1.0'
+  title: OMDb API
+  termsOfService: 'http://omdbapi.com/legal.htm'
+  contact:
+    email: bfritz@fadingsignal.com
+  license:
+    name: CC BY-NC 4.0
+    url: 'https://creativecommons.org/licenses/by-nc/4.0/'
+host: omdbapi.com
+basePath: /
+tags:
+  - name: Search
+schemes:
+  - https
+security:
+  - APIKeyQueryParam: []
+paths:
+  /:
+    get:
+      tags:
+        - Search
+      summary: Search
+      operationId: search
+      parameters:
+        - name: t
+          in: query
+          description: Title of movie or series
+          required: false
+          type: string
+        - name: i
+          in: query
+          description: A valid IMDb ID (e.g. tt0000001)
+          required: false
+          type: string
+        - name: s
+          in: query
+          description: Title of movie or series
+          required: false
+          type: string
+        - name: page
+          in: query
+          description: Page number to return
+          required: false
+          type: integer
+        - name: y
+          in: query
+          description: Year of release
+          required: false
+          type: integer
+        - name: type
+          in: query
+          description: Return movie or series
+          required: false
+          type: string
+          enum:
+            - movie
+            - series
+            - episode
+        - name: plot
+          in: query
+          description: Return short or full plot
+          required: false
+          type: string
+          enum:
+            - short
+            - full
+        - name: r
+          in: query
+          description: The response type to return
+          required: false
+          type: string
+          enum:
+            - json
+            - xml
+        - name: callback
+          in: query
+          description: JSONP callback name
+          required: false
+          type: string
+      x-dependencies:
+        - OnlyOne(i OR t, s);
+      responses:
+        '200':
+          description: Successful operation
+          schema:
+            $ref: "#/definitions/Response"
+        '401':
+          description: Not authenticated
+          schema:
+            $ref: "#/definitions/Error"
+#      security:
+#        - APIKeyQueryParam: []
+definitions:
+  Response:
+    type: object
+    required:
+      - Response
+    properties:
+      Response:
+        type: string
+        enum:
+          - "True"
+          - "False"
+        example: "True"
+      Error:
+        type: string
+        example: No API key provided.
+      Search:
+        type: array
+        items:
+          type: object
+          properties:
+            Title:
+              type: string
+              example: This Is the End
+            Year:
+              type: string
+              example: 2013
+            imdbID:
+              type: string
+              example: tt1245492
+            Type:
+              type: string
+              example: movie
+            Poster:
+              type: string
+              example: https://m.media-amazon.com/images/M/MV5BMTQxODE3NjM1Ml5BMl5BanBnXkFtZTcwMzkzNjc4OA@@._V1_SX300.jpg
+      totalResults:
+        type: integer
+        example: 2
+      Title:
+        type: string
+        example: This Is the End
+      Year:
+        type: string
+        example: 2013
+      Rated:
+        type: string
+        example: R
+      Released:
+        type: string
+        example: 12 Jun 2013
+      Runtime:
+        type: string
+        example: 107 min
+      Genre:
+        type: string
+        example: Comedy
+      Director:
+        type: string
+        example: Evan Goldberg, Seth Rogen
+      Writer:
+        type: string
+        example: Seth Rogen (screenplay), Evan Goldberg (screenplay), Seth Rogen (screen story), Evan Goldberg (screen story), Seth Rogen (short film \"Jay and Seth vs. The Apocalypse\"), Jason Stone (based on the short film \"Jay and Seth vs. The Apocalypse\" by), Evan Goldberg (short film \"Jay and Seth vs. The Apocalypse\")
+      Actors:
+        type: string
+        example: James Franco, Jonah Hill, Seth Rogen, Jay Baruchel
+      Plot:
+        type: string
+        example: 6 Los Angeles celebrities are stuck in James Franco's house after a series of devastating events just destroyed the city. Inside, the group not only have to face the apocalypse, but themselves.
+      Language:
+        type: string
+        example: English, Spanish
+      Country:
+        type: string
+        example: USA
+      Awards:
+        type: string
+        example: 10 wins & 20 nominations.
+      Poster:
+        type: string
+        example: https://m.media-amazon.com/images/M/MV5BMTQxODE3NjM1Ml5BMl5BanBnXkFtZTcwMzkzNjc4OA@@._V1_SX300.jpg
+      Ratings:
+        type: array
+        items:
+          type: object
+          properties:
+            Source:
+              type: string
+              example: Internet Movie Database
+            Value:
+              type: string
+              example: 6.6/10
+        example:
+      Metascore:
+        type: string
+        example: 67
+      imdbRating:
+        type: string
+        example: 6.6
+      imdbVotes:
+        type: string
+        example: 370,080
+      imdbID:
+        type: string
+        example: tt1245492
+      Type:
+        type: string
+        example: movie
+      DVD:
+        type: string
+        example: 01 Oct 2013
+      BoxOffice:
+        type: string
+        example: $96,200,000
+      Production:
+        type: string
+        example: Sony Pictures
+      Website:
+        type: string
+        example: N/A
+      Episode:
+        type: string
+        example: 4
+      Season:
+        type: string
+        example: 16
+      seriesID:
+        type: string
+        example: tt0341939
+      totalSeasons:
+        type: string
+        example: 2
+  Error:
+    type: object
+    required:
+      - Response
+      - Error
+    properties:
+      Response:
+        type: string
+        enum:
+          - "False"
+        example: "False"
+      Error:
+        type: string
+        example: No API key provided.
+securityDefinitions:
+  APIKeyQueryParam:
+    type: apiKey
+    name: apikey
+    in: query

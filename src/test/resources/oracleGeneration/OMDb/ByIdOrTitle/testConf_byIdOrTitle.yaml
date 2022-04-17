@@ -1,0 +1,168 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /
+    operationId: search
+    method: get
+    testParameters:
+    - name: t
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - The Avengers      # MOVIES
+          - White Snake
+          - Blade Runner
+          - V for Vendetta
+          - The Godfather
+          - The Dark Knight
+          - Pulp Fiction
+          - Parasite
+          - Taxi Driver
+          - Mad max
+          - Seven Samurai
+          - The Matrix
+          - John Wick
+          - Berserk           # SERIES
+          - Breaking Bad
+          - Dororo
+          - Fargo
+          - Game of Thrones
+          - Better Call Saul
+          - The Boys
+          - One Piece
+          - The last kingdom
+          - Lupin
+          - Say my name        # EPISODES Breaking Bad
+          - Ozymandias
+          - You Found Me      # The Boys
+          - Bagman            # Better Call Saul
+          - Namaste
+          - Finale            # The Office
+          - "Spider-Man: No Way Home"   # LONG IMDB IDs
+          - The Matrix Resurrections
+          - Arcane
+          - Moon Knight
+          - Sonic the Hedgehog 2
+          - Belfast
+          - A tale of two guns
+          - Sin eater
+          - "Demon Slayer: Kimetsu no Yaiba - Tsuzumi Mansion Arc"
+          - "Don't Look Up"0
+          objectValues: null
+        valid: true
+    - name: i
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - tt0848228	# MOVIES      The Avengers
+          - tt9288776	# White Snake
+          - tt0083658	# Blade Runner
+          - tt0434409	# V for Vendetta
+          - tt0068646	# The Godfather
+          - tt0468569	# The Dark Knight
+          - tt0110912	# Pulp Fiction
+          - tt6751668	# Parasite
+          - tt0075314	# Taxi Driver
+          - tt0079501	# Mad max
+          - tt0047478	# Seven Samurai
+          - tt0133093	# The Matrix
+          - tt2911666	# John Wick
+          - tt0318871	# SERIES Berserk
+          - tt0903747	# Breaking Bad
+          - tt9458304	# Dororo
+          - tt2802850	# Fargo
+          - tt0944947	# Game of Thrones
+          - tt3032476	# Better Call Saul
+          - tt1190634	# The Boys
+          - tt0388629	# One Piece
+          - tt4179452	# The last kingdom
+          - tt2531336	# Lupin
+          - tt2301467	#EPISODES       Say my name     # Breaking Bad
+          - tt2301451	# Ozymandias
+          - tt8100958	# You Found Me                  # The Boys
+          - tt8772218	# Bagman                        # Better Call Saul
+          - tt8772192	# Namaste
+          - tt2669746	# Finale                        # The Office
+          - tt10872600    # # LONG IMDB IDs (They are 10 characters long since December 2021)   Spider-Man: No Way Home
+          - tt10838180    # The Matrix Resurrections
+          - tt11126994    # Arcane
+          - tt10234724    # Moon Knight
+          - tt12412888    # Sonic the Hedgehog 2
+          - tt12789558    # Belfast
+          - tt16513514    # A tale of two guns
+          - tt11667808    # Sin eater
+          - tt16492678    # Demon Slayer: Kimetsu no Yaiba - Tsuzumi Mansion Arc
+          - tt11286314    # Don't Look Up
+          objectValues: null
+        valid: true
+    - name: type
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - movie
+          - series
+          - episode
+          objectValues: null
+        valid: true
+    - name: "y"
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1970
+          objectValues: null
+        - name: max
+          values:
+          - 2022
+          objectValues: null
+        valid: true
+    - name: plot
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - short
+          - full
+          objectValues: null
+        valid: true
+    - name: r
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - json
+          objectValues: null
+        valid: true
+    expectedResponse: 200
