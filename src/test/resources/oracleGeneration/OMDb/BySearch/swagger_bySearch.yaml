@@ -30,7 +30,7 @@ paths:
         - name: s
           in: query
           description: Title of movie or series
-          required: false
+          required: true
           type: string
         - name: type
           in: query
