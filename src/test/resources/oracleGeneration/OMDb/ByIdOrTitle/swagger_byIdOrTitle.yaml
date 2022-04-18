@@ -25,7 +25,7 @@ paths:
       tags:
         - Search
       summary: Search
-      operationId: search
+      operationId: searchByIdOrTitle
       parameters:
         - name: t
           in: query
@@ -68,7 +68,7 @@ paths:
             - json
 #            - xml
       x-dependencies:
-        - OnlyOne(i OR t);
+        - OnlyOne(i, t);
       responses:
         '200':
           description: Successful operation

@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
-  apiKeysPath: null
+  apiKeysPath: OMDb/apikeys.json
   headersPath: null
   oauthPath: null
 testConfiguration:
@@ -58,7 +58,7 @@ testConfiguration:
           - A tale of two guns
           - Sin eater
           - "Demon Slayer: Kimetsu no Yaiba - Tsuzumi Mansion Arc"
-          - "Don't Look Up"0
+          - "Don't Look Up"
           objectValues: null
         valid: true
     - name: i
