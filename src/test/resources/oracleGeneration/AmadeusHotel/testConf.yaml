@@ -1,0 +1,526 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /shopping/hotel-offers
+    operationId: getMultiHotelOffers
+    method: get
+    testParameters:
+    - name: hotelIds
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
+          objectValues: null
+        - name: values
+          values:
+          - HSMADACU    # EUROPE    ## SPAIN    # Madrid
+          - RTMADPUL
+          - WIMAD079
+          - WVMAD955
+          - ARMADREC
+          - ARMADCAR
+          - ARMADATO
+          - SMMAD130
+          - WVMAD011
+          - ARMADVAS
+          - ARMADAVE
+          - ARMADAIT
+          - ARMADCUZ
+          - SMSVQ148    # Seville
+          - ARSVQCIU
+          - ARSVQTOR
+          - ARSVQJUS
+          - WVBCN014    # Barcelona
+          - HSBCNAGY
+          - WVBCN054
+          - MDBCNMER
+          - WVBCN087
+          - INBCNAC7
+          - WVBCNCOL
+          - HSBCNAVW
+          - BRBCNDMB
+          - LMBCNPIC
+          - WVBCNEMA
+          - WVBCN779
+          - WIROM070    # ITALY  # Rome
+          - SBROMPLM
+          - BWROM024
+          - RTROMMER
+          - WVROM181
+          - BWROM242
+          - GIROM198
+          - ONROMRIF
+          - RTROMCOR
+          - ONROMMUS
+          - BWROM282
+          - WVFLRCAR    # Florence
+          - HSFLRAPH
+          - CHFLRHMT
+          - RTFLRSOF
+          - WVFLRORO
+          - WVFLRMIN
+          - ONFLR250
+          - WIFLR043
+          - XRFLR045
+          - ARFLRFIR
+          - GIFLR424
+          - HSFLRAQR
+          - HSFLRAHS
+          - BWVCE261    # Venice
+          - MCVCEJWM
+          - HSVCEAHJ
+          - XKPAR321   # FRANCE   # Paris
+          - OIPAR555
+          - BLPAR123
+          - RTPARSOR
+          - HSPARCEN
+          - RTPARNOV
+          - BRPARVDB
+          - BWPAR578
+          - LMPARCRE
+          - FGPARVOI
+          - RTLYSMON    # Lyon
+          - CPTLSED6    # Toulouse
+          - RTTLSMER
+          - BWTLS454
+          - CHTLSH02
+          - RTTLSMIR
+          - RTTLSAIR
+          - MCBERMCM    # GERMANY   # Berlin
+          - RZBERZTZ
+          - REBER870
+          - SBBERGEN
+          - SMBERMEL
+          - RTBERLIB
+          - ONBER609
+          - CYBERMTC
+          - RTBERPTZ
+          - WVBERTIT
+          - HYHAMIPH    # Hamburg
+          - MDHAM800
+          - LMHAMBEL
+          - ONHAMRUB
+          - ONMUCITA    # Munich
+          - CYMUCCYC
+          - MDMUCMER
+          - ONMUCAHM
+          - WVMUC371
+          - HIMUC041
+          - WVMUC306
+          - RTMUCPAN
+          - HLMUC258
+          - RCMUCRIR
+          - HILON98B    # UK   # London
+          - PILONARG
+          - ALLON591
+          - RTLONEXC
+          - HILON542
+          - RTLCYIBI
+          - PILONAQH
+          - HLLON300
+          - RTLONGRE
+          - WVLONINT
+          - PILPLBBW    # Liverpool
+          - RTLPLNOV
+          - PILPLADC
+          - WVLPLBRI
+          - HLLPL708
+          - RTLPLIBI
+          - HXLPL405
+          - PILPLASB
+          - HILPL830
+          - PILPLAKQ
+          - PIMANAFZ    # Manchester
+          - PIMANAFT
+          - HLMAN101
+          - PIMANAEE
+          - MCMANVAM
+          - WVMANBRI
+          - OMLAXCTR    # USA     ## WEST-COAST   # Los Angeles
+          - HHLAX269
+          - WVLAX684
+          - RCLAXRIR
+          - CYLAXLDC
+          - HILAXE1C
+          - WISFOSTF    # San Francisco
+          - MCSFOUSM
+          - HYSFOHUQ
+          - WHSFOXBK
+          - MDSFO957
+          - HYSFOHRS
+          - CYSFOCFC
+          - CYOAKCDC    # Oakland
+          - HGOAK110
+          - SIOAK913
+          - GIOAK510
+          - WILGBLON    # Long Beach
+          - CYLGBCYC
+          - RCLGBRIR
+          - DTLGB562
+          - HXNYC320    # EAST-COAST    # New York
+          - FNNYCLMF
+          - GINYC212
+          - HYNYCAWS
+          - MCNYCWSM
+          - WVNYCNHO
+          - DTNYC917
+          - CYNYCMTC
+          - HYEWRHJC
+          - MCLGABKM
+          - MCBOSLWM    # Boston
+          - KCBOSNNZ
+          - HYBOSHBF
+          - RZBOSRTZ
+          - WHBOS787
+          - MCBOSCBM
+          - WVBOS381
+          - SIBOS430
+          - HXBOSFI9
+          - CYBOSSOC
+          - RZMIARZR    # Miami
+          - CYMIAGVC
+          - HXMIAFZ7
+          - CYMIAGBC
+          - MCWASJWM    # Washington DC
+          - HIWAS13D
+          - CYWASFBC
+          - XRWAS193
+          - BRWASRBB
+          - MCPHLDTM    # Philadelphia
+          - RZPHLRTZ
+          - MDPHL238
+          - GIPHL174
+          - HXPHL130
+          - SIPHL992
+          - HGPHL527
+          - ALORL761    # Orlando
+          - WVMCO625
+          - CPMCOD08
+          - CYORLMAC
+          - HSLIMAAL    # SOUTH AMERICA   # Lima
+          - SILIM284
+          - MCBOGMCM    # Bogota
+          - HIBOG578
+          - SIBOG651
+          - HHBOG369
+          - RTSSAMER    # Salvador
+          - RTSSAMSB
+          - HLSEL235    # ASIA      ## South Korea    # Seoul
+          - CYSELCYC
+          - WISELWES
+          - MCSELDPM
+          - HYSELIRS
+          - HIBKK47E    # Thailand    # Bangkok
+          - CYBKKCYC
+          - XRBKK199
+          - RTBKKVIE
+          - MCBKKDTM
+          - BWBKK356
+          - RTBKKNAN
+          - CPBKK3C3
+          - ALBKK211
+          - MDBKK946
+          - HIBKKCAC
+          - RTBKKASO
+          - PUBKKMON
+          - MDCEI160    # Chiang Mai
+          - WHUSM058    # Koh Samui
+          - CYTYOGZC    # Japan       # Tokyo
+          - CYTYOCYC
+          - ICTYOICB
+          - SIKMI422    # Miyazaki
+          - HLOSA239    # Osaka
+          - BWOSA523
+          - XROSA198
+          - SIOSA092
+          - RZUKYRZZ
+          - MCOSAMCM
+          - WIOSAOSA
+          - CPNGSHNG    # Nagasaki
+          - SIHIJ595
+          - MCDXBHCM    #  United Arab Emirates   # Dubai
+          - RTDXBNOV
+          - SIDXB408
+          - WVDXBAIR
+          - WVDXB488
+          - SIDXB093
+          - MDDXB328
+          - MDDXB834
+          - HIDXBEE0
+          - ICDXBD92
+          - LMSYD707    # OCEANIA     ## Australia      # Sydney
+          - RTSYDMEN
+          - WVSYD007
+          - MCSYDMCM
+          - WVSYDKOA
+          - WVSYDOAK
+          - RTSYDKIN
+          - BWSYD207
+          - RTSYDIWS
+          - LMSYD895
+          - WVSYD309
+          - BWMEL270    # Melbourne
+          - HLADL215    # Adelaide
+          - WVADLFRA
+          - RTADLROC
+          - WVADL860
+          - RTADLGRO
+          - WVADL347
+          - LMAKL880  # New Zealand   # Auckland
+          - IQAKLHER
+          - LMAKL490
+          - LMAKL131
+          - LMAKL002
+          - HLAKL100
+          - BWAKL460
+          - RTAKLNEL
+          - RTAKLIEL
+          objectValues: null
+        valid: true
+    - name: adults
+      in: query
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 9
+          objectValues: null
+        valid: true
+    - name: checkInDate
+      in: query
+      weight: 0.4
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: fromToday
+          values:
+            - true
+        - name: endDate
+          values:
+            - 2022-04-29
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: checkOutDate
+      in: query
+      weight: 0.4
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: startDate
+          values:
+            - 2022-04-30
+        - name: endDate
+          values:
+            - 2022-05-10
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        valid: true
+    - name: countryOfResidence
+      in: query
+      weight: 0.3
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - ES
+          - IT
+          - DE
+          - FR
+          - GB
+          - US
+          - AR
+          - BR
+          - MX
+          - CA
+          - CL
+          - MA
+          - AE
+          - UY
+          - JP
+          - CN
+          - TW
+          - CH
+          - KR
+          - AU
+          - NZ
+          objectValues: null
+        valid: true
+    - name: roomQuantity
+      in: query
+      weight: 0.3
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 9
+          objectValues: null
+        valid: true
+    - name: priceRange
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "0-200"
+          - "100-1000"
+          - "-10000"
+          - "100"
+          - "300"
+          objectValues: null
+        valid: true
+    - name: currency
+      in: query
+      weight: 0.3
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - EUR
+          - USD
+          - AED
+          - AUD
+          - BOB
+          - BRL
+          - CAD
+          - CHF
+          - CLP
+          - CNY
+          - COP
+          - EGP
+          - HKD
+          - HRK
+          - HUF
+          - JPY
+          - KRW
+          - MKD
+          - RUB
+          - UYU
+          - ZWL
+          objectValues: null
+        valid: true
+    - name: paymentPolicy
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - GUARANTEE
+          - DEPOSIT
+          - NONE
+          objectValues: null
+        valid: true
+    - name: boardType
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - ROOM_ONLY
+          - BREAKFAST
+          - HALF_BOARD
+          - FULL_BOARD
+          - ALL_INCLUSIVE
+          objectValues: null
+        valid: true
+    - name: includeClosed
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: bestRateOnly
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: lang
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "fr-FR"
+          - FR
+          - fr
+          - "es-ES"
+          - ES
+          - es
+          - "de-DE"
+          - DE
+          - de
+          - "ja-JP"
+          - JA
+          - ja
+          - "ar-DZ"
+          - AR
+          - ar
+          - "it-IT"
+          - IT
+          - it
+          - "zh-CN"
+          - ZH
+          - zh
+          - "hu-HU"
+          - HU
+          - hu
+          - "ru-RU"
+          - RU
+          - ru
+          - "ko-KR"
+          - KO
+          - ko
+          objectValues: null
+        valid: true
+    expectedResponse: 200

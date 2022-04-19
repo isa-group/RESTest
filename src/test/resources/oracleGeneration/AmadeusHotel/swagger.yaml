@@ -152,6 +152,8 @@ paths:
           description: "Requested language of descriptive texts. \nExamples: FR , fr
           , fr-FR.\nIf a language is not available the text will be returned in english.\nISO
           language code (https://www.iso.org/iso-639-language-codes.html)."
+      x-dependencies:
+        - IF priceRange THEN currency;
       responses:
         '200':
           description: OK
