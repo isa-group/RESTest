@@ -5,7 +5,7 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
-  oauthPath: null
+  oauthPath: Amadeus/oauth3.json
 testConfiguration:
   operations:
   - testPath: /shopping/hotel-offers
@@ -313,7 +313,7 @@ testConfiguration:
         valid: true
     - name: checkInDate
       in: query
-      weight: 0.4
+      weight: 0.2
       generators:
       - type: RandomDate
         genParameters:
@@ -330,7 +330,7 @@ testConfiguration:
         valid: true
     - name: checkOutDate
       in: query
-      weight: 0.4
+      weight: 0.2
       generators:
       - type: RandomDate
         genParameters:
@@ -378,7 +378,7 @@ testConfiguration:
         valid: true
     - name: roomQuantity
       in: query
-      weight: 0.3
+      weight: 0.2
       generators:
       - type: RandomNumber
         genParameters:
@@ -408,6 +408,10 @@ testConfiguration:
           - "-10000"
           - "100"
           - "300"
+          - "60"
+          - "0-100000"
+          - "0-500"
+          - "0-50000"
           objectValues: null
         valid: true
     - name: currency
@@ -443,7 +447,7 @@ testConfiguration:
         valid: true
     - name: paymentPolicy
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:
@@ -456,7 +460,7 @@ testConfiguration:
         valid: true
     - name: boardType
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:
@@ -471,21 +475,21 @@ testConfiguration:
         valid: true
     - name: includeClosed
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomBoolean
         genParameters: []
         valid: true
     - name: bestRateOnly
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomBoolean
         genParameters: []
         valid: true
     - name: lang
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:

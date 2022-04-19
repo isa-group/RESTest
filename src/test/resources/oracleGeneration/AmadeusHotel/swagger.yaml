@@ -27,7 +27,7 @@ paths:
       operationId: getMultiHotelOffers
       deprecated: false
       produces:
-        - application/json
+        - application/vnd.amadeus+json
       parameters:
         - name: hotelIds
           in: query
@@ -215,8 +215,18 @@ definitions:
     title: MultiResponse
     type: object
     properties:
+      dictionaries: # Added
+        type: object
+        description: "Dictionary of Conversion rates"
+        properties:
+          currencyConversionLookupRates:
+            type: object
+            additionalProperties:
+              type: object
       data:
-        "$ref": "#/definitions/HotelOffers"
+        type: array
+        items:
+          $ref: "#/definitions/HotelOffers"
     example:
       data:
         - type: hotel-offers
@@ -318,6 +328,15 @@ definitions:
         example: PAR
         type: string
         pattern: "^[A-Z]{3}$"
+      latitude:   # Added
+        description: "Latitude"
+        type:  number
+      longitude:  # Added
+        description: "Longitude"
+        type: number
+      type:       # Added
+        description: "type"
+        type: string
   HotelOffer:
     title: HotelOffer
     description: Hotel Offer
@@ -424,6 +443,9 @@ definitions:
         description: A self link to the object. Use this to refresh the Offer price
         example: https://test.travel.api.amadeus.com/v2/shopping/hotel-offers/63A93695B58821ABB0EC2B33FE9FAB24D72BF34B1BD7D707293763D8D9378FC3
         type: string
+      cancelPolicyHash: # Added
+        description: "Cancel policy hash"
+        type: string
     required:
       - id
       - rateCode
@@ -509,7 +531,7 @@ definitions:
       amount:
         description: Amount of the cancellation fee.
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       numberOfNights:
         description: Number of nights due as fee in case of cancellation.
         type: integer
@@ -519,7 +541,7 @@ definitions:
         description: Percentage of the total stay amount to be paid in case of cancellation.
           Value is between 0 and 100.
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       deadline:
         description: |-
           Represents the deadline after which the penalty applies. DateTime is in ISO 8601 [https://www.w3.org/TR/NOTE-datetime].
@@ -528,7 +550,7 @@ definitions:
           Example: 2010-08-14T12:00:00-01:00
           The value is expressed in the hotel local time zone, with the added time zone difference. So you can compute the deadline in UTC(GMT) if desired.
         type: string
-        format: date-time
+#        format: date-time
       description:
         "$ref": "#/definitions/QualifiedFreeText"
   HotelProduct_CheckInOutPolicy:
@@ -555,12 +577,12 @@ definitions:
         description: Percentage of the commission paid to the travel seller. Value
           is between 0 and 100
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       amount:
         description: Amount of the commission paid to the travel seller. The amount
           is always linked to the currency code of the offer
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       description:
         "$ref": "#/definitions/QualifiedFreeText"
   HotelProduct_DepositPolicy:
@@ -572,13 +594,13 @@ definitions:
       amount:
         description: Deposit-Prepay amount
         type: string
-        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
+#        pattern: "^\\\\d+(\\\\.\\\\d+)?$"
       deadline:
         description: "The date and time of the deadline in ISO 8601[https://www.w3.org/TR/NOTE-datetime].
           \n Example: 2010-08-14T13:00:00\n Please note that this value is expressed
           in the hotels local time zone"
         type: string
-        format: date-time
+#        format: date-time
       description:
         "$ref": "#/definitions/QualifiedFreeText"
       acceptedPayments:
@@ -643,7 +665,7 @@ definitions:
           \n Example: 2010-08-14T13:00:00\n Please note that this value is expressed
           in the hotels local time zone"
         type: string
-        format: date-time
+#        format: date-time
     required:
       - deadline
   HotelProduct_HotelPrice:
@@ -842,6 +864,10 @@ definitions:
       - DEPOSIT
       - PREPAY
       - HOLDTIME
+      - guarantee   # Added
+      - deposit     # Added
+      - prepay      # Added
+      - holdtime    # Added
   Price:
     title: Price
     description: Price valuation information
