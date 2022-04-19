@@ -2,7 +2,7 @@ import pandas as pd
 from urllib.parse import unquote
 
 from root.helpers.spec import get_spec
-from root.processing.encodings import encode_boolean, encode_date, encode_enum, encode_number, encode_text, is_boolean_serie
+from root.processing.encodings import encode_boolean, encode_datetime, encode_enum, encode_number, encode_text, is_boolean_serie
 
 def raw2preprocessed(raw, properties_file):
 
@@ -49,9 +49,9 @@ def raw2preprocessed(raw, properties_file):
     tree_data = tree_data.loc[tree_data.index.drop_duplicates(keep ='first')]
 
     # add missing columns (to match idl verification)
-    for column in types.keys():
-        if not column in tree_data.columns:
-            tree_data[column] = pd.Series()
+    # for column in types.keys():
+    #     if not column in tree_data.columns:
+    #         tree_data[column] = pd.Series()
 
     # change packagedimensions%5B%5D to packagedimensions[]
     tree_data = tree_data.rename(columns={x: unquote(x) for x in tree_data.columns})
@@ -64,7 +64,7 @@ def raw2preprocessed(raw, properties_file):
                 tree_data = encode_number(tree_data, column)
 
             if types[column] == 'datetime':
-                tree_data = encode_date(tree_data, column)
+                tree_data = encode_datetime(tree_data, column)
 
             if types[column] == 'enum':
                 if is_boolean_serie(tree_data[column]):

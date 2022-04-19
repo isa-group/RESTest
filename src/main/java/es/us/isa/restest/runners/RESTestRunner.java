@@ -171,4 +171,6 @@ public class RESTestRunner {
 	public void setGenerator(AbstractTestCaseGenerator generator) {
 		this.generator = generator;
 	}
+
+	public AbstractTestCaseGenerator getGenerator() { return generator; }
 }

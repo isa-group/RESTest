@@ -49,7 +49,7 @@ testConfiguration:
             genParameters:
               - name: csv
                 values:
-                  - src/test/resources/Stripe_Coupons/aux/currency_codes.csv
+                  - src/test/resources/Stripe_Coupons/data/currency_codes.csv
                 objectValues: null
       - name: duration
         in: formData

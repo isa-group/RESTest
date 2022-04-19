@@ -641,4 +641,8 @@ public abstract class AbstractTestCaseGenerator {
 	public void setCheckTestCases(boolean checkTestCases) {
 		this.checkTestCases = checkTestCases;
 	}
+
+	public int getNumberOfTests() { return numberOfTests; }
+
+	public void setNumberOfTests(int numberOfTests) { this.numberOfTests = numberOfTests; }
 }

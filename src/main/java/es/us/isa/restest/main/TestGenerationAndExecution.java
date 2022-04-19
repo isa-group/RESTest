@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/GitHub/props.properties";
+	private static String propertiesFilePath = "src/test/resources/YouTube_CommentsAndThreads/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -156,6 +156,11 @@ public class TestGenerationAndExecution {
 		// Main loop
 		int iteration = 1;
 		while (totalNumTestCases == -1 || runner.getNumTestCases() < totalNumTestCases) {
+
+			//	Limit the number of tests to execute in this iteration to the number of remaining tests
+			runner.getGenerator().setNumberOfTests(Math.min(runner.getGenerator().getNumberOfTests(), totalNumTestCases-runner.getNumTestCases()));
+
+			// Execute the iteration
 			testIteration();
 
 			// Only for ML generator: if keepLearning is enabled, retrain the model with newly generated test cases

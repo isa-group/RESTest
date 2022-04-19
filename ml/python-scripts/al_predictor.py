@@ -47,8 +47,10 @@ except FileNotFoundError:
 # transform train/pool data to tree form
 X_pool = raw2preprocessed(pool, properties_file)
 
-# load predictor
+# predictor path
 predictor_path = experiment_folder + '/predictor.joblib'
+
+# try to load predictor, except random testing (should happen in first iteration)
 try:
     predictor = joblib.load(experiment_folder + '/predictor.joblib')
 

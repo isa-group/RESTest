@@ -27,7 +27,7 @@ def encode_enum(data, column):
 # <<< Enum encoding <<<
 
 # >>> Dates encoding >>>
-def encode_date(data, column):
+def encode_datetime(data, column):
     # EXAMPLE: publishedBefore=2016-10-04T23%3A50%3A37Z to 1475617837.0
 
     # 'presence' column

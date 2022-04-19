@@ -6,6 +6,10 @@ from root.helpers.properties import PropertiesFile
 
 def get_spec(properties_file):
 
+    types = {}
+    descriptions = {}
+    api_keys = []
+
     # define the properties object
     try:
         properties = PropertiesFile(properties_file)
@@ -27,10 +31,6 @@ def get_spec(properties_file):
             spec = json.load(f)
         elif oas_path.endswith('yaml'):
             spec = yaml.safe_load(f)
-
-    types = {}
-    descriptions = {}
-    api_keys = []
     
     # version 2.0
     if not 'openapi' in spec.keys():
