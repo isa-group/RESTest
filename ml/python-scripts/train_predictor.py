@@ -4,9 +4,10 @@ import numpy as np
 from sklearn.model_selection import cross_val_score
 
 from root.constants import PREDICTOR, RESTEST_RESULTS_PATH, SCALER
-from root.processing.dataset import read_dataset
+from root.data.dataset import read_dataset
 from root.helpers.properties import PropertiesFile
-from root.processing.resampling import resample
+from root.helpers.resampling import resample
+from root.helpers.scores import compute_scores
 
 if len(sys.argv) > 1:
 
@@ -18,7 +19,7 @@ if len(sys.argv) > 1:
 
 else: # debug mode
     print('debug mode...')
-    properties_file = '/home/giuliano/RESTest/src/test/resources/Stripe_Products/props.properties'
+    properties_file = '/home/giuliano/RESTest/src/test/resources/YouTube_Search/props.properties'
     sampling_ratio = 0.8
 
 # define the properties object
@@ -75,13 +76,7 @@ else:
     joblib.dump(predictor, training_data_path + '/predictor.joblib')
 
     # kfold cross validation of the predictor:
-    if train_data.size < 50:
-        accuracy = 0
-        roc_auc  = 0
-    else:
-        accuracy = np.mean(cross_val_score(predictor, X_train, y_train, cv=5, scoring='accuracy'))
-        roc_auc  = np.mean(cross_val_score(predictor, X_train, y_train, cv=5, scoring='roc_auc'))
-
+    accuracy, roc_auc = compute_scores(predictor, X_train, y_train)    
     score = min(accuracy, roc_auc)
 
     # print score to be parsed by RESTest

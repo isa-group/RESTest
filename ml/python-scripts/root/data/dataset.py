@@ -4,7 +4,7 @@ from sklearn.metrics import accuracy_score, roc_auc_score
 from root.helpers.spec import get_spec
 
 # from root.processing.idl.dependencies import DEPENDENCIES
-from root.processing.helpers import raw2preprocessed, read_raw
+from root.data.processing import raw2preprocessed, read_raw
 
 def read_dataset(path, properties_file):
 

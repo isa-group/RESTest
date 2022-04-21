@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.model_selection import cross_val_score
 
 from root.constants import RESTEST_RESULTS_PATH
-from root.processing.dataset import read_dataset
+from root.data.dataset import read_dataset
 from root.helpers.properties import PropertiesFile
 
 if len(sys.argv) > 1:

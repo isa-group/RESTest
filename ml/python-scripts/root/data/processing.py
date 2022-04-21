@@ -2,7 +2,7 @@ import pandas as pd
 from urllib.parse import unquote
 
 from root.helpers.spec import get_spec
-from root.processing.encodings import encode_boolean, encode_datetime, encode_enum, encode_number, encode_text, is_boolean_serie
+from root.data.encodings import encode_boolean, encode_datetime, encode_enum, encode_number, encode_text, is_boolean_serie
 
 def raw2preprocessed(raw, properties_file):
 

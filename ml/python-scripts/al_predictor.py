@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from root.constants import RESTEST_RESULTS_PATH
-from root.processing.helpers import label_requests, read_raw, raw2preprocessed
+from root.data.processing import label_requests, read_raw, raw2preprocessed
 from root.helpers.properties import PropertiesFile
 
 if len(sys.argv) > 1:
