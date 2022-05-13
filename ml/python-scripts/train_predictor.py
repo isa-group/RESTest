@@ -14,13 +14,13 @@ if len(sys.argv) > 1:
     # path to the .properties file
     properties_file = sys.argv[1]
 
-    # sampling ratio
-    sampling_ratio = float(sys.argv[2])
+    # resampling ratio
+    resampling_ratio = float(sys.argv[2])
 
 else: # debug mode
     print('debug mode...')
     properties_file = '/home/giuliano/RESTest/src/test/resources/YouTube_Search/props.properties'
-    sampling_ratio = 0.8
+    resampling_ratio = 0.8
 
 # define the properties object
 try:
@@ -46,7 +46,7 @@ except FileNotFoundError:
     raise Exception('training data folder "'+training_data_path+'" not found.')
 
 # if all responses were 401, 403, 413, or 429, score to be parsed by RESTest is 0
-if train_data.size == 0:
+if train_data.size < 30:
     print(0)
 else:
     # preprocess train data
@@ -57,7 +57,7 @@ else:
     features_names = X_train.columns.tolist()
 
     # resample and compute certainty threshold
-    X_train, y_train, certainty_threshold = resample(X_train, y_train, sampling_ratio)
+    X_train, y_train, certainty_threshold = resample(X_train, y_train, resampling_ratio)
 
     # scale data
     scaler  = SCALER

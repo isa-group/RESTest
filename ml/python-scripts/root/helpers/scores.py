@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.model_selection import cross_val_score
 
 # for dataset with a lower than threhsold size, the scores are 0
-THRESHOLD = 50
+THRESHOLD = 25
 
 def compute_scores(predictor, X_train, y_train):
 
@@ -18,8 +18,8 @@ def compute_scores(predictor, X_train, y_train):
     n_folds = min(5, n_minority)
 
     # compute the metrics
-    accuracy = np.mean(cross_val_score(predictor, X_train, y_train, cv=min(5), scoring='accuracy'))
-    roc_auc  = np.mean(cross_val_score(predictor, X_train, y_train, cv=5, scoring='roc_auc'))
+    accuracy = np.mean(cross_val_score(predictor, X_train, y_train, cv=n_folds, scoring='accuracy'))
+    roc_auc  = np.mean(cross_val_score(predictor, X_train, y_train, cv=n_folds, scoring='roc_auc'))
 
     return accuracy, roc_auc
 

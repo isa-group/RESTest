@@ -2,6 +2,7 @@ import sys
 import joblib
 import numpy as np
 import pandas as pd
+import os
 
 from root.constants import RESTEST_RESULTS_PATH
 from root.data.processing import label_requests, read_raw, raw2preprocessed
@@ -12,7 +13,7 @@ if len(sys.argv) > 1:
     # path to the .properties file
     properties_file = sys.argv[1]
 
-    # number of tests to query from pool
+    # number of tests
     n_tests = int(sys.argv[2])
 
 else: # debug
@@ -47,12 +48,10 @@ except FileNotFoundError:
 # transform train/pool data to tree form
 X_pool = raw2preprocessed(pool, properties_file)
 
-# predictor path
-predictor_path = experiment_folder + '/predictor.joblib'
-
 # try to load predictor, except random testing (should happen in first iteration)
-try:
-    predictor = joblib.load(experiment_folder + '/predictor.joblib')
+if os.path.exists(predictor_path):
+
+    predictor = joblib.load(predictor_path)
 
     # subselect common features
     common_features = [f for f in predictor.features_names if f in X_pool.columns]
@@ -70,9 +69,9 @@ try:
     probabilities = pd.Series(np.max(predictor.predict_proba(X_pool), axis=1), index=pool.index).sort_values(ascending=True)
 
     # query first n_tests requests
-    query = pool.iloc[probabilities.index.tolist()[:n_tests]]
+    query = pool.loc[probabilities.index.tolist()[:n_tests]]
 
-except Exception as e:
+else:
     print('No predictor found in ' + predictor_path + '. Proceeding with random testing.')
     query = pool[:n_tests]
 
