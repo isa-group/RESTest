@@ -34,7 +34,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/Stripe_Coupons/props.properties";
+	private static String propertiesFilePath = "src/test/resources/GitHub/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -81,6 +81,7 @@ public class TestGenerationAndExecution {
 	private static Float mlResamplingRatio;								// TODO
 	private static Boolean mlInitialData;								// Whether to use initial data to train the ML model or not (stored in /target/test-data/experimentName)
 	private static Boolean mlKeepLearning;								// Whether to keep refining the ML model after every RESTest iteration with the generated test cases
+	private static String mlLearningStrategy;							// Set to "active" for active learning or "random" for random learning
 
 	// ARTE
 	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
@@ -150,8 +151,10 @@ public class TestGenerationAndExecution {
 
 
 		// ML configuration
-		if (generatorType.equals("MLT"))
-			activeLearning();
+		if (generatorType.equals("MLT")) {
+			mlLearning();
+		}
+
 
 		// Main loop
 		int iteration = 1;
@@ -205,7 +208,7 @@ public class TestGenerationAndExecution {
 		runner.run();
 	}
 
-	private static void activeLearning() throws RESTestException {
+	private static void mlLearning() throws RESTestException {
 		float precision = 0f;
 		float maxPrecision = precision;
 		int iterationsWithoutLearning = 0;
@@ -215,17 +218,25 @@ public class TestGenerationAndExecution {
 			maxPrecision = precision;
 		}
 
-		ALDrivenTestCaseGenerator alTestGenerator = new ALDrivenTestCaseGenerator(spec, testConf, mlTrainingRequestsPerIteration);
-		alTestGenerator.setPropertiesFilePath(propertiesFilePath);
-		alTestGenerator.setMlTrainingRequestsPerIteration(mlTrainingRequestsPerIteration);
-		alTestGenerator.setMlUncertaintyPredictorCommand(mlUncertaintyPredictorCommand);
-		alTestGenerator.setMlTrainingMaxIterationsNotLearning(mlTrainingMaxIterationsNotLearning);
-		alTestGenerator.setMlTrainingPrecisionThreshold(mlTrainingPrecisionThreshold);
-		alTestGenerator.setMlCandidatesRatio(mlCandidatesRatio);
-		alTestGenerator.setPoolFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
+		// Random or Active learning
+		if (mlLearningStrategy.equals("random")) {
+			RandomTestCaseGenerator randomTestGenerator = new RandomTestCaseGenerator(spec, testConf, mlTrainingRequestsPerIteration);
 
-		// Use ALTestGenerator with the Runner
-		runner.setGenerator(alTestGenerator);
+			// Use randomTestGenerator with the Runner
+			runner.setGenerator(randomTestGenerator);
+		} else {
+			ALDrivenTestCaseGenerator ALTestGenerator = new ALDrivenTestCaseGenerator(spec, testConf, mlTrainingRequestsPerIteration);
+			ALTestGenerator.setPropertiesFilePath(propertiesFilePath);
+			ALTestGenerator.setMlTrainingRequestsPerIteration(mlTrainingRequestsPerIteration);
+			ALTestGenerator.setMlUncertaintyPredictorCommand(mlUncertaintyPredictorCommand);
+			ALTestGenerator.setMlTrainingMaxIterationsNotLearning(mlTrainingMaxIterationsNotLearning);
+			ALTestGenerator.setMlTrainingPrecisionThreshold(mlTrainingPrecisionThreshold);
+			ALTestGenerator.setMlCandidatesRatio(mlCandidatesRatio);
+			ALTestGenerator.setPoolFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
+
+			// Use ALTestGenerator with the Runner
+			runner.setGenerator(ALTestGenerator);
+		}
 
 		while (precision < mlTrainingPrecisionThreshold && iterationsWithoutLearning < mlTrainingMaxIterationsNotLearning && runner.getNumTestCases() < totalNumTestCases) {
 			testIteration();
@@ -530,6 +541,10 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("ml.keeplearning") != null)
 			mlKeepLearning = Boolean.parseBoolean(readParameterValue("ml.keeplearning"));
 		logger.info("ML keep learning: {}", mlKeepLearning);
+
+		if (readParameterValue("ml.learning.strategy") != null)
+			mlLearningStrategy = readParameterValue("ml.learning.strategy");
+		logger.info("ML learning strategy: {}", mlLearningStrategy);
 
 		// ARTE
 		if (readParameterValue("learnRegex") != null)
