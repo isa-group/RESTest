@@ -44,8 +44,11 @@ src/test/resources/restest-test-resources/test_collection_urlencoded.postman_col
 stateful_data.json
 
 restest-full.jar
-predictor
-MLT-utils
 
 src/generation/java
 /src/main/resources/TestData/Generated/
+
+ml/mlTrain
+ml/mlUncertaintyPredictor
+ml/mlValidityPredictor
+ml/executables
