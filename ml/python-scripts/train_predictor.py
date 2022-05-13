@@ -70,7 +70,6 @@ else:
     # set certainty_threshold and scaler as predictor attributes
     predictor.features_names = features_names
     predictor.certainty_threshold = certainty_threshold
-    predictor.scaler = scaler
 
     # save predictor
     joblib.dump(predictor, training_data_path + '/predictor.joblib')

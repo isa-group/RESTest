@@ -3,7 +3,7 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from root.constants import RESTEST_RESULTS_PATH
+from root.constants import RESTEST_RESULTS_PATH, SCALER
 from root.data.processing import label_requests, read_raw, raw2preprocessed
 from root.helpers.properties import PropertiesFile
 
@@ -14,7 +14,7 @@ if len(sys.argv) > 1:
 
 else: # debug mode
     print('debug mode...')
-    properties_file = '/home/giuliano/RESTest/src/test/resources/GitHub/props.properties'
+    properties_file = '/home/giuliano/RESTest/src/test/resources/Stripe_Products/props.properties'
 
 # define the properties object
 try:
@@ -56,8 +56,8 @@ common_features = [f for f in predictor.features_names if f in X_pool.columns]
 X_pool  = X_pool[common_features]
 
 # scale data
-scaler  = predictor.scaler
-X_pool  = scaler.transform(X_pool)
+scaler  = SCALER
+X_pool  = scaler.fit_transform(X_pool)
 
 # label the pool with predictions
 predictions = pd.Series(predictor.predict(X_pool), index=pool.index)

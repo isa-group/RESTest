@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import os
 
-from root.constants import RESTEST_RESULTS_PATH
+from root.constants import RESTEST_RESULTS_PATH, SCALER
 from root.data.processing import label_requests, read_raw, raw2preprocessed
 from root.helpers.properties import PropertiesFile
 
@@ -58,8 +58,8 @@ if os.path.exists(predictor_path):
     X_pool = X_pool[common_features]
 
     # scale data
-    scaler = predictor.scaler
-    X_pool = scaler.transform(X_pool)
+    scaler = SCALER
+    X_pool = scaler.fit_transform(X_pool)
 
     # label the pool with predictions
     predictions = pd.Series(predictor.predict(X_pool), index=pool.index)
