@@ -1,2 +1,2 @@
-#! /bin/bash
+#!/bin/bash
 /home/giuliano/anaconda3/envs/testing/bin/python /home/giuliano/RESTest/ml/python-scripts/train_predictor.py $1 $2

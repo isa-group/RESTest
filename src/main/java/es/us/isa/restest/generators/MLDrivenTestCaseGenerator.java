@@ -23,6 +23,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	private String propertiesFilePath;
 	private String mlValidityPredictorCommand;						// TODO
 	private Integer mlCandidatesRatio;								// TODO
+	private Float mlResamplingRatio;
 	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the selector)
 	private String poolFolderPath;
 
@@ -65,7 +66,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			// Feed test cases to predictor, which updates them
 			boolean commandOk = true;
 			try {
-				runCommand(mlValidityPredictorCommand, new String[]{propertiesFilePath});
+				runCommand(mlValidityPredictorCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
 			} catch(RESTestException e) {
 				commandOk = false;
 			}
@@ -154,4 +155,6 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	private String getPoolDataPath() {
 		return poolFolderPath + "/" + CSV_NAME;
 	}
+
+	public void setMlResamplingRatio(Float mlResamplingRatio) {	this.mlResamplingRatio = mlResamplingRatio; }
 }

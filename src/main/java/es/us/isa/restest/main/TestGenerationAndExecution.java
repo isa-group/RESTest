@@ -116,6 +116,11 @@ public class TestGenerationAndExecution {
 		argsList = Arrays.asList(args);
 		readParameterValues();
 
+		// ML configuration
+		if (generatorType.equals("MLT") && mlInitialData) {
+			deletePreviousResults = false;
+		}
+
 		// Set proxy globally, if specified
 		if (proxy != null) {
 			System.setProperty("http.proxyHost", proxy.split(":")[0]);
@@ -152,6 +157,9 @@ public class TestGenerationAndExecution {
 
 		// ML configuration
 		if (generatorType.equals("MLT")) {
+			if (mlInitialData) {
+				deletePreviousResults = false;
+			}
 			mlLearning();
 		}
 
@@ -233,6 +241,7 @@ public class TestGenerationAndExecution {
 			ALTestGenerator.setMlTrainingPrecisionThreshold(mlTrainingPrecisionThreshold);
 			ALTestGenerator.setMlCandidatesRatio(mlCandidatesRatio);
 			ALTestGenerator.setPoolFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
+			ALTestGenerator.setMlResamplingRatio(mlResamplingRatio);
 
 			// Use ALTestGenerator with the Runner
 			runner.setGenerator(ALTestGenerator);
@@ -299,6 +308,7 @@ public class TestGenerationAndExecution {
 				((MLDrivenTestCaseGenerator) gen).setMlCandidatesRatio(mlCandidatesRatio);
 				((MLDrivenTestCaseGenerator) gen).setPropertiesFilePath(propertiesFilePath);
 				((MLDrivenTestCaseGenerator) gen).setPoolFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
+				((MLDrivenTestCaseGenerator) gen).setMlResamplingRatio(mlResamplingRatio);
 				gen.setFaultyRatio(faultyRatio);
 				break;
 			default:

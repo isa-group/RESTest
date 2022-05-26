@@ -24,6 +24,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	private Integer mlTrainingRequestsPerIteration;
 	private Integer mlTrainingMaxIterationsNotLearning;
 	private Float mlTrainingPrecisionThreshold;
+	private Float mlResamplingRatio;
 	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the selector)
 	private String poolFolderPath;
 
@@ -66,7 +67,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			// Feed test cases to predictor, which queries and labels the best ones
 			boolean commandOk = true;
 			try {
-				runCommand(mlUncertaintyPredictorCommand, new String[]{propertiesFilePath, Integer.toString(mlTrainingRequestsPerIteration)});
+				runCommand(mlUncertaintyPredictorCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio), Integer.toString(mlTrainingRequestsPerIteration)});
 			} catch(RESTestException e) {
 				commandOk = false;
 			}
@@ -168,5 +169,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	private String getPoolDataPath() {
 		return poolFolderPath + "/" + CSV_NAME;
 	}
+
+	public void setMlResamplingRatio(Float mlResamplingRatio) { this.mlResamplingRatio = mlResamplingRatio; }
 }
 
