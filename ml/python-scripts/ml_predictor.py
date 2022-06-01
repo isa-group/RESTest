@@ -1,6 +1,5 @@
 import sys
 import numpy as np
-from sklearn.model_selection import cross_val_score
 import pandas as pd
 
 from root.constants import PREDICTOR, RESTEST_RESULTS_PATH, SCALER
@@ -8,7 +7,6 @@ from root.data.dataset import read_dataset
 from root.data.processing import label_requests, raw2preprocessed, read_raw
 from root.helpers.properties import PropertiesFile
 from root.helpers.resampling import resample
-from root.helpers.scores import compute_scores
 
 if len(sys.argv) > 1:
 

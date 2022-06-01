@@ -1,8 +1,6 @@
 import sys
-import joblib
 import numpy as np
 import pandas as pd
-import os
 
 from root.constants import PREDICTOR, RESTEST_RESULTS_PATH, SCALER
 from root.data.dataset import read_dataset

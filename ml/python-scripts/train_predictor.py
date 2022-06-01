@@ -1,6 +1,4 @@
 import sys
-import numpy as np
-from sklearn.model_selection import cross_val_score
 
 from root.constants import PREDICTOR, RESTEST_RESULTS_PATH, SCALER
 from root.data.dataset import read_dataset
