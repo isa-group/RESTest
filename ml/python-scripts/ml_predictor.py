@@ -49,11 +49,11 @@ try:
 except FileNotFoundError:
     raise Exception('pool data '+ experiment_folder + '/pool.csv not found.')
 
-# preprocess train data
+# process train data
 X_train = train_data.preprocess_requests()
 y_train = train_data.obt_validities
 
-# transform train/pool data to tree form
+# process pool data
 X_pool = raw2preprocessed(pool, properties_file)
 
 # subselect the common features

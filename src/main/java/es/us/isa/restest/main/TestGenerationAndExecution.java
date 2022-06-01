@@ -80,7 +80,6 @@ public class TestGenerationAndExecution {
 	private static Integer mlCandidatesRatio;							// When generating N desired test cases with ML, generate N*mlCandidatesRatio potential test cases
 	private static Float mlResamplingRatio;								// TODO
 	private static Boolean mlInitialData;								// Whether to use initial data to train the ML model or not (stored in /target/test-data/experimentName)
-	private static Boolean mlKeepLearning;								// Whether to keep refining the ML model after every RESTest iteration with the generated test cases
 	private static String mlLearningStrategy;							// Set to "active" for active learning or "random" for random learning
 
 	// ARTE
@@ -174,10 +173,6 @@ public class TestGenerationAndExecution {
 			// Execute the iteration
 			testIteration();
 
-			// Only for ML generator: if keepLearning is enabled, retrain the model with newly generated test cases
-			if (generatorType.equals("MLT") && mlKeepLearning)
-				trainMlModel();
-
 			logger.info("Iteration {}. {} test cases generated.", iteration, runner.getNumTestCases());
 
 			// Introduce optional delay
@@ -195,7 +190,6 @@ public class TestGenerationAndExecution {
 		try {
 			String mlTrainProcessOutput = runCommand(mlTrainCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
 			Float score = Float.parseFloat(mlTrainProcessOutput);
-			System.out.println("SCORE");
 			return score;
 		} catch (RESTestException e) {
 			logger.warn("Error when training the ML model. The model will be retrained in the next iteration.");
@@ -547,10 +541,6 @@ public class TestGenerationAndExecution {
 		if (readParameterValue("ml.initialdata") != null)
 			mlInitialData = Boolean.parseBoolean(readParameterValue("ml.initialdata"));
 		logger.info("ML initial data: {}", mlInitialData);
-
-		if (readParameterValue("ml.keeplearning") != null)
-			mlKeepLearning = Boolean.parseBoolean(readParameterValue("ml.keeplearning"));
-		logger.info("ML keep learning: {}", mlKeepLearning);
 
 		if (readParameterValue("ml.learning.strategy") != null)
 			mlLearningStrategy = readParameterValue("ml.learning.strategy");
