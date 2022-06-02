@@ -8,22 +8,16 @@ from root.data.processing import label_requests, read_raw, raw2preprocessed
 from root.helpers.properties import PropertiesFile
 from root.helpers.resampling import resample
 
-if len(sys.argv) > 1:
+args = ' '.join(sys.argv[1:])
 
-    # path to the .properties file
-    properties_file = sys.argv[1]
+# path to the .properties file
+properties_file, resampling_ratio, n_tests = args.split(' ')
 
-    # resampling ratio
-    resampling_ratio = float(sys.argv[2])
+# resampling ratio
+resampling_ratio = float(resampling_ratio)
 
-    # number of tests
-    n_tests = int(sys.argv[3])
-
-else: # debug
-    print('debug mode...')
-    properties_file = '/home/giuliano/RESTest/src/test/resources/GitHub/props.properties'
-    resampling_ratio = 0.8
-    n_tests = 5
+# number of tests
+n_tests = int(n_tests)
 
 # define the properties object
 try:

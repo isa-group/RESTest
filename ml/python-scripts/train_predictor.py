@@ -6,18 +6,13 @@ from root.helpers.properties import PropertiesFile
 from root.helpers.resampling import resample
 from root.helpers.scores import compute_scores
 
-if len(sys.argv) > 1:
+args = ' '.join(sys.argv[1:])
 
-    # path to the .properties file
-    properties_file = sys.argv[1]
+# path to the .properties file
+properties_file, resampling_ratio = args.split(' ')
 
-    # resampling ratio
-    resampling_ratio = float(sys.argv[2])
-
-else: # debug mode
-    print('debug mode...')
-    properties_file = '/home/giuliano/RESTest/src/test/resources/GitHub/props.properties'
-    resampling_ratio = 0.8
+# resampling ratio
+resampling_ratio = float(resampling_ratio)
 
 # define the properties file
 try:

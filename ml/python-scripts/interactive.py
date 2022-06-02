@@ -3,7 +3,7 @@ from root.data.dataset import read_dataset
 
 SERVICES = [
     "GitHub", 
-    "Stripe_Coupons", 
+    # "Stripe_Coupons", 
     "Stripe_Products", 
     "Yelp_Businesses", 
     "YouTube_CommentsAndThreads", 
