@@ -3,6 +3,8 @@ package es.us.isa.restest.testcases.restassured.filters;
 import es.us.isa.restest.testcases.TestResult;
 import es.us.isa.restest.util.PropertyManager;
 import io.restassured.response.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * REST-Assured filter to be extended by all RESTest filters.
@@ -19,6 +21,9 @@ public class RESTestFilter {
     protected Boolean testCaseIsFaulty; // Whether this test case is faulty or not
     protected Boolean dependenciesFulfilled; // Whether this test case fulfills all inter-parameter dependencies or not
     protected String faultyReason; // Why the test case is faulty
+
+    private static Logger logger = LogManager.getLogger(RESTestFilter.class.getName());
+
 
 
     public RESTestFilter() {
@@ -46,6 +51,7 @@ public class RESTestFilter {
         String testDataFile = PropertyManager.readProperty("data.tests.dir") + "/" + APIName + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
         TestResult tr = new TestResult(testResultId, Integer.toString(response.statusCode()), response.asString(), response.contentType(), passed, failReason);
         tr.exportToCSV(testDataFile);
+        logger.info("Test result exported: {}", testResultId);
     }
 
     protected void saveTestResultAndThrowException(Response response, String message) {
