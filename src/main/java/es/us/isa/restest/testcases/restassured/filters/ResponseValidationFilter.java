@@ -5,12 +5,15 @@ import com.atlassian.oai.validator.model.Request;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.atlassian.oai.validator.restassured.RestAssuredRequest;
 import com.atlassian.oai.validator.restassured.RestAssuredResponse;
+import es.us.isa.restest.main.TestGenerationAndExecution;
 import es.us.isa.restest.util.PropertyManager;
 import io.restassured.filter.FilterContext;
 import io.restassured.filter.OrderedFilter;
 import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.stream.Collectors;
 
@@ -31,6 +34,8 @@ public class ResponseValidationFilter extends RESTestFilter implements OrderedFi
     private final Boolean enabled = Boolean.parseBoolean(PropertyManager.readProperty("response.body.analysis"));
     private final Boolean limit = Boolean.parseBoolean(PropertyManager.readProperty("response.body.limit"));
     private final Long bodySizeLimit = Long.parseLong(PropertyManager.readProperty("response.body.size"));
+
+    private static Logger logger = LogManager.getLogger(ResponseValidationFilter.class.getName());
 
     public ResponseValidationFilter(final String specUrlOrDefinition) {
         requireNonEmpty(specUrlOrDefinition, "A spec is required");
@@ -58,6 +63,7 @@ public class ResponseValidationFilter extends RESTestFilter implements OrderedFi
                 exportTestResultToCSV(response, false, errors);
             throw new RuntimeException(errors);
         }
+        logger.info("Validation filter executed.");
     }
 
     private String getMessagesSummary(ValidationReport validationReport) {
