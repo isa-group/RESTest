@@ -1,2 +1,0 @@
-#!/bin/bash
-python ml/python-scripts/train_predictor.py $1 $2

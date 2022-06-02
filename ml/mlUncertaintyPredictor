@@ -1,2 +1,0 @@
-#!/bin/bash
-python ml/python-scripts/al_predictor.py $1 $2 $3
