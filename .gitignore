@@ -48,7 +48,6 @@ restest-full.jar
 src/generation/java
 /src/main/resources/TestData/Generated/
 
-ml/old/mlTrain
-ml/old/mlUncertaintyPredictor
-ml/old/mlValidityPredictor
-ml/executables
+ml/mlTrain
+ml/mlUncertaintyPredictor
+ml/mlValidityPredictor
