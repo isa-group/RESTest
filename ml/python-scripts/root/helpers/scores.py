@@ -14,6 +14,9 @@ def compute_scores(predictor, X_train, y_train):
     if n_valid + n_faulty < THRESHOLD:
         return 0, 0
 
+    if n_minority < 3:
+        return 0, 0
+
     # compute the number of folds
     n_folds = min(5, n_minority)
 
