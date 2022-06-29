@@ -48,11 +48,6 @@ def raw2preprocessed(raw, properties_file):
     # drop duplicated indices if any
     tree_data = tree_data.loc[tree_data.index.drop_duplicates(keep ='first')]
 
-    # add missing columns (to match idl verification)
-    # for column in types.keys():
-    #     if not column in tree_data.columns:
-    #         tree_data[column] = pd.Series()
-
     # change packagedimensions%5B%5D to packagedimensions[]
     tree_data = tree_data.rename(columns={x: unquote(x) for x in tree_data.columns})
 

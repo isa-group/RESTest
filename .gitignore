@@ -48,6 +48,6 @@ restest-full.jar
 src/generation/java
 /src/main/resources/TestData/Generated/
 
-ml/mlTrain
-ml/mlUncertaintyPredictor
-ml/mlValidityPredictor
+ml/restest-env
+ml/python-scripts/.vscode
+ml/python-scripts/interactive.py

@@ -1,0 +1,2 @@
+#!/bin/bash
+ml/restest-env/bin/python3 ml/python-scripts/ml_predictor.py $1 $2

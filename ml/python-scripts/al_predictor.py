@@ -8,10 +8,8 @@ from root.data.processing import label_requests, read_raw, raw2preprocessed
 from root.helpers.properties import PropertiesFile
 from root.helpers.resampling import resample
 
-args = ' '.join(sys.argv[1:])
-
 # path to the .properties file
-properties_file, resampling_ratio, n_tests = args.split(' ')
+properties_file, resampling_ratio, n_tests = sys.argv[1:]
 
 # resampling ratio
 resampling_ratio = float(resampling_ratio)

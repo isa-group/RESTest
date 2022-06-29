@@ -11,11 +11,13 @@ SERVICES = [
     "YouTube_Search", 
 ]
 
-exp = 1
+REPETITIONS = 1
 
-for service in SERVICES:
+for i in range(REPETITIONS):
+    for service in SERVICES:
 
-    data = read_dataset('../../target/test-data/'+service+'_'+str(exp), '../src/test/resources/'+service+'/props.properties')
+        data = read_dataset('../../target/test-data/'+service+'_'+str(i), '../src/test/resources/'+service+'/props.properties')
 
-    print(data.size)
-    print(data.obt_valid_ratio)
+        print('\n'+ service + '_' + str(i))
+        print(data.size)
+        print(data.obt_valid_ratio)

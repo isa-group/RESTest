@@ -6,6 +6,8 @@ from root.helpers.properties import PropertiesFile
 from root.helpers.resampling import resample
 from root.helpers.scores import compute_scores
 
+print(sys.argv)
+
 args = ' '.join(sys.argv[1:])
 
 # path to the .properties file

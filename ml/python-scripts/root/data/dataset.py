@@ -131,12 +131,12 @@ class Dataset:
 
 
 # >>> Helpers: >>>
-def clean_status_codes(responses_data):
-    responses_data = responses_data.drop(responses_data[responses_data["statusCode"]==401].index) # missing or invalid credentials 
-    responses_data = responses_data.drop(responses_data[responses_data["statusCode"]==403].index) # forbidden (insufficient api key permission) 
-    responses_data = responses_data.drop(responses_data[responses_data["statusCode"]==413].index) # 
-    responses_data = responses_data.drop(responses_data[responses_data["statusCode"]==429].index) # too many requests 
-    return responses_data
+def clean_status_codes(responses):
+    responses = responses.drop(responses[responses["statusCode"]==401].index) # missing or invalid credentials 
+    responses = responses.drop(responses[responses["statusCode"]==403].index) # forbidden (insufficient api key permission) 
+    responses = responses.drop(responses[responses["statusCode"]==413].index) # 
+    responses = responses.drop(responses[responses["statusCode"]==429].index) # too many requests 
+    return responses
 
 def is_a_valid_status_code(x):
     x = int(x)

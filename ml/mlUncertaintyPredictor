@@ -1,0 +1,3 @@
+#!/bin/bash
+#/home/giuliano/anaconda3/envs/testing/bin/python ml/python-scripts/al_predictor.py $1 $2 $3
+ml/restest-env/bin/python ml/python-scripts/al_predictor.py $1 $2 $3
