@@ -6,12 +6,8 @@ from root.helpers.properties import PropertiesFile
 from root.helpers.resampling import resample
 from root.helpers.scores import compute_scores
 
-print(sys.argv)
-
-args = ' '.join(sys.argv[1:])
-
 # path to the .properties file
-properties_file, resampling_ratio = args.split(' ')
+properties_file, resampling_ratio = sys.argv[1:]
 
 # resampling ratio
 resampling_ratio = float(resampling_ratio)
