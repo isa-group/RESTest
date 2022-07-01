@@ -80,7 +80,9 @@ def read_raw(raw_path):
     lines = [l.replace(", but", "but") for l in lines]
     with open(raw_path, "w") as f:
         f.writelines(lines)
-    raw = pd.read_csv(raw_path)
+    raw = pd.read_csv(raw_path, dtype=str)
+    if 'faultyReason' in raw.columns:
+        raw['faultyReason'] = raw['faultyReason'].fillna('null')
     if "testCaseId" in raw.columns:
         raw = raw.set_index("testCaseId")
     else:
@@ -95,7 +97,7 @@ def label_requests(raw, predictions):
 
     # label 'faultyReason' column
     raw.loc[predictions[predictions==False].index, 'faultyReason']='inter_parameter_dependency'
-    raw.loc[predictions[predictions==True].index,  'faultyReason']=None
+    # raw.loc[predictions[predictions==True].index,  'faultyReason']='null'
 
     # label 'fulfillsDependencies' column
     raw.loc[predictions[predictions==False].index, 'fulfillsDependencies']='false'

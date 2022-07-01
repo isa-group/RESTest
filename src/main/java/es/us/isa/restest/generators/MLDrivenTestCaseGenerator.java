@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import static es.us.isa.restest.util.CommandRunner.runCommand;
 import static es.us.isa.restest.util.FileManager.deleteFile;
+import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 import static es.us.isa.restest.util.TestManager.getTestCases;
 
 public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
@@ -51,11 +52,14 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Reset counters for the current operation
 		resetOperation();
 
+		boolean fulfillsDependencies = !hasDependencies(testOperation.getOpenApiOperation());
+
 		// Repeat iterations until the desired number of faulty and nominal test cases have been generated
 		while (hasNext()) {
 			iterationTestCases.clear();
 			while (iterationTestCases.size() < (numberOfTests-nTests)*mlCandidatesRatio) { // TO DO: ml.candidates.ratio=100
 				TestCase test = generateNextTestCase(testOperation);
+				test.setFulfillsDependencies(fulfillsDependencies);
 				iterationTestCases.add(test);
 			}
 

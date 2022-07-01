@@ -14,6 +14,7 @@ import java.util.*;
 
 import static es.us.isa.restest.util.CommandRunner.runCommand;
 import static es.us.isa.restest.util.FileManager.deleteFile;
+import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 import static es.us.isa.restest.util.TestManager.getTestCases;
 
 public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
@@ -52,11 +53,14 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Reset counters for the current operation
 		resetOperation();
 
+		boolean fulfillsDependencies = !hasDependencies(testOperation.getOpenApiOperation());
+
 		// Repeat iterations until the desired number of test cases have been generated
 		while (hasNext()) {
 			testCasesPool.clear();
 			while (testCasesPool.size() < (numberOfTests-nTests)*mlCandidatesRatio) {
 				TestCase test = generateNextTestCase(testOperation);
+				test.setFulfillsDependencies(fulfillsDependencies);
 				testCasesPool.add(test);
 			}
 

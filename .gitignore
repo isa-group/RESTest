@@ -51,3 +51,5 @@ src/generation/java
 ml/restest-env
 ml/python-scripts/.vscode
 ml/python-scripts/interactive.py
+
+*/__pycache__
