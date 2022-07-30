@@ -1,0 +1,53 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: Amadeus/oauth.json
+testConfiguration:
+  operations:
+  - testPath: /duty-of-care/diseases/covid19-area-report
+    operationId: GETCovidReport
+    method: get
+    testParameters:
+    - name: countryCode
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - 'src/test/resources/AmadeusTravelRestrictions/data/CountryCodes-ISO-3166-1-alpha-2.csv'
+        valid: true
+    - name: cityCode
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: csv
+              values:
+                - 'src/test/resources/AmadeusTravelRestrictions/data/IATACodes.csv'
+          valid: true
+    - name: language
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - EN
+                - ES
+                - DE
+                - JA
+                - KO
+                - TH
+                - ID
+                - ZH
+                - FR
+          valid: true
+    expectedResponse: 200
