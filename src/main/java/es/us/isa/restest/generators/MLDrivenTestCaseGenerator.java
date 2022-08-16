@@ -1,6 +1,11 @@
 package es.us.isa.restest.generators;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -9,12 +14,10 @@ import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.RESTestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static es.us.isa.restest.util.CommandRunner.runCommand;
 import static es.us.isa.restest.util.FileManager.deleteFile;
 import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 import static es.us.isa.restest.util.TestManager.getTestCases;
@@ -26,7 +29,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	private Integer mlCandidatesRatio;								// TODO
 	private Float mlResamplingRatio;
 	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the selector)
-	private String poolFolderPath;
+	private String experimentFolder;
 
 	private static Logger logger = LogManager.getLogger(MLDrivenTestCaseGenerator.class.getName());
 
@@ -70,9 +73,30 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			// Feed test cases to predictor, which updates them
 			boolean commandOk = true;
 			try {
-				runCommand(mlValidityPredictorCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
-			} catch(RESTestException e) {
-				commandOk = false;
+
+				HttpClient httpClient = HttpClient.newBuilder()
+						.version(HttpClient.Version.HTTP_1_1)
+						.connectTimeout(Duration.ofSeconds(10))
+						.build();
+
+				HttpRequest request = HttpRequest.newBuilder()
+						.GET()
+						.uri(URI.create("http://127.0.0.1:8000/validity?trainingFolder="+experimentFolder+"&target="+getPoolDataPath()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
+						.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+						.build();
+
+				HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+				// print status code
+				commandOk = response.statusCode() == 200;
+
+				// runCommand(mlValidityPredictorCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
+			// } catch(RESTestException e) {
+			// 	commandOk = false;
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
 			}
 
 			if (commandOk) {
@@ -80,7 +104,12 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 				iterationTestCases = getTestCases(getPoolDataPath());
 
 				// Add test cases one by one until desired number is reached both for nominal and faulty
-				iterationTestCases.forEach(tc -> {
+				for (TestCase tc : iterationTestCases) {
+
+					if (!hasNext()) {
+						break;
+					}
+
 					if ((Boolean.TRUE.equals(tc.getFaulty()) && hasNextFaulty()) ||
 							(Boolean.FALSE.equals(tc.getFaulty()) && hasNextNominal())) {
 						// Set authentication data (if any)
@@ -92,7 +121,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 						// Update indexes
 						updateIndexes(tc);
 					}
-				});
+				}
 			}
 		}
 
@@ -148,16 +177,16 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.mlCandidatesRatio = mlCandidatesRatio;
 	}
 
-	public String getPoolFolderPath() {
-		return poolFolderPath;
+	public String getExperimentFolder() {
+		return experimentFolder;
 	}
 
-	public void setPoolFolderPath(String poolFolderPath) {
-		this.poolFolderPath = poolFolderPath;
+	public void setExperimentFolder(String experimentFolder) {
+		this.experimentFolder = experimentFolder;
 	}
 
 	private String getPoolDataPath() {
-		return poolFolderPath + "/" + CSV_NAME;
+		return experimentFolder + "/" + CSV_NAME;
 	}
 
 	public void setMlResamplingRatio(Float mlResamplingRatio) {	this.mlResamplingRatio = mlResamplingRatio; }

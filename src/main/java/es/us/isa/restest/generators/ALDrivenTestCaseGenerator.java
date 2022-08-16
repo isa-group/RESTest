@@ -4,15 +4,18 @@ import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.RESTestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.*;
 
-import static es.us.isa.restest.util.CommandRunner.runCommand;
 import static es.us.isa.restest.util.FileManager.deleteFile;
 import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
 import static es.us.isa.restest.util.TestManager.getTestCases;
@@ -24,10 +27,9 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	private Integer mlCandidatesRatio;								// TODO
 	private Integer mlTrainingRequestsPerIteration;
 	private Integer mlTrainingMaxIterationsNotLearning;
-	private Float mlTrainingPrecisionThreshold;
 	private Float mlResamplingRatio;
 	private static final String CSV_NAME = "pool.csv";				// CSV of temporary test cases (the ones analyzed/output by the selector)
-	private String poolFolderPath;
+	private String experimentFolder;
 
 	private static Logger logger = LogManager.getLogger(ALDrivenTestCaseGenerator.class.getName());
 
@@ -71,17 +73,40 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			// Feed test cases to predictor, which queries and labels the best ones
 			boolean commandOk = true;
 			try {
-				runCommand(mlUncertaintyPredictorCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio), Integer.toString(mlTrainingRequestsPerIteration)});
-			} catch(RESTestException e) {
-				commandOk = false;
+
+				HttpClient httpClient = HttpClient.newBuilder()
+						.version(HttpClient.Version.HTTP_1_1)
+						.connectTimeout(Duration.ofSeconds(10))
+						.build();
+
+				HttpRequest request = HttpRequest.newBuilder()
+						.GET()
+						.uri(URI.create("http://127.0.0.1:8000/uncertainty?trainingFolder="+experimentFolder+"&target="+getPoolDataPath()+"&nTests="+mlTrainingRequestsPerIteration.toString()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
+						.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+						.build();
+
+				HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+				// print status code
+				commandOk = response.statusCode() == 200;
+
+				// runCommand(mlUncertaintyPredictorCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio), Integer.toString(mlTrainingRequestsPerIteration)});
+			// } catch(RESTestException e) {
+			// 	commandOk = false;
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
 			}
 
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
 				testCasesPool = getTestCases(getPoolDataPath());
 
-				testCasesPool.forEach(tc ->{
-					if (hasNext()) {
+				for (TestCase tc : testCasesPool) {
+					if (!hasNext()) {
+						break;
+					} else {
 						// Set authentication data (if any)
 						authenticateTestCase(tc);
 
@@ -91,7 +116,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 						// Update indexes
 						updateIndexes(tc);
 					}
-				});
+				}
 			}
 		}
 
@@ -154,24 +179,16 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		this.mlTrainingMaxIterationsNotLearning = mlTrainingMaxIterationsNotLearning;
 	}
 
-	public Float getMlTrainingPrecisionThreshold() {
-		return mlTrainingPrecisionThreshold;
+	public String getExperimentFolder() {
+		return experimentFolder;
 	}
 
-	public void setMlTrainingPrecisionThreshold(Float mlTrainingPrecisionThreshold) {
-		this.mlTrainingPrecisionThreshold = mlTrainingPrecisionThreshold;
-	}
-
-	public String getPoolFolderPath() {
-		return poolFolderPath;
-	}
-
-	public void setPoolFolderPath(String poolFolderPath) {
-		this.poolFolderPath = poolFolderPath;
+	public void setExperimentFolder(String experimentFolder) {
+		this.experimentFolder = experimentFolder;
 	}
 
 	private String getPoolDataPath() {
-		return poolFolderPath + "/" + CSV_NAME;
+		return experimentFolder + "/" + CSV_NAME;
 	}
 
 	public void setMlResamplingRatio(Float mlResamplingRatio) { this.mlResamplingRatio = mlResamplingRatio; }

@@ -1,5 +1,6 @@
 package es.us.isa.restest.main;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
@@ -17,14 +18,20 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
-import static es.us.isa.restest.util.CommandRunner.runCommand;
 import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.Timer.TestStep.ALL;
 
@@ -34,7 +41,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/GitHub/props.properties";
+	private static String propertiesFilePath = "src/test/resources/YouTube_CommentsAndThreads/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -186,14 +193,39 @@ public class TestGenerationAndExecution {
 		generateTimeReport(iteration-1);
 	}
 
-	private static Float trainMlModel() {
+	private static Double trainMlModel() {
 		try {
-			String mlTrainProcessOutput = runCommand(mlTrainCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
-			Float score = Float.parseFloat(mlTrainProcessOutput);
+
+			HttpClient httpClient = HttpClient.newBuilder()
+					.version(HttpClient.Version.HTTP_1_1)
+					.connectTimeout(Duration.ofSeconds(10))
+					.build();
+
+			HttpRequest request = HttpRequest.newBuilder()
+					.GET()
+					.uri(URI.create("http://127.0.0.1:8000/train?trainingFolder="+readParameterValue("data.tests.dir") + "/" + experimentName+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
+					.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
+					.build();
+
+			HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String,Object> result = mapper.readValue(response.body(), Map.class);
+
+			// Float score = response.body();
+			Double score = (Double) result.get("score");
+
+			// String mlTrainProcessOutput = runCommand(mlTrainCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
+			// Float score = Float.parseFloat(mlTrainProcessOutput);
+
 			return score;
-		} catch (RESTestException e) {
-			logger.warn("Error when training the ML model. The model will be retrained in the next iteration.");
-			return 0f;
+		// } catch (RESTestException e) {
+		// 	logger.warn("Error when training the ML model. The model will be retrained in the next iteration.");
+		// 	return 0f;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -211,8 +243,8 @@ public class TestGenerationAndExecution {
 	}
 
 	private static void mlLearning() throws RESTestException {
-		float precision = 0f;
-		float maxPrecision = precision;
+		double precision = 0f;
+		double maxPrecision = precision;
 		int iterationsWithoutLearning = 0;
 
 		if (mlInitialData) {
@@ -232,9 +264,8 @@ public class TestGenerationAndExecution {
 			ALTestGenerator.setMlTrainingRequestsPerIteration(mlTrainingRequestsPerIteration);
 			ALTestGenerator.setMlUncertaintyPredictorCommand(mlUncertaintyPredictorCommand);
 			ALTestGenerator.setMlTrainingMaxIterationsNotLearning(mlTrainingMaxIterationsNotLearning);
-			ALTestGenerator.setMlTrainingPrecisionThreshold(mlTrainingPrecisionThreshold);
 			ALTestGenerator.setMlCandidatesRatio(mlCandidatesRatio);
-			ALTestGenerator.setPoolFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
+			ALTestGenerator.setExperimentFolder(readParameterValue("data.tests.dir") + "/" + experimentName);
 			ALTestGenerator.setMlResamplingRatio(mlResamplingRatio);
 
 			// Use ALTestGenerator with the Runner
@@ -301,7 +332,7 @@ public class TestGenerationAndExecution {
 				((MLDrivenTestCaseGenerator) gen).setMlValidityPredictorCommand(mlValidityPredictorCommand);
 				((MLDrivenTestCaseGenerator) gen).setMlCandidatesRatio(mlCandidatesRatio);
 				((MLDrivenTestCaseGenerator) gen).setPropertiesFilePath(propertiesFilePath);
-				((MLDrivenTestCaseGenerator) gen).setPoolFolderPath(readParameterValue("data.tests.dir") + "/" + experimentName);
+				((MLDrivenTestCaseGenerator) gen).setExperimentFolder(readParameterValue("data.tests.dir") + "/" + experimentName);
 				((MLDrivenTestCaseGenerator) gen).setMlResamplingRatio(mlResamplingRatio);
 				gen.setFaultyRatio(faultyRatio);
 				break;
