@@ -219,7 +219,7 @@ public abstract class AbstractTestCaseGenerator {
 
 		}
 
-		return generate(filters);
+		return generate(filters); // too slow!
 	}
 
 

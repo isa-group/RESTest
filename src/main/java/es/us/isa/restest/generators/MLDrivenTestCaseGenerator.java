@@ -81,7 +81,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 				HttpRequest request = HttpRequest.newBuilder()
 						.GET()
-						.uri(URI.create("http://127.0.0.1:8000/validity?trainingFolder="+experimentFolder+"&target="+getPoolDataPath()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
+						.uri(URI.create("http://127.0.0.1:8000/validity?trainingPath="+experimentFolder+"&targetPath="+getPoolDataPath()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
 						.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
 						.build();
 

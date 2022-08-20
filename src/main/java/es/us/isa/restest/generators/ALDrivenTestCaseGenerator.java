@@ -81,7 +81,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 				HttpRequest request = HttpRequest.newBuilder()
 						.GET()
-						.uri(URI.create("http://127.0.0.1:8000/uncertainty?trainingFolder="+experimentFolder+"&target="+getPoolDataPath()+"&nTests="+mlTrainingRequestsPerIteration.toString()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
+						.uri(URI.create("http://127.0.0.1:8000/uncertainty?trainingPath="+experimentFolder+"&targetPath="+getPoolDataPath()+"&nTests="+mlTrainingRequestsPerIteration.toString()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
 						.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
 						.build();
 
@@ -104,6 +104,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 				testCasesPool = getTestCases(getPoolDataPath());
 
 				for (TestCase tc : testCasesPool) {
+
 					if (!hasNext()) {
 						break;
 					} else {

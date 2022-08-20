@@ -41,7 +41,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/YouTube_CommentsAndThreads/props.properties";
+	private static String propertiesFilePath = "src/test/resources/YouTube_Search/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -78,9 +78,6 @@ public class TestGenerationAndExecution {
 	private static Integer numberCandidates;							// Number of candidate test cases per AR iteration
 
 	// For Machine Learning testing:
-	private static String mlValidityPredictorCommand;					// Python command to predict validity of generated test cases (in CSV format)
-	private static String mlUncertaintyPredictorCommand;				// Python command to predict uncertainty of validity of generated test cases (in CSV format)
-	private static String mlTrainCommand;								// Python command to train ML model based on existing test cases (in CSV format)
 	private static Integer mlTrainingRequestsPerIteration;				// While Active Learning: Number of requests per iteration
 	private static Integer mlTrainingMaxIterationsNotLearning;			// While Active Learning: Max allowed number of iterations without learning
 	private static Float mlTrainingPrecisionThreshold;					// While Active Learning: Desired precision to be achieved by the ML model
@@ -203,7 +200,7 @@ public class TestGenerationAndExecution {
 
 			HttpRequest request = HttpRequest.newBuilder()
 					.GET()
-					.uri(URI.create("http://127.0.0.1:8000/train?trainingFolder="+readParameterValue("data.tests.dir") + "/" + experimentName+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
+					.uri(URI.create("http://127.0.0.1:8000/train?trainingPath="+readParameterValue("data.tests.dir") + "/" + experimentName+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
 					.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
 					.build();
 
@@ -214,6 +211,8 @@ public class TestGenerationAndExecution {
 
 			// Float score = response.body();
 			Double score = (Double) result.get("score");
+
+			logger.info("The score is " + score.toString() + ".");
 
 			// String mlTrainProcessOutput = runCommand(mlTrainCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio)});
 			// Float score = Float.parseFloat(mlTrainProcessOutput);
@@ -262,7 +261,6 @@ public class TestGenerationAndExecution {
 			ALDrivenTestCaseGenerator ALTestGenerator = new ALDrivenTestCaseGenerator(spec, testConf, mlTrainingRequestsPerIteration);
 			ALTestGenerator.setPropertiesFilePath(propertiesFilePath);
 			ALTestGenerator.setMlTrainingRequestsPerIteration(mlTrainingRequestsPerIteration);
-			ALTestGenerator.setMlUncertaintyPredictorCommand(mlUncertaintyPredictorCommand);
 			ALTestGenerator.setMlTrainingMaxIterationsNotLearning(mlTrainingMaxIterationsNotLearning);
 			ALTestGenerator.setMlCandidatesRatio(mlCandidatesRatio);
 			ALTestGenerator.setExperimentFolder(readParameterValue("data.tests.dir") + "/" + experimentName);
@@ -272,7 +270,7 @@ public class TestGenerationAndExecution {
 			runner.setGenerator(ALTestGenerator);
 		}
 
-		while (precision < mlTrainingPrecisionThreshold && iterationsWithoutLearning < mlTrainingMaxIterationsNotLearning && runner.getNumTestCases() < totalNumTestCases) {
+		while (precision==0.0 || (precision < mlTrainingPrecisionThreshold && iterationsWithoutLearning < mlTrainingMaxIterationsNotLearning && runner.getNumTestCases() < totalNumTestCases)) {
 			testIteration();
 			precision = trainMlModel();
 			if (precision > maxPrecision) {
@@ -329,7 +327,6 @@ public class TestGenerationAndExecution {
 				break;
 			case "MLT":
 				gen = new MLDrivenTestCaseGenerator(spec, testConf, numTestCases);
-				((MLDrivenTestCaseGenerator) gen).setMlValidityPredictorCommand(mlValidityPredictorCommand);
 				((MLDrivenTestCaseGenerator) gen).setMlCandidatesRatio(mlCandidatesRatio);
 				((MLDrivenTestCaseGenerator) gen).setPropertiesFilePath(propertiesFilePath);
 				((MLDrivenTestCaseGenerator) gen).setExperimentFolder(readParameterValue("data.tests.dir") + "/" + experimentName);
@@ -535,20 +532,6 @@ public class TestGenerationAndExecution {
 		logger.info("Faulty dependency ratio: {}", faultyDependencyRatio);
 
 		// MLT
-		String os = System.getProperty("os.name");
-		if (os.contains("Windows")) {
-			mlValidityPredictorCommand = PropertyManager.readProperty("ml.validity.predictor.command.windows");
-			mlUncertaintyPredictorCommand = PropertyManager.readProperty("ml.uncertainty.predictor.command.windows");
-			mlTrainCommand = PropertyManager.readProperty("ml.train.command.windows");
-		} else {
-			mlValidityPredictorCommand = PropertyManager.readProperty("ml.validity.predictor.command.unix");
-			mlUncertaintyPredictorCommand = PropertyManager.readProperty("ml.uncertainty.predictor.command.unix");
-			mlTrainCommand = PropertyManager.readProperty("ml.train.command.unix");
-		}
-		logger.info("ML validity predictor command: {}", mlValidityPredictorCommand);
-		logger.info("ML uncertainty predictor command: {}", mlUncertaintyPredictorCommand);
-		logger.info("ML train command: {}", mlTrainCommand);
-
 		if (readParameterValue("ml.training.iteration.requests") != null)
 			mlTrainingRequestsPerIteration = Integer.parseInt(readParameterValue("ml.training.iteration.requests"));
 		logger.info("ML training requests per iteration: {}", mlTrainingRequestsPerIteration);
