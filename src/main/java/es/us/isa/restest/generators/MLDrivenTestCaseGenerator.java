@@ -60,7 +60,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		// Repeat iterations until the desired number of faulty and nominal test cases have been generated
 		while (hasNext()) {
 			iterationTestCases.clear();
-			while (iterationTestCases.size() < (numberOfTests-nTests)*mlCandidatesRatio) { // TO DO: ml.candidates.ratio=100
+			while (iterationTestCases.size() < (numberOfTests-nTests)*mlCandidatesRatio) {
 				TestCase test = generateNextTestCase(testOperation);
 				test.setFulfillsDependencies(fulfillsDependencies);
 				iterationTestCases.add(test);
@@ -126,6 +126,7 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 		}
 
 		deleteFile(getPoolDataPath()); // Delete pool file
+
 		return testCases;
 	}
 

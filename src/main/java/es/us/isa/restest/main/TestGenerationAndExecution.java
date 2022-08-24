@@ -265,6 +265,7 @@ public class TestGenerationAndExecution {
 			ALTestGenerator.setMlCandidatesRatio(mlCandidatesRatio);
 			ALTestGenerator.setExperimentFolder(readParameterValue("data.tests.dir") + "/" + experimentName);
 			ALTestGenerator.setMlResamplingRatio(mlResamplingRatio);
+			ALTestGenerator.setFaultyRatio(faultyRatio);
 
 			// Use ALTestGenerator with the Runner
 			runner.setGenerator(ALTestGenerator);

@@ -50,7 +50,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	protected Collection<TestCase> generateOperationTestCases(Operation testOperation) throws RESTestException {
 
 		List<TestCase> testCases = new ArrayList<>();
-		List<TestCase> testCasesPool = new ArrayList<>();
+		List<TestCase> iterationTestCases = new ArrayList<>();
 
 		// Reset counters for the current operation
 		resetOperation();
@@ -59,16 +59,16 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 		// Repeat iterations until the desired number of test cases have been generated
 		while (hasNext()) {
-			testCasesPool.clear();
-			while (testCasesPool.size() < (numberOfTests-nTests)*mlCandidatesRatio) {
+			iterationTestCases.clear();
+			while (iterationTestCases.size() < (numberOfTests-nTests)*mlCandidatesRatio) {
 				TestCase test = generateNextTestCase(testOperation);
 				test.setFulfillsDependencies(fulfillsDependencies);
-				testCasesPool.add(test);
+				iterationTestCases.add(test);
 			}
 
 			// Export test cases to temporary CSV
 			deleteFile(getPoolDataPath()); // Delete file first, so as to consider only test cases from this iteration
-			testCasesPool.forEach(tc -> tc.exportToCSV(getPoolDataPath()));
+			iterationTestCases.forEach(tc -> tc.exportToCSV(getPoolDataPath()));
 
 			// Feed test cases to predictor, which queries and labels the best ones
 			boolean commandOk = true;
@@ -101,13 +101,17 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
-				testCasesPool = getTestCases(getPoolDataPath());
+				iterationTestCases = getTestCases(getPoolDataPath());
 
-				for (TestCase tc : testCasesPool) {
+				// Add test cases one by one until desired number is reached both for nominal and faulty
+				for (TestCase tc : iterationTestCases) {
 
 					if (!hasNext()) {
 						break;
-					} else {
+					}
+
+					if ((Boolean.TRUE.equals(tc.getFaulty()) && hasNextFaulty()) ||
+							(Boolean.FALSE.equals(tc.getFaulty()) && hasNextNominal())) {
 						// Set authentication data (if any)
 						authenticateTestCase(tc);
 
@@ -116,6 +120,22 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 						// Update indexes
 						updateIndexes(tc);
+					}
+				}
+
+				for (TestCase tc : iterationTestCases) {
+
+					if (hasNext() && !testCases.contains(tc)) {
+						// Set authentication data (if any)
+						authenticateTestCase(tc);
+
+						// Add test case to the collection
+						testCases.add(tc);
+
+						// Update indexes
+						updateIndexes(tc);
+					} else {
+						break;
 					}
 				}
 			}
@@ -139,6 +159,14 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 	}
 
 	protected boolean hasNext() { return nTests < numberOfTests; }
+
+	private boolean hasNextFaulty() {
+		return nFaulty < (int) (faultyRatio * numberOfTests);
+	}
+
+	private boolean hasNextNominal() {
+		return nNominal < (int) ((1 - faultyRatio) * numberOfTests);
+	}
 
 	public String getPropertiesFilePath() {
 		return propertiesFilePath;
