@@ -192,9 +192,12 @@ public class TestGenerationAndExecution {
 
 	private static Double trainMlModel() {
 
-			Response response = RestAssured.given()
-					.get("http://localhost:8000/train?trainingPath="+readParameterValue("data.tests.dir") + "/" + experimentName+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath)
-					.andReturn();
+		Response response = RestAssured.given()
+				.queryParam("trainingPath", readParameterValue("data.tests.dir") + "/" + experimentName)
+				.queryParam("resamplingRatio", mlResamplingRatio.toString())
+				.queryParam("propertiesPath", propertiesFilePath)
+				.get("http://localhost:8000/train")
+				.andReturn();
 
 			ObjectMapper mapper = new ObjectMapper();
 			Map<String,Object> result = null;

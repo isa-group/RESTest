@@ -73,7 +73,11 @@ public class MLDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			boolean commandOk = true;
 
 			Response response = RestAssured.given()
-					.get("http://localhost:8000/validity?trainingPath="+experimentFolder+"&targetPath="+getPoolDataPath()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath)
+					.queryParam("trainingPath", experimentFolder)
+					.queryParam("targetPath", getPoolDataPath())
+					.queryParam("resamplingRatio", mlResamplingRatio.toString())
+					.queryParam("propertiesPath", propertiesFilePath)
+					.get("http://localhost:8000/validity")
 					.andReturn();
 
 			// print status code
