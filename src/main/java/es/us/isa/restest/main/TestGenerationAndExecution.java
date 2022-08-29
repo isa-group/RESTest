@@ -1,5 +1,6 @@
 package es.us.isa.restest.main;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
@@ -12,6 +13,8 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.writers.IWriter;
 import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,9 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -191,23 +191,18 @@ public class TestGenerationAndExecution {
 	}
 
 	private static Double trainMlModel() {
-		try {
 
-			HttpClient httpClient = HttpClient.newBuilder()
-					.version(HttpClient.Version.HTTP_1_1)
-					.connectTimeout(Duration.ofSeconds(10))
-					.build();
-
-			HttpRequest request = HttpRequest.newBuilder()
-					.GET()
-					.uri(URI.create("http://127.0.0.1:8000/train?trainingPath="+readParameterValue("data.tests.dir") + "/" + experimentName+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
-					.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
-					.build();
-
-			HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+			Response response = RestAssured.given()
+					.get("http://localhost:8000/train?trainingPath="+readParameterValue("data.tests.dir") + "/" + experimentName+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath)
+					.andReturn();
 
 			ObjectMapper mapper = new ObjectMapper();
-			Map<String,Object> result = mapper.readValue(response.body(), Map.class);
+			Map<String,Object> result = null;
+			try {
+				result = mapper.readValue(response.body().print(), Map.class);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
 
 			// Float score = response.body();
 			Double score = (Double) result.get("score");
@@ -221,11 +216,6 @@ public class TestGenerationAndExecution {
 		// } catch (RESTestException e) {
 		// 	logger.warn("Error when training the ML model. The model will be retrained in the next iteration.");
 		// 	return 0f;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	private static void testIteration() throws RESTestException {

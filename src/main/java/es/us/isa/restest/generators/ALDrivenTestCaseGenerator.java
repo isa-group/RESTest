@@ -5,14 +5,14 @@ import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.*;
 
@@ -72,32 +72,13 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 			// Feed test cases to predictor, which queries and labels the best ones
 			boolean commandOk = true;
-			try {
 
-				HttpClient httpClient = HttpClient.newBuilder()
-						.version(HttpClient.Version.HTTP_1_1)
-						.connectTimeout(Duration.ofSeconds(10))
-						.build();
+			Response response = RestAssured.given()
+					.get("http://localhost:8000/uncertainty?trainingPath"+experimentFolder+"&targetPath="+getPoolDataPath()+"&nTests="+mlTrainingRequestsPerIteration.toString()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath)
+					.andReturn();
 
-				HttpRequest request = HttpRequest.newBuilder()
-						.GET()
-						.uri(URI.create("http://127.0.0.1:8000/uncertainty?trainingPath="+experimentFolder+"&targetPath="+getPoolDataPath()+"&nTests="+mlTrainingRequestsPerIteration.toString()+"&resamplingRatio="+mlResamplingRatio.toString()+"&propertiesPath="+propertiesFilePath))
-						.setHeader("User-Agent", "Java 11 HttpClient Bot") // add request header
-						.build();
-
-				HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-				// print status code
-				commandOk = response.statusCode() == 200;
-
-				// runCommand(mlUncertaintyPredictorCommand, new String[]{propertiesFilePath, Float.toString(mlResamplingRatio), Integer.toString(mlTrainingRequestsPerIteration)});
-			// } catch(RESTestException e) {
-			// 	commandOk = false;
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
+			// print status code
+			commandOk = response.statusCode() == 200;
 
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
