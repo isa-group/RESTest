@@ -43,30 +43,11 @@ testConfiguration:
       in: body
       weight: null
       generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - "{\"name\":\"Playlist1\",\"description\":\"Playlist description 1\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist2\",\"description\":\"Playlist description 2\",\"public\": false,\"collaborative\": false}"
-          - "{\"name\":\"Playlist3\",\"description\":\"Playlist description 3\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist4\",\"description\":\"Playlist description 4\",\"public\": false,\"collaborative\": false}"
-          - "{\"name\":\"Playlist5\",\"description\":\"Playlist description 5\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist6\",\"description\":\"Playlist description 6\",\"public\": false,\"collaborative\": false}"
-          - "{\"name\":\"Playlist7\",\"description\":\"Playlist description 7\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist8\",\"description\":\"Playlist description 8\",\"public\": false,\"collaborative\": false}"
-          - "{\"name\":\"Playlist9\",\"description\":\"Playlist description 9\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist10\",\"description\":\"Playlist description 10\",\"public\": false,\"collaborative\": false}"
-          - "{\"name\":\"Playlist11\",\"description\":\"Playlist description 11\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist12\",\"description\":\"Playlist description 12\",\"public\": false,\"collaborative\": true}"
-          - "{\"name\":\"Playlist13\",\"description\":\"Playlist description 13\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist14\",\"description\":\"Playlist description 14\",\"public\": false,\"collaborative\": true}"
-          - "{\"name\":\"Playlist15\",\"description\":\"Playlist description 15\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist16\",\"description\":\"Playlist description 16\",\"public\": false,\"collaborative\": true}"
-          - "{\"name\":\"Playlist17\",\"description\":\"Playlist description 17\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist18\",\"description\":\"Playlist description 18\",\"public\": false,\"collaborative\": true}"
-          - "{\"name\":\"Playlist19\",\"description\":\"Playlist description 19\",\"public\": true,\"collaborative\": false}"
-          - "{\"name\":\"Playlist20\",\"description\":\"Playlist description 20\",\"public\": false,\"collaborative\": true}"
-          objectValues: null
-        valid: true
+        - valid: true
+          type: RandomRegExp
+          genParameters:
+            - name: regExp
+              values:
+                - '\{\"name\":  \"(Playlist |1|2|3|4|5|6|7|8|9|0|hits |pop |rock |classic |music |banger |ost |mix |latin |hip |hop |metal |custom |opera |emotional |epic |podcast |episode |anime |movie |videogame |epic ){0,4}(Playlist|1|2|3|4|5|6|7|8|9|0|hits|pop|rock|classic|music|banger|ost|mix|latin|hip|hop|metal|custom|opera|emotional|epic|podcast|episode|anime|movie|videogame|epic){1}\", \"description\": \"(Playlist |description |1|2|3|4|5|6|7|8|9|0|recommended |metal |gear |rising |original |soundtrack |by |greatest |hits |classics |from |the |radio |Metallica |megamix |qwerty |hands |by |english |japanese |italian |decades |genres |apple |susumu |hirasawa |french |languages |guitar |piano |flute |blondie |acdc |rolling |stones ){1,9}(Playlist|description|1|2|3|4|5|6|7|8|9|0|recommended|metal|gear|rising|original|soundtrack|by|greatest|hits|classics|from|the|radio|Metallica|megamix|qwerty|hands|by|english|japanese|italian|decades|genres|apple|susumu|hirasawa|french|languages|guitar|piano|flute|blondie|acdc|rolling|stones){1}\", \"public\": (true|false){1}, \"collaborative\": (true|false){1}  \}'
+              objectValues: null
     expectedResponse: 200
