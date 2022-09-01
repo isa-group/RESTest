@@ -13,6 +13,7 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 
 import static es.us.isa.restest.coverage.CriterionType.*;
+import static es.us.isa.restest.util.SpecificationVisitor.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,10 +38,6 @@ public class CoverageGatherer {
     private List<CriterionType> coverageCriterionTypes; // Types of criteria to be covered
     private List<CoverageCriterion> coverageCriteria;   // Coverage criteria to keep track of
 //    private int bodyPropertyDepthLevel = 0;
-
-    public static final String MEDIA_TYPE_APPLICATION_JSON_REGEX = "^application/.*(\\\\+)?json.*$";
-    public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-    public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 
     public CoverageGatherer(OpenAPISpecification spec) {
         this.spec = spec;

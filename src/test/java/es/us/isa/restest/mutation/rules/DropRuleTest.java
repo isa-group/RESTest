@@ -1,15 +1,26 @@
 package es.us.isa.restest.mutation.rules;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
+import es.us.isa.restest.util.SchemaManager;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.reflect.Field;
 
 import static es.us.isa.restest.util.SchemaManager.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DropRuleTest {
+
+    @Before
+    public void resetSchemaManager() throws NoSuchFieldException, IllegalAccessException {
+        Field currentRefPath = SchemaManager.class.getDeclaredField("currentRefPath");
+        currentRefPath.setAccessible(true);
+        currentRefPath.set(null, "");
+    }
 
     @Test
     public void applyDropRuleCommentsPostCommentTest() {
@@ -57,5 +68,16 @@ public class DropRuleTest {
         DropRule.getInstance().apply(postCommentSchema, spec.getSpecification());
 
         assertEquals(4, ((ArraySchema)postCommentSchema).getItems().getProperties().size());
+    }
+
+    @Test
+    public void applyDropRuleCommentsObjectWithoutPropertiesTest() {
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger_forTestSuite7.yaml");
+        Schema postCommentSchema = spec.getSpecification().getPaths().get("/comments").getPost().getRequestBody().getContent().get("application/json").getSchema();
+        postCommentSchema = generateFullyResolvedSchema(postCommentSchema, spec.getSpecification());
+
+        DropRule.getInstance().apply(postCommentSchema, spec.getSpecification());
+
+        assertEquals(5, postCommentSchema.getProperties().size());
     }
 }

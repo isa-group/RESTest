@@ -21,17 +21,17 @@ The RESTest testing ecosystem comprehends a complete suite of tools for automati
 1. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
 1. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
 1. [Quickstart guide](https://github.com/isa-group/RESTest#quickstart-guide)
-    1. [Setting up RESTest](https://github.com/isa-group/RESTest#setting-up-restest)
-    1. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
+   1. [Setting up RESTest](https://github.com/isa-group/RESTest#setting-up-restest)
+   1. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
 1. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
-    1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
-    1. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
+   1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
+   1. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
 1. [Citing RESTest](https://github.com/isa-group/RESTest#citing-restest)
 1. [License](https://github.com/isa-group/RESTest#license)
-    1. [Icon credits](https://github.com/isa-group/RESTest#icon-credits)
+   1. [Icon credits](https://github.com/isa-group/RESTest#icon-credits)
 
 ## RESTest Wiki
-In this page you can find a brief description of how RESTest works and an illustrating example. If you want to read the full documentation, please visit the [Wiki](https://github.com/isa-group/RESTest/wiki). 
+In this page you can find a brief description of how RESTest works and an illustrating example. If you want to read the full documentation, please visit the [Wiki](https://github.com/isa-group/RESTest/wiki).
 
 ## How does it work?
 The figure below shows how RESTest works:
@@ -191,9 +191,9 @@ public void test_1jidbvas4d6ph_v2Name() {
 ```
 
 This test case makes a GET request to the endpoint `/v2/name/{name}` with several query and path parameters. Then it asserts that:
-  - The status code is not 500 or higher, which would reveal a server error (`statusCode5XXFilter`).
-  - The status code is in the range 2XX if the request is valid or 4XX if the request is faulty (`nominalOrFaultyTestCaseFilter`).
-  - The response conforms to the OAS specification of the API (`validationFilter`).
+- The status code is not 500 or higher, which would reveal a server error (`statusCode5XXFilter`).
+- The status code is in the range 2XX if the request is valid or 4XX if the request is faulty (`nominalOrFaultyTestCaseFilter`).
+- The response conforms to the OAS specification of the API (`validationFilter`).
 
 Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `target/allure-reports/restcountries/index.html` in your browser:
 

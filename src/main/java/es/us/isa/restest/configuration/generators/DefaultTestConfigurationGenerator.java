@@ -26,6 +26,8 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static es.us.isa.restest.util.SpecificationVisitor.*;
+
 /**
  * TestConfiguration objects are key in RESTest. They include all the
  * information required to test an API (data dictionaries, authentication data,
@@ -56,10 +58,6 @@ public class DefaultTestConfigurationGenerator {
 	public static final String GEN_PARAM_TYPE = "type";
 	public static final String GEN_PARAM_MIN = "min";
 	public static final String GEN_PARAM_MAX = "max";
-
-	public static final String MEDIA_TYPE_APPLICATION_JSON = "application/json";
-	public static final String MEDIA_TYPE_APPLICATION_X_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded";
-	public static final String MEDIA_TYPE_MULTIPART_FORM_DATA = "multipart/form-data";
 
 	// ARTE
 	public static final String SEMANTIC_PARAMETER = "SemanticParameter";
@@ -419,7 +417,8 @@ public class DefaultTestConfigurationGenerator {
 		// headers or form-data)
 		List<TestParameter> testParameters = new ArrayList<>();
 
-		if (requestBody.getContent().containsKey(MEDIA_TYPE_APPLICATION_JSON)) {
+		if (requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)) ||
+				requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_TEXT_PLAIN_REGEX))) {
 
 			TestParameter testParam = new TestParameter();
 			testParam.setName("body");
@@ -429,11 +428,28 @@ public class DefaultTestConfigurationGenerator {
 				testParam.setWeight(0.5f);
 			}
 
+			List<Generator> gens = new ArrayList<>();
 			Generator gen = new Generator();
 			gen.setGenParameters(new ArrayList<>());
-			generateBodyGenerator(gen, requestBody.getContent().get(MEDIA_TYPE_APPLICATION_JSON));
-			List<Generator> gens = new ArrayList<>();
+
+			if (requestBody.getContent().keySet().stream().anyMatch(x -> x.matches(MEDIA_TYPE_APPLICATION_JSON_REGEX))) {
+				Entry<String, MediaType> mediaTypeEntry = requestBody.getContent().entrySet().stream().filter(x -> x.getKey().matches(MEDIA_TYPE_APPLICATION_JSON_REGEX)).findFirst().orElse(null);
+				if (mediaTypeEntry != null)
+					addObjectPerturbatorIfPossible(gens, mediaTypeEntry.getValue());
+
+				// Regardless of whether an ObjectPerturbator generator was set or not, add a BodyGenerator:
+				gen.setType("BodyGenerator");
+			} else { // Content-Type = text/plain
+				Map.Entry<String, MediaType> mediaTypeEntry = requestBody.getContent().entrySet()
+						.stream().filter(x -> x.getKey().matches(MEDIA_TYPE_TEXT_PLAIN_REGEX)).findFirst().orElse(null);
+				if (mediaTypeEntry != null)
+					generateGenerator(gen, mediaTypeEntry.getValue().getSchema());
+				else // should never happen
+					setDefaultGenerator(gen);
+			}
+
 			gens.add(gen);
+
 			testParam.setGenerators(gens);
 			testParameters.add(testParam);
 
@@ -502,7 +518,7 @@ public class DefaultTestConfigurationGenerator {
 		return testParameters;
 	}
 
-	private void generateBodyGenerator(Generator gen, MediaType mediaType) {
+	private void addObjectPerturbatorIfPossible(List<Generator> gens, MediaType mediaType) {
 		GenParameter stringObject = new GenParameter();
 
 		String bodyParam = null;
@@ -540,12 +556,12 @@ public class DefaultTestConfigurationGenerator {
 		}
 
 		if (bodyParam != null && !bodyParam.equals("null")) {
+			Generator gen = new Generator();
+			gen.setGenParameters(new ArrayList<>());
 			gen.setType(OBJECT_PERTURBATOR);
 			stringObject.setName(GEN_PARAM_STRING_OBJECTS);
 			stringObject.setValues(Collections.singletonList(bodyParam));
 			gen.getGenParameters().add(stringObject);
-		} else {
-			setDefaultGenerator(gen);
 		}
 	}
 
