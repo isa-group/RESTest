@@ -43,12 +43,22 @@ testConfiguration:
           - One Piece
           - The last kingdom
           - Lupin
+          - Two and a half men
+          - The Big Bang Theory
+          - The Simpsons
+          - Family Guy
+          - Modern Family
           - Say my name        # EPISODES Breaking Bad
           - Ozymandias
           - You Found Me      # The Boys
           - Bagman            # Better Call Saul
           - Namaste
           - Finale            # The Office
+          - The Stockholm Syndrome  # The Big Bang Theory
+          - First Blood             # Family Guy
+          - Christmas Crime
+          - The Movement
+          - Manger Things           # The Simpsons
           - "Spider-Man: No Way Home"   # LONG IMDB IDs
           - The Matrix Resurrections
           - Arcane
@@ -91,6 +101,11 @@ testConfiguration:
           - tt1190634	# The Boys
           - tt0388629	# One Piece
           - tt4179452	# The last kingdom
+          - tt0369179    # Two and a half men
+          - tt0898266    # The Big Bang Theory
+          - tt0096697    # The Simpsons
+          - tt0182576    # Family Guy
+          - tt1442437    # Modern Family
           - tt2531336	# Lupin
           - tt2301467	#EPISODES       Say my name     # Breaking Bad
           - tt2301451	# Ozymandias
@@ -98,6 +113,11 @@ testConfiguration:
           - tt8772218	# Bagman                        # Better Call Saul
           - tt8772192	# Namaste
           - tt2669746	# Finale                        # The Office
+          - tt13800512	# Manger Things		            # The Simpsons
+          - tt6674736	# The Stockholm Syndrome        # Big Bang Theory
+          - tt19268098    # First Blood	                # Family Guy
+          - tt16091638    # Christmas Crime
+          - tt11312618    # The Movement
           - tt10872600    # # LONG IMDB IDs (They are 10 characters long since December 2021)   Spider-Man: No Way Home
           - tt10838180    # The Matrix Resurrections
           - tt11126994    # Arcane

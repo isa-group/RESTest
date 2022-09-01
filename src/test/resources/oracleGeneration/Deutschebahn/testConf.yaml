@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: 'Bearer ----'
+    Authorization: 'Bearer d4564ca07ca242f39efbd3c691e32da8'
   apiKeysPath: null
   headersPath: null
   oauthPath: null
@@ -15,7 +15,7 @@ testConfiguration:
     testParameters:
     - name: offset
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomNumber
         genParameters:
@@ -29,12 +29,12 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 10
+          - 30
           objectValues: null
         valid: true
     - name: limit
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomNumber
         genParameters:
@@ -53,7 +53,7 @@ testConfiguration:
         valid: true
     - name: searchstring
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomRegExp
         genParameters:
@@ -64,7 +64,7 @@ testConfiguration:
         valid: true
     - name: category
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
@@ -88,21 +88,48 @@ testConfiguration:
         valid: true
     - name: federalstate
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
-        - name: csv
+        - name: minValues
           values:
-          - src/test/resources/Deutschebahn/federalState.csv
+            - 1
+        - name: maxValues
+          values:
+            - 10
+        - name: values
+          values:
+          - Baden-Württemberg
+          - Bayern
+          - Berlin
+          - Brandenburg
+          - Bremen
+          - Hamburg
+          - Hessen
+          - Niedersachsen
+          - Mecklenburg-Vorpommern
+          - Nordrhein-Westfalen
+          - Rheinland-Pfalz
+          - Saarland
+          - Sachsen
+          - Sachsen-Anhalt
+          - Schleswig-Holstein
+          - Thüringen
           objectValues: null
         valid: true
     - name: eva
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 10
         - name: values
           values:
           - 8004353
@@ -116,14 +143,76 @@ testConfiguration:
           - 8000324
           - 8011184
           - 8004652
+          - 8010003
+          - 8011086
+          - 8011267
+          - 8010061
+          - 8011453
+          - 8011480
+          - 8010012
+          - 8011095
+          - 8011185
+          - 8011264
+          - 8011320
+          - 8010076
+          - 8000496
+          - 8000657
+          - 8000017
+          - 8000757
+          - 8000909
+          - 8000973
+          - 8000539
+          - 8000621
+          - 8000685
+          - 8000717
+          - 8080070
+          - 8011100
+          - 8011154
+          - 8013470
+          - 8001156
+          - 8001157
+          - 8001159
+          - 8002551
+          - 8006319
+          - 8005207
+          - 8005191
+          - 8000589
+          - 8000015
+          - 8000752
+          - 8005324
+          - 8079095
+          - 8003545
+          - 8006559
+          - 8013156
+          - 8013236
+          - 8013104
+          - 8010338
+          - 8001580
+          - 8005057
+          - 8004190
+          - 8005257
+          - 8002025
+          - 8005071
+          - 8079083
+          - 8002132
+          - 8006392
+          - 8012686
+          - 8073410
+          - 8013418
           objectValues: null
         valid: true
     - name: ril
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 10
         - name: values
           values:
             - BOSS
@@ -141,11 +230,64 @@ testConfiguration:
             - BALX
             - KDF
             - US
+            - TA
+            - TAF
+            - TAE
+            - TALL
+            - MAD
+            - MAIN
+            - MALT
+            - NAWN
+            - BARO
+            - WFW
+            - BBO
+            - BBA
+            - BBZS
+            - HBN
+            - HBL
+            - HBOS
+            - ABAP
+            - ABWM
+            - AELB
+            - AWBS
+            - FKJK
+            - FMBB
+            - FFLF
+            - HOLW
+            - HBLB
+            - HLTT
+            - WGMW
+            - WKAR
+            - WZAR
+            - WWSF
+            - KARE
+            - EAHLH
+            - EALN
+            - EA
+            - RLAD
+            - RANS
+            - RGES
+            - SGN
+            - SWB
+            - SSZA
+            - DKW
+            - DPUS
+            - LLN
+            - DSRB
+            - UNRO
+            - LCBS
+            - LBGR
+            - ALHS
+            - ANSW
+            - ASU
+            - USKM
+            - UWOL
+            - UWMT
           objectValues: null
         valid: true
     - name: logicaloperator
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:

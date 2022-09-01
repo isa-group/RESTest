@@ -38,7 +38,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/---/resources/oracleGeneration/AmadeusHotel/amadeus.properties";
+	private static String propertiesFilePath = "src/---/resources/oracleGeneration/YouTube/getVideos/youtube_getVideos.properties";
 
 	private static List<String> argsList;								// List containing args
 	

@@ -344,6 +344,13 @@ definitions:
   Station:
     type: object
     properties:
+      productLine:    # Added
+        type: object
+        properties:
+          productLine:
+            type: string
+          segment:
+            type: string
       number:
         description: unique identifier representing a specific railway station
         type: integer

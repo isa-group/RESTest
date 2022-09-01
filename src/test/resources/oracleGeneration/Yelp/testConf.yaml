@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer ----
+    Authorization: Bearer cKpxeQbNSG5xgkkIGu7vcP_DofInJ14jqw0hpW6XECRfGGszfv_lRgRYkj-m1X67pBtEClKeFnwLcmdXx3Xked5Js80RKgFRyBYc_ioIDH3WzNsZtXZeguo1aqFfXnYx
   apiKeysPath: null
   headersPath: null
   oauthPath: null
@@ -31,6 +31,10 @@ testConfiguration:
           - chinese
           - indian
           - museum
+          - hospital
+          - massage
+          - thai
+          - japanese
           objectValues: null
         valid: true
     - name: location
@@ -41,16 +45,44 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - Mannheim
-          - Berlin
-          - New York
-          - San Francisco
-          - Seville
           - Madrid
-          - London
-          - Paris
+          - Seville
+          - Barcelona
           - Rome
-          - Lisboa
+          - Florence
+          - Venice
+          - Paris
+          - Lyon
+          - Toulouse
+          - Berlin
+          - Mannheim
+          - Hamburg
+          - Munich
+          - London
+          - Liverpool
+          - Manchester
+          - Los Angeles
+          - San Francisco
+          - Oakland
+          - Long Beach
+          - New York
+          - Boston
+          - Miami
+          - Washington DC
+          - Philadelphia
+          - Orlando
+          - Bogota
+          - Salvador
+          - Tokyo
+          - Yokohama
+          - Osaka
+          - Nagasaki
+          - Hiroshima
+          - Kyoto
+          - Sydney
+          - Melbourne
+          - Adelaide
+          - Auckland
           objectValues: null
         valid: true
     - name: latitude
@@ -65,10 +97,10 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-            - 47.392337
+            - -90.0
         - name: min
           values:
-            - 33.125898
+            - 90.0
         valid: true
     - name: longitude
       in: query
@@ -82,14 +114,14 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-            - -119.205793
+            - -180.0
         - name: max
           values:
-            - -79.958475
+            - 180.0
         valid: true
     - name: radius
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomNumber
         genParameters:
@@ -108,7 +140,7 @@ testConfiguration:
         valid: true
     - name: categories
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
@@ -125,7 +157,7 @@ testConfiguration:
         valid: true
     - name: locale
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:
@@ -136,7 +168,7 @@ testConfiguration:
         valid: true
     - name: limit
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomNumber
         genParameters:
@@ -155,7 +187,7 @@ testConfiguration:
         valid: true
     - name: offset
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomNumber
         genParameters:
@@ -188,7 +220,7 @@ testConfiguration:
         valid: true
     - name: price
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
@@ -208,7 +240,7 @@ testConfiguration:
         valid: true
     - name: open_now
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomBoolean
         genParameters: []
@@ -225,16 +257,16 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1645815009
+          - 1650616508
           objectValues: null
         - name: max
           values:
-          - 1646280910
+          - 1651743309
           objectValues: null
         valid: true
     - name: attributes
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:

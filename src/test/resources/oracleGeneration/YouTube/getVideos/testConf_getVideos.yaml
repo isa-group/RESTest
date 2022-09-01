@@ -44,7 +44,7 @@ testConfiguration:
         valid: true
     - name: chart
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:
@@ -56,21 +56,95 @@ testConfiguration:
         valid: true
     - name: hl
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
         - name: values
           values:
-          - es
-          - en
-          - fr
-          - it
+          - af
+          - am
+          - ar
+          - as
+          - az
+          - be
+          - bg
+          - bn
+          - bs
+          - ca
+          - cs
+          - da
           - de
-          - pt
-          - no
+          - el
+          - en-GB
+          - en-IN
+          - en
+          - es
+          - es-419
+          - es-US
+          - et
+          - eu
+          - fa
           - fi
+          - fil
+          - fr-CA
+          - fr
+          - gl
+          - gu
+          - hi
+          - hr
+          - hu
+          - hy
+          - id
+          - is
+          - it
+          - iw
           - ja
+          - ka
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lo
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - no
+          - ne
+          - nl
+          - or
+          - pa
+          - pl
+          - pt
+          - pt-PT
+          - ro
+          - ru
+          - si
+          - sk
+          - sl
+          - sq
+          - sr-Latn
+          - sr
+          - sv
+          - sw
+          - ta
+          - te
+          - th
+          - tr
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-CN
+          - zh-HK
+          - zh-TW
+          - zu
           objectValues: null
         valid: true
     - name: id
@@ -79,6 +153,14 @@ testConfiguration:
       generators:
       - type: RandomInputValue
         genParameters:
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
+          objectValues: null
         - name: values
           values:
             - zZa8PFYtWr4
@@ -92,11 +174,105 @@ testConfiguration:
             - 5kUu97Vkwj4
             - TH7m9c72TKA
             - lL-RfE-ioJ8
+            - pnxol_9jYuU
+            - sEKcCg_Jfosç
+            - BEmi2JWb-Wo
+            - MRazr0gkBPw
+            - V1CNu7kx_YU
+            - L762_Hok56I
+            - _up-qjqqRVc
+            - A8IMQOACIHA
+            - AOi1sVKPsfo
+            - jNQXAC9IVRw
+            - eqP_Q7cgwJc
+            - 3MZftSsYSUQ
+            - n9xSQfuBOWA
+            - UbkuFychbKM
+            - qRBWLhIRUoY
+            - nAg2ZUluskc
+            - Cp4Rxh1ZqzA
+            - LTLYwt9Yitw
+            - 9XF7t3pyL2M
+            - ccBjfB5UOkw
+            - acBCHmS6XCs
+            - ynB3zFU2RHI
+            - J8hE0kTSJ0s
+            - wLL1VEuwmw8
+            - _X-BTbwj3xU
+            - cYZHtkq4f-8
+            - C1eOiOkD_8A
+            - uCpE6z999Uk
+            - i1wGMQ3TjzA
+            - XQdt04iTfVI
+            - OS0m3A0kuKM
+            - 0r3qO2YBEDE
+            - ka-yIPOKups
+            - papu-GJiRMI
+            - 2EK8VEZWxyc
+            - v_pg7KsTuos
+            - mpT_dEZAQHk
+            - kt2jMqUS3iE
+            - wODZ-0EYpG4
+            - UFnXm6cjGwU
+            - pRpeEdMmmQ0
+            - dQw4w9WgXcQ
+            - gYzitEwkeYE
+            - SOloyjRxmXI
+            - G4UspBs3DGQ
+            - KzRFuPlUcCI
+            - 0enJWrc7apE
+            - 5aUDNyRpdRk
+            - 0XrcYiu-Ydo
+            - fn5jS9GEDnw
+            - YuuTrYG2zhg
+            - bTgRLQHGouw
+            - 2Nv-2PvOSr4
+            - BhgxoeZGSN4
+            - smcfifLxkjc
+            - zjaTIkKGNws
+            - bzuGMAMKwss
+            - vjH5otptiBE
+            - bHEV9f9NLv4
+            - jLBsBPwqysM
+            - _j1LsWbC7_s
+            - nC327id4aUM
+            - PSVscd4yrvU
+            - EGyfdtW5zn0
+            - vx2u5uUu3DE
+            - tNgMbN0laHE
+            - tc60Bnn82mE
+            - xiX9zveLSRA
+            - HndV87XpkWg
+            - _aB9Tg6SRA0
+            - YbJOTdZBX1g
+            - r8Z-vcHr65g
+            - amS6S_QLHzo
+            - nk2cCxcnexU
+            - PV9t27f0HFY
+            - 4HgzF3pOCFw
+            - "-VIjZMdYu5A"
+            - 6TkVXdPKH_o
+            - gTgsOTUjDcA
+            - cAMcWSIY5js
+            - Z-JkdGYAHl4
+            - APAp8Tgzcf8
+            - Uvg32yRi3oM
+            - 5n8QfgubNAI
+            - KD-iSMNYvf0
+            - Yn9wEjNX-K4
+            - T7LGxxU2PhA
+            - _zS_XlfV1xc
+            - _B_1IMstVzs
+            - uSjS_l3wGu8
+            - r5sgI6h1S3k
+            - XNE5Bi0ktVQ
+            - Sx-rrBv2lyc
+            - 3ngxKydsrQU
           objectValues: null
         valid: true
     - name: maxHeight
       in: query
-      weight: 0.5
+      weight: 0.4
       generators:
       - type: RandomNumber
         genParameters:
@@ -134,7 +310,7 @@ testConfiguration:
         valid: true
     - name: maxWidth
       in: query
-      weight: 0.5
+      weight: 0.4
       generators:
       - type: RandomNumber
         genParameters:
@@ -153,7 +329,7 @@ testConfiguration:
         valid: true
     - name: myRating
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:
@@ -188,26 +364,56 @@ testConfiguration:
         valid: true
     - name: regionCode
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:
         - name: values
           values:
-          - ES
           - US
-          - DE
-          - FR
-          - IT
           - PT
           - FI
           - NO
           - JP
+          - HU
+          - ES
+          - AR
+          - AU
+          - AT
+          - BR
+          - BG
+          - CA
+          - CL
+          - CO
+          - DO
+          - EC
+          - SV
+          - FR
+          - DE
+          - GR
+          - HK
+          - IN
+          - IT
+          - KR
+          - MX
+          - MC
+          - MA
+          - NZ
+          - PE
+          - PL
+          - RO
+          - SG
+          - CH
+          - TH
+          - TR
+          - UA
+          - GB
+          - UY
           objectValues: null
         valid: true
     - name: videoCategoryId
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
@@ -219,8 +425,32 @@ testConfiguration:
           - 10
           - 15
           - 17
+          - 18
           - 19
           - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 26
+          - 27
+          - 28
+          - 30
+          - 31
+          - 32
+          - 33
+          - 34
+          - 35
+          - 36
+          - 37
+          - 38
+          - 39
+          - 40
+          - 41
+          - 42
+          - 43
+          - 44
           objectValues: null
         valid: true
     expectedResponse: 200

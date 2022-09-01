@@ -124,8 +124,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BusinessesResult"
-        "400":
-          description: bad request
+#        "400":
+#          description: bad request
 #  /transactions/{transaction_type}/search:
 #    get:
 #      operationId: getTransactions

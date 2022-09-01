@@ -43,12 +43,22 @@ testConfiguration:
           - One Piece
           - The last kingdom
           - Lupin
+          - Two and a half men
+          - The Big Bang Theory
+          - The Simpsons
+          - Family Guy
+          - Modern Family
           - Say my name                       # EPISODES   Breaking Bad
           - Ozymandias
           - You Found Me                      # The Boys
           - Bagman                            # Better Call Saul
           - Namaste
           - Finale                            # The Office
+          - Manger Things                     # The Simpsons
+          - The Stockholm Syndrome            # The Big Bang Theory
+          - First Blood                       # Family Guy
+          - Christmas Crime
+          - The Movement
           - "Spider-Man: No Way Home"         # LONG IMDB IDs
           - The Matrix Resurrections
           - Arcane
