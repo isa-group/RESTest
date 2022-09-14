@@ -42,7 +42,6 @@ testConfiguration:
           - 3qrqWaQBRtiDvKnVgi2Jhk
           - 6NnxUxgj1FlneEPzSaRflN
           - 4aawyAB9vmqN3uQ7FjRGTy
-          - 4VQfkbHBOMUfhy2394RqdP
           - 0CR8Q3InJ651Wke81ihesx
           - 7uqVE9qWdqjtDeLpdHyMxP
           - 5c91uYKAFjDmwGCW87pRyx
@@ -74,6 +73,15 @@ testConfiguration:
           - 7I23Ozytuydr8LCgRiHNY5
           - 0X0ZWOmMDsAJW7NDeMXIN4
           - 4YQsbhCYkpmueqKC4aEn7f
+          - 4otkd9As6YaxxEkIjXPiZ6
+          - 3MKvhQoFSrR2PrxXXBHe9B
+          - 6t7956yu5zYf5A829XRiHC
+          - 2t1EvhAPgUWbd2jHITrLUj
+          - 3vOgbDjgsZBAPwV2M3bNOj
+          - 6DN7GcZF1HywzrkGN6Eeqk
+          - 7bHBKXxGoDv8OepZWqLw1p
+          - 1nzXLhEwX425ohlxbW98nK
+          - 7vfuTRXIAYJz5Uc8SddnTr
           objectValues: null
         valid: true
     - name: limit
@@ -111,7 +119,7 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 10
+          - 20
           objectValues: null
         valid: true
     - name: market
