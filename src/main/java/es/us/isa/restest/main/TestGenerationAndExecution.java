@@ -38,7 +38,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/oracleGeneration/Spotify/createPlaylist/spotify_createPlaylist.properties";
+	private static String propertiesFilePath = "src/test/resources/oracleGenerationICST/GitHub/createAnOrganizationRepository/github_createAnOrganizationRepository.properties";
 
 	private static List<String> argsList;								// List containing args
 	

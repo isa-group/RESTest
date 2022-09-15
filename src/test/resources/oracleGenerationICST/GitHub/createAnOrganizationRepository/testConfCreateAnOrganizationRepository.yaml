@@ -1,0 +1,60 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: "/orgs/{org}/repos"
+    operationId: repos/create-in-org
+    method: post
+    testParameters:
+    - name: org
+      in: path
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - valid: true
+        type: RandomRegExp
+        genParameters:
+          - name: regExp
+            values:
+              - '\{ \"name\": \"(repository |technology |python |java |awesome |library |framework |personal |project |api |rest |graphql |javascript |learning |node |tensorflow |for |beginners |1 |2 |3 |4 |5 |6 |7 |8 |9 |0 |carsick |optimized |research |code |replication |package |qwerty |london |search |engine |to |rank |slow |fast |daikonexpress |pytorch |prologBest |germany |government |mining |data |clustering |neural |network |deep |reinforcement |permissions |bayonetta |jmetal |genetic |algorithms |music |sla |ikeapark |cereza |kachi ){0,4}(repository|technology|python|java|awesome|library|framework|personal|project|api|rest|graphql|javascript|learning|node|tensorflow|for|beginners|1|2|3|4|5|6|7|8|9|0|carsick|optimized|research|code|replication|package|qwerty|london|search|engine|to|rank|slow|fast|daikonexpress|pytorch|prologBest|germany|government|mining|data|clustering|neural|network|deep|reinforcement|permissions|bayonetta|jmetal|genetic|algorithms|music|sla|ikeapark|cereza|kachi){1}\", 
+              \"description\": \"(repository |technology |python |java |awesome |library |framework |personal |project |api |rest |graphql |javascript |learning |node |tensorflow |for |beginners |1 |2 |3 |4 |5 |6 |7 |8 |9 |0 |carsick |optimized |research |code |replication |package |qwerty |london |search |engine |to |rank |slow |fast |daikonexpress |pytorch |prologBest |germany |government |mining |data |clustering |neural |network |deep |reinforcement |permissions |bayonetta |jmetal |genetic |algorithms |music |sla |ikeapark |cereza |kachi ){4,10}(repository|technology|python|java|awesome|library|framework|personal|project|api|rest|graphql|javascript|learning|node|tensorflow|for|beginners|1|2|3|4|5|6|7|8|9|0|carsick|optimized|research|code|replication|package|qwerty|london|search|engine|to|rank|slow|fast|daikonexpress|pytorch|prologBest|germany|government|mining|data|clustering|neural|network|deep|reinforcement|permissions|bayonetta|jmetal|genetic|algorithms|music|sla|ikeapark|cereza|kachi){1}\",
+              \"homepage\": \"www\.(repository|technology|python|java|awesome|library|framework|personal|project|api|rest|graphql|javascript|learning|node|tensorflow|for|beginners|1|2|3|4|5|6|7|8|9|0|carsick|optimized|research|code|replication|package|qwerty|london|search|engine|to|rank|slow|fast|daikonexpress|pytorch|prologBest|germany|government|mining|data|clustering|neural|network|deep|reinforcement|permissions|bayonetta|jmetal|genetic|algorithms|music|sla|ikeapark|cereza|kachi){3,9}\.com\",
+              \"private\": (true|false){1},
+              \"visibility\": \"(public|private){1}\",
+              \"has_issues\": (true|false){1},
+              \"has_projects\": (true|false){1},
+              \"has_wiki\": (true|false){1},
+              \"is_template\": (true|false){1},
+              \"team_id\": (1234|5678){1},
+              \"auto_init\": (true|false){1},
+              \"gitignore_template\": \"(AL|Actionscript|Ada|Agda|Android|AppEngine|AppceleratorTitanium|ArchLinuxPackages|Autotools|C\+\+|C|CFWheels|CMake|CUDA|CakePHP|ChefCookbook|Clojure|CodeIgniter|CommonLisp|Composer|Concrete5|Coq|CraftCMS|D|DM|Dart|Delphi|Drupal|EPiServer|Eagle|Elisp|Elixir|Elm|Erlang|ExpressionEngine|ExtJs|Fancy|Finale|FlaxEngine|ForceDotCom|Fortran|FuelPHP|GWT|Gcov|GitBook|Go|Godot|Gradle|Grails|Haskell|IGORPro|Idris|JBoss|JENKINS_HOME|Java|Jekyll|Joomla|Julia|KiCad|Kohana|Kotlin|LabVIEW|Laravel|Leiningen|LemonStand|Lilypond|Lithium|Lua|Magento|Maven|Mercury|MetaProgrammingSystem|Nanoc|Nim|Node|OCaml|Objective-C|Opa|OpenCart|OracleForms|Packer|Perl|Phalcon|PlayFramework|Plone|Prestashop|Processing|PureScript|Python|Qooxdoo|Qt|R|ROS|Racket|Rails|Raku|RhodesRhomobile|Ruby|Rust|SCons|Sass|Scala|Scheme|Scrivener|Sdcc|SeamGen|SketchUp|Smalltalk|Stella|SugarCRM|Swift|Symfony|SymphonyCMS|TeX|Terraform|Textpattern|TurboGears2|TwinCAT3|Typo3|Unity|UnrealEngine|VVVV|VisualStudio|Waf|WordPress|Xojo|Yeoman|Yii|ZendFramework|Zephir){1}\",
+              \"license_template\": \"(afl-3\.0|apache-2\.0|artistic-2\.0|bsl-1\.0|bsd-2-clause|bsd-3-clause|bsd-3-clause-clear|cc|cc0-1\.0|cc-by-4\.0|cc-by-sa-4\.0|wtfpl|ecl-2\.0|epl-1\.0|epl-2\.0|eupl-1\.1|agpl-3\.0|gpl|gpl-2\.0|gpl-3\.0|lgpl|lgpl-2\.1|lgpl-3\.0|isc|lppl-1\.3c|ms-pl|mit|mpl-2\.0|osl-3\.0|postgresql|ofl-1\.1|ncsa|unlicense|zlib){1}\",
+              \"allow_squash_merge\": (true|false){1},
+              \"allow_merge_commit\": (true|false){1},
+              \"allow_rebase_merge\": (true|false){1},
+              \"allow_auto_merge\": (true|false){1},
+              \"delete_branch_on_merge\": (true|false){1},
+              \"use_squash_pr_title_as_default\": (true|false){1},
+              \"squash_merge_commit_title\": \"(PR_TITLE|COMMIT_OR_PR_TITLE){1}\",
+              \"squash_merge_commit_message\": \"(PR_BODY|COMMIT_MESSAGES|BLANK){1}\",
+              \"merge_commit_title\": \"(PR_TITLE|MERGE_MESSAGE){1}\",
+              \"merge_commit_message\": \"(PR_TITLE|PR_BODY|BLANK){1}\"      
+              \}'
+
+    expectedResponse: 200
