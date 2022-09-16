@@ -2,11 +2,10 @@
 auth:
   required: true
   queryParams: {}
-  headerParams:
-    Authorization: Bearer ---
+  headerParams: {}
   apiKeysPath: null
   headersPath: null
-  oauthPath: null
+  oauthPath: Spotify/oauth.json
 testConfiguration:
   operations:
   - testPath: "/artists/{id}/albums"
@@ -282,6 +281,14 @@ testConfiguration:
       generators:
       - type: RandomInputValue
         genParameters:
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 4
+          objectValues: null
         - name: values
           values:
           - album

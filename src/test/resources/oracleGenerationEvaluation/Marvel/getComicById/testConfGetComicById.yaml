@@ -1,0 +1,26 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: Marvel/apikeys.json
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: "/v1/public/comics/{comicId}"
+    operationId: getComicIndividual
+    method: get
+    testParameters:
+    - name: comicId
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/oracleGenerationEvaluation/Marvel/getComicById/comics_ids_extended.csv
+          objectValues: null
+        valid: true
+    expectedResponse: 200

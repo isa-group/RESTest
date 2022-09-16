@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class CreateTestConf {
 
     private static final Logger log = LogManager.getLogger(CreateTestConf.class);
-    private static String openApiSpecPath = "src/test/resources/oracleGenerationICST/GitHub/createAnOrganizationRepository/swagger_createAnOrganizationRepository.yaml";			                                // OAS file path
+    private static String openApiSpecPath = "src/test/---/oracleGenerationICST/Marvel/getComicById/swagger_getComicById.yaml";			                                // OAS file path
     private static String confPath;																// Test configuration path
 
     
