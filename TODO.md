@@ -1,0 +1,4 @@
+- Integration with Circle CI (See main branch)
+- Integration with Maven Central (See main branch)
+- Update wiki (remove anything not essential and redirect to samples directory)
+- Update README.md
