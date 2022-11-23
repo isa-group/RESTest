@@ -1,0 +1,381 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams:
+    Authorization: Basic aXZhbi5wZXRyb3ZAeWFuZGV4LnJ1OnBldHJvdg==
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /customer
+    operationId: getCustomerUsingGET
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /customer/cart
+    operationId: getCartUsingGET
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /customer/cart
+    operationId: addItemUsingPUT
+    method: put
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+            - src/test/resources/icsoc22-tutorial/market/data/cart_product_valid_1.json
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_product_invalid_1.json
+        valid: false
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_product_invalid_2.json
+        valid: false
+      - type: RandomObject
+        genParameters:
+          - name: files
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_product_valid_1.json
+        valid: true
+      - type: RandomObject
+        genParameters:
+          - name: files
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_product_invalid_1.json
+              - src/test/resources/icsoc22-tutorial/market/data/cart_product_invalid_2.json
+        valid: false
+    expectedResponse: 200
+  - testPath: /customer/cart
+    operationId: clearCartUsingDELETE
+    method: delete
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /customer/cart/delivery
+    operationId: setDeliveryUsingPUT
+    method: put
+    testParameters:
+    - name: included
+      in: query
+      weight: null
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /customer/cart/pay
+    operationId: payByCardUsingPOST
+    method: post
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_pay_valid_1.json
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_pay_valid_2.json
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_pay_invalid_1.json
+        valid: false
+      - type: RandomObject
+        genParameters:
+          - name: files
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_pay_valid_1.json
+              - src/test/resources/icsoc22-tutorial/market/data/cart_pay_valid_2.json
+        valid: true
+      - type: RandomObject
+        genParameters:
+          - name: files
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/cart_pay_invalid_1.json
+        valid: false
+    expectedResponse: 200
+  - testPath: /customer/contacts
+    operationId: getContactsUsingGET
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /customer/contacts
+    operationId: updateContactsUsingPUT
+    method: put
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/contact_valid_1.json
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/contact_invalid_1.json
+        valid: false
+      - type: RandomObject
+        genParameters:
+          - name: files
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/contact_valid_1.json
+        valid: true
+      - type: RandomObject
+        genParameters:
+          - name: files
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/contact_invalid_1.json
+        valid: false
+    expectedResponse: 200
+  - testPath: /customer/orders
+    operationId: getOrdersUsingGET
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/customer/orders/{orderId}"
+    operationId: getOrderUsingGET
+    method: get
+    testParameters:
+    - name: name
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: orderId
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int64
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 10
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /products
+    operationId: getProductsUsingGET
+    method: get
+    testParameters: null
+    expectedResponse: 200
+  - testPath: "/products/{productId}"
+    operationId: getProductUsingGET
+    method: get
+    testParameters:
+    - name: productId
+      in: path
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int64
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 11
+          objectValues: null
+        valid: true
+      - type: RandomNumber
+        genParameters:
+          - name: type
+            values:
+              - int64
+            objectValues: null
+          - name: min
+            values:
+              - 12
+            objectValues: null
+          - name: max
+            values:
+              - 100
+            objectValues: null
+        valid: false
+      - type: RandomNumber
+        genParameters:
+          - name: type
+            values:
+              - int64
+            objectValues: null
+          - name: min
+            values:
+              - -100
+            objectValues: null
+          - name: max
+            values:
+              - 0
+            objectValues: null
+        valid: false
+    expectedResponse: 200
+  - testPath: /register
+    operationId: createCustomerUsingPOST
+    method: post
+    testParameters:
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+      - type: ObjectPerturbator
+        genParameters:
+          - name: file
+            values:
+              - src/test/resources/icsoc22-tutorial/market/data/register_valid_1.json
+        valid: false
+    expectedResponse: 200

@@ -25,6 +25,7 @@ public abstract class SingleRule {
             List<Schema> objectNodes = getAllObjectNodes(schema, internalNode, spec);
             Schema s = objectNodes.get(random.nextInt(objectNodes.size()));
 
+
             applyNodeFuzzingRule(s, spec);
         }
     }
@@ -34,13 +35,15 @@ public abstract class SingleRule {
 
         objectNodes.add(schema);
 
-        for(Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
-            if ("array".equals(entry.getValue().getType())) {
-                apply(((ArraySchema) entry.getValue()).getItems(), internalNode, spec);
-            } else if ("object".equals(entry.getValue().getType())) {
-                objectNodes.addAll(getAllObjectNodes(entry.getValue(), internalNode, spec));
-            } else if (!internalNode) {
-                objectNodes.add(entry.getValue());
+        if (schema.getProperties() != null) {
+            for (Map.Entry<String, Schema> entry : schema.getProperties().entrySet()) {
+                if ("array".equals(entry.getValue().getType())) {
+                    apply(((ArraySchema) entry.getValue()).getItems(), internalNode, spec);
+                } else if ("object".equals(entry.getValue().getType())) {
+                    objectNodes.addAll(getAllObjectNodes(entry.getValue(), internalNode, spec));
+                } else if (!internalNode) {
+                    objectNodes.add(entry.getValue());
+                }
             }
         }
 

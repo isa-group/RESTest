@@ -25,11 +25,13 @@ public class DuplicateRule extends SingleRule {
 
     @Override
     protected void applyNodeFuzzingRule(Schema<?> schema, OpenAPI spec) {
-        List<String> propertyNames = new ArrayList<>(schema.getProperties().keySet());
-        if (propertyNames.size() > 0) {
-            String duplicatedProperty = propertyNames.get(random.nextInt(propertyNames.size()));
-            Schema duplicatedSchema = generateFullyResolvedSchema(schema.getProperties().get(duplicatedProperty), spec);
-            schema.getProperties().put(duplicatedProperty + "-duplicated", duplicatedSchema);
+        if (schema.getProperties() != null) {
+            List<String> propertyNames = new ArrayList<>(schema.getProperties().keySet());
+            if (propertyNames.size() > 0) {
+                String duplicatedProperty = propertyNames.get(random.nextInt(propertyNames.size()));
+                Schema duplicatedSchema = generateFullyResolvedSchema(schema.getProperties().get(duplicatedProperty), spec);
+                schema.getProperties().put(duplicatedProperty + "-duplicated", duplicatedSchema);
+            }
         }
     }
 }
