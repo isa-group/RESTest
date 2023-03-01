@@ -2,7 +2,7 @@ const axios = require('axios').default
 const fs = require('fs')
 
 axios.defaults.baseURL = 'https://api.spotify.com'
-axios.defaults.headers.common['Authorization'] = 'Bearer XXX'
+axios.defaults.headers.common['Authorization'] = 'Bearer BQAOyp_fU26dH_D1BANvbzwUXD9_OJiXrQIE6GThKas8Oi_NebMfj9tpyTK86V7ko-jIdpOin2qMDrRu9fqgJdUz2kXvH4rZE2UA86NAN0KsxGmx_heNvnnvxETElvSwppVqrSAMe6uczASCjIHHTcvk3fwjfOdG63xZdrZsdWBy83lzk6aXiBFN7Ee5QS7YTBLEipP0jJjBMuRxCVZ0Nd1Vr4seJn4n8Ur3AymsZIAjkjAK7pBJKgviSdR7r8xo'
 
 const timer = 90
 const limit = 100

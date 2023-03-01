@@ -74,6 +74,10 @@ public class RESTestRunner {
 
 		generateReports();
 
+		// Delete this (additional delay if the API returns a 403)
+//		statsReportManager.introduceAdditionalDelay(testId);
+		// End delete this
+
 		if(learnRegex){
 			statsReportManager.learn(testId, spec, confPath);
 		}

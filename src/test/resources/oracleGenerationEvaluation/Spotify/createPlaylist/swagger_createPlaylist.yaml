@@ -512,7 +512,7 @@ definitions:
 #            URL for the object.'
 #          type: string
         description: Known external URLs for this album.
-#        type: object
+        type: object
         properties:
           spotify:
             type: string

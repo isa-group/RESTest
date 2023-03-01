@@ -1,0 +1,10 @@
+{
+	"refresh_endpoint": "https://test.api.amadeus.com/v1/security/oauth2/token",
+	"refresh_body": "grant_type=client_credentials&client_id=----&client_secret=---",
+	"refresh_headers": {
+		"Content-Type": "application/x-www-form-urlencoded"
+	},
+	"expires_in_property": "expires_in",
+	"response_token_property": "access_token",
+	"oauth_header_format": "Bearer response_token_property"
+}

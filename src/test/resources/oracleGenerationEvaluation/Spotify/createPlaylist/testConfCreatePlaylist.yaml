@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: Bearer BQBnwpcq2vpvQRfhQWwUaleDeXNnN_PBX3bE8sQ_x8oMU9PATUki6cnIG6UFBo0nNrEq4iCfBFrxFpUGu4P-mlzX8ftUNUa4atb6a3eTm6LKFKfFMjPG9fFGvjbcL96ZxyR20iJW88jNkCI5y5qPe6MGScfeqbnLXm4F-mlOI2G7YYXyAQEdoID4Aa8vvKU3utcvgKtWpsGlZlbcL7e0yABqVEmw0PX0
+    Authorization: 'Bearer BQAOyp_fU26dH_D1BANvbzwUXD9_OJiXrQIE6GThKas8Oi_NebMfj9tpyTK86V7ko-jIdpOin2qMDrRu9fqgJdUz2kXvH4rZE2UA86NAN0KsxGmx_heNvnnvxETElvSwppVqrSAMe6uczASCjIHHTcvk3fwjfOdG63xZdrZsdWBy83lzk6aXiBFN7Ee5QS7YTBLEipP0jJjBMuRxCVZ0Nd1Vr4seJn4n8Ur3AymsZIAjkjAK7pBJKgviSdR7r8xo'
   apiKeysPath: null
   headersPath: null
   oauthPath: null
@@ -25,7 +25,7 @@ testConfiguration:
 #          - 314p6dat3wsraktwd2tawz6vzr3q # benchmark1
 #          - 31q3hnw36axarvbryjncmdxod7bu # benchmark2
 #          - 31hae73dc27cjg75derzdd3vvcja # benchmark3
-          - 31a3nain5ou3gvple56vxquxayhe # benchmark 4
+          - 312xh5dwfxwwxkkauxvxdjvqmvgy # benchmark 4
           objectValues: null
         valid: true
     - name: Accept
@@ -48,6 +48,8 @@ testConfiguration:
           genParameters:
             - name: regExp
               values:
-                - '\{\"name\":  \"(Playlist |1|2|3|4|5|6|7|8|9|0|hits |pop |rock |classic |music |banger |ost |mix |latin |hip |hop |metal |custom |opera |emotional |epic |podcast |episode |anime |movie |videogame |epic ){0,4}(Playlist|1|2|3|4|5|6|7|8|9|0|hits|pop|rock|classic|music|banger|ost|mix|latin|hip|hop|metal|custom|opera|emotional|epic|podcast|episode|anime|movie|videogame|epic){1}\", \"description\": \"(Playlist |description |1|2|3|4|5|6|7|8|9|0|recommended |metal |gear |rising |original |soundtrack |by |greatest |hits |classics |from |the |radio |Metallica |megamix |qwerty |hands |by |english |japanese |italian |decades |genres |apple |susumu |hirasawa |french |languages |guitar |piano |flute |blondie |acdc |rolling |stones ){1,9}(Playlist|description|1|2|3|4|5|6|7|8|9|0|recommended|metal|gear|rising|original|soundtrack|by|greatest|hits|classics|from|the|radio|Metallica|megamix|qwerty|hands|by|english|japanese|italian|decades|genres|apple|susumu|hirasawa|french|languages|guitar|piano|flute|blondie|acdc|rolling|stones){1}\", \"public\": (true|false){1}, \"collaborative\": (true|false){1}  \}'
+                - '\{\"name\":  \"(Playlist |1|2|3|4|5|6|7|8|9|0|hits |pop |rock |classic |music |banger |ost |mix |latin |hip |hop |metal |custom |opera |emotional |epic |podcast |episode |anime |movie |videogame |epic ){0,4}(Playlist|1|2|3|4|5|6|7|8|9|0|hits|pop|rock|classic|music|banger|ost|mix|latin|hip|hop|metal|custom|opera|emotional|epic|podcast|episode|anime|movie|videogame|epic){1}\", \"description\": \"(Playlist |description |1|2|3|4|5|6|7|8|9|0|recommended |metal |gear |rising |original |soundtrack |by |greatest |hits |classics |from |the |radio |Metallica |megamix |qwerty |hands |by |english |japanese |italian |decades |genres |apple |susumu |hirasawa |french |languages |guitar |piano |flute |blondie |acdc |rolling |stones ){1,9}(Playlist|description|1|2|3|4|5|6|7|8|9|0|recommended|metal|gear|rising|original|soundtrack|by|greatest|hits|classics|from|the|radio|Metallica|megamix|qwerty|hands|by|english|japanese|italian|decades|genres|apple|susumu|hirasawa|french|languages|guitar|piano|flute|blondie|acdc|rolling|stones){1}\", 
+                (\"public\": (true|false){1}, \"collaborative\": false |  \"public\": false, \"collaborative\": true){1}
+                \}'
               objectValues: null
     expectedResponse: 200

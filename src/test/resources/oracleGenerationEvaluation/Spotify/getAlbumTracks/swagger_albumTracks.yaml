@@ -1344,6 +1344,9 @@ definitions:
   artist-simple:
     properties:
       external_urls:
+        properties:
+          spotify:
+            type: string
         additionalProperties:
           type: string
         description: Known external URLs for this artist.
@@ -1870,6 +1873,9 @@ definitions:
         description: Whether or not the track has explicit lyrics (true = yes it does; false = no it does not OR unknown).
         type: boolean
       external_urls:
+        properties:
+          spotify:
+            type: string
         additionalProperties:
           description: 'The type of the URL, for example: ''spotify'' - The Spotify URL for the object.'
           type: string
@@ -1891,6 +1897,9 @@ definitions:
         description: 'Part of the response when Track Relinking is applied, and the requested track has been replaced with different track. The track in the linked_from object contains information about the originally requested track.'
         properties:
           external_urls:
+            properties:
+              spotify:
+                type: string
             additionalProperties:
               description: 'The type of the URL, for example: ''spotify'' - The Spotify URL for the object.'
               type: string

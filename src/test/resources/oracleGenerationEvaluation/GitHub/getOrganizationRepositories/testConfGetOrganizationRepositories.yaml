@@ -4,7 +4,7 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: null
-  headersPath: GitHub/headers.json
+  headersPath: GitHub/headers4.json
   oauthPath: null
 testConfiguration:
   operations:
@@ -58,6 +58,9 @@ testConfiguration:
           - Tech-Phantoms
           - EddieHubCommunity
           - integrateme-co
+          - foxHound2005
+          - outerHeaven1984
+          - bandOfTheHawk1997
           objectValues: null
         valid: true
     - name: type

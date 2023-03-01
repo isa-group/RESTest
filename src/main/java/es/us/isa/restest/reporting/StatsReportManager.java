@@ -15,6 +15,7 @@ import it.units.inginf.male.outputs.FinalSolution;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.Test;
 
 import java.util.*;
 
@@ -27,6 +28,7 @@ import static es.us.isa.restest.inputs.semantic.regexGenerator.RegexGeneratorUti
 import static es.us.isa.restest.main.TestGenerationAndExecution.*;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -94,6 +96,22 @@ public class StatsReportManager {
 
     }
 
+    // Delete this method
+    public void introduceAdditionalDelay(String testId) {
+        // Get TestResults
+        String csvTrPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
+        List<TestResult> trs = TestManager.getTestResults(csvTrPath);
+
+        TestResult testResult = trs.get(0);
+
+        // Wait half an hour
+        if(testResult.getStatusCode().equals("403")) {
+            logger.info("Introducing delay of 31 minutes to avoid GitHub secondary rate limit");
+            delay(1860);
+        }
+
+
+    }
 
     public void learn(String testId, OpenAPISpecification spec, String confPath) {
 

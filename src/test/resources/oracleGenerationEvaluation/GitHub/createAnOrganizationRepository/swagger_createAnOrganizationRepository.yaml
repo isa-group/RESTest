@@ -234,10 +234,10 @@ paths:
               example: https://api.github.com/repos/octocat/Hello-World
               schema:
                 type: string
-        '403':
-          "$ref": "#/components/responses/forbidden"
-        '422':
-          "$ref": "#/components/responses/validation_failed"
+#        '403':
+#          "$ref": "#/components/responses/forbidden"
+#        '422':
+#          "$ref": "#/components/responses/validation_failed"
       x-github:
         githubCloudOnly: false
         enabledForGitHubApps: true
@@ -929,6 +929,7 @@ components:
     license-simple:
       title: License Simple
       description: License Simple
+      nullable: true # added
       type: object
       properties:
         key:
@@ -979,8 +980,9 @@ components:
           example: octocat/Hello-World
         license:
           nullable: true
-          allOf:
-          - "$ref": "#/components/schemas/license-simple"
+          "$ref": "#/components/schemas/license-simple"
+#          allOf:
+#          - "$ref": "#/components/schemas/license-simple"
         forks:
           type: integer
         permissions:
@@ -1002,8 +1004,13 @@ components:
           - push
         owner:
           nullable: true
-          allOf:
-          - "$ref": "#/components/schemas/simple-user"
+          "$ref": "#/components/schemas/simple-user"
+#          allOf:
+#          - "$ref": "#/components/schemas/simple-user"
+        organization: # Added
+          "$ref": "#/components/schemas/simple-user"
+#          allOf:
+#          - "$ref": "#/components/schemas/simple-user"
         private:
           description: Whether the repository is private or public.
           default: false
@@ -1491,6 +1498,24 @@ components:
         starred_at:
           type: string
           example: '"2020-07-09T00:17:42Z"'
+        allow_auto_merge:   # added
+          type: boolean
+        allow_forking:      # added
+          type: boolean
+        allow_update_branch:  # added
+          type: boolean
+        merge_commit_message: # added
+          type: string
+        merge_commit_title:   # added
+          type: string
+        squash_merge_commit_message:  # added
+          type: string
+        squash_merge_commit_title:    # added
+          type: string
+        use_squash_pr_title_as_default:   # added
+          type: boolean
+        web_commit_signoff_required:      # added
+          type: boolean
       required:
       - archive_url
       - assignees_url

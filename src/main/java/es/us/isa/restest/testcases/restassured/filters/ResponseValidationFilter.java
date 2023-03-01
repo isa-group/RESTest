@@ -12,6 +12,7 @@ import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.atlassian.oai.validator.util.StringUtils.requireNonEmpty;

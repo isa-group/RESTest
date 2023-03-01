@@ -1,0 +1,10 @@
+{
+	"refresh_endpoint": "https://oauth2.googleapis.com/token",
+	"refresh_body": "{\"client_id\":\"---\",\"client_secret\":\"---\",\"grant_type\":\"refresh_token\",\"refresh_token\":\"1//---\"}",
+	"refresh_headers": {
+		"Content-Type": "application/json"
+	},
+	"expires_in_property": "expires_in",
+	"response_token_property": "access_token",
+	"oauth_header_format": "Bearer response_token_property"
+}

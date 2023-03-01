@@ -1,9 +1,10 @@
 ---
 auth:
   required: true
-  queryParams: {}
+  queryParams:
+    apikey: ---
   headerParams: {}
-  apiKeysPath: OMDb/apikeys.json
+  apiKeysPath: null
   headersPath: null
   oauthPath: null
 testConfiguration:
@@ -59,7 +60,7 @@ testConfiguration:
           - First Blood                       # Family Guy
           - Christmas Crime
           - The Movement
-          - "Spider-Man: No Way Home"         # LONG IMDB IDs
+          - "Spider-Man: No Way Home"
           - The Matrix Resurrections
           - Arcane
           - Moon Knight

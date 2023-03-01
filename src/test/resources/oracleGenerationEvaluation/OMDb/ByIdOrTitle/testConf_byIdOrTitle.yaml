@@ -1,9 +1,10 @@
 ---
 auth:
   required: true
-  queryParams: {}
+  queryParams:
+    apikey: ---
   headerParams: {}
-  apiKeysPath: OMDb/apikeys.json
+  apiKeysPath: null
   headersPath: null
   oauthPath: null
 testConfiguration:
@@ -48,6 +49,7 @@ testConfiguration:
           - The Simpsons
           - Family Guy
           - Modern Family
+          - House of the Dragon
           - Say my name        # EPISODES Breaking Bad
           - Ozymandias
           - You Found Me      # The Boys
@@ -59,7 +61,7 @@ testConfiguration:
           - Christmas Crime
           - The Movement
           - Manger Things           # The Simpsons
-          - "Spider-Man: No Way Home"   # LONG IMDB IDs
+          - "Spider-Man: No Way Home"
           - The Matrix Resurrections
           - Arcane
           - Moon Knight
@@ -69,6 +71,29 @@ testConfiguration:
           - Sin eater
           - "Demon Slayer: Kimetsu no Yaiba - Tsuzumi Mansion Arc"
           - "Don't Look Up"
+          - "Life Liberty and Pursuit"
+          - "I Wanna Dance with Somebody"
+          - "It's Always Sunny in Philadelphia"
+          - Gotham
+          - "The Scarecrow"
+          - "Movie 43"
+          - "Thor: Love and Thunder"
+          - "The Sandman"
+          - Prey
+          - Elvis
+          - "The Lord of the Rings: The Fellowship of the Ring"
+          - "The Lord of the Rings: The Return of the King"
+          - "Obi-Wan Kenobi"
+          - "The Lord of the Rings: The Two Towers"
+          - "The Dark Knight"
+          - "The Dark Knight Rises"
+          - "Fight Club"
+          - "Batman Begins"
+          - Joker
+          - Interstellar
+          - "The Shawshank Redemption"
+          - "Top Gun: Maverick"
+          - "The Great Gatsby"
           objectValues: null
         valid: true
     - name: i
@@ -107,6 +132,7 @@ testConfiguration:
           - tt0182576    # Family Guy
           - tt1442437    # Modern Family
           - tt2531336	# Lupin
+          - tt11198330  # House of the Dragon
           - tt2301467	#EPISODES       Say my name     # Breaking Bad
           - tt2301451	# Ozymandias
           - tt8100958	# You Found Me                  # The Boys
@@ -118,7 +144,7 @@ testConfiguration:
           - tt19268098    # First Blood	                # Family Guy
           - tt16091638    # Christmas Crime
           - tt11312618    # The Movement
-          - tt10872600    # # LONG IMDB IDs (They are 10 characters long since December 2021)   Spider-Man: No Way Home
+          - tt10872600    # Spider-Man: No Way Home
           - tt10838180    # The Matrix Resurrections
           - tt11126994    # Arcane
           - tt10234724    # Moon Knight
@@ -128,6 +154,52 @@ testConfiguration:
           - tt11667808    # Sin eater
           - tt16492678    # Demon Slayer: Kimetsu no Yaiba - Tsuzumi Mansion Arc
           - tt11286314    # Don't Look Up
+          - tt11198334
+          - tt11198336
+          - tt11198338
+          - tt11198340
+          - tt0541970
+          - tt12193804
+          - tt0472954
+          - tt1028236
+          - tt1027449
+          - tt1027450
+          - tt1140907
+          - tt1141458
+          - tt2377298
+          - tt2317936
+          - tt2411492
+          - tt2317922
+          - tt4463986
+          - tt4463980
+          - tt4359300
+          - tt3984176
+          - tt3749900
+          - tt4142526
+          - tt4120554
+          - tt4120542
+          - tt4120524
+          - tt5668386
+          - tt5668400
+          - tt7820276
+          - tt1333125
+          - tt10648342
+          - tt1751634
+          - tt11866324
+          - tt3704428
+          - tt0120737
+          - tt0167260
+          - tt8466564
+          - tt0167261
+          - tt0468569
+          - tt1345836
+          - tt0137523
+          - tt0372784
+          - tt7286456
+          - tt0816692
+          - tt0111161
+          - tt1745960
+          - tt1343092
           objectValues: null
         valid: true
     - name: type

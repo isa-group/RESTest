@@ -2,10 +2,9 @@
 auth:
   required: true
   queryParams: {}
-  headerParams:
-    Authorization: Bearer cKpxeQbNSG5xgkkIGu7vcP_DofInJ14jqw0hpW6XECRfGGszfv_lRgRYkj-m1X67pBtEClKeFnwLcmdXx3Xked5Js80RKgFRyBYc_ioIDH3WzNsZtXZeguo1aqFfXnYx
+  headerParams: {}
   apiKeysPath: null
-  headersPath: null
+  headersPath: Yelp/headers.json
   oauthPath: null
 testConfiguration:
   operations:
@@ -201,7 +200,7 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 5
+          - 10
           objectValues: null
         valid: true
     - name: sort_by
@@ -257,11 +256,11 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1650616508
+          - 1665562924
           objectValues: null
         - name: max
           values:
-          - 1651743309
+          - 1665933970
           objectValues: null
         valid: true
     - name: attributes

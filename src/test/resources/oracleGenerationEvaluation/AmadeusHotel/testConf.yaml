@@ -5,7 +5,7 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
-  oauthPath: Amadeus/oauth4.json
+  oauthPath: Amadeus/oauth12.json
 testConfiguration:
   operations:
   - testPath: /shopping/hotel-offers
@@ -322,7 +322,7 @@ testConfiguration:
             - true
         - name: endDate
           values:
-            - 2022-04-29
+            - 2022-09-23
         - name: format
           values:
           - yyyy-MM-dd
@@ -336,10 +336,10 @@ testConfiguration:
         genParameters:
         - name: startDate
           values:
-            - 2022-04-30
+            - 2022-09-24
         - name: endDate
           values:
-            - 2022-05-10
+            - 2022-10-02
         - name: format
           values:
           - yyyy-MM-dd
@@ -412,6 +412,8 @@ testConfiguration:
           - "0-100000"
           - "0-500"
           - "0-50000"
+          - "10-"
+          - "15-10000"
           objectValues: null
         valid: true
     - name: currency

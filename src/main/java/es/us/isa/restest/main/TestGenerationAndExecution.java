@@ -38,7 +38,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/oracleGenerationEvaluation/Spotify/getArtistAlbums/spotifyGetArtistAlbumsTestConf.properties";
+	private static String propertiesFilePath = "src/test/---/oracleGenerationEvaluation/Yelp/yelp.properties";
 
 	private static List<String> argsList;								// List containing args
 	
@@ -286,7 +286,7 @@ public class TestGenerationAndExecution {
 	/*
 	 * Stop the execution n seconds
 	 */
-	private static void delay(Integer time) {
+	public static void delay(Integer time) {
 		try {
 			logger.info("Introducing delay of {} seconds", time);
 			TimeUnit.SECONDS.sleep(time);

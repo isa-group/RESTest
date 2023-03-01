@@ -237,6 +237,10 @@ components:
                   - €€
                   - €€€
                   - €€€€
+                  - ￥
+                  - ￥￥
+                  - ￥￥￥
+                  - ￥￥￥￥
               rating:
                 type: number
                 minimum: 1

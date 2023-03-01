@@ -193,6 +193,9 @@ definitions:
           type: string
         type: array
       external_urls:
+        properties:
+          spotify:
+            type: string
         additionalProperties:
           description: 'The type of the URL, for example: ''spotify'' - The Spotify URL for the object.'
           type: string
@@ -218,6 +221,18 @@ definitions:
       uri:
         description: The Spotify URI for the album.
         type: string
+      album_group:  # Added
+        type: string
+      artists: # Added
+        type: array
+        items:
+          $ref: '#/definitions/artist-simple'
+      release_date: # Added
+        type: string
+      release_date_precision: # Added
+        type: string
+      total_tracks: # Added
+        type: integer
     type: object
   album-simple-page:
     properties:
@@ -235,12 +250,14 @@ definitions:
       next:
         description: URL to the next page of items. (null if none)
         type: string
+        x-nullable: true # Added
       offset:
         description: The offset of the items returned (as set in the query or by default).
         type: integer
       previous:
         description: URL to the previous page of items. (null if none)
         type: string
+        x-nullable: true # Added
       total:
         description: The total number of items available to return.
         type: integer
@@ -312,6 +329,9 @@ definitions:
   artist-simple:
     properties:
       external_urls:
+        properties:
+          spotify:
+            type: string
         additionalProperties:
           type: string
         description: Known external URLs for this artist.

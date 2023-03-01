@@ -3718,6 +3718,8 @@ components:
           type: boolean
         is_template:
           type: boolean
+        web_commit_signoff_required: # Added
+          type: boolean
         topics:
           type: array
           items:
