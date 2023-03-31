@@ -43,13 +43,8 @@ testConfiguration:
       in: body
       weight: null
       generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - value 1
-          - value 2
-          objectValues: null
+      - type: BodyGenerator
+        genParameters: []
         valid: true
     expectedResponse: 200
   - testPath: "/grocerylist/item/{guid}"
@@ -141,12 +136,7 @@ testConfiguration:
       in: body
       weight: null
       generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - value 1
-          - value 2
-          objectValues: null
+      - type: BodyGenerator
+        genParameters: []
         valid: true
     expectedResponse: 200

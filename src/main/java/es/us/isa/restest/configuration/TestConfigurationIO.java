@@ -64,10 +64,6 @@ public class TestConfigurationIO {
 				}
 			});
 
-			// Print with format
-			// String prettyConf =
-			// mapper.writerWithDefaultPrettyPrinter().writeValueAsString(conf);
-			// System.out.println(prettyConf);
 		} catch (Exception e) {
 			logger.error("Error parsing configuration file: {}", e.getMessage());
 		}

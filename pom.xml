@@ -76,6 +76,7 @@
 	  <tag>HEAD</tag>
   </scm>
 
+	<!-- Apache Maven GPG Plugin (for deploying to Maven Central) -->
 	<profiles>
 		<profile>
 			<id>sign</id>
@@ -100,6 +101,7 @@
 		</profile>
 	</profiles>
 
+	<!-- SonarQube -->
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
@@ -112,13 +114,11 @@
 	</distributionManagement>
 
 
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<aspectj.version>1.9.5</aspectj.version>
-		<jmetal.version>5.9</jmetal.version>
+		<aspectj.version>1.9.7</aspectj.version>
 		<swagger.version>2.1.10</swagger.version>
 <!--		<swaggerparser.version>2.0.27</swaggerparser.version>-->
 		<openapivalidator.version>2.18.1</openapivalidator.version>
@@ -142,13 +142,6 @@
 			<version>${swagger.version}</version>
 		</dependency>
 
-<!--		<dependency>-->
-<!--			<groupId>io.swagger.parser.v3</groupId>-->
-<!--			<artifactId>swagger-parser</artifactId>-->
-<!--			<version>${swaggerparser.version}</version>-->
-<!--		</dependency>-->
-
-
 		<!-- OPENAPI VALIDATOR DEPENDENCIES -->
 		<!-- https://mvnrepository.com/artifact/com.atlassian.oai/swagger-request-validator -->
 		<dependency>
@@ -163,7 +156,6 @@
 			<version>${openapivalidator.version}</version>
 		</dependency>
 
-
 		<!-- REST ASSURED DEPENDENCIES -->
 		<!-- REST Assured -->
 		<dependency>
@@ -171,7 +163,6 @@
 			<artifactId>rest-assured</artifactId>
 			<version>${restassured.version}</version>
 		</dependency>
-
 
 		<!-- JACKSON DEPENDENCIES -->
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
@@ -202,6 +193,7 @@
 			<version>${jackson.version}</version>
 		</dependency>
 
+
 		<!-- TEST DEPENDENCIES -->
 		<!-- JUnit 4 -->
 		<dependency>
@@ -223,6 +215,7 @@
 			<artifactId>allure-rest-assured</artifactId>
 			<version>${allure.version}</version>
 		</dependency>
+
 		<!-- Mockito -->
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -236,7 +229,6 @@
 			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 
 		<!-- MISC DEPENDENCIES -->
 		<!-- Apache Common IO -->
@@ -329,33 +321,6 @@
 			<version>0.0.1</version>
 		</dependency>
 
-		<!-- IDLreasoner dependency -->
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>idlreasoner-choco</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<!-- IDL dependency -->
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>idl-choco</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<!-- RG++ -->
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>MaleRegexTree</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>RandomRegexTurtle</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
 		<!-- Jena -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
@@ -398,6 +363,32 @@
 			<groupId>edu.stanford.nlp</groupId>
 			<artifactId>stanford-parser</artifactId>
 			<version>3.9.2</version>
+		</dependency>
+
+		<!-- LOCAL DEPENDENCIES -->
+
+		<!-- IDLreasoner dependency -->
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idlreasoner-choco</artifactId>
+			<version>1.0.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/idlreasoner-choco-1.0.0.jar</systemPath>
+		</dependency>
+
+		<!-- IDL dependency -->
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idl-choco</artifactId>
+			<version>1.0.0</version>
+<!--			<scope>system</scope>
+			<systemPath>${basedir}/lib/idl-choco-1.0.0.jar</systemPath>-->
+		</dependency>
+
+		<dependency>
+			<groupId>es.us.isa</groupId>
+			<artifactId>idlreasoner-choco</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 	</dependencies>
@@ -545,5 +536,6 @@
 			</plugin>
 		</plugins>
 	</build>
+
 
 </project>

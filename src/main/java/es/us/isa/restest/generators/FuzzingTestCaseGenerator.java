@@ -12,9 +12,9 @@ import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
 import es.us.isa.restest.inputs.random.RandomInputValueIterator;
 import es.us.isa.restest.inputs.random.RandomStringGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.SpecificationVisitor;
+import es.us.isa.restest.specification.OpenAPISpecificationVisitor;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.ObjectSchema;
@@ -28,8 +28,7 @@ import java.util.*;
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getFuzzingValues;
 import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFromValue;
 import static es.us.isa.restest.util.SchemaManager.generateFullyResolvedSchema;
-import static es.us.isa.restest.util.SchemaManager.resolveSchema;
-import static es.us.isa.restest.util.SpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
+import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
 
 /**
  * This class implements a generator of fuzzing test cases. It uses a customizable dictionary to obtain
@@ -61,7 +60,7 @@ public class FuzzingTestCaseGenerator extends AbstractTestCaseGenerator {
         if (testOperation.getTestParameters() != null) {
             for (TestParameter testParam : testOperation.getTestParameters()) {
                 if (!testParam.getIn().equals("body")) {
-                    ParameterFeatures param = SpecificationVisitor.findParameterFeatures(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
+                    OpenAPIParameter param = OpenAPISpecificationVisitor.findParameterFeatures(testOperation.getOpenApiOperation(), testParam.getName(), testParam.getIn());
                     List<String> fuzzingList = getFuzzingValues(param.getType());
                     if (param.getEnumValues() != null)
                         fuzzingList.addAll(param.getEnumValues());

@@ -54,7 +54,7 @@ public class StatefulFilter extends RESTestFilter implements OrderedFilter {
                 addResponseBodyValues(allValues.get(operationMethod + operationPath), bodyNode, "");
                 objectMapper.writeValue(jsonFile, allValues);
             } catch (IOException e) {
-                logger.warn("The response body could not be saved to the JSON: {}", e.getMessage());
+                logger.warn("The response body could not be saved to JSON: {}", e.getMessage());
             }
         }
         return response;

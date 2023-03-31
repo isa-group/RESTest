@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.LIMIT;
 import static es.us.isa.restest.util.CSVManager.*;
 import static es.us.isa.restest.util.FileManager.*;
 import static org.junit.Assert.*;
@@ -70,27 +69,4 @@ public class CSVManagerTest {
         assertTrue("The CSV should contain the introduced values", readValues.containsAll(collection));
 
     }
-
-    @Test
-    public void testSetToCSVWithLimit() {
-
-        if (LIMIT != null) {
-            String path = "src/test/resources/csvData/csvCollectionWithLimitSample.csv";
-
-            Set<String> collection = new HashSet<>();
-            for(int i = 0; i< LIMIT + 10; i++) {
-                collection.add(Integer.toString(i));
-            }
-
-            setToCSVWithLimit(path, collection);
-            assertTrue("The file should exist", checkIfExists(path));
-
-            List<String> readValues = readValues(path);
-            assertTrue("LIMIT not properly applied", readValues.size() == LIMIT);
-
-        }
-
-
-    }
-
 }

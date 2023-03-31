@@ -1,6 +1,6 @@
 package es.us.isa.restest.generators;
 
-import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
+import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.hasDependencies;
 
 import java.util.ArrayList;
 import java.util.Collection;

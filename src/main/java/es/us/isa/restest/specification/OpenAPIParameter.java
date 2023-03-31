@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Auxiliary class to store multiple commonly used properties of an OpenAPI parameter
+ * Auxiliary class to represent API parameters. Used as a proxy to facilitate the work with OAS parameters.
  */
-public class ParameterFeatures {
+public class OpenAPIParameter {
     String name;                    // Parameter name
     String in;                      // query, path, etc.
     String type;                    // string, integer, etc.
@@ -24,7 +24,7 @@ public class ParameterFeatures {
     Integer maxLength;              // If parameter is string, maxLength value allowed
     Boolean required;               // 'true' if the parameter needs to be in the response
 
-    public ParameterFeatures(Parameter p) {
+    public OpenAPIParameter(Parameter p) {
         name = p.getName();
         in = p.getIn();
         type = p.getSchema().getType();
@@ -40,13 +40,13 @@ public class ParameterFeatures {
         required = p.getRequired() == null? Boolean.FALSE : p.getRequired();
     }
 
-    public ParameterFeatures(String name, String in, Boolean required) {
+    public OpenAPIParameter(String name, String in, Boolean required) {
         this.name = name;
         this.in = in;
         this.required = required;
     }
 
-    public ParameterFeatures(String name, Schema s, Boolean required) {
+    public OpenAPIParameter(String name, Schema s, Boolean required) {
         this.name = name;
         type = s.getType();
         format = s.getFormat();
@@ -156,7 +156,7 @@ public class ParameterFeatures {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ParameterFeatures that = (ParameterFeatures) o;
+        OpenAPIParameter that = (OpenAPIParameter) o;
         return Objects.equals(name, that.name) &&
                 Objects.equals(in, that.in) &&
                 Objects.equals(type, that.type) &&

@@ -13,7 +13,7 @@ import static org.apache.commons.text.StringEscapeUtils.escapeCsv;
  */
 public class TestResult {
 
-    private String id;              // Test result unique identifier. Coincides with the test case one
+    private String id;              // Test result unique identifier. Matches with the test case one
     private String statusCode;      // Status code returned in the response
     private String responseBody;    // Body (if any) returned in the response
     private String outputFormat;    // Format of the response (JSON, XML, etc.)

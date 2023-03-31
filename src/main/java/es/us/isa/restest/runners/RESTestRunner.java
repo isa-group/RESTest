@@ -37,14 +37,12 @@ public class RESTestRunner {
 	private boolean allureReports = true;				// Whether to actually generate reports or not (folder "allure-reports")
 	private int numTestCases = 0;						// Number of test cases generated so far
 
-	private boolean learnRegex;
-	private boolean secondPredicateSearch;
 	private OpenAPISpecification spec;
 	private String confPath;
 
 	private static final Logger logger = LogManager.getLogger(RESTestRunner.class.getName());
 
-	public RESTestRunner(String testClassName, String targetDir, String packageName, Boolean learnRegex, Boolean secondPredicateSearch, OpenAPISpecification spec, String confPath, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
+	public RESTestRunner(String testClassName, String targetDir, String packageName, OpenAPISpecification spec, String confPath, AbstractTestCaseGenerator generator, IWriter writer, AllureReportManager reportManager, StatsReportManager statsReportManager) {
 		this.targetDir = targetDir;
 		this.packageName = packageName;
 		this.testClassName = testClassName;
@@ -53,8 +51,6 @@ public class RESTestRunner {
 		this.allureReportManager = reportManager;
 		this.statsReportManager = statsReportManager;
 
-		this.learnRegex = learnRegex;
-		this.secondPredicateSearch = secondPredicateSearch;
 		this.spec = spec;
 		this.confPath = confPath;
 
@@ -74,9 +70,6 @@ public class RESTestRunner {
 
 		generateReports();
 
-		if(learnRegex){
-			statsReportManager.learn(testId, spec, confPath);
-		}
 	}
 
 	protected void generateReports() {

@@ -1,6 +1,5 @@
 package es.us.isa.restest.inputs.stateful;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -27,7 +26,7 @@ import static es.us.isa.restest.inputs.fuzzing.FuzzingDictionary.getNodeFuzzingV
 import static es.us.isa.restest.inputs.stateful.DataMatching.getParameterValue;
 import static es.us.isa.restest.util.FileManager.checkIfExists;
 import static es.us.isa.restest.util.SchemaManager.resolveSchema;
-import static es.us.isa.restest.util.SpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
+import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
 
 
 public class BodyGenerator implements ITestDataGenerator {

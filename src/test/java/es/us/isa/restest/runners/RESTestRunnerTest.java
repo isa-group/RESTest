@@ -64,7 +64,7 @@ public class RESTestRunnerTest {
         StatsReportManager statsReportManager = new StatsReportManager(testDataDir, coverageDataDir);
         statsReportManager.setCoverageMeter(new CoverageMeter(new CoverageGatherer(spec)));
 
-        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", false, false, spec, confPath, generator,writer, arm, statsReportManager);
+        RESTestRunner runner = new RESTestRunner("RunnerTest", "src/generation/java/runnerTest", "runnerTest", spec, confPath, generator,writer, arm, statsReportManager);
         runner.setExecuteTestCases(true);
         runner.setTestId(testId);
 

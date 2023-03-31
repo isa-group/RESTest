@@ -1,18 +1,7 @@
 package es.us.isa.restest.mutation.operators.invalidvalue;
 
-import es.us.isa.restest.mutation.operators.AbstractMutationOperator;
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import es.us.isa.restest.testcases.TestCase;
-import org.apache.commons.lang3.RandomStringUtils;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static es.us.isa.restest.mutation.operators.invalidvalue.AbstractToInvalidOperator.*;
-import static es.us.isa.restest.mutation.operators.invalidvalue.InvalidParameterValue.INTEGER_TYPE;
-import static es.us.isa.restest.mutation.operators.invalidvalue.InvalidParameterValue.NUMBER_TYPE;
 
 /**
  * Mutate an integer parameter by assigning it a string, a boolean, a double, or
@@ -30,7 +19,7 @@ public class IntegerToInvalid extends AbstractToInvalidOperator {
             REPLACE_WITH_BOOL
     };
 
-    public static String mutate(TestCase tc, ParameterFeatures param) {
+    public static String mutate(TestCase tc, OpenAPIParameter param) {
         return mutate(tc, param, mutations);
     }
 }

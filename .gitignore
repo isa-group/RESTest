@@ -3,10 +3,10 @@
 /.vscode/
 /.classpath/
 /.project/
-RESTest.iml
-TODO.txt
-jMetal.log
+/bin/
 /target
+/log/*
+
 /allure-results/
 /src/test/resources/csvData/csvSample.csv
 /src/test/resources/csvData/coverage-results.csv
@@ -16,30 +16,22 @@ jMetal.log
 /src/test/resources/csvData/test-results-coverage.csv
 /src/test/resources/csvData/test-coverage.json
 /src/test/resources/csvData/test-coverage.csv
-/log/*
-
 /src/test/resources/auth/*
-!/src/test/resources/auth/Sample
+/src/test/resources/auth/Sample
 /src/test/resources/auth/Sample/*
-!/src/test/resources/auth/Sample/apikeys.json
-!/src/test/resources/auth/Sample/headers.json
-!/src/test/resources/auth/Sample/oauth.json
-!/src/test/resources/auth/Sample/oauth_wrong.json
-!/src/test/resources/auth/Sample/oauth_short_expiration.json
+/src/test/resources/auth/Sample/apikeys.json
+/src/test/resources/auth/Sample/headers.json
+/src/test/resources/auth/Sample/oauth.json
+/src/test/resources/auth/Sample/oauth_wrong.json
+/src/test/resources/auth/Sample/oauth_short_expiration.json
 
 /idl_aux_files
 src/test/resources/file-manager/*
-.classpath
-
-.factorypath
-
-.project
 
 src/main/resources/TestConfigurationMetamodel/configuration-model-output.yaml
 src/test/resources/restest-test-resources/compare2.postman_collection.json
 src/test/resources/restest-test-resources/test_collection.postman_collection.json
 src/test/resources/restest-test-resources/test_collection_urlencoded.postman_collection.json
-/bin/
 
 stateful_data.json
 /src/main/resources/TestData/Generated/

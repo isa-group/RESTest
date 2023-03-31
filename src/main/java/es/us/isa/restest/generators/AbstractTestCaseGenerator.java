@@ -7,6 +7,7 @@ import es.us.isa.restest.configuration.pojos.Generator;
 import es.us.isa.restest.inputs.stateful.BodyGenerator;
 import es.us.isa.restest.inputs.stateful.ParameterGenerator;
 import es.us.isa.restest.mutation.TestCaseMutation;
+import es.us.isa.restest.specification.OpenAPISpecificationVisitor;
 import es.us.isa.restest.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,13 +22,13 @@ import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.TestDataGeneratorFactory;
 import es.us.isa.restest.inputs.perturbation.ObjectPerturbator;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 
 import static es.us.isa.restest.configuration.TestConfigurationVisitor.hasStatefulGenerators;
 import static es.us.isa.restest.configuration.TestConfigurationVisitor.isArteEnabled;
-import static es.us.isa.restest.util.SpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
+import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.MEDIA_TYPE_APPLICATION_JSON_REGEX;
 
 /**
  * Abstract class to be implemented by test case generators
@@ -124,13 +125,13 @@ public abstract class AbstractTestCaseGenerator {
 	private void preconditions(TestConfigurationObject conf) {
 
 		for(Operation testOperation : conf.getTestConfiguration().getOperations()) {
-			List<ParameterFeatures> requiredParams = SpecificationVisitor.getRequiredParametersFeatures(testOperation.getOpenApiOperation());
+			List<OpenAPIParameter> requiredParams = OpenAPISpecificationVisitor.getRequiredParametersFeatures(testOperation.getOpenApiOperation());
 
 			if(testOperation.getTestParameters() != null) {
 
 				for(TestParameter testParameter : testOperation.getTestParameters()) {
 
-					ParameterFeatures param = SpecificationVisitor.findParameterFeatures(testOperation.getOpenApiOperation(), testParameter.getName(), testParameter.getIn());
+					OpenAPIParameter param = OpenAPISpecificationVisitor.findParameterFeatures(testOperation.getOpenApiOperation(), testParameter.getName(), testParameter.getIn());
 					if(param == null) {
 						throw new IllegalArgumentException("Each parameter in the testConf must exist in the OAS; unknown parameter: " + testParameter.getName() + ", in: " + testParameter.getIn());
 					}
@@ -544,7 +545,7 @@ public abstract class AbstractTestCaseGenerator {
 						((ParameterGenerator) gen).setSpec(spec);
 						((ParameterGenerator) gen).setOperation("GET", operation.getTestPath());
 						((ParameterGenerator) gen).setParameterName(param.getName());
-						((ParameterGenerator) gen).setParameterType(SpecificationVisitor.findParameterFeatures(operation.getOpenApiOperation(), param.getName(), param.getIn()).getType());
+						((ParameterGenerator) gen).setParameterType(OpenAPISpecificationVisitor.findParameterFeatures(operation.getOpenApiOperation(), param.getName(), param.getIn()).getType());
 					}
 
 					if(g.isValid()) nomGens.add(gen);

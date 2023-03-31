@@ -1,7 +1,7 @@
 package es.us.isa.restest.util;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import io.swagger.v3.oas.models.Operation;
 import org.hamcrest.MatcherAssert;
 import org.junit.BeforeClass;
@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static es.us.isa.restest.util.SpecificationVisitor.*;
+import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.*;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.*;
 
@@ -30,7 +30,7 @@ public class SpecificationVisitorTest {
         Operation op = travelApiOas.getSpecification().getPaths().get("/trips").getGet();
         String paramName = "offset";
         String paramType = "query";
-        ParameterFeatures param = findParameterFeatures(op, paramName, paramType);
+        OpenAPIParameter param = findParameterFeatures(op, paramName, paramType);
 
         assertEquals("The parameter's name should be 'offset', but its name is" + param.getName(), "offset", param.getName());
         assertEquals("'offset' should be a query parameter, but it is a " + param.getIn() + " parameter", "query", param.getIn());
@@ -41,25 +41,25 @@ public class SpecificationVisitorTest {
     @Test
     public void shouldGetRequiredParametersGetOperation() {
         Operation op = travelApiOas.getSpecification().getPaths().get("/trips/user").getGet();
-        List<ParameterFeatures> required = getRequiredParametersFeatures(op);
+        List<OpenAPIParameter> required = getRequiredParametersFeatures(op);
 
-        MatcherAssert.assertThat(required.stream().map(ParameterFeatures::getName).collect(Collectors.toList()), contains("username", "password"));
+        MatcherAssert.assertThat(required.stream().map(OpenAPIParameter::getName).collect(Collectors.toList()), contains("username", "password"));
     }
 
     @Test
     public void shouldGetRequiredParametersPostOperation() {
         Operation op = travelApiOas.getSpecification().getPaths().get("/users").getPost();
-        List<ParameterFeatures> required = getRequiredParametersFeatures(op);
+        List<OpenAPIParameter> required = getRequiredParametersFeatures(op);
 
-        MatcherAssert.assertThat(required.stream().map(ParameterFeatures::getName).collect(Collectors.toList()), contains("body"));
+        MatcherAssert.assertThat(required.stream().map(OpenAPIParameter::getName).collect(Collectors.toList()), contains("body"));
     }
 
     @Test
     public void shouldGetParametersSubjectToInvalidValueChangeTravelAPI() {
         Operation op = travelApiOas.getSpecification().getPaths().get("/trips/user").getGet();
-        List<ParameterFeatures> parameters = getParametersFeaturesSubjectToInvalidValueChange(op);
+        List<OpenAPIParameter> parameters = getParametersFeaturesSubjectToInvalidValueChange(op);
 
-        MatcherAssert.assertThat(parameters.stream().map(ParameterFeatures::getName).collect(Collectors.toList()), contains("isAdmin", "maxPriceAirbnb", "includeTripsWithUnsetAirbnbPrice", "sort"));
+        MatcherAssert.assertThat(parameters.stream().map(OpenAPIParameter::getName).collect(Collectors.toList()), contains("isAdmin", "maxPriceAirbnb", "includeTripsWithUnsetAirbnbPrice", "sort"));
     }
 
     @Test

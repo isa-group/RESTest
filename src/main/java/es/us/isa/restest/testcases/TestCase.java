@@ -11,7 +11,7 @@ import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.report.ValidationReport;
 import es.us.isa.idlreasonerchoco.analyzer.Analyzer;
 import es.us.isa.restest.configuration.pojos.TestParameter;
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import es.us.isa.idlreasonerchoco.configuration.IDLException;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
 import org.apache.logging.log4j.LogManager;
@@ -94,7 +94,7 @@ public class TestCase implements Serializable {
 		this.path = path;
 	}
 
-	public void addParameter(ParameterFeatures parameter, String value) {
+	public void addParameter(OpenAPIParameter parameter, String value) {
 		addParameter(parameter.getIn(), parameter.getName(), value);
 	}
 
@@ -124,7 +124,7 @@ public class TestCase implements Serializable {
 		}
 	}
 
-	public String getParameterValue(ParameterFeatures parameter) {
+	public String getParameterValue(OpenAPIParameter parameter) {
 		return getParameterValue(parameter.getIn(), parameter.getName());
 	}
 
@@ -149,7 +149,7 @@ public class TestCase implements Serializable {
 		}
 	}
 
-	public void removeParameter(ParameterFeatures parameter) {
+	public void removeParameter(OpenAPIParameter parameter) {
 		removeParameter(parameter.getIn(), parameter.getName());
 	}
 
@@ -351,6 +351,10 @@ public class TestCase implements Serializable {
 		return pathParamValue;
 	}
 
+	/**
+	 * Returns a string representation of the test case.
+	 * @return Test case representation
+	 */
 	public String getFlatRepresentation() {
 		StringBuilder tcRepresentation = new StringBuilder(300);
 

@@ -26,7 +26,7 @@ import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import static es.us.isa.restest.util.SpecificationVisitor.*;
+import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.*;
 
 /**
  * TestConfiguration objects are key in RESTest. They include all the
@@ -89,7 +89,7 @@ public class DefaultTestConfigurationGenerator {
 	 * Generate a default test configuration file for a given Open API specification
 	 * 
 	 * @param destination Path of the output test configuration file
-	 * @param filters     Set the paths and HTTP methods to be included in the test
+	 * @param filters     Filters setting the paths and HTTP methods to be included in the test
 	 *                    configuration file, i.e. those that will be tested
 	 * @return a test configuration object
 	 */
@@ -114,7 +114,7 @@ public class DefaultTestConfigurationGenerator {
 		return conf;
 	}
 
-	// Generate the test configuration data for operations
+	// Generate the test configuration data for the target paths and operations (as indicated in the filters)
 	private List<Operation> generateOperations(Collection<TestConfigurationFilter> filters) {
 
 		List<Operation> operations = new ArrayList<>();
@@ -129,8 +129,7 @@ public class DefaultTestConfigurationGenerator {
 		return operations;
 	}
 
-	// Generate the test configuration data for the operations of a specific input
-	// path
+	// Generate the test configuration data for the operations of a specific input path
 	private List<Operation> generateOperationsOfPath(Entry<String, PathItem> path, Collection<HttpMethod> methods) {
 
 		List<Operation> pathOperations = new ArrayList<>();

@@ -1,13 +1,13 @@
 package es.us.isa.restest.mutation.operators;
 
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.Operation;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static es.us.isa.restest.util.SpecificationVisitor.getRequiredNotPathParametersFeatures;
+import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.getRequiredNotPathParametersFeatures;
 
 /**
  * @author Alberto Martin-Lopez
@@ -26,14 +26,14 @@ public class RemoveRequiredParameter extends AbstractMutationOperator {
      * @return True if the mutation was applied, false otherwise.
      */
     public static String mutate(TestCase tc, Operation specOperation) {
-        List<ParameterFeatures> candidateParameters = getRequiredNotPathParametersFeatures(specOperation); // Path parameters cannot be removed
+        List<OpenAPIParameter> candidateParameters = getRequiredNotPathParametersFeatures(specOperation); // Path parameters cannot be removed
         
         // No required parameters. Mutation not applicable
         if (candidateParameters.isEmpty())
         	return "";
         
         // Remove random required parameter
-        ParameterFeatures selectedParam = candidateParameters.get(ThreadLocalRandom.current().nextInt(0, candidateParameters.size()));
+        OpenAPIParameter selectedParam = candidateParameters.get(ThreadLocalRandom.current().nextInt(0, candidateParameters.size()));
         tc.removeParameter(selectedParam);
         return "Removed required parameter " + selectedParam.getName();
     }

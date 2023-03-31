@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
-import static es.us.isa.restest.inputs.semantic.ARTEInputGenerator.szEndpoint;
 import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.util.FileManager.deleteDir;
 import static es.us.isa.restest.util.Timer.TestStep.ALL;
@@ -88,9 +87,6 @@ public class TestGenerationAndExecution {
 
 		Timer.startCounting(ALL);
 
-		// ONLY FOR LOCAL COPY OF DBPEDIA
-		if (szEndpoint.contains("localhost") || szEndpoint.contains("127.0.0.1"))
-			System.setProperty("http.maxConnections", "10000");
 
 		// Read .properties file path. This file contains the configuration parameters for the generation
 		if (args.length > 0)
@@ -119,8 +115,7 @@ public class TestGenerationAndExecution {
 		StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
 		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
 
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, learnRegex,
-				secondPredicateSearch, spec, confPath, generator, writer,
+		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, spec, confPath, generator, writer,
 				reportManager, statsReportManager);
 
 		runner.setExecuteTestCases(executeTestCases);

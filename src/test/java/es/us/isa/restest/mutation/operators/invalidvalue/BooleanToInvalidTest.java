@@ -1,7 +1,7 @@
 package es.us.isa.restest.mutation.operators.invalidvalue;
 
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import es.us.isa.restest.testcases.TestCase;
 import io.swagger.v3.oas.models.PathItem;
 import org.apache.commons.lang3.SerializationUtils;
@@ -19,7 +19,7 @@ public class BooleanToInvalidTest {
         TestCase tc = new TestCase("dfgsdfg", true, "getTripsFromUser", "/trips/user", PathItem.HttpMethod.GET);
 
         TestCase oldTc = SerializationUtils.clone(tc);
-        ParameterFeatures paramToMutate = new ParameterFeatures(spec.getSpecification().getPaths().get("/trips/user").getGet().getParameters().stream().filter(p -> p.getName().equals("isAdmin")).findFirst().get());
+        OpenAPIParameter paramToMutate = new OpenAPIParameter(spec.getSpecification().getPaths().get("/trips/user").getGet().getParameters().stream().filter(p -> p.getName().equals("isAdmin")).findFirst().get());
 
         assertTrue("The test case should be mutated", BooleanToInvalid.mutate(tc, paramToMutate).matches("Changed value of boolean parameter isAdmin from '.*' to .* '.*'"));
         assertFalse("The value should not be boolean", Arrays.asList("true", "false").contains(tc.getParameterValue(paramToMutate)));

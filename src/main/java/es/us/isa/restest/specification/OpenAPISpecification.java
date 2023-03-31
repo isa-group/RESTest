@@ -5,7 +5,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import io.swagger.v3.parser.core.models.ParseOptions;
 
 /**
- * Class to deserialize and manage a specification of a RESTful API described with the OAS language.
+ * Class for reading OAS specification v3 files (JSON or YAML)
  */
 public class OpenAPISpecification {
 
@@ -13,8 +13,8 @@ public class OpenAPISpecification {
 	private String path;
 
 	/**
-	 * This constructor deserializes an OpenAPI specification from a file that is stored in <i>location</i>.
-	 * @param location The location of the file
+	 * This constructor deserializes an OpenAPI specification v3 from a file (JSON or YAML) that is stored in <i>location</i>.
+	 * @param location File location (URL or file path)
 	 */
 	public OpenAPISpecification(String location) {
 		ParseOptions parseOptions = new ParseOptions();

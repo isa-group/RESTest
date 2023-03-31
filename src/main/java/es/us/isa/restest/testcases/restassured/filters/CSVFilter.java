@@ -6,6 +6,9 @@ import io.restassured.response.Response;
 import io.restassured.specification.FilterableRequestSpecification;
 import io.restassured.specification.FilterableResponseSpecification;
 
+/**
+ * This class is an RestAssured filter that exports the test results to a CSV file.
+ */
 public class CSVFilter extends RESTestFilter implements OrderedFilter {
 
     public CSVFilter() {

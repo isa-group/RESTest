@@ -18,7 +18,7 @@ public class TestConfigurationVisitor {
 	private TestConfigurationVisitor() {}
 
 	/**
-	 * Returns the test configuration object for a given operation
+	 * Returns the test configuration object for a given operation (path and http method)
 	 * @param conf General test configuration object
 	 * @param path	Path under test
 	 * @param method Method under test
@@ -31,8 +31,8 @@ public class TestConfigurationVisitor {
 	}
 	
 	/**
-	 * Returns the test configuration object for a given operation
-	 * @param operationsOfPath operations of a path
+	 * Returns the test configuration object for a given operation (from the list of operations of the path)
+	 * @param operationsOfPath List of operations of the path
 	 * @param method HTTP method
 	 * @return Operation test configuration object
 	 */

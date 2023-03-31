@@ -1,7 +1,7 @@
 package es.us.isa.restest.generators;
 
 import static es.us.isa.restest.util.IDLAdapter.idl2restestTestCase;
-import static es.us.isa.restest.util.SpecificationVisitor.hasDependencies;
+import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.hasDependencies;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +24,6 @@ import es.us.isa.restest.configuration.pojos.TestParameter;
 import es.us.isa.restest.inputs.ITestDataGenerator;
 import es.us.isa.restest.inputs.random.RandomBooleanGenerator;
 import es.us.isa.restest.inputs.random.RandomInputValueIterator;
-import es.us.isa.restest.mutation.TestCaseMutation;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;

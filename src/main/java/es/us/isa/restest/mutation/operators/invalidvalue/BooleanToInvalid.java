@@ -1,14 +1,7 @@
 package es.us.isa.restest.mutation.operators.invalidvalue;
 
-import es.us.isa.restest.mutation.operators.AbstractMutationOperator;
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import es.us.isa.restest.testcases.TestCase;
-import org.apache.commons.lang3.RandomStringUtils;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Mutate a boolean parameter by assigning it an invalid value, i.e., a string,
@@ -24,7 +17,7 @@ public class BooleanToInvalid extends AbstractToInvalidOperator {
             REPLACE_WITH_STRING
     };
 
-    public static String mutate(TestCase tc, ParameterFeatures param) {
+    public static String mutate(TestCase tc, OpenAPIParameter param) {
         return mutate(tc, param, mutations);
     }
 }

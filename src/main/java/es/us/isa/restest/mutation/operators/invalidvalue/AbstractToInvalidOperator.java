@@ -1,7 +1,7 @@
 package es.us.isa.restest.mutation.operators.invalidvalue;
 
 import es.us.isa.restest.mutation.operators.AbstractMutationOperator;
-import es.us.isa.restest.specification.ParameterFeatures;
+import es.us.isa.restest.specification.OpenAPIParameter;
 import es.us.isa.restest.testcases.TestCase;
 import org.apache.commons.lang3.RandomStringUtils;
 
@@ -32,7 +32,7 @@ public abstract class AbstractToInvalidOperator extends AbstractMutationOperator
     protected static final String VIOLATE_MAX_LENGTH_CONSTRAINT = "VIOLATE_MAX_LENGTH_CONSTRAINT";
     protected static final String VIOLATE_MIN_LENGTH_CONSTRAINT = "VIOLATE_MIN_LENGTH_CONSTRAINT";
 
-    public static String mutate(TestCase tc, ParameterFeatures param, String[] mutations) {
+    public static String mutate(TestCase tc, OpenAPIParameter param, String[] mutations) {
         String mutationApplied = "";
 
         // Shuffle list of mutations
@@ -115,7 +115,7 @@ public abstract class AbstractToInvalidOperator extends AbstractMutationOperator
         return mutationApplied;
     }
 
-    private static String getMutationMessage(String mutation, ParameterFeatures param, TestCase tc, String newValue) {
+    private static String getMutationMessage(String mutation, OpenAPIParameter param, TestCase tc, String newValue) {
         switch (mutation) {
             case REPLACE_WITH_INT:
                 return "Changed value of " + param.getType() + (param.getEnumValues() != null ? " (enum) " : " ") + "parameter " + param.getName() + " from '" + tc.getParameterValue(param) + "' to integer '" + newValue + "'";
