@@ -1,4 +1,4 @@
-package es.us.isa.restest.util.generators;
+package es.us.isa.restest.generators;
 
 import es.us.isa.restest.configuration.pojos.Operation;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;

@@ -1,4 +1,4 @@
-package es.us.isa.restest.util.generators;
+package es.us.isa.restest.generators;
 
 import static es.us.isa.restest.util.IDLAdapter.idl2restestTestCase;
 import static es.us.isa.restest.specification.OpenAPISpecificationVisitor.hasDependencies;

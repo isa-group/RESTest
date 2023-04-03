@@ -3,7 +3,7 @@ package es.us.isa.restest.runners;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
-import es.us.isa.restest.util.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.specification.OpenAPISpecification;

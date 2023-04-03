@@ -5,8 +5,6 @@ import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.generators.AbstractTestCaseGenerator;
-import es.us.isa.restest.util.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 import es.us.isa.restest.util.RESTestException;
 

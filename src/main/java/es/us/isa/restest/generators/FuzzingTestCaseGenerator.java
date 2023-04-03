@@ -1,4 +1,4 @@
-package es.us.isa.restest.util.generators;
+package es.us.isa.restest.generators;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

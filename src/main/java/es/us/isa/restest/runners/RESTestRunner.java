@@ -10,7 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 
-import es.us.isa.restest.util.generators.AbstractTestCaseGenerator;
+import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.testcases.TestCase;
