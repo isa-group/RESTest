@@ -26,7 +26,7 @@ public class CreateTestConf {
     /*
      * This main method can receive two types of arguments (optional):
      * 		1. Path of the OAS specification file for which the test configuration file will be generated
-     *      2. One ore more filters specifying the operations for which test configuration data must be created. Format: "path1:HTTPMethod1,path2:HTTPMethod2,..."
+     *      2. One or more filters specifying the operations for which test configuration data must be created. Format: "path1:HTTPMethod1,path2:HTTPMethod2,..."
      */
     public static void main(String[] args) {
 

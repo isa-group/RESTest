@@ -3,17 +3,17 @@ package es.us.isa.restest.main;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
-import es.us.isa.restest.generators.ARTestCaseGenerator;
-import es.us.isa.restest.generators.AbstractTestCaseGenerator;
-import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
-import es.us.isa.restest.generators.FuzzingTestCaseGenerator;
-import es.us.isa.restest.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.util.generators.ARTestCaseGenerator;
+import es.us.isa.restest.util.generators.AbstractTestCaseGenerator;
+import es.us.isa.restest.util.generators.ConstraintBasedTestCaseGenerator;
+import es.us.isa.restest.util.generators.FuzzingTestCaseGenerator;
+import es.us.isa.restest.util.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.runners.RESTestRunner;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.testcases.writers.IWriter;
-import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
+import es.us.isa.restest.writers.IWriter;
+import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 import es.us.isa.restest.util.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -71,15 +71,6 @@ public class TestGenerationAndExecution {
 	// For AR Testing only:
 	private static String similarityMetric;								// The algorithm to measure the similarity between test cases
 	private static Integer numberCandidates;							// Number of candidate test cases per AR iteration
-
-	// ARTE
-	private static Boolean learnRegex;									// Set to 'true' if you want RESTest to automatically generate Regular expressions that filter the semantically generated input data
-	private static boolean secondPredicateSearch;
-	private static int maxNumberOfPredicates;                			// MaxNumberOfPredicates = AdditionalPredicates + 1
-	private static int minimumValidAndInvalidValues;
-	private static String metricToUse;
-	private static Double minimumValueOfMetric;
-	private static int maxNumberOfTriesToGenerateRegularExpression;
 
 	private static Logger logger = LogManager.getLogger(TestGenerationAndExecution.class.getName());
 
@@ -262,9 +253,7 @@ public class TestGenerationAndExecution {
 		CoverageMeter coverageMeter = enableInputCoverage || enableOutputCoverage ? new CoverageMeter(new CoverageGatherer(spec)) : null;
 
 		return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
-					enableOutputCoverage, coverageMeter, secondPredicateSearch, maxNumberOfPredicates,
-					minimumValidAndInvalidValues, metricToUse, minimumValueOfMetric,
-					maxNumberOfTriesToGenerateRegularExpression);
+					enableOutputCoverage, coverageMeter);
 	}
 
 	private static void generateTimeReport(Integer iterations) {
@@ -394,35 +383,7 @@ public class TestGenerationAndExecution {
 			faultyDependencyRatio = Float.parseFloat(readParameterValue("faulty.dependency.ratio"));
 		logger.info("Faulty dependency ratio: {}", faultyDependencyRatio);
 
-		// ARTE
-		if (readParameterValue("learnRegex") != null)
-			learnRegex = Boolean.parseBoolean(readParameterValue("learnRegex"));
-		logger.info("Learn Regular expressions: {}", learnRegex);
 
-		if (readParameterValue("secondPredicateSearch") != null)
-			secondPredicateSearch = Boolean.parseBoolean(readParameterValue("secondPredicateSearch"));
-		logger.info("Second Predicate Search: {}", secondPredicateSearch);
-
-		if (readParameterValue("maxNumberOfPredicates") != null)
-			maxNumberOfPredicates = Integer.parseInt(readParameterValue("maxNumberOfPredicates"));
-		logger.info("Maximum number of predicates: {}", maxNumberOfPredicates);
-
-		if (readParameterValue("minimumValidAndInvalidValues") != null)
-			minimumValidAndInvalidValues = Integer.parseInt(readParameterValue("minimumValidAndInvalidValues"));
-		logger.info("Minimum valid and invalid values: {}", minimumValidAndInvalidValues);
-
-		if (readParameterValue("metricToUse") != null)
-			metricToUse = readParameterValue("metricToUse");
-		logger.info("Metric to use: {}", metricToUse);
-
-		if (readParameterValue("minimumValueOfMetric") != null)
-			minimumValueOfMetric = Double.parseDouble(readParameterValue("minimumValueOfMetric"));
-		logger.info("Minimum value of metric: {}", minimumValueOfMetric);
-
-		if (readParameterValue("maxNumberOfTriesToGenerateRegularExpression") != null)
-			maxNumberOfTriesToGenerateRegularExpression = Integer.parseInt(readParameterValue("maxNumberOfTriesToGenerateRegularExpression"));
-		logger.info("Maximum number of tries to generate a regular expression: {}", maxNumberOfTriesToGenerateRegularExpression);
-	
 	}
 
 	// Read the parameter value from: 1) CLI; 2) the local .properties file; 3) the global .properties file (config.properties)

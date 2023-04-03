@@ -1,0 +1,63 @@
+[
+	{
+		"name": "SEVERITY 3: Status 5XX with valid request",
+		"messageRegex": "Status code 5XX with valid request.",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "SEVERITY 2: Status 5XX with invalid request",
+		"messageRegex": "Status code 5XX with invalid request.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "SEVERITY 2: Status 5XX",
+		"messageRegex": "Status code 5XX.",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "WARNING: Status 400 with (possibly) valid request",
+		"messageRegex": "This test case's input was \\(possibly\\) correct.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "SEVERITY 1: Status 2XX with invalid request (inter-parameter dependency violated)",
+		"messageRegex": "This faulty test case was expecting a 4XX status code.*inter_parameter_dependency.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "SEVERITY 1: Status 2XX with invalid request (invalid parameter)",
+		"messageRegex": "This faulty test case was expecting a 4XX status code.*(individual_parameter_constraint|invalid_request_body).*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "SEVERITY 1: Disconformity with OAS",
+		"messageRegex": "OAS disconformity.*",
+		"matchedStatuses": [
+			"failed"
+		]
+	},
+	{
+		"name": "Ignored tests",
+		"matchedStatuses": [
+			"skipped"
+		]
+	},
+	{
+		"name": "Broken tests",
+		"matchedStatuses": [
+			"broken"
+		]
+	}
+]

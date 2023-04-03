@@ -14,7 +14,7 @@ import java.util.List;
 
 /**
  *
- * This class generates the statistics related to the generation and execution of test cases. Currently, it generates test cases in CVS format and coverage data
+ * This class generates the statistics related to the generation and execution of test cases. Currently, it generates test cases in CSV format and coverage data
  *
  */
 public class StatsReportManager {
@@ -26,12 +26,6 @@ public class StatsReportManager {
     private boolean enableOutputCoverage = true;
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
-    private boolean secondPredicateSearch;
-    private Integer maxNumberOfPredicates;                // MaxNumberOfPredicates = AdditionalPredicates + 1
-    private Integer minimumValidAndInvalidValues;
-    private String metricToUse;
-    private Double minimumValueOfMetric;
-    private Integer maxNumberOfTriesToGenerateRegularExpression;
 
 
     private static final Logger logger = LogManager.getLogger(StatsReportManager.class.getName());
@@ -40,22 +34,13 @@ public class StatsReportManager {
         this(PropertyManager.readProperty("data.tests.dir"), PropertyManager.readProperty("data.coverage.tests.dir"));
     }
 
-    public StatsReportManager(String testDataDir, String coverageDataDir, boolean enableCSVStats, boolean enableInputCoverage, boolean enableOutputCoverage, CoverageMeter coverageMeter,
-                              Boolean secondPredicateSearch, Integer maxNumberOfPredicates, Integer minimumValidAndInvalidValues,
-                              String metricToUse, Double minimumValueOfMetric, Integer maxNumberOfTriesToGenerateRegularExpression) {
+    public StatsReportManager(String testDataDir, String coverageDataDir, boolean enableCSVStats, boolean enableInputCoverage, boolean enableOutputCoverage, CoverageMeter coverageMeter) {
         this.testDataDir = testDataDir;
         this.coverageDataDir = coverageDataDir;
         this.enableCSVStats = enableCSVStats;
         this.enableInputCoverage = enableInputCoverage;
         this.enableOutputCoverage = enableOutputCoverage;
         this.coverageMeter = coverageMeter;
-
-        this.secondPredicateSearch = secondPredicateSearch;
-        this.maxNumberOfPredicates = maxNumberOfPredicates;
-        this.minimumValidAndInvalidValues = minimumValidAndInvalidValues;
-        this.metricToUse = metricToUse;
-        this.minimumValueOfMetric = minimumValueOfMetric;
-        this.maxNumberOfTriesToGenerateRegularExpression = maxNumberOfTriesToGenerateRegularExpression;
 
     }
 
@@ -78,7 +63,7 @@ public class StatsReportManager {
     }
 
 
-    // Generate CVS statistics (test cases to CSV)
+    // Generate CSV statistics (test cases to CSV)
     private void generateCSVStats(String testId) {
         logger.info("Exporting test cases to CSV");
         String csvTcPath = testDataDir + "/" + PropertyManager.readProperty("data.tests.testcases.file") + "_" + testId + ".csv";

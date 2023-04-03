@@ -3,21 +3,15 @@ package es.us.isa.restest.generators;
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.TestConfigurationIO;
 import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
-import es.us.isa.restest.coverage.CoverageGatherer;
-import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.testcases.writers.RESTAssuredWriter;
+import es.us.isa.restest.util.generators.AbstractTestCaseGenerator;
+import es.us.isa.restest.util.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 import es.us.isa.restest.util.RESTestException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import static es.us.isa.restest.coverage.CriterionType.AUTHENTICATION;
-import static es.us.isa.restest.coverage.CriterionType.OPERATION;
-import static es.us.isa.restest.coverage.CriterionType.PARAMETER;
-import static es.us.isa.restest.coverage.CriterionType.PARAMETER_VALUE;
-import static es.us.isa.restest.coverage.CriterionType.PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

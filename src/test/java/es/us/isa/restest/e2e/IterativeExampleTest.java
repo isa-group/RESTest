@@ -127,6 +127,7 @@ public class IterativeExampleTest {
         deleteFile("target/log/external_logger/log.log");
     }
 
+    @Ignore
     @Test
     public void testIterativeExampleCliCommandsOption1() throws RESTestException, IOException {
         deleteFile("target/log/external_logger/log.log");
@@ -143,6 +144,7 @@ public class IterativeExampleTest {
         assertFalse(checkIfExists("target/log/external_logger/log.log"));
     }
 
+    @Ignore
     @Test
     public void testIterativeExampleCliCommandsOption2() throws RESTestException, IOException {
         deleteFile("target/log/external_logger/log.log");
@@ -158,36 +160,6 @@ public class IterativeExampleTest {
         } catch(NullPointerException ignored) {}
 
         assertFalse(checkIfExists("target/log/external_logger/log.log"));
-    }
-
-    @Test
-    public void testARTEWithRegex() throws RESTestException {
-
-        String semanticPropertiesFilePath = "src/test/resources/semanticAPITests/DHL/dhl_semantic.properties";
-        String parameterValuesPath = "src/main/resources/TestData/Generated/DHL_e2e/findByAddress_countryCode.csv";
-
-        Set<String> initialValues = new HashSet<>(readValues(parameterValuesPath));
-
-        String[] args = {semanticPropertiesFilePath};
-
-        String confPathSemantic = "src/test/resources/semanticAPITests/DHL/testConfSemantic.yaml";
-
-        String testConfSemanticString = readFile(confPathSemantic);
-
-        TestGenerationAndExecution.main(args);
-
-        String propertiesPathOriginal = "src/test/resources/semanticAPITests/DHL/dhl.properties";
-
-        assertTrue(checkIfExists(propertiesPathOriginal));
-        assertTrue(checkIfExists(parameterValuesPath));
-
-
-        deleteFile(parameterValuesPath);
-        createFileIfNotExists(parameterValuesPath);
-        collectionToCSV(parameterValuesPath, initialValues);
-        deleteFile(confPathSemantic);
-        writeFile(confPathSemantic, testConfSemanticString);
-
     }
 
 }

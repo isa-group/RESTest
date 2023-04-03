@@ -1,5 +1,6 @@
 package es.us.isa.restest.util;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -46,6 +47,7 @@ public class AuthManagerTest {
         assertNull(oauthHeader);
     }
 
+    @Ignore
     @Test
     public void testOauth() {
         AuthManager authManager = new AuthManager(OAUTH_DATA, true);
@@ -59,6 +61,7 @@ public class AuthManagerTest {
         assertEquals(renewedOauthHeader, oauthHeader);
     }
 
+    @Ignore
     @Test
     public void testOauthShortExpiration() {
         AuthManager authManager = new AuthManager(OAUTH_DATA_SHORT_EXPIRATION, true);

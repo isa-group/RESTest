@@ -5,6 +5,7 @@ import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
+import es.us.isa.restest.util.generators.FuzzingTestCaseGenerator;
 import org.junit.Test;
 
 import java.util.Collection;
