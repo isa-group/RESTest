@@ -8,8 +8,12 @@ import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.TestManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+
+import static es.us.isa.restest.util.FileManager.copyFile;
 
 
 /**
@@ -27,12 +31,7 @@ public class StatsReportManager {
     private CoverageMeter coverageMeter;
     Collection<TestCase> testCases = null;
 
-
     private static final Logger logger = LogManager.getLogger(StatsReportManager.class.getName());
-
-    public StatsReportManager() {
-        this(PropertyManager.readProperty("data.tests.dir"), PropertyManager.readProperty("data.coverage.tests.dir"));
-    }
 
     public StatsReportManager(String testDataDir, String coverageDataDir, boolean enableCSVStats, boolean enableInputCoverage, boolean enableOutputCoverage, CoverageMeter coverageMeter) {
         this.testDataDir = testDataDir;
@@ -60,6 +59,22 @@ public class StatsReportManager {
         if (enableInputCoverage || enableOutputCoverage)
             generateCoverageStats(testId, executeTestCases);
 
+        /*
+        if (enableOutputCoverage) {
+            String source = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
+            String destination = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
+            System.out.println("Origin: " + source);
+            System.out.println("Destination: " + destination);
+            try {
+                copyFile(source, destination);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+
+        }
+
+         */
     }
 
 

@@ -36,5 +36,7 @@ src/test/resources/restest-test-resources/test_collection_urlencoded.postman_col
 stateful_data.json
 /src/main/resources/TestData/Generated/
 
-/src/main/resources/Examples/Ex1_RandomGeneration/test_cases/*
+/src/main/resources/Examples/Ex1_RandomGeneration/test_cases/
 /src/main/resources/Examples/Ex2_CreateTestConf/default_test_conf.yaml
+/src/main/resources/Examples/Ex9_Generation_Execution/allure_report/anApiOfIceAndFire/
+/src/main/resources/Examples/Ex9_Generation_Execution/csv_report/anApiOfIceAndFire/

@@ -81,21 +81,7 @@ public class RESTestLoader {
 		spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
-		TestConfigurationObject conf;
-
-		/*
-		if(generator.equals("FT") && confPath == null) {
-			logger.info("No testConf specified. Generating one");
-			String[] args = {OAISpecPath};
-			CreateTestConf.main(args);
-
-			String specDir = OAISpecPath.substring(0, OAISpecPath.lastIndexOf('/'));
-			confPath = specDir + "/testConf.yaml";
-			logger.info("Created testConf in '{}'", confPath);
-		}
-		*/
-
-		conf = loadConfiguration(confPath, spec);
+		TestConfigurationObject conf = loadConfiguration(confPath, spec);
 
 		// Create generator
 		AbstractTestCaseGenerator gen = null;
@@ -142,6 +128,7 @@ public class RESTestLoader {
 		writer.setEnableStats(enableCSVStats);
 		writer.setEnableOutputCoverage(enableOutputCoverage);
 		writer.setAPIName(experimentName);
+		writer.setTestId(experimentName);
 		writer.setProxy(proxy);
 		return writer;
 	}
@@ -214,7 +201,6 @@ public class RESTestLoader {
 		
 		experimentName = readProperty("experiment.name");
 		logger.info("Experiment name: {}", experimentName);
-		packageName = experimentName;
 
 		if (readProperty("experiment.execute") != null) {
 			executeTestCases = Boolean.parseBoolean(readProperty("experiment.execute"));
@@ -241,6 +227,9 @@ public class RESTestLoader {
 		
 		testClassName = readProperty("testclass.name");
 		logger.info("Test class name: {}", testClassName);
+
+		packageName = readProperty("test.target.package");
+		logger.info("Package name: {}", packageName);
 
 		if (readProperty("testsperoperation") != null)
 			numTestCases = Integer.parseInt(readProperty("testsperoperation"));

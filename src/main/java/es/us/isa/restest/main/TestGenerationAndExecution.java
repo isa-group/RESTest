@@ -10,8 +10,7 @@ import es.us.isa.restest.generators.FuzzingTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
-import es.us.isa.restest.runners.RESTestLoader;
-import es.us.isa.restest.runners.RESTestRunner;
+import es.us.isa.restest.runners.RESTestWorkflow;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.writers.IWriter;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
@@ -107,7 +106,7 @@ public class TestGenerationAndExecution {
 		StatsReportManager statsReportManager = createStatsReportManager(); // Stats reporter
 		AllureReportManager reportManager = createAllureReportManager(); // Allure test case reporter
 
-		RESTestRunner runner = new RESTestRunner(testClassName, targetDirJava, packageName, spec, confPath, generator, writer,
+		RESTestWorkflow runner = new RESTestWorkflow(testClassName, targetDirJava, packageName, spec, confPath, generator, writer,
 				reportManager, statsReportManager);
 
 		runner.setExecuteTestCases(executeTestCases);

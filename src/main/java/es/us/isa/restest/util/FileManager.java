@@ -7,7 +7,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Collections;
 
 public class FileManager {
@@ -59,6 +61,10 @@ public class FileManager {
             logger.error("Exception: ", e);
         }
         return null;
+    }
+
+    public static void copyFile(String source, String destination) throws IOException {
+        Files.copy(Paths.get(source), Paths.get(destination), StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**

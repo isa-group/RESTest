@@ -1,0 +1,1859 @@
+---
+swagger: '2.0'
+info:
+  title: Hotel
+  version: 2.0.0
+  description: |
+    The Hotel Search REST/JSON API is a hotel search API that enables you to find the best hotel offers that match your search from a wide choice of providers. The results contain the hotel details and will allow the user to select their preferred option based on price, location and amenities among other factors. A wide range of search criteria can be applied to narrow the search results.
+
+    ## Authorization
+
+    Before using the API you will need to get an access token. Please read our **[Authorization Guide](https://developers.amadeus.com/self-service/apis-docs/guides/authorization)** for more information on how to get your token.
+  x-tags:
+    - "#mobile-services"
+  x-status: validated
+host: test.api.amadeus.com
+basePath: "/v2"
+securityDefinitions: {}
+schemes:
+  - https
+consumes:
+  - application/vnd.amadeus+json
+produces:
+  - application/vnd.amadeus+json
+paths:
+  "/shopping/hotel-offers":
+    get:
+      summary: FIND HOTELS.
+      tags:
+        - shopping
+      description: |
+        This service returns a list of hotels with multiple shopping offers around a city center or geolocation for a given date range.
+
+        It is also possible to directly ask for a specific list of hotels.
+
+        The user can refine the search criteria by asking for specific hotel categories, hotel chains or hotel facilities, such as parking or restaurant.
+        It is also possible to ask for a specific meal or budget.
+
+        By default, only available hotels are returned, with the cheapest available option for each hotel. It is however also possible to retrieve details about the closed properties, and to retrieve all available offers per hotel.
+
+        __Warning__: at this step only preliminary prices are returned. Use the next service to ask for a single hotel to retrieve exact prices.
+
+        __Minimum mandatory parameters for a hotel search (mutually exclusive):__
+        - cityCode
+        - geocodes (longitude and latitude)
+        - list of hotels
+
+        ### Query example
+        Get the cheapest hotel offers in Paris today with a search radius of 5 Km around the city center. Include all available hotel descriptive content.
+        <pre><code>
+        GET https://test.api.amadeus.com/v2/shopping/hotel-offers?cityCode=PAR&adults=1&radius=5&radiusUnit=KM&paymentPolicy=NONE&includeClosed=false&bestRateOnly=true&view=FULL&sort=PRICE
+        </code></pre>
+
+        ### Response example
+        <pre><code>
+        {
+          "data": [
+            {
+              "type": "hotel-offers",
+              "hotel": {
+                "type": "hotel",
+                "hotelId": "EAMIAMAP",
+                "chainCode": "EA",
+                "dupeId": "700107767",
+                "name": "CONCORDE OPERA PARIS OPERA PARIS",
+                "rating": "2",
+                "cityCode": "MIA",
+                "latitude": 48.85693,
+                "longitude": 2.3412,
+                "hotelDistance": {
+                  "distance": 0.4,
+                  "distanceUnit": "KM"
+                },
+                "address": {
+                  "lines": [
+                    "LEFISTON STREET"
+                  ],
+                  "cityName": "PARIS",
+                  "countryCode": "FR"
+                },
+                "contact": {
+                  "phone": "1-305-436-1811",
+                  "fax": "1-305-436-1864"
+                },
+                "amenities": [
+                  "HANDICAP_FAC",
+                  "ACC_BATHS",
+                  "ACC_WASHBASIN",
+                  "ACC_BATH_CTRLS",
+                  "ACC_LIGHT_SW",
+                  "ACC_ELEVATORS",
+                  "ACC_TOILETS",
+                  "SERV_DOGS_ALWD",
+                  "DIS_PARKG",
+                  "HANDRAIL_BTHRM",
+                  "ADAPTED_PHONES",
+                  "ADAPT_RM_DOORS",
+                  "ACC_RM_WCHAIR",
+                  "TV_SUB/CAPTION",
+                  "ACC_WCHAIR",
+                  "HANDRAIL_BTHRM",
+                  "EXT_ROOM_ENTRY",
+                  "EMERG_LIGHTING",
+                  "EXTINGUISHERS",
+                  "FIRE_SAFETY",
+                  "RESTRIC_RM_ACC",
+                  "SMOKE_DETECTOR",
+                  "SPRINKLERS",
+                  "KIDS_WELCOME",
+                  "ELEVATOR",
+                  "INT_HOTSPOTS",
+                  "FREE_INTERNET",
+                  "LAUNDRY_SVC",
+                  "NO_PORN_FILMS",
+                  "PARKING",
+                  "PETS_ALLOWED",
+                  "SWIMMING_POOL",
+                  "AIR_CONDITIONING",
+                  "KITCHEN",
+                  "NONSMOKING_RMS",
+                  "TELEVISION",
+                  "WI-FI_IN_ROOM"
+                ],
+                "media": [
+                  {
+                    "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/69810B23CB8644A18AF760DC66BE41A6",
+                    "category": "EXTERIOR"
+                  }
+                ]
+              },
+              "available": true,
+              "offers": [
+                {
+                  "id": "ECF8AD653801C3A81B3D04BAEF0D85AF182E8FB2115B0FAD144D49FAD108C60D",
+                  "rateCode": "RAC",
+                  "room": {
+                    "type": "A0C",
+                    "typeEstimated": {
+                      "category": "ACCESSIBLE_ROOM",
+                      "beds": 1,
+                      "bedType": "QUEEN"
+                    },
+                    "description": {
+                      "lang": "EN",
+                      "text": "NIGHTLY VALUE RATE\nSTANDARD STUDIO 1 QUEEN NONSMKNG ACCESSIBLE\nFREE WIFI"
+                    }
+                  },
+                  "guests": {
+                    "adults": 1
+                  },
+                  "price": {
+                    "currency": "USD",
+                    "base": "114.99",
+                    "total": "129.94",
+                    "variations": {
+                      "average": {
+                        "base": "114.99"
+                      },
+                      "changes": [
+                        {
+                          "startDate": "2019-01-22",
+                          "endDate": "2019-01-23",
+                          "base": "114.99"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "self": "https://test.api.amadeus.com/v2/shopping/hotel-offers/by-hotel?hotelId=EAMIAMAP&adults=1&paymentPolicy=NONE&view=FULL"
+            },
+            {
+              "type": "hotel-offers",
+              "hotel": {
+                "type": "hotel",
+                "hotelId": "BWPAR261",
+                "chainCode": "BW",
+                "dupeId": "700019804",
+                "name": "BEST WESTERN AU TROCADERO",
+                "rating": "3",
+                "cityCode": "PAR",
+                "latitude": 48.85326,
+                "longitude": 2.33855,
+                "hotelDistance": {
+                  "distance": 0.5,
+                  "distanceUnit": "KM"
+                },
+                "address": {
+                  "lines": [
+                    "3 AVENUE RAYMOND-POINCARE "
+                  ],
+                  "postalCode": "FR75116",
+                  "cityName": "PARIS",
+                  "countryCode": "FR"
+                },
+                "contact": {
+                  "fax": "33-1-47278085",
+                  "phone": "33-1-47273330"
+                },
+                "description": {
+                  "lang": "en",
+                  "text": "The best western au trocadero is located in one of the most elegant district of paris, facing the trocadero, the eiffel tower and champ de mars. You will enjoy the friendly setting."
+                },
+                "amenities": [
+                  "BAR",
+                  "ICE_MACHINES",
+                  "RESTAURANT",
+                  "ACC_BATHS",
+                  "ACC_TOILETS",
+                  "HANDRAIL_BTHRM",
+                  "ACC_RM_WCHAIR",
+                  "BABY-SITTING",
+                  "KIDS_WELCOME",
+                  "ELEVATOR",
+                  "WIFI",
+                  "LAUNDRY_SVC",
+                  "LOUNGE",
+                  "AIR_CONDITIONING",
+                  "HAIR_DRYER",
+                  "MINIBAR",
+                  "NONSMOKING_RMS",
+                  "ROOM_SERVICE",
+                  "TELEVISION",
+                  "WI-FI_IN_ROOM",
+                  "EXT_ROOM_ENTRY",
+                  "EMERG_LIGHTING",
+                  "EXTINGUISHERS",
+                  "FIRE_SAFETY",
+                  "SMOKE_DETECTOR",
+                  "VIDEO_SURVEIL"
+                ],
+                "media": [
+                  {
+                    "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/D231E485EDCB4AB1B61F3032404474D1",
+                    "category": "EXTERIOR"
+                  }
+                ]
+              },
+              "available": true,
+              "offers": [
+                {
+                  "id": "7D158B52F8A4EED40A30AA8D96E957EC26C3AC381099486510BA1E32F468FA35",
+                  "rateCode": "RAC",
+                  "rateFamilyEstimated": {
+                    "code": "BAR",
+                    "type": "P"
+                  },
+                  "room": {
+                    "type": "A2T",
+                    "description": {
+                      "lang": "EN",
+                      "text": "FLEXIBLE RATE*BEST LEAST RESTRICTIVE RATE\n2 SINGLE BEDS,CONFORT RM,GRABBR,RAMP ACCESS,\nWHEELCHAIR"
+                    }
+                  },
+                  "guests": {
+                    "adults": 1
+                  },
+                  "price": {
+                    "currency": "EUR",
+                    "base": "150.00",
+                    "total": "151.65",
+                    "variations": {
+                      "average": {
+                        "base": "150.00"
+                      },
+                      "changes": [
+                        {
+                          "startDate": "2019-01-22",
+                          "endDate": "2019-01-23",
+                          "base": "150.00"
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "self": "https://test.api.amadeus.com/v2/shopping/hotel-offers/by-hotel?hotelId=BWPAR261&adults=1&paymentPolicy=NONE&view=FULL"
+            }
+          ],
+          "meta": {
+            "links": {
+              "next": "https://test.api.amadeus.com/v2/shopping/hotel-offers?adults=1&bestRateOnly=true&cityCode=PAR&includeClosed=false&paymentPolicy=NONE&radius=5&radiusUnit=KM&sort=PRICE&view=FULL&page[offset]=05G15W3U2NWG_96"
+            }
+          }
+        }
+        </code></pre>
+      operationId: getMultiHotelOffers
+      parameters:
+        - "$ref": "#/parameters/cityCode"
+        - "$ref": "#/parameters/latitude"
+        - "$ref": "#/parameters/longitude"
+        - "$ref": "#/parameters/hotelIds"
+        - "$ref": "#/parameters/checkInDate"
+        - "$ref": "#/parameters/checkOutDate"
+        - "$ref": "#/parameters/roomQuantity"
+        - "$ref": "#/parameters/adults"
+        - "$ref": "#/parameters/childAges"
+        - "$ref": "#/parameters/radius"
+        - "$ref": "#/parameters/radiusUnit"
+        - "$ref": "#/parameters/hotelName"
+        - "$ref": "#/parameters/chains"
+        - "$ref": "#/parameters/rateCodes"
+        - "$ref": "#/parameters/amenities"
+        - "$ref": "#/parameters/ratings"
+        - "$ref": "#/parameters/priceRange"
+        - "$ref": "#/parameters/currency"
+        - "$ref": "#/parameters/paymentPolicy"
+        - "$ref": "#/parameters/boardType"
+        - "$ref": "#/parameters/includeClosed"
+        - "$ref": "#/parameters/bestRateOnly"
+        - "$ref": "#/parameters/view"
+        - "$ref": "#/parameters/sort"
+        - "$ref": "#/parameters/pageLimit"
+        - "$ref": "#/parameters/pageOffset"
+        - "$ref": "#/parameters/lang"
+      x-dependencies:
+        - OnlyOne(cityCode, latitude AND longitude, hotelIds);
+        - AllOrNone(latitude, longitude);
+        - IF priceRange THEN currency;
+        - IF includeClosed THEN NOT sort=='PRICE';
+#        - IF childAges THEN adults; # Unspecified dependency
+#        - IF hotelIds THEN NOT childAges; # Unspecified dependency
+      responses:
+        '200':
+          "$ref": "#/responses/MultiHotelsOffers"
+        '400':
+          "$ref": "#/responses/Error400Response"
+        '500':
+          "$ref": "#/responses/Error500Response"
+      security: []
+#  "/shopping/hotel-offers/by-hotel":
+#    get:
+#      summary: VIEW HOTEL ROOMS.
+#      tags:
+#        - shopping
+#      description: |+
+#        This service will return all available offers for a given hotel at a given date range.
+#        The user can filter the offers returned by asking for a specific meal, rateCode, or other parameters as described here.
+#
+#        Note: At this step, exact prices are returned.
+#
+#        ### Query example
+#        Get all offers for Bulgari Hotels Resorts Milano available today.
+#        <pre><code>
+#        GET https://test.api.amadeus.com/v2/shopping/hotel-offers/by-hotel?hotelId=BGMILBGB&adults=2&roomQuantity=1&paymentPolicy=NONE&view=FULL_ALL_IMAGES
+#        </code></pre>
+#
+#        ### Response example
+#        <pre><code>
+#        {
+#          "data": {
+#            "type": "hotel-offers",
+#            "hotel": {
+#              "type": "hotel",
+#              "hotelId": "BGMILBGB",
+#              "chainCode": "BG",
+#              "dupeId": "700025106",
+#              "name": "BULGARI HOTELS RESORTS MILANO",
+#              "rating": "5",
+#              "cityCode": "MIL",
+#              "latitude": 45.47253,
+#              "longitude": 9.18805,
+#              "address": {
+#                "lines": [
+#                  "VIA PRIVATA FRATELLI GABBA 7B"
+#                ],
+#                "postalCode": "20121",
+#                "cityName": "MILAN",
+#                "countryCode": "IT"
+#              },
+#              "contact": {
+#                "phone": "39-02-8058051",
+#                "fax": "39-02-805805222"
+#              },
+#              "amenities": [
+#                "CONVENTION_CTR",
+#                "MEETING_ROOMS",
+#                "ICE_MACHINES",
+#                "RESTAURANT",
+#                "HANDICAP_FAC",
+#                "ACC_TOILETS",
+#                "DIS_PARKG",
+#                "BABY-SITTING",
+#                "BEAUTY_PARLOUR",
+#                "CAR_RENTAL",
+#                "ELEVATOR",
+#                "EXCHANGE_FAC",
+#                "WIFI",
+#                "LAUNDRY_SVC",
+#                "SPA",
+#                "VALET_PARKING",
+#                "HAIRDRESSER",
+#                "SWIMMING_POOL",
+#                "AIR_CONDITIONING",
+#                "HAIR_DRYER",
+#                "MINIBAR",
+#                "MOVIE_CHANNELS",
+#                "ROOM_SERVICE",
+#                "TELEVISION",
+#                "SAFE_DEP_BOX",
+#                "FITNESS_CENTER"
+#              ],
+#              "media": [
+#                {
+#                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/B6AA0C7920214C49AAFBCFFF32A15300",
+#                  "category": "EXTERIOR"
+#                },
+#                {
+#                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/0B9245555964410B97E958128EB3DE52",
+#                  "category": "LOBBY"
+#                },
+#                {
+#                  "uri": "http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/DDFD5AD22B134110BCDBE64186FE860A",
+#                  "category": "SUITE"
+#                }
+#              ]
+#            },
+#            "available": true,
+#            "offers": [
+#              {
+#                "id": "8BB1F89D377409FEFACB3E73654A5D765CD812920802E5976BFBB060BAF23AD7",
+#                "rateCode": "RAC",
+#                "rateFamilyEstimated": {
+#                  "code": "RAC",
+#                  "type": "P"
+#                },
+#                "room": {
+#                  "type": "REG",
+#                  "typeEstimated": {
+#                    "category": "SUPERIOR_ROOM",
+#                    "beds": 1,
+#                    "bedType": "KING"
+#                  },
+#                  "description": {
+#                    "lang": "EN",
+#                    "text": "Regular Rate\nSuperior Room garden or patio view, large bathr\noom, 1 King, 35sqm/377sqft, Wireless internet,"
+#                  }
+#                },
+#                "guests": {
+#                  "adults": 2
+#                },
+#                "price": {
+#                  "currency": "EUR",
+#                  "total": "857.00"
+#                },
+#                "self": "https://test.api.amadeus.com/v2/shopping/hotel-offers/8BB1F89D377409FEFACB3E73654A5D765CD812920802E5976BFBB060BAF23AD7"
+#              },
+#              {
+#                "id": "2E5650829E01B8BD88085B597266F15EF03E6E23BC8DB1A470A6D03F8E2BA1A8",
+#                "rateCode": "RAC",
+#                "rateFamilyEstimated": {
+#                  "code": "RAC",
+#                  "type": "P"
+#                },
+#                "room": {
+#                  "type": "REG",
+#                  "typeEstimated": {
+#                    "category": "DELUXE_ROOM"
+#                  },
+#                  "description": {
+#                    "lang": "EN",
+#                    "text": "Regular Rate\nDeluxe Room garden or patio view, walk-in close\nt, large bathroom, 1 King or 2 Queen, 40sqm/430"
+#                  }
+#                },
+#                "guests": {
+#                  "adults": 2
+#                },
+#                "price": {
+#                  "currency": "EUR",
+#                  "total": "912.00"
+#                },
+#                "self": "https://test.api.amadeus.com/v2/shopping/hotel-offers/2E5650829E01B8BD88085B597266F15EF03E6E23BC8DB1A470A6D03F8E2BA1A8"
+#              }
+#            ]
+#          }
+#        }
+#        </code></pre>
+#
+#      operationId: getSingleHotelOffers
+#      parameters:
+#        - "$ref": "#/parameters/hotelId"
+#        - "$ref": "#/parameters/checkInDate"
+#        - "$ref": "#/parameters/checkOutDate"
+#        - "$ref": "#/parameters/adults"
+#        - "$ref": "#/parameters/childAges"
+#        - "$ref": "#/parameters/rateCodes"
+#        - "$ref": "#/parameters/roomQuantity"
+#        - "$ref": "#/parameters/currency"
+#        - "$ref": "#/parameters/paymentPolicy"
+#        - "$ref": "#/parameters/boardType"
+#        - "$ref": "#/parameters/view_single"
+#        - "$ref": "#/parameters/lang"
+#      responses:
+#        '200':
+#          "$ref": "#/responses/SingleHotelOffers"
+#        '400':
+#          "$ref": "#/responses/Error400Response"
+#        '404':
+#          "$ref": "#/responses/Error404Response"
+#        '500':
+#          "$ref": "#/responses/Error500Response"
+#  "/shopping/hotel-offers/{offerId}":
+#    get:
+#      summary: VIEW ROOM DETAILS.
+#      tags:
+#        - shopping
+#      description: |
+#        Return all available details of a specific hotel offer.
+#           Returned details mainly includes:
+#          - prices with tax
+#          - accepted methods of payments
+#          - cancellation policies
+#          - guaranteed pricing
+#          - descriptions about the meal, room, and special rate.
+#      operationId: getOfferPricing
+#      parameters:
+#        - "$ref": "#/parameters/offerId"
+#        - "$ref": "#/parameters/lang"
+#      responses:
+#        '200':
+#          "$ref": "#/responses/SingleHotelOffers"
+#        '400':
+#          "$ref": "#/responses/Error400Response"
+#        '404':
+#          "$ref": "#/responses/Error404Response"
+#        '500':
+#          "$ref": "#/responses/Error500Response"
+tags:
+  - name: shopping
+    description: Search Available Hotels and Check their Price
+parameters:
+  cityCode:
+    name: cityCode
+    in: query
+    required: false
+    type: string
+    pattern: "^[A-Za-z]{3}$"
+    minLength: 3
+    maxLength: 3
+    description: "Destination City Code (or Airport Code). In case of city code, the
+      search will be done around the city center. Available codes can be found in
+      [IATA table codes](http://www.iata.org/publications/Pages/code-search.aspx)
+      (3 chars IATA Code)     \n\nExample: PAR\n\nShould be used together with `radius`+`radiusUnit`
+      (required)\n\n__Mandatory parameter for a city search__"
+  latitude:
+    name: latitude
+    in: query
+    required: false
+    type: string
+#    type: number
+#    format: double
+#    minimum: -90
+#    maximum: 90
+    description: "search around a geographical point. The latitude is specified in
+      decimal degrees    \n\nExample: 52.5238    \n\nShould be used together with
+      `longitude`+`radius`+`radiusUnit`  (required)\n\n__Mandatory parameter for a
+      search by geocodes__"
+  longitude:
+    name: longitude
+    in: query
+    required: false
+    type: string
+#    type: number
+#    format: double
+#    minimum: -180
+#    maximum: 180
+    description: "search around a geographical point. The longitude is specified in
+      decimal degrees    \n\nExample: 13.3835\n\nShould be used together with `latitude`+`radius`+`radiusUnit`
+      \ (required)\n\n__Mandatory parameter for a search by geocodes__"
+  hotelIds:
+    name: hotelIds
+    in: query
+    required: false
+    type: array
+    items:
+      type: string
+      pattern: "^[A-Z0-9]{8}$"
+    minItems: 0
+    maxItems: 9999
+    description: "Amadeus Property Codes (8 chars) (comma separated list)\n\nExample:
+      BGLONBGB,BGMILBGB    \n\n__Mandatory parameter for a search by predefined list
+      of hotels__\n"
+  hotelId:
+    name: hotelId
+    in: query
+    required: true
+    type: string
+    pattern: "^[A-Z0-9]{8}$"
+    description: |
+      Amadeus Property Code (8 chars)
+
+      Example: BGMILBGB
+  radius:
+    name: radius
+    in: query
+    required: false
+    type: integer
+    minimum: 1
+    maximum: 200
+    default: 5
+    description: maximum distance (in `radiusUnit`) from Destination (city center
+      or geocodes)
+  radiusUnit:
+    name: radiusUnit
+    in: query
+    required: false
+    type: string
+    enum:
+      - KM
+      - MILE
+    default: KM
+    description: distance unit (of the `radius` value)
+  hotelName:
+    name: hotelName
+    in: query
+    required: false
+    type: string
+    minLength: 3
+    maxLength: 40
+    description: |-
+      Search by Hotel Name. Accepts maximum 4 keywords.
+
+      Example: Hotel California
+      Example: Hotel Califo
+  chains:
+    name: chains
+    in: query
+    required: false
+    type: array
+    minItems: 0
+    maxItems: 99
+    items:
+      type: string
+      pattern: "^[A-Z0-9a-z]{2}$"
+    description: "Chain (EM...) or Brand (SB...) or Merchant (AD...) (comma separated
+      list of Amadeus 2 chars Codes)\n\nExample Chains:\n* EM = Marriott\n* EH = Hilton\n*
+      HY = Hyatt\n* 6C = IHG\n* WR = Wyndham\n* RT = Accor\n* BW = Best Western\n*
+      EC = Choice\n* CW = Radisson\n\nExample Merchants:\n* AD = Value Hotels    \n*
+      HV = HRS\n"
+  amenities:
+    name: amenities
+    in: query
+    description: amenities (list)
+    required: false
+    type: array
+    minItems: 0
+    maxItems: 3
+    items:
+      type: string
+      enum:
+        - SWIMMING_POOL
+        - SPA
+        - FITNESS_CENTER
+        - AIR_CONDITIONING
+        - RESTAURANT
+        - PARKING
+        - PETS_ALLOWED
+        - AIRPORT_SHUTTLE
+        - BUSINESS_CENTER
+        - DISABLED_FACILITIES
+        - WIFI
+        - MEETING_ROOMS
+        - NO_KID_ALLOWED
+        - TENNIS
+        - GOLF
+        - KITCHEN
+        - ANIMAL_WATCHING
+        - BABY-SITTING
+        - BEACH
+        - CASINO
+        - JACUZZI
+        - SAUNA
+        - SOLARIUM
+        - MASSAGE
+        - VALET_PARKING
+        - BAR
+        - KIDS_WELCOME
+        - NO_PORN_FILMS
+        - MINIBAR
+        - TELEVISION
+        - WI-FI_IN_ROOM
+        - ROOM_SERVICE
+        - GUARDED_PARKG
+        - SERV_SPEC_MENU
+  ratings:
+    name: ratings
+    in: query
+    description: |
+      hotel stars. Up to four values can be requested at the same time in a comma separated list
+      * 5 stars
+      * 4 stars
+      * 3 stars
+      * 2 stars
+      * 1 star
+    required: false
+    type: array
+    minItems: 0
+    maxItems: 4
+    items:
+      type: integer
+      enum:
+        - 5
+        - 4
+        - 3
+        - 2
+        - 1
+  view:
+    name: view
+    in: query
+    description: |
+      hotel descriptive content to include in the response
+
+      NONE: geocoordinates, hotel distance
+
+      LIGHT: NONE view + city name, phone number, fax, address, postal code, country code, state code, ratings, 1 image
+
+      FULL: LIGHT view + hotel description, amenities and facilities
+    required: false
+    type: string
+    enum:
+      - FULL
+      - LIGHT
+      - NONE
+    default: FULL
+  view_single:
+    name: view
+    in: query
+    description: |
+      hotel descriptive content to include in the response
+
+      NONE: geocoordinates, hotel distance
+
+      LIGHT: NONE view + city name, phone number, fax, address, postal code, country code, state code, ratings, 1 image
+
+      FULL: LIGHT view + hotel description, amenities and facilities
+
+      FULL_ALL_IMAGES: FULL view + all images
+    required: false
+    type: string
+    enum:
+      - FULL_ALL_IMAGES
+      - FULL
+      - LIGHT
+      - NONE
+    default: FULL_ALL_IMAGES
+  pageLimit:
+    name: page[limit]
+    in: query
+    required: false
+    type: integer
+    minimum: 1
+    maximum: 96
+    description: maximum number of hotels to return in each response
+  pageOffset:
+    name: page[offset]
+    in: query
+    required: false
+    type: string
+    description: used to specify the next scrolling window if all offers could not
+      be returned in the current response. Use the next link in the response to have
+      it automatically added.
+  lang:
+    in: query
+    name: lang
+    description: "requested language of descriptive texts. \n\nExamples: FR , fr ,
+      fr-FR\n\nif a language is not avaiable the text will be returned in english.\nISO
+      language code (https://www.iso.org/iso-639-language-codes.html)\n"
+    required: false
+    type: string
+    pattern: "^[a-zA-Z0-9-]{2,5}$"
+  includeClosed:
+    name: includeClosed
+    in: query
+    description: show All properties (include Sold Out) or Available only. For Sold
+      Out properties, please check availability on other dates. To be used with `sort`
+      DISTANCE or NONE
+    required: false
+    type: boolean
+    default: false
+  checkInDate:
+    name: checkInDate
+    in: query
+    required: false
+    type: string
+    format: date
+    description: "check-in date of the stay (hotel local date). Format YYYY-MM-DD\n\nThe
+      lowest accepted value is the present date (no dates in the past). \nIf not present,
+      the default value will be today's date in the GMT timezone.\n\n"
+  checkOutDate:
+    name: checkOutDate
+    in: query
+    required: false
+    type: string
+    format: date
+    description: "check-out date of the stay (hotel local date). Format YYYY-MM-DD\n\nThe
+      lowest accepted value is checkInDate+1. \nIf not present, it will default to
+      checkInDate + 1\n\n"
+  adults:
+    name: adults
+    in: query
+    required: false
+    type: integer
+    minimum: 1
+    maximum: 9
+    default: 2
+    description: number of adult guests (1-9) per room
+  childAges:
+    name: childAges
+    in: query
+    required: false
+    type: array
+    minItems: 0
+    maxItems: 9
+    items:
+      type: integer
+      minimum: 0
+      maximum: 20
+    description: comma separated list of ages of each child at the time of check-out
+      from the hotel. If several children have the same age, their ages should be
+      repeated in the list
+  rateCodes:
+    name: rateCodes
+    in: query
+    required: false
+    type: array
+    minItems: 0
+    maxItems: 8
+    items:
+      type: string
+      pattern: "^[A-Z0-9]{3}$"
+    collectionFormat: csv
+    description: "Special Rate (comma separated list of Amadeus 3 chars Codes): Public
+      Rate (PRO...), Qualified Rate (GOV...) or Corporate Rate (IBM...).\n\nWhen a
+      Corporate Rate is entered, Amadeus performs a check to verify which chains have
+      authorized the caller to view the rate, only authorized chains will be queried
+      for availability.\n\nWarning: The availability response can also contain Public
+      rates.\n\nExample Rates: \n* GOV - Government Rate\n* AAA - AAA Rate\n* MIL
+      - Military/Veteran Rate\n* SNR - Senior Rate\n* PRO - Promotional Code\n* COR
+      - Corporate Code\n\n"
+  roomQuantity:
+    name: roomQuantity
+    in: query
+    required: false
+    type: integer
+    minimum: 1
+    maximum: 9
+    default: 1
+    description: number of rooms (1-9)
+  priceRange:
+    name: priceRange
+    in: query
+    required: false
+    type: string
+    description: |+
+      filter hotel offers by price per night interval (ex: 200-300 or -300 or 100)
+
+      It is mandatory to include a currency when this field is set
+
+      Note: a margin of +/- 10% is applied on the daily price
+
+  currency:
+    name: currency
+    in: query
+    required: false
+    type: string
+    pattern: "^[A-Z]{3}$"
+    description: |+
+      use this parameter to request a specific currency. ISO currency code (http://www.iso.org/iso/home/standards/currency_codes.htm).
+
+      If a hotel does not support the requested currency, the prices for the hotel will be returned in the local currency of the hotel
+      and instead a currency conversion rate will be added in the dictionary.
+
+      Example: EUR
+
+  paymentPolicy:
+    name: paymentPolicy
+    in: query
+    description: filter the response based on a specific payment type. NONE means
+      all types (default)
+    required: false
+    type: string
+    enum:
+      - GUARANTEE
+      - DEPOSIT
+      - NONE
+    default: NONE
+  boardType:
+    name: boardType
+    in: query
+    required: false
+    type: string
+    enum:
+      - ROOM_ONLY
+      - BREAKFAST
+      - HALF_BOARD
+      - FULL_BOARD
+      - ALL_INCLUSIVE
+    description: |
+      filter response based on available meals
+      * ROOM_ONLY = RO / Room Only
+      * BREAKFAST = BB / Bed & Breakfast
+      * HALF_BOARD = DBB / Diner & Bed & Breakfast (only for Aggregators)
+      * FULL_BOARD = FB / Full Board (only for Aggregators)
+      * ALL_INCLUSIVE = AI / All Inclusive (only for Aggregators)
+  bestRateOnly:
+    name: bestRateOnly
+    in: query
+    required: false
+    type: boolean
+    default: true
+    description: use to return only the cheapest offer per hotel or all available
+      offers
+  sort:
+    name: sort
+    in: query
+    description: |
+      sort by:
+      * distance from city center (or reference point)
+      * lowest price first (warning: all hotels may not be returned)
+    required: false
+    type: string
+    enum:
+      - NONE
+      - DISTANCE
+      - PRICE
+    default: NONE
+  offerId:
+    name: offerId
+    in: path
+    required: true
+    type: string
+    description: offer id to request. Please note that an offer id has a limited lifetime
+      and will expire
+    pattern: "^[A-Z0-9]*$"
+definitions:
+  HotelOffers:
+    title: Hotel Offers
+    description: details of the requested hotel and the available offers
+    type: object
+    properties:
+      type:
+        description: the type of the object (hotel-offers)
+        type: string
+        default: offers
+      hotel:
+        "$ref": "#/definitions/Hotel"
+      available:
+        description: availability status of this hotel
+        type: boolean
+      offers:
+        type: array
+        items:
+          "$ref": "#/definitions/HotelOffer"
+      self:
+        description: a self link to the object
+        type: string
+        format: uri
+  Hotel:
+    title: Hotel
+    description: Hotel Content
+    type: object
+    properties:
+      type:
+        type: string
+        description: data type Hotel
+        default: hotel
+        enum:
+          - hotel
+        example: hotel
+      hotelId:
+        type: string
+        pattern: "^[A-Z0-9]{8}$"
+        example: ADPAR001
+        description: 'Amadeus Property Code (8 chars)
+
+'
+      chainCode:
+        type: string
+        pattern: "^[A-Z]{2}$"
+        example: AD
+        description: 'Brand (RT...) or Merchant (AD...) (Amadeus 2 chars Code)
+
+'
+      brandCode:
+        type: string
+        pattern: "^[A-Z]{2}$"
+        example: RT
+        description: |+
+          Brand (RT...) (Amadeus 2 chars Code). Small Properties distributed by Merchants may not have a Brand.
+          Example: AD (Value Hotels) is the Provider/Merchant, and RT (Accor) is the Brand of the Property
+
+      dupeId:
+        type: string
+        example: '501132260'
+        description: |+
+          Unique Property identifier of the physical hotel.
+          One physical hotel can be represented by different Providers, each one having its own `hotelID`.
+          This attribute allows a client application to group together hotels that are actually the same.
+
+      name:
+        type: string
+        example: Hotel de Paris
+        description: Hotel Name
+      rating:
+        type: string
+        pattern: "^[1-5]$"
+        example: '5'
+        description: Hotel Stars (1-5)
+        enum:
+          - '5'
+          - '4'
+          - '3'
+          - '2'
+          - '1'
+      description:
+        "$ref": "#/definitions/TextWithLanguageType"
+      amenities:
+        type: array
+        description: amenities (list)
+        example:
+          - SWIMMING_POOL
+          - SPA
+        items:
+          type: string
+          description: amenity
+      media:
+        type: array
+        description: All Media (images...)
+        minItems: 0
+        maxItems: 1000
+        items:
+          "$ref": "#/definitions/File"
+      cityCode:
+        type: string
+        pattern: "^[A-Z]{3}$"
+        example: PAR
+        description: 'Warning: The IATA city code associated to the hotel (not necessary
+          the real Hotel City)'
+      latitude:
+        type: number
+        format: double
+        example: 52.52387
+        minimum: -90
+        maximum: 90
+        description: Hotel Latitude in decimal degrees (5 decimals)
+      longitude:
+        type: number
+        format: double
+        example: 13.38357
+        description: Hotel Longitude in decimal degrees (5 decimals)
+      hotelDistance:
+        "$ref": "#/definitions/HotelDistance"
+      address:
+        "$ref": "#/definitions/AddressHotel"
+      contact:
+        "$ref": "#/definitions/ContactHotel"
+    required:
+      - type
+      - hotelId
+      - chainCode
+      - name
+  File:
+    description: media
+    type: object
+    required:
+      - uri
+      - category
+    properties:
+      uri:
+        type: string
+        format: uri
+        example: http://pdt.multimediarepository.testing.amadeus.com/cmr/retrieve/hotel/69810B23CB8644A18AF760DC66BE41A6
+        description: 'href to display the image
+
+'
+      category:
+        type: string
+        description: media category (enum)
+        example: EXTERIOR
+        enum:
+          - EXTERIOR
+          - LOBBY
+          - SWIMMING_POOL
+          - RESTAURANT
+          - FITNESS_CENTER
+          - ROOM
+          - SUITE
+          - MEETING_ROOMS
+          - BALLROOM
+          - GOLF
+          - BEACH
+          - SPA
+          - BAR
+          - RECREATIONAL
+          - LOGO
+          - BASICS
+          - MAP
+          - PROMOTIONAL
+          - HOT_NEWS
+          - MISCELLANEOUS
+          - ROOM_AMENITY
+          - PROPERTY_AMENITY
+          - BUSINESS_CENTER
+  HotelDistance:
+    description: distance from the point of search to the hotel
+    properties:
+      distance:
+        type: number
+        format: double
+        minimum: 0
+        maximum: 250
+        example: 0.3
+        description: distance (in `distanceUnit`)
+      distanceUnit:
+        type: string
+        enum:
+          - KM
+          - MILE
+        example: KM
+        description: unit of measure (Km or Miles)
+  AddressHotel:
+    description: Address Details
+    properties:
+      lines:
+        type: array
+        items:
+          type: string
+        description: When the address is unformatted these lines will contain free
+          form address details.
+      postalCode:
+        type: string
+        description: Post office code number
+      cityName:
+        type: string
+        description: City Name
+      countryCode:
+        type: string
+        pattern: "^[A-Z]{2}$"
+        example: FR
+        description: ISO 3166-1 defines codes for the names of countries, dependent
+          territories, and special areas of geographical interest
+      stateCode:
+        type: string
+        description: ISO 3166-2 defines codes for identifying the principal subdivisions
+          (e.g. provinces or states) of all countries coded in ISO 3166-1
+  ContactHotel:
+    description: Contact Details
+    required:
+      - phone
+      - fax
+    properties:
+      phone:
+        type: string
+        description: Phone Number
+        pattern: "[0-9]{2}"
+        minLength: 2
+        maxLength: 90
+        example: "+33679278416"
+      fax:
+        type: string
+        description: Fax Number
+        pattern: "[0-9]{2}"
+        minLength: 2
+        maxLength: 90
+        example: "+33679278417"
+      email:
+        type: string
+        format: email
+        description: Email Address
+        pattern: "@"
+        minLength: 3
+        maxLength: 90
+        example: hotel@brand.com
+  HotelOffer:
+    title: HotelOffer
+    description: Hotel Offer
+    type: object
+    required:
+      - id
+      - rateCode
+      - room
+      - price
+    properties:
+      type:
+        description: data type
+        type: string
+        example: hotel-offer
+        default: hotel-offer
+        enum:
+          - hotel-offer
+      id:
+        type: string
+        pattern: "^[A-Z0-9]*$"
+        minLength: 2
+        maxLength: 100
+        example: 63A93695B58821ABB0EC2B33FE9FAB24D72BF34B1BD7D707293763D8D9378FC3
+        description: Unique identifier of this offer. Might be valid for a temporary
+          period only.
+      checkInDate:
+        type: string
+        format: date
+        example: '2020-12-30'
+        description: "check-in date of the stay (hotel local date). Format YYYY-MM-DD\n\nThe
+          lowest accepted value is today date (no dates in the past). \n\n"
+      checkOutDate:
+        type: string
+        format: date
+        example: '2020-12-31'
+        description: "check-out date of the stay (hotel local date). Format YYYY-MM-DD\n\nThe
+          lowest accepted value is `checkInDate`+1. \n\n"
+      roomQuantity:
+        type: integer
+        minimum: 1
+        maximum: 9
+        example: 1
+        description: number of rooms (1-9)
+      rateCode:
+        type: string
+        description: |
+          Special Rate - Provider Response Code (3 chars)
+          Examples:
+          * RAC - Rack
+          * BAR - Best Available Rate
+          * PRO - Promotional
+          * COR - Corporate
+          * GOV - Government (qualified)
+          * AAA - AAA (qualified)
+          * BNB - Bed and Breakfast
+          * PKG - Package
+          * TVL - Travel Industry
+          * SPC - Special Promo Rate
+          * WKD - Weekend
+          * CON - Convention
+          * SNR - Senior (Europe) (qualified)
+          * ARP - AARP - American Association of Retired People (50+) (qualified)
+          * SRS - Senior (qualified)
+          * ROR - Room Only Rate (no breakfast)
+          * FAM - Family
+          * DAY - Day rate
+        pattern: "^[A-Z0-9*]{3}$"
+        minLength: 3
+        maxLength: 3
+        example: RAC
+      rateFamilyEstimated:
+        "$ref": "#/definitions/RateFamily"
+      category:
+        type: string
+        description: |
+          Special Rate Category
+          Examples:
+           ASSOCIATION
+           FAMILY_PLAN
+        example: FAMILY_PLAN
+      description:
+        "$ref": "#/definitions/TextWithLanguageType"
+      commission:
+        "$ref": "#/definitions/Commission"
+      boardType:
+        description: 'The included Breakfast/Meals
+
+'
+        type: string
+        example: BREAKFAST
+        enum:
+          - ROOM_ONLY
+          - BREAKFAST
+          - HALF_BOARD
+          - FULL_BOARD
+          - ALL_INCLUSIVE
+          - BUFFET_BREAKFAST
+          - CARIBBEAN_BREAKFAST
+          - CONTINENTAL_BREAKFAST
+          - ENGLISH_BREAKFAST
+          - FULL_BREAKFAST
+          - DINNER_BED_AND_BREAKFAST
+          - LUNCH
+          - DINNER
+          - FAMILY_PLAN
+          - AS_BROCHURED
+          - SELF_CATERING
+          - BERMUDA
+          - AMERICAN
+          - FAMILY_AMERICAN
+          - MODIFIED
+      room:
+        "$ref": "#/definitions/RoomDetails"
+      guests:
+        "$ref": "#/definitions/Guests"
+      price:
+        "$ref": "#/definitions/HotelPrice"
+      policies:
+        "$ref": "#/definitions/PolicyDetails"
+      self:
+        description: A self link to the object. Use this to refresh the Offer price
+        type: string
+        format: uri
+        example: https://test.api.amadeus.com/v2/shopping/hotel-offers/63A93695B58821ABB0EC2B33FE9FAB24D72BF34B1BD7D707293763D8D9378FC3
+  RateFamily:
+    description: The estimated rate code family of the offer. Grouping various rate
+      plan codes that belongs to the same family and indicates the type of the rate
+    properties:
+      code:
+        description: The estimated rate family (PRO,FAM,GOV)
+        type: string
+        pattern: "[A-Z0-9]{3}"
+      type:
+        description: The type of the rate (public=P, negotiated=N, conditional=C)
+        type: string
+        pattern: "[PNC]"
+  Commission:
+    type: object
+    properties:
+      percentage:
+        description: Percentage of the commission paid to the travel seller. Value
+          is between 0 and 100
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+      amount:
+        description: Amount of the commission paid to the travel seller. The amount
+          is always linked to the currency code of the offer
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+      description:
+        "$ref": "#/definitions/TextWithLanguageType"
+  RoomDetails:
+    type: object
+    properties:
+      type:
+        description: "Room type code, 3 character identifier of the room.\nThe first
+          character identifies the room type category. \nThe second numeric character
+          identifies the number of beds. \nThe third character identifies the bed
+          type. \nThere is a special case where ROH is returned, this value stands
+          for Run Of House.\n"
+        type: string
+        pattern: "^[A-Z0-9*]{3}$"
+      typeEstimated:
+        "$ref": "#/definitions/EstimatedRoomType"
+      description:
+        "$ref": "#/definitions/TextWithLanguageType"
+  Guests:
+    title: Guests
+    type: object
+    properties:
+      adults:
+        type: integer
+        minimum: 1
+        maximum: 9
+        example: 2
+        description: number of adult guests (1-9) per room
+      childAges:
+        type: array
+        items:
+          type: integer
+          minimum: 0
+          maximum: 20
+        description: Comma separated list of ages of each child at the time of check-out
+          from the hotel. If several children have the same age, the ages will be
+          repeated.
+  HotelPrice:
+    type: object
+    description: price information
+    properties:
+      currency:
+        description: Currency code
+        type: string
+      total:
+        description: Total amount including taxes
+        type: string
+      base:
+        description: Total amount excluding taxes
+        type: string
+      taxes:
+        type: array
+        items:
+          "$ref": "#/definitions/HotelTax"
+      variations:
+        "$ref": "#/definitions/PriceVariations"
+  PolicyDetails:
+    type: object
+    description: Booking Rules
+    properties:
+      paymentType:
+        type: string
+        description: payment type. Guarantee means Pay at Check Out. Check the `methods`
+          in `guarantee` or `deposit` or `prepay`.
+        example: deposit
+        enum:
+          - guarantee
+          - deposit
+          - prepay
+          - holdTime
+      guarantee:
+        "$ref": "#/definitions/GuaranteePolicy"
+      deposit:
+        "$ref": "#/definitions/DepositPolicy"
+      prepay:
+        "$ref": "#/definitions/DepositPolicy"
+      holdTime:
+        "$ref": "#/definitions/HoldPolicy"
+      cancellation:
+        "$ref": "#/definitions/CancellationPolicy"
+      checkInOut:
+        "$ref": "#/definitions/CheckInOutPolicy"
+  EstimatedRoomType:
+    type: object
+    description: estimated room category, bed type and number of beds in the room.
+      This information has been parsed from the room description, and is thus only
+      provided for informational purposes
+    properties:
+      category:
+        description: Category code
+        type: string
+      beds:
+        description: Number of beds in the room (1-9)
+        type: integer
+      bedType:
+        description: Type of the bed
+        type: string
+  PriceVariations:
+    type: object
+    description: Daily price variations and the average daily price (when available)
+      is shown here
+    properties:
+      average:
+        "$ref": "#/definitions/BaseTotalAmount"
+      changes:
+        description: A collection of price periods if the daily price changes during
+          the stay
+        type: array
+        items:
+          "$ref": "#/definitions/PriceVariation"
+  GuaranteePolicy:
+    description: the guarantee policy information applicable to the offer. It includes
+      accepted payments
+    type: object
+    properties:
+      description:
+        "$ref": "#/definitions/TextWithLanguageType"
+      acceptedPayments:
+        "$ref": "#/definitions/PaymentPolicy"
+  DepositPolicy:
+    description: the deposit/prepay policy information applicable to the offer. It
+      includes accepted payments, deadline and the amount due
+    type: object
+    properties:
+      amount:
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+        description: Deposit-Prepay amount
+      deadline:
+        type: string
+        format: date-time
+        description: "The date and time of the deadline in ISO 8601[https://www.w3.org/TR/NOTE-datetime].
+          \n Example: 2010-08-14T13:00:00\n Please note that this value is expressed
+          in the hotels local time zone\n"
+      description:
+        "$ref": "#/definitions/TextWithLanguageType"
+      acceptedPayments:
+        "$ref": "#/definitions/PaymentPolicy"
+  HoldPolicy:
+    description: the hold policy
+    type: object
+    properties:
+      deadline:
+        type: string
+        format: date-time
+        description: "The date and time of the deadline in ISO 8601[https://www.w3.org/TR/NOTE-datetime].
+          \n Example: 2010-08-14T13:00:00\n Please note that this value is expressed
+          in the hotels local time zone\n"
+    required:
+      - deadline
+  CancellationPolicy:
+    type: object
+    properties:
+      type:
+        type: string
+        description: |
+          ["Flat","FlatPerNight", "Nights", "StayPercent", "FirstNight", "LastNight", "FirstAndLastNight", "FullStay"]
+          Several penalty types can apply for the same product.
+      amount:
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+        description: Amount of the cancellation fee.
+      numberOfNights:
+        type: integer
+        format: int32
+        minimum: 0
+        description: Number of nights due as fee in case of cancellation.
+      percentage:
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+        description: Percentage of the total stay amount to be paid in case of cancellation.
+          Value is between 0 and 100.
+      deadline:
+        type: string
+        format: date-time
+        description: |
+          Represents the deadline's date. Time is in ISO 8601 [https://www.w3.org/TR/NOTE-datetime].
+          Example: 2010-08-14T13:00:00
+          Please note that this value is expressed in the hotels local time zone
+      description:
+        "$ref": "#/definitions/TextWithLanguageType"
+  CheckInOutPolicy:
+    type: object
+    properties:
+      checkIn:
+        type: string
+        example: '13:00:00'
+        description: Check-in From time limit in ISO-8601 format [http://www.w3.org/TR/xmlschema-2/#time]
+      checkInDescription:
+        "$ref": "#/definitions/TextWithLanguageType"
+      checkOut:
+        type: string
+        example: '11:00:00'
+        description: Check-out Until time limit in ISO-8601 format [http://www.w3.org/TR/xmlschema-2/#time]
+      checkOutDescription:
+        "$ref": "#/definitions/TextWithLanguageType"
+  HotelTax:
+    type: object
+    title: Price_Tax
+    properties:
+      currency:
+        type: string
+        description: Currency code of the tax
+      amount:
+        type: string
+        description: Amount of the tax
+      code:
+        description: |
+          The tax code which identifies the tax.
+            Examples:
+            1=BED_TAX
+            2=CITY_TAX
+        type: string
+      percentage:
+        type: string
+        description: percentage of the tax. Use together with pricingFrequency and
+          pricingMode
+      included:
+        type: boolean
+        description: Is the tax included in the base amount
+      description:
+        type: string
+        description: Textual description of the tax
+      pricingFrequency:
+        description: |
+          Specifies if the tax applies per stay or per night
+           - PER_STAY
+           - PER_NIGHT
+        type: string
+      pricingMode:
+        description: |
+          Specifies if the tax applies per occupant or per room
+           - PER_OCCUPANT
+           - PER_PRODUCT
+        type: string
+  BaseTotalAmount:
+    description: estimated nightly average for the stay
+    type: object
+    properties:
+      base:
+        description: Amount excluding taxes.
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+      total:
+        description: Amount including taxes.
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+    required:
+      - base
+      - total
+  PriceVariation:
+    title: Price variation
+    description: Some prices may vary during a stay, thus here you can see the daily
+      price per period of the stay
+    type: object
+    properties:
+      startDate:
+        description: |
+          Begin date of the period
+          Format: YYYY-MM-DD
+        type: string
+        format: date
+      endDate:
+        description: |
+          End date of the period
+          Format: YYYY-MM-DD
+        type: string
+        format: date
+      base:
+        description: Daily amount excluding tax
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+      total:
+        description: Daily amount including tax
+        type: string
+        pattern: "^\\\\d+(\\.\\\\d+)?$"
+    required:
+      - startDate
+      - endDate
+  PaymentPolicy:
+    type: object
+    description: Accepted Payment Methods and Card Types. Several Payment Methods
+      and Card Types may be available
+    properties:
+      creditCards:
+        type: array
+        description: Accepted Payment Card Types for the `method` CREDIT_CARD
+        items:
+          type: string
+          pattern: "^[A-Z]{2}$"
+          minLength: 2
+          maxLength: 2
+          example: VI
+          description: "card type (CA, VI, AX, DC...)\nExamples:\n  * CA - MasterCard
+            (warning: use it instead of MC/IK/EC/MD/XS)\n  * VI - Visa\n  * AX - American
+            Express\n  * DC - Diners Club\n  * AU - Carte Aurore\n  * CG - Cofinoga\n
+            \ * DS - Discover\n  * GK - Lufthansa GK Card\n  * JC - Japanese Credit
+            Bureau\n  * TC - Torch Club\n  * TP - Universal Air Travel Card\n  * BC
+            - Bank Card\n  * DL - Delta\n  * MA - Maestro\n  * UP - China UnionPay
+            \  \n"
+        example:
+          - CA
+          - VI
+          - AX
+      methods:
+        type: array
+        description: Accepted Payment Methods
+        items:
+          type: string
+          example: CREDIT_CARD
+          enum:
+            - CREDIT_CARD
+            - TRAVEL_AGENT_ID
+            - CORPORATE_ID
+            - HOTEL_GUEST_ID
+            - CHECK
+            - MISC_CHARGE_ORDER
+            - ADVANCE_DEPOSIT
+            - COMPANY_ADDRESS
+          description: |-
+            The Payment Methods :
+             * CREDIT_CARD (CC) - Payment Cards in `creditCards` are accepted
+             * TRAVEL_AGENT_ID - Agency IATA/ARC Number is accepted to Guarantee the booking
+             * CORPORATE_ID (COR-ID) - Corporate Account is accepted to Guarantee the booking
+             * HOTEL_GUEST_ID - Hotel Chain Rewards Card Number is accepted to Guarantee the booking
+             * CHECK - Checks are accepted
+             * MISC_CHARGE_ORDER - Miscellaneous Charge Order is accepted
+             * ADVANCE_DEPOSIT - Cash is accepted for Deposit/PrePay
+             * COMPANY_ADDRESS - Company Billing Address is accepted to Guarantee the booking
+  TextWithLanguageType:
+    description: text and language
+    properties:
+      lang:
+        type: string
+        pattern: "[a-zA-Z0-9-]{2,5}"
+        description: Language code of the text ISO language code (https://www.iso.org/iso-639-language-codes.html)
+      text:
+        type: string
+        description: Text description
+  Meta:
+    description: meta information
+    type: object
+    properties:
+      links:
+        "$ref": "#/definitions/Links"
+      lang:
+        description: the default language of all texts returned
+        type: string
+  Links:
+    description: links to continue in the shopping process
+    type: object
+    properties:
+      next:
+        description: Use this link to get the next hotels in the search result
+        type: string
+        format: uri
+  HotelDictionary:
+    type: object
+    properties:
+      currencyConversionLookupRates:
+        description: |
+          - Used to convey rate conversions the requested currency differs from the currency returned by a hotel
+          - origin_amount = reverse_rate x target_amount
+          - target_amount = rate x origin_amount
+          - Example:
+                  currencyConversionLookupRates: {
+                    USD: {
+                          rate: "0.80",
+                          targetDecimalPlaces: 2,
+                          target: EUR
+                      },
+                      GBP: {
+                          rate: "1.14",
+                          targetDecimalPlaces: 2,
+                          target: EUR
+                      }
+                  }
+        type: object
+        additionalProperties:
+          "$ref": "#/definitions/CurrencyConversionRate"
+  CurrencyConversionRate:
+    description: conversion from provider's currency to requested currency
+    type: object
+    properties:
+      rate:
+        description: The conversion factor to apply against the source currency to
+          obtain the requested currency
+        type: string
+      target:
+        description: Requested currency code
+        type: string
+        pattern: "[A-Z]{3}"
+      targetDecimalPlaces:
+        description: Indicates the number of decimal places for the target currency
+        type: integer
+  ErrorResponse:
+    title: ErrorResponse
+    type: object
+    required:
+      - errors
+    properties:
+      errors:
+        type: array
+        items:
+          "$ref": "#/definitions/Error"
+  Error:
+    type: object
+    description: Error
+    properties:
+      code:
+        type: integer
+        description: "[Integer] A machine-readable error code from the Amadeus Canned
+          Messages table, that will enable the API Consumers code to handle this type
+          of error"
+        example: 1
+        enum:
+          - 23
+          - 61
+          - 137
+          - 145
+          - 195
+          - 249
+          - 377
+          - 381
+          - 382
+          - 383
+          - 392
+          - 397
+          - 400
+          - 402
+          - 404
+          - 424
+          - 431
+          - 450
+          - 451
+          - 562
+          - 784
+          - 790
+          - 795
+          - 842
+      title:
+        type: string
+        description: "[String] An error title from the Canned Messages table with
+          a 1:1 correspondence to the error code. This may be localized"
+        example: Resource not found
+        enum:
+          - PASSENGER TYPE NOT SUPPORTED
+          - INVALID CURRENCY CODE
+          - INVALID ADULTS OCCUPANCY REQUESTED
+          - DURATION PERIOD OR DATES INCORRECT
+          - SERVICE RESTRICTION
+          - INVALID RATE CODE
+          - MAX STAY DURATION IS EXCEEDED
+          - INVALID CHECK-IN DATE
+          - INVALID CHECK-OUT DATE
+          - INVALID CITY CODE
+          - INVALID HOTEL CODE
+          - INVALID NUMBER OF ADULTS
+          - INVALID PROPERTY CODE
+          - INVALID ROOM TYPE
+          - CHECK_OUT DATE MUST BE FURTHER IN THE FUTURE THAN CHECK-IN DATE
+          - NO HOTELS FOUND WHICH MATCH THIS INPUT
+          - CHECK-OUT DATE IS TOO FAR IN THE FUTURE
+          - INVALID PROVIDER RESPONSE
+          - INVALID CREDENTIALS
+          - RESTRICTED ACCESS FOR THE REQUESTED RATES AND CHAINS
+          - PROVIDER TIME OUT
+          - NO PROPERTIES FOUND WITHIN THIS RADIUS
+          - NO SIMILAR NAME FOUND, PLEASE ENLARGE YOUR SEARCH CRITERIA
+          - RATE SECURITY NOT LOADED
+      detail:
+        type: string
+        description: "[String] An easy-to-read explanation specific to this occurrence
+          of the problem. It should give the API consumer an idea of what went wrong
+          and how to recover from it. Like the title, this field’s value can be localized."
+        example: The targeted resource doesn't exist
+      status:
+        type: integer
+        description: "[Integer] The [HTTP status code](https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml)
+          of this response. This is present only in terminal errors which cause an
+          unsuccessful response. In the case of multiple errors, they must all have
+          the same status."
+        example: 400
+responses:
+  MultiHotelsOffers:
+    description: An array of hotel offers, ie. hotels with their attributes plus available
+      offers for each returned hotel.
+    schema:
+      type: object
+      properties:
+        data:
+          type: array
+          description: The list of the hotels matching the search criteria, and the
+            available offers for each hotel.
+          items:
+            "$ref": "#/definitions/HotelOffers"
+        meta:
+          "$ref": "#/definitions/Meta"
+        dictionaries:
+          "$ref": "#/definitions/HotelDictionary"
+  SingleHotelOffers:
+    description: A single hotel with available offers.
+    schema:
+      type: object
+      properties:
+        data:
+          "$ref": "#/definitions/HotelOffers"
+        meta:
+          "$ref": "#/definitions/Meta"
+        dictionaries:
+          "$ref": "#/definitions/HotelDictionary"
+  Error400Response:
+    description: "code    | title \n------- | -------------------------------------
+      \ \n23      | PASSENGER TYPE NOT SUPPORTED\n61      | INVALID CURRENCY CODE\n137
+      \    | INVALID ADULTS OCCUPANCY REQUESTED\n145     | DURATION PERIOD OR DATES
+      INCORRECT\n195     | SERVICE RESTRICTION\n249     | INVALID RATE CODE\n377     |
+      MAX STAY DURATION IS EXCEEDED\n381     | INVALID CHECK-IN DATE\n382     | INVALID
+      CHECK-OUT DATE\n383     | INVALID CITY CODE\n392     | INVALID HOTEL CODE\n397
+      \    | INVALID NUMBER OF ADULTS\n400     | INVALID PROPERTY CODE\n402     |
+      INVALID ROOM TYPE\n404     | CHECK_OUT DATE MUST BE FURTHER IN THE FUTURE THAN
+      CHECK-IN DATE\n424     | NO HOTELS FOUND WHICH MATCH THIS INPUT\n431     | CHECK-OUT
+      DATE IS TOO FAR IN THE FUTURE\n450     | INVALID PROVIDER RESPONSE\n451     |
+      INVALID CREDENTIALS\n562     | RESTRICTED ACCESS FOR THE REQUESTED RATES AND
+      CHAINS  \n784     | PROVIDER TIME OUT\n790     | NO PROPERTIES FOUND WITHIN
+      THIS RADIUS\n795     | NO SIMILAR NAME FOUND, PLEASE ENLARGE YOUR SEARCH CRITERIA\n842
+      \    | RATE SECURITY NOT LOADED\n"
+    schema:
+      "$ref": "#/definitions/ErrorResponse"
+  Error404Response:
+    description: 'Hotel or offer not found
+
+'
+    schema:
+      "$ref": "#/definitions/ErrorResponse"
+  Error500Response:
+    description: Internal server error.
+    schema:
+      "$ref": "#/definitions/ErrorResponse"
+x-generatedAt: '2019-02-14T10:41:25.918Z'

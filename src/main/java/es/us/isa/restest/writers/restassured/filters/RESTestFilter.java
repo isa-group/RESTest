@@ -1,5 +1,6 @@
 package es.us.isa.restest.writers.restassured.filters;
 
+import com.google.protobuf.Api;
 import es.us.isa.restest.testcases.TestResult;
 import es.us.isa.restest.util.PropertyManager;
 import io.restassured.response.Response;
