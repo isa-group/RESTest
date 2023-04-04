@@ -63,7 +63,6 @@ public abstract class AbstractTestCaseGenerator {
 	protected int nNominal;													// Number of nominal test cases generated for the current operation
 
 	private boolean hasStatefulGenerators;
-	private boolean isArteEnabled;
 	private boolean checkTestCases;
 
 
@@ -88,7 +87,6 @@ public abstract class AbstractTestCaseGenerator {
 
 		// Reset counters
 		resetGenerator();
-
 
 		this.rand = new Random();
 		this.seed = rand.nextLong();
@@ -244,7 +242,7 @@ public abstract class AbstractTestCaseGenerator {
 
 		// Update these booleans, which may differ for every operation
 		hasStatefulGenerators = hasStatefulGenerators(testOperation);
-		isArteEnabled = isArteEnabled(testOperation);
+
 
 		return generateOperationTestCases(testOperation);
 	}
@@ -287,11 +285,11 @@ public abstract class AbstractTestCaseGenerator {
 
 	/**
 	 * Make sure the test case generated conforms to the specification. Otherwise, throw an exception and stop the execution
-	 * There's an exception: if stateful generators are configured, or ARTE is enabled, we cannot assure that the test case
+	 * There's an exception: if stateful generators are configured we cannot assure that the test case
 	 * will be valid, therefore we omit this
 	 */
 	protected void checkTestCaseValidity(TestCase test) throws RESTestException {
-		if (!test.getFaulty() && checkTestCases && !hasStatefulGenerators && !isArteEnabled) {
+		if (!test.getFaulty() && checkTestCases && !hasStatefulGenerators) {
 			List<String> errors = test.getValidationErrors(OASAPIValidator.getValidator(spec));
 			if (!errors.isEmpty()) {
 				throw new RESTestException("The test case generated does not conform to the specification: " + errors);
@@ -625,11 +623,9 @@ public abstract class AbstractTestCaseGenerator {
 		rand.setSeed(seed);
 	}
 
-
 	public int getMaxTriesPerTestCase() {
 		return maxTriesPerTestCase;
 	}
-
 
 	public void setMaxTriesPerTestCase(int maxTriesPerTestCase) {
 		this.maxTriesPerTestCase = maxTriesPerTestCase;

@@ -22,11 +22,11 @@ public class IterativeExampleTest {
 
     @Before
     public void resetSingleton() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field properties = PropertyManager.class.getDeclaredField("properties");
+        Field properties = PropertyManager.class.getDeclaredField("globalProperties");
         properties.setAccessible(true);
         properties.set(null, null);
 
-        Field experimentProperties = PropertyManager.class.getDeclaredField("experimentProperties");
+        Field experimentProperties = PropertyManager.class.getDeclaredField("userProperties");
         experimentProperties.setAccessible(true);
         experimentProperties.set(null, null);
     }

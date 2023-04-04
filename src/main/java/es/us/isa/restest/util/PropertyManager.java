@@ -13,41 +13,52 @@ import java.util.Properties;
  */
 public class PropertyManager {
 
-	static String propertyFilePath = "src/main/resources/config.properties";
-	static Properties properties = null;
-	static Properties experimentProperties = null;
+	static String globalPropertyFilePath = "src/main/resources/config.properties";
+	static Properties globalProperties = null;
+	static Properties userProperties = null;
 
 	private static Logger logger = LogManager.getLogger(PropertyManager.class.getName());
-	
+
+	/**
+	 * Reads a property from the global properties file
+	 * @param name Property name
+	 * @return
+	 */
 	static public String readProperty(String name) {
 	
-		if (properties==null) {
-			 properties = new Properties();
-			 try(FileInputStream defaultProperties = new FileInputStream(propertyFilePath)) {
-				 properties.load(defaultProperties);
+		if (globalProperties ==null) {
+			 globalProperties = new Properties();
+			 try(FileInputStream defaultProperties = new FileInputStream(globalPropertyFilePath)) {
+				 globalProperties.load(defaultProperties);
 			 } catch (IOException e) {
 				 logger.error("Error reading property file: {}", e.getMessage());
 				 logger.error("Exception: ", e);
 			 }
 		}
 		
-		return properties.getProperty(name);
+		return globalProperties.getProperty(name);
 		
 	}
 
+	/**
+	 * Reads a property from the property file located in evalPropertiesFilePath
+	 * @param evalPropertiesFilePath Path to the user properties file
+	 * @param name Property name
+	 * @return
+	 */
 	public static String readProperty(String evalPropertiesFilePath, String name) {
 
-		if (experimentProperties ==null) {
-			experimentProperties = new Properties();
+		if (userProperties ==null) {
+			userProperties = new Properties();
 			try(FileInputStream experimentProperties = new FileInputStream(evalPropertiesFilePath)) {
-				PropertyManager.experimentProperties.load(experimentProperties);
+				PropertyManager.userProperties.load(experimentProperties);
 			} catch (IOException e) {
 				logger.error("Error reading property file: {}", e.getMessage());
 				logger.error("Exception: ", e);
 			}
 		}
 
-		return experimentProperties.getProperty(name);
+		return userProperties.getProperty(name);
 	}
 
 

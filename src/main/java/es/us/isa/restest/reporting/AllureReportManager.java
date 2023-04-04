@@ -95,7 +95,7 @@ public class AllureReportManager {
 		try {
 			FileUtils.copyFile(sourceFile, targetFile);
 		} catch (IOException e) {
-			logger.error("Error copying Allure environment.properties file");
+			logger.error("Error copying Allure environment .properties file");
 			logger.error("Exception: ", e);
 		}
 		

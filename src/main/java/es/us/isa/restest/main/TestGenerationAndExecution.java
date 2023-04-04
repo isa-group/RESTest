@@ -10,6 +10,7 @@ import es.us.isa.restest.generators.FuzzingTestCaseGenerator;
 import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
+import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.runners.RESTestRunner;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.writers.IWriter;
