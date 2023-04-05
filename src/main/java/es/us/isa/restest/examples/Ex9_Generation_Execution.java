@@ -1,6 +1,7 @@
 package es.us.isa.restest.examples;
 
 import es.us.isa.restest.runners.RESTestRunner;
+import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.RESTestException;
 
 /**
@@ -22,6 +23,8 @@ public class Ex9_Generation_Execution {
         runner.run();
 
         System.out.println(runner.getNumberOfTestCases() + " test cases generated and written to " + runner.getTargetDirJava());
-        System.out.println("Check CSV and Allure reports in the example folder");
+        System.out.println("Allure report available at " + runner.getAllureReportsPath());
+        System.out.println("CSV stats available at " + PropertyManager.readProperty("data.tests.dir") + "/" + runner.getExperimentName());
+        System.out.println("Coverage report available at " + PropertyManager.readProperty("data.coverage.dir") + "/" + runner.getExperimentName());
     }
 }

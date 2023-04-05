@@ -40,3 +40,4 @@ stateful_data.json
 /src/main/resources/Examples/Ex2_CreateTestConf/default_test_conf.yaml
 /src/main/resources/Examples/Ex9_Generation_Execution/allure_report/anApiOfIceAndFire/
 /src/main/resources/Examples/Ex9_Generation_Execution/csv_report/anApiOfIceAndFire/
+/src/main/resources/Examples/Ex10_Iterative_Generation_Execution/allure_report/anApiOfIceAndFire/

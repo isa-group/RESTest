@@ -59,22 +59,6 @@ public class StatsReportManager {
         if (enableInputCoverage || enableOutputCoverage)
             generateCoverageStats(testId, executeTestCases);
 
-        /*
-        if (enableOutputCoverage) {
-            String source = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
-            String destination = testDataDir + "/" + PropertyManager.readProperty("data.tests.testresults.file") + "_" + testId + ".csv";
-            System.out.println("Origin: " + source);
-            System.out.println("Destination: " + destination);
-            try {
-                copyFile(source, destination);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-
-        }
-
-         */
     }
 
 
