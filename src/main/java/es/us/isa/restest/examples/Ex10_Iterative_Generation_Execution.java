@@ -28,6 +28,7 @@ public class Ex10_Iterative_Generation_Execution {
     public static String propertyFilePath="src/main/resources/Examples/Ex10_Iterative_Generation_Execution/user_config.properties"; 		// Path to user properties file with configuration options
 
     public static void main(String[] args) throws RESTestException {
+
         // Load properties
         RESTestIterativeRunner runner = new RESTestIterativeRunner(propertyFilePath);
 

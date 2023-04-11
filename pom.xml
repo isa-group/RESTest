@@ -120,7 +120,6 @@
 		<maven.compiler.target>11</maven.compiler.target>
 		<aspectj.version>1.9.7</aspectj.version>
 		<swagger.version>2.1.10</swagger.version>
-<!--		<swaggerparser.version>2.0.27</swaggerparser.version>-->
 		<openapivalidator.version>2.18.1</openapivalidator.version>
 		<restassured.version>4.2.0</restassured.version>
 		<jackson.version>2.11.4</jackson.version>
@@ -230,6 +229,41 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp -->
+		<!-- Stanford NLP -->
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.4.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models-english</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>4.2.2</version>
+			<classifier>models-english-kbp</classifier>
+		</dependency>
+
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-parser</artifactId>
+			<version>3.9.2</version>
+		</dependency>
+
 		<!-- MISC DEPENDENCIES -->
 		<!-- Apache Common IO -->
 		<dependency>
@@ -242,7 +276,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
-			<version>3.10</version>
+			<version>3.12.0</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
@@ -330,64 +364,19 @@
 		</dependency>
 
 
-		<!-- https://mvnrepository.com/artifact/edu.stanford.nlp/stanford-corenlp -->
-		<!-- Stanford NLP -->
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.4.0</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models</classifier>
-		</dependency>
-		
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models-english</classifier>
-		</dependency>
-		
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models-english-kbp</classifier>
-		</dependency>
-
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-parser</artifactId>
-			<version>3.9.2</version>
-		</dependency>
-
-		<!-- LOCAL DEPENDENCIES -->
-
-		<!-- IDLreasoner dependency -->
-		<dependency>
-			<groupId>es.us.isa</groupId>
-			<artifactId>idlreasoner-choco</artifactId>
-			<version>1.0.0</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/lib/idlreasoner-choco-1.0.0.jar</systemPath>
-		</dependency>
+		<!-- AUTOMATED ANALYSIS OF INTER-PARAMETER DEPENDENCIES -->
 
 		<!-- IDL dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
 			<artifactId>idl-choco</artifactId>
 			<version>1.0.0</version>
-<!--			<scope>system</scope>
-			<systemPath>${basedir}/lib/idl-choco-1.0.0.jar</systemPath>-->
 		</dependency>
 
+		<!-- IDLreasoner dependency -->
 		<dependency>
 			<groupId>es.us.isa</groupId>
-			<artifactId>idlreasoner-choco</artifactId>
+			<artifactId>idl-reasoner</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 
@@ -399,8 +388,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>8</source>
-					<target>8</target>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -422,7 +411,7 @@
 									<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 								</manifest>
 							</archive>
-							<finalName>restest-full</finalName>
+							<finalName>restest</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
