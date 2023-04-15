@@ -16,7 +16,7 @@ public class NumberToInvalidTest {
 
     @Test
     public void mutationAppliedTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Memes/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Memes/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "<>", "/gallery", PathItem.HttpMethod.PUT);
 
         TestCase oldTc = SerializationUtils.clone(tc);

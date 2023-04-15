@@ -90,7 +90,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testAmadeusHotelTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/AmadeusHotel/swagger.yaml";
+		String specPath="src/test/resources/AmadeusHotel/openapi.yaml";
 		String confPath="src/test/resources/AmadeusHotel/defaultConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -147,7 +147,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testPetstoreFullTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Petstore/swagger.yaml";
+		String specPath="src/test/resources/Petstore/openapi.yaml";
 		String confPath="src/test/resources/Petstore/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -166,7 +166,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testSimpleAPIFullTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/SimpleAPI/swagger.yaml";
+		String specPath="src/test/resources/SimpleAPI/openapi.yaml";
 		String confPath="src/test/resources/SimpleAPI/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -185,7 +185,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testBikewiseFullTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Bikewise/swagger.yaml";
+		String specPath="src/test/resources/Bikewise/openapi.yaml";
 		String confPath="src/test/resources/Bikewise/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -204,7 +204,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testDataAtWorkFullTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/DataAtWork/swagger.yaml";
+		String specPath="src/test/resources/DataAtWork/openapi.yaml";
 		String confPath="src/test/resources/DataAtWork/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -223,7 +223,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testYouTubeFullTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/YouTube/swagger.yaml";
+		String specPath="src/test/resources/YouTube/openapi.yaml";
 		String confPath="src/test/resources/YouTube/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -262,7 +262,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testCommentsTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Comments/swagger.yaml";
+		String specPath="src/test/resources/Comments/openapi.yaml";
 		String confPath="src/test/resources/Comments/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -300,7 +300,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testEventsTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Events/swagger.yaml";
+		String specPath="src/test/resources/Events/openapi.yaml";
 		String confPath="src/test/resources/Events/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -319,7 +319,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testTravelTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Travel/swagger.yaml";
+		String specPath="src/test/resources/Travel/openapi.yaml";
 		String confPath="src/test/resources/Travel/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -338,7 +338,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testYouTubeSearchTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/YouTube/swagger.yaml";
+		String specPath="src/test/resources/YouTube/openapi.yaml";
 		String confPath="src/test/resources/YouTube/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -359,7 +359,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testOMDbTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/OMDb/swagger.yaml";
+		String specPath="src/test/resources/OMDb/openapi.yaml";
 		String confPath="src/test/resources/OMDb/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -378,7 +378,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testMemesTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Memes/swagger.yaml";
+		String specPath="src/test/resources/Memes/openapi.yaml";
 		String confPath="src/test/resources/Memes/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -397,7 +397,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testMarvelTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Marvel/swagger.yaml";
+		String specPath="src/test/resources/Marvel/openapi.yaml";
 		String confPath="src/test/resources/Marvel/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -416,7 +416,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testTwitterTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Twitter/swagger.yaml";
+		String specPath="src/test/resources/Twitter/openapi.yaml";
 		String confPath="src/test/resources/Twitter/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -435,7 +435,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testFoursquareTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Foursquare/swagger.yaml";
+		String specPath="src/test/resources/Foursquare/openapi.yaml";
 		String confPath="src/test/resources/Foursquare/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -454,7 +454,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testBingWebSearchTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/BingWebSearch/swagger.yaml";
+		String specPath="src/test/resources/BingWebSearch/openapi.yaml";
 		String confPath="src/test/resources/BingWebSearch/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -473,7 +473,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testTumblrTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Tumblr/swagger.yaml";
+		String specPath="src/test/resources/Tumblr/openapi.yaml";
 		String confPath="src/test/resources/Tumblr/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -492,7 +492,7 @@ public class DefaultTestConfigurationGeneratorTest {
 	@Test
 	public void testStripeTestConfigurationGeneration() {
 
-		String specPath="src/test/resources/Stripe/swagger.yaml";
+		String specPath="src/test/resources/Stripe/openapi.yaml";
 		String confPath="src/test/resources/Stripe/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
@@ -510,7 +510,7 @@ public class DefaultTestConfigurationGeneratorTest {
 
 	@Test
 	public void testAnApiOfIceAndFireTestConfigurationGeneration() {
-		String specPath="src/test/resources/AnApiOfIceAndFire/swagger.yaml";
+		String specPath="src/test/resources/AnApiOfIceAndFire/openapi.yaml";
 		String confPath="src/test/resources/AnApiOfIceAndFire/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 

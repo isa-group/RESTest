@@ -14,7 +14,7 @@ public class IntegerToInvalidTest {
 
     @Test
     public void mutationAppliedTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Travel/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Travel/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "getTripsFromUser", "/trips/user", PathItem.HttpMethod.GET);
 
         TestCase oldTc = SerializationUtils.clone(tc);
@@ -30,7 +30,7 @@ public class IntegerToInvalidTest {
 
     @Test
     public void integerMinMaxMutationTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/AmadeusHotel/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/AmadeusHotel/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "getMultiHotelOffers", "/shopping/hotel-offers", PathItem.HttpMethod.GET);
 
         ParameterFeatures paramToMutate = new ParameterFeatures(spec.getSpecification().getPaths().get("/shopping/hotel-offers").getGet().getParameters().stream().filter(p -> p.getName().equals("page[limit]")).findFirst().get());

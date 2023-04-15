@@ -25,7 +25,7 @@ public class RegexGeneratorUtilsTest {
     public void testGetCsvPaths() {
 
         String confPath = "src/test/resources/semanticAPITests/OMDb/testConfSemantic.yaml";
-        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/OMDb/swagger.yaml");
+        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/OMDb/openapi.yaml");
         TestConfigurationObject conf = loadConfiguration(confPath, specification);
 
         List<Operation> operations = conf.getTestConfiguration().getOperations();

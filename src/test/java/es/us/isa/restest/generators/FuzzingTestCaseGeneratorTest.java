@@ -18,7 +18,7 @@ public class FuzzingTestCaseGeneratorTest {
     @Test
     public void bikewiseFuzzingTestCaseGenerator() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Bikewise/openapi.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
@@ -50,7 +50,7 @@ public class FuzzingTestCaseGeneratorTest {
     @Test
     public void commentsFuzzingTestCaseGenerator() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Comments/openapi.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration

@@ -21,8 +21,8 @@ public class SpecificationVisitorTest {
 
     @BeforeClass
     public static void getSpec() {
-        travelApiOas = new OpenAPISpecification("src/test/resources/Travel/swagger.yaml");
-        stripeApiOas = new OpenAPISpecification("src/test/resources/Stripe/swagger.yaml");
+        travelApiOas = new OpenAPISpecification("src/test/resources/Travel/openapi.yaml");
+        stripeApiOas = new OpenAPISpecification("src/test/resources/Stripe/openapi.yaml");
     }
 
     @Test

@@ -32,7 +32,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void petstoreTestCaseGeneratorWithFilters() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/Petstore/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Petstore/openapi.yaml";
 		String testConf = "src/test/resources/Petstore/fullConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -101,7 +101,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void petstoreTestCaseGeneratorWithFiltersAndFaults() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/Petstore/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Petstore/openapi.yaml";
 		String testConf = "src/test/resources/Petstore/fullConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -196,7 +196,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void bikewiseFullTestCaseGenerator() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Bikewise/openapi.yaml";
 		String testConf = "src/test/resources/Bikewise/fullConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -238,7 +238,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void bikewiseFullTestCaseGeneratorWithFaults() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Bikewise/openapi.yaml";
 		String testConf = "src/test/resources/Bikewise/fullConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -375,8 +375,8 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void amadeusHotelFullTestCaseGenerator() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
-		String testConf = "src/test/resources/AmadeusHotel/defaultConf.yaml";
+		String OAISpecPath = "src/test/resources/AmadeusHotel/openapi.yaml";
+		String testConf = "src/test/resources/AmadeusHotel/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
@@ -658,7 +658,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void dataAtWorkFullTestCaseGeneratorTest() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/DataAtWork/swagger.yaml";
+		String OAISpecPath = "src/test/resources/DataAtWork/openapi.yaml";
 		String testConf = "src/test/resources/DataAtWork/fullConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -701,7 +701,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void foursquareFullTestCaseGenerator() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/Foursquare/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Foursquare/openapi.yaml";
 		String testConf = "src/test/resources/Foursquare/testConf_forTestSuite2.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -743,7 +743,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void marvelFullTestCaseGenerator() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/Marvel/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Marvel/openapi.yaml";
 		String testConf = "src/test/resources/Marvel/testConf_forTestSuite2.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -788,7 +788,7 @@ public class RandomTestCaseGeneratorTest {
 
 		// Load specification
 		String OAISpecPath = "src/test/resources/Playlist/spec.yaml";
-		String testConf = "src/test/resources/Playlist/defaultConf.yaml";
+		String testConf = "src/test/resources/Playlist/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
@@ -827,7 +827,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void simpleAPIFullTestCaseGenerator() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/SimpleAPI/swagger.yaml";
+		String OAISpecPath = "src/test/resources/SimpleAPI/openapi.yaml";
 		String testConf = "src/test/resources/SimpleAPI/fullConfRight.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -870,7 +870,7 @@ public class RandomTestCaseGeneratorTest {
 	@Test
 	public void tumblrFullTestCaseGenerator() throws RESTestException {
 		// Load specification
-		String OAISpecPath = "src/test/resources/Tumblr/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Tumblr/openapi.yaml";
 		String testConf = "src/test/resources/Tumblr/testConf_forTestSuite2.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -915,7 +915,7 @@ public class RandomTestCaseGeneratorTest {
 	public void commentsFullTestCaseGeneratorWithFaults() throws RESTestException {
 
 		// Load specification
-		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Comments/openapi.yaml";
 		String testConf = "src/test/resources/Comments/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -965,7 +965,7 @@ public class RandomTestCaseGeneratorTest {
 	public void commentsFullTestCaseGeneratorWithPerturbationAndFaults() throws RESTestException {
 
 		// Load specification
-		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Comments/openapi.yaml";
 		String testConf = "src/test/resources/Comments/testConf_forTestSuite3.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -1021,7 +1021,7 @@ public class RandomTestCaseGeneratorTest {
 	public void travelTestCaseGeneratorWithFaults() throws RESTestException {
 
 		// Load specification
-		String OAISpecPath = "src/test/resources/Travel/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Travel/openapi.yaml";
 		String testConf = "src/test/resources/Travel/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 

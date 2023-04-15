@@ -159,6 +159,9 @@ paths:
         - $ref: "#/components/parameters/page"
         - $ref: "#/components/parameters/since"
         - $ref: "#/components/parameters/before"
+      x-dependencies:
+        - ZeroOrOne(type, visibility);
+        - ZeroOrOne(type, affiliation);
       responses:
         "200":
           content:

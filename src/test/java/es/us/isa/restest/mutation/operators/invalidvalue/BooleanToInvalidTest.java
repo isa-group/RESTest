@@ -15,7 +15,7 @@ public class BooleanToInvalidTest {
 
     @Test
     public void mutationAppliedTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Travel/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Travel/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "getTripsFromUser", "/trips/user", PathItem.HttpMethod.GET);
 
         TestCase oldTc = SerializationUtils.clone(tc);

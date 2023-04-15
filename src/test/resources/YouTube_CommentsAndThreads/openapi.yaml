@@ -143,6 +143,12 @@ paths:
           name: videoId
           schema:
             type: string
+      x-dependencies:
+        - OnlyOne(allThreadsRelatedToChannelId, channelId, id, videoId);
+        - ZeroOrOne(id, moderationStatus);
+        - ZeroOrOne(id, order);
+        - ZeroOrOne(id, pageToken);
+        - ZeroOrOne(id, searchTerms);
       responses:
         "200":
           content:

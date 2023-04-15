@@ -41,7 +41,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/YouTube_Search/props.properties";
+	private static String propertiesFilePath = "src/test/resources/YouTube_Videos/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
@@ -159,13 +159,9 @@ public class TestGenerationAndExecution {
 
 
 		// ML configuration
-		if (generatorType.equals("MLT")) {
-			if (mlInitialData) {
-				deletePreviousResults = false;
-			}
+		if (generatorType.equals("MLT") && !mlInitialData) {
 			mlLearning();
 		}
-
 
 		// Main loop
 		int iteration = 1;
@@ -264,7 +260,7 @@ public class TestGenerationAndExecution {
 			runner.setGenerator(ALTestGenerator);
 		}
 
-		while (precision==0.0 || (precision < mlTrainingPrecisionThreshold && iterationsWithoutLearning < mlTrainingMaxIterationsNotLearning && runner.getNumTestCases() < totalNumTestCases)) {
+		while (precision < mlTrainingPrecisionThreshold && iterationsWithoutLearning < mlTrainingMaxIterationsNotLearning && runner.getNumTestCases() < totalNumTestCases) {
 			testIteration();
 			precision = trainMlModel();
 			if (precision > maxPrecision) {

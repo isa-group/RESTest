@@ -16,7 +16,7 @@ public class EnumToInvalidTest {
 
     @Test
     public void mutationAppliedTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "getComments", "/comments", PathItem.HttpMethod.GET);
         tc.addQueryParameter("type", "Review");
         tc.addQueryParameter("limit", "2");

@@ -23,7 +23,7 @@ public class BodyGeneratorParameterizedTest {
     @Parameterized.Parameters
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-                {"src/test/resources/Comments/swagger.yaml", "src/test/resources/jsonData", "/comments" ,true},
+                {"src/test/resources/Comments/openapi.yaml", "src/test/resources/jsonData", "/comments" ,true},
                 {"src/test/resources/Comments/swagger_forTestSuite3.yaml", "", "/comments", true},
                 {"src/test/resources/Comments/swagger_forTestSuite4.yaml", "", "/comments", false},
                 {"src/test/resources/Comments/swagger_forTestSuite6.yaml", "", "/comments/multiple", false},

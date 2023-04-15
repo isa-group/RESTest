@@ -76,7 +76,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 			Response response = RestAssured.given()
 					.queryParam("trainingPath", experimentFolder)
 					.queryParam("targetPath", getPoolDataPath())
-					.queryParam("nTests", mlTrainingRequestsPerIteration.toString())
+					// .queryParam("nTests", mlTrainingRequestsPerIteration.toString())
 					.queryParam("resamplingRatio", mlResamplingRatio.toString())
 					.queryParam("propertiesPath", propertiesFilePath)
 					.get("http://localhost:8000/uncertainty")
@@ -98,6 +98,7 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 
 					if ((Boolean.TRUE.equals(tc.getFaulty()) && hasNextFaulty()) ||
 							(Boolean.FALSE.equals(tc.getFaulty()) && hasNextNominal())) {
+
 						// Set authentication data (if any)
 						authenticateTestCase(tc);
 

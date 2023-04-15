@@ -150,6 +150,12 @@ paths:
           name: videoCategoryId
           schema:
             type: string
+      x-dependencies:
+        - OnlyOne(chart, id, myRating);
+        - ZeroOrOne(maxResults, id);
+        - ZeroOrOne(pageToken, id);
+        - IF regionCode THEN chart;
+        - IF videoCategoryId THEN chart;
       responses:
         "200":
           content:

@@ -163,7 +163,7 @@ public class PredicatesTest {
     public void testGetPredicates() {
 
         String confPath = "src/test/resources/semanticAPITests/OMDb/testConfSemantic.yaml";
-        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/OMDb/swagger.yaml");
+        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/OMDb/openapi.yaml");
         TestConfigurationObject conf = loadConfiguration(confPath, specification);
         String regex = "^\\w*$";
 
@@ -186,7 +186,7 @@ public class PredicatesTest {
 
     @Test
     public void testSetPredicatesAndGetParameterValues() {
-        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/OMDb/swagger.yaml");
+        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/OMDb/openapi.yaml");
 
         String confPath = "src/test/resources/semanticAPITests/OMDb/testConf.yaml";
         TestConfigurationObject conf = loadConfiguration(confPath, specification);

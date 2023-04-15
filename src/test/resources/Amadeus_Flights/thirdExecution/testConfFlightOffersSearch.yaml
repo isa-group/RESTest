@@ -1,0 +1,251 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: Amadeus/oauth10.json
+testConfiguration:
+  operations:
+  - testPath: /shopping/flight-offers
+    operationId: getFlightOffers
+    method: get
+    testParameters:
+    - name: originLocationCode
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/oracleGenerationEvaluation/AmadeusFlight/FlightOffersSearch/data/IATAairportCodes.csv
+          objectValues: null
+        valid: true
+    - name: destinationLocationCode
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/oracleGenerationEvaluation/AmadeusFlight/FlightOffersSearch/data/IATAairportCodes.csv
+          objectValues: null
+        valid: true
+    - name: departureDate
+      in: query
+      weight: null
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        - name: startDate
+          values:
+            - 2022-10-10
+        - name: endDate
+          values:
+            - 2022-10-23
+        valid: true
+    - name: returnDate
+      in: query
+      weight: 0.3
+      generators:
+      - type: RandomDate
+        genParameters:
+        - name: format
+          values:
+          - yyyy-MM-dd
+          objectValues: null
+        - name: startDate
+          values:
+            - 2022-10-24
+        - name: endDate
+          values:
+            - 2022-10-30
+        valid: true
+    - name: adults
+      in: query
+      weight: null
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 9
+          objectValues: null
+        valid: true
+    - name: children
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 0
+          objectValues: null
+        - name: max
+          values:
+          - 9
+          objectValues: null
+        valid: true
+    - name: infants
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 0
+          objectValues: null
+        - name: max
+          values:
+          - 9
+          objectValues: null
+        valid: true
+    - name: travelClass
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - ECONOMY
+          - PREMIUM_ECONOMY
+          - BUSINESS
+          - FIRST
+          objectValues: null
+        valid: true
+    - name: includedAirlineCodes
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/oracleGenerationEvaluation/AmadeusFlight/FlightOffersSearch/data/IncludedAirlineCodes.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 20
+        valid: true
+    - name: excludedAirlineCodes
+      in: query
+      weight: 0.3
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/oracleGenerationEvaluation/AmadeusFlight/FlightOffersSearch/data/ExcludedAirlineCodes.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+        - name: maxValues
+          values:
+            - 20
+        valid: true
+    - name: nonStop
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomBoolean
+        genParameters: []
+        valid: true
+    - name: currencyCode
+      in: query
+      weight: 0.3
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - EUR
+          - USD
+          - AED
+          - AUD
+          - BOB
+          - BRL
+          - CAD
+          - CHF
+          - CLP
+          - CNY
+          - COP
+          - EGP
+          - HKD
+          - HRK
+          - HUF
+          - JPY
+          - KRW
+          - MKD
+          - RUB
+          - UYU
+          objectValues: null
+        valid: true
+    - name: maxPrice
+      in: query
+      weight: 0.2
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 50
+          objectValues: null
+        - name: max
+          values:
+          - 1000
+          objectValues: null
+        valid: true
+    - name: max
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    expectedResponse: 200

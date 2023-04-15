@@ -24,7 +24,7 @@ public class DropRuleTest {
 
     @Test
     public void applyDropRuleCommentsPostCommentTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
         Schema postCommentSchema = spec.getSpecification().getPaths().get("/comments").getPost().getRequestBody().getContent().get("application/json").getSchema();
         postCommentSchema = generateFullyResolvedSchema(postCommentSchema, spec.getSpecification());
 

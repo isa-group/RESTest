@@ -19,7 +19,7 @@ public class ARTestCaseGeneratorTest {
     @Test
     public void bikewiseARTestCaseGenerator() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Bikewise/openapi.yaml";
         String testConf = "src/test/resources/Bikewise/fullConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -56,7 +56,7 @@ public class ARTestCaseGeneratorTest {
     @Test
     public void bikewiseARTestCaseGeneratorWithoutFaults() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Bikewise/openapi.yaml";
         String testConf = "src/test/resources/Bikewise/fullConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -97,7 +97,7 @@ public class ARTestCaseGeneratorTest {
     public void commentsARTestCaseGeneratorWithFaults() throws RESTestException {
 
         // Load specification
-        String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Comments/openapi.yaml";
         String testConf = "src/test/resources/Comments/testConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -150,8 +150,8 @@ public class ARTestCaseGeneratorTest {
     @Test
     public void amadeusHotelARTestCaseGeneratorWithFaults() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
-        String testConf = "src/test/resources/AmadeusHotel/defaultConf.yaml";
+        String OAISpecPath = "src/test/resources/AmadeusHotel/openapi.yaml";
+        String testConf = "src/test/resources/AmadeusHotel/testConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration

@@ -16,7 +16,7 @@ public class CoverageGathererTest {
 
     @Test
     public void coverageGathererTest() {
-        String oasPath = "src/test/resources/Bikewise/swagger.yaml";
+        String oasPath = "src/test/resources/Bikewise/openapi.yaml";
         OpenAPISpecification oas = new OpenAPISpecification(oasPath);
         List<CriterionType> coverageCriterionTypes = new ArrayList<>();
 

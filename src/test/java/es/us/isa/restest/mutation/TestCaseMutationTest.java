@@ -14,7 +14,7 @@ public class TestCaseMutationTest {
 
     @Test
     public void testCaseMutationTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "getComments", "/comments", HttpMethod.GET);
         tc.addQueryParameter("type", "Review");
         tc.addQueryParameter("limit", "2");
@@ -26,7 +26,7 @@ public class TestCaseMutationTest {
 
     @Test
     public void testCaseMutationImpossibleTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "getComment", "/comments/{id}", HttpMethod.GET);
         tc.addPathParameter("id", "c1");
 
@@ -38,7 +38,7 @@ public class TestCaseMutationTest {
 
     @Test
     public void removeRequiredParameterTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "postComment", "/comments", HttpMethod.POST);
         tc.setBodyParameter("{\"randomBody\": \"randomValue\"}");
 
@@ -49,7 +49,7 @@ public class TestCaseMutationTest {
 
     @Test
     public void removeRequiredParameterNotPossibleTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "getComments", "/comments", HttpMethod.GET);
         tc.addQueryParameter("type", "Review");
         tc.addQueryParameter("limit", "2");
@@ -73,7 +73,7 @@ public class TestCaseMutationTest {
 
     @Test
     public void invalidParameterValueNotPossibleTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
         TestCase tc = new TestCase("dfgsdfg", true, "putComment", "/comments", HttpMethod.PUT);
 
         TestCase oldTc = SerializationUtils.clone(tc);

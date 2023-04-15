@@ -25,7 +25,7 @@ public class TypeRuleTest {
 
     @Test
     public void applyTypeRuleCommentsPostCommentTest() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
         Schema originalSchema = spec.getSpecification().getPaths().get("/comments").getPost().getRequestBody().getContent().get("application/json").getSchema();
         originalSchema = generateFullyResolvedSchema(originalSchema, spec.getSpecification());
         Schema mutatedSchema = generateFullyResolvedSchema(originalSchema, spec.getSpecification());

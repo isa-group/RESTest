@@ -10,7 +10,7 @@ import static org.junit.Assert.fail;
 
 public class ResponseValidationFilterTest {
 
-    private static final String OAI_JSON_URL = "src/test/resources/AnApiOfIceAndFire/swagger.yaml";
+    private static final String OAI_JSON_URL = "src/test/resources/AnApiOfIceAndFire/openapi.yaml";
     private static final String OAI_FAULTY_JSON_URL = "src/test/resources/AnApiOfIceAndFire/swaggerFaulty.yaml";
     private final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);
     private final ResponseValidationFilter validationFaultyFilter = new ResponseValidationFilter(OAI_FAULTY_JSON_URL);

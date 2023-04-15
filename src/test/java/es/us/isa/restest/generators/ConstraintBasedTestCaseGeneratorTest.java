@@ -26,7 +26,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
     @Test
     public void bikewiseFullTestCaseGeneratorNoConstraints() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Bikewise/openapi.yaml";
         String testConf = "src/test/resources/Bikewise/fullConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -64,7 +64,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
     @Test
     public void bikewiseFullTestCaseGeneratorNoConstraintsWithFaults() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/Bikewise/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Bikewise/openapi.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
@@ -348,8 +348,8 @@ public class ConstraintBasedTestCaseGeneratorTest {
     @Test
     public void amadeusHotelFullTestCaseGenerator() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
-        String testConf = "src/test/resources/AmadeusHotel/defaultConf.yaml";
+        String OAISpecPath = "src/test/resources/AmadeusHotel/openapi.yaml";
+        String testConf = "src/test/resources/AmadeusHotel/testConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
@@ -397,8 +397,8 @@ public class ConstraintBasedTestCaseGeneratorTest {
     @Test
     public void amadeusHotelFullTestCaseGeneratorWithFaults() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/AmadeusHotel/swagger.yaml";
-        String testConf = "src/test/resources/AmadeusHotel/defaultConf.yaml";
+        String OAISpecPath = "src/test/resources/AmadeusHotel/openapi.yaml";
+        String testConf = "src/test/resources/AmadeusHotel/testConf.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
@@ -457,7 +457,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 	public void commentsFullTestCaseGeneratorWithPerturbationAndFaults() throws RESTestException {
 		
 		// Load specification
-		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Comments/openapi.yaml";
 		String testConf = "src/test/resources/Comments/testConf_forTestSuite3.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
@@ -505,7 +505,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 	public void commentsConstraintBasedTestCaseGeneratorWithFaults() throws RESTestException {
 		
 		// Load specification
-		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Comments/openapi.yaml";
 		String testConf = "src/test/resources/Comments/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		
@@ -557,7 +557,7 @@ public class ConstraintBasedTestCaseGeneratorTest {
 	public void commentsConstraintBasedTestCaseGeneratorWithFiltersAndFaults() throws RESTestException {
 		
 		// Load specification
-		String OAISpecPath = "src/test/resources/Comments/swagger.yaml";
+		String OAISpecPath = "src/test/resources/Comments/openapi.yaml";
 		String testConf = "src/test/resources/Comments/testConf.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 		

@@ -24,7 +24,7 @@ public class PostmanWriterTest {
     @Test
     public void generateTestCasesAndExportTest() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/Travel/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Travel/openapi.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration
@@ -54,7 +54,7 @@ public class PostmanWriterTest {
     @Test
     public void generateTestCasesWithUrlencodedAndExportTest() throws RESTestException {
         // Load specification
-        String OAISpecPath = "src/test/resources/Stripe/swagger.yaml";
+        String OAISpecPath = "src/test/resources/Stripe/openapi.yaml";
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
         // Load configuration

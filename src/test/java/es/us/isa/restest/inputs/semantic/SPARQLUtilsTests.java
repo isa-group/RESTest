@@ -23,7 +23,7 @@ public class SPARQLUtilsTests {
     public void testGetNewValues() {
 
         String confPath = "src/test/resources/semanticAPITests/sampleSemanticAPI/testConfSemantic.yaml";
-        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/sampleSemanticAPI/swagger.yaml");
+        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/sampleSemanticAPI/openapi.yaml");
         TestConfigurationObject conf = loadConfiguration(confPath, specification);
 
         List<Operation> operations = conf.getTestConfiguration().getOperations();

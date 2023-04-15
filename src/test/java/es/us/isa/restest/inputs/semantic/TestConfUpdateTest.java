@@ -32,7 +32,7 @@ public class TestConfUpdateTest {
         String confPath = "src/test/resources/semanticAPITests/sampleSemanticAPI/";
         String confPathOriginal = confPath + "testConf.yaml";
         String confPathSemantic = confPath + "testConfSemantic.yaml";
-        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/sampleSemanticAPI/swagger.yaml");
+        OpenAPISpecification specification = new OpenAPISpecification("src/test/resources/semanticAPITests/sampleSemanticAPI/openapi.yaml");
 //        TestConfigurationObject testConfSemanticOriginal = loadConfiguration(confPath, specification);
         TestConfigurationObject testConfSemantic = loadConfiguration(confPathSemantic, specification);
 

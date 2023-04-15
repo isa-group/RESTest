@@ -42,7 +42,7 @@ public class CoverageComputationTest {
     @Test
     public void wrongThirdArgumentTest() {
         try {
-            String[] args = {"src/test/resources/restest-test-resources/coverage-data/swagger.yaml", "src/test/resources/restest-test-resources/coverage-data", "noInteger"};
+            String[] args = {"src/test/resources/restest-test-resources/coverage-data/openapi.yaml", "src/test/resources/restest-test-resources/coverage-data", "noInteger"};
             CoverageComputation.main(args);
             fail("This test should throw an exception.");
         } catch (IllegalArgumentException e) {
@@ -53,7 +53,7 @@ public class CoverageComputationTest {
     @Test
     public void wrongThirdArgument2Test() {
         try {
-            String[] args = {"src/test/resources/restest-test-resources/coverage-data/swagger.yaml", "src/test/resources/restest-test-resources/coverage-data", "-5"};
+            String[] args = {"src/test/resources/restest-test-resources/coverage-data/openapi.yaml", "src/test/resources/restest-test-resources/coverage-data", "-5"};
             CoverageComputation.main(args);
             fail("This test should throw an exception.");
         } catch (IllegalArgumentException e) {
@@ -75,7 +75,7 @@ public class CoverageComputationTest {
     @Test
     public void dirPathDoesntExistTest() {
         try {
-            String[] args = {"src/test/resources/restest-test-resources/coverage-data/swagger.yaml", "noPath"};
+            String[] args = {"src/test/resources/restest-test-resources/coverage-data/openapi.yaml", "noPath"};
             CoverageComputation.main(args);
             fail("This test should throw an exception.");
         } catch (IllegalArgumentException e) {
@@ -85,7 +85,7 @@ public class CoverageComputationTest {
 
     @Test
     public void validTest() {
-        String[] args = {"src/test/resources/restest-test-resources/coverage-data/swagger.yaml", "src/test/resources/restest-test-resources/coverage-data"};
+        String[] args = {"src/test/resources/restest-test-resources/coverage-data/openapi.yaml", "src/test/resources/restest-test-resources/coverage-data"};
         CoverageComputation.main(args);
 
         String aPrioriCoveragePath = "src/test/resources/restest-test-resources/coverage-data/test-coverage-priori.csv";

@@ -19,7 +19,7 @@ public class ParameterGeneratorTest {
 
     @Before
     public void setUp() {
-        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/swagger.yaml");
+        OpenAPISpecification spec = new OpenAPISpecification("src/test/resources/Comments/openapi.yaml");
 
         generator = new Generator();
         generator.setType("ParameterGenerator");
