@@ -5,7 +5,7 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
-  oauthPath: Amadeus/oauth2.json
+  oauthPath: Amadeus/oauth1.json
 testConfiguration:
   operations:
   - testPath: /shopping/flight-offers
@@ -46,10 +46,10 @@ testConfiguration:
           objectValues: null
         - name: startDate
           values:
-            - 2022-10-10
+            - 2023-10-10
         - name: endDate
           values:
-            - 2022-10-23
+            - 2023-10-23
         valid: true
     - name: returnDate
       in: query
@@ -63,10 +63,10 @@ testConfiguration:
           objectValues: null
         - name: startDate
           values:
-            - 2022-10-24
+            - 2023-10-24
         - name: endDate
           values:
-            - 2022-10-30
+            - 2023-10-30
         valid: true
     - name: adults
       in: query

@@ -82,37 +82,17 @@ public class ALDrivenTestCaseGenerator extends AbstractTestCaseGenerator {
 					.get("http://localhost:8000/uncertainty")
 					.andReturn();
 
-			// print status code
+			// status code
 			commandOk = response.statusCode() == 200;
 
 			if (commandOk) {
 				// Read back test cases from CSV and update objects
 				iterationTestCases = getTestCases(getPoolDataPath());
 
-				// Add test cases one by one until desired number is reached both for nominal and faulty
+				// Add test cases one by one until desired number is reached
 				for (TestCase tc : iterationTestCases) {
 
-					if (!hasNext()) {
-						break;
-					}
-
-					if ((Boolean.TRUE.equals(tc.getFaulty()) && hasNextFaulty()) ||
-							(Boolean.FALSE.equals(tc.getFaulty()) && hasNextNominal())) {
-
-						// Set authentication data (if any)
-						authenticateTestCase(tc);
-
-						// Add test case to the collection
-						testCases.add(tc);
-
-						// Update indexes
-						updateIndexes(tc);
-					}
-				}
-
-				for (TestCase tc : iterationTestCases) {
-
-					if (hasNext() && !testCases.contains(tc)) {
+					if (hasNext()) {
 						// Set authentication data (if any)
 						authenticateTestCase(tc);
 

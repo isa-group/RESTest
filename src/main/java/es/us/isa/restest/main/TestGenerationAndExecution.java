@@ -36,12 +36,12 @@ import static es.us.isa.restest.util.FileManager.*;
 import static es.us.isa.restest.util.Timer.TestStep.ALL;
 
 /*
- * This class show the basic workflow of test case generation -> test case execution -> test reporting
+ * This class shows the basic workflow of test case generation -> test case execution -> test reporting
  */
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/YouTube_Videos/props.properties";
+	private static String propertiesFilePath = "src/test/resources/YouTube_Search/props.properties";
 
 	private static List<String> argsList;								// List containing args
 
