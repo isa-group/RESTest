@@ -312,11 +312,9 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		AbstractTestCaseGenerator generator = new ConstraintBasedTestCaseGenerator(spec, conf, numTestCases);
 		generator.setFaultyRatio(faultyRatio);
 
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/artists");
-		filter.addGetMethod();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/artists:get")
+		);
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
@@ -575,13 +573,10 @@ public class ConstraintBasedTestCaseGeneratorTest {
 		generator.setFaultyDependencyRatio(faultyDependencyRatio);
 		generator.setFaultyRatio(faultyRatio);
 
-		
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/comments");
-		filter.addGetMethod();
-		filters.add(filter);
-		
+
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/comments:get")
+		);
 		
 		Collection<TestCase> testCases = generator.generate(filters);
 		

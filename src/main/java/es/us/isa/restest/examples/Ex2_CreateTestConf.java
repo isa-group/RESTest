@@ -2,19 +2,12 @@ package es.us.isa.restest.examples;
 
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
-import es.us.isa.restest.generators.RandomTestCaseGenerator;
-import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
-import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import static es.us.isa.restest.util.FileManager.checkIfExists;
-import static es.us.isa.restest.util.FileManager.deleteFile;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -38,9 +31,7 @@ public class Ex2_CreateTestConf {
 
         // Create filters to indicate which operations (paths and http methods) to include in the test configuration file.
         List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-        TestConfigurationFilter filter = new TestConfigurationFilter();
-        filter.setPath("/recipes");
-        filter.addGetMethod();
+        TestConfigurationFilter filter = TestConfigurationFilter.parse("/recipes:get");
         filters.add(filter);
 
         // Generate default test configuration file

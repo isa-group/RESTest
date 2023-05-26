@@ -79,9 +79,7 @@ public class DefaultTestConfigurationGenerator {
 	 * @return a test configuration object
 	 */
 	public TestConfigurationObject generate(String destination) {
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);
-		filter.addAllMethods();
+		TestConfigurationFilter filter = TestConfigurationFilter.parse("*:all");
 		return this.generate(destination, Collections.singletonList(filter));
 	}
 

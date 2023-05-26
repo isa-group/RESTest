@@ -183,31 +183,13 @@ public abstract class AbstractTestCaseGenerator {
 			int filterIndex = -1;
 
 			if(filter == null) {
-				filter = new TestConfigurationFilter();
-				filter.setPath(testOperation.getTestPath());
+				filter = TestConfigurationFilter.parse(
+						Objects.requireNonNullElse(testOperation.getTestPath(), "*") +
+								":" +
+								testOperation.getMethod().toLowerCase()
+				);
 			} else {
 				filterIndex = filters.indexOf(filter);
-			}
-
-			switch(testOperation.getMethod().toLowerCase()) {
-				case "get":
-					filter.addGetMethod();
-					break;
-				case "post":
-					filter.addPostMethod();
-					break;
-				case "put":
-					filter.addPutMethod();
-					break;
-				case "patch":
-					filter.addPatchMethod();
-					break;
-				case "delete":
-					filter.addDeleteMethod();
-					break;
-				default:
-					throw new RESTestException("Methods other than GET, POST, PUT, PATCH and DELETE are not " +
-							"allowed in the test configuration file");
 			}
 
 			if(filterIndex > -1) {

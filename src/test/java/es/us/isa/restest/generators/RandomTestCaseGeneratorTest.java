@@ -39,32 +39,13 @@ public class RandomTestCaseGeneratorTest {
 		// Create generator and filter
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/store/order/{orderId}");
-		filter.addGetMethod();
-		filters.add(filter);
-
-		TestConfigurationFilter filter2 = new TestConfigurationFilter();
-		filter2.setPath("/user/login");
-		filter2.addGetMethod();
-		filters.add(filter2);
-
-		TestConfigurationFilter filter3 = new TestConfigurationFilter();
-		filter3.setPath("/pet");
-		filter3.addPostMethod();
-		filter3.addPutMethod();
-		filters.add(filter3);
-
-		TestConfigurationFilter filter4 = new TestConfigurationFilter();
-		filter4.setPath("/store/order");
-		filter4.addPostMethod();
-		filters.add(filter4);
-
-		TestConfigurationFilter filter5 = new TestConfigurationFilter();
-		filter5.setPath("/user");
-		filter5.addPostMethod();
-		filters.add(filter5);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/store/order/{orderId}:get"),
+				TestConfigurationFilter.parse("/user/login:get"),
+				TestConfigurationFilter.parse("/pet:post,put"),
+				TestConfigurationFilter.parse("/store/order:post"),
+				TestConfigurationFilter.parse("/user:post")
+		);
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
@@ -112,32 +93,13 @@ public class RandomTestCaseGeneratorTest {
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 		generator.setFaultyRatio(faultyRatio);
 
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/store/order/{orderId}");
-		filter.addGetMethod();
-		filters.add(filter);
-
-		TestConfigurationFilter filter2 = new TestConfigurationFilter();
-		filter2.setPath("/user/login");
-		filter2.addGetMethod();
-		filters.add(filter2);
-
-		TestConfigurationFilter filter3 = new TestConfigurationFilter();
-		filter3.setPath("/pet");
-		filter3.addPostMethod();
-		filter3.addPutMethod();
-		filters.add(filter3);
-
-		TestConfigurationFilter filter4 = new TestConfigurationFilter();
-		filter4.setPath("/store/order");
-		filter4.addPostMethod();
-		filters.add(filter4);
-
-		TestConfigurationFilter filter5 = new TestConfigurationFilter();
-		filter5.setPath("/user");
-		filter5.addPostMethod();
-		filters.add(filter5);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/store/order/{orderId}:get"),
+				TestConfigurationFilter.parse("/user/login:get"),
+				TestConfigurationFilter.parse("/pet:post,put"),
+				TestConfigurationFilter.parse("/store/order:post"),
+				TestConfigurationFilter.parse("/user:post")
+		);
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
@@ -425,11 +387,9 @@ public class RandomTestCaseGeneratorTest {
 		// Create generator and filter
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/hotels/search-airport");
-		filter.addGetMethod();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/hotels/search-airport:get")
+		);
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
@@ -475,11 +435,9 @@ public class RandomTestCaseGeneratorTest {
 		// Create generator and filter
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/albums");
-		filter.addGetMethod();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/albums:get")
+		);
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
@@ -518,11 +476,9 @@ public class RandomTestCaseGeneratorTest {
 		// Create generator and filter
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/artists");
-		filter.addGetMethod();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/hotels/artists:get")
+		);
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
@@ -557,11 +513,9 @@ public class RandomTestCaseGeneratorTest {
 		// Create generator and filter
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/search");
-		filter.addGetMethod();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/search:get")
+		);
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
@@ -607,11 +561,9 @@ public class RandomTestCaseGeneratorTest {
 		AbstractTestCaseGenerator generator = new RandomTestCaseGenerator(spec, conf, numTestCases);
 		generator.setFaultyRatio(faultyRatio);
 
-		List<TestConfigurationFilter> filters = new ArrayList<>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/artists");
-		filter.addGetMethod();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/artists:get")
+		);
 
 		Collection<TestCase> testCases = generator.generate(filters);
 
