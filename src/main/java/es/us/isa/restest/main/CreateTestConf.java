@@ -64,48 +64,9 @@ public class CreateTestConf {
      * Each filter must follow the format "path:httpmethod".
      */
     private static List<TestConfigurationFilter> generateFilters(String[] filtersArr) {
-        List<TestConfigurationFilter> filters = new ArrayList<>();
-
-        for(String s : filtersArr) {
-            TestConfigurationFilter filter = new TestConfigurationFilter();
-            String[] sp = s.split(":");
-
-            if(sp.length != 2) {
-                throw new IllegalArgumentException("Invalid format: a filter must be specified with the format 'path:HTTPMethod1,HTTPMethod2,...'");
-            }
-
-            filter.setPath(sp[0]);
-            String[] methods = sp[1].split(",");
-
-            for(String method : methods) {
-                switch (method.toLowerCase()) {
-                    case "get":
-                        filter.addGetMethod();
-                        break;
-                    case "post":
-                        filter.addPostMethod();
-                        break;
-                    case "put":
-                        filter.addPutMethod();
-                        break;
-                    case "patch":
-                        filter.addPatchMethod();
-                        break;
-                    case "delete":
-                        filter.addDeleteMethod();
-                        break;
-                    case "all":
-                        filter.addAllMethods();
-                        break;
-                    default:
-                        throw new IllegalArgumentException("HTTP method not supported: " + method);
-                }
-            }
-
-            filters.add(filter);
-        }
-
-        return filters;
+        return Arrays.stream(filtersArr)
+                .map(TestConfigurationFilter::parse)
+                .collect(Collectors.toList());
     }
 
     /*

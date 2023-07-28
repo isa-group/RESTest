@@ -6,7 +6,6 @@ import java.util.List;
 import org.junit.Test;
 
 import es.us.isa.restest.configuration.TestConfigurationFilter;
-import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
 import es.us.isa.restest.specification.OpenAPISpecification;
 
 import static es.us.isa.restest.util.FileManager.checkIfExists;
@@ -21,12 +20,10 @@ public class DefaultTestConfigurationGeneratorTest {
 		String specPath="src/test/resources/BigOven/spec.yaml";
 		String confPath="src/test/resources/BigOven/defaultConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
-		
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/recipes");
-		filter.addGetMethod();
-		filters.add(filter);
+
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/recipes:get")
+		);
 		
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -75,11 +72,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Amadeus/defaultConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 		
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/hotels/search-airport");
-		filter.addGetMethod();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/hotels/search-airport:get")
+		);
 		
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -94,11 +89,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/AmadeusHotel/defaultConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -113,11 +106,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Playlist/defaultConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 		
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 		
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -132,11 +123,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Amadeus/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -151,11 +140,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Petstore/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -170,11 +157,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/SimpleAPI/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -189,11 +174,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Bikewise/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -208,11 +191,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/DataAtWork/fullConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -227,31 +208,11 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/YouTube/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-//		TestConfigurationFilter filter = new TestConfigurationFilter();
-//		filter.setPath(null);
-//		filter.addAllMethods();
-//		filters.add(filter);
-
-		// Filter 1
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath("/activities");
-		filter.addGetMethod();
-		filter.addPostMethod();
-		filters.add(filter);
-
-		// Filter 2
-		TestConfigurationFilter filter2 = new TestConfigurationFilter();
-		filter2.setPath("/search");
-		filter2.addGetMethod();
-		filters.add(filter2);
-
-		// Filter 3
-		TestConfigurationFilter filter3 = new TestConfigurationFilter();
-		filter3.setPath("/videos");
-		filter3.addGetMethod();
-		filter3.addPostMethod();
-		filters.add(filter3);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/activities:get,post"),
+				TestConfigurationFilter.parse("/search:get"),
+				TestConfigurationFilter.parse("/videos:get,post")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -266,11 +227,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Comments/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -285,11 +244,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Comments/testConf_forTestSuite2_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -304,11 +261,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Events/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -323,11 +278,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Travel/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -342,13 +295,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/YouTube/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-
-		// Filter 1
-		TestConfigurationFilter filter2 = new TestConfigurationFilter();
-		filter2.setPath("/search");
-		filter2.addGetMethod();
-		filters.add(filter2);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("/search:get")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -363,11 +312,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/OMDb/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -382,11 +329,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Memes/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -401,11 +346,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Marvel/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -420,11 +363,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Twitter/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -439,11 +380,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Foursquare/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -458,11 +397,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/BingWebSearch/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -477,11 +414,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Tumblr/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -496,11 +431,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/Stripe/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -514,11 +447,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/AnApiOfIceAndFire/testConf_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
@@ -532,11 +463,9 @@ public class DefaultTestConfigurationGeneratorTest {
 		String confPath="src/test/resources/restest-test-resources/testConf-scout_test.yaml";
 		OpenAPISpecification spec = new OpenAPISpecification(specPath);
 
-		List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
-		TestConfigurationFilter filter = new TestConfigurationFilter();
-		filter.setPath(null);		// null = All paths
-		filter.addAllMethods();
-		filters.add(filter);
+		List<TestConfigurationFilter> filters = List.of(
+				TestConfigurationFilter.parse("*:all")
+		);
 
 		DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
 		gen.generate(confPath, filters);
