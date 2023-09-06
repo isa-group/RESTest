@@ -18,16 +18,16 @@ The RESTest testing ecosystem comprehends a complete suite of tools for automati
 
 ## Index
 1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
-1. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
-1. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
-1. [Quickstart guide](https://github.com/isa-group/RESTest#quickstart-guide)
+2. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
+3. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
+4. [Quickstart guide](https://github.com/isa-group/RESTest#quickstart-guide)
    1. [Setting up RESTest](https://github.com/isa-group/RESTest#setting-up-restest)
-   1. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
-1. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
+   2. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
+5. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
    1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
-   1. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
-1. [Citing RESTest](https://github.com/isa-group/RESTest#citing-restest)
-1. [License](https://github.com/isa-group/RESTest#license)
+   2. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
+6. [Citing RESTest](https://github.com/isa-group/RESTest#citing-restest)
+7. [License](https://github.com/isa-group/RESTest#license)
    1. [Icon credits](https://github.com/isa-group/RESTest#icon-credits)
 
 ## RESTest Wiki
@@ -38,13 +38,13 @@ The figure below shows how RESTest works:
 
 1. **Test model generation**: RESTest takes as input the OAS specification of the API under test, considered the *system model*. A [*test model*](https://github.com/isa-group/RESTest/wiki/Test-configuration-files) is automatically generated from the system model including test-specific configuration data. The default test model can be manually enriched with fine-grained configuration details such as test data generation settings.
 
-1. **Abstract test case generation**: The system and the test models drive the generation of abstract test cases following user-defined test case generation strategies such as random testing. If the API under test contains [inter-parameter dependencies](https://github.com/isa-group/RESTest/wiki/Inter-parameter-dependencies), then constraint-based testing can be applied, specifying the dependencies in the OAS specification using the IDL4OAS extension (see examples [here](https://github.com/isa-group/IDLReasoner/blob/master/src/test/resources/OAS_example.yaml#L45) and [here](https://github.com/isa-group/IDLReasoner/tree/master/src/test/resources)). Requests satisfying all inter-parameter dependencies are automatically generated thanks to [IDLReasoner](https://github.com/isa-group/IDLReasoner).
+2. **Abstract test case generation**: The system and the test models drive the generation of abstract test cases following user-defined test case generation strategies such as random testing. If the API under test contains [inter-parameter dependencies](https://github.com/isa-group/RESTest/wiki/Inter-parameter-dependencies), then constraint-based testing can be applied, specifying the dependencies in the OAS specification using the IDL4OAS extension (see examples [here](https://github.com/isa-group/IDLReasoner/blob/master/src/test/resources/OAS_example.yaml#L45) and [here](https://github.com/isa-group/IDLReasoner/tree/master/src/test/resources)). Requests satisfying all inter-parameter dependencies are automatically generated thanks to [IDLReasoner](https://github.com/isa-group/IDLReasoner).
 
-1. **Test case generation**: The abstract test cases are instantiated into a specific programming language or testing framework using a [test writer](https://github.com/isa-group/RESTest/wiki/Test-writers). RESTest currently supports the generation of [REST Assured](http://rest-assured.io/) and [Postman](https://www.postman.com/) test cases.
+3. **Test case generation**: The abstract test cases are instantiated into a specific programming language or testing framework using a [test writer](https://github.com/isa-group/RESTest/wiki/Test-writers). RESTest currently supports the generation of [REST Assured](http://rest-assured.io/) and [Postman](https://www.postman.com/) test cases.
 
-1. **Test case execution**: The test cases are executed and a set of reports and stats are generated. Stats are machine-readable, and the test reports can be graphically visualized thanks to [Allure](http://allure.qatools.ru/).
+4. **Test case execution**: The test cases are executed and a set of reports and stats are generated. Stats are machine-readable, and the test reports can be graphically visualized thanks to [Allure](http://allure.qatools.ru/).
 
-1. **Feedback collection**: [Test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators) and other components can react to the test outputs (i.e., the stats generated in the previous step) to create more sophisticated test cases. Examples of this are the stateful data generators (e.g., the [BodyGenerator](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/inputs/stateful/BodyGenerator.java)) and the [StatsReportManager](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/reporting/StatsReportManager.java), both of which generate new test data based on previous API responses.
+5. **Feedback collection**: [Test case generators](https://github.com/isa-group/RESTest/wiki/Test-case-generators) and other components can react to the test outputs (i.e., the stats generated in the previous step) to create more sophisticated test cases. Examples of this are the stateful data generators (e.g., the [BodyGenerator](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/inputs/stateful/BodyGenerator.java)) and the [StatsReportManager](https://github.com/isa-group/RESTest/blob/master/src/main/java/es/us/isa/restest/reporting/StatsReportManager.java), both of which generate new test data based on previous API responses.
 
 ![RESTest](docs/RESTest_v3.png)
 
@@ -59,12 +59,6 @@ To get started with RESTest, download the code and move to the parent directory:
 git clone https://github.com/isa-group/RESTest.git
 cd RESTest
 ````
-
-### Installing local dependencies
-RESTest relies on two libraries located in the `lib/` folder. To install them, simply run the following command from the parent directory (i.e., `RESTest/`):
-```
-./scripts/install_dependencies.sh
-```
 
 ### Setting up RESTest
 
@@ -243,7 +237,7 @@ If you want to cite RESTest in your research, please use the BibTeX entry below.
 ## License
 RESTest is distributed under the [GNU Lesser General Public License v3.0](LICENSE).
 
-RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
+RESTest includes Allure Framework &copy; 2019 Qameta Software OÜ. It is used under the terms of the Apache 2.0 License, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
 
 ### Icon credits
 This README and some pages of the Wiki use icons provided by [Freepik](https://www.flaticon.com/authors/freepik), available at [Flaticon](https://www.flaticon.com/).
