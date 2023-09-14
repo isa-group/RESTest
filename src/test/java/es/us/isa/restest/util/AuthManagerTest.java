@@ -47,31 +47,5 @@ public class AuthManagerTest {
         assertNull(oauthHeader);
     }
 
-    @Ignore
-    @Test
-    public void testOauth() {
-        AuthManager authManager = new AuthManager(OAUTH_DATA, true);
-        String oauthHeader = authManager.getUpdatedOauthHeader();
-        assertNotNull(oauthHeader);
-        assertTrue(oauthHeader.matches("^Bearer .+$"));
-        assertTrue(authManager.getExpiration() > new Date().getTime() / 1000);
-        assertTrue(authManager.getExpiration() <= new Date().getTime() / 1000 + 3600);
 
-        String renewedOauthHeader = authManager.getUpdatedOauthHeader();
-        assertEquals(renewedOauthHeader, oauthHeader);
-    }
-
-    @Ignore
-    @Test
-    public void testOauthShortExpiration() {
-        AuthManager authManager = new AuthManager(OAUTH_DATA_SHORT_EXPIRATION, true);
-        String oauthHeader = authManager.getUpdatedOauthHeader();
-        assertNotNull(oauthHeader);
-        assertTrue(oauthHeader.matches("^Bearer .+$"));
-        assertTrue(authManager.getExpiration() > new Date().getTime() / 1000);
-        assertTrue(authManager.getExpiration() <= new Date().getTime() / 1000 + 3600);
-
-        String renewedOauthHeader = authManager.getUpdatedOauthHeader();
-        assertNotEquals(renewedOauthHeader, oauthHeader);
-    }
 }

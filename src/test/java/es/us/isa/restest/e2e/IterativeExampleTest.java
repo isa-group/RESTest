@@ -31,24 +31,6 @@ public class IterativeExampleTest {
         experimentProperties.set(null, null);
     }
 
-    @Ignore // Bikewise is currently down
-    @Test
-    public void testIterativeExampleWithBasicPropertiesFile() throws RESTestException {
-        String propertiesFilePath = "src/test/resources/Bikewise/bikewise_test.properties";
-
-        String[] args = {propertiesFilePath};
-        TestGenerationAndExecution.main(args);
-
-        assertTrue(checkIfExists("src/generation/java/bikewise"));
-
-        assertTrue(checkIfExists("target/allure-results/bikewise"));
-        assertTrue(checkIfExists("target/allure-reports/bikewise"));
-        assertTrue(checkIfExists("target/test-data/bikewise/time.csv"));
-        assertTrue(checkIfExists("target/coverage-data/bikewise"));
-        assertTrue(checkIfExists("target/test-data/bikewise"));
-        assertTrue(checkIfExists("log/bikewise.log"));
-    }
-
     @Test
     public void testIterativeExampleRandomTestCaseGenerator() throws RESTestException {
         String propertiesFilePath = "src/test/resources/AnApiOfIceAndFire/iceandfire_e2e.properties";
@@ -127,39 +109,5 @@ public class IterativeExampleTest {
         deleteFile("target/log/external_logger/log.log");
     }
 
-    @Ignore
-    @Test
-    public void testIterativeExampleCliCommandsOption1() throws RESTestException, IOException {
-        deleteFile("target/log/external_logger/log.log");
-
-        String propertiesFilePath = "src/test/resources/restest-test-resources/external_logger.properties";
-        String cliOption1 = "logToFile=false";
-
-        String[] args = {propertiesFilePath, cliOption1};
-        try {
-            TestGenerationAndExecution.main(args);
-            fail("An exception should be thrown for the previous props file");
-        } catch(NullPointerException ignored) {}
-
-        assertFalse(checkIfExists("target/log/external_logger/log.log"));
-    }
-
-    @Ignore
-    @Test
-    public void testIterativeExampleCliCommandsOption2() throws RESTestException, IOException {
-        deleteFile("target/log/external_logger/log.log");
-
-        String propertiesFilePath = "src/test/resources/restest-test-resources/external_logger.properties";
-        String cliOption1Part1 = "logToFile";
-        String cliOption1Part2 = "false";
-
-        String[] args = {propertiesFilePath, cliOption1Part1, cliOption1Part2};
-        try {
-            TestGenerationAndExecution.main(args);
-            fail("An exception should be thrown for the previous props file");
-        } catch(NullPointerException ignored) {}
-
-        assertFalse(checkIfExists("target/log/external_logger/log.log"));
-    }
 
 }

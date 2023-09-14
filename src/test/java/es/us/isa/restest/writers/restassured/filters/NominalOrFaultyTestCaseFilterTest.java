@@ -66,45 +66,4 @@ public class NominalOrFaultyTestCaseFilterTest {
         }
     }
 
-    @Ignore
-    @Test(expected=RuntimeException.class)
-    public void conformanceErrorFoundTestNotNominal() {
-
-        NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter(false, true, "none");
-
-        Response response = RestAssured
-                .given()
-                .log().all()
-                .queryParam("per_page", "13")
-                .queryParam("incident_type", "abc")
-                .queryParam("proximity", "lanthanum")
-                .queryParam("proximity_square", "33")
-                .filter(nominalOrFaultyTestCaseFilter)
-                .when()
-                .get("/statuscodes/400");
-
-        response.then().log().all();
-        fail("This test shouldn't be nominal");
-    }
-
-    @Ignore
-    @Test(expected=RuntimeException.class)
-    public void conformanceErrorFoundTestNotFaulty() {
-
-        NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter(true, true, "individual_parameter_constraint");
-
-        Response response = RestAssured
-                .given()
-                .log().all()
-                .queryParam("per_page", "13")
-                .queryParam("incident_type", "chop_shop")
-                .queryParam("proximity", "hey")
-                .queryParam("proximity_square", "33")
-                .filter(nominalOrFaultyTestCaseFilter)
-                .when()
-                .get("/statuscodes/200");
-
-        response.then().log().all();
-        fail("This test shouldn't be faulty");
-    }
 }
