@@ -207,7 +207,7 @@ mvn clean install -DskipTests
 Then, run the JAR file passing as argument the path to the properties file, for example:
 
 ```
-java -jar target/restest-full.jar src/test/resources/Restcountries/restcountries_demo.properties
+java -jar target/restest.jar src/test/resources/Restcountries/restcountries_demo.properties
 ```
 
 ### Option 2: Download the latest release
