@@ -8,6 +8,7 @@ import io.swagger.v3.oas.models.media.Schema;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -165,6 +166,8 @@ public class SchemaManager {
             }
         } else if (value instanceof Boolean) {
             node = mapper.getNodeFactory().booleanNode((Boolean) value);
+        } else if (value instanceof OffsetDateTime) {
+            node = mapper.getNodeFactory().textNode(((OffsetDateTime) value).toString());
         } else {
             node = mapper.getNodeFactory().textNode((String) value);
         }

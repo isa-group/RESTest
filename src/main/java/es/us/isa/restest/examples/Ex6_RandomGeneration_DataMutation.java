@@ -18,9 +18,23 @@ import static es.us.isa.restest.util.FileManager.createDir;
  */
 public class Ex6_RandomGeneration_DataMutation {
 
-    public static String propertyFilePath="TODO"; 		// Path to user properties file with configuration options
+    public static String propertyFilePath="src/main/resources/Examples/Ex6_RandomGeneration_DataMutation/events.properties"; 		// Path to user properties file with configuration options
 
     public static void main(String[] args) throws RESTestException {
+        // Load properties
+        RESTestLoader loader = new RESTestLoader(propertyFilePath);
 
+        // Create test case generator
+        RandomTestCaseGenerator generator = (RandomTestCaseGenerator) loader.createGenerator();
+        Collection<TestCase> testCases = generator.generate();
+
+        // Create target directory for test cases if it does not exist
+        createDir(loader.getTargetDirJava());
+
+        // Write (RestAssured) test cases
+        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
+        writer.write(testCases);
+
+        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
     }
 }

@@ -1,0 +1,311 @@
+---
+swagger: "2.0"
+info:
+  description: This is a simple Events API
+  version: 1.0.0
+  title: Events
+host: localhost:8082
+basePath: /EventsAPI/api
+tags:
+  - name: Events
+schemes:
+  - http
+paths:
+  /events:
+    get:
+      tags:
+        - Events
+      summary: get all events
+      description: |
+        This request returns all system events
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - name: name
+          type: string
+          in: query
+          required: false
+          description: filter by event name
+        - name: creator
+          type: integer
+          in: query
+          required: false
+          description: filter by event creator
+        - name: area
+          type: string
+          in: query
+          required: false
+          description: filter by event area
+        - name: tag
+          type: string
+          in: query
+          required: false
+          description: filter by event tag
+          enum:
+            - beach
+            - food
+            - music
+            - none
+        - name: day
+          type: integer
+          in: query
+          required: false
+          description: filter by event day
+        - name: date_minimum
+          type: string
+          in: query
+          required: false
+          description: filter by event date_minimum
+        - name: type
+          type: string
+          in: query
+          required: false
+          description: filter by event type
+          enum:
+            - meeting
+            - holidays
+            - unspecified
+            - all
+        - name: order
+          type: string
+          in: query
+          required: false
+          description: order events by creator name or starting date
+          enum:
+            - date+
+            - date
+            - date-
+            - creator+
+            - creator
+            - creator-
+      responses:
+        "200":
+          description: returns all events
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/EventReturned'
+        "400":
+          description: bad input parameter
+    post:
+      tags:
+        - Events
+      summary: adds an event
+      description: Adds an Event to the system
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - in: body
+          name: event
+          description: Event to add
+          required: true
+          schema:
+            $ref: '#/definitions/EventPostPut'
+      responses:
+        "201":
+          description: event created
+        "400":
+          description: invalid input, object invalid
+    put:
+      tags:
+        - Events
+      summary: edit an event
+      description: Edit an existing Event in the system
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - name: id
+          in: query
+          required: true
+          type: integer
+        - in: body
+          name: event
+          description: Event to edit
+          required: true
+          schema:
+            $ref: '#/definitions/EventPostPut'
+      responses:
+        "204":
+          description: event updated
+        "400":
+          description: invalid input, object invalid
+        "404":
+          description: event not found
+  /events/{id}:
+    get:
+      tags:
+        - Events
+      summary: getEvent
+      description: |
+        Returns an Event by Id
+      produces:
+        - application/json
+        - text/html;charset=utf-8
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: integer
+          description: ID of the event
+      responses:
+        "200":
+          description: search results matching criteria
+          schema:
+            $ref: '#/definitions/EventReturned'
+        "400":
+          description: bad input parameter
+        "404":
+          description: event not found
+definitions:
+  EventReturned:
+    type: object
+    required:
+      - id
+      - description
+      - date_start
+      - date_end
+      - id_creator
+      - name
+      - name_creator
+      - tags
+      - latitude
+      - longitude
+      - type
+    properties:
+      id:
+        type: integer
+        example: 1
+      id_creator:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: "Event 2017 (Seville)"
+      description:
+        type: string
+        example: "Event of example"
+      name_creator:
+        type: string
+        example: "Pepe"
+      date_end:
+        type: string
+        example: "2017-04-09T00:00:00.000-01:00"
+      date_start:
+        type: string
+        example: "2017-04-16T23:59:59.999-01:00"
+      tags:
+        type: string
+        items:
+          type: string
+          enum:
+            - beach
+            - food
+            - music
+            - none
+        example: "beach,food"
+      latitude:
+        type: number
+        format: double
+        example: 4.5344
+      longitude:
+        type: number
+        format: double
+        example: -4.4343
+      type:
+        type: string
+        enum:
+          - meeting
+          - holidays
+          - unspecified
+        example: meeting
+    example:
+      id: 5
+      id_creator: 2
+      name: "Random event"
+      description: "This is a completely random event"
+      name_creator: "Sergio"
+      date_start: "2020-07-15T12:00:00.000-01:00"
+      date_end: "2020-07-15T16:00:00.000-01:00"
+      tags: "food,music"
+      latitude: 1.1
+      longitude: 2.2
+      type: "meeting"
+  EventPostPut:
+    type: object
+    required:
+      - description
+      - date_start
+      - date_end
+      - id_creator
+      - name
+      - name_creator
+      - tags
+      - latitude
+      - longitude
+      - type
+    properties:
+      id_creator:
+        type: integer
+        example: 1
+      name:
+        type: string
+        example: "Event 2017 (Seville)"
+      description:
+        type: string
+        example: "Event of example"
+      name_creator:
+        type: string
+        example: "Pepe"
+      date_end:
+        type: string
+        format: date-time
+        example: "2017-04-09T00:00:00.000-01:00"
+      date_start:
+        type: string
+        format: date-time
+        example: "2017-04-16T23:59:59.999-01:00"
+      tags:
+        type: string
+        items:
+          type: string
+          enum:
+            - beach
+            - food
+            - music
+            - none
+        example: "beach,food"
+      latitude:
+        type: number
+        format: double
+        example: 4.5344
+      longitude:
+        type: number
+        format: double
+        example: -4.4343
+      type:
+        type: string
+        enum:
+          - meeting
+          - holidays
+          - unspecified
+        example: meeting
+    example:
+      id_creator: 2
+      name: "Random event"
+      description: "This is a completely random event"
+      name_creator: "Sergio"
+      date_start: "2020-07-15T12:00:00.000-01:00"
+      date_end: "2020-07-15T16:00:00.000-01:00"
+      tags: "food,music"
+      latitude: 1.1
+      longitude: 2.2
+      type: "meeting"
+
+
