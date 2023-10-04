@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
-  apiKeysPath: YouTube/apikeys.json
+  apiKeysPath: YouTube/headers.json
   headersPath: null
 testConfiguration:
   operations:
