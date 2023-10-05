@@ -1,4 +1,4 @@
-package Example3;
+package restest;
 
 import org.junit.*;
 import io.restassured.RestAssured;
@@ -25,7 +25,7 @@ public class AmadeusTest {
 	private static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);
 	private static final AllureRestAssured allureFilter = new AllureRestAssured();
 	private static final String APIName = "Example3";
-	private static final String testId = "null";
+	private static final String testId = "Example3";
 	private static final CSVFilter csvFilter = new CSVFilter(APIName, testId);
 
 	@BeforeClass
@@ -41,11 +41,11 @@ public class AmadeusTest {
 	}
 
 	@Test
-	public void test_1h7u98k5b6stg_getMultiHotelOffers() {
-		String testResultId = "test_1h7u98k5b6stg_getMultiHotelOffers";
+	public void test_uv5uwyrtyqlu_getMultiHotelOffers() {
+		String testResultId = "test_uv5uwyrtyqlu_getMultiHotelOffers";
 
-		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'max' constraint of integer parameter radius");
-		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'max' constraint of integer parameter radius");
+		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'format/pattern' constraint of string parameter checkInDate");
+		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'format/pattern' constraint of string parameter checkInDate");
 		csvFilter.setTestResultId(testResultId);
 		statusCode5XXFilter.setTestResultId(testResultId);
 		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
@@ -54,19 +54,21 @@ public class AmadeusTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("boardType", "BREAKFAST")
-				.queryParam("hotelIds", "HHALB462")
-				.queryParam("chains", "BW,WW,CW,WV,EC")
-				.queryParam("adults", "1")
+				.queryParam("amenities", "RESTAURANT,TENNIS,BUSINESS_CENTER")
+				.queryParam("hotelIds", "HIALB1CE")
+				.queryParam("roomQuantity", "1")
+				.queryParam("chains", "WV,WW,HI")
+				.queryParam("adults", "5")
 				.queryParam("sort", "DISTANCE")
-				.queryParam("page[offset]", "74")
-				.queryParam("checkOutDate", "2023-05-30")
-				.queryParam("ratings", "2")
-				.queryParam("currency", "SRD")
-				.queryParam("childAges", "0")
-				.queryParam("lang", "AR")
-				.queryParam("radius", "207")
-				.queryParam("rateCodes", "PKG,CON")
+				.queryParam("checkInDate", "JWovSlmgKwGC")
+				.queryParam("view", "FULL")
+				.queryParam("page[offset]", "96")
+				.queryParam("checkOutDate", "2023-12-03")
+				.queryParam("includeClosed", "true")
+				.queryParam("currency", "AED")
+				.queryParam("childAges", "9")
+				.queryParam("lang", "PI")
+				.queryParam("paymentPolicy", "NONE")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
@@ -84,8 +86,100 @@ public class AmadeusTest {
 	}
 
 	@Test
-	public void test_qhhs8m2rj23m_getMultiHotelOffers() {
-		String testResultId = "test_qhhs8m2rj23m_getMultiHotelOffers";
+	public void test_1hb7q3iondcmq_getMultiHotelOffers() {
+		String testResultId = "test_1hb7q3iondcmq_getMultiHotelOffers";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("boardType", "BREAKFAST")
+				.queryParam("roomQuantity", "1")
+				.queryParam("latitude", "49.299005")
+				.queryParam("adults", "7")
+				.queryParam("hotelName", "Sol")
+				.queryParam("bestRateOnly", "true")
+				.queryParam("page[limit]", "24")
+				.queryParam("view", "NONE")
+				.queryParam("page[offset]", "71")
+				.queryParam("checkOutDate", "2023-11-25")
+				.queryParam("currency", "KWD")
+				.queryParam("childAges", "12")
+				.queryParam("radius", "16")
+				.queryParam("radiusUnit", "MILE")
+				.queryParam("rateCodes", "COR")
+				.queryParam("paymentPolicy", "DEPOSIT")
+				.queryParam("longitude", "7.463675")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/shopping/hotel-offers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1h7zaskbdi4vq_getMultiHotelOffers() {
+		String testResultId = "test_1h7zaskbdi4vq_getMultiHotelOffers";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("amenities", "MINIBAR,SWIMMING_POOL,JACUZZI")
+				.queryParam("boardType", "ROOM_ONLY")
+				.queryParam("hotelIds", "ICPPTICA")
+				.queryParam("roomQuantity", "9")
+				.queryParam("adults", "2")
+				.queryParam("sort", "DISTANCE")
+				.queryParam("checkInDate", "2023-11-09")
+				.queryParam("hotelName", "Barcelo")
+				.queryParam("view", "LIGHT")
+				.queryParam("page[offset]", "89")
+				.queryParam("ratings", "1")
+				.queryParam("includeClosed", "false")
+				.queryParam("currency", "KZT")
+				.queryParam("childAges", "20")
+				.queryParam("radiusUnit", "KM")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/shopping/hotel-offers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_s4xx85xf244l_getMultiHotelOffers() {
+		String testResultId = "test_s4xx85xf244l_getMultiHotelOffers";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -99,146 +193,20 @@ public class AmadeusTest {
 			.given()
 				.queryParam("boardType", "ROOM_ONLY")
 				.queryParam("roomQuantity", "3")
-				.queryParam("chains", "EC,BW,CW")
+				.queryParam("chains", "BW,HI")
 				.queryParam("latitude", "51.514081")
-				.queryParam("sort", "DISTANCE")
-				.queryParam("page[offset]", "18")
-				.queryParam("checkOutDate", "2023-05-27")
-				.queryParam("ratings", "2")
-				.queryParam("childAges", "6")
-				.queryParam("radius", "20")
-				.queryParam("radiusUnit", "KM")
-				.queryParam("lang", "TY")
-				.queryParam("paymentPolicy", "GUARANTEE")
-				.queryParam("longitude", "-0.073438")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/shopping/hotel-offers");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_u7ojzme7yotx_getMultiHotelOffers() {
-		String testResultId = "test_u7ojzme7yotx_getMultiHotelOffers";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("amenities", "TELEVISION,SOLARIUM")
-				.queryParam("page[offset]", "38")
-				.queryParam("hotelIds", "HXXIF400")
-				.queryParam("adults", "2")
-				.queryParam("currency", "LRD")
-				.queryParam("sort", "DISTANCE")
-				.queryParam("radius", "35")
-				.queryParam("radiusUnit", "KM")
-				.queryParam("lang", "CY")
-				.queryParam("hotelName", "Hotel California")
-				.queryParam("priceRange", "41-130")
-				.queryParam("paymentPolicy", "DEPOSIT")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/shopping/hotel-offers");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_socc0vlvboth_getMultiHotelOffers() {
-		String testResultId = "test_socc0vlvboth_getMultiHotelOffers";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("checkOutDate", "2023-05-21")
-				.queryParam("roomQuantity", "7")
-				.queryParam("latitude", "51.514081")
-				.queryParam("adults", "5")
-				.queryParam("radiusUnit", "MILE")
-				.queryParam("lang", "RM")
-				.queryParam("checkInDate", "2023-05-12")
-				.queryParam("hotelName", "Hotel California")
-				.queryParam("paymentPolicy", "DEPOSIT")
-				.queryParam("longitude", "-0.073438")
-				.queryParam("bestRateOnly", "true")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/shopping/hotel-offers");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_qe6lvexxp44x_getMultiHotelOffers() {
-		String testResultId = "test_qe6lvexxp44x_getMultiHotelOffers";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("hotelIds", "RTVLCBON")
-				.queryParam("chains", "6C,HS,HI")
-				.queryParam("hotelName", "Hotel")
+				.queryParam("checkInDate", "2023-11-18")
+				.queryParam("hotelName", "Barcelo")
 				.queryParam("view", "FULL")
-				.queryParam("page[offset]", "83")
-				.queryParam("checkOutDate", "2023-05-23")
+				.queryParam("checkOutDate", "2023-11-27")
 				.queryParam("ratings", "2")
-				.queryParam("includeClosed", "false")
-				.queryParam("currency", "COP")
-				.queryParam("childAges", "12")
-				.queryParam("radius", "117")
-				.queryParam("radiusUnit", "MILE")
-				.queryParam("lang", "NO")
-				.queryParam("rateCodes", "PKG,TVL,TUR,WKD,COR")
-				.queryParam("priceRange", "2-717")
+				.queryParam("currency", "BRL")
+				.queryParam("childAges", "5")
+				.queryParam("radius", "45")
+				.queryParam("rateCodes", "TUR,WKD")
+				.queryParam("priceRange", "-915")
+				.queryParam("paymentPolicy", "GUARANTEE")
+				.queryParam("longitude", "7.463675")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
@@ -256,8 +224,8 @@ public class AmadeusTest {
 	}
 
 	@Test
-	public void test_qxwmgt9pnzom_getMultiHotelOffers() {
-		String testResultId = "test_qxwmgt9pnzom_getMultiHotelOffers";
+	public void test_1h84uc1qy5s9x_getMultiHotelOffers() {
+		String testResultId = "test_1h84uc1qy5s9x_getMultiHotelOffers";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -269,17 +237,60 @@ public class AmadeusTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("amenities", "TELEVISION,NO_PORN_FILMS,BEACH")
-				.queryParam("page[offset]", "50")
-				.queryParam("boardType", "BREAKFAST")
-				.queryParam("checkOutDate", "2023-05-21")
-				.queryParam("hotelIds", "ICPPTICA")
-				.queryParam("chains", "WV,EC,HS")
+				.queryParam("roomQuantity", "7")
+				.queryParam("chains", "HI,WW,EC")
+				.queryParam("latitude", "51.514081")
+				.queryParam("sort", "DISTANCE")
+				.queryParam("bestRateOnly", "false")
+				.queryParam("view", "NONE")
+				.queryParam("checkOutDate", "2023-12-01")
 				.queryParam("includeClosed", "false")
+				.queryParam("currency", "XSU")
+				.queryParam("radius", "196")
+				.queryParam("radiusUnit", "MILE")
+				.queryParam("lang", "YO")
+				.queryParam("rateCodes", "WKD,TUR,STP,COR,GOV")
+				.queryParam("longitude", "-0.073438")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/shopping/hotel-offers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_t81tzmnec8rn_getMultiHotelOffers() {
+		String testResultId = "test_t81tzmnec8rn_getMultiHotelOffers";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("page[limit]", "13")
+				.queryParam("amenities", "SERV_SPEC_MENU,RESTAURANT,NO_KID_ALLOWED")
+				.queryParam("view", "LIGHT")
+				.queryParam("page[offset]", "56")
+				.queryParam("boardType", "ROOM_ONLY")
+				.queryParam("cityCode", "MAD")
+				.queryParam("includeClosed", "true")
+				.queryParam("currency", "XAG")
 				.queryParam("radiusUnit", "KM")
-				.queryParam("lang", "IA")
-				.queryParam("checkInDate", "2023-05-16")
-				.queryParam("rateCodes", "PKG,RAC,PRO")
+				.queryParam("checkInDate", "2023-11-17")
 				.queryParam("paymentPolicy", "GUARANTEE")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
@@ -298,8 +309,8 @@ public class AmadeusTest {
 	}
 
 	@Test
-	public void test_vb3lcdypcqch_getMultiHotelOffers() {
-		String testResultId = "test_vb3lcdypcqch_getMultiHotelOffers";
+	public void test_1h821umszel9u_getMultiHotelOffers() {
+		String testResultId = "test_1h821umszel9u_getMultiHotelOffers";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -311,21 +322,18 @@ public class AmadeusTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("roomQuantity", "3")
-				.queryParam("chains", "HS,EC,6C,WV")
-				.queryParam("cityCode", "TYO")
-				.queryParam("adults", "6")
-				.queryParam("sort", "NONE")
-				.queryParam("checkInDate", "2023-05-07")
-				.queryParam("page[limit]", "45")
-				.queryParam("view", "LIGHT")
-				.queryParam("page[offset]", "44")
-				.queryParam("checkOutDate", "2023-05-25")
-				.queryParam("includeClosed", "false")
-				.queryParam("currency", "CLF")
-				.queryParam("radius", "130")
-				.queryParam("radiusUnit", "KM")
-				.queryParam("priceRange", "3-475")
+				.queryParam("page[limit]", "19")
+				.queryParam("view", "FULL")
+				.queryParam("page[offset]", "40")
+				.queryParam("boardType", "ROOM_ONLY")
+				.queryParam("checkOutDate", "2023-11-21")
+				.queryParam("hotelIds", "RTVLCBON")
+				.queryParam("chains", "HS,CW,BW")
+				.queryParam("adults", "7")
+				.queryParam("childAges", "18")
+				.queryParam("radius", "141")
+				.queryParam("checkInDate", "2023-11-07")
+				.queryParam("paymentPolicy", "DEPOSIT")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
@@ -343,8 +351,8 @@ public class AmadeusTest {
 	}
 
 	@Test
-	public void test_1iyc5fvy11k6e_getMultiHotelOffers() {
-		String testResultId = "test_1iyc5fvy11k6e_getMultiHotelOffers";
+	public void test_r1al096x02na_getMultiHotelOffers() {
+		String testResultId = "test_r1al096x02na_getMultiHotelOffers";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -356,103 +364,106 @@ public class AmadeusTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("amenities", "MEETING_ROOMS,RESTAURANT,SWIMMING_POOL")
+				.queryParam("amenities", "ANIMAL_WATCHING,KIDS_WELCOME")
 				.queryParam("boardType", "BREAKFAST")
-				.queryParam("hotelIds", "HSFELAAY")
-				.queryParam("chains", "HS,BW,EC,CW")
-				.queryParam("adults", "7")
+				.queryParam("hotelIds", "HXASH407")
+				.queryParam("chains", "EC,HI,6C,WV")
 				.queryParam("sort", "PRICE")
-				.queryParam("checkInDate", "2023-05-08")
+				.queryParam("checkInDate", "2023-11-09")
+				.queryParam("page[offset]", "59")
+				.queryParam("checkOutDate", "2023-11-27")
+				.queryParam("ratings", "4")
+				.queryParam("radiusUnit", "KM")
+				.queryParam("lang", "MI")
+				.queryParam("rateCodes", "TUR,MIL,GOV,STP,PKG")
+				.queryParam("paymentPolicy", "GUARANTEE")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/shopping/hotel-offers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1jenqw9gprm1y_getMultiHotelOffers() {
+		String testResultId = "test_1jenqw9gprm1y_getMultiHotelOffers";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("amenities", "NO_PORN_FILMS,SERV_SPEC_MENU")
+				.queryParam("view", "LIGHT")
+				.queryParam("page[offset]", "15")
+				.queryParam("boardType", "BREAKFAST")
+				.queryParam("cityCode", "MEL")
+				.queryParam("ratings", "4")
+				.queryParam("childAges", "9")
+				.queryParam("radiusUnit", "KM")
+				.queryParam("checkInDate", "2023-11-11")
+				.queryParam("hotelName", "Barcelo")
+				.queryParam("rateCodes", "CON,TUR,RAC,SRS,GOV")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/shopping/hotel-offers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1iuvipsohy5wm_getMultiHotelOffers() {
+		String testResultId = "test_1iuvipsohy5wm_getMultiHotelOffers";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("amenities", "BAR,TENNIS")
+				.queryParam("boardType", "ROOM_ONLY")
+				.queryParam("cityCode", "OPO")
+				.queryParam("sort", "DISTANCE")
+				.queryParam("checkInDate", "2023-11-15")
 				.queryParam("hotelName", "Barcelo")
 				.queryParam("view", "NONE")
-				.queryParam("page[offset]", "37")
-				.queryParam("ratings", "1")
-				.queryParam("currency", "HKD")
-				.queryParam("radiusUnit", "KM")
-				.queryParam("rateCodes", "TVL,COR,RAC,GOV,WKD")
-				.queryParam("priceRange", "-797")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/shopping/hotel-offers");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_tocun2eccdo0_getMultiHotelOffers() {
-		String testResultId = "test_tocun2eccdo0_getMultiHotelOffers";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("page[limit]", "90")
-				.queryParam("view", "FULL")
-				.queryParam("checkOutDate", "2023-06-03")
-				.queryParam("hotelIds", "HSMUCBBN")
-				.queryParam("ratings", "2")
-				.queryParam("adults", "7")
-				.queryParam("childAges", "19")
-				.queryParam("radiusUnit", "KM")
-				.queryParam("checkInDate", "2023-05-10")
-				.queryParam("hotelName", "Ibis")
+				.queryParam("page[offset]", "86")
+				.queryParam("checkOutDate", "2023-12-04")
+				.queryParam("ratings", "3")
+				.queryParam("childAges", "9")
+				.queryParam("radius", "144")
+				.queryParam("radiusUnit", "MILE")
+				.queryParam("lang", "SW")
+				.queryParam("rateCodes", "GOV,TVL,SRS")
 				.queryParam("paymentPolicy", "GUARANTEE")
-				.queryParam("bestRateOnly", "true")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/shopping/hotel-offers");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_skmqn5i6tiya_getMultiHotelOffers() {
-		String testResultId = "test_skmqn5i6tiya_getMultiHotelOffers";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("amenities", "CASINO,TELEVISION,BABY-SITTING")
-				.queryParam("page[offset]", "25")
-				.queryParam("boardType", "ROOM_ONLY")
-				.queryParam("hotelIds", "RTVLCBON")
-				.queryParam("roomQuantity", "5")
-				.queryParam("ratings", "1")
-				.queryParam("currency", "XPF")
-				.queryParam("sort", "NONE")
-				.queryParam("lang", "AZ")
-				.queryParam("paymentPolicy", "DEPOSIT")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)

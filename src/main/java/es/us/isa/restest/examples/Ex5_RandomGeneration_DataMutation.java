@@ -11,14 +11,18 @@ import java.util.Collection;
 import static es.us.isa.restest.util.FileManager.createDir;
 
 /**
- * TODO
+ * This example demonstrates how to generate a set of random test cases and write them to a file using the RESTAssured writer,
+ * while also applying data mutation to the generated test cases. To apply data mutation, we utilize the RandomTestCaseGenerator
+ * class and ObjectPerturbator, which is a versatile tool designed to transform JSON objects, commonly used as inputs for API
+ * operations, into new JSON objects. These transformed objects may be invalid (although not guaranteed), allowing developers
+ * to test various data scenarios.
  *
- * The resources for this example are located at src/main/resources/Examples/Ex1_RandomGeneration.
+ * The resources for this example are located at src/main/resources/Examples/Ex5_RandomGeneration_DataMutation.
  *
  */
-public class Ex6_RandomGeneration_DataMutation {
+public class Ex5_RandomGeneration_DataMutation {
 
-    public static String propertyFilePath="src/main/resources/Examples/Ex6_RandomGeneration_DataMutation/events.properties"; 		// Path to user properties file with configuration options
+    public static String propertyFilePath="src/main/resources/Examples/Ex5_RandomGeneration_DataMutation/events.properties"; 		// Path to user properties file with configuration options
 
     public static void main(String[] args) throws RESTestException {
         // Load properties

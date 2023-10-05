@@ -18,7 +18,8 @@ import static es.us.isa.restest.util.FileManager.deleteFile;
 import static org.junit.Assert.assertTrue;
 
 /**
- * All RESTest test case generators requires an input test configuration file specifying the API operations to be tested, test data generators for each input parameter, authentication details, etc.
+ * All RESTest test case generators requires an input test configuration file specifying the API operations to be tested,
+ * test data generators for each input parameter, authentication details, etc.
  * This example shows how to generate a default test configuration file for an API given its OAS specification.
  * See test cases for more examples.
  *
