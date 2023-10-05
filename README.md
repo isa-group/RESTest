@@ -10,12 +10,6 @@
 
 RESTest is a framework for automated black-box testing of RESTful web APIs. It follows a model-based approach, where test cases are automatically derived from the [OpenAPI Specification (OAS)](https://www.openapis.org/) of the API under test. No access to the source code is required, which makes it possible to test APIs written in any programming language, running in local or remote servers.
 
-## RESTest: Your RESTful APIs. Tested. By robots.
-
-The RESTest testing ecosystem comprehends a complete suite of tools for automatically testing and monitoring your APIs. Still testing your APIs manually? Stop it. Let our robots do the work.
-
-<a href="https://youtu.be/-rydj3T_YjA" target="_blank"><img src="https://raw.githubusercontent.com/isa-group/RESTest/master/docs/restest-video.png" alt="RESTest: Your RESTful APIs. Tested. By robots." /></a>
-
 ## Index
 1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
 2. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
@@ -192,6 +186,45 @@ This test case makes a GET request to the endpoint `/v2/name/{name}` with severa
 Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `target/allure-reports/restcountries/index.html` in your browser:
 
 ![Allure](docs/Allure.png)
+
+### Show an example
+
+In this example shows how to generate a set of random test cases and write them to a file using the RESTAssured writer. 
+
+The values of each parameter are generated using different types of generators (e.g., fully random, random from a list, 
+random from a range, etc.), specified in the test configuration file located [here](src/main/resources/Examples/Ex1_RandomGeneration/test_conf.yaml) 
+(and implemented in package es.us.isa.restest.inputs).
+
+Then, we need a property file as the one show [here](src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties) to configure the execution of RESTest:
+
+Later, we specify the path to the RESTLoader constructor, for load property, as:
+
+```java
+RESTestLoader loader = new RESTestLoader(propertyFilePath);
+```
+
+With this we can create the generator which we want to use, in this case, RandomTestGenerator, as:
+
+```java
+RandomTestCaseGenerator generator = (RandomTestCaseGenerator) loader.createGenerator();
+Collection<TestCase> testCases = generator.generate();
+```
+
+And create target directory for test cases if it does not exist:
+
+```java
+createDir(loader.getTargetDirJava());
+```
+
+Finally, we can write the test cases to a file using the RESTAssured writer:
+
+```java
+RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
+writer.write(testCases);
+```
+
+You can find a complete example of how to use RESTest with the BikeWise API [here](src/main/java/es/us/isa/restest/examples/Ex1_RandomGeneration.java)
+and more examples [here](src/main/java/es/us/isa/restest/examples).
 
 ## Running RESTest as a JAR
 Instead of from an IDE like IntelliJ IDEA, you can also run RESTest as a fat JAR. You have two options:
