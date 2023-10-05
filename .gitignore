@@ -38,6 +38,9 @@ stateful_data.json
 
 /src/main/resources/Examples/Ex1_RandomGeneration/test_cases/
 /src/main/resources/Examples/Ex2_CreateTestConf/default_test_conf.yaml
-/src/main/resources/Examples/Ex9_Generation_Execution/allure_report/anApiOfIceAndFire/
-/src/main/resources/Examples/Ex9_Generation_Execution/csv_report/anApiOfIceAndFire/
-/src/main/resources/Examples/Ex10_Iterative_Generation_Execution/allure_report/anApiOfIceAndFire/
+/src/main/resources/Examples/Ex3_CBTGeneration/test_cases/
+/src/main/resources/Examples/Ex4_CBTGenerationAuth/test_cases/
+/src/main/resources/Examples/Ex5_RandomGeneration_DataMutation/test_cases/
+/src/main/resources/Examples/Ex8_Generation_Execution/allure_report/anApiOfIceAndFire/
+/src/main/resources/Examples/Ex8_Generation_Execution/csv_report/anApiOfIceAndFire/
+/src/main/resources/Examples/Ex9_Iterative_Generation_Execution/allure_report/anApiOfIceAndFire/
