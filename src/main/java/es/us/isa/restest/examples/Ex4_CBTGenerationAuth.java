@@ -1,7 +1,6 @@
 package es.us.isa.restest.examples;
 
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
-import es.us.isa.restest.runners.RESTestExecutor;
 import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
