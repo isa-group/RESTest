@@ -1,13 +1,14 @@
 package es.us.isa.restest.examples;
 
 import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
-import es.us.isa.restest.generators.RandomTestCaseGenerator;
 import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 
@@ -22,11 +23,13 @@ import static es.us.isa.restest.util.FileManager.createDir;
  */
 public class Ex3_CBTGeneration {
 
-    public static String propertyFilePath="src/main/resources/Examples/Ex3_CBTGeneration/user_config.properties"; 		// Path to user properties file with configuration options
+    public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex3_CBTGeneration/user_config.properties"; 		// Path to user properties file with configuration options
+
+    public static final Logger logger = Logger.getLogger(Ex3_CBTGeneration.class.getName());
 
     public static void main(String[] args) throws RESTestException {
         // Load properties
-        RESTestLoader loader = new RESTestLoader(propertyFilePath);
+        RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
 
         // Create test case generator
         ConstraintBasedTestCaseGenerator generator = (ConstraintBasedTestCaseGenerator) loader.createGenerator();
@@ -39,6 +42,10 @@ public class Ex3_CBTGeneration {
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
 
-        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
+        if (logger.isLoggable(Level.INFO)) {
+            String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
+            logger.info(message);
+        }
+
     }
 }

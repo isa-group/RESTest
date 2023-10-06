@@ -2,20 +2,13 @@ package es.us.isa.restest.examples;
 
 import es.us.isa.restest.configuration.TestConfigurationFilter;
 import es.us.isa.restest.configuration.generators.DefaultTestConfigurationGenerator;
-import es.us.isa.restest.generators.RandomTestCaseGenerator;
-import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.specification.OpenAPISpecification;
-import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.RESTestException;
-import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import static es.us.isa.restest.util.FileManager.checkIfExists;
-import static es.us.isa.restest.util.FileManager.deleteFile;
-import static org.junit.Assert.assertTrue;
 
 /**
  * All RESTest test case generators requires an input test configuration file specifying the API operations to be tested,
@@ -28,17 +21,19 @@ import static org.junit.Assert.assertTrue;
  */
 public class Ex2_CreateTestConf {
 
-    public static String specPath="src/main/resources/Examples/Ex2_CreateTestConf/spec_bigoven.yaml"; 		// Path to OAS specification file
-    public static String confPath="src/main/resources/Examples/Ex2_CreateTestConf/default_test_conf.yaml"; 		// Path to test configuration file
+    public static final String SPEC_PATH = "src/main/resources/Examples/Ex2_CreateTestConf/spec_bigoven.yaml"; 		// Path to OAS specification file
+    public static final String CONF_PATH = "src/main/resources/Examples/Ex2_CreateTestConf/default_test_conf.yaml"; 		// Path to test configuration file
+
+    public static final Logger logger = Logger.getLogger(Ex2_CreateTestConf.class.getName());
 
 
-    public static void main(String[] args) throws RESTestException {
+    public static void main(String[] args) {
 
         // Load specification file
-        OpenAPISpecification spec = new OpenAPISpecification(specPath);
+        OpenAPISpecification spec = new OpenAPISpecification(SPEC_PATH);
 
         // Create filters to indicate which operations (paths and http methods) to include in the test configuration file.
-        List<TestConfigurationFilter> filters = new ArrayList<TestConfigurationFilter>();
+        List<TestConfigurationFilter> filters = new ArrayList<>();
         TestConfigurationFilter filter = new TestConfigurationFilter();
         filter.setPath("/recipes");
         filter.addGetMethod();
@@ -46,8 +41,12 @@ public class Ex2_CreateTestConf {
 
         // Generate default test configuration file
         DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
-        gen.generate(confPath, filters);
+        gen.generate(CONF_PATH, filters);
 
-        System.out.println("Default test configuration file generated at " + confPath);
+        if (logger.isLoggable(Level.INFO)) {
+            String message = String.format("Default test configuration file generated at %s", CONF_PATH);
+            logger.info(message);
+        }
+
     }
 }

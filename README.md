@@ -128,22 +128,31 @@ In this example, we will explore the generation and execution of test cases usin
 
 ```java
 
-public class Ex8_Generation_Execution {
+public class Ex9_Generation_Execution {
 
-    public static String propertyFilePath="src/main/resources/Examples/Ex8_Generation_Execution/user_config.properties"; 		// Path to user properties file with configuration options
+   public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex9_Generation_Execution/user_config.properties"; 		// Path to user properties file with configuration options
 
-    public static void main(String[] args) throws RESTestException {
-        // Load properties
-        RESTestRunner runner = new RESTestRunner(propertyFilePath);
+   public static final Logger logger = Logger.getLogger(Ex9_Generation_Execution.class.getName());
 
-        // Run workflow
-        runner.run();
+   public static void main(String[] args) throws RESTestException {
+      // Load properties
+      RESTestRunner runner = new RESTestRunner(PROPERTY_FILE_PATH);
 
-        System.out.println(runner.getNumberOfTestCases() + " test cases generated and written to " + runner.getTargetDirJava());
-        System.out.println("Allure report available at " + runner.getAllureReportsPath());
-        System.out.println("CSV stats available at " + PropertyManager.readProperty("data.tests.dir") + "/" + runner.getExperimentName());
-        System.out.println("Coverage report available at " + PropertyManager.readProperty("data.coverage.dir") + "/" + runner.getExperimentName());
-    }
+      // Run workflow
+      runner.run();
+
+      if (logger.isLoggable(java.util.logging.Level.INFO)) {
+         String message1 = String.format("%d test cases generated and written to %s", runner.getNumberOfTestCases(), runner.getTargetDirJava());
+         String message2 = String.format("Allure report available at %s", runner.getAllureReportsPath());
+         String message3 = String.format("CSV stats available at %s/%s", PropertyManager.readProperty("data.tests.dir"), runner.getExperimentName());
+         String message4 = String.format("Coverage report available at %s/%s", PropertyManager.readProperty("data.coverage.dir"), runner.getExperimentName());
+         logger.info(message1);
+         logger.info(message2);
+         logger.info(message3);
+         logger.info(message4);
+      }
+
+   }
 }
 
 
@@ -160,7 +169,7 @@ Finally, test failures are collected and they can be easily spotted and analyzed
 
 En this section, we will delve into a specific example to illustrate in detail how RESTEST operates. Throughout the following steps, we will break down a practical scenario, providing step-by-step explanations of how the system functions.
 
-In this example, we will conduct tests on the Ice and Fire API using RESTest. To perform these tests, we will rely on the OpenAPI specification of the API, which is available at the following [link](src/main/resources/Examples/Ex9_Iterative_Generation_Execution/spec_iceandfire.yaml).
+In this example, we will conduct tests on the Ice and Fire API using RESTest. To perform these tests, we will rely on the OpenAPI specification of the API, which is available at the following [link](src/main/resources/Examples/Ex10_Iterative_Generation_Execution/spec_iceandfire.yaml).
 
 En the next step, we will proceed to obtain the configuration file that will encompass all the essential settings for our tests. This file plays a fundamental role as it sets key parameters, such as the types of generators to use, specific configurations for the Ice and Fire API, and any other relevant information for the successful execution of tests with RESTest.
 This is the configuration file for this example:
@@ -351,22 +360,31 @@ Once we have this file, we will be ready to carry out the generation and executi
 
 ```java
 
-public class Ex8_Generation_Execution {
+public class Ex9_Generation_Execution {
 
-    public static String propertyFilePath="src/main/resources/Examples/Ex8_Generation_Execution/user_config.properties"; 		// Path to user properties file with configuration options
+   public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex9_Generation_Execution/user_config.properties"; 		// Path to user properties file with configuration options
 
-    public static void main(String[] args) throws RESTestException {
-        // Load properties
-        RESTestRunner runner = new RESTestRunner(propertyFilePath);
+   public static final Logger logger = Logger.getLogger(Ex9_Generation_Execution.class.getName());
 
-        // Run workflow
-        runner.run();
+   public static void main(String[] args) throws RESTestException {
+      // Load properties
+      RESTestRunner runner = new RESTestRunner(PROPERTY_FILE_PATH);
 
-        System.out.println(runner.getNumberOfTestCases() + " test cases generated and written to " + runner.getTargetDirJava());
-        System.out.println("Allure report available at " + runner.getAllureReportsPath());
-        System.out.println("CSV stats available at " + PropertyManager.readProperty("data.tests.dir") + "/" + runner.getExperimentName());
-        System.out.println("Coverage report available at " + PropertyManager.readProperty("data.coverage.dir") + "/" + runner.getExperimentName());
-    }
+      // Run workflow
+      runner.run();
+
+      if (logger.isLoggable(java.util.logging.Level.INFO)) {
+         String message1 = String.format("%d test cases generated and written to %s", runner.getNumberOfTestCases(), runner.getTargetDirJava());
+         String message2 = String.format("Allure report available at %s", runner.getAllureReportsPath());
+         String message3 = String.format("CSV stats available at %s/%s", PropertyManager.readProperty("data.tests.dir"), runner.getExperimentName());
+         String message4 = String.format("Coverage report available at %s/%s", PropertyManager.readProperty("data.coverage.dir"), runner.getExperimentName());
+         logger.info(message1);
+         logger.info(message2);
+         logger.info(message3);
+         logger.info(message4);
+      }
+
+   }
 }
 
 ```

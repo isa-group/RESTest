@@ -8,11 +8,11 @@ import es.us.isa.restest.util.RESTestException;
  * The resources for this example are located at src/main/resources/Examples/Ex1_RandomGeneration.
  *
  */
-public class Ex6_CBTStatefulGeneration {
+public class Ex7_CBTStatefulGeneration {
 
-    public static String propertyFilePath="TODO"; 		// Path to user properties file with configuration options
+    public static final String PROPERTY_FILE_PATH = "TODO"; 		// Path to user properties file with configuration options
 
     public static void main(String[] args) throws RESTestException {
-
+        // TODO
     }
 }
