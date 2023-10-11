@@ -22,21 +22,18 @@ import static es.us.isa.restest.util.FileManager.createDir;
  */
 public class Ex8_TestExecution {
 
-    public static String targetDir = "src/main/resources/Examples/Ex8_TestExecution/test_cases";
 
-    public static String testClassName = "RestCountriesTest";
-
-    public static String packageName = "restcountries";
-
-    public static String propertyFilePath="src/main/resources/Examples/Ex8_TestExecution/user_config.properties"; 		// Path to user properties file with configuration options
+    public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex8_TestExecution/user_config.properties"; 		// Path to user properties file with configuration options
 
 
 
 
     public static void main(String[] args) throws RESTestException {
 
+        // Create tests if they do not exist
+
         // Load properties
-        RESTestLoader loader = new RESTestLoader(propertyFilePath);
+        RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
 
         // Create test case generator
         ConstraintBasedTestCaseGenerator generator = (ConstraintBasedTestCaseGenerator) loader.createGenerator();
@@ -45,13 +42,19 @@ public class Ex8_TestExecution {
         // Create target directory for test cases if it does not exist
         createDir(loader.getTargetDirJava());
 
+        // Create stats report manager
+        loader.createStatsReportManager();
+
         // Write (RestAssured) test cases
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
 
         System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
 
-        RESTestExecutor executor = new RESTestExecutor(targetDir, testClassName, packageName);
+
+        // Execute tests
+
+        RESTestExecutor executor = new RESTestExecutor(loader);
         executor.execute();
 
 

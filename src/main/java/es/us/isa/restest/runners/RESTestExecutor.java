@@ -15,15 +15,10 @@ public class RESTestExecutor {
 
     private static final Logger logger = LogManager.getLogger(RESTestExecutor.class.getName());
 
-    private String targetDir;
-    private String testClassName;
+    RESTestLoader loader;
 
-    private String packageName;
-
-    public RESTestExecutor(String targetDir, String testClassName, String packageName) {
-        this.targetDir = targetDir;
-        this.testClassName = testClassName;
-        this.packageName = packageName;
+    public RESTestExecutor(RESTestLoader loader) {
+        this.loader = loader;
     }
 
     public void execute() {
@@ -34,8 +29,8 @@ public class RESTestExecutor {
 
     private Class<?> loadTestClass() {
         // Load test class
-        String filePath = targetDir + "/" + testClassName + ".java";
-        String className = packageName + "." + testClassName;
+        String filePath = loader.targetDirJava + "/" + loader.testClassName + ".java";
+        String className = loader.packageName + "." + loader.testClassName;
         logger.info("Compiling and loading test class {}.java", className);
         return ClassLoader.loadClass(filePath, className);
     }
@@ -53,28 +48,4 @@ public class RESTestExecutor {
 
     }
 
-    // Agrega getters y setters según sea necesario
-    public String getTargetDir() {
-        return targetDir;
-    }
-
-    public void setTargetDir(String targetDir) {
-        this.targetDir = targetDir;
-    }
-
-    public String getTestClassName() {
-        return testClassName;
-    }
-
-    public void setTestClassName(String testClassName) {
-        this.testClassName = testClassName;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
 }
