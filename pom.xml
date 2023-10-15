@@ -502,7 +502,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.4.1</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -511,6 +511,11 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<sourcepath>src/main/java</sourcepath>
+					<subpackages>es.us.isa.restest.configuration.generators</subpackages>
+					<failOnError>false</failOnError>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
