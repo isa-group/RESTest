@@ -6,12 +6,12 @@ import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.Collection;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.util.FileManager.deleteDir;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class RESTestExecutorTest {
 
@@ -30,17 +30,32 @@ public class RESTestExecutorTest {
 
         createDir(loader.getTargetDirJava());
 
+        var targetDir = loader.getTargetDirJava();
+
+        File folder = new File(targetDir);
+
+        File[] listOfFiles = folder.listFiles();
+
+        assert listOfFiles != null;
+
+        assertTrue(folder.exists() && folder.isDirectory() && listOfFiles.length == 0);
+
         loader.createStatsReportManager();
 
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
+
+        listOfFiles = folder.listFiles();
+
+        assert listOfFiles != null;
+        assertTrue(listOfFiles.length > 0);
 
         RESTestExecutor executor = new RESTestExecutor(PROPERTY_FILE_PATH);
         executor.execute();
 
         deleteDir(loader.getTargetDirJava());
 
-        assertTrue(true);
+        assertFalse(folder.exists());
 
     }
 
