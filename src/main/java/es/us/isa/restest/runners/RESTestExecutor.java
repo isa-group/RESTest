@@ -9,6 +9,10 @@ import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import static es.us.isa.restest.util.Timer.TestStep.TEST_SUITE_EXECUTION;
 
 public class RESTestExecutor {
@@ -17,20 +21,25 @@ public class RESTestExecutor {
 
     RESTestLoader loader;
 
-    public RESTestExecutor(RESTestLoader loader) {
-        this.loader = loader;
+    public RESTestExecutor(String propertyFilePath) {
+        loader = new RESTestLoader(propertyFilePath);
     }
 
     public void execute() {
-        // Cargar y ejecutar la clase de prueba
-        Class<?> testClass = loadTestClass();
-        runTests(testClass);
-    }
-
-    private Class<?> loadTestClass() {
-        // Load test class
         String filePath = loader.targetDirJava + "/" + loader.testClassName + ".java";
         String className = loader.packageName + "." + loader.testClassName;
+        Path path = Paths.get(filePath);
+        if(!Files.exists(path)) {
+            logger.error("Test class {} not found in {}", className, filePath);
+            throw new IllegalArgumentException("Test class " + className + " not found in " + filePath);
+        }else{
+            Class<?> testClass = loadTestClass(filePath, className);
+            runTests(testClass);
+        }
+
+    }
+
+    private Class<?> loadTestClass(String filePath, String className) {
         logger.info("Compiling and loading test class {}.java", className);
         return ClassLoader.loadClass(filePath, className);
     }
@@ -38,7 +47,6 @@ public class RESTestExecutor {
     private void runTests(Class<?> testClass) {
 
         JUnitCore junit = new JUnitCore();
-        //junit.addListener(new TextListener(System.out));
         junit.addListener(new io.qameta.allure.junit4.AllureJunit4());
         Timer.startCounting(TEST_SUITE_EXECUTION);
         Result result = junit.run(testClass);

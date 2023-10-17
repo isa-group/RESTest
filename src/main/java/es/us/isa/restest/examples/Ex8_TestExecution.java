@@ -26,35 +26,33 @@ public class Ex8_TestExecution {
     public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex8_TestExecution/user_config.properties"; 		// Path to user properties file with configuration options
 
 
-
-
     public static void main(String[] args) throws RESTestException {
 
-        // Create tests if they do not exist
-
-        // Load properties
-        RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
-
-        // Create test case generator
-        ConstraintBasedTestCaseGenerator generator = (ConstraintBasedTestCaseGenerator) loader.createGenerator();
-        Collection<TestCase> testCases = generator.generate();
-
-        // Create target directory for test cases if it does not exist
-        createDir(loader.getTargetDirJava());
-
-        // Create stats report manager
-        loader.createStatsReportManager();
-
-        // Write (RestAssured) test cases
-        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
-        writer.write(testCases);
-
-        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
+//        // Create tests if they do not exist
+//
+//        // Load properties
+//        RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
+//
+//        // Create test case generator
+//        ConstraintBasedTestCaseGenerator generator = (ConstraintBasedTestCaseGenerator) loader.createGenerator();
+//        Collection<TestCase> testCases = generator.generate();
+//
+//        // Create target directory for test cases if it does not exist
+//        createDir(loader.getTargetDirJava());
+//
+//        // Create stats report manager
+//        loader.createStatsReportManager();
+//
+//        // Write (RestAssured) test cases
+//        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
+//        writer.write(testCases);
+//
+//        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
 
 
         // Execute tests
 
-        RESTestExecutor executor = new RESTestExecutor(loader);
+        RESTestExecutor executor = new RESTestExecutor(PROPERTY_FILE_PATH);
         executor.execute();
 
 
