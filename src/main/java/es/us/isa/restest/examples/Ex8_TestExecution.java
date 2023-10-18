@@ -8,11 +8,11 @@ import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import java.util.Collection;
+import java.util.logging.Logger;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 
 /**
- * TODO
  * This example demonstrates how to execute a previously generated set of tests using the RESTestExecutor class. To do this,
  * the following parameters need to be specified: targetDir (destination directory of tests generated), testClassName (test class name),
  * and packageName (package name), this information can be found in the user properties file (see src/main/resources/Examples/Ex8_TestExecution/user_conf.properties).
@@ -24,6 +24,8 @@ public class Ex8_TestExecution {
 
 
     public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex8_TestExecution/user_config.properties"; 		// Path to user properties file with configuration options
+
+    public static final Logger logger = Logger.getLogger(Ex8_TestExecution.class.getName());
 
 
     public static void main(String[] args) throws RESTestException {
@@ -47,7 +49,10 @@ public class Ex8_TestExecution {
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
 
-        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
+        if(logger.isLoggable(java.util.logging.Level.INFO)) {
+            String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
+            logger.info(message);
+        }
 
 
         // Execute tests
