@@ -74,13 +74,13 @@ import static org.junit.Assert.fail;
 
 public class Ex3_CBTGeneration {
 
-   // ... Código anterior ...
+   // ... Previous code ...
 
    @Test
    public void test_qec4n4cuyvcj_getMultiHotelOffers() {
       String testResultId = "test_qec4n4cuyvcj_getMultiHotelOffers";
 
-      // Configuración de filtros para el caso de prueba específico
+      // Filter settings for specific test case
       nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'min' constraint of integer parameter radius");
       statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'min' constraint of integer parameter radius");
       csvFilter.setTestResultId(testResultId);
@@ -89,7 +89,7 @@ public class Ex3_CBTGeneration {
       validationFilter.setTestResultId(testResultId);
 
       try {
-         // Construir y enviar la solicitud utilizando RestAssured
+         // Build and send request using RestAssured
          Response response = RestAssured
                  .given()
                  .queryParam("page[limit]", "25")
@@ -111,7 +111,7 @@ public class Ex3_CBTGeneration {
                  .when()
                  .get("/shopping/hotel-offers");
 
-         // Verificar la respuesta
+         // Verify the response
          response.then();
          System.out.println("El caso de prueba pasó exitosamente.");
       } catch (RuntimeException ex) {
@@ -167,7 +167,7 @@ Finally, test failures are collected and they can be easily spotted and analyzed
 
 ## Detailed example
 
-En this section, we will delve into a specific example to illustrate in detail how RESTEST operates. Throughout the following steps, we will break down a practical scenario, providing step-by-step explanations of how the system functions.
+In this section, we will delve into a specific example to illustrate in detail how RESTEST operates. Throughout the following steps, we will break down a practical scenario, providing step-by-step explanations of how the system functions.
 
 In this example, we will conduct tests on the Ice and Fire API using RESTest. To perform these tests, we will rely on the OpenAPI specification of the API, which is available at the following [link](src/main/resources/Examples/Ex10_Iterative_Generation_Execution/spec_iceandfire.yaml).
 
