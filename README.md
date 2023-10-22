@@ -171,7 +171,7 @@ In this section, we will delve into a specific example to illustrate in detail h
 
 In this example, we will conduct tests on the Ice and Fire API using RESTest. To perform these tests, we will rely on the OpenAPI specification of the API, which is available at the following [link](src/main/resources/Examples/Ex10_Iterative_Generation_Execution/spec_iceandfire.yaml).
 
-En the next step, we will proceed to obtain the configuration file that will encompass all the essential settings for our tests. This file plays a fundamental role as it sets key parameters, such as the types of generators to use, specific configurations for the Ice and Fire API, and any other relevant information for the successful execution of tests with RESTest.
+In the next step, we will proceed to obtain the configuration file that will encompass all the essential settings for our tests. This file plays a fundamental role as it sets key parameters, such as the types of generators to use, specific configurations for the Ice and Fire API, and any other relevant information for the successful execution of tests with RESTest.
 This is the configuration file for this example:
 
 ```yaml
