@@ -12,11 +12,12 @@ RESTest is a framework for automated black-box testing of RESTful web APIs. It f
 
 ## Index
 1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
-2. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
-3. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
-4. [Quickstart guide](https://github.com/isa-group/RESTest#quickstart-guide)
-   1. [Setting up RESTest](https://github.com/isa-group/RESTest#setting-up-restest)
-   2. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
+
+4. [Quick examples](https://github.com/isa-group/RESTest#quick-examples)
+   1. [Generating test cases](https://github.com/isa-group/RESTest#generating-test-cases)
+   2. [Generating and running test cases](https://github.com/isa-group/RESTest#generating-and-running-test-cases)
+3. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
+4. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
 5. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
    1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
    2. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
