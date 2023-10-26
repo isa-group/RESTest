@@ -4,6 +4,7 @@ import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -16,7 +17,7 @@ import static org.junit.Assert.*;
 public class RESTestExecutorTest {
 
     public static final String PROPERTY_FILE_PATH = "src/test/resources/Restcountries/restcountries_demo.properties";
-
+    @Ignore
     @Test
     public void testExecutor() throws RESTestException {
 

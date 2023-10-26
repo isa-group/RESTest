@@ -28,25 +28,6 @@ public class Ex2_CreateTestConf {
 
 
     public static void main(String[] args) {
-
-        // Load specification file
-        OpenAPISpecification spec = new OpenAPISpecification(SPEC_PATH);
-
-        // Create filters to indicate which operations (paths and http methods) to include in the test configuration file.
-        List<TestConfigurationFilter> filters = new ArrayList<>();
-        TestConfigurationFilter filter = new TestConfigurationFilter();
-        filter.setPath("/recipes");
-        filter.addGetMethod();
-        filters.add(filter);
-
-        // Generate default test configuration file
-        DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
-        gen.generate(CONF_PATH, filters);
-
-        if (logger.isLoggable(Level.INFO)) {
-            String message = String.format("Default test configuration file generated at %s", CONF_PATH);
-            logger.info(message);
-        }
-
+        //TODO
     }
 }

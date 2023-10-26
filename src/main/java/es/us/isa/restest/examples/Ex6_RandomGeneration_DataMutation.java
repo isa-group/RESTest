@@ -29,25 +29,6 @@ public class Ex6_RandomGeneration_DataMutation {
     public static final Logger logger = Logger.getLogger(Ex6_RandomGeneration_DataMutation.class.getName());
 
     public static void main(String[] args) throws RESTestException {
-        // Load properties
-        RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
-
-        // Create test case generator
-        RandomTestCaseGenerator generator = (RandomTestCaseGenerator) loader.createGenerator();
-        Collection<TestCase> testCases = generator.generate();
-
-        // Create target directory for test cases if it does not exist
-        createDir(loader.getTargetDirJava());
-
-        // Write (RestAssured) test cases
-        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
-        writer.write(testCases);
-
-        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
-
-        if (logger.isLoggable(Level.INFO)) {
-            String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
-            logger.info(message);
-        }
+        //TODO
     }
 }

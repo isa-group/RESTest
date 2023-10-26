@@ -28,24 +28,6 @@ public class Ex3_CBTGeneration {
     public static final Logger logger = Logger.getLogger(Ex3_CBTGeneration.class.getName());
 
     public static void main(String[] args) throws RESTestException {
-        // Load properties
-        RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
-
-        // Create test case generator
-        ConstraintBasedTestCaseGenerator generator = (ConstraintBasedTestCaseGenerator) loader.createGenerator();
-        Collection<TestCase> testCases = generator.generate();
-
-        // Create target directory for test cases if it does not exist
-        createDir(loader.getTargetDirJava());
-
-        // Write (RestAssured) test cases
-        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
-        writer.write(testCases);
-
-        if (logger.isLoggable(Level.INFO)) {
-            String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
-            logger.info(message);
-        }
-
+        //TODO
     }
 }

@@ -20,22 +20,6 @@ public class Ex9_Generation_Execution {
     public static final Logger logger = Logger.getLogger(Ex9_Generation_Execution.class.getName());
 
     public static void main(String[] args) throws RESTestException {
-        // Load properties
-        RESTestRunner runner = new RESTestRunner(PROPERTY_FILE_PATH);
-
-        // Run workflow
-        runner.run();
-
-        if (logger.isLoggable(java.util.logging.Level.INFO)) {
-            String message1 = String.format("%d test cases generated and written to %s", runner.getNumberOfTestCases(), runner.getTargetDirJava());
-            String message2 = String.format("Allure report available at %s", runner.getAllureReportsPath());
-            String message3 = String.format("CSV stats available at %s/%s", PropertyManager.readProperty("data.tests.dir"), runner.getExperimentName());
-            String message4 = String.format("Coverage report available at %s/%s", PropertyManager.readProperty("data.coverage.dir"), runner.getExperimentName());
-            logger.info(message1);
-            logger.info(message2);
-            logger.info(message3);
-            logger.info(message4);
-        }
-
+        //TODO
     }
 }
