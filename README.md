@@ -12,11 +12,12 @@ RESTest is a framework for automated black-box testing of RESTful web APIs. It f
 
 ## Index
 1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
-2. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
-3. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
-4. [Quickstart guide](https://github.com/isa-group/RESTest#quickstart-guide)
-   1. [Setting up RESTest](https://github.com/isa-group/RESTest#setting-up-restest)
-   2. [Generated test cases and test reports](https://github.com/isa-group/RESTest#generated-test-cases-and-test-reports)
+
+4. [Quick examples](https://github.com/isa-group/RESTest#quick-examples)
+   1. [Generating test cases](https://github.com/isa-group/RESTest#generating-test-cases)
+   2. [Generating and running test cases](https://github.com/isa-group/RESTest#generating-and-running-test-cases)
+3. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
+4. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
 5. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
    1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
    2. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
@@ -74,13 +75,13 @@ import static org.junit.Assert.fail;
 
 public class Ex3_CBTGeneration {
 
-   // ... Código anterior ...
+   // ... Previous code ...
 
    @Test
    public void test_qec4n4cuyvcj_getMultiHotelOffers() {
       String testResultId = "test_qec4n4cuyvcj_getMultiHotelOffers";
 
-      // Configuración de filtros para el caso de prueba específico
+      // Filter settings for specific test case
       nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'min' constraint of integer parameter radius");
       statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Violated 'min' constraint of integer parameter radius");
       csvFilter.setTestResultId(testResultId);
@@ -89,7 +90,7 @@ public class Ex3_CBTGeneration {
       validationFilter.setTestResultId(testResultId);
 
       try {
-         // Construir y enviar la solicitud utilizando RestAssured
+         // Build and send request using RestAssured
          Response response = RestAssured
                  .given()
                  .queryParam("page[limit]", "25")
@@ -111,7 +112,7 @@ public class Ex3_CBTGeneration {
                  .when()
                  .get("/shopping/hotel-offers");
 
-         // Verificar la respuesta
+         // Verify the response
          response.then();
          System.out.println("El caso de prueba pasó exitosamente.");
       } catch (RuntimeException ex) {
@@ -167,11 +168,11 @@ Finally, test failures are collected and they can be easily spotted and analyzed
 
 ## Detailed example
 
-En this section, we will delve into a specific example to illustrate in detail how RESTEST operates. Throughout the following steps, we will break down a practical scenario, providing step-by-step explanations of how the system functions.
+In this section, we will delve into a specific example to illustrate in detail how RESTEST operates. Throughout the following steps, we will break down a practical scenario, providing step-by-step explanations of how the system functions.
 
 In this example, we will conduct tests on the Ice and Fire API using RESTest. To perform these tests, we will rely on the OpenAPI specification of the API, which is available at the following [link](src/main/resources/Examples/Ex10_Iterative_Generation_Execution/spec_iceandfire.yaml).
 
-En the next step, we will proceed to obtain the configuration file that will encompass all the essential settings for our tests. This file plays a fundamental role as it sets key parameters, such as the types of generators to use, specific configurations for the Ice and Fire API, and any other relevant information for the successful execution of tests with RESTest.
+In the next step, we will proceed to obtain the configuration file that will encompass all the essential settings for our tests. This file plays a fundamental role as it sets key parameters, such as the types of generators to use, specific configurations for the Ice and Fire API, and any other relevant information for the successful execution of tests with RESTest.
 This is the configuration file for this example:
 
 ```yaml
