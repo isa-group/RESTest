@@ -4,7 +4,7 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: null
-  headersPath: null
+  headersPath: Deutschebahn/headers.json
   oauthPath: null
 testConfiguration:
   operations:
@@ -33,7 +33,7 @@ testConfiguration:
         valid: true
     - name: limit
       in: query
-      weight: 0.3
+      weight: 0.7
       generators:
       - type: RandomNumber
         genParameters:

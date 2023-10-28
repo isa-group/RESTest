@@ -1,0 +1,497 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "City Search",
+    "version": "1.0.1",
+    "description": "Before using the API you will need to get an access token. Please read our **[Authorization Guide](https://developers.amadeus.com/self-service/apis-docs/guides/authorization-262)** for more information on how to get your token."
+  },
+  "servers": [
+    {
+      "url": "https://test.api.amadeus.com/v1"
+    }
+  ],
+  "paths": {
+    "/reference-data/locations/cities": {
+      "get": {
+        "summary": "GET Cities by keyword",
+        "tags": [
+          "City"
+        ],
+        "operationId": "GETCities",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2
+            },
+            "in": "query",
+            "name": "countryCode",
+            "description": "ISO 3166 Alpha-2 code. e.g. \"US\" United States of America.",
+            "example": "FR"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 10
+            },
+            "in": "query",
+            "name": "keyword",
+            "description": "keyword that should represent the start of a word in a city name.",
+            "example": "PARIS",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "integer"
+            },
+            "in": "query",
+            "name": "max",
+            "description": "Number of results user want to see in response.",
+            "example": 10
+          },
+          {
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "AIRPORTS"
+                ]
+              }
+            },
+            "in": "query",
+            "name": "include",
+            "description": "Resources to be included example : Airports",
+            "style": "form",
+            "explode": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Reply",
+            "content": {
+              "application/vnd.amadeus+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Warning"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/Meta"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Location"
+                      }
+                    },
+                    "included": {
+                      "type": "object",
+                      "properties": {
+                        "airports": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "$ref": "#/components/schemas/Location"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example": {
+                    "value": {
+                      "data": [
+                        {
+                          "type": "location",
+                          "subType": "city",
+                          "name": "PARIS",
+                          "iataCode": "PAR",
+                          "address": {
+                            "CountryCode": "FR"
+                          },
+                          "geoCode": {
+                            "latitude": "49.01278",
+                            "longitude": "2.55"
+                          },
+                          "relationships": [
+                            {
+                              "id": "CDG",
+                              "type": "Airport",
+                              "href": "#/included/airports/CDG"
+                            },
+                            {
+                              "id": "ORY",
+                              "type": "Airport",
+                              "href": "#/included/airports/ORY"
+                            }
+                          ]
+                        }
+                      ],
+                      "included": {
+                        "airports": {
+                          "CDG": {
+                            "name": "CHARLES DE GAULLE",
+                            "iataCode": "CDG",
+                            "subType": "Airport"
+                          },
+                          "ORY": {
+                            "name": "ORLY",
+                            "iataCode": "ORY",
+                            "subType": "Airport"
+                          }
+                        }
+                      },
+                      "meta": {
+                        "count": "1",
+                        "links": {
+                          "self": "https://api.amadeus.net/v1/reference-data/locations/cities/keyword=PARIS&CountryCode=FR&include=AIRPORTS"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request\n\ncode    | title                                 \n------- | -------------------------------------                        \n32171   | MANDATORY DATA MISSING \n572     | INVALID OPTION\n2781    | INVALID LENGTH\n477     | INVALID FORMAT\n4926    | INVALID DATA RECEIVED\n",
+            "content": {
+              "application/vnd.amadeus+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_400"
+                },
+                "examples": {
+                  "example-400": {
+                    "value": {
+                      "errors": [
+                        {
+                          "status": 400,
+                          "code": 32171,
+                          "title": "MANDATORY DATA MISSING",
+                          "detail": "Missing mandatory query parameter"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error\n\ncode    | title                                 \n------- | ------------------------------------- \n141     | SYSTEM ERROR HAS OCCURRED",
+            "content": {
+              "application/vnd.amadeus+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error_500"
+                },
+                "examples": {
+                  "example-500": {
+                    "value": {
+                      "errors": [
+                        {
+                          "status": 500,
+                          "code": 141,
+                          "title": "SYSTEM ERROR HAS OCCURRED"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": ""
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Location": {
+        "title": "Location",
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Resource Type "
+              },
+              "relationships": {
+                "type": "array",
+                "items": {
+                  "description": "Relationship allows to cross reference 2 entities via Link and/or id .",
+                  "title": "Relationship",
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "id of the related resource"
+                    },
+                    "type": {
+                      "type": "string",
+                      "description": "Type of the related resource",
+                      "example": "processed-dcs-passenger"
+                    },
+                    "href": {
+                      "type": "string",
+                      "format": "url",
+                      "description": "URL value"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Description of a particular point or place in physical space",
+            "title": "Location",
+            "properties": {
+              "subtype": {
+                "type": "string",
+                "description": "Location sub-type (e.g. airport, port, rail-station, restaurant, atm...)"
+              },
+              "name": {
+                "type": "string",
+                "description": "Label associated to the location (e.g. Eiffel Tower, Madison Square)",
+                "example": "Eiffel Tower"
+              },
+              "iataCode": {
+                "type": "string",
+                "description": "IATA location code",
+                "example": "PAR"
+              },
+              "address": {
+                "type": "object",
+                "description": "Address information",
+                "title": "Address",
+                "properties": {
+                  "postalCode": {
+                    "type": "string",
+                    "description": "Example: 74130"
+                  },
+                  "countryCode": {
+                    "type": "string",
+                    "description": "ISO 3166-1 country code",
+                    "pattern": "[a-zA-Z]{2}"
+                  },
+                  "stateCode": {
+                    "type": "string",
+                    "description": "State code (two character standard IATA state code)",
+                    "pattern": "[a-zA-Z0-9]{1,2}"
+                  }
+                }
+              },
+              "geoCode": {
+                "type": "object",
+                "description": "Geographic coordinates describing the position of any location on the surface of Earth",
+                "title": "GeoCode",
+                "properties": {
+                  "latitude": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Latitude of the position expressed in decimal degrees (WSG 84), e.g. 6.244203. A positive value denotes northern hemisphere or the equator, and a negative value denotes southern hemisphere. The number of digits to represent the precision of the coordinate.",
+                    "minimum": -90,
+                    "exclusiveMinimum": false,
+                    "maximum": 90,
+                    "exclusiveMaximum": false,
+                    "example": 48.85837
+                  },
+                  "longitude": {
+                    "type": "number",
+                    "format": "float",
+                    "description": "Longitude of the position expressed in decimal degrees (WSG 84), e.g. -75.581211. A positive value denotes east longitude or the prime meridian, and a negative value denotes west longitude.  The number of digits to represent the precision of the coordinate.",
+                    "minimum": -180,
+                    "exclusiveMinimum": false,
+                    "maximum": 180,
+                    "exclusiveMaximum": false,
+                    "example": 2.294481
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "description": ""
+      },
+      "Error_400": {
+        "type": "object",
+        "description": "A set of errors",
+        "title": "Error 400",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "The Error Definition",
+              "title": "Error",
+              "properties": {
+                "status": {
+                  "type": "integer",
+                  "description": "The [HTTP status code](https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml) of this response. This is present only in terminal errors which cause an unsuccessful response. In the case of multiple errors, they must all have the same status."
+                },
+                "code": {
+                  "type": "integer",
+                  "description": "A machine-readable error code from the Amadeus Canned Messages table, that will enable the API Consumers code to handle this type of error"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "An error title from the Canned Messages table with a 1:1 correspondence to the error code. This may be localized"
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "An easy-to-read explanation specific to this occurrence of the problem. It should give the API consumer an idea of what went wrong and how to recover from it. Like the title, this field’s value can be localized."
+                },
+                "source": {
+                  "type": "object",
+                  "title": "Error_Source",
+                  "properties": {
+                    "parameter": {
+                      "type": "string",
+                      "description": "The key of the URI path or query parameter that caused the error"
+                    },
+                    "pointer": {
+                      "type": "string",
+                      "description": "A JSON Pointer [RFC6901] to the associated entity in the request body that caused this error"
+                    },
+                    "example": {
+                      "type": "string",
+                      "description": "A sample input to guide the user when resolving this issue"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Error_500": {
+        "type": "object",
+        "description": "A set of errors",
+        "title": "Error 500",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "The Error Definition",
+              "title": "Error",
+              "properties": {
+                "status": {
+                  "type": "integer",
+                  "description": "The [HTTP status code](https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml) of this response. This is present only in terminal errors which cause an unsuccessful response. In the case of multiple errors, they must all have the same status."
+                },
+                "code": {
+                  "type": "integer",
+                  "description": "A machine-readable error code from the Amadeus Canned Messages table, that will enable the API Consumers code to handle this type of error"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "An error title from the Canned Messages table with a 1:1 correspondence to the error code. This may be localized"
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "An easy-to-read explanation specific to this occurrence of the problem. It should give the API consumer an idea of what went wrong and how to recover from it. Like the title, this field’s value can be localized."
+                },
+                "source": {
+                  "type": "object",
+                  "title": "Error_Source",
+                  "properties": {
+                    "parameter": {
+                      "type": "string",
+                      "description": "The key of the URI path or query parameter that caused the error"
+                    },
+                    "pointer": {
+                      "type": "string",
+                      "description": "A JSON Pointer [RFC6901] to the associated entity in the request body that caused this error"
+                    },
+                    "example": {
+                      "type": "string",
+                      "description": "A sample input to guide the user when resolving this issue"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Meta": {
+        "type": "object",
+        "description": "Meta information about the returned object(s) in \"data\"",
+        "title": "Meta",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total number of object(s) retrieved",
+            "minimum": 0,
+            "exclusiveMinimum": false
+          },
+          "links": {
+            "type": "object",
+            "title": "Links",
+            "description": "Links related to the returned object(s)",
+            "properties": {
+              "self": {
+                "type": "string",
+                "format": "url",
+                "description": "Link to the same page."
+              }
+            }
+          }
+        }
+      },
+      "Warning": {
+        "type": "object",
+        "description": "The Warning Definition",
+        "title": "Warning",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "A machine-readable error code from the Canned Messages table, that will enable the API Consumers code to handle this type of error"
+          },
+          "title": {
+            "type": "string",
+            "description": "An error title from the Canned Messages table with a 1:1 correspondence to the error code. This may be localized"
+          },
+          "detail": {
+            "type": "string",
+            "description": "An easy-to-read explanation specific to this occurrence of the problem. It should give the API consumer an idea of what went wrong and how to recover from it. Like the title, this field’s value can be localized."
+          },
+          "source": {
+            "type": "object",
+            "description": "The Warning Source Definition",
+            "title": "Warning_Source",
+            "properties": {
+              "parameter": {
+                "type": "string",
+                "description": "The key of the URI path or query parameter that caused the error"
+              },
+              "pointer": {
+                "type": "string",
+                "description": "A JSON Pointer [RFC6901] to the associated entity in the request body that caused this error"
+              },
+              "example": {
+                "type": "string",
+                "description": "A sample input to guide the user when resolving this issu"
+              }
+            }
+          }
+        },
+        "required": [
+          "code",
+          "title"
+        ]
+      }
+    }
+  }
+}
