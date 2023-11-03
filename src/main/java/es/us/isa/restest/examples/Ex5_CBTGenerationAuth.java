@@ -7,8 +7,6 @@ import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 
@@ -27,7 +25,6 @@ public class Ex5_CBTGenerationAuth {
 
     public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex5_CBTGenerationAuth/youtube_getVideos.properties"; 		// Path to user properties file with configuration options
 
-    public static final Logger logger = Logger.getLogger(Ex5_CBTGenerationAuth.class.getName());
 
     public static void main(String[] args) throws RESTestException {
 
@@ -45,10 +42,7 @@ public class Ex5_CBTGenerationAuth {
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
 
-        if (logger.isLoggable(Level.INFO)) {
-            String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
-            logger.info(message);
-        }
+        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
 
     }
 }

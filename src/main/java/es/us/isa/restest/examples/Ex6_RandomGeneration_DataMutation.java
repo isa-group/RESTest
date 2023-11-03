@@ -7,8 +7,6 @@ import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 
@@ -25,8 +23,6 @@ import static es.us.isa.restest.util.FileManager.createDir;
 public class Ex6_RandomGeneration_DataMutation {
 
     public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex6_RandomGeneration_DataMutation/events.properties"; 		// Path to user properties file with configuration options
-
-    public static final Logger logger = Logger.getLogger(Ex6_RandomGeneration_DataMutation.class.getName());
 
     public static void main(String[] args) throws RESTestException {
         // Load properties
@@ -45,9 +41,6 @@ public class Ex6_RandomGeneration_DataMutation {
 
         System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
 
-        if (logger.isLoggable(Level.INFO)) {
-            String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
-            logger.info(message);
-        }
+
     }
 }

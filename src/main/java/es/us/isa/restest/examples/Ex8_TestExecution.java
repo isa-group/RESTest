@@ -8,7 +8,6 @@ import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import java.util.Collection;
-import java.util.logging.Logger;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 
@@ -24,8 +23,6 @@ public class Ex8_TestExecution {
 
 
     public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex8_TestExecution/user_config.properties"; 		// Path to user properties file with configuration options
-
-    public static final Logger logger = Logger.getLogger(Ex8_TestExecution.class.getName());
 
 
     public static void main(String[] args) throws RESTestException {
@@ -49,10 +46,7 @@ public class Ex8_TestExecution {
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
 
-        if(logger.isLoggable(java.util.logging.Level.INFO)) {
-            String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
-            logger.info(message);
-        }
+        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
 
 
         // Execute tests

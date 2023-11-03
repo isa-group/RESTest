@@ -6,8 +6,6 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -24,7 +22,6 @@ public class Ex2_CreateTestConf {
     public static final String SPEC_PATH = "src/main/resources/Examples/Ex2_CreateTestConf/spec_bigoven.yaml"; 		// Path to OAS specification file
     public static final String CONF_PATH = "src/main/resources/Examples/Ex2_CreateTestConf/default_test_conf.yaml"; 		// Path to test configuration file
 
-    public static final Logger logger = Logger.getLogger(Ex2_CreateTestConf.class.getName());
 
 
     public static void main(String[] args) {
@@ -43,10 +40,7 @@ public class Ex2_CreateTestConf {
         DefaultTestConfigurationGenerator gen = new DefaultTestConfigurationGenerator(spec);
         gen.generate(CONF_PATH, filters);
 
-        if (logger.isLoggable(Level.INFO)) {
-            String message = String.format("Default test configuration file generated at %s", CONF_PATH);
-            logger.info(message);
-        }
+        System.out.println("Default test configuration file generated at " + CONF_PATH);
 
     }
 }

@@ -7,8 +7,6 @@ import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 
@@ -25,7 +23,6 @@ public class Ex4_ARTestGeneration {
     // Need to create the file src\test\resources\auth\OMDb\apikeys.json
     public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex4_ARTestGeneration/omdb.properties"; 		// Path to user properties file with configuration options
 
-    public static final Logger logger = Logger.getLogger(Ex4_ARTestGeneration.class.getName());
 
     public static void main(String[] args) throws RESTestException {
         // Load properties
@@ -42,10 +39,7 @@ public class Ex4_ARTestGeneration {
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
 
-        if (logger.isLoggable(Level.INFO)) {
-            String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
-            logger.info(message);
-        }
+        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
 
     }
 
