@@ -29,8 +29,7 @@ public class Ex8_TestExecution {
 
 
     public static void main(String[] args) throws RESTestException {
-
-        // Create tests if they do not exist
+/*        // Create tests if they do not exist
 
         // Load properties
         RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
@@ -52,7 +51,7 @@ public class Ex8_TestExecution {
         if(logger.isLoggable(java.util.logging.Level.INFO)) {
             String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
             logger.info(message);
-        }
+        }*/
 
 
         // Execute tests
