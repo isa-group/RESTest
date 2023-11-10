@@ -1,6 +1,7 @@
 package es.us.isa.restest.runners;
 
 
+import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.ClassLoader;
 
 import es.us.isa.restest.util.Timer;
@@ -48,6 +49,8 @@ public class RESTestExecutor {
 
         JUnitCore junit = new JUnitCore();
         junit.addListener(new io.qameta.allure.junit4.AllureJunit4());
+        loader.spec = new OpenAPISpecification(loader.OAISpecPath);
+        loader.createStatsReportManager();
         Timer.startCounting(TEST_SUITE_EXECUTION);
         Result result = junit.run(testClass);
         Timer.stopCounting(TEST_SUITE_EXECUTION);
