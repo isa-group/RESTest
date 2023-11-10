@@ -5,6 +5,8 @@ import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 
@@ -24,6 +26,10 @@ public class Ex6_RandomGeneration_DataMutation {
 
     public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex6_RandomGeneration_DataMutation/events.properties"; 		// Path to user properties file with configuration options
 
+
+    private static final Logger logger = LogManager.getLogger(Ex6_RandomGeneration_DataMutation.class.getName());
+
+
     public static void main(String[] args) throws RESTestException {
         // Load properties
         RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
@@ -39,7 +45,7 @@ public class Ex6_RandomGeneration_DataMutation {
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
 
-        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
+        logger.info(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
 
 
     }

@@ -1,0 +1,572 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {
+                  Spotify/headers.json
+  }
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /me/playlists
+    operationId: endpoint-get-a-list-of-current-users-playlists
+    method: get
+    testParameters:
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 0
+          objectValues: null
+        - name: max
+          values:
+          - 100000
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/users/{user_id}/playlists"
+    operationId: endpoint-get-list-users-playlists
+    method: get
+    testParameters:
+    - name: user_id
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - playlists.items.owner.id
+          - name: altOperationPath
+            values:
+              - /search
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 0
+          objectValues: null
+        - name: max
+          values:
+          - 100000
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: "/users/{user_id}/playlists"
+    operationId: endpoint-create-playlist
+    method: post
+    testParameters:
+    - name: user_id
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - id
+          - name: altOperationPath
+            values:
+              - /me
+        valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}"
+    operationId: endpoint-get-playlist
+    method: get
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - playlists.items.id
+          - name: altOperationPath
+            values:
+              - /search
+        valid: true
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/main/resources/Examples/Ex7_CBTStatefulGeneration/CountryCodes-ISO-3166-1-alpha-2.csv
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - collaborative
+          - description
+          - external_urls
+          - followers
+          - href
+          - id
+          - images
+          - name
+          - owner
+          - public
+          - snapshot_id
+          - tracks
+          - type
+          - uri
+        - name: minValues
+          values:
+          - 1
+        - name: maxValues
+          values:
+          - 5
+          objectValues: null
+        valid: true
+    - name: additional_types
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - track
+              - episode
+          - name: maxValues
+            values:
+              - 2
+        valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}"
+    operationId: endpoint-change-playlist-details
+    method: put
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+      - type: ParameterGenerator
+        genParameters:
+          - name: altParamName
+            values:
+              - items.id
+          - name: altOperationPath
+            values:
+              - /me/playlists
+        valid: true
+    - name: body
+      in: body
+      weight: 0.5
+      generators:
+      - type: BodyGenerator
+        genParameters: []
+        valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}/tracks"
+    operationId: endpoint-get-playlists-tracks
+    method: get
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - playlists.items.id
+            - name: altOperationPath
+              values:
+                - /search
+          valid: true
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: csv
+              values:
+                - src/main/resources/Examples/Ex7_CBTStatefulGeneration/CountryCodes-ISO-3166-1-alpha-2.csv
+              objectValues: null
+          valid: true
+    - name: fields
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - href
+                - items
+                - limit
+                - next
+                - offset
+                - previous
+            - name: minValues
+              values:
+                - 1
+            - name: maxValues
+              values:
+                - 3
+              objectValues: null
+          valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100000
+          objectValues: null
+        valid: true
+    - name: additional_types
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: values
+              values:
+                - track
+                - episode
+            - name: maxValues
+              values:
+                - 2
+          valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}/tracks"
+    operationId: endpoint-reorder-or-replace-playlists-tracks
+    method: put
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - items.id
+            - name: altOperationPath
+              values:
+                - /me/playlists
+          valid: true
+    - name: uris
+      in: query
+      weight: 0.5
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - tracks.items.uri
+            - name: altOperationPath
+              values:
+                - /search
+          valid: true
+    - name: body
+      in: body
+      weight: 0.5
+      generators:
+        - type: BodyGenerator
+          genParameters: []
+          valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}/tracks"
+    operationId: endpoint-add-tracks-to-playlist
+    method: post
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - items.id
+            - name: altOperationPath
+              values:
+                - /me/playlists
+          valid: true
+    - name: position
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 100
+          objectValues: null
+        valid: true
+    - name: uris
+      in: query
+      weight: 0.5
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - tracks.items.uri
+            - name: altOperationPath
+              values:
+                - /search
+          valid: true
+    - name: body
+      in: body
+      weight: 0.5
+      generators:
+        - type: BodyGenerator
+          genParameters: []
+          valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}/tracks"
+    operationId: endpoint-remove-tracks-playlist
+    method: delete
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - items.id
+            - name: altOperationPath
+              values:
+                - /me/playlists
+          valid: true
+    - name: body
+      in: body
+      weight: null
+      generators:
+        - type: BodyGenerator
+          genParameters: []
+          valid: true
+    expectedResponse: 200
+  - testPath: "/playlists/{playlist_id}/images"
+    operationId: endpoint-get-playlist-cover
+    method: get
+    testParameters:
+    - name: playlist_id
+      in: path
+      weight: null
+      generators:
+        - type: ParameterGenerator
+          genParameters:
+            - name: altParamName
+              values:
+                - playlists.items.id
+            - name: altOperationPath
+              values:
+                - /search
+          valid: true
+    expectedResponse: 200
+  - testPath: /search
+    operationId: endpoint-search
+    method: get
+    testParameters:
+    - name: q
+      in: query
+      weight: null
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: type
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - album
+          - artist
+          - playlist
+          - track
+          - show
+          - episode
+          objectValues: null
+        valid: true
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+        - type: RandomInputValue
+          genParameters:
+            - name: csv
+              values:
+                - src/main/resources/Examples/Ex7_CBTStatefulGeneration/CountryCodes-ISO-3166-1-alpha-2.csv
+              objectValues: null
+          valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - int32
+          objectValues: null
+        - name: min
+          values:
+          - 0
+          objectValues: null
+        - name: max
+          values:
+          - 1000
+          objectValues: null
+        valid: true
+    - name: include_external
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - audio
+          objectValues: null
+        valid: true
+    expectedResponse: 200
+  - testPath: /me
+    operationId: endpoint-get-current-users-profile
+    method: get
+    testParameters: []
+    expectedResponse: 200

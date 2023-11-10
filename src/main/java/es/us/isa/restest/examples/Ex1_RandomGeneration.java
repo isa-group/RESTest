@@ -5,6 +5,8 @@ import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Collection;
 
@@ -22,7 +24,9 @@ import static es.us.isa.restest.util.FileManager.createDir;
  */
 public class Ex1_RandomGeneration {
 
-    public static final String PROPERTY_FILE_PATH="src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties"; 		// Path to user properties file with configuration options
+    public static final String PROPERTY_FILE_PATH="src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties";    // Path to user properties file with configuration options
+
+    private static final Logger logger = LogManager.getLogger(Ex1_RandomGeneration.class.getName());
 
     public static void main(String[] args) throws RESTestException {
         // Load properties
@@ -39,6 +43,6 @@ public class Ex1_RandomGeneration {
         RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
         writer.write(testCases);
         
-        System.out.println(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
+        logger.info(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
     }
 }
