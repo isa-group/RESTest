@@ -11,11 +11,11 @@ import es.us.isa.restest.util.RESTestException;
  * The resources for this example are located at src/main/resources/Examples/Ex8_TestExecution.
  *
  */
+
 public class Ex8_TestExecution {
 
 
     public static final String PROPERTY_FILE_PATH = "src/main/resources/Examples/Ex8_TestExecution/user_config.properties"; 		// Path to user properties file with configuration options
-
 
     public static void main(String[] args) throws RESTestException {
 
