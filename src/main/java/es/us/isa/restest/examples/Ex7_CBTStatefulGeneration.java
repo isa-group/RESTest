@@ -13,9 +13,11 @@ import java.util.Collection;
 import static es.us.isa.restest.util.FileManager.createDir;
 
 /**
- * TODO
+ * This example shows how to generate a set of test cases using the Constraint-Based Stateful test case generator and write them to a file using the RESTAssured writer.
+ * Stateful test cases store certain values from responses, creating a dictionary to store them, and subsequently use those values in other tests.
+ * This is reflected within the configuration file using BodyGenerator and ParameterGenerator.
  *
- * The resources for this example are located at src/main/resources/Examples/Ex1_RandomGeneration.
+ * The resources for this example are located at src/main/resources/Examples/Ex7_CBTStatefulGeneration.
  *
  */
 public class Ex7_CBTStatefulGeneration {

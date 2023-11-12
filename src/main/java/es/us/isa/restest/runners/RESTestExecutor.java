@@ -16,6 +16,13 @@ import java.nio.file.Paths;
 
 import static es.us.isa.restest.util.Timer.TestStep.TEST_SUITE_EXECUTION;
 
+/**
+ * This class implement execution of test cases according to the configuration properties.
+ * @author José Luis García
+ * @author Vicente Cambrón
+ *
+ */
+
 public class RESTestExecutor {
 
     private static final Logger logger = LogManager.getLogger(RESTestExecutor.class.getName());

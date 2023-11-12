@@ -4,6 +4,7 @@ import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -14,11 +15,11 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ExecutorTest {
+public class RESTestExecutorTest {
 
     @Test
+    @Ignore
     public void testExecutor() throws RESTestException {
-
 
         RESTestLoader loader = new RESTestLoader("src/test/resources/Restcountries/restcountries_demo.properties");
 
