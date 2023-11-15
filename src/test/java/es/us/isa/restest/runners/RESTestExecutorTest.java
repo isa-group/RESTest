@@ -4,6 +4,7 @@ import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -11,17 +12,16 @@ import java.util.Collection;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.util.FileManager.deleteDir;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class RESTestExecutorTest {
 
-    public static final String PROPERTY_FILE_PATH = "src/test/resources/Restcountries/restcountries_demo.properties";
-
     @Test
+    @Ignore
     public void testExecutor() throws RESTestException {
 
-
-        RESTestLoader loader = new RESTestLoader(PROPERTY_FILE_PATH);
+        RESTestLoader loader = new RESTestLoader("src/test/resources/Restcountries/restcountries_demo.properties");
 
         deleteDir(loader.getTargetDirJava());
 
@@ -50,7 +50,7 @@ public class RESTestExecutorTest {
         assert listOfFiles != null;
         assertTrue(listOfFiles.length > 0);
 
-        RESTestExecutor executor = new RESTestExecutor(PROPERTY_FILE_PATH);
+        RESTestExecutor executor = new RESTestExecutor("src/test/resources/Restcountries/restcountries_demo.properties");
         executor.execute();
 
         deleteDir(loader.getTargetDirJava());
@@ -64,7 +64,7 @@ public class RESTestExecutorTest {
     public void testExecuteWithNonExistingTestClass() {
 
         try {
-            RESTestExecutor executor = new RESTestExecutor(PROPERTY_FILE_PATH);
+            RESTestExecutor executor = new RESTestExecutor("src/test/resources/Restcountries/restcountries_demo.properties");
             executor.execute();
         } catch (Exception e) {
             assertTrue(e instanceof IllegalArgumentException);

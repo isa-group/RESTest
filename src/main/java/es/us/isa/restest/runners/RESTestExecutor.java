@@ -1,6 +1,7 @@
 package es.us.isa.restest.runners;
 
 
+import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.ClassLoader;
 
 import es.us.isa.restest.util.Timer;
@@ -15,6 +16,13 @@ import java.nio.file.Paths;
 
 import static es.us.isa.restest.util.Timer.TestStep.TEST_SUITE_EXECUTION;
 
+/**
+ * This class implement execution of test cases according to the configuration properties.
+ * @author José Luis García
+ * @author Vicente Cambrón
+ *
+ */
+
 public class RESTestExecutor {
 
     private static final Logger logger = LogManager.getLogger(RESTestExecutor.class.getName());
@@ -23,6 +31,10 @@ public class RESTestExecutor {
 
     public RESTestExecutor(String propertyFilePath) {
         loader = new RESTestLoader(propertyFilePath);
+    }
+
+    public RESTestExecutor(String propertyFilePath, boolean reloadProperties) {
+        loader = new RESTestLoader(propertyFilePath, reloadProperties);
     }
 
     public void execute() {
@@ -48,6 +60,8 @@ public class RESTestExecutor {
 
         JUnitCore junit = new JUnitCore();
         junit.addListener(new io.qameta.allure.junit4.AllureJunit4());
+        loader.spec = new OpenAPISpecification(loader.OAISpecPath);
+        loader.createStatsReportManager();
         Timer.startCounting(TEST_SUITE_EXECUTION);
         Result result = junit.run(testClass);
         Timer.stopCounting(TEST_SUITE_EXECUTION);
