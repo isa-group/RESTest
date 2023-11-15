@@ -72,6 +72,14 @@ public class RESTestLoader {
 		readProperties();
 	}
 
+	public RESTestLoader(String userPropertiesFilePath, boolean reloadProperties) {
+		if (reloadProperties) {
+			PropertyManager.setUserPropertiesFilePath(null);
+		}
+		this.userPropertiesFilePath = userPropertiesFilePath;
+		readProperties();
+	}
+
 	public RESTestLoader() {
 		readProperties();
 	}

@@ -61,5 +61,10 @@ public class PropertyManager {
 		return userProperties.getProperty(name);
 	}
 
+	// Setters
+
+	public static void setUserPropertiesFilePath(Properties userPropertiesFilePath) {
+		userProperties = userPropertiesFilePath;
+	}
 
 }

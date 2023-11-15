@@ -33,6 +33,10 @@ public class RESTestExecutor {
         loader = new RESTestLoader(propertyFilePath);
     }
 
+    public RESTestExecutor(String propertyFilePath, boolean reloadProperties) {
+        loader = new RESTestLoader(propertyFilePath, reloadProperties);
+    }
+
     public void execute() {
         String filePath = loader.targetDirJava + "/" + loader.testClassName + ".java";
         String className = loader.packageName + "." + loader.testClassName;
