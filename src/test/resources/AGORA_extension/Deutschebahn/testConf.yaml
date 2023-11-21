@@ -33,7 +33,7 @@ testConfiguration:
         valid: true
     - name: limit
       in: query
-      weight: 0.7
+      weight: 1.0
       generators:
       - type: RandomNumber
         genParameters:

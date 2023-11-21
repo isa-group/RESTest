@@ -160,7 +160,7 @@ paths:
         - description: Search query.
           in: query
           name: query
-          required: true
+#          required: true
           schema:
             example: staff picks
             type: string
@@ -189,10 +189,10 @@ paths:
             items:
               type: string
       x-dependencies:
-        - ZeroOrOne(links, query);
+        - OnlyOne(query, links);
+        - OnlyOne(query, uris);
         - ZeroOrOne(links, filter);
         - ZeroOrOne(links, sort);
-        - ZeroOrOne(uris, query);
         - ZeroOrOne(uris, filter);
         - ZeroOrOne(uris, sort);
       responses:
@@ -822,33 +822,33 @@ components:
                 - users
                 - videos
               type: object
-            interactions:
-              description: The permissible actions related to the category.
-              properties:
-                follow:
-                  description: An action indicating if the authenticated user has followed this category.
-                  properties:
-                    added:
-                      description: Whether the authenticated user has followed this category.
-                      example: "true"
-                      type: boolean
-                    added_time:
-                      description: The time in ISO 8601 format that the user followed this category, or the null value if the user hasn't followed this category.
-                      example: 2017-05-17T17:46:09+00:00
-                      nullable: true
-                      type: string
-                    uri:
-                      description: "The URI for following or unfollowing this category: PUT to this URI to follow the category, or DELETE to this URI to unfollow the category."
-                      example: /users/152184/categories/animation
-                      type: string
-                  required:
-                    - added
-                    - added_time
-                    - uri
-                  type: object
-              required:
-                - follow
-              type: object
+#            interactions:  # private_token
+#              description: The permissible actions related to the category.
+#              properties:
+#                follow:
+#                  description: An action indicating if the authenticated user has followed this category.
+#                  properties:
+#                    added:
+#                      description: Whether the authenticated user has followed this category.
+#                      example: "true"
+#                      type: boolean
+#                    added_time:
+#                      description: The time in ISO 8601 format that the user followed this category, or the null value if the user hasn't followed this category.
+#                      example: 2017-05-17T17:46:09+00:00
+#                      nullable: true
+#                      type: string
+#                    uri:
+#                      description: "The URI for following or unfollowing this category: PUT to this URI to follow the category, or DELETE to this URI to unfollow the category."
+#                      example: /users/152184/categories/animation
+#                      type: string
+#                  required:
+#                    - added
+#                    - added_time
+#                    - uri
+#                  type: object
+#              required:
+#                - follow
+#              type: object
           required:
             - connections
 #            - interactions
@@ -3506,6 +3506,7 @@ components:
         - uri
       title: Tag
       type: object
+      nullable: true # added
     text-track:
       properties:
         active:
@@ -3715,28 +3716,28 @@ components:
           example: This is where you will find videos and news updates from the staff.
           nullable: true
           type: string
-        content_filter:
-          description: |
-            The user's content filters:
-
-            Option descriptions:
-             * `drugs` - Drugs or alcohol use.
-             * `language` - Profanity or sexually suggestive content.
-             * `nudity` - Nudity.
-             * `safe` - Suitable for all audiences.
-             * `unrated` - No rating.
-             * `violence` - Violent or graphic content.
-          enum:
-            - drugs
-            - language
-            - nudity
-            - safe
-            - unrated
-            - violence
-          example: drugs
-          items:
-            type: string
-          type: array
+#        content_filter:  # private_token
+#          description: |
+#            The user's content filters:
+#
+#            Option descriptions:
+#             * `drugs` - Drugs or alcohol use.
+#             * `language` - Profanity or sexually suggestive content.
+#             * `nudity` - Nudity.
+#             * `safe` - Suitable for all audiences.
+#             * `unrated` - No rating.
+#             * `violence` - Violent or graphic content.
+#          enum:
+#            - drugs
+#            - language
+#            - nudity
+#            - safe
+#            - unrated
+#            - violence
+#          example: drugs
+#          items:
+#            type: string
+#          type: array
         created_time:
           description: The time in ISO 8601 format when the user account was created.
           example: 2007-01-18T16:40:11+00:00
@@ -3870,48 +3871,48 @@ components:
 #                    - total
 #                    - uri
                   type: object
-                block:
-                  description: Information on the users that the current user has blocked. This data requires a bearer token with the `private` scope.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI. This data requires a bearer token with the `private` scope.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of blocked users on this connection. This data requires a bearer token with the `private` scope.
-                      example: 73
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data. This data requires a bearer token with the `private` scope.
-                      example: /me/block
-                      type: string
-#                  required:
-#                    - options
-#                    - total
-#                    - uri
-                  type: object
-                categories:
-                  description: Information about this user's followed categories.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of categories on this connection.
-                      example: 5
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      example: /users/152184/categories
-                      type: string
-#                  required:
-#                    - options
-#                    - total
-#                    - uri
-                  type: object
+#                block: # private_token
+#                  description: Information on the users that the current user has blocked. This data requires a bearer token with the `private` scope.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI. This data requires a bearer token with the `private` scope.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of blocked users on this connection. This data requires a bearer token with the `private` scope.
+#                      example: 73
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data. This data requires a bearer token with the `private` scope.
+#                      example: /me/block
+#                      type: string
+##                  required:
+##                    - options
+##                    - total
+##                    - uri
+#                  type: object
+#                categories:  # private_token
+#                  description: Information about this user's followed categories.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of categories on this connection.
+#                      example: 5
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      example: /users/152184/categories
+#                      type: string
+##                  required:
+##                    - options
+##                    - total
+##                    - uri
+#                  type: object
                 channels:
                   description: Information about this user's subscribed channels.
                   properties:
@@ -3949,27 +3950,27 @@ components:
 #                    - options
 #                    - uri
                   type: object
-                folders:
-                  description: Information about this user's folders.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of folders on this connection.
-                      example: 9
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      example: /me/folders
-                      type: string
-#                  required:
-#                    - options
-#                    - total
-#                    - uri
-                  type: object
+#                folders: # private_token
+#                  description: Information about this user's folders.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of folders on this connection.
+#                      example: 9
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      example: /me/folders
+#                      type: string
+##                  required:
+##                    - options
+##                    - total
+##                    - uri
+#                  type: object
                 followers:
                   description: Information about the user's followers.
                   properties:
@@ -4117,48 +4118,48 @@ components:
 #                    - total
 #                    - uri
                   type: object
-                recommended_channels:
-                  description: A collection of recommended channels for the current user to follow. This data requires a bearer token with the `private` scope.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI. This data requires a bearer token with the `private` scope.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of channels on this connection. This data requires a bearer token with the `private` scope.
-                      example: 4
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data. This data requires a bearer token with the `private` scope.
-                      example: /me/recommendations/channels
-                      type: string
-#                  required:
-#                    - options
-#                    - total
-#                    - uri
-                  type: object
-                recommended_users:
-                  description: A Collection of recommended users for the current user to follow. This data requires a bearer token with the `private` scope.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI. This data requires a bearer token with the `private` scope.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of users on this connection. This data requires a bearer token with the `private` scope.
-                      example: 6
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data. This data requires a bearer token with the `private` scope.
-                      example: /me/recommendations/users
-                      type: string
-#                  required:
-#                    - options
-#                    - total
-#                    - uri
-                  type: object
+#                recommended_channels:  # private_token
+#                  description: A collection of recommended channels for the current user to follow. This data requires a bearer token with the `private` scope.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI. This data requires a bearer token with the `private` scope.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of channels on this connection. This data requires a bearer token with the `private` scope.
+#                      example: 4
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data. This data requires a bearer token with the `private` scope.
+#                      example: /me/recommendations/channels
+#                      type: string
+##                  required:
+##                    - options
+##                    - total
+##                    - uri
+#                  type: object
+#                recommended_users: # private_token
+#                  description: A Collection of recommended users for the current user to follow. This data requires a bearer token with the `private` scope.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI. This data requires a bearer token with the `private` scope.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of users on this connection. This data requires a bearer token with the `private` scope.
+#                      example: 6
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data. This data requires a bearer token with the `private` scope.
+#                      example: /me/recommendations/users
+#                      type: string
+##                  required:
+##                    - options
+##                    - total
+##                    - uri
+#                  type: object
                 shared:
                   description: Information about the videos that have been shared with this user.
                   properties:
@@ -4201,48 +4202,48 @@ components:
 #                    - total
 #                    - uri
                   type: object
-                watched_videos:
-                  description: Information about the videos that this user has watched.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of videos on this connection.
-                      example: 322
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      example: /me/watched/videos
-                      type: string
-                  required:
-                    - options
-                    - total
-                    - uri
-                  type: object
-                watchlater:
-                  description: Information about the videos that this user wants to watch later.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of videos on this connection.
-                      example: 14
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      example: /users/152184/watchlater
-                      type: string
-                  required:
-                    - options
-                    - total
-                    - uri
-                  type: object
+#                watched_videos:  # private_token
+#                  description: Information about the videos that this user has watched.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of videos on this connection.
+#                      example: 322
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      example: /me/watched/videos
+#                      type: string
+#                  required:
+#                    - options
+#                    - total
+#                    - uri
+#                  type: object
+#                watchlater:  # private_token
+#                  description: Information about the videos that this user wants to watch later.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of videos on this connection.
+#                      example: 14
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      example: /users/152184/watchlater
+#                      type: string
+#                  required:
+#                    - options
+#                    - total
+#                    - uri
+#                  type: object
 #              required:
 #                - albums
 #                - appearances
@@ -4265,95 +4266,95 @@ components:
 #                - watched_videos
 #                - watchlater
               type: object
-            interactions:
-              properties:
-                add_privacy_user:
-                  properties:
-                    options:
-                      description: An array of the HTTP methods permitted on this URI. This data requires a bearer token with the `private` scope.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The API URI that resolves to the connection data. This data requires a bearer token with the `private` scope.
-                      example: /channels/152184/privacy/users
-                      type: string
-                  type: object
-                block:
-                  description: Information related to the block status of this user.
-                  properties:
-                    added:
-                      description: Whether a user is blocking the current user.
-                      example: "true"
-                      type: boolean
-                    added_time:
-                      description: The time in ISO 8601 format when the block occurred, or the null value if no block exists.
-                      example: 2017-05-16T15:05:43+00:00
-                      nullable: true
-                      type: string
-                    options:
-                      description: An array of the HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The URI to block or unblock the user.
-                      example: /me/block/3766357
-                      type: string
-#                  required:
-#                    - added
-#                    - added_time
-#                    - options
-#                    - uri
-                  type: object
-                follow:
-                  description: Information related to the followed status of this user.
-                  properties:
-                    added:
-                      description: Whether a user is following the current user.
-                      example: "true"
-                      type: boolean
-                    options:
-                      description: An array of the HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The URI to follow the user.
-                      example: /users/152184/following/3766357
-                      type: string
-#                  required:
-#                    - added
-#                    - options
-#                    - uri
-                  type: object
-                report:
-                  description: Information regarding where and how to report a user.
-                  properties:
-                    options:
-                      description: An array of the HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    reason:
-                      description: List of valid reasons for reporting a video.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      example: /users/152184/report
-                      type: string
-#                  required:
-#                    - options
-#                    - reason
-#                    - uri
-                  type: object
+#            interactions:  # private_token
+#              properties:
+#                add_privacy_user:  # private_token
+#                  properties:
+#                    options:
+#                      description: An array of the HTTP methods permitted on this URI. This data requires a bearer token with the `private` scope.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The API URI that resolves to the connection data. This data requires a bearer token with the `private` scope.
+#                      example: /channels/152184/privacy/users
+#                      type: string
+#                  type: object
+#                block: # private_token
+#                  description: Information related to the block status of this user.
+#                  properties:
+#                    added:
+#                      description: Whether a user is blocking the current user.
+#                      example: "true"
+#                      type: boolean
+#                    added_time:
+#                      description: The time in ISO 8601 format when the block occurred, or the null value if no block exists.
+#                      example: 2017-05-16T15:05:43+00:00
+#                      nullable: true
+#                      type: string
+#                    options:
+#                      description: An array of the HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The URI to block or unblock the user.
+#                      example: /me/block/3766357
+#                      type: string
+##                  required:
+##                    - added
+##                    - added_time
+##                    - options
+##                    - uri
+#                  type: object
+#                follow:  # private_token
+#                  description: Information related to the followed status of this user.
+#                  properties:
+#                    added:
+#                      description: Whether a user is following the current user.
+#                      example: "true"
+#                      type: boolean
+#                    options:
+#                      description: An array of the HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The URI to follow the user.
+#                      example: /users/152184/following/3766357
+#                      type: string
+##                  required:
+##                    - added
+##                    - options
+##                    - uri
+#                  type: object
+#                report:  # private_token
+#                  description: Information regarding where and how to report a user.
+#                  properties:
+#                    options:
+#                      description: An array of the HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    reason:
+#                      description: List of valid reasons for reporting a video.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      example: /users/152184/report
+#                      type: string
+##                  required:
+##                    - options
+##                    - reason
+##                    - uri
+#                  type: object
 #              required:
 #                - block
 #                - follow
 #                - report
-              type: object
+#              type: object
 #          required:
 #            - connections
 #            - interactions
@@ -4651,7 +4652,7 @@ components:
           type: boolean
           nullable: true
         uploader: # added
-          $ref: "#/components/schemas/user"
+          $ref: "#/components/schemas/picture"
         categories:
           description: The categories to which this video belongs.
           items:
@@ -4867,22 +4868,22 @@ components:
                     - total
                     - uri
                   type: object
-                playback:
-                  description: The DRM playback status connection for this video.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      example: /videos/258684937/playback
-                      type: string
-                  required:
-                    - options
-                    - uri
-                  type: object
+#                playback:    # Not present in the official docs
+#                  description: The DRM playback status connection for this video.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      example: /videos/258684937/playback
+#                      type: string
+#                  required:
+#                    - options
+#                    - uri
+#                  type: object
                 recommendations:
                   description: The recommendations for this video.
                   nullable: true
@@ -4974,27 +4975,27 @@ components:
                     - resource_key
                     - uri
                   type: object
-                users_with_access:
-                  description: Information about the user privacy of this video, if the video privacy is `users`.
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of users on this connection.
-                      example: 8
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      example: /videos/258684937/privacy/users
-                      type: string
-                  required:
-                    - options
-                    - total
-                    - uri
-                  type: object
+#                users_with_access: # private_token
+#                  description: Information about the user privacy of this video, if the video privacy is `users`.
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of users on this connection.
+#                      example: 8
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      example: /videos/258684937/privacy/users
+#                      type: string
+#                  required:
+#                    - options
+#                    - total
+#                    - uri
+#                  type: object
                 versions:
                   description: Information about the versions of this video.
                   properties:
@@ -5038,127 +5039,127 @@ components:
             interactions:
               description: A list of resource URIs related to the video.
               properties:
-                buy:
-                  description: The Buy interaction for a On Demand video.
-                  nullable: true
-                  properties:
-                    currency:
-                      description: The currency code for the current user's region.
-                      example: USD
-                      nullable: true
-                      type: string
-                    display_price:
-                      description: Formatted price to display to buy an On Demand video.
-                      example: "5.99"
-                      nullable: true
-                      type: string
-                    download:
-                      description: |
-                        The user's download access to this On Demand video:
-
-                        Option descriptions:
-                         * `available` - The video is available for download.
-                         * `purchased` - The user has purchased the video.
-                         * `restricted` - The user isn't permitted to download the video.
-                         * `unavailable` - The video isn't available for download.
-                      enum:
-                        - available
-                        - purchased
-                        - restricted
-                        - unavailable
-                      example: available
-                      type: string
-                    drm:
-                      description: Whether the video has DRM.
-                      example: "true"
-                      type: boolean
-                    link:
-                      description: The URL to buy the On Demand video on Vimeo.
-                      example: https://vimeo.com/ondemand/darbyforever
-                      nullable: true
-                      type: string
-                    price:
-                      description: The numeric value of the price for buying the On Demand video.
-                      example: 5.99
-                      nullable: true
-                      type: number
-                    purchase_time:
-                      description: The time in ISO 8601 format when the On Demand video was purchased.
-                      example: 2018-03-05T21:04:47+00:00
-                      nullable: true
-                      type: string
-                    stream:
-                      description: |
-                        The user's streaming access to this On Demand video:
-
-                        Option descriptions:
-                         * `available` - The video is available for streaming.
-                         * `purchased` - The user has purchased the video.
-                         * `restricted` - The user isn't permitted to stream the video.
-                         * `unavailable` - The video isn't available for streaming
-                      enum:
-                        - available
-                        - purchased
-                        - restricted
-                        - unavailable
-                      example: available
-                      type: string
-                    uri:
-                      description: The product URI to purchase the On Demand video.
-                      example: /ondemand/pages/61326/products/12345
-                      nullable: true
-                      type: string
-                  required:
-                    - currency
-                    - display_price
-                    - download
-                    - drm
-                    - link
-                    - price
-                    - purchase_time
-                    - stream
-                    - uri
-                  type: object
-                channel:
-                  description: When a video is referenced by a channel URI, if the user is a moderator of the channel, include information about removing the video from the channel.
-                  nullable: true
-                  properties:
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      type: string
-                  required:
-                    - options
-                    - uri
-                  type: object
-                like:
-                  description: Information about whether the authenticated user has liked this video.
-                  properties:
-                    added:
-                      description: Whether the user has liked the video.
-                      example: "true"
-                      type: boolean
-                    added_time:
-                      description: The time in ISO 8601 format when the user liked the video.
-                      type: string
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      type: string
-                  required:
-                    - added
-                    - added_time
-                    - options
-                    - uri
-                  type: object
+#                buy: # private_token
+#                  description: The Buy interaction for a On Demand video.
+#                  nullable: true
+#                  properties:
+#                    currency:
+#                      description: The currency code for the current user's region.
+#                      example: USD
+#                      nullable: true
+#                      type: string
+#                    display_price:
+#                      description: Formatted price to display to buy an On Demand video.
+#                      example: "5.99"
+#                      nullable: true
+#                      type: string
+#                    download:
+#                      description: |
+#                        The user's download access to this On Demand video:
+#
+#                        Option descriptions:
+#                         * `available` - The video is available for download.
+#                         * `purchased` - The user has purchased the video.
+#                         * `restricted` - The user isn't permitted to download the video.
+#                         * `unavailable` - The video isn't available for download.
+#                      enum:
+#                        - available
+#                        - purchased
+#                        - restricted
+#                        - unavailable
+#                      example: available
+#                      type: string
+#                    drm:
+#                      description: Whether the video has DRM.
+#                      example: "true"
+#                      type: boolean
+#                    link:
+#                      description: The URL to buy the On Demand video on Vimeo.
+#                      example: https://vimeo.com/ondemand/darbyforever
+#                      nullable: true
+#                      type: string
+#                    price:
+#                      description: The numeric value of the price for buying the On Demand video.
+#                      example: 5.99
+#                      nullable: true
+#                      type: number
+#                    purchase_time:
+#                      description: The time in ISO 8601 format when the On Demand video was purchased.
+#                      example: 2018-03-05T21:04:47+00:00
+#                      nullable: true
+#                      type: string
+#                    stream:
+#                      description: |
+#                        The user's streaming access to this On Demand video:
+#
+#                        Option descriptions:
+#                         * `available` - The video is available for streaming.
+#                         * `purchased` - The user has purchased the video.
+#                         * `restricted` - The user isn't permitted to stream the video.
+#                         * `unavailable` - The video isn't available for streaming
+#                      enum:
+#                        - available
+#                        - purchased
+#                        - restricted
+#                        - unavailable
+#                      example: available
+#                      type: string
+#                    uri:
+#                      description: The product URI to purchase the On Demand video.
+#                      example: /ondemand/pages/61326/products/12345
+#                      nullable: true
+#                      type: string
+#                  required:
+#                    - currency
+#                    - display_price
+#                    - download
+#                    - drm
+#                    - link
+#                    - price
+#                    - purchase_time
+#                    - stream
+#                    - uri
+#                  type: object
+#                channel:   # private_token
+#                  description: When a video is referenced by a channel URI, if the user is a moderator of the channel, include information about removing the video from the channel.
+#                  nullable: true
+#                  properties:
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      type: string
+#                  required:
+#                    - options
+#                    - uri
+#                  type: object
+#                like:  # private_token
+#                  description: Information about whether the authenticated user has liked this video.
+#                  properties:
+#                    added:
+#                      description: Whether the user has liked the video.
+#                      example: "true"
+#                      type: boolean
+#                    added_time:
+#                      description: The time in ISO 8601 format when the user liked the video.
+#                      type: string
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      type: string
+#                  required:
+#                    - added
+#                    - added_time
+#                    - options
+#                    - uri
+#                  type: object
                 rent:
                   description: The Rent interaction for an On Demand video.
                   nullable: true
@@ -5271,54 +5272,54 @@ components:
                       example: purchased
                       type: string
                   type: object
-                watched:
-                  description: Information about removing this video from the user's list of watched videos.
-                  properties:
-                    added:
-                      description: Whether the user has watched the video.
-                      example: "true"
-                      type: boolean
-                    added_time:
-                      description: The time in ISO 8601 format when the user watched the video.
-                      type: string
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      type: string
-                  required:
-                    - added
-                    - added_time
-                    - options
-                    - uri
-                  type: object
-                watchlater:
-                  description: Information about whether this video appears on the authenticated user's Watch Later list.
-                  properties:
-                    added:
-                      description: Whether the user has added the video to their Watch later list.
-                      example: "true"
-                      type: boolean
-                    added_time:
-                      description: The time in ISO 8601 format when the user added the video to their Watch Later list.
-                      type: string
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      type: string
-                  required:
-                    - added
-                    - added_time
-                    - options
-                    - uri
-                  type: object
+#                watched: # private_token
+#                  description: Information about removing this video from the user's list of watched videos.
+#                  properties:
+#                    added:
+#                      description: Whether the user has watched the video.
+#                      example: "true"
+#                      type: boolean
+#                    added_time:
+#                      description: The time in ISO 8601 format when the user watched the video.
+#                      type: string
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      type: string
+#                  required:
+#                    - added
+#                    - added_time
+#                    - options
+#                    - uri
+#                  type: object
+#                watchlater:  # private_token
+#                  description: Information about whether this video appears on the authenticated user's Watch Later list.
+#                  properties:
+#                    added:
+#                      description: Whether the user has added the video to their Watch later list.
+#                      example: "true"
+#                      type: boolean
+#                    added_time:
+#                      description: The time in ISO 8601 format when the user added the video to their Watch Later list.
+#                      type: string
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      type: string
+#                  required:
+#                    - added
+#                    - added_time
+#                    - options
+#                    - uri
+#                  type: object
               required:
 #                - buy
 #                - channel
@@ -5340,11 +5341,11 @@ components:
           description: The video's title.
           example: Celebrating 10 Years of Staff Picks
           type: string
-        parent_folder:
-          allOf:
-            - $ref: "#/components/schemas/project"
-          description: Information about the folder that contains this video.
-          nullable: true
+#        parent_folder: private_token
+#          allOf:
+#            - $ref: "#/components/schemas/project"
+#          description: Information about the folder that contains this video.
+#          nullable: true
         password:
           description: The privacy-enabled password to watch this video. Only users can see their own video passwords. This data requires a bearer token with the `private` scope.
           example: hunter1

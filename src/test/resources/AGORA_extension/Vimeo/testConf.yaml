@@ -14,7 +14,7 @@ testConfiguration:
     testParameters:
     - name: direction
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
@@ -26,7 +26,7 @@ testConfiguration:
         valid: true
     - name: filter
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomInputValue
         genParameters:
@@ -69,7 +69,7 @@ testConfiguration:
         valid: true
     - name: page
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomNumber
         genParameters:
@@ -83,12 +83,12 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 20
+          - 10
           objectValues: null
         valid: true
     - name: per_page
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomNumber
         genParameters:
@@ -107,7 +107,7 @@ testConfiguration:
         valid: true
     - name: query
       in: query
-      weight: null
+      weight: 0.3
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -118,7 +118,7 @@ testConfiguration:
         valid: true
     - name: sort
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:

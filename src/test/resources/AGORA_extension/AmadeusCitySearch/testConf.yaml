@@ -5,7 +5,7 @@ auth:
   headerParams: {}
   apiKeysPath: null
   headersPath: null
-  oauthPath: AmadeusCitySearch/oauth5.json
+  oauthPath: AmadeusCitySearch/oauth6.json
 testConfiguration:
   operations:
   - testPath: /reference-data/locations/cities
