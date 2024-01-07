@@ -4652,7 +4652,10 @@ components:
           type: boolean
           nullable: true
         uploader: # added
-          $ref: "#/components/schemas/picture"
+          type: object
+          properties:
+            pictures:
+              $ref: "#/components/schemas/picture"
         categories:
           description: The categories to which this video belongs.
           items:
@@ -5039,87 +5042,87 @@ components:
             interactions:
               description: A list of resource URIs related to the video.
               properties:
-#                buy: # private_token
-#                  description: The Buy interaction for a On Demand video.
-#                  nullable: true
-#                  properties:
-#                    currency:
-#                      description: The currency code for the current user's region.
-#                      example: USD
-#                      nullable: true
-#                      type: string
-#                    display_price:
-#                      description: Formatted price to display to buy an On Demand video.
-#                      example: "5.99"
-#                      nullable: true
-#                      type: string
-#                    download:
-#                      description: |
-#                        The user's download access to this On Demand video:
-#
-#                        Option descriptions:
-#                         * `available` - The video is available for download.
-#                         * `purchased` - The user has purchased the video.
-#                         * `restricted` - The user isn't permitted to download the video.
-#                         * `unavailable` - The video isn't available for download.
-#                      enum:
-#                        - available
-#                        - purchased
-#                        - restricted
-#                        - unavailable
-#                      example: available
-#                      type: string
-#                    drm:
-#                      description: Whether the video has DRM.
-#                      example: "true"
-#                      type: boolean
-#                    link:
-#                      description: The URL to buy the On Demand video on Vimeo.
-#                      example: https://vimeo.com/ondemand/darbyforever
-#                      nullable: true
-#                      type: string
-#                    price:
-#                      description: The numeric value of the price for buying the On Demand video.
-#                      example: 5.99
-#                      nullable: true
-#                      type: number
-#                    purchase_time:
-#                      description: The time in ISO 8601 format when the On Demand video was purchased.
-#                      example: 2018-03-05T21:04:47+00:00
-#                      nullable: true
-#                      type: string
-#                    stream:
-#                      description: |
-#                        The user's streaming access to this On Demand video:
-#
-#                        Option descriptions:
-#                         * `available` - The video is available for streaming.
-#                         * `purchased` - The user has purchased the video.
-#                         * `restricted` - The user isn't permitted to stream the video.
-#                         * `unavailable` - The video isn't available for streaming
-#                      enum:
-#                        - available
-#                        - purchased
-#                        - restricted
-#                        - unavailable
-#                      example: available
-#                      type: string
-#                    uri:
-#                      description: The product URI to purchase the On Demand video.
-#                      example: /ondemand/pages/61326/products/12345
-#                      nullable: true
-#                      type: string
-#                  required:
-#                    - currency
-#                    - display_price
-#                    - download
-#                    - drm
-#                    - link
-#                    - price
-#                    - purchase_time
-#                    - stream
-#                    - uri
-#                  type: object
+                buy: # private_token, otherwise null
+                  description: The Buy interaction for a On Demand video.
+                  nullable: true
+                  properties:
+                    currency:
+                      description: The currency code for the current user's region.
+                      example: USD
+                      nullable: true
+                      type: string
+                    display_price:
+                      description: Formatted price to display to buy an On Demand video.
+                      example: "5.99"
+                      nullable: true
+                      type: string
+                    download:
+                      description: |
+                        The user's download access to this On Demand video:
+
+                        Option descriptions:
+                         * `available` - The video is available for download.
+                         * `purchased` - The user has purchased the video.
+                         * `restricted` - The user isn't permitted to download the video.
+                         * `unavailable` - The video isn't available for download.
+                      enum:
+                        - available
+                        - purchased
+                        - restricted
+                        - unavailable
+                      example: available
+                      type: string
+                    drm:
+                      description: Whether the video has DRM.
+                      example: "true"
+                      type: boolean
+                    link:
+                      description: The URL to buy the On Demand video on Vimeo.
+                      example: https://vimeo.com/ondemand/darbyforever
+                      nullable: true
+                      type: string
+                    price:
+                      description: The numeric value of the price for buying the On Demand video.
+                      example: 5.99
+                      nullable: true
+                      type: number
+                    purchase_time:
+                      description: The time in ISO 8601 format when the On Demand video was purchased.
+                      example: 2018-03-05T21:04:47+00:00
+                      nullable: true
+                      type: string
+                    stream:
+                      description: |
+                        The user's streaming access to this On Demand video:
+
+                        Option descriptions:
+                         * `available` - The video is available for streaming.
+                         * `purchased` - The user has purchased the video.
+                         * `restricted` - The user isn't permitted to stream the video.
+                         * `unavailable` - The video isn't available for streaming
+                      enum:
+                        - available
+                        - purchased
+                        - restricted
+                        - unavailable
+                      example: available
+                      type: string
+                    uri:
+                      description: The product URI to purchase the On Demand video.
+                      example: /ondemand/pages/61326/products/12345
+                      nullable: true
+                      type: string
+                  required:
+                    - currency
+                    - display_price
+                    - download
+                    - drm
+                    - link
+                    - price
+                    - purchase_time
+                    - stream
+                    - uri
+                  type: object
 #                channel:   # private_token
 #                  description: When a video is referenced by a channel URI, if the user is a moderator of the channel, include information about removing the video from the channel.
 #                  nullable: true
@@ -5160,7 +5163,7 @@ components:
 #                    - options
 #                    - uri
 #                  type: object
-                rent:
+                rent: # private_token, otherwise null
                   description: The Rent interaction for an On Demand video.
                   nullable: true
                   properties:
@@ -5251,7 +5254,7 @@ components:
                     - reason
                     - uri
                   type: object
-                subscribe:
+                subscribe:  # private_token, otherwise null
                   description: Subscription information for an On Demand video.
                   nullable: true
                   properties:

@@ -1,0 +1,34 @@
+---
+auth:
+  required: false
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /v3.1/alpha
+    operationId: v31ListOfCodes
+    method: get
+    testParameters:
+    - name: codes
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+            - src/test/resources/AGORA_extension/RESTCountries/input_values/all_country_codes.csv
+          objectValues: null
+        - name: minValues
+          values:
+          - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
+          objectValues: null
+        valid: true
+    expectedResponse: 200

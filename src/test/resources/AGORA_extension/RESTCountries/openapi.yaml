@@ -1,0 +1,191 @@
+openapi: 3.0.0
+servers:
+  - url: 'https://restcountries.com'
+info:
+  description: 'REST countries API'
+  title: REST countries API
+  version: v3.1.0
+paths:
+  /v3.1/alpha:
+    get:
+      operationId: v31ListOfCodes
+      parameters:
+        - name: codes
+          description: Search by cca2, ccn3, cca3 or cioc country code (yes, any!)
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: object
+                      properties:
+                        common:
+                          type: string
+                        official:
+                          type: string
+                        nativeName:
+                          type: object
+                          additionalProperties:
+                            type: object
+                    tld:
+                      type: array
+                      items:
+                        type: string
+                    cca2:
+                      type: string
+                    ccn3:
+                      type: string
+                    cca3:
+                      type: string
+                    cioc:
+                      type: string
+                    independent:
+                      type: boolean
+                    status:
+                      type: string
+                    unMember:
+                      type: boolean
+                    currencies:
+                      type: object
+                      additionalProperties:
+                        type: object
+                    idd:
+                      type: object
+                      properties:
+                        root:
+                          type: string
+                        suffixes:
+                          type: array
+                          items:
+                            type: string
+                    capital:
+                      type: array
+                      items:
+                        type: string
+                    altSpellings:
+                      type: array
+                      items:
+                        type: string
+                    region:
+                      type: string
+                    subregion:
+                      type: string
+                    languages:
+                      type: object
+                      additionalProperties:
+                        type: string
+                    translations:
+                      type: object
+                      additionalProperties:
+                        type: object
+                    latlng:
+                      type: array
+                      items:
+                        type: number
+                    landlocked:
+                      type: boolean
+                    borders:
+                      type: array
+                      items:
+                        type: string
+                    area:
+                      type: number
+                    demonyms:
+                      type: object
+                      properties:
+                        eng:
+                          type: object
+                          properties:
+                            f:
+                              type: string
+                            m:
+                              type: string
+                        fra:
+                          type: object
+                          properties:
+                            f:
+                              type: string
+                            m:
+                              type: string
+                    flag:
+                      type: string
+                    maps:
+                      type: object
+                      properties:
+                        googleMaps:
+                          type: string
+                        openStreetMaps:
+                          type: string
+                    population:
+                      type: integer
+                    gini:
+                      type: object
+                      additionalProperties:
+                        type: number
+                    fifa:
+                      type: string
+                    car:
+                      type: object
+                      properties:
+                        signs:
+                          type: array
+                          items:
+                            type: string
+                        side:
+                          type: string
+                    timezones:
+                      type: array
+                      items:
+                        type: string
+                    continents:
+                      type: array
+                      items:
+                        type: string
+                    flags:
+                      type: object
+                      properties:
+                        png:
+                          type: string
+                        svg:
+                          type: string
+                        alt:
+                          type: string
+                    coatOfArms:
+                      type: object
+                      properties:
+                        png:
+                          type: string
+                        svg:
+                          type: string
+                    startOfWeek:
+                      type: string
+                    capitalInfo:
+                      type: object
+                      properties:
+                        latlng:
+                          type: array
+                          items:
+                            type: number
+                    postalCode:
+                      type: object
+                      properties:
+                        format:
+                          type: string
+                        regex:
+                          type: string
+#        default:
+#          description: Other responses
+#components:
+#  schemas: { }

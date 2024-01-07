@@ -1,0 +1,166 @@
+openapi: 3.0.0
+servers:
+  - url: 'https://itunes.apple.com'
+info:
+  description: 'iTunes search API'
+  title: iTunes search API
+  version: v2
+paths:
+  /search:
+    get:
+      operationId: search
+      parameters:
+        - name: term
+          description: "The URL-encoded text string you want to search for. For example: jack+johnson."
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: country
+          description: "The two-letter country code for the store you want to search. The search uses the default store front for the specified country. For example: US. The default is US."
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: media
+          description: "The media type you want to search for. For example: movie. The default is all."
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: entity
+          description: "The type of results you want returned, relative to the specified media type. For example: movieArtist for a movie media type search. The default is the track entity associated with the specified media type."
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: attribute
+          description: "The attribute you want to search for in the stores, relative to the specified media type. For example, if you want to search for an artist by name specify entity=allArtist&attribute=allArtistTerm. In this example, if you search for term=maroon, iTunes returns “Maroon 5” in the search results, instead of all artists who have ever recorded a song with the word “maroon” in the title. The default is all attributes associated with the specified media type."
+          in: query
+          required: false
+          schema:
+            type: string
+#        - name: callback
+#          description: "The name of the Javascript callback function you want to use when returning search results to your website."
+#          in: query
+#          required: false
+#          schema:
+#            type: string
+        - name: limit
+          description: "The number of search results you want the iTunes Store to return. For example: 25. The default is 50."
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: lang
+          description: "The language, English or Japanese, you want to use when returning search results. Specify the language using the five-letter codename. For example: en_us. The default is en_us (English)."
+          in: query
+          required: false
+          schema:
+            type: string
+#        - name: version
+#          description: "The search result key version you want to receive back from your search. The default is 2."
+#          in: query
+#          required: false
+#          schema:
+#            type: integer
+        - name: explicit
+          description: "A flag indicating whether or not you want to include explicit content in your search results. The default is Yes."
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+#            text/javascript:
+              schema:
+                type: object
+                properties:
+                  resultCount:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        wrapperType:
+                          type: string
+                          description: "The name of the object returned by the search request. Return values and examples: track, collection, artist For example: track."
+                        explicitness:
+                          type: string
+                          description: "The Recording Industry Association of America (RIAA) parental advisory for the content returned by the search request. For more information, see http://itunes.apple.com/WebObjects/MZStore.woa/wa/parentalAdvisory. Return values and examples: explicit (explicit lyrics, possibly explicit album cover), cleaned (explicit lyrics “bleeped out”), notExplicit (no explicit lyrics) For example: “trackExplicitness”:”notExplicit”."
+                        kind:
+                          type: string
+                          description: "The kind of content returned by the search request. Return values and examples: book, album, coached-audio, feature-movie, interactive- booklet, music-video, pdf podcast, podcast-episode, software-package, song, tv- episode, artist. For example: song."
+                        trackName:
+                          type: string
+                          description: "The name of the track, song, video, TV episode, and so on returned by the search request. For example: “Banana Pancakes”."
+                        artistName:
+                          type: string
+                          description: "The name of the artist returned by the search request. For example: 'Jack Johnson'."
+                        collectionName:
+                          type: string
+                          description: "The name of the album, TV season, audiobook, and so on returned by the search request. For example: “In Between Dreams”."
+                        censoredName:
+                          type: string
+                          description: "The name of the album, TV season, audiobook, and so on returned by the search request, with objectionable words *’d out. Note: Artist names are never censored. For example: “S**t Happens”."
+                        artworkUrl100:
+                          type: string
+                          description: "A URL for the artwork associated with the returned media type, sized to 100×100 pixels or 60×60 pixels. For example: “http:// a1.itunes.apple.com/jp/r10/Music/ y2005/m06/d03/h05/ s05.oazjtxkw.100×100-75.jpg”."
+                        artworkUrl60:
+                          type: string
+                          description: "A URL for the artwork associated with the returned media type, sized to 100×100 pixels or 60×60 pixels. For example: “http:// a1.itunes.apple.com/jp/r10/Music/ y2005/m06/d03/h05/ s05.oazjtxkw.100×100-75.jpg”."
+                        viewUrl:
+                          type: string
+                          description: "A URL for the content associated with the returned media type. You can click the URL to view the content in the iTunes Store. For example: “http:// itunes.apple.com/WebObjects/ MZStore.woa/wa/viewAlbum? i=68615807&id=68615813&s=1434 62”."
+                        previewURL:
+                          type: string
+                          description: "A URL referencing the 30-second preview file for the content associated with the returned media type. For example: “http:// a392.itunes.apple.com/jp/r10/ Music/y2005/m06/d03/h05/s05.zdzqlufu.p.m4p”."
+                        trackTimeMillis:
+                          type: integer
+                          description: "The returned track’s time in milliseconds."
+                        artistId:
+                          type: integer
+                        collectionId:
+                          type: integer
+                        trackId:
+                          type: integer
+                        collectionCensoredName:
+                          type: string
+                        trackCensoredName:
+                          type: string
+                        artistViewUrl:
+                          type: string
+                        collectionViewUrl:
+                          type: string
+                        trackViewUrl:
+                          type: string
+                        collectionPrice:
+                          type: number
+                        trackPrice:
+                          type: number
+                        collectionExplicitness:
+                          type: string
+                        trackExplicitness:
+                          type: string
+                        discCount:
+                          type: integer
+                        discNumber:
+                          type: integer
+                        trackCount:
+                          type: integer
+                        trackNumber:
+                          type: integer
+                        country:
+                          type: string
+                        currency:
+                          type: string
+                        primaryGenreName:
+                          type: string
+                        description:
+                          type: string
+        default:
+          description: Other responses

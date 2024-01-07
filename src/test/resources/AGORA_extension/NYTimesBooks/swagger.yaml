@@ -1,0 +1,292 @@
+swagger: "2.0"
+basePath: /svc/books/v3
+host: api.nytimes.com
+schemes:
+  - https
+info:
+  version: 3.0.0
+  title: Books API
+  description: |
+    The Books API provides information about book reviews and The New York Times Best Sellers lists.
+
+    ## Best Sellers Lists Services
+    ### List Names
+    The lists/names service returns a list of all the NYT Best Sellers Lists.  Some lists are published weekly and others monthly.  The response includes when each list was first published and last published.
+
+    ```
+    /lists/names.json
+    ```
+
+    ### List Data
+
+    The lists/{date}/{name} service returns the books on the best sellers list for the specified date and list name.
+
+    ```
+    /lists/2019-01-20/hardcover-fiction.json
+    ```
+
+    Use "current" for {date} to get the latest list.
+    ```
+    /lists/current/hardcover-fiction.json
+    ```
+
+    ## Book Reviews Services
+
+    The book reviews service lets you get NYT book review by author, ISBN, or title.
+
+    ```
+    /reviews.json?author=Michelle+Obama
+    ```
+
+    ```
+    /reviews.json?isbn=9781524763138
+    ```
+
+    ```
+    /reviews.json?title=Becoming
+    ```
+
+    ## Example Calls
+
+    ```
+    https://api.nytimes.com/svc/books/v3/lists/current/hardcover-fiction.json?api-key=yourkey
+    ```
+
+    ```
+    https://api.nytimes.com/svc/books/v3/reviews.json?author=Stephen+King&api-key=yourkey
+    ```
+paths:
+  "/lists.json":
+    get:
+      summary: Best Sellers List
+      description: Get Best Sellers list.  If no date is provided returns the latest list.
+      operationId: GET_lists-format
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: list
+          in: query
+          description: |-
+            The name of the Times best sellers list (hardcover-fiction, paperback-nonfiction, ...).
+            The /lists/names service returns all the list names.
+            The encoded list names are lower case with hyphens instead of spaces (e.g. e-book-fiction, instead of E-Book Fiction).
+          type: string
+          required: true
+          default: hardcover-fiction
+        - name: bestsellers-date
+          in: query
+          description: |-
+            YYYY-MM-DD
+
+            The week-ending date for the sales reflected on list-name. Times best sellers lists are compiled using available book sale data. The bestsellers-date may be significantly earlier than published-date. For additional information, see the explanation at the bottom of any best-seller list page on NYTimes.com (example: Hardcover Fiction, published Dec. 5 but reflecting sales to Nov. 29).
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        - name: published-date
+          in: query
+          description: |-
+            YYYY-MM-DD
+
+            The date the best sellers list was published on NYTimes.com (different than bestsellers-date).  Use "current" for latest list.
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        - name: offset
+          in: query
+          description: Sets the starting point of the result set (0, 20, ...).  Used to paginate thru books if list has more than 20. Defaults to 0.  The num_results field indicates how many books are in the list.
+          type: integer
+          multipleOf: 20
+      x-dependencies:
+        - ZeroOrOne(bestsellers-date, published-date);
+      responses:
+        "200":
+          description: "Best Sellers list books"
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+              copyright:
+                type: string
+              num_results:
+                type: integer
+              last_modified:
+                type: string
+              results:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    list_name:
+                      type: string
+                    display_name:
+                      type: string
+                    bestsellers_date:
+                      type: string
+                    published_date:
+                      type: string
+                    rank:
+                      type: integer
+                    rank_last_week:
+                      type: integer
+                    weeks_on_list:
+                      type: integer
+                    asterisk:
+                      type: integer
+                    dagger:
+                      type: integer
+                    amazon_product_url:
+                      type: string
+                    isbns:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          isbn10:
+                            type: string
+                          isbn13:
+                            type: string
+                    book_details:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          description:
+                            type: string
+                          contributor:
+                            type: string
+                          author:
+                            type: string
+                          contributor_note:
+                            type: string
+                          price:
+                            type: integer
+                          age_group:
+                            type: string
+                          publisher:
+                            type: string
+                          primary_isbn13:
+                            type: string
+                          primary_isbn10:
+                            type: string
+                    reviews:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          book_review_link:
+                            type: string
+                          first_chapter_link:
+                            type: string
+                          sunday_review_link:
+                            type: string
+                          article_chapter_link:
+                            type: string
+          examples:
+            application/json:
+              status: OK
+              copyright: Copyright (c) 2019 The New York Times Company.  All Rights Reserved.
+              num_results: 1
+              last_modified: "2016-03-11T13:09:01-05:00"
+              results:
+                - list_name: Hardcover Fiction
+                  display_name: Hardcover Fiction
+                  bestsellers_date: "2016-03-05"
+                  published_date: "2016-03-20"
+                  rank: 5
+                  rank_last_week: 2
+                  weeks_on_list: 2
+                  asterisk: 0
+                  dagger: 0
+                  amazon_product_url: "http://www.amazon.com/Girls-Guide-Moving-On-Novel-ebook/dp/B00ZNE17B4?tag=thenewyorktim-20"
+                  isbns:
+                    - isbn10: 0553391925
+                      isbn13: "9780553391923"
+                  book_details:
+                    - title: A GIRL'S GUIDE TO MOVING ON
+                      description: A mother and her daughter-in-law both leave unhappy marriages and take up with new men.
+                      contributor: by Debbie Macomber
+                      author: Debbie Macomber
+                      contributor_note: ""
+                      price: 0
+                      age_group: ""
+                      publisher: Ballantine
+                      primary_isbn13: "9780553391923"
+                      primary_isbn10: 0553391925
+                  reviews:
+                    - book_review_link: ""
+                      first_chapter_link: ""
+                      sunday_review_link: ""
+                      article_chapter_link: ""
+      security:
+        - api-key: []
+definitions:
+  OverviewResponse:
+    type: object
+    properties:
+      status:
+        type: string
+      copyright:
+        type: string
+      num_results:
+        type: integer
+      results:
+        type: object
+        properties:
+          bestsellers_date:
+            type: string
+          published_date:
+            type: string
+          lists:
+            type: array
+            items:
+              type: object
+              properties:
+                list_id:
+                  type: integer
+                list_name:
+                  type: string
+                display_name:
+                  type: string
+                updated:
+                  type: string
+                list_image:
+                  type: string
+                books:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      age_group:
+                        type: string
+                      author:
+                        type: string
+                      contributor:
+                        type: string
+                      contributor_note:
+                        type: string
+                      created_date:
+                        type: string
+                      description:
+                        type: string
+                      price:
+                        type: integer
+                      primary_isbn13:
+                        type: string
+                      primary_isbn10:
+                        type: string
+                      publisher:
+                        type: string
+                      rank:
+                        type: integer
+                      title:
+                        type: string
+                      updated_date:
+                        type: string
+securityDefinitions:
+  api-key:
+    name: api-key
+    type: apiKey
+    in: query
