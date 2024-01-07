@@ -25,51 +25,60 @@ testConfiguration:
         valid: true
     - name: country
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
-          values:
-          - 1
+        - name: csv
+          values: # Countries not supported by the API (i.e., they return a 400 code) have been removed from the CSV
+          - src/test/resources/AGORA_extension/iTunes/input_values/country_codes.csv
           objectValues: null
         valid: true
     - name: media
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - movie
+          - podcast
+          - music
+          - musicVideo
+          - audiobook
+          - shortFilm
+          - tvShow
+          - software
+          - ebook
+          - all
           objectValues: null
         valid: true
     - name: entity
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/iTunes/input_values/entities.csv
           objectValues: null
         valid: true
     - name: attribute
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/iTunes/input_values/attributes.csv
           objectValues: null
         valid: true
     - name: limit
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
       - type: RandomNumber
         genParameters:
@@ -83,29 +92,31 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 200
           objectValues: null
         valid: true
     - name: lang
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - en_us
+          - ja_jp
           objectValues: null
         valid: true
     - name: explicit
       in: query
-      weight: 0.0
+      weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - Yes
+          - No
           objectValues: null
         valid: true
     expectedResponse: 200

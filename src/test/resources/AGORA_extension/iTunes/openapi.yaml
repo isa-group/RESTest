@@ -17,7 +17,7 @@ paths:
           schema:
             type: string
         - name: country
-          description: "The two-letter country code for the store you want to search. The search uses the default store front for the specified country. For example: US. The default is US."
+          description: "The two-letter country code for the store you want to search. The search uses the default store front for the specified country. For example: US. The default is US. See http://en.wikipedia.org/wiki/ ISO_3166-1_alpha-2 for a list of ISO Country Codes."
           in: query
           required: false
           schema:
@@ -116,7 +116,7 @@ paths:
                         viewUrl:
                           type: string
                           description: "A URL for the content associated with the returned media type. You can click the URL to view the content in the iTunes Store. For example: “http:// itunes.apple.com/WebObjects/ MZStore.woa/wa/viewAlbum? i=68615807&id=68615813&s=1434 62”."
-                        previewURL:
+                        previewUrl:
                           type: string
                           description: "A URL referencing the 30-second preview file for the content associated with the returned media type. For example: “http:// a392.itunes.apple.com/jp/r10/ Music/y2005/m06/d03/h05/s05.zdzqlufu.p.m4p”."
                         trackTimeMillis:
@@ -161,6 +161,126 @@ paths:
                         primaryGenreName:
                           type: string
                         description:
+                          type: string
+                        amgArtistId:
+                          type: integer
+                        copyright:
+                          type: string
+                        releaseDate:
+                          type: string
+                        artworkUrl30:
+                          type: string
+                        artworkUrl600:
+                          type: string
+                        collectionHdPrice:
+                          type: number
+                        contentAdvisoryRating:
+                          type: string
+                        feedUrl:
+                          type: string
+                        genreIds:
+                          type: array
+                          items:
+                            type: string
+                        genres:
+                          type: array
+                          items:
+                            type: string
+                        collectionArtistId:
+                          type: integer
+                        collectionArtistName:
+                          type: string
+                        isStreamable:
+                          type: boolean
+                        longDescription:
+                          type: string
+                        shortDescription:
+                          type: string
+                        trackHdPrice:
+                          type: number
+                        trackHdRentalPrice:
+                          type: number
+                        trackRentalPrice:
+                          type: number
+                        collectionArtistViewUrl:
+                          type: string
+                        hasITunesExtras:
+                          type: boolean
+                        advisories:
+                          type: array
+                          items:
+                            type: string
+                        appletvScreenshotUrls:
+                          type: array
+                          items:
+                            type: string
+                        artworkUrl512:
+                          type: string
+                        averageUserRating:
+                          type: number
+                        averageUserRatingForCurrentVersion:
+                          type: number
+                        userRatingCountForCurrentVersion:
+                          type: integer
+                        bundleId:
+                          type: string
+                        currentVersionReleaseDate:
+                          type: string
+                        features:
+                          type: array
+                          items:
+                            type: string
+                        fileSizeBytes:
+                          type: integer # In some cases, its value is a string
+                        formattedPrice:
+                          type: string
+                        ipadScreenshotUrls:
+                          type: array
+                          items:
+                            type: string
+                        isGameCenterEnabled:
+                          type: boolean
+                        isVppDeviceBasedLicensingEnabled:
+                          type: boolean
+                        languageCodesISO2A:
+                          type: array
+                          items:
+                            type: string
+                        minimumOsVersion:
+                          type: string
+                        price:
+                          type: number
+                        primaryGenreId:
+                          type: integer
+                        releaseNotes:
+                          type: string
+                        screenshotUrls:
+                          type: array
+                          items:
+                            type: string
+                        sellerName:
+                          type: string
+                        sellerUrl:
+                          type: string
+                        supportedDevices:
+                          type: array
+                          items:
+                            type: string
+                        trackContentRating:
+                          type: string
+                        userRatingCount:
+                          type: integer
+                        version:
+                          type: string
+                        artistIds:
+                          type: array
+                          items:
+                            type: integer
+                        artistLinkUrl:
+                          type: string
+                        artistType:
+                          type: string
+                        collectionType:
                           type: string
         default:
           description: Other responses
