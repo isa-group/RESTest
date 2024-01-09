@@ -67,7 +67,7 @@ testConfiguration:
         valid: true
     - name: attribute
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:

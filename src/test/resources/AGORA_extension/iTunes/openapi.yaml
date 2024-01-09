@@ -70,6 +70,30 @@ paths:
           required: false
           schema:
             type: string
+      x-dependencies:
+        - IF entity THEN media;
+        - IF attribute THEN media;
+        # entity
+        - IF media=='movie' THEN (entity=='movieArtist' OR entity=='movie');
+        - IF media=='podcast' THEN (entity=='podcastAuthor' OR entity=='podcast');
+        - IF media=='music' THEN (entity=='musicArtist' OR entity=='musicTrack' OR entity=='album' OR entity=='musicVideo' OR entity=='mix' OR entity=='song');
+        - IF media=='musicVideo' THEN (entity=='musicArtist' OR entity=='musicVideo');
+        - IF media=='audiobook' THEN (entity=='audiobookAuthor' OR entity=='audiobook');
+        - IF media=='shortFilm' THEN (entity=='shortFilmArtist' OR entity=='shortFilm');
+        - IF media=='tvShow' THEN (entity=='tvEpisode' OR entity=='tvSeason');
+        - IF media=='software' THEN (entity=='software' OR entity=='iPadSoftware' OR entity=='macSoftware');
+        - IF media=='ebook' THEN (entity=='ebook');
+        - IF media=='all' THEN (entity=='movie' OR entity=='album' OR entity=='allArtist' OR entity=='podcast' OR entity=='musicVideo' OR entity=='mix' OR entity=='audiobook' OR entity=='tvSeason' OR entity=='allTrack');
+        # attributes
+        - IF media=='movie' THEN (attribute=='actorTerm' OR attribute=='genreIndex' OR attribute=='artistTerm' OR attribute=='shortFilmTerm' OR attribute=='producerTerm' OR attribute=='ratingTerm' OR attribute=='directorTerm' OR attribute=='releaseYearTerm' OR attribute=='featureFilmTerm' OR attribute=='movieArtistTerm' OR attribute=='movieTerm' OR attribute=='ratingIndex' OR attribute=='descriptionTerm');
+        - IF media=='podcast' THEN (attribute=='titleTerm' OR attribute=='languageTerm' OR attribute=='authorTerm' OR attribute=='genreIndex' OR attribute=='artistTerm' OR attribute=='ratingIndex' OR attribute=='keywordsTerm' OR attribute=='descriptionTerm');
+        - IF media=='music' THEN (attribute=='mixTerm' OR attribute=='genreIndex' OR attribute=='artistTerm' OR attribute=='composerTerm' OR attribute=='albumTerm' OR attribute=='ratingIndex' OR attribute=='songTerm');
+        - IF media=='musicVideo' THEN (attribute=='genreIndex' OR attribute=='artistTerm' OR attribute=='albumTerm' OR attribute=='ratingIndex' OR attribute=='songTerm');
+        - IF media=='audiobook' THEN (attribute=='titleTerm' OR attribute=='authorTerm' OR attribute=='genreIndex' OR attribute=='ratingIndex');
+        - IF media=='shortFilm' THEN (attribute=='genreIndex' OR attribute=='artistTerm' OR attribute=='shortFilmTerm' OR attribute=='ratingIndex' OR attribute=='descriptionTerm');
+        - IF media=='software' THEN (attribute=='softwareDeveloper');
+        - IF media=='tvShow' THEN (attribute=='genreIndex' OR attribute=='tvEpisodeTerm' OR attribute=='showTerm' OR attribute=='tvSeasonTerm' OR attribute=='ratingIndex' OR attribute=='descriptionTerm');
+        - IF media=='all' THEN (attribute=='actorTerm' OR attribute=='languageTerm' OR attribute=='allArtistTerm' OR attribute=='tvEpisodeTerm' OR attribute=='shortFilmTerm' OR attribute=='directorTerm' OR attribute=='releaseYearTerm' OR attribute=='titleTerm' OR attribute=='featureFilmTerm' OR attribute=='ratingIndex' OR attribute=='keywordsTerm' OR attribute=='descriptionTerm' OR attribute=='authorTerm' OR attribute=='genreIndex' OR attribute=='mixTerm' OR attribute=='allTrackTerm' OR attribute=='artistTerm' OR attribute=='composerTerm' OR attribute=='tvSeasonTerm' OR attribute=='producerTerm' OR attribute=='ratingTerm' OR attribute=='songTerm' OR attribute=='movieArtistTerm' OR attribute=='showTerm' OR attribute=='movieTerm' OR attribute=='albumTerm');
       responses:
         '200':
           description: Successful response
