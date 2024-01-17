@@ -29,7 +29,7 @@ public class RESTestCLI {
     private static final String BASE_COPY_PROPERTY_FILE_PATH = "src/main/resources/base-copy.properties";
 
     public static void main(String[] args) {
-        test();
+        cli(args);
     }
 
     public static void cli(String[] args) {
@@ -323,10 +323,9 @@ public class RESTestCLI {
     }
 
 
-    // Test
+    // in
 
-    public static void test() {
-        //String[] args = {"-oas", "C:\\Users\\vicen\\SCORE\\RESTest\\src\\test\\resources\\Restcountries\\openapi.yaml"};
+    public static void in() {
         String[] args = {"-g", "-p", "src/test/resources/Restcountries/restcountries.properties"};
         cli(args);
 
