@@ -13,16 +13,24 @@ RESTest is a framework for automated black-box testing of RESTful web APIs. It f
 ## Index
 1. [RESTest Wiki](https://github.com/isa-group/RESTest#restest-wiki)
 
-4. [Quick examples](https://github.com/isa-group/RESTest#quick-examples)
-   1. [Generating test cases](https://github.com/isa-group/RESTest#generating-test-cases)
-   2. [Generating and running test cases](https://github.com/isa-group/RESTest#generating-and-running-test-cases)
-3. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
-4. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
-5. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
+2. [Quick examples](https://github.com/isa-group/RESTest#quick-examples)
+       1. [Using the system programmatically](https://github.com/isa-group/RESTest#using-the-system-programmatically)
+	   	1. [Generating test cases](https://github.com/isa-group/RESTest#generating-test-cases)
+	   	2. [Generating and running test cases](https://github.com/isa-group/RESTest#generating-and-running-test-cases)
+	   	3. [Generating and running test cases](https://github.com/isa-group/RESTest#running-test-cases)
+       2. [Using the system via the command-line interface](https://github.com/isa-group/RESTest#using-the-system-via-the-command-line-interface)
+		1. [Generate, Execute, and Generate Reports based on OpenAPI specification](https://github.com/isa-group/RESTest#generate,-execute,-and-generate-reports-based-on-openapi-specification)
+	   	2. [Create a Test Configuration File](https://github.com/isa-group/RESTest#create-a-test-configuration-file)
+	   	3. [Generate Test Cases](https://github.com/isa-group/RESTest#generate-test-cases)
+   	   	4. [Execute Test Cases](https://github.com/isa-group/RESTest#execute-test-cases)
+	   	5. [Generate and Execute Test Cases](https://github.com/isa-group/RESTest#generate-and-execute-test-cases)
+4. [How does it work?](https://github.com/isa-group/RESTest#how-does-it-work)
+5. [What can I do with RESTest?](https://github.com/isa-group/RESTest#what-can-i-do-with-restest)
+6. [Running RESTest as a JAR](https://github.com/isa-group/RESTest#running-restest-as-a-jar)
    1. [Option 1: Build RESTest from source](https://github.com/isa-group/RESTest#option-1-build-restest-from-source)
    2. [Option 2: Download the latest release](https://github.com/isa-group/RESTest#option-2-download-the-latest-release)
-6. [Citing RESTest](https://github.com/isa-group/RESTest#citing-restest)
-7. [License](https://github.com/isa-group/RESTest#license)
+7. [Citing RESTest](https://github.com/isa-group/RESTest#citing-restest)
+8. [License](https://github.com/isa-group/RESTest#license)
    1. [Icon credits](https://github.com/isa-group/RESTest#icon-credits)
 
 ## RESTest Wiki
@@ -181,6 +189,12 @@ public class Ex9_Generation_Execution {
 
 ```
 
+Upon completion, the program will display detailed information in the console. This will include the number of generated test cases, the location of Allure reports, CSV statistics, and the coverage report, providing a comprehensive overview of the results obtained during the execution.
+
+Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `src/main/resources/Examples/Ex8_Generation_Execution/allure_report/anApiOfIceAndFire/index.html` in your browser:
+
+![Allure](docs/img.png)
+
 ### Using the system via the command-line interface
 
 The RESTest CLI supports various options for interacting with the system. Here are the available options: 
@@ -226,12 +240,6 @@ java -jar restest-cli.jar -e [path_to_properties_file]
 ```
 java -jar restest-cli.jar -g -e [path_to_properties_file]
 ```
-
-Upon completion, the program will display detailed information in the console. This will include the number of generated test cases, the location of Allure reports, CSV statistics, and the coverage report, providing a comprehensive overview of the results obtained during the execution.
-
-Finally, test failures are collected and they can be easily spotted and analyzed in a user-friendly GUI, built with [Allure](http://allure.qatools.ru/). To do so, open the file `src/main/resources/Examples/Ex8_Generation_Execution/allure_report/anApiOfIceAndFire/index.html` in your browser:
-
-![Allure](docs/img.png)
 
 
 ## Detailed example
