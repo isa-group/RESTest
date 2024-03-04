@@ -8,8 +8,12 @@ import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
+import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
+
+
 
 import java.io.*;
 import java.nio.file.Files;
@@ -36,13 +40,20 @@ public class RESTestCLI {
         CommandLineParser parser = new DefaultParser();
         Options options = new Options();
         options.addOption("h", "help", false, "Show help");
-        options.addOption("oas", "openapi", true, "OpenAPI file");
-        options.addOption("p", "property", true, "Property file");
-        options.addOption("c", "conf", true, "Test configuration file");
-        options.addOption("cc", "create-conf", false, "Create test configuration file");
-        options.addOption("g", "generate", false, "Generate test cases");
-        options.addOption("e", "execute", false, "Execute test cases");
-        options.addOption("ge", "generate-execute", false, "Generate and execute test cases");
+        options.addOption("o", "openapi", true, "OpenAPI file");
+        options.addOption("c", "create-conf", true, "Create test configuration file");
+        options.addOption(Option.builder("g")
+                .longOpt("generate")
+                .hasArg()
+                .optionalArg(true)
+                .desc("Generate test cases")
+                .build());
+        options.addOption(Option.builder("e")
+                .longOpt("execute")
+                .hasArg()
+                .optionalArg(true)
+                .desc("Execute test cases")
+                .build());
 
 
         if (args.length == 0) {
@@ -55,45 +66,55 @@ public class RESTestCLI {
         try {
             CommandLine cmd = parser.parse(options, args);
 
-            if (cmd.hasOption("cc") && !cmd.hasOption("oas")) {
-                throw new RuntimeException("Error: OAS file path is empty");
-            }
-
-            if ((cmd.hasOption("g") || cmd.hasOption("e") || cmd.hasOption("ge")) && !cmd.hasOption("p")) {
-                throw new RuntimeException("Error: Property file path is empty");
-            }
-
-            if ((cmd.hasOption("g") && cmd.hasOption("e")) || (cmd.hasOption("g") && cmd.hasOption("ge")) || (cmd.hasOption("e") && cmd.hasOption("ge"))) {
-                throw new RuntimeException("Error: Only one of the following options can be used: -g, -e, -ge");
-            }
-
             if (cmd.hasOption("h")) {
                 HelpFormatter formatter = new HelpFormatter();
                 formatter.printHelp("RESTestCLI", options);
                 return;
             }
 
-            if (cmd.hasOption("oas")) {
+            if(cmd.hasOption("c")){
+                String oasFile = cmd.getOptionValue("c");
+
+                boolean isOASFile = isOASFile(oasFile);
+                if (!isOASFile) {
+                    throw new RuntimeException("Error: The provided file is not a valid OpenAPI specification.");
+                }
+
+                if (oasFile == null) {
+                    throw new RuntimeException("Error: OAS file path is empty");
+                }
+
+                if (isWindowsPath(oasFile)) {
+                    oasFile = oasFile.replace("\\", "/");
+                }
+
+                if (oasFile.trim().isEmpty()){
+                    throw new RuntimeException("Error: OAS file path is empty");
+                }
+
+                boolean oasFileExists = checkFileExists(oasFile);
+
+                if (oasFileExists) {
+                    CreateTestConf.main(new String[]{oasFile});
+                    return;
+                }
+
+            }
+
+            if (cmd.hasOption("o")) {
                 String oasFile = checkGetOAS(cmd);
 
                 if (oasFile.trim().isEmpty()){
                     throw new RuntimeException("Error: OAS file path is empty");
                 }
 
-                if (cmd.hasOption("cc")) {
-                    CreateTestConf.main(new String[]{oasFile});
-                    return;
+                if(isWindowsPath(oasFile)){
+                    oasFile = oasFile.replace("\\", "/");
                 }
-
-                CreateTestConf c = new CreateTestConf();
 
                 CreateTestConf.main(new String[]{oasFile});
 
                 String confPath = CreateTestConf.getConfPath();
-
-                confPath = confPath.replace("/", "");
-
-                confPath = folderPath(oasFile) + confPath;
 
                 copyFile(BASE_PROPERTY_FILE_PATH, BASE_COPY_PROPERTY_FILE_PATH);
 
@@ -116,8 +137,116 @@ public class RESTestCLI {
                 deleteFile(BASE_COPY_PROPERTY_FILE_PATH);
 
 
-            } else if (cmd.hasOption("p")) {
-                String propFile = cmd.getOptionValue("p");
+            } else if ((cmd.hasOption("g") && cmd.hasOption("e"))) {
+
+                String propFileOptionG = cmd.getOptionValue("g");
+                String propFileOptionE = cmd.getOptionValue("e");
+
+
+
+                if (propFileOptionG == null && propFileOptionE == null) {
+                    throw new RuntimeException("Error parsing command line arguments: Missing argument for option: g or e");
+                }else if (propFileOptionG != null) {
+
+                    boolean isPropertyFileG = isPropertyFile(propFileOptionG);
+                    if (!isPropertyFileG) {
+                        throw new RuntimeException("Error: The provided file is not a valid property file.");
+                    }
+
+                    if (isWindowsPath(propFileOptionG)) {
+                        propFileOptionG = propFileOptionG.replace("\\", "/");
+                    }
+
+                    if (propFileOptionG.trim().isEmpty()) {
+                        throw new RuntimeException("Error: Property file path is empty");
+                    }
+
+                    boolean propFileExistsG = checkFileExists(propFileOptionG);
+
+                    if (propFileExistsG) {
+                        RESTestRunner runner = new RESTestRunner(propFileOptionG);
+                        runner.run();
+
+                        logger.info(runner.getNumberOfTestCases() + " test cases generated and written to " + runner.getTargetDirJava());
+                        logger.info("Allure report available at " + runner.getAllureReportsPath());
+                        logger.info("CSV stats available at " + PropertyManager.readProperty("data.tests.dir") + "/" + runner.getExperimentName());
+                        logger.info("Coverage report available at " + PropertyManager.readProperty("data.coverage.dir") + "/" + runner.getExperimentName());
+
+                    }
+                }else if (propFileOptionE != null) {
+
+                    boolean isPropertyFileE = isPropertyFile(propFileOptionE);
+                    if (!isPropertyFileE) {
+                        throw new RuntimeException("Error: The provided file is not a valid property file.");
+                    }
+
+                    if (isWindowsPath(propFileOptionE)) {
+                        propFileOptionE = propFileOptionE.replace("\\", "/");
+                    }
+
+                    if (propFileOptionE.trim().isEmpty()) {
+                        throw new RuntimeException("Error: Property file path is empty");
+                    }
+
+                    boolean propFileExistsE = checkFileExists(propFileOptionE);
+
+                    if (propFileExistsE) {
+
+                        RESTestRunner runner = new RESTestRunner(propFileOptionE);
+                        runner.run();
+
+                        logger.info(runner.getNumberOfTestCases() + " test cases generated and written to " + runner.getTargetDirJava());
+                        logger.info("Allure report available at " + runner.getAllureReportsPath());
+                        logger.info("CSV stats available at " + PropertyManager.readProperty("data.tests.dir") + "/" + runner.getExperimentName());
+                        logger.info("Coverage report available at " + PropertyManager.readProperty("data.coverage.dir") + "/" + runner.getExperimentName());
+
+
+                    }
+                }
+
+            } else if (cmd.hasOption("e")) {
+                String propFile = cmd.getOptionValue("e");
+
+                boolean isPropertyFile = isPropertyFile(propFile);
+                if (!isPropertyFile) {
+                    throw new RuntimeException("Error: The provided file is not a valid property file.");
+                }
+
+                if (propFile == null) {
+                    throw new RuntimeException("Error parsing command line arguments: Missing argument for option: e");
+                }
+
+                if (isWindowsPath(propFile)) {
+                    propFile = propFile.replace("\\", "/");
+                }
+
+                if (propFile.trim().isEmpty()) {
+                    throw new RuntimeException("Error: Property file path is empty");
+                }
+
+                boolean propFileExists = checkFileExists(propFile);
+
+                if (propFileExists) {
+                    RESTestExecutor executor = new RESTestExecutor(propFile);
+                    executor.execute();
+                }
+            }
+            else if (cmd.hasOption("g")) {
+
+                String propFile = cmd.getOptionValue("g");
+
+                boolean isPropertyFile = isPropertyFile(propFile);
+                if (!isPropertyFile) {
+                    throw new RuntimeException("Error: The provided file is not a valid property file.");
+                }
+
+                if (propFile == null) {
+                    throw new RuntimeException("Error parsing command line arguments: Missing argument for option: g");
+                }
+
+                if (isWindowsPath(propFile)) {
+                    propFile = propFile.replace("\\", "/");
+                }
 
                 if (propFile.trim().isEmpty()){
                     throw new RuntimeException("Error: Property file path is empty");
@@ -127,38 +256,22 @@ public class RESTestCLI {
 
                 if (propFileExists) {
 
-                    if (cmd.hasOption("g")) {
+                    RESTestLoader loader = new RESTestLoader(propFile);
 
-                        RESTestLoader loader = new RESTestLoader(propFile);
+                    try {
+                        var generator = loader.createGenerator();
+                        Collection<TestCase> testCases = generator.generate();
 
-                        try {
-                            var generator = loader.createGenerator();
-                            Collection<TestCase> testCases = generator.generate();
+                        createDir(loader.getTargetDirJava());
 
-                            createDir(loader.getTargetDirJava());
+                        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
+                        writer.write(testCases);
 
-                            RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
-                            writer.write(testCases);
+                        logger.info(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
 
-                            logger.info(testCases.size() + " test cases generated and written to " + loader.getTargetDirJava());
-
-                        } catch (RESTestException e) {
-                            logger.error("Error during test generation: " + e.getMessage());
-                        }
-
-                    } else if (cmd.hasOption("e")) {
-                        RESTestExecutor executor = new RESTestExecutor(propFile);
-                        executor.execute();
-                    } else if (cmd.hasOption("ge")) {
-                        RESTestRunner runner = new RESTestRunner(propFile);
-                        runner.run();
-
-                        logger.info(runner.getNumberOfTestCases() + " test cases generated and written to " + runner.getTargetDirJava());
-                        logger.info("Allure report available at " + runner.getAllureReportsPath());
-                        logger.info("CSV stats available at " + PropertyManager.readProperty("data.tests.dir") + "/" + runner.getExperimentName());
-                        logger.info("Coverage report available at " + PropertyManager.readProperty("data.coverage.dir") + "/" + runner.getExperimentName());
+                    } catch (RESTestException e) {
+                        logger.error("Error during test generation: " + e.getMessage());
                     }
-
                 }
             }
         } catch (ParseException e) {
@@ -183,16 +296,31 @@ public class RESTestCLI {
         return false;
     }
 
+
+
     private static String checkGetOAS(CommandLine cmd) {
-        String oasFile = cmd.getOptionValue("oas");
+        String oasFile = cmd.getOptionValue("o");
+
         boolean oasFileExists = checkFileExists(oasFile);
 
         if (oasFileExists) {
-            return oasFile;
+            // Parse the provided OpenAPI file
+            SwaggerParseResult parseResult = new OpenAPIParser().readLocation(oasFile, null, null);
+            if (parseResult != null && parseResult.getOpenAPI() != null) {
+                // File is a valid OpenAPI specification
+                return oasFile;
+            } else {
+                // File is not a valid OpenAPI specification
+                System.err.println("Error: The provided file is not a valid OpenAPI specification.");
+                return null;
+            }
         } else {
+            // File does not exist
+            System.err.println("Error: The provided file does not exist.");
             return null;
         }
     }
+
 
     private static String folderPath(String path) {
         String[] pathSplit = path.split("[/\\\\]");
@@ -322,11 +450,19 @@ public class RESTestCLI {
         System.out.println("File updated successfully.");
     }
 
+    public static boolean isPropertyFile(String filePath) {
+        return filePath.endsWith(".properties");
+    }
+
+    public static boolean isOASFile(String filePath) {
+        return filePath.endsWith(".json") || filePath.endsWith(".yaml") || filePath.endsWith(".yml");
+    }
+
 
     // in
 
     public static void in() {
-        String[] args = {"-g", "-p", "src/test/resources/Restcountries/restcountries.properties"};
+        String[] args = {"-o", "C:\\Users\\josel\\OneDrive\\Escritorio\\openapi.yaml"};
         cli(args);
 
     }
