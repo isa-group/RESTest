@@ -210,35 +210,35 @@ Here are some quick examples of using the RESTest CLI:
 #### Generate, Execute, and Generate Reports based on OpenAPI specification: 
 
 ```
-java -jar restest-cli.jar -o [path_to_oas_file] 
+java -jar .\target\restest-cli.jar -o [path_to_oas_file] 
 ```
   
 
 #### Create a Test Configuration File: 
 
 ```
-java -jar restest-cli.jar -c [path_to_oas_file] 
+java -jar .\target\restest-cli.jar -c [path_to_oas_file] 
 ```
   
 
 #### Generate Test Cases: 
 
 ```
-java -jar restest-cli.jar -g [path_to_properties_file] 
+java -jar .\target\restest-cli.jar -g [path_to_properties_file] 
 ```
   
 
 #### Execute Test Cases: 
 
 ```
-java -jar restest-cli.jar -e [path_to_properties_file] 
+java -jar .\target\restest-cli.jar -e [path_to_properties_file] 
 ```
   
 
 #### Generate and Execute Test Cases: 
 
 ```
-java -jar restest-cli.jar -g -e [path_to_properties_file]
+java -jar .\target\restest-cli.jar -g -e [path_to_properties_file]
 ```
 
 
