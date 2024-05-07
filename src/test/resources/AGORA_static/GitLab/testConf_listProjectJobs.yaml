@@ -1,0 +1,45 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: GitLab/headers.json
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: "/projects/{id}/jobs"
+    operationId: listProjectJobs
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/AGORA_static/GitLab/input_values/gitlab_projects_ids_with_jobs.csv
+          objectValues: null
+        valid: true
+    - name: scope
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: csv
+          values:
+          - src/test/resources/AGORA_static/GitLab/input_values/job_scopes.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 9
+          objectValues: null
+        valid: true
+    expectedResponse: 200
