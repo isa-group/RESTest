@@ -19,7 +19,7 @@ info:
     name: CC BY-SA 4.0
     url: 'https://gitlab.com/gitlab-org/gitlab/-/blob/master/LICENSE'
 servers:
-- url: https://www.gitlab.com/api/v4
+- url: https://gitlab.com/api/v4
 security:
   - ApiKeyAuth: []
 tags:
@@ -3744,6 +3744,8 @@ components:
         artifacts:
           type: array
           description: The artifacts produced by the job
+          items:
+            type: object
         tag:
           type: boolean
           description: Indicates if the job is tagged
