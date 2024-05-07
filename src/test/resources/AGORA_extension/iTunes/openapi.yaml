@@ -306,5 +306,7 @@ paths:
                           type: string
                         collectionType:
                           type: string
-        default:
-          description: Other responses
+                        amgVideoArtistId:
+                          type: integer
+#        default:
+#          description: Other responses

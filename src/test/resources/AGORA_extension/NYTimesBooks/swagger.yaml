@@ -83,6 +83,7 @@ paths:
             The week-ending date for the sales reflected on list-name. Times best sellers lists are compiled using available book sale data. The bestsellers-date may be significantly earlier than published-date. For additional information, see the explanation at the bottom of any best-seller list page on NYTimes.com (example: Hardcover Fiction, published Dec. 5 but reflecting sales to Nov. 29).
           type: string
           pattern: '^\d{4}-\d{2}-\d{2}$'
+          required: false
         - name: published-date
           in: query
           description: |-
@@ -91,13 +92,13 @@ paths:
             The date the best sellers list was published on NYTimes.com (different than bestsellers-date).  Use "current" for latest list.
           type: string
           pattern: '^\d{4}-\d{2}-\d{2}$'
+          required: false
         - name: offset
           in: query
           description: Sets the starting point of the result set (0, 20, ...).  Used to paginate thru books if list has more than 20. Defaults to 0.  The num_results field indicates how many books are in the list.
           type: integer
           multipleOf: 20
-      x-dependencies:
-        - ZeroOrOne(bestsellers-date, published-date);
+          required: false
       responses:
         "200":
           description: "Best Sellers list books"
@@ -155,6 +156,7 @@ paths:
                             type: string
                           description:
                             type: string
+                            nullable: true
                           contributor:
                             type: string
                           author:
@@ -162,7 +164,7 @@ paths:
                           contributor_note:
                             type: string
                           price:
-                            type: integer
+                            type: string
                           age_group:
                             type: string
                           publisher:
@@ -272,7 +274,7 @@ definitions:
                       description:
                         type: string
                       price:
-                        type: integer
+                        type: string
                       primary_isbn13:
                         type: string
                       primary_isbn10:

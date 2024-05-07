@@ -1,0 +1,48 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: AmadeusCitySearch/oauth6.json
+testConfiguration:
+  operations:
+  - testPath: /reference-data/locations/cities
+    operationId: GETCities
+    method: get
+    testParameters:
+    - name: countryCode
+      in: query
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "Value with spaces and , @ special characters"
+          objectValues: null
+        valid: true
+    - name: keyword
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "Value with spaces and , @ special characters"
+          objectValues: null
+        valid: true
+    - name: max
+      in: header
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "Value with spaces and , @ special characters"
+          objectValues: null
+        valid: true
+    expectedResponse: 200

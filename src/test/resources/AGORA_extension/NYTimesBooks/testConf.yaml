@@ -3,8 +3,8 @@ auth:
   required: true
   queryParams: {}
   headerParams: {}
-  apiKeysPath: NYTimesBooks/apikeys0.json
-  headersPath: null
+  apiKeysPath: NYTimesBooks/apikeys2.json
+  headersPath: nulls
   oauthPath: null
 testConfiguration:
   operations:
@@ -27,12 +27,20 @@ testConfiguration:
       in: query
       weight: 0.2
       generators:
-      - type: RandomInputValue
+      - type: RandomDate
         genParameters:
-        - name: csv
-          values:
-          - src/test/resources/AGORA_extension/NYTimesBooks/input_values/bestsellers-date.csv
-          objectValues: null
+          - name: startDate
+            values:
+              - 2008-06-08
+            objectValues: null
+          - name: endDate
+            values:
+              - 2024-01-06
+            objectValues: null
+          - name: format
+            values:
+              - yyyy-MM-dd
+            objectValues: null
         valid: true
     - name: published-date
       in: query
@@ -46,7 +54,7 @@ testConfiguration:
           objectValues: null
         - name: endDate
           values:
-            - 2023-11-15
+            - 2024-01-06
           objectValues: null
         - name: format
           values:

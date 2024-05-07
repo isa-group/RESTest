@@ -1433,81 +1433,81 @@ components:
             weekend_challenge:
               type: boolean
               nullable: true
-        buttons:
-          description: A collection of information about the buttons that appear on the interface of the embeddable player.
-          properties:
-            embed:
-              description: Whether the Embed button appears in the embeddable player for this video.
-              example: "true"
-              type: boolean
-            fullscreen:
-              description: Whether the Fullscreen button appears in the embeddable player for this video.
-              example: "true"
-              type: boolean
-            hd:
-              description: Whether the HD button appears in the embeddable player for this video.
-              example: "true"
-              type: boolean
-            like:
-              description: Whether the Like button appears in the embeddable player for this video.
-              example: "true"
-              type: boolean
-            scaling:
-              description: Whether the Scaling button appears in the embeddable player for this video.
-              example: "true"
-              type: boolean
-            share:
-              description: Whether the Share button appears in the embeddable player for this video.
-              example: "true"
-              type: boolean
-            watchlater:
-              description: Whether the Watch Later button appears in the embeddable player for this video.
-              example: "true"
-              type: boolean
-#          required:
-#            - embed
-#            - fullscreen
-#            - hd
-#            - like
-#            - scaling
-#            - share
-#            - watchlater
-          type: object
+#        buttons: # private_token
+#          description: A collection of information about the buttons that appear on the interface of the embeddable player.
+#          properties:
+#            embed:
+#              description: Whether the Embed button appears in the embeddable player for this video.
+#              example: "true"
+#              type: boolean
+#            fullscreen:
+#              description: Whether the Fullscreen button appears in the embeddable player for this video.
+#              example: "true"
+#              type: boolean
+#            hd:
+#              description: Whether the HD button appears in the embeddable player for this video.
+#              example: "true"
+#              type: boolean
+#            like:
+#              description: Whether the Like button appears in the embeddable player for this video.
+#              example: "true"
+#              type: boolean
+#            scaling:
+#              description: Whether the Scaling button appears in the embeddable player for this video.
+#              example: "true"
+#              type: boolean
+#            share:
+#              description: Whether the Share button appears in the embeddable player for this video.
+#              example: "true"
+#              type: boolean
+#            watchlater:
+#              description: Whether the Watch Later button appears in the embeddable player for this video.
+#              example: "true"
+#              type: boolean
+##          required:
+##            - embed
+##            - fullscreen
+##            - hd
+##            - like
+##            - scaling
+##            - share
+##            - watchlater
+#          type: object
         color:
           description: The primary player color, which controls the color of the progress bar, buttons, and more.
           example: "#0a0808"
           type: string
-        logos:
-          description: A collection of information about the logo in the corner of the embeddable player.
-          properties:
-            custom:
-              description: A collection of information relating to custom logos in the embeddable player.
-              properties:
-                active:
-                  description: Whether the custom logo appears in the embeddable player.
-                  example: "true"
-                  type: boolean
-                link:
-                  description: The URL that loads upon clicking the custom logo.
-                  example: http://example.com
-                  type: string
-                sticky:
-                  description: Whether the custom logo appears even when the player interface is hidden.
-                  example: "true"
-                  type: boolean
-              required:
-                - active
-                - link
-                - sticky
-              type: object
-            vimeo:
-              description: Whether the Vimeo logo appears in the embeddable player for this video.
-              example: "true"
-              type: boolean
-          required:
-            - custom
-            - vimeo
-          type: object
+#        logos:   # private_token
+#          description: A collection of information about the logo in the corner of the embeddable player.
+#          properties:
+#            custom:
+#              description: A collection of information relating to custom logos in the embeddable player.
+#              properties:
+#                active:
+#                  description: Whether the custom logo appears in the embeddable player.
+#                  example: "true"
+#                  type: boolean
+#                link:
+#                  description: The URL that loads upon clicking the custom logo.
+#                  example: http://example.com
+#                  type: string
+#                sticky:
+#                  description: Whether the custom logo appears even when the player interface is hidden.
+#                  example: "true"
+#                  type: boolean
+#              required:
+#                - active
+#                - link
+#                - sticky
+#              type: object
+#            vimeo:
+#              description: Whether the Vimeo logo appears in the embeddable player for this video.
+#              example: "true"
+#              type: boolean
+#          required:
+#            - custom
+#            - vimeo
+#          type: object
         playbar:
           description: Whether the playbar appears in the embeddable player for this video.
           example: "true"
@@ -1516,53 +1516,53 @@ components:
           description: Whether the speed controls appear in the embeddable player for this video.
           example: "true"
           type: boolean
-        title:
-          description: A collection of information relating to the embeddable player's title bar.
-          properties:
-            name:
-              description: |
-                How the embeddable player handles the video title:
-
-                Option descriptions:
-                 * `hide` - The title is hidden.
-                 * `show` - The title is shown.
-              enum:
-                - hide
-                - show
-                - user
-              example: hide
-              type: string
-            owner:
-              description: |
-                How the embeddable player handles the video owner's information:
-
-                Option descriptions:
-                 * `hide` - The owner's information is hidden.
-                 * `show` - The owner's information is shown.
-              enum:
-                - hide
-                - show
-                - user
-              example: hide
-              type: string
-            portrait:
-              description: |
-                How the embeddable player handles the video owner's portrait:
-
-                Option descriptions:
-                 * `hide` - The owner's portrait is hidden
-                 * `show` - The owner's portrait is shown.
-              enum:
-                - hide
-                - show
-                - user
-              example: hide
-              type: string
-          required:
-            - name
-            - owner
-            - portrait
-          type: object
+#        title:   # private_token
+#          description: A collection of information relating to the embeddable player's title bar.
+#          properties:
+#            name:
+#              description: |
+#                How the embeddable player handles the video title:
+#
+#                Option descriptions:
+#                 * `hide` - The title is hidden.
+#                 * `show` - The title is shown.
+#              enum:
+#                - hide
+#                - show
+#                - user
+#              example: hide
+#              type: string
+#            owner:
+#              description: |
+#                How the embeddable player handles the video owner's information:
+#
+#                Option descriptions:
+#                 * `hide` - The owner's information is hidden.
+#                 * `show` - The owner's information is shown.
+#              enum:
+#                - hide
+#                - show
+#                - user
+#              example: hide
+#              type: string
+#            portrait:
+#              description: |
+#                How the embeddable player handles the video owner's portrait:
+#
+#                Option descriptions:
+#                 * `hide` - The owner's portrait is hidden
+#                 * `show` - The owner's portrait is shown.
+#              enum:
+#                - hide
+#                - show
+#                - user
+#              example: hide
+#              type: string
+#          required:
+#            - name
+#            - owner
+#            - portrait
+#          type: object
         uri:
           description: The URI of the embed preset.
           example: /videos/258684937/presets/12345
@@ -2976,76 +2976,76 @@ components:
       type: object
     play:
       properties:
-        progressive:
-          description: Progressive files.
-          items:
-            properties:
-              created_time:
-                description: The time in ISO 8601 format when this video file was created.
-                example: 2017-05-16T17:21:51+00:00
-                type: string
-              fps:
-                description: The FPS of the video file.
-                example: 30
-                type: number
-              height:
-                description: The height in pixels of the video.
-                example: 720
-                nullable: true
-                type: number
-              link:
-                description: The direct link to this video file.
-                type: string
-              link_expiration_time:
-                description: The time in ISO 8601 format when the link to this video file expires.
-                example: 2017-05-16T17:21:51+00:00
-                type: string
-              log:
-                description: The URLs for logging events.
-                type: object
-              md5:
-                description: The MD5 hash of the video file.
-                example: 1bc29b36f623ba82aaf6724fd3b16718
-                type: string
-              size:
-                description: The file size in bytes of this video.
-                example: 5000000
-                nullable: true
-                type: number
-              type:
-                description: |
-                  The type of the video file:
-
-                  Option descriptions:
-                   * `source` - The video is a source file.
-                   * `video/mp4` - The video is in MP4 format.
-                   * `video/webm` - The video is in WebM format.
-                   * `vp6/x-video` - The video is in VP6 format.
-                enum:
-                  - source
-                  - video/mp4
-                  - video/webm
-                  - vp6/x-video
-                example: source
-                nullable: true
-                type: string
-              width:
-                description: The width in pixels of the video.
-                example: 1280
-                nullable: true
-                type: number
-            required:
-              - created_time
-              - fps
-              - height
-              - link
-              - link_expiration_time
-              - md5
-              - size
-              - type
-              - width
-            type: object
-          type: array
+#        progressive: # private_token
+#          description: Progressive files.
+#          items:
+#            properties:
+#              created_time:
+#                description: The time in ISO 8601 format when this video file was created.
+#                example: 2017-05-16T17:21:51+00:00
+#                type: string
+#              fps:
+#                description: The FPS of the video file.
+#                example: 30
+#                type: number
+#              height:
+#                description: The height in pixels of the video.
+#                example: 720
+#                nullable: true
+#                type: number
+#              link:
+#                description: The direct link to this video file.
+#                type: string
+#              link_expiration_time:
+#                description: The time in ISO 8601 format when the link to this video file expires.
+#                example: 2017-05-16T17:21:51+00:00
+#                type: string
+#              log:
+#                description: The URLs for logging events.
+#                type: object
+#              md5:
+#                description: The MD5 hash of the video file.
+#                example: 1bc29b36f623ba82aaf6724fd3b16718
+#                type: string
+#              size:
+#                description: The file size in bytes of this video.
+#                example: 5000000
+#                nullable: true
+#                type: number
+#              type:
+#                description: |
+#                  The type of the video file:
+#
+#                  Option descriptions:
+#                   * `source` - The video is a source file.
+#                   * `video/mp4` - The video is in MP4 format.
+#                   * `video/webm` - The video is in WebM format.
+#                   * `vp6/x-video` - The video is in VP6 format.
+#                enum:
+#                  - source
+#                  - video/mp4
+#                  - video/webm
+#                  - vp6/x-video
+#                example: source
+#                nullable: true
+#                type: string
+#              width:
+#                description: The width in pixels of the video.
+#                example: 1280
+#                nullable: true
+#                type: number
+#            required:
+#              - created_time
+#              - fps
+#              - height
+#              - link
+#              - link_expiration_time
+#              - md5
+#              - size
+#              - type
+#              - width
+#            type: object
+#          type: array
         status:
           description: |
             The play status of the video:
@@ -4368,166 +4368,166 @@ components:
 #          allOf:
 #            - $ref: "#/components/schemas/picture"
           description: The active portrait of this user.
-        preferences:
-          properties:
-            videos:
-              properties:
-                privacy:
-                  properties:
-                    add:
-                      description: Whether other users can add the user's videos.
-                      example: "true"
-                      type: boolean
-                    comments:
-                      description: |
-                        The user's privacy preference for comments:
-
-                        Option descriptions:
-                         * `anybody` - Anyone can comment on the user's videos.
-                         * `contacts` - Only contacts can comment on the user's videos.
-                         * `nobody` - No one can comment on the user's videos.
-                      enum:
-                        - anybody
-                        - contacts
-                        - nobody
-                      example: anybody
-                      type: string
-                    download:
-                      description: Whether other users can download the user's videos.
-                      example: "true"
-                      type: boolean
-                    embed:
-                      description: |
-                        The user's privacy preference for embeds:
-
-                        Option descriptions:
-                         * `private` - Only the user can embed their own videos.
-                         * `public` - Anyone can embed the user's videos.
-                         * `whitelist` - Only those on the whitelist can embed the user's videos.
-                      enum:
-                        - private
-                        - public
-                        - whitelist
-                      example: private
-                      type: string
-                    view:
-                      description: |
-                        The user's privacy preference for views:
-
-                        Option descriptions:
-                         * `anybody` - Anyone can view the user's videos.
-                         * `contacts` - Only contacts can view the user's videos.
-                         * `disable` - Views are disabled for the user's videos.
-                         * `nobody` - No one except the user can view the user's videos.
-                         * `password` - Only those with the password can view the user's videos.
-                         * `unlisted` - Anybody can view the user's videos if they have a link.
-                         * `users` - Only other Vimeo members can view the user's videos.
-                      enum:
-                        - anybody
-                        - contacts
-                        - disable
-                        - nobody
-                        - password
-                        - unlisted
-                        - users
-                      example: anybody
-                      type: string
-                  type: object
-              type: object
-          type: object
+#        preferences:   # private_token
+#          properties:
+#            videos:
+#              properties:
+#                privacy:
+#                  properties:
+#                    add:
+#                      description: Whether other users can add the user's videos.
+#                      example: "true"
+#                      type: boolean
+#                    comments:
+#                      description: |
+#                        The user's privacy preference for comments:
+#
+#                        Option descriptions:
+#                         * `anybody` - Anyone can comment on the user's videos.
+#                         * `contacts` - Only contacts can comment on the user's videos.
+#                         * `nobody` - No one can comment on the user's videos.
+#                      enum:
+#                        - anybody
+#                        - contacts
+#                        - nobody
+#                      example: anybody
+#                      type: string
+#                    download:
+#                      description: Whether other users can download the user's videos.
+#                      example: "true"
+#                      type: boolean
+#                    embed:
+#                      description: |
+#                        The user's privacy preference for embeds:
+#
+#                        Option descriptions:
+#                         * `private` - Only the user can embed their own videos.
+#                         * `public` - Anyone can embed the user's videos.
+#                         * `whitelist` - Only those on the whitelist can embed the user's videos.
+#                      enum:
+#                        - private
+#                        - public
+#                        - whitelist
+#                      example: private
+#                      type: string
+#                    view:
+#                      description: |
+#                        The user's privacy preference for views:
+#
+#                        Option descriptions:
+#                         * `anybody` - Anyone can view the user's videos.
+#                         * `contacts` - Only contacts can view the user's videos.
+#                         * `disable` - Views are disabled for the user's videos.
+#                         * `nobody` - No one except the user can view the user's videos.
+#                         * `password` - Only those with the password can view the user's videos.
+#                         * `unlisted` - Anybody can view the user's videos if they have a link.
+#                         * `users` - Only other Vimeo members can view the user's videos.
+#                      enum:
+#                        - anybody
+#                        - contacts
+#                        - disable
+#                        - nobody
+#                        - password
+#                        - unlisted
+#                        - users
+#                      example: anybody
+#                      type: string
+#                  type: object
+#              type: object
+#          type: object
         resource_key:
           description: The user's resource key string.
           example: bac1033deba2310ebba2caec33c23e4beea67aba
           type: string
-        upload_quota:
-          description: Appears only when the user has upload access and is looking at their own user record.
-          properties:
-            lifetime:
-              description: Information about the user's lifetime upload usage.
-              properties:
-                free:
-                  description: The number of bytes remaining in your lifetime maximum.
-                  example: 5000000
-                  nullable: true
-                  type: number
-                max:
-                  description: The total number of bytes that you can upload across the lifetime of your account.
-                  example: 5368709120
-                  nullable: true
-                  type: number
-                used:
-                  description: The number of bytes that you've already uploaded against your lifetime limit.
-                  example: 5368704120
-                  nullable: true
-                  type: number
-              required:
-                - free
-                - max
-                - used
-              type: object
-            periodic:
-              description: Information about the user's usage for the current period.
-              properties:
-                free:
-                  description: The number of bytes remaining in your upload quota for the current period.
-                  example: 5000000
-                  nullable: true
-                  type: number
-                max:
-                  description: The total number of bytes that you can upload per period.
-                  example: 5368709120
-                  nullable: true
-                  type: number
-                reset_date:
-                  description: The time in ISO 8601 format when your upload quota resets.
-                  example: 2029-03-13T02:35:13-04:00
-                  nullable: true
-                  type: string
-                used:
-                  description: The number of bytes that you've already uploaded against your quota in the current period.
-                  example: 5368704120
-                  nullable: true
-                  type: number
-              required:
-                - free
-                - max
-                - reset_date
-                - used
-              type: object
-            space:
-              description: Information about the user's upload space remaining for the current period.
-              properties:
-                free:
-                  description: The number of bytes remaining in your upload quota.
-                  example: 5000000
-                  type: number
-                max:
-                  description: The maximum number of bytes allotted to your upload quota.
-                  example: 5368709120
-                  nullable: true
-                  type: number
-                showing:
-                  description: Whether the values of the upload_quota.space fields are for the lifetime quota or the periodic quota.
-                  enum:
-                    - lifetime
-                    - periodic
-                  example: lifetime
-                  type: string
-                used:
-                  description: The number of bytes that you've already uploaded against your quota.
-                  example: 5368704120
-                  type: number
-              required:
-                - free
-                - max
-                - showing
-                - used
-              type: object
-          required:
-            - lifetime
-            - periodic
-            - space
-          type: object
+#        upload_quota:    # private_token
+#          description: Appears only when the user has upload access and is looking at their own user record.
+#          properties:
+#            lifetime:
+#              description: Information about the user's lifetime upload usage.
+#              properties:
+#                free:
+#                  description: The number of bytes remaining in your lifetime maximum.
+#                  example: 5000000
+#                  nullable: true
+#                  type: number
+#                max:
+#                  description: The total number of bytes that you can upload across the lifetime of your account.
+#                  example: 5368709120
+#                  nullable: true
+#                  type: number
+#                used:
+#                  description: The number of bytes that you've already uploaded against your lifetime limit.
+#                  example: 5368704120
+#                  nullable: true
+#                  type: number
+#              required:
+#                - free
+#                - max
+#                - used
+#              type: object
+#            periodic:
+#              description: Information about the user's usage for the current period.
+#              properties:
+#                free:
+#                  description: The number of bytes remaining in your upload quota for the current period.
+#                  example: 5000000
+#                  nullable: true
+#                  type: number
+#                max:
+#                  description: The total number of bytes that you can upload per period.
+#                  example: 5368709120
+#                  nullable: true
+#                  type: number
+#                reset_date:
+#                  description: The time in ISO 8601 format when your upload quota resets.
+#                  example: 2029-03-13T02:35:13-04:00
+#                  nullable: true
+#                  type: string
+#                used:
+#                  description: The number of bytes that you've already uploaded against your quota in the current period.
+#                  example: 5368704120
+#                  nullable: true
+#                  type: number
+#              required:
+#                - free
+#                - max
+#                - reset_date
+#                - used
+#              type: object
+#            space:
+#              description: Information about the user's upload space remaining for the current period.
+#              properties:
+#                free:
+#                  description: The number of bytes remaining in your upload quota.
+#                  example: 5000000
+#                  type: number
+#                max:
+#                  description: The maximum number of bytes allotted to your upload quota.
+#                  example: 5368709120
+#                  nullable: true
+#                  type: number
+#                showing:
+#                  description: Whether the values of the upload_quota.space fields are for the lifetime quota or the periodic quota.
+#                  enum:
+#                    - lifetime
+#                    - periodic
+#                  example: lifetime
+#                  type: string
+#                used:
+#                  description: The number of bytes that you've already uploaded against your quota.
+#                  example: 5368704120
+#                  type: number
+#              required:
+#                - free
+#                - max
+#                - showing
+#                - used
+#              type: object
+#          required:
+#            - lifetime
+#            - periodic
+#            - space
+#          type: object
         uri:
           description: The user's canonical relative URI.
           example: /users/152184
@@ -4666,38 +4666,38 @@ components:
           items:
             type: string
           type: array
-        context:
-          description: The context of the video's subscription, if this video is part of a subscription.
-          properties:
-            action:
-              description: |
-                The contextual action:
-
-                Option descriptions:
-                 * `Added to` - An Added To action.
-                 * `Appearance by` - An Appearance By action.
-                 * `Liked by` - A Liked By action.
-                 * `Uploaded by` - An Unloaded By action.
-              enum:
-                - Added to
-                - Appearance by
-                - Liked by
-                - Uploaded by
-              example: Added to
-              type: string
-            resource:
-              description: "The contextual resource: a user, group, or channel representation, or an object of a tag."
-              nullable: true
-              type: object
-            resource_type:
-              description: The contextual resource type.
-              example: clip
-              type: string
-          required:
-            - action
-            - resource
-            - resource_type
-          type: object
+#        context: # private_token
+#          description: The context of the video's subscription, if this video is part of a subscription.
+#          properties:
+#            action:
+#              description: |
+#                The contextual action:
+#
+#                Option descriptions:
+#                 * `Added to` - An Added To action.
+#                 * `Appearance by` - An Appearance By action.
+#                 * `Liked by` - A Liked By action.
+#                 * `Uploaded by` - An Unloaded By action.
+#              enum:
+#                - Added to
+#                - Appearance by
+#                - Liked by
+#                - Uploaded by
+#              example: Added to
+#              type: string
+#            resource:
+#              description: "The contextual resource: a user, group, or channel representation, or an object of a tag."
+#              nullable: true
+#              type: object
+#            resource_type:
+#              description: The contextual resource type.
+#              example: clip
+#              type: string
+#          required:
+#            - action
+#            - resource
+#            - resource_type
+#          type: object
         created_time:
           description: The time in ISO 8601 format when the video was created.
           example: 2018-03-05T21:04:47+00:00
@@ -4999,31 +4999,31 @@ components:
 #                    - total
 #                    - uri
 #                  type: object
-                versions:
-                  description: Information about the versions of this video.
-                  properties:
-                    current_uri:
-                      description: The URI of the current version of the video.
-                      example: /videos/258684937/versions/12345
-                      type: string
-                    options:
-                      description: An array of HTTP methods permitted on this URI.
-                      items:
-                        type: string
-                      type: array
-                    total:
-                      description: The total number of versions on this connection.
-                      example: 3
-                      type: number
-                    uri:
-                      description: The API URI that resolves to the connection data.
-                      example: /videos/258684937/versions
-                      type: string
-                  required:
-                    - options
-                    - total
-                    - uri
-                  type: object
+#                versions:    # private_token
+#                  description: Information about the versions of this video.
+#                  properties:
+#                    current_uri:
+#                      description: The URI of the current version of the video.
+#                      example: /videos/258684937/versions/12345
+#                      type: string
+#                    options:
+#                      description: An array of HTTP methods permitted on this URI.
+#                      items:
+#                        type: string
+#                      type: array
+#                    total:
+#                      description: The total number of versions on this connection.
+#                      example: 3
+#                      type: number
+#                    uri:
+#                      description: The API URI that resolves to the connection data.
+#                      example: /videos/258684937/versions
+#                      type: string
+#                  required:
+#                    - options
+#                    - total
+#                    - uri
+#                  type: object
               required:
                 - comments
                 - credits
@@ -5042,87 +5042,87 @@ components:
             interactions:
               description: A list of resource URIs related to the video.
               properties:
-                buy: # private_token, otherwise null
-                  description: The Buy interaction for a On Demand video.
-                  nullable: true
-                  properties:
-                    currency:
-                      description: The currency code for the current user's region.
-                      example: USD
-                      nullable: true
-                      type: string
-                    display_price:
-                      description: Formatted price to display to buy an On Demand video.
-                      example: "5.99"
-                      nullable: true
-                      type: string
-                    download:
-                      description: |
-                        The user's download access to this On Demand video:
-
-                        Option descriptions:
-                         * `available` - The video is available for download.
-                         * `purchased` - The user has purchased the video.
-                         * `restricted` - The user isn't permitted to download the video.
-                         * `unavailable` - The video isn't available for download.
-                      enum:
-                        - available
-                        - purchased
-                        - restricted
-                        - unavailable
-                      example: available
-                      type: string
-                    drm:
-                      description: Whether the video has DRM.
-                      example: "true"
-                      type: boolean
-                    link:
-                      description: The URL to buy the On Demand video on Vimeo.
-                      example: https://vimeo.com/ondemand/darbyforever
-                      nullable: true
-                      type: string
-                    price:
-                      description: The numeric value of the price for buying the On Demand video.
-                      example: 5.99
-                      nullable: true
-                      type: number
-                    purchase_time:
-                      description: The time in ISO 8601 format when the On Demand video was purchased.
-                      example: 2018-03-05T21:04:47+00:00
-                      nullable: true
-                      type: string
-                    stream:
-                      description: |
-                        The user's streaming access to this On Demand video:
-
-                        Option descriptions:
-                         * `available` - The video is available for streaming.
-                         * `purchased` - The user has purchased the video.
-                         * `restricted` - The user isn't permitted to stream the video.
-                         * `unavailable` - The video isn't available for streaming
-                      enum:
-                        - available
-                        - purchased
-                        - restricted
-                        - unavailable
-                      example: available
-                      type: string
-                    uri:
-                      description: The product URI to purchase the On Demand video.
-                      example: /ondemand/pages/61326/products/12345
-                      nullable: true
-                      type: string
-                  required:
-                    - currency
-                    - display_price
-                    - download
-                    - drm
-                    - link
-                    - price
-                    - purchase_time
-                    - stream
-                    - uri
-                  type: object
+#                buy: # private_token, otherwise null
+#                  description: The Buy interaction for a On Demand video.
+#                  nullable: true
+#                  properties:
+#                    currency:
+#                      description: The currency code for the current user's region.
+#                      example: USD
+#                      nullable: true
+#                      type: string
+#                    display_price:
+#                      description: Formatted price to display to buy an On Demand video.
+#                      example: "5.99"
+#                      nullable: true
+#                      type: string
+#                    download:
+#                      description: |
+#                        The user's download access to this On Demand video:
+#
+#                        Option descriptions:
+#                         * `available` - The video is available for download.
+#                         * `purchased` - The user has purchased the video.
+#                         * `restricted` - The user isn't permitted to download the video.
+#                         * `unavailable` - The video isn't available for download.
+#                      enum:
+#                        - available
+#                        - purchased
+#                        - restricted
+#                        - unavailable
+#                      example: available
+#                      type: string
+#                    drm:
+#                      description: Whether the video has DRM.
+#                      example: "true"
+#                      type: boolean
+#                    link:
+#                      description: The URL to buy the On Demand video on Vimeo.
+#                      example: https://vimeo.com/ondemand/darbyforever
+#                      nullable: true
+#                      type: string
+#                    price:
+#                      description: The numeric value of the price for buying the On Demand video.
+#                      example: 5.99
+#                      nullable: true
+#                      type: number
+#                    purchase_time:
+#                      description: The time in ISO 8601 format when the On Demand video was purchased.
+#                      example: 2018-03-05T21:04:47+00:00
+#                      nullable: true
+#                      type: string
+#                    stream:
+#                      description: |
+#                        The user's streaming access to this On Demand video:
+#
+#                        Option descriptions:
+#                         * `available` - The video is available for streaming.
+#                         * `purchased` - The user has purchased the video.
+#                         * `restricted` - The user isn't permitted to stream the video.
+#                         * `unavailable` - The video isn't available for streaming
+#                      enum:
+#                        - available
+#                        - purchased
+#                        - restricted
+#                        - unavailable
+#                      example: available
+#                      type: string
+#                    uri:
+#                      description: The product URI to purchase the On Demand video.
+#                      example: /ondemand/pages/61326/products/12345
+#                      nullable: true
+#                      type: string
+#                  required:
+#                    - currency
+#                    - display_price
+#                    - download
+#                    - drm
+#                    - link
+#                    - price
+#                    - purchase_time
+#                    - stream
+#                    - uri
+#                  type: object
 #                channel:   # private_token
 #                  description: When a video is referenced by a channel URI, if the user is a moderator of the channel, include information about removing the video from the channel.
 #                  nullable: true
@@ -5163,76 +5163,76 @@ components:
 #                    - options
 #                    - uri
 #                  type: object
-                rent: # private_token, otherwise null
-                  description: The Rent interaction for an On Demand video.
-                  nullable: true
-                  properties:
-                    currency:
-                      description: The currency code for the current user's region.
-                      example: USD
-                      nullable: true
-                      type: string
-                    display_price:
-                      description: Formatted price to display to rent an On Demand video.
-                      example: "5.99"
-                      nullable: true
-                      type: string
-                    drm:
-                      description: Whether the video has DRM.
-                      example: "true"
-                      type: boolean
-                    expires_time:
-                      description: The time in ISO 8601 format when the rental period for the video expires.
-                      example: 2018-03-05T21:04:47+00:00
-                      nullable: true
-                      type: string
-                    link:
-                      description: The URL to rent the On Demand video on Vimeo.
-                      example: https://vimeo.com/ondemand/darbyforever
-                      nullable: true
-                      type: string
-                    price:
-                      description: The numeric value of the price for buying the On Demand video.
-                      example: 5.99
-                      nullable: true
-                      type: number
-                    purchase_time:
-                      description: The time in ISO 8601 format when the On Demand video was rented.
-                      example: 2018-09-16T09:02:40+00:00
-                      nullable: true
-                      type: string
-                    stream:
-                      description: |
-                        The user's streaming access to this On Demand video:
-
-                        Option descriptions:
-                         * `available` - The video is available for streaming.
-                         * `purchased` - The user has purchased the video.
-                         * `restricted` - The user isn't permitted to stream the video.
-                         * `unavailable` - The video isn't available for streaming.
-                      enum:
-                        - available
-                        - purchased
-                        - restricted
-                        - unavailable
-                      example: available
-                      type: string
-                    uri:
-                      description: The product URI to rent the On Demand video.
-                      example: /ondemand/pages/61326/products/12345
-                      nullable: true
-                      type: string
-                  required:
-                    - currency
-                    - display_price
-                    - drm
-                    - expires_time
-                    - link
-                    - price
-                    - purchase_time
-                    - stream
-                    - uri
-                  type: object
+#                rent: # private_token, otherwise null
+#                  description: The Rent interaction for an On Demand video.
+#                  nullable: true
+#                  properties:
+#                    currency:
+#                      description: The currency code for the current user's region.
+#                      example: USD
+#                      nullable: true
+#                      type: string
+#                    display_price:
+#                      description: Formatted price to display to rent an On Demand video.
+#                      example: "5.99"
+#                      nullable: true
+#                      type: string
+#                    drm:
+#                      description: Whether the video has DRM.
+#                      example: "true"
+#                      type: boolean
+#                    expires_time:
+#                      description: The time in ISO 8601 format when the rental period for the video expires.
+#                      example: 2018-03-05T21:04:47+00:00
+#                      nullable: true
+#                      type: string
+#                    link:
+#                      description: The URL to rent the On Demand video on Vimeo.
+#                      example: https://vimeo.com/ondemand/darbyforever
+#                      nullable: true
+#                      type: string
+#                    price:
+#                      description: The numeric value of the price for buying the On Demand video.
+#                      example: 5.99
+#                      nullable: true
+#                      type: number
+#                    purchase_time:
+#                      description: The time in ISO 8601 format when the On Demand video was rented.
+#                      example: 2018-09-16T09:02:40+00:00
+#                      nullable: true
+#                      type: string
+#                    stream:
+#                      description: |
+#                        The user's streaming access to this On Demand video:
+#
+#                        Option descriptions:
+#                         * `available` - The video is available for streaming.
+#                         * `purchased` - The user has purchased the video.
+#                         * `restricted` - The user isn't permitted to stream the video.
+#                         * `unavailable` - The video isn't available for streaming.
+#                      enum:
+#                        - available
+#                        - purchased
+#                        - restricted
+#                        - unavailable
+#                      example: available
+#                      type: string
+#                    uri:
+#                      description: The product URI to rent the On Demand video.
+#                      example: /ondemand/pages/61326/products/12345
+#                      nullable: true
+#                      type: string
+#                  required:
+#                    - currency
+#                    - display_price
+#                    - drm
+#                    - expires_time
+#                    - link
+#                    - price
+#                    - purchase_time
+#                    - stream
+#                    - uri
+#                  type: object
                 report:
                   description: Information about where and how to report a video.
                   properties:
@@ -5254,27 +5254,27 @@ components:
                     - reason
                     - uri
                   type: object
-                subscribe:  # private_token, otherwise null
-                  description: Subscription information for an On Demand video.
-                  nullable: true
-                  properties:
-                    drm:
-                      description: Whether the video has DRM.
-                      example: "true"
-                      type: boolean
-                    expires_time:
-                      description: The time in ISO 8601 format when the subscription expires.
-                      example: 2018-03-05T21:04:47+00:00
-                      type: string
-                    purchase_time:
-                      description: The tine in ISO 8601 format when the subscription was purchased.
-                      example: 2018-03-02T21:04:47+00:00
-                      type: string
-                    stream:
-                      description: The stream type.
-                      example: purchased
-                      type: string
-                  type: object
+#                subscribe:  # private_token, otherwise null
+#                  description: Subscription information for an On Demand video.
+#                  nullable: true
+#                  properties:
+#                    drm:
+#                      description: Whether the video has DRM.
+#                      example: "true"
+#                      type: boolean
+#                    expires_time:
+#                      description: The time in ISO 8601 format when the subscription expires.
+#                      example: 2018-03-05T21:04:47+00:00
+#                      type: string
+#                    purchase_time:
+#                      description: The tine in ISO 8601 format when the subscription was purchased.
+#                      example: 2018-03-02T21:04:47+00:00
+#                      type: string
+#                    stream:
+#                      description: The stream type.
+#                      example: purchased
+#                      type: string
+#                  type: object
 #                watched: # private_token
 #                  description: Information about removing this video from the user's list of watched videos.
 #                  properties:
@@ -5390,7 +5390,7 @@ components:
                 Option descriptions:
                  * `private` - The video is private.
                  * `public` - Anyone can embed the video.
-                 * `public` -
+                 * `whitelist` -
               enum:
                 - private
                 - public
@@ -5549,68 +5549,68 @@ components:
           items:
             $ref: "#/components/schemas/tag"
           type: array
-        transcode:
-          description: The transcode information for a video upload.
-          nullable: true
-          properties:
-            status:
-              description: Status code for this video's availability.
-              enum:
-                - complete
-                - error
-                - in_progress
-              example: complete
-              type: string
-          type: object
-        upload:
-          description: The upload information for this video.
-          nullable: true
-          properties:
-            approach:
-              description: The approach for uploading the video.
-              enum:
-                - post
-                - pull
-                - streaming
-                - tus
-              example: post
-              type: string
-            complete_uri:
-              description: The URI for completing the upload.
-              type: string
-            form:
-              description: The HTML form for uploading a video through the post approach.
-              type: string
-            link:
-              description: The link of the video to capture through the pull approach.
-              type: string
-            redirect_url:
-              description: The redirect URL for the upload app.
-              type: string
-            size:
-              description: The file size in bytes of the uploaded video.
-              example: 60000
-              type: number
-            status:
-              description: |
-                The status code for the availability of the uploaded video:
-
-                Option descriptions:
-                 * `complete` - The upload is complete.
-                 * `error` - The upload ended with an error.
-                 * `in_progress` - The upload is underway.
-              enum:
-                - complete
-                - error
-                - in_progress
-              example: complete
-              type: string
-            upload_link:
-              description: The link for sending video file data.
-              type: string
-          required:
-            - status
-          type: object
+#        transcode:   # private_token
+#          description: The transcode information for a video upload.
+#          nullable: true
+#          properties:
+#            status:
+#              description: Status code for this video's availability.
+#              enum:
+#                - complete
+#                - error
+#                - in_progress
+#              example: complete
+#              type: string
+#          type: object
+#        upload:  # private_token
+#          description: The upload information for this video.
+#          nullable: true
+#          properties:
+#            approach:
+#              description: The approach for uploading the video.
+#              enum:
+#                - post
+#                - pull
+#                - streaming
+#                - tus
+#              example: post
+#              type: string
+#            complete_uri:
+#              description: The URI for completing the upload.
+#              type: string
+#            form:
+#              description: The HTML form for uploading a video through the post approach.
+#              type: string
+#            link:
+#              description: The link of the video to capture through the pull approach.
+#              type: string
+#            redirect_url:
+#              description: The redirect URL for the upload app.
+#              type: string
+#            size:
+#              description: The file size in bytes of the uploaded video.
+#              example: 60000
+#              type: number
+#            status:
+#              description: |
+#                The status code for the availability of the uploaded video:
+#
+#                Option descriptions:
+#                 * `complete` - The upload is complete.
+#                 * `error` - The upload ended with an error.
+#                 * `in_progress` - The upload is underway.
+#              enum:
+#                - complete
+#                - error
+#                - in_progress
+#              example: complete
+#              type: string
+#            upload_link:
+#              description: The link for sending video file data.
+#              type: string
+#          required:
+#            - status
+#          type: object
         uri:
           description: The video's canonical relative URI.
           example: /videos/258684937

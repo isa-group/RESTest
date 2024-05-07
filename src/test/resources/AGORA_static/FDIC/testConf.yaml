@@ -1,0 +1,94 @@
+---
+auth:
+  required: false
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+  - testPath: /institutions
+    operationId: searchInstitutions
+    method: get
+    testParameters:
+    - name: filters
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: search
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: fields
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: sort_by
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: sort_order
+      in: query
+      weight: 0.0
+      generators:
+      - type: RandomEnglishWord
+        genParameters:
+        - name: maxWords
+          values:
+          - 1
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 1.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - 10000
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 1.0
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - 0
+          - 10000
+          - 20000
+          objectValues: null
+        valid: true
+    expectedResponse: 200
