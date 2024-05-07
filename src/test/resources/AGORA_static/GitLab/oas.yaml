@@ -3148,6 +3148,8 @@ components:
         web_url:
           type: string
           example: https://gitlab.example.com/janedoe/gitlab-foss/-/commit/ed899a2f4b50b4370feeea94676502b42383c746
+        extended_trailers:  # Added
+          type: object
     API_Entities_MetricImage:
       type: object
       properties:
@@ -3266,6 +3268,7 @@ components:
       description: API_Entities_Cluster model
     API_Entities_UserBasic:
       type: object
+      nullable: true  # Added
       properties:
         id:
           type: integer
@@ -3295,6 +3298,61 @@ components:
           example: https://gitlab.example.com/root
         email:
           type: string
+          nullable: true
+        bio:    # Added
+          type: string
+          nullable: true
+        bot:    # Added
+          type: boolean
+          nullable: true
+        created_at:    # Added
+          type: string
+          nullable: true
+        discord:    # Added
+          type: string
+          nullable: true
+        followers:    # Added
+          type: integer
+          nullable: true
+        following:    # Added
+          type: integer
+          nullable: true
+        job_title:    # Added
+          type: string
+          nullable: true
+        linkedin:    # Added
+          type: string
+          nullable: true
+        local_time:    # Added
+          type: string
+          nullable: true
+        location:    # Added
+          type: string
+          nullable: true
+        locked:    # Added
+          type: boolean
+          nullable: true
+        organization:    # Added
+          type: string
+          nullable: true
+        pronouns:    # Added
+          type: string
+          nullable: true
+        public_email:    # Added
+          type: string
+          nullable: true
+        skype:    # Added
+          type: string
+          nullable: true
+        twitter:    # Added
+          type: string
+          nullable: true
+        website_url:    # Added
+          type: string
+          nullable: true
+        work_information:    # Added
+          type: string
+          nullable: true
     API_Entities_Platform_Kubernetes:
       type: object
       properties:
@@ -3714,11 +3772,13 @@ components:
           format: date-time
           example: 2016-01-11T10:13:33.506Z
           description: The start time of the job
+          nullable: true  # Added
         finished_at:
           type: string
           format: date-time
           example: 2016-01-11T10:13:33.506Z
           description: The finish time of the job
+          nullable: true  # Added
         commit:
           $ref: '#/components/schemas/API_Entities_Commit'
         archived:
@@ -3732,12 +3792,15 @@ components:
           format: date-time
           example: 2016-01-11T10:13:33.506Z
           description: The time when the job was erased, if applicable
+          nullable: true
         duration:
-          type: integer
+          type: number  # Changed form integer
           description: The duration of the job in seconds
+          nullable: true # Added
         queued_duration:
           type: number
           description: The duration the job was queued before execution, in seconds
+          nullable: true  # Added
         ref:
           type: string
           description: The reference for the job
@@ -3746,6 +3809,16 @@ components:
           description: The artifacts produced by the job
           items:
             type: object
+            properties: # Added
+              file_format:
+                type: string
+                nullable: true
+              file_type:
+                type: string
+              size:
+                type: integer
+              filename:
+                type: string
         tag:
           type: boolean
           description: Indicates if the job is tagged
@@ -3761,6 +3834,74 @@ components:
         user:
           $ref: '#/components/schemas/API_Entities_UserBasic'
           description: The user that started the job
+        artifacts_expire_at:  # Added
+          type: string
+          nullable: true
+        artifacts_file: # Added
+          type: object
+          properties:
+            filename:
+              type: string
+            size:
+              type: integer
+        failure_reason: # Added
+          type: string
+        tag_list: # Added
+          type: array
+          items:
+            type: string
+        runner:   # Added
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            description:
+              type: string
+            ip_address:
+              type: string
+              nullable: true
+            active:
+              type: boolean
+            paused:
+              type: boolean
+            is_shared:
+              type: boolean
+            runner_type:
+              type: string
+            name:
+              type: string
+              nullable: true
+            status:
+              type: string
+            online:
+              type: boolean
+        pipeline:   # Added
+          type: object
+          properties:
+            id:
+              type: integer
+            iid:
+              type: integer
+            project_id:
+              type: integer
+            sha:
+              type: string
+            ref:
+              type: string
+            status:
+              type: string
+            source:
+              type: string
+            created_at:
+              type: string
+            updated_at:
+              type: string
+            web_url:
+              type: string
+        coverage:   # Added
+          type: number
+          nullable: true
       description: API_Entities_Job model
   securitySchemes:
     ApiKeyAuth:

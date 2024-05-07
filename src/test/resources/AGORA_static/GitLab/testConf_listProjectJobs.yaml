@@ -39,7 +39,7 @@ testConfiguration:
           objectValues: null
         - name: maxValues
           values:
-            - 9
+            - 1
           objectValues: null
         valid: true
     expectedResponse: 200
