@@ -3006,7 +3006,7 @@ components:
         rendered_image_url:
           type: string
         id:
-          type: string
+          type: integer # Changed from string
         kind:
           type: string
       description: API_Entities_Badge model
