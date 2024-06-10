@@ -5,6 +5,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -16,6 +18,10 @@ public class PropertyManager {
 	static String globalPropertyFilePath = "src/main/resources/config.properties";
 	static Properties globalProperties = null;
 	static Properties userProperties = null;
+
+	private static Map<String, Properties> userPropertiesMap= new HashMap<>();
+
+
 
 	private static Logger logger = LogManager.getLogger(PropertyManager.class.getName());
 
@@ -48,10 +54,13 @@ public class PropertyManager {
 	 */
 	public static String readProperty(String evalPropertiesFilePath, String name) {
 
+		Properties userProperties = userPropertiesMap.get(evalPropertiesFilePath);
+
 		if (userProperties ==null) {
 			userProperties = new Properties();
 			try(FileInputStream experimentProperties = new FileInputStream(evalPropertiesFilePath)) {
-				PropertyManager.userProperties.load(experimentProperties);
+				userProperties.load(experimentProperties);
+				userPropertiesMap.put(evalPropertiesFilePath, userProperties);
 			} catch (IOException e) {
 				logger.error("Error reading property file: {}", e.getMessage());
 				logger.error("Exception: ", e);
@@ -63,8 +72,15 @@ public class PropertyManager {
 
 	// Setters
 
-	public static void setUserPropertiesFilePath(Properties userPropertiesFilePath) {
-		userProperties = userPropertiesFilePath;
+	public static void setUserPropertiesFilePath(String evalPropertiesFilePath) {
+		Properties userProperties = new Properties();
+		try (FileInputStream experimentProperties = new FileInputStream(evalPropertiesFilePath)) {
+			userProperties.load(experimentProperties);
+			userPropertiesMap.put(evalPropertiesFilePath, userProperties);
+		} catch (IOException e) {
+			logger.error("Error reading property file: {}", e.getMessage());
+			logger.error("Exception: ", e);
+		}
 	}
 
 }
