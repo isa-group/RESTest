@@ -3876,6 +3876,44 @@ components:
               type: string
             online:
               type: boolean
+        runner_manager: # Added
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+            description:
+              type: string
+            ip_address:
+              type: string
+            active:
+              type: boolean
+            paused:
+              type: boolean
+            is_shared:
+              type: boolean
+            runner_type:
+              type: string
+            name:
+              type: string
+            online:
+              type: boolean
+            status:
+              type: string
+            architecture:
+              type: string
+            contacted_at:
+              type: string
+            created_at:
+              type: string
+            platform:
+              type: string
+            revision:
+              type: string
+            system_id:
+              type: string
+            version:
+              type: string
         pipeline:   # Added
           type: object
           properties:

@@ -122,16 +122,29 @@ paths:
                   meta:
                     type: object
                     $ref: '#/components/schemas/metadata'
+                  totals:   # Added
+                    type: object
+                    properties:
+                      count:
+                        type: integer
                   data:
                     type: array
                     items:
                       type: object
                       properties:
+                        score:    # Added
+                          type: number
+                        highlight:    # Added
+                          type: object
+                          additionalProperties:
+                            type: array
+                            items:
+                              type: string
                         data:
                           type: object
                           properties:
                             ACTIVE:
-                              type: string
+                              type: integer   # original: string
                               title: Institution Status
                               description: >-
                                 A number indicating the status of an institution. 1='Institutions that are currently open and insured by the FDIC'; 0='Institution closed or not insured by FDIC'
@@ -153,6 +166,8 @@ paths:
 #                              x-source-mapping:
 #                                - file: VINST_FIN_CUR_SDC
 #                                  field: LOCN_PHY_LNE1_TXT
+                            ADDRESS2:   # Added
+                              type: string
                             ASSET:
                               type: number
                               title: Total assets
@@ -165,19 +180,21 @@ paths:
 #                                  field: ASSET
                             BKCLASS:
                               title: Institution Class
-                              enum:
-                                - 'N'
-                                - SM
-                                - NM
-                                - SB
-                                - SA
-                                - OI
+#                              enum:
+#                                - 'N'
+#                                - SM
+#                                - NM
+#                                - SB
+#                                - SA
+#                                - OI
                               description: >-
                                 A classification code assigned by the FDIC based on the institution's charter type (commercial bank or savings institution), charter agent (state or federal), Federal Reserve membership status (Fed member, Fed non-member) and its primary federal regulator (state chartered institutions are subject to both federal and state supervision). N - Commercial bank, national (federal) charter, Fed member, and supervised by the Office of the Comptroller of the Currency (OCC); NM - Commercial bank, state charter, Fed non-member, and supervised by the Federal Deposit Insurance Corporation (FDIC); OI - Insured U.S. branch of a foreign chartered institution (IBA) and supervised by the OCC or FDIC; SB – Federal savings banks, federal charter, supervised by the OCC or before July 21,2011 the Office of Thrift Supervision (OTS); SI - State chartered stock savings banks, supervised by the FDIC; SL - State chartered stock savings and loan associations, supervised by the FDIC or before July 21,2011 the OTS; SM - Commercial bank, state charter, Fed member, and supervised by the Federal Reserve Bank (FRB); NC – Noninsured non-deposit commercial banks and/or trust companies regulated by the OCC, a state, or a territory; NS - Noninsured stock savings bank supervised by a state or territory; CU - state or federally chartered credit unions supervised by the National Credit Union Association (NCUA).
                               type: string
 #                              x-source-mapping:
 #                                - file: VINST_FIN_CUR_SDC
 #                                  field: INST_CLASS_CDE
+                            CALLFORM:   # Added
+                              type: integer
                             CB:
                               title: Community Bank
                               description: >-
@@ -277,7 +294,7 @@ paths:
                               description: >-
                                 A unique NUMBER assigned by the FDIC used to identify institutions
                                 and for the issuance of insurance certificates.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_FIN_CUR_SDC
 #                                  field: ORG_CERT_NUM
@@ -328,7 +345,7 @@ paths:
                               description: >-
                                 Indicates secondary supervision by CFPB ('0' - not supervised by
                                 CFPB, '1'- secondarily supervised by CFPB)
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -339,6 +356,8 @@ paths:
 #                                        } else {
 #                                          ctx.CFPBFLAG = 0
 #                                        }
+                            FEDDESC:    # Added
+                              type: string
                             PRIORNAME1:
                               title: Previous Name 1
                               description: >-
@@ -419,7 +438,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -468,7 +487,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT2_NUM
@@ -476,7 +495,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT3_NUM
@@ -484,7 +503,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT4_NUM
@@ -492,7 +511,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -500,7 +519,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -508,7 +527,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -516,7 +535,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -524,7 +543,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -532,7 +551,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -540,7 +559,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -548,7 +567,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -556,7 +575,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -564,7 +583,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -572,7 +591,7 @@ paths:
                               title: Change Code
                               description: >-
                                 FDIC code used to signify a structural event relating to an institution.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: VINST_BR_SDC
 #                                  field: ACT_EVT5_NUM
@@ -618,7 +637,7 @@ paths:
                               title: Numeric code
                               description: >-
                                 A number that sub-categorizes a major class of institutions. 3 = National bank, Federal Reserve System (FRS) member; 13 = State commercial bank, FRS member; 15 = State savings, co-op, or industrial bank, FRS member; 21 = State commercial bank, not FRS member; 23 = State savings, co-op, or industrial bank, not FRS member; 25 - State mutual commercial bank, not FRS member; 33 = Federal chartered stock savings bank; 34 = Federal chartered mutual saving bank; 35 = State chartered stock savings and loan association; 36 = State chartered mutual savings and loan association; 37 = Federal chartered stock savings and loan association; 38 = Federal chartered mutual savings and loan association; 41 = State chartered stock savings bank; 42 = State chartered mutual savings bank; 43 = Federal chartered stock savings bank (historical); 44 = Federal chartered mutual savings bank (historical); 52 = Insured domestic offices of foreign banks (International Banking Act(IBA)); 50 = OCC chartered nondeposit and/or noninsured trust companies; 51 = Noninsured commercial bank; 52 = Noninsured domestic offices of foreign bank (International Banking Act); 53 = Noninsured industrial bank; 54 = State chartered nondeposit and/or noninsured trust company, not FRS member; 55 = State chartered domestic branches of foreign banks; 56 = OCC chartered domestic branches of foreign banks; 57 = New York investment company; 58 = State chartered nondeposit and/or noninsured trust company, FRS member; 59 = OTS chartered nondeposit and/or noninsured trust company; 61 = Noninsured private bank; 62 = Noninsured loan workout bank, OCC chartered; 63 = Noninsured loan workout bank, state chartered, FRS member; 64 = Noninsured loan workout bank, state chartered, not FRS member; 65 = Other holding company; 71 = Transfer agent; 81 = Noninsured stock savings bank; 82 = Noninsured mutual savings bank; 85 = Noninsured stock savings and loan association; 86 = Noninsured mutual savings and loan association; 89 = Noninsured insurance company; 91 = State chartered credit unions; 92 = Federal chartered credit unions; 93 = Privately insured state credit union.
-                              type: number
+                              type: string  # original: number
 #                              x-source-mapping:
 #                                - file: VINST_FIN_CUR_SDC
 #                                  field: INST_CAT_NUM
@@ -654,6 +673,8 @@ paths:
 #                              x-source-mapping:
 #                                - file: VINST_FIN_CUR_SDC
 #                                  field: INST_FIN_CNS_FLG
+                            count:    # Added
+                              type: integer
                             COUNTY:
                               title: County
                               description: >-
@@ -803,7 +824,7 @@ paths:
                                 Texas  San Francisco - Alaska, American Samoa, Arizona, California,
                                 Guam, Hawaii, Idaho, Montana, Nevada, Oregon, States of Micronesia,
                                 Utah, Washington, Wyoming
-                              type: string
+                              type: integer # original: string
 #                              x-source-mapping:
 #                                - file: VINST_FIN_CUR_SDC
 #                                  field: LOCN_REGN_OFC_CDE
@@ -868,7 +889,7 @@ paths:
                               description: >-
                                 A flag used to indicate whether the institution is chartered by an
                                 agent of the federal government.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -913,7 +934,7 @@ paths:
                                 countries.  These institutions are regulated by one of the three
                                 Federal commercial bank regulators and submit financial data to the
                                 Federal Reserve.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -929,7 +950,7 @@ paths:
                               description: >-
                                 Institutions that are currently closed but were once insured by the
                                 FDIC.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -940,6 +961,8 @@ paths:
 #                                        } else {
 #                                          ctx.INACTIVE = 1;
 #                                        }
+                            ID:   # Added
+                              type: string
                             INSAGNT1:
                               title: Primary Insurance Agency
                               description: >-
@@ -969,7 +992,7 @@ paths:
                                 Insurance Fund (SAIF) to create a single Deposit Insurance Fund
                                 (DIF).  All FDIC insured BIF member institutions, that are still
                                 active or open, are now insured members of DIF.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -989,7 +1012,7 @@ paths:
                                 Currency).  They submit financial reports to the Federal Reserve
                                 (state member banks) or the FDIC (state non-member banks and
                                 national banks).
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -1067,7 +1090,7 @@ paths:
                                 of DIF.    0 = No, not DIF insured and 1 = Yes, DIF insured.  Note
                                 that institutions that became inactive prior to April 1006 will also
                                 have zero value.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - file: RISVIEW
 #                                  field: INSDIF
@@ -1089,7 +1112,7 @@ paths:
                                 Insurance Fund (BIF) to create a single Deposit Insurance Fund
                                 (DIF).  All FDIC insured SAIF member institutions, that are still
                                 active or open, are now insured members of DIF.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: simpleSet
@@ -1104,7 +1127,7 @@ paths:
                                 These institutions are regulated by and submit financial reports to
                                 one of two Federal regulators (FDIC or Office of Thrift
                                 Supervision).
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: simpleSet
@@ -1126,7 +1149,7 @@ paths:
                                 Institutions with total loans greater than 50% of total assets and
                                 credit card loans greater than 50% of total loans, including loans
                                 that have been securitized and sold.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -1256,7 +1279,7 @@ paths:
                               description: >-
                                 A new certificate number of an already existing FDIC-insured
                                 institution resulting from either a merger or an acquisition.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -1290,7 +1313,7 @@ paths:
                                 A member of one insurance fund that acquired deposits insured by the
                                 other fund, where that portion of the buyer's deposits remained
                                 insured by, and assessable by, the other fund.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -1309,6 +1332,8 @@ paths:
 #                              x-source-mapping:
 #                                - file: VINST_FIN_CUR_SDC
 #                                  field: LOCN_OCC_DIST_CDE
+                            OCCDISTDESC:    # Added
+                              type: string
                             OFFDOM:
                               title: Number of Domestic Offices
                               description: >-
@@ -1357,6 +1382,8 @@ paths:
 #                              x-source-mapping:
 #                                - file: RISVIEW
 #                                  field: OFFOA
+                            OI:   # Added
+                              type: integer
                             OTSDIST:
                               title: OTS District
                               description: >-
@@ -1548,6 +1575,8 @@ paths:
 #                                    parameters:
 #                                      setField: 'RUNDATE'
 #                                      script: 'new SimpleDateFormat("MM/dd/yyyy").format(new Date())'
+                            S10T250B:   # Added
+                              type: integer
                             SASSER:
                               title: Sasser Institutions
                               description: >-
@@ -1556,7 +1585,7 @@ paths:
                                 members of the SAIF, but they become subject to supervision by one
                                 of the three federal banking agencies. Not Applicable as of March
                                 31, 2006.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -1642,7 +1671,7 @@ paths:
                               description: >-
                                 A flag (1=yes;0=no) that indicates if an institution is state
                                 chartered.
-                              type: string
+                              type: integer   # original: string
 #                              x-source-mapping:
 #                                - formula:
 #                                    type: raw
@@ -1740,6 +1769,14 @@ paths:
 #                              x-source-mapping:
 #                                - file: VINST_FIN_CUR_SDC
 #                                  field: ORG_SPVR_REGN_CDE
+                            SZ100:    # Added
+                              type: integer
+                            SZ100T1B: # Added
+                              type: integer
+                            SZ1BT10B: # Added
+                              type: integer
+                            SZ250BP:  # Added
+                              type: integer
                             TE01N528:
                               title: Web Site URL 01
                               description: >-
@@ -2418,6 +2455,8 @@ components:
         parameters:
           type: object
           description: Query parameters supplied
+          additionalProperties:   # Added
+            type: string
         index:
           type: object
           properties:
