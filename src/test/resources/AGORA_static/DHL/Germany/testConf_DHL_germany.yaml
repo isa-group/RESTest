@@ -49,11 +49,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_static/DHL/Germany/input_values/street_address.csv
           objectValues: null
         valid: true
     - name: providerType
