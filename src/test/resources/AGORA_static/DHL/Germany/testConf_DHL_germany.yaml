@@ -27,22 +27,22 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_static/DHL/Germany/input_values/address_locality.csv
           objectValues: null
         valid: true
     - name: postalCode
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_static/DHL/Germany/input_values/postal_codes.csv
           objectValues: null
         valid: true
     - name: streetAddress
