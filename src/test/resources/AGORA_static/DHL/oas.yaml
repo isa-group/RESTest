@@ -1,0 +1,1048 @@
+openapi: 3.0.1
+info:
+  title: DHL Location Finder API
+  version: 1.9.2
+  description: The DHL Location Finder API provides Service Point locations of Deutsche
+    Post DHL Group. This service is also known as pick up and drop off (PUDO). Detailed
+    documentation and release notes are available [here](https://developer.dhl.com/api-reference/location-finder).
+tags:
+- name: locations
+  description: Retrieve information about DHL Service Point locations
+servers:
+- url: https://api-sandbox.dhl.com
+  description: Sandbox Server
+- url: https://api.dhl.com
+  description: Productive Server
+security:
+    - ApiKeyAuth: [ ]
+paths:
+  /location-finder/v1/find-by-address:
+    get:
+      tags:
+      - locations
+      summary: Search for DHL Service Point locations by address.
+      description: 'This method will find DHL locations based on an address by first
+        converting the address to a reference point (latitude, longitude) and then
+        finding locations near that point. To convert an address to a reference point,
+        this API uses the ``Google Geocoding API Address``. To optimize results, besides
+        ``countryCode`` you need to provide ``addressLocality`` and /or ``postalCode``.
+        The more address fields you provide, the better results you may get.  Please
+        read Google Geocoding API Terms of Use: <https://cloud.google.com/maps-platform/terms>  ``Limitations:``
+        Address fields are not filters. 3rd party Geocoding API hence limited control
+        over results.'
+      operationId: getLocation-finderV1Find-by-address
+      parameters:
+      - name: countryCode
+        in: query
+        description: A two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+          code specifying the [country](https://gs1.org/voc/Country).
+        required: true
+        schema:
+          type: string
+        example: DE
+      - name: addressLocality
+        in: query
+        description: Text specifying the name of the [locality](https://gs1.org/voc/addressLocality),
+          for example a city.
+        required: false
+        schema:
+          type: string
+        example: Bonn
+      - name: postalCode
+        in: query
+        description: Text specifying the postal [code](https://gs1.org/voc/postalCode)
+          for an address.
+        required: false
+        schema:
+          type: string
+        example: 53113
+      - name: streetAddress
+        in: query
+        description: The street address is expressed as free form text. The  [street
+          address](https://www.gs1.org/voc/streetAddress) is printed on paper as the
+          first lines below the name. For example, the name of the street and the
+          number in the street, or the name of a building.
+        required: false
+        schema:
+          type: string
+        example: Charles-de-Gaulle-Str. 20
+      - name: providerType
+        in: query
+        description: 'This parameter allows to filter by DPDHL''s internal Business
+          Units. When this parameter is specified at least once per request, only
+          locations known by that providerType (a.k.a Business Unit) will be returned.
+          There may be locations with more than one providerType. The available providerTypes
+          are: ``express`` (DHL Express Global), ``parcel`` (eCommerce Solutions Europe
+          and Post & Parcel Germany), ``post`` (Post & Parcel Germany) '
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalProviderType'
+      - name: locationType
+        in: query
+        description: Type of the DHL Service Point location. This parameter can be
+          added multiple times in each API request. The response will include only
+          locations of the type that matches any of the requested ones.
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationType'
+      - name: serviceType
+        in: query
+        description: Each location can offer more than one service. This parameter
+          can be added multiple times in each API request. The response will include
+          only locations with at least all of the serviceTypes requested. Only exception
+          of this behaviour is parcel:pick-up-all, which includes any of the three
+          parcel:pick-up services. Note that this cannot be combined with any other
+          serviceType param.
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceType'
+      - name: radius
+        in: query
+        description: 'Specifies the radius in meters around the provided location,
+          to search within. Maximum radius: 1 000 000 meters (any radius greater than  1
+          000 000 will be considered as 1 000 000). Default radius: 5000 meters.'
+        required: false
+        schema:
+          type: number
+          default: 5000
+          minimum: 0
+        example: 2500
+      - name: limit
+        in: query
+        description: 'Number specifying the maximum amount of locations included in
+          the results. Maximum limit: 50 locations (any limit greater than 50 will
+          be considered as 50). Default limit: 15 locations.'
+        required: false
+        schema:
+          type: number
+          default: 15
+          minimum: 0
+        example: 20
+      - name: hideClosedLocations
+        in: query
+        description: When set to true this parameter allows to exclude locations that
+          have a closure period entry at the time of the request. By default it is
+          set to false and all locations are returned, whether they are showing closed
+          or not.
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: currentDate
+        in: query
+        description: When any date is specified in this parameter then the api will
+          exclude locations that have a closure period entry at the time of the specified
+          date. Note:- currentDate will work only when parameter hideClosedLocations
+          is set to true.
+        required: false
+        schema:
+          type: string
+          format: date
+        example: 24-01-2023
+      x-dependencies:
+        - OnlyOne(addressLocality, postalCode, streetAddress);
+        - IF currentDate THEN hideClosedLocations==true;
+      responses:
+        '200':
+          description: DHL Service Point location collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/locations'
+#        '400':
+#          description: Bad request, for example invalid geo position, location type,
+#            service type or country.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/BadRequest'
+#              example:
+#                status: 400
+#                title: Unknown Service Type
+#                detail: Provided serviceType xyz is not known.
+#        '401':
+#          description: Unauthorized. Provided key is invalid for requested resource.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/Unauthorized'
+#              example:
+#                status: 401
+#                title: Unauthorized
+#                detail: Invalid token
+#        '500':
+#          description: Internal Server Error.
+#          content:
+#            application/json:
+#              schema:
+#                $ref: '#/components/schemas/InternalError'
+#              example:
+#                status: 500
+#                title: Internal Server Error.
+  /location-finder/v1/find-by-geo:
+    get:
+      tags:
+      - locations
+      summary: Search for DHL Service Point locations by geo coordinates
+      operationId: getLocation-finderV1Find-by-geo
+      parameters:
+      - name: latitude
+        in: query
+        description: Latitude (only accepts values between -90 to 90 )
+        required: true
+        schema:
+          type: number
+        example: 50.7160027
+      - name: longitude
+        in: query
+        description: Longitude (only accepts values between -180 to 180)
+        required: true
+        schema:
+          type: number
+        example: 7.1300817
+      - name: providerType
+        in: query
+        description: 'This parameter allows to filter by DPDHL''s internal Business
+          Units. When this parameter is specified at least once per request, only
+          locations known by that providerType (a.k.a Business Unit) will be returned.
+          There may be locations with more than one providerType. The available providerTypes
+          are: ``express`` (DHL Express Global), ``parcel`` (eCommerce Solutions Europe
+          and Post & Parcel Germany), ``post`` (Post & Parcel Germany) '
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExternalProviderType'
+      - name: locationType
+        in: query
+        description: Type of the DHL Service Point location. This parameter can be
+          added multiple times in each API request. The response will include only
+          locations of the type that matches any of the requested ones.
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationType'
+      - name: serviceType
+        in: query
+        description: Each location can offer more than one service. This parameter
+          can be added multiple times in each API request. The response will include
+          only locations with at least all of the serviceTypes requested. Only exception
+          of this behaviour is parcel:pick-up-all, which includes any of the three
+          parcel:pick-up services. Note that this cannot be combined with any other
+          serviceType param.
+        required: false
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ServiceType'
+      - name: radius
+        in: query
+        description: 'Specifies the radius in meters around the provided location,
+          to search within. Maximum radius: 1 000 000 meters (any radius greater than  1
+          000 000 will be considered as 1 000 000). Default radius: 5000 meters.'
+        required: false
+        schema:
+          type: number
+          default: 5000
+          minimum: 0
+        example: 2500
+      - name: limit
+        in: query
+        description: 'Number specifying the maximum amount of locations included in
+          the results. Maximum limit: 50 locations (any limit greater than 50 will
+          be considered as 50). Default limit: 15 locations.'
+        required: false
+        schema:
+          type: number
+          default: 15
+          minimum: 0
+        example: 20
+      - name: countryCode
+        in: query
+        description: A two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+          code specifying the [country](https://gs1.org/voc/Country).
+        required: false
+        schema:
+          type: string
+        example: DE
+      - name: hideClosedLocations
+        in: query
+        description: When set to true this parameter allows to exclude locations that
+          have a closure period entry at the time of the request. By default it is
+          set to false and all locations are returned, whether they are showing closed
+          or not.
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: currentDate
+        in: query
+        description: When any date is specified in this parameter then the api will
+          exclude locations that have a closure period entry at the time of the specified
+          date. Note:- currentDate will work only when parameter hideClosedLocations
+          is set to true.
+        required: false
+        schema:
+          type: string
+          format: date
+        example: 24-01-2023
+      responses:
+        '200':
+          description: DHL Service Point location collection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/locations'
+        '400':
+          description: Bad request, for example invalid geo position, location type,
+            service type or country.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+              example:
+                status: 400
+                title: Unknown Service Type
+                detail: Provided serviceType xyz is not known.
+        '401':
+          description: Unauthorized. Provided key is invalid for requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid token
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+              example:
+                status: 500
+                title: Internal Server Error.
+  /location-finder/v1/find-by-keyword-id:
+    get:
+      tags:
+      - locations
+      summary: Search for DHL Service Point locations by keywordId
+      operationId: getLocation-finderV1Find-by-keyword-id
+      parameters:
+      - name: keywordId
+        in: query
+        description: Id belonging to keyword that builds the streetAddress for direct
+          addressing to a service point or locker for pick up / drop off.
+        required: true
+        schema:
+          type: string
+        example: 502
+      - name: countryCode
+        in: query
+        description: A two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+          code specifying the [country](https://gs1.org/voc/Country).
+        required: true
+        schema:
+          type: string
+        example: DE
+      - name: postalCode
+        in: query
+        description: Text specifying the postal [code](https://gs1.org/voc/postalCode)
+          for an address.
+        required: true
+        schema:
+          type: string
+        example: 53113
+      responses:
+        '200':
+          description: ' DHL Service Point location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/location'
+        '400':
+          description: Bad request, for example invalid geo position, location type,
+            service type or country.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+              example:
+                status: 400
+                title: Unknown Service Type
+                detail: Provided serviceType xyz is not known.
+        '401':
+          description: Unauthorized. Provided key is invalid for requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid token
+        '404':
+          description: DHL Service Point location not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                status: 404
+                title: Location not found
+                detail: Location with provided keyword ID could not be found.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+              example:
+                status: 500
+                title: Internal Server Error.
+  /location-finder/v1/locations/{locationId}:
+    get:
+      tags:
+      - locations
+      summary: Retrieve one DHL Service Point location by its ID
+      operationId: getLocation-finderV1LocationsLocationid
+      parameters:
+      - name: locationId
+        in: path
+        description: ID of the DHL Service Point location.
+        required: true
+        schema:
+          type: string
+        example: 8007-401067103
+      responses:
+        '200':
+          description: ' DHL Service Point location'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/location'
+        '400':
+          description: Bad request, for example invalid geo position, location type,
+            service type or country.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequest'
+              example:
+                status: 400
+                title: Unknown Service Type
+                detail: Provided serviceType xyz is not known.
+        '401':
+          description: Unauthorized. Provided key is invalid for requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unauthorized'
+              example:
+                status: 401
+                title: Unauthorized
+                detail: Invalid token
+        '404':
+          description: DHL Service Point location not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+              example:
+                status: 404
+                title: Location not found
+                detail: Location with provided keyword ID could not be found.
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalError'
+              example:
+                status: 500
+                title: Internal Server Error.
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: DHL-API-Key
+  schemas:
+    BadRequest:
+      title: BadRequest
+      required:
+      - status
+      - title
+      - detail
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        detail:
+          type: string
+    ExternalProviderType:
+      title: ExternalProviderType
+      type: string
+      enum:
+      - express
+      - parcel
+    InternalError:
+      title: InternalError
+      required:
+      - status
+      - title
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+    Location:
+      title: Location
+      required:
+      - keyword
+      - keywordId
+      - type
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            $ref: '#/components/schemas/referenceLocation'
+          description: One location can be known within different business units (providerTypes).
+            They will be known under a unique ID within each business unit domain,
+            as provided.
+        keyword:
+          type: string
+          description: Address to put on a label, to send a shipment to a service
+            point or locker for pick up / drop off. For German locations, keyword
+            and keywordId are placed as street name and house number, streetAddress
+            is omitted on the label of a shipment. For locations outside of Germany,
+            keyword and keywordId are placed in addition to streetAddress.
+        keywordId:
+          type: string
+          description: Id belonging to keyword that together with the keywordId build
+            up the streetAddress for direct addressing to a service point or locker
+            for pick up / drop off.
+          example: 443
+        type:
+          type: string
+          description: Type of the DHL Service Point location.
+          example: servicepoint
+        leanLocker:
+          type: boolean
+          description: Lean lockers can only be operated with a mobile phone.
+          example: false
+    LocationType:
+      title: LocationType
+      type: string
+      enum:
+      - servicepoint
+      - locker
+      - postoffice
+      - postbank
+      - pobox
+      - postbox
+    NotFound:
+      title: NotFound
+      required:
+      - status
+      - title
+      - detail
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        detail:
+          type: string
+    ServiceType:
+      title: ServiceType
+      type: string
+      enum:
+      - age-verification
+      - cash-on-delivery
+      - cash-service
+      - express:drop-off
+      - express:drop-off-account
+      - express:drop-off-easy
+      - express:drop-off-prelabeled
+      - express:pick-up
+      - franking
+      - handicapped-access
+      - letter-service
+      - packaging-material
+      - parcel:drop-off
+      - parcel:drop-off-unregistered
+      - parcel:pick-up
+      - parcel:pick-up-registered
+      - parcel:pick-up-unregistered
+      - parking
+      - postbank
+      - postident
+      - parcel:drop-off-unlabeled
+      - express:drop-off-unlabeled
+      - parcel:pick-up-all
+      - parcel:drop-off-all
+    Unauthorized:
+      title: Unauthorized
+      required:
+      - status
+      - title
+      - detail
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        title:
+          type: string
+        detail:
+          type: string
+    address:
+      title: address
+      required:
+      - countryCode
+      - postalCode
+      - addressLocality
+      - streetAddress
+      type: object
+      properties:
+        countryCode:
+          title: CountryCode
+          type: string
+          description: A short text string code (ISO 3166-1 alpha-2 country code)
+            specifying the country.
+          example: DE
+        postalCode:
+          title: PostalCode
+          type: string
+          description: Text specifying the postal code for an address. https://gs1.org/voc/postalCode
+          example: 53113
+        addressLocality:
+          title: AddressLocality
+          type: string
+          description: Text specifying the name of the locality, for example a city.
+            https://gs1.org/voc/addressLocality
+          example: Bonn
+        streetAddress:
+          title: StreetAddress
+          type: string
+          description: The street address expressed as free form text. The street
+            address is printed on paper as the first lines below the name. For example,
+            the name of the street and the number in the street or the name of a building.
+            https://www.gs1.org/voc/streetAddress
+          example: Charles-de-Gaulle-Str. 20
+      example:
+        countryCode: DE
+        postalCode: '53113'
+        addressLocality: Bonn
+        streetAddress: Charles-de-Gaulle-Str. 20
+    averageCapacityDayOfWeek:
+      title: averageCapacityDayOfWeek
+      required:
+      - dayOfWeek
+      - capacity
+      type: object
+      properties:
+        dayOfWeek:
+          type: string
+          description: The day of the week as defined at https://schema.org/DayOfWeek
+        capacity:
+          title: Capacity
+          type: string
+          description: Information on the average availability of locker capacity
+            (only available in Germany).
+          example: high
+    closurePeriod:
+      title: closurePeriod
+      required:
+      - type
+      - fromDate
+      - toDate
+      type: object
+      properties:
+        type:
+          type: string
+          description: Reason for the closure
+          example: holiday
+        fromDate:
+          type: string
+          description: A date value in ISO 8601 format (`2017-06-21`) or a combination
+            of date and time of day (`2017-06-21T14:07:17Z`) (see Chapter 5.4 of ISO
+            8601).
+          example: '2018-03-02T07:53:47Z'
+        toDate:
+          type: string
+          description: A date value in ISO 8601 format (`2017-06-21`) or a combination
+            of date and time of day (`2017-06-21T14:07:17Z`) (see Chapter 5.4 of ISO
+            8601).
+          example: '2018-03-02T07:53:47Z'
+      description: Periods where the DHL Service Point location is closed in the addition
+        to opening hours.
+    containedInPlace:
+      title: containedInPlace
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+          example: Lidl Markt
+      description: Description of the building/facility etc. this service point is
+        located within
+    geo:
+      title: geo
+      required:
+      - latitude
+      - longitude
+      type: object
+      properties:
+        latitude:
+          type: number
+          description: Latitude
+          format: double
+        longitude:
+          type: number
+          description: Longitude
+          format: double
+      description: The geo coordinates of the DHL Service Point location.
+      example:
+        latitude: 53.5512589
+        longitude: 10.0023976
+    location:
+      title: Location
+      required:
+      - url
+      - location
+      - name
+      - place
+      type: object
+      properties:
+        url:
+          type: string
+          description: The `self` link relation - globally unique identifier of this
+            DHL Service Point location.
+          example: /locations/8003-4103535
+        location:
+          $ref: '#/components/schemas/Location'
+        name:
+          type: string
+          description: Name of the DHL Service Point location.
+        distance:
+          type: integer
+          description: Distance in meters (m) from the requested geographical coordinates.
+          format: int64
+        place:
+          $ref: '#/components/schemas/place'
+        openingHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/openingHours'
+          description: List of the opening hours of the DHL Service Point location.
+            http://supermodel.io/schemaorg/OpeningHoursSpecification.
+        closurePeriods:
+          type: array
+          items:
+            $ref: '#/components/schemas/closurePeriod'
+          description: Periods where the DHL Service Point location is closed in the
+            addition to opening hours.
+        serviceTypes:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+          description: The list of services available at the DHL Service Point location.
+            - parcel:pick-up - Consumers can pick up DHL Parcel shipments. This applies
+            to last mile. - parcel:drop-off - Consumers can drop off DHL Parcel shipments.
+            This applies to first mile. - express:pick-up - Consumers can pick up
+            DHL Express shipments. This applies to last mile. - express:drop-off -
+            Consumers can drop off DHL Express shipments. This applies to first mile.
+            - parcel:pick-up-registered - Automated locker station for DHL Parcel
+            pick-up for pre-registered consumers (e.g. Parcel Locker, Packstation,
+            SwipBox, Lean Parcel Locker) - parcel:pick-up-unregistered - Automated
+            locker station for DHL Parcel pick-up for unregistered consumers (e.g.
+            Parcel Locker, Packstation, SwipBox, Lean Parcel Locker) - parcel:drop-off-unregistered
+            - Automated locker station for DHL Parcel drop-off for unregistered consumers
+            (e.g. Parcel Locker, Packstation, SwipBox, Lean Parcel Locker) - letter-service
+            - Letter services are offered (e.g. Post Office offering). - postbank
+            - Offering of services  of the German financial institution Deutsche Postbank
+            AG, a subsidiary of Deutsche Bank AG. The individual offering can be looked
+            up at Deutsche Postbank AG. - cash-on-delivery - Offering of \"cash on
+            delivery\". A shipment is only handed over to the recipient against payment.
+            - franking - Offering of labels for franking. This does not include the
+            product \"Mobile Paketmarke\". - cash-service - Cash service is offered
+            via cash or card payment service. In Germany Giro, Maestro, Postcard and
+            cash payment is supported. - packaging-material - Offering for packing
+            material such as packages for parcels, envelopes for letters, paper, pencils,
+            pens. - postident - Postident is a service to reliably verify the identity
+            of a consumer. This service is commonly used for online bank account identity
+            verification. - age-verification - Reliable verification of the customers
+            age. This service is commonly used to verify that the consumer has reached
+            a specific age for an online offering (e.g. 14 or 18 years). - handicapped-access
+            - Disabled fair access. - parking - Parking area close by. - parcel:drop-off-unlabeled
+            - Location that offers unlabeled drop-off for DHL Parcel shipments. This
+            service is also known as label-free, label-less or QR code drop-off. -
+            express:drop-off-unlabeled - Location that offers unlabeled drop-off for
+            DHL Express shipments. This service is also known as label-free, label-less
+            or QR code drop-off.
+        availableCapacity:
+          title: Capacity
+          type: string
+          description: Information on the average availability of locker capacity
+            (only available in Germany).
+          example: high
+        averageCapacityDayOfWeek:
+          type: array
+          items:
+            $ref: '#/components/schemas/averageCapacityDayOfWeek'
+          description: Indicates the average capacity of the parcel locker on the
+            listed day. If this information is not available, only an aggregated average
+            capacity indication based on the last weeks will be provided as availableCapacity.
+      example:
+        url: /locations/8003-4103535
+        location:
+          ids:
+          - locationId: 8003-4103535
+            provider: parcel
+          keyword: Postfiliale
+          keywordId: '443'
+          type: servicepoint
+          leanLocker: false
+        name: B+B Tabakwaren
+        distance: 255
+        place:
+          address:
+            countryCode: DE
+            postalCode: '53113'
+            addressLocality: Bonn
+            streetAddress: Charles-de-Gaulle-Str. 20
+          geo:
+            latitude: 53.5512589
+            longitude: 10.0023976
+          containedInPlace:
+            name: Lidl Markt
+        openingHours:
+        - opens: 09:00:00
+          closes: '19:00:00'
+          dayOfWeek: https://schema.org/Monday
+        - opens: 09:00:00
+          closes: '19:00:00'
+          dayOfWeek: https://schema.org/Tuesday
+        - opens: 09:00:00
+          closes: '19:00:00'
+          dayOfWeek: https://schema.org/Wednesday
+        - opens: 09:00:00
+          closes: '19:00:00'
+          dayOfWeek: https://schema.org/Thursday
+        - opens: 09:00:00
+          closes: '19:00:00'
+          dayOfWeek: https://schema.org/Friday
+        - opens: 09:00:00
+          closes: '19:00:00'
+          dayOfWeek: https://schema.org/Saturday
+        - opens: 09:00:00
+          closes: '19:00:00'
+          dayOfWeek: https://schema.org/Sunday
+        closurePeriods: []
+        serviceTypes:
+        - parcel:drop-off
+        - parcel:pick-up
+        averageCapacityDayOfWeek: []
+    locations:
+      title: Locations
+      type: object
+      properties:
+        locations:
+          title: Location
+          type: array
+          items:
+            $ref: '#/components/schemas/location'
+          description: DHL Service Point location collection
+          example:
+          - url: /locations/8003-4103535
+            location:
+              ids:
+              - locationId: 8003-4103535
+                provider: parcel
+              keyword: Postfiliale
+              keywordId: '443'
+              type: servicepoint
+              leanLocker: false
+            name: B+B Tabakwaren
+            distance: 255
+            place:
+              address:
+                countryCode: DE
+                postalCode: '53113'
+                addressLocality: Bonn
+                streetAddress: Charles-de-Gaulle-Str. 20
+              geo:
+                latitude: 53.5512589
+                longitude: 10.0023976
+              containedInPlace:
+                name: Lidl Markt
+            openingHours:
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Monday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Tuesday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Wednesday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Thursday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Friday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Saturday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Sunday
+            closurePeriods: []
+            serviceTypes:
+            - parcel:drop-off
+            - parcel:pick-up
+            averageCapacityDayOfWeek: []
+          - url: /locations/8007-420095227
+            location:
+              ids:
+              - locationId: 8007-420095227
+                provider: parcel
+              keyword: DHL Packstation
+              keywordId: '227'
+              type: locker
+            name: DHL Packstation 227
+            distance: 473
+            place:
+              address:
+                countryCode: DE
+                postalCode: '20095'
+                addressLocality: Hamburg
+                streetAddress: Ballindamm 40
+              geo:
+                latitude: 53.5516856
+                longitude: 9.9952905
+            openingHours:
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Monday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Tuesday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Wednesday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Thursday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Friday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Saturday
+            - opens: 09:00:00
+              closes: '19:00:00'
+              dayOfWeek: https://schema.org/Sunday
+            closurePeriods: []
+            serviceTypes:
+            - parcel:drop-off-unregistered
+            - parcel:pick-up-registered
+            averageCapacityDayOfWeek:
+            - dayOfWeek: Monday
+              capacity: very-low
+            - dayOfWeek: Tuesday
+              capacity: low
+            - dayOfWeek: Wednesday
+              capacity: high
+            - dayOfWeek: Thursday
+              capacity: high
+            - dayOfWeek: Friday
+              capacity: low
+            - dayOfWeek: Saturday
+              capacity: very-low
+            - dayOfWeek: Sunday
+              capacity: very-low
+    openingHours:
+      title: openingHours
+      required:
+      - opens
+      - closes
+      - dayOfWeek
+      type: object
+      properties:
+        opens:
+          title: Opens
+          type: string
+          description: The opening hour of the place or service on the given day(s)
+            of the week.
+        closes:
+          title: Closes
+          type: string
+          description: The closing hour of the place or service on the given day(s)
+            of the week.
+        dayOfWeek:
+          title: DayOfWeek
+          type: string
+          description: The day of the week, e.g. used to specify to which day the
+            opening hours of an OpeningHoursSpecification refer.<br/><br/> Originally,
+            URLs from <a href=\"http://purl.org/goodrelations/v1\">GoodRelations</a>
+            were used (for <a class=\"localLink\" href=\"http://schema.org/Monday\">Monday</a>,
+            <a class=\"localLink\" href=\"http://schema.org/Tuesday\">Tuesday</a>,
+            <a class=\"localLink\" href=\"http://schema.org/Wednesday\">Wednesday</a>,
+            <a class=\"localLink\" href=\"http://schema.org/Thursday\">Thursday</a>,
+            <a class=\"localLink\" href=\"http://schema.org/Friday\">Friday</a>, <a
+            class=\"localLink\" href=\"http://schema.org/Saturday\">Saturday</a>,
+            <a class=\"localLink\" href=\"http://schema.org/Sunday\">Sunday</a> plus
+            a special entry for <a class=\"localLink\" href=\"http://schema.org/PublicHolidays\">PublicHolidays</a>);
+            these have now been integrated directly into schema.org.
+      description: List of the opening hours of the DHL Service Point location. http://supermodel.io/schemaorg/OpeningHoursSpecification.
+    place:
+      title: Place
+      required:
+      - address
+      - geo
+      type: object
+      properties:
+        address:
+          $ref: '#/components/schemas/address'
+        geo:
+          $ref: '#/components/schemas/geo'
+        containedInPlace:
+          $ref: '#/components/schemas/containedInPlace'
+    referenceLocation:
+      title: referenceLocation
+      required:
+      - locationId
+      - provider
+      type: object
+      properties:
+        locationId:
+          type: string
+          description: The ID as how the location is know within this business unit
+            / provider.
+          example: 8003-4103535
+        provider:
+          type: string
+          description: The business unit of the DHL Service Point location.
+          example: parcel
