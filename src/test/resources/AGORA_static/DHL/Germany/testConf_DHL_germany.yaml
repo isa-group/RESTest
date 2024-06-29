@@ -4,7 +4,7 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: null
-  headersPath: null
+  headersPath: DHL/headers.json
   oauthPath: null
 testConfiguration:
   operations:
@@ -67,14 +67,6 @@ testConfiguration:
           - express
           - parcel
           objectValues: null
-        - name: minValues
-          values:
-            - 1
-          objectValues: null
-        - name: maxValues
-          values:
-            - 2
-          objectValues: null
         valid: true
     - name: locationType
       in: query
@@ -90,14 +82,6 @@ testConfiguration:
           - postbank
           - pobox
           - postbox
-          objectValues: null
-        - name: minValues
-          values:
-            - 1
-          objectValues: null
-        - name: maxValues
-          values:
-            - 6
           objectValues: null
         valid: true
     - name: serviceType
@@ -132,14 +116,6 @@ testConfiguration:
           - express:drop-off-unlabeled
           - parcel:pick-up-all
           - parcel:drop-off-all
-          objectValues: null
-        - name: minValues
-          values:
-            - 1
-          objectValues: null
-        - name: maxValues
-          values:
-            - 10
           objectValues: null
         valid: true
     - name: radius
@@ -201,7 +177,7 @@ testConfiguration:
             - 2024-06-27
         - name: format
           values:
-          - yyyy-MM-dd
+          - dd-MM-yyyy
           objectValues: null
         valid: true
     expectedResponse: 200

@@ -76,9 +76,11 @@ paths:
           and Post & Parcel Germany), ``post`` (Post & Parcel Germany) '
         required: false
         schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/ExternalProviderType'
+          type: string
+#        schema:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/ExternalProviderType'
       - name: locationType
         in: query
         description: Type of the DHL Service Point location. This parameter can be
@@ -86,9 +88,11 @@ paths:
           locations of the type that matches any of the requested ones.
         required: false
         schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/LocationType'
+          type: string
+#        schema:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/LocationType'
       - name: serviceType
         in: query
         description: Each location can offer more than one service. This parameter
@@ -99,9 +103,11 @@ paths:
           serviceType param.
         required: false
         schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/ServiceType'
+          type: string
+#        schema:
+#          type: array
+#          items:
+#            $ref: '#/components/schemas/ServiceType'
       - name: radius
         in: query
         description: 'Specifies the radius in meters around the provided location,

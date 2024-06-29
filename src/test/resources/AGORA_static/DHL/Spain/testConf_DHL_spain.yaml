@@ -16,44 +16,44 @@ testConfiguration:
       in: query
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - ES
           objectValues: null
         valid: true
     - name: addressLocality
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_static/DHL/Spain/input_values/address_locality.csv
           objectValues: null
         valid: true
     - name: postalCode
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_static/DHL/Spain/input_values/postal_codes.csv
           objectValues: null
         valid: true
     - name: streetAddress
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_static/DHL/Spain/input_values/street_address.csv
           objectValues: null
         valid: true
     - name: providerType
