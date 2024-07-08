@@ -37,7 +37,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/---/resources/AGORA_static/DHL/Italy/dhl_italy.properties";
+	private static String propertiesFilePath = "src/---/resources/AGORA_static/DHL/UnitedKingdom/dhl_unitedKingdom.properties";
 
 	private static List<String> argsList;								// List containing args
 	
