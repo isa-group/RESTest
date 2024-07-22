@@ -73,7 +73,7 @@ paths:
           locations known by that providerType (a.k.a Business Unit) will be returned.
           There may be locations with more than one providerType. The available providerTypes
           are: ``express`` (DHL Express Global), ``parcel`` (eCommerce Solutions Europe
-          and Post & Parcel Germany), ``post`` (Post & Parcel Germany) '
+          and Post & Parcel Germany).'
         required: false
         schema:
           type: string
