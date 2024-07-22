@@ -772,40 +772,70 @@ components:
           items:
             type: string
           uniqueItems: true
-          description: The list of services available at the DHL Service Point location.
-            - parcel:pick-up - Consumers can pick up DHL Parcel shipments. This applies
-            to last mile. - parcel:drop-off - Consumers can drop off DHL Parcel shipments.
-            This applies to first mile. - express:pick-up - Consumers can pick up
-            DHL Express shipments. This applies to last mile. - express:drop-off -
-            Consumers can drop off DHL Express shipments. This applies to first mile.
-            - parcel:pick-up-registered - Automated locker station for DHL Parcel
-            pick-up for pre-registered consumers (e.g. Parcel Locker, Packstation,
-            SwipBox, Lean Parcel Locker) - parcel:pick-up-unregistered - Automated
-            locker station for DHL Parcel pick-up for unregistered consumers (e.g.
-            Parcel Locker, Packstation, SwipBox, Lean Parcel Locker) - parcel:drop-off-unregistered
-            - Automated locker station for DHL Parcel drop-off for unregistered consumers
-            (e.g. Parcel Locker, Packstation, SwipBox, Lean Parcel Locker) - letter-service
-            - Letter services are offered (e.g. Post Office offering). - postbank
-            - Offering of services  of the German financial institution Deutsche Postbank
-            AG, a subsidiary of Deutsche Bank AG. The individual offering can be looked
-            up at Deutsche Postbank AG. - cash-on-delivery - Offering of \"cash on
-            delivery\". A shipment is only handed over to the recipient against payment.
-            - franking - Offering of labels for franking. This does not include the
-            product \"Mobile Paketmarke\". - cash-service - Cash service is offered
-            via cash or card payment service. In Germany Giro, Maestro, Postcard and
-            cash payment is supported. - packaging-material - Offering for packing
-            material such as packages for parcels, envelopes for letters, paper, pencils,
-            pens. - postident - Postident is a service to reliably verify the identity
-            of a consumer. This service is commonly used for online bank account identity
-            verification. - age-verification - Reliable verification of the customers
-            age. This service is commonly used to verify that the consumer has reached
-            a specific age for an online offering (e.g. 14 or 18 years). - handicapped-access
-            - Disabled fair access. - parking - Parking area close by. - parcel:drop-off-unlabeled
-            - Location that offers unlabeled drop-off for DHL Parcel shipments. This
-            service is also known as label-free, label-less or QR code drop-off. -
-            express:drop-off-unlabeled - Location that offers unlabeled drop-off for
-            DHL Express shipments. This service is also known as label-free, label-less
-            or QR code drop-off.
+          description: "The list of services available at the DHL Service Point location.\n\
+            \ - express:drop-off-all - Includes any of the parcel:drop-off services.\
+            \ This can be used as a meta query parameter. It will not be part of the\
+            \ API response.\n - express:drop-off - Consumers can drop off DHL Express\
+            \ shipments. This applies to first mile.\n - express:drop-off-account\
+            \ - Consumers with a DHL Express account but without shipment label can\
+            \ drop off DHL Express shipment.\n - express:drop-off-easy - Consumers\
+            \ without a DHL Express account (new customer) can drop off DHL Express\
+            \ shipment.\n - express:drop-off-prelabeled - Consumers with a DHL Express\
+            \ account can drop off a DHL Express shipment which label has been created\
+            \ by using an online shipment manifest creation tool. The shipment can\
+            \ also be a return shipment.\n - express:drop-off-unlabeled - Location\
+            \ that offers unlabeled drop-off for DHL Express shipments. This service\
+            \ is also known as label-free, label-less or QR code drop-off.\n - express:pick-up\
+            \ - Consumers can pick up DHL Express shipments. This applies to last\
+            \ mile.\n - parcel:drop-off-all - Includes locations that offer any of\
+            \ the parcel:drop-off services. This can be used as a meta-query parameter.\
+            \ The service type \"parcel:drop-off-all\" will not be part of the API\
+            \ response.\n - parcel:drop-off - Deprecated. Please use \"serviceType=parcel:drop-off-firstmile\"\
+            \ to find locations that support parcel drop-off.\n - parcel:drop-off-unlabeled\
+            \ - Deprecated. Please use \"serviceType=parcel: drop-off-firstmile-unlabeled\"\
+            , or \"serviceType=parcel:drop-off-return-unlabeled\" according to the\
+            \ need.\n - parcel:drop-off-unregistered - Deprecated. Please use \"serviceType=parcel:drop-off-firstmile\"\
+            \ to find locations that support parcel drop-off.\n - parcel:drop-off-firstmile\
+            \ - Locations that offer first-mile drop-off of labeled regular DHL Parcel\
+            \ shipments (not returns/reverse). For return shipments, please refer\
+            \ to parcel:drop-off-return services.\n - parcel:drop-off-firstmile-unlabeled\
+            \ - Locations that offer first-mile drop-off of unlabeled DHL Parcel shipments\
+            \ (not returns/reverse). This service is also known as label-free, label-less,\
+            \ or QR code drop-off. For return shipments, please refer to parcel:drop-off-return\
+            \ services.\n - parcel:drop-off-return - Locations that offer regular\
+            \ labeled return drop-off of DHL Parcel shipments (not first mile/initial\
+            \ drop-off of a new shipment).\n - parcel:drop-off-return-unlabeled -\
+            \ Locations that offer unlabeled return drop-off of DHL Parcel shipments\
+            \ (not first mile/initial drop-off of a new shipment). This service is\
+            \ also known as label-free, label-less, or QR code drop-off.\n - parcel:pick-up-all\
+            \ - Includes any of the parcel:pick-up services. This can be used as a\
+            \ meta-query parameter. The service type \"parcel:pick-up-all\" will not\
+            \ be part of the API response.\n - parcel:pick-up - Deprecated. Please\
+            \ use the other parcel:pick-up service options  according to the need.\n\
+            \ - parcel:pick-up-registered - Locations that offer pick-up of DHL Parcel\
+            \ shipments only for registered users. This Service Type is relevant only\
+            \ to Germany. All of these locations are packstations/lockers.\n - parcel:pick-up-unregistered\
+            \ - Locations that offer pick-up of DHL Parcel shipments for any user\
+            \ in the supported European countries.\n - age-verification - Reliable\
+            \ verification of the customers age. This service is commonly used to\
+            \ verify that the consumer has reached a specific age for an online offering\
+            \ (e.g. 14 or 18 years).\n - cash-on-delivery - Offering of \\\"cash on\
+            \ delivery\\\". A shipment is only handed over to the recipient against\
+            \ payment.\n - cash-service - Cash service is offered via cash or card\
+            \ payment service. In Germany Giro, Maestro, Postcard and cash payment\
+            \ is supported.\n - franking - Offering of labels for franking. This does\
+            \ not include the product \\\"Mobile Paketmarke\\\".\n - handicapped-access\
+            \ - Disabled fair access. - parking - Parking area close by.\n - letter-service\
+            \ - Letter services are offered (e.g. Post Office offering).\n - packaging-material\
+            \ - Offering for packing material such as packages for parcels, envelopes\
+            \ for letters, paper, pencils, pens.\n - postbank - Offering of services\
+            \ of the German financial institution Deutsche Postbank AG, a subsidiary\
+            \ of Deutsche Bank AG. The individual offering can be looked up at Deutsche\
+            \ Postbank AG.\n - postident - Postident is a service to reliably verify\
+            \ the identity of a consumer. This service is commonly used for online\
+            \ bank account identity verification.\n - NOTE - All deprecated services\
+            \ can still be used, but we encourage to re-configure your systems to\
+            \ the new recommended ones.\n "
         availableCapacity:
           title: Capacity
           type: string
