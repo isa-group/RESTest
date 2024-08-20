@@ -5,6 +5,8 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.ClassLoader;
 
 import es.us.isa.restest.util.Timer;
+import io.qameta.allure.AllureLifecycle;
+import io.qameta.allure.junit4.AllureJunit4;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
@@ -28,6 +30,7 @@ public class RESTestExecutor {
     private static final Logger logger = LogManager.getLogger(RESTestExecutor.class.getName());
 
     RESTestLoader loader;
+    private final AllureLifecycle allureLifecycle = new AllureLifecycle();
 
     public RESTestExecutor(String propertyFilePath) {
         loader = new RESTestLoader(propertyFilePath);
@@ -45,6 +48,8 @@ public class RESTestExecutor {
             logger.error("Test class {} not found in {}", className, filePath);
             throw new IllegalArgumentException("Test class " + className + " not found in " + filePath);
         }else{
+            String allureResultsDirectory = loader.allureResultsPath + "/" + loader.experimentName;
+            System.setProperty("allure.results.directory", allureResultsDirectory);
             Class<?> testClass = loadTestClass(filePath, className);
             runTests(testClass);
         }
@@ -59,7 +64,7 @@ public class RESTestExecutor {
     private void runTests(Class<?> testClass) {
 
         JUnitCore junit = new JUnitCore();
-        junit.addListener(new io.qameta.allure.junit4.AllureJunit4());
+        junit.addListener(new AllureJunit4(this.allureLifecycle));
         loader.spec = new OpenAPISpecification(loader.OAISpecPath);
         loader.createStatsReportManager();
         Timer.startCounting(TEST_SUITE_EXECUTION);
