@@ -174,11 +174,11 @@ public class RESTestLoader {
 		if (deletePreviousResults) {
 			deleteDir(testDataDir);
 			deleteDir(coverageDataDir);
-
-			// Recreate directories
-			createDir(testDataDir);
-			createDir(coverageDataDir);
 		}
+
+    // Create target directories if they don't exist
+		createDir(testDataDir);
+		createDir(coverageDataDir);
 
 		CoverageMeter coverageMeter = enableInputCoverage || enableOutputCoverage ? new CoverageMeter(new CoverageGatherer(spec)) : null;
 
