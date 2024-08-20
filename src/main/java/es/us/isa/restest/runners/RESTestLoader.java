@@ -357,8 +357,19 @@ public class RESTestLoader {
 
 	public String getExperimentName(){ return experimentName; }
 
+	public void setExperimentName(String experimentName) {
+		this.experimentName = experimentName;
+	}
+
 	public String getAllureReportsPath() {
 		return allureReportsPath;
 	}
 
+	public String getTestClassName() {
+		return testClassName;
+	}
+
+	public void setTestClassName(String testClassName) {
+		this.testClassName = testClassName;
+	}
 }
