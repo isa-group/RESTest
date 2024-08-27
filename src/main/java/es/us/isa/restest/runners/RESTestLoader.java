@@ -86,8 +86,6 @@ public class RESTestLoader {
 
 	// Create a test case generator
 	public AbstractTestCaseGenerator createGenerator() throws RESTestException {
-		// Load specification
-		spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
 		TestConfigurationObject conf = loadConfiguration(confPath, spec);
@@ -187,7 +185,7 @@ public class RESTestLoader {
 	}
 
 	// Read the parameter values from the .properties file. If the value is not found, the system looks for it in the global .properties file (config.properties)
-	private void readProperties() {
+	public void readProperties() {
 
 		logToFile = Boolean.parseBoolean(readProperty("logToFile"));
 		if(logToFile) {
@@ -201,6 +199,9 @@ public class RESTestLoader {
 		
 		OAISpecPath = readProperty("oas.path");
 		logger.info("OAS path: {}", OAISpecPath);
+
+		// Load specification
+		spec = new OpenAPISpecification(OAISpecPath);
 		
 		confPath = readProperty("conf.path");
 		logger.info("Test configuration path: {}", confPath);
@@ -300,7 +301,7 @@ public class RESTestLoader {
 
 
 	// Read the parameter values from the user property file (if provided). If the value is not found, look for it in the global .properties file (config.properties)
-	private String readProperty(String propertyName) {
+	public String readProperty(String propertyName) {
 		
 		// Read property from user property file (if provided)
 		String value = PropertyManager.readProperty(userPropertiesFilePath, propertyName);
