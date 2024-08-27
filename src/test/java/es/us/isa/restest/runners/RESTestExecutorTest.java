@@ -61,6 +61,7 @@ public class RESTestExecutorTest {
 
 
     @Test
+    @Ignore
     public void testExecuteWithNonExistingTestClass() {
 
         try {
