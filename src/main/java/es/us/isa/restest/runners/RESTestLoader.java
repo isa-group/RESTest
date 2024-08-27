@@ -200,7 +200,7 @@ public class RESTestLoader {
 		OAISpecPath = readProperty("oas.path");
 		logger.info("OAS path: {}", OAISpecPath);
 
-		// Load specification
+		// Load OAS specification
 		spec = new OpenAPISpecification(OAISpecPath);
 		
 		confPath = readProperty("conf.path");
