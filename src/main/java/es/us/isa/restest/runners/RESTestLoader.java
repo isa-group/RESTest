@@ -51,6 +51,7 @@ public class RESTestLoader {
 	Boolean logToFile;									// If 'true', log messages will be printed to external files
 	Boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 	Boolean allureReports;								// If 'true', Allure reports will be generated
+	String allureResultsPath;							// Path to Allure results
 	String allureReportsPath;							// Path to Allure reports
 	Boolean checkTestCases;								// If 'true', test cases will be checked with OASValidator before executing them
 	String proxy;										// Proxy to use for all requests in format host:port
@@ -144,7 +145,7 @@ public class RESTestLoader {
 	public AllureReportManager createAllureReportManager() {
 		AllureReportManager arm = null;
 		if(executeTestCases) {
-			String allureResultsDir = readProperty("allure.results.dir") + "/" + experimentName;
+			String allureResultsDir = allureResultsPath + "/" + experimentName;
 			String allureReportDir = allureReportsPath + "/" + experimentName;
 
 			// Delete previous results (if any)
@@ -222,6 +223,8 @@ public class RESTestLoader {
 		}
 		logger.info("Allure reports: {}", allureReports);
 
+		allureResultsPath = readProperty("allure.results.dir");
+		logger.info("Allure results path: {}", allureResultsPath);
 
 		allureReportsPath = readProperty("allure.report.dir");
 		logger.info("Allure reports path: {}", allureReportsPath);
