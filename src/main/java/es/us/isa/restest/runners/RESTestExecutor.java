@@ -33,11 +33,15 @@ public class RESTestExecutor {
     private final AllureLifecycle allureLifecycle = new AllureLifecycle();
 
     public RESTestExecutor(String propertyFilePath) {
-        loader = new RESTestLoader(propertyFilePath);
+        this(new RESTestLoader(propertyFilePath));
     }
 
     public RESTestExecutor(String propertyFilePath, boolean reloadProperties) {
-        loader = new RESTestLoader(propertyFilePath, reloadProperties);
+        this(new RESTestLoader(propertyFilePath, reloadProperties));
+    }
+
+    public RESTestExecutor(RESTestLoader loader) {
+        this.loader = loader;
     }
 
     public void execute() {
