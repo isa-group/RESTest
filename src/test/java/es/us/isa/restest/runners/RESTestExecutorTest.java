@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 public class RESTestExecutorTest {
 
     @Test
-    @Ignore
     public void testExecutor() throws RESTestException {
 
         RESTestLoader loader = new RESTestLoader("src/test/resources/Restcountries/restcountries_demo.properties");
@@ -61,7 +60,6 @@ public class RESTestExecutorTest {
 
 
     @Test
-    @Ignore
     public void testExecuteWithNonExistingTestClass() {
 
         try {
