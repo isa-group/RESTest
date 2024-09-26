@@ -239,27 +239,6 @@
 
 		<dependency>
 			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models</classifier>
-		</dependency>
-
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models-english</classifier>
-		</dependency>
-
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
-			<artifactId>stanford-corenlp</artifactId>
-			<version>4.2.2</version>
-			<classifier>models-english-kbp</classifier>
-		</dependency>
-
-		<dependency>
-			<groupId>edu.stanford.nlp</groupId>
 			<artifactId>stanford-parser</artifactId>
 			<version>3.9.2</version>
 		</dependency>
