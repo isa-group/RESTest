@@ -172,7 +172,7 @@ testConfiguration:
                 objectValues: null
               - name: min
                 values:
-                  - 1635003636
+                  - 1690124125
                 objectValues: null
               - name: max
                 values:
