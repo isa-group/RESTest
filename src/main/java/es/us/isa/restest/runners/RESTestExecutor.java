@@ -30,7 +30,6 @@ public class RESTestExecutor {
     private static final Logger logger = LogManager.getLogger(RESTestExecutor.class.getName());
 
     RESTestLoader loader;
-    private final AllureLifecycle allureLifecycle = new AllureLifecycle();
 
     public RESTestExecutor(String propertyFilePath) {
         this(new RESTestLoader(propertyFilePath));
@@ -66,9 +65,9 @@ public class RESTestExecutor {
     }
 
     private void runTests(Class<?> testClass) {
-
         JUnitCore junit = new JUnitCore();
-        junit.addListener(new AllureJunit4(this.allureLifecycle));
+        AllureLifecycle allureLifecycle = new AllureLifecycle();
+        junit.addListener(new AllureJunit4(allureLifecycle));
         loader.spec = new OpenAPISpecification(loader.OAISpecPath);
         loader.createStatsReportManager();
         Timer.startCounting(TEST_SUITE_EXECUTION);
