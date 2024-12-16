@@ -122,7 +122,7 @@
 		<swagger.version>2.1.10</swagger.version>
 		<openapivalidator.version>2.18.1</openapivalidator.version>
 		<restassured.version>4.2.0</restassured.version>
-		<jackson.version>2.11.4</jackson.version>
+		<jackson.version>2.12.7.1</jackson.version>
 		<allure.version>2.13.3</allure.version>
 		<mockito.version>3.7.7</mockito.version>
 		<sonar.projectKey>isa-group_RESTest</sonar.projectKey>
