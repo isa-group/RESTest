@@ -339,13 +339,13 @@ paths:
       x-dependencies:
         - AllOrNone([package_dimensions[height]], [package_dimensions[length]], [package_dimensions[weight]], [package_dimensions[width]]);
         - AllOrNone([default_price_data[currency]], [default_price_data[unit_amount]]);
-        - IF images[7] THEN images[6];
-        - IF images[6] THEN images[5];
-        - IF images[5] THEN images[4];
-        - IF images[4] THEN images[3];
-        - IF images[3] THEN images[2];
-        - IF images[2] THEN images[1];
-        - IF images[1] THEN images[0];
+        - IF [images[7]] THEN [images[6]];
+        - IF [images[6]] THEN [images[5]];
+        - IF [images[5]] THEN [images[4]];
+        - IF [images[4]] THEN [images[3]];
+        - IF [images[3]] THEN [images[2]];
+        - IF [images[2]] THEN [images[1]];
+        - IF [images[1]] THEN [images[0]];
       responses:
         '200':
           content:
