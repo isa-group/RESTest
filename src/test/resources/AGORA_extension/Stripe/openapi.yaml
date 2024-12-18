@@ -86,11 +86,12 @@ components:
             - product
           type: string
         package_dimensions:
-          oneOf:
-            - "$ref": "#/components/schemas/package_dimensions"
-            - type: array
-              items:
-                type: string
+          "$ref": "#/components/schemas/package_dimensions"
+#          oneOf:
+#            - "$ref": "#/components/schemas/package_dimensions"
+#            - type: array
+#              items:
+#                type: string
           description: The dimensions of this product for shipping purposes.
           nullable: true
         shippable:
@@ -131,6 +132,22 @@ components:
           maxLength: 2048
           nullable: true
           type: string
+        attributes: # Added
+          type: array
+          items:
+            type: string
+        default_price: # Added
+          type: string
+          nullable: true
+        marketing_features: # Added
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+        type: # Added
+          type: string
       required:
         - active
         - created
@@ -149,6 +166,7 @@ components:
       x-resourceId: product
     package_dimensions:
       description: ''
+      nullable: true
       properties:
         height:
           description: Height, in inches.
@@ -171,6 +189,7 @@ components:
       type: object
       x-expandableFields: [ ]
     tax_code:
+      nullable: true
       description: "[Tax codes](https://stripe.com/docs/tax/tax-codes) classify goods
           and services for tax purposes."
       properties:

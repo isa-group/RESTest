@@ -49,7 +49,7 @@ testConfiguration:
         genParameters:
         - name: regExp
           values:
-          - [a-zA-Z0-9_\-]+
+          - ([a-zA-Z0-9_\-]{3,})
           objectValues: null
         valid: true
     - name: tax_code
@@ -279,11 +279,11 @@ testConfiguration:
       in: formData
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomRegExp
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - ([a-zA-Z0-9_\-]{1,12})
           objectValues: null
         valid: true
     - name: url
