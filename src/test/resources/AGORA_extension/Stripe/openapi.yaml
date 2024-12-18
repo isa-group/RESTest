@@ -263,9 +263,43 @@ paths:
                   description: A [tax code](https://stripe.com/docs/tax/tax-codes)
                     ID.
                   type: string
-                images[]:
+                default_price_data[currency]:
+                  type: string
+                  description: "Three-letter ISO currency code, in lowercase. Must be a supported currency."
+                default_price_data[unit_amount]:
+                  type: integer
+                  description: "A positive integer in cents (or 0 for a free price) representing how much to charge. One of unit_amount, unit_amount_decimal, or custom_unit_amount is required."
+                images[0]:
                   description: A list of up to 8 URLs of images for this product,
                     meant to be displayable to the customer.
+                  type: array
+                  items:
+                    type: string
+                images[1]:
+                  type: array
+                  items:
+                    type: string
+                images[2]:
+                  type: array
+                  items:
+                    type: string
+                images[3]:
+                  type: array
+                  items:
+                    type: string
+                images[4]:
+                  type: array
+                  items:
+                    type: string
+                images[5]:
+                  type: array
+                  items:
+                    type: string
+                images[6]:
+                  type: array
+                  items:
+                    type: string
+                images[7]:
                   type: array
                   items:
                     type: string
@@ -304,6 +338,14 @@ paths:
         required: true
       x-dependencies:
         - AllOrNone([package_dimensions[height]], [package_dimensions[length]], [package_dimensions[weight]], [package_dimensions[width]]);
+        - AllOrNone([default_price_data[currency]], [default_price_data[unit_amount]]);
+        - IF images[7] THEN images[6];
+        - IF images[6] THEN images[5];
+        - IF images[5] THEN images[4];
+        - IF images[4] THEN images[3];
+        - IF images[3] THEN images[2];
+        - IF images[2] THEN images[1];
+        - IF images[1] THEN images[0];
       responses:
         '200':
           content:
