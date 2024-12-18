@@ -297,4 +297,169 @@ testConfiguration:
           - 1
           objectValues: null
         valid: true
+    - name: "marketing_features[0][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[1][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[2][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[3][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[4][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[5][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[6][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[7][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[8][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[9][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[10][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[11][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[12][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[13][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
+    - name: "marketing_features[14][name]"
+      in: formData
+      weight: 0.5
+      generators:
+        - type: RandomEnglishWord
+          genParameters:
+            - name: maxWords
+              values:
+                - 1
+              objectValues: null
+          valid: true
     expectedResponse: 200

@@ -351,6 +351,36 @@ paths:
                   description: A URL of a publicly-accessible webpage for this product.
                   maxLength: 5000
                   type: string
+                marketing_features[0][name]:
+                  type: string
+                marketing_features[1][name]:
+                  type: string
+                marketing_features[2][name]:
+                  type: string
+                marketing_features[3][name]:
+                  type: string
+                marketing_features[4][name]:
+                  type: string
+                marketing_features[5][name]:
+                  type: string
+                marketing_features[6][name]:
+                  type: string
+                marketing_features[7][name]:
+                  type: string
+                marketing_features[8][name]:
+                  type: string
+                marketing_features[9][name]:
+                  type: string
+                marketing_features[10][name]:
+                  type: string
+                marketing_features[11][name]:
+                  type: string
+                marketing_features[12][name]:
+                  type: string
+                marketing_features[13][name]:
+                  type: string
+                marketing_features[14][name]:
+                  type: string
               required:
                 - name
               type: object
@@ -365,6 +395,20 @@ paths:
         - IF [images[3]] THEN [images[2]];
         - IF [images[2]] THEN [images[1]];
         - IF [images[1]] THEN [images[0]];
+        - IF [marketing_features[14][name]] THEN [marketing_features[13][name]];
+        - IF [marketing_features[13][name]] THEN [marketing_features[12][name]];
+        - IF [marketing_features[12][name]] THEN [marketing_features[11][name]];
+        - IF [marketing_features[11][name]] THEN [marketing_features[10][name]];
+        - IF [marketing_features[10][name]] THEN [marketing_features[9][name]];
+        - IF [marketing_features[9][name]] THEN [marketing_features[8][name]];
+        - IF [marketing_features[8][name]] THEN [marketing_features[7][name]];
+        - IF [marketing_features[7][name]] THEN [marketing_features[6][name]];
+        - IF [marketing_features[6][name]] THEN [marketing_features[5][name]];
+        - IF [marketing_features[5][name]] THEN [marketing_features[4][name]];
+        - IF [marketing_features[4][name]] THEN [marketing_features[3][name]];
+        - IF [marketing_features[3][name]] THEN [marketing_features[2][name]];
+        - IF [marketing_features[2][name]] THEN [marketing_features[1][name]];
+        - IF [marketing_features[1][name]] THEN [marketing_features[0][name]];
       responses:
         '200':
           content:
