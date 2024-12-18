@@ -14,13 +14,13 @@ testConfiguration:
     testParameters:
     - name: name
       in: formData
-      weight: 0.5
+      weight: 1.0
       generators:
       - type: RandomEnglishWord
         genParameters:
         - name: maxWords
           values:
-          - 1
+          - 5
           objectValues: null
         valid: true
     - name: active
@@ -38,40 +38,40 @@ testConfiguration:
         genParameters:
         - name: maxWords
           values:
-          - 1
+          - 10
           objectValues: null
         valid: true
     - name: id
       in: formData
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomRegExp
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - ^[a-zA-Z0-9_\-]+$
           objectValues: null
         valid: true
     - name: tax_code
       in: formData
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Stripe/input_values/tax_codes.csv
           objectValues: null
         valid: true
     - name: "default_price_data[currency]"
       in: formData
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Stripe/input_values/iso_currency_codes.csv
           objectValues: null
         valid: true
     - name: "default_price_data[unit_amount]"
@@ -86,11 +86,11 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1
+          - 0
           objectValues: null
         - name: max
           values:
-          - 100
+          - 10000
           objectValues: null
         valid: true
     - name: "images[0]"
@@ -193,7 +193,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1
+          - -100
           objectValues: null
         - name: max
           values:
@@ -212,7 +212,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1
+          - -100
           objectValues: null
         - name: max
           values:
@@ -231,7 +231,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1
+          - -100
           objectValues: null
         - name: max
           values:
@@ -250,7 +250,7 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1
+          - -100
           objectValues: null
         - name: max
           values:
