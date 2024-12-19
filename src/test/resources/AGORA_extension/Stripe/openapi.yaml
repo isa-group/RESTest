@@ -106,15 +106,17 @@ components:
           nullable: true
           type: string
         tax_code:
-          anyOf:
-            - maxLength: 5000
-              type: string
-            - "$ref": "#/components/schemas/tax_code"
-          description: A [tax code](https://stripe.com/docs/tax/tax-codes) ID.
+          type: string
           nullable: true
-          x-expansionResources:
-            oneOf:
-              - "$ref": "#/components/schemas/tax_code"
+#          anyOf:
+#            - maxLength: 5000
+#              type: string
+#            - "$ref": "#/components/schemas/tax_code"
+#          description: A [tax code](https://stripe.com/docs/tax/tax-codes) ID.
+#          nullable: true
+#          x-expansionResources:
+#            oneOf:
+#              - "$ref": "#/components/schemas/tax_code"
         unit_label:
           description: A label that represents units of this product in Stripe and
             on customers’ receipts and invoices. When set, this will be included in
@@ -291,37 +293,21 @@ paths:
                 images[0]:
                   description: A list of up to 8 URLs of images for this product,
                     meant to be displayable to the customer.
-                  type: array
-                  items:
-                    type: string
+                  type: string
                 images[1]:
-                  type: array
-                  items:
-                    type: string
+                  type: string
                 images[2]:
-                  type: array
-                  items:
-                    type: string
+                  type: string
                 images[3]:
-                  type: array
-                  items:
-                    type: string
+                  type: string
                 images[4]:
-                  type: array
-                  items:
-                    type: string
+                  type: string
                 images[5]:
-                  type: array
-                  items:
-                    type: string
+                  type: string
                 images[6]:
-                  type: array
-                  items:
-                    type: string
+                  type: string
                 images[7]:
-                  type: array
-                  items:
-                    type: string
+                  type: string
                 package_dimensions[height]:
                   type: number
                 package_dimensions[length]:
