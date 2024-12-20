@@ -153,6 +153,7 @@ paths:
         - min_price <= max_price;
       responses:
         '200':
+          description: "Success"
           content:
             application/json:
               schema:
