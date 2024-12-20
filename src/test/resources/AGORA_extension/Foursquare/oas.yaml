@@ -150,7 +150,9 @@ paths:
         - OnlyOne(polygon, near, ll, ne);
         - AllOrNone(ll, radius);
         - AllOrNone(ne, sw);
+        - ZeroOrOne(chains, exclude_chains);
         - ZeroOrOne(exclude_chains, exclude_all_chains);
+        - IF chains THEN exclude_all_chains == false;
         - ZeroOrOne(open_at, open_now);
         - min_price <= max_price;
       responses:

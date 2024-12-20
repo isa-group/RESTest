@@ -74,7 +74,7 @@ testConfiguration:
         valid: true
     - name: chains
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:
@@ -93,7 +93,7 @@ testConfiguration:
         valid: true
     - name: exclude_chains
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomInputValue
         genParameters:
@@ -112,7 +112,7 @@ testConfiguration:
         valid: true
     - name: exclude_all_chains
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomBoolean
         genParameters: []
