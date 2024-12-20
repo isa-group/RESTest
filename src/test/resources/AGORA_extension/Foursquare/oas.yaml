@@ -261,6 +261,8 @@ paths:
                               type: string
                             formatted_address:
                               type: string
+                            census_block:
+                              type: string
                         categories:
                           description: "An array, possibly empty, of categories that describe the FSQ Place. Included subfields: id (Category ID), name (Category Label), and icon (Category's Icon)."
                           type: array
