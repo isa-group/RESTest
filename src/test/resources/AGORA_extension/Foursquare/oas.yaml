@@ -1,0 +1,38 @@
+openapi: 3.0.0
+info:
+  description: The Places API offers real-time access to Foursquare’s global database of
+    rich venue data and user content to power your location-based experiences in
+    your app or website.
+  version: 1.0.0
+  title: Places API Foursquare
+tags:
+  - name: Places
+    description: Foursquare places
+paths:
+  /places/search:
+    get:
+      tags:
+        - Places
+      summary: Search for places
+      description: "Search for places in the FSQ Places database using a location and querying by name, category name, 
+      telephone number, taste label, or chain name. For example, search for 'coffee' to get back a list of recommended 
+      coffee shops.
+      
+      You may pass a location with your request by using one of the following options. If none of the following options 
+      are passed, Place Search defaults to geolocation using ip biasing with the optional radius parameter.
+          - ll & radius (circular boundary)
+          - near (geocodable locality)
+          - ne & sw (rectangular boundary)"
+      operationId: "placeSearch"
+      parameters:
+        - name: query
+      x-dependencies:
+        - "abc"
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                "$ref": ""
+servers:
+  - url: https://api.foursquare.com/v3
