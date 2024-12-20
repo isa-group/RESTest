@@ -168,7 +168,7 @@ paths:
                     items:
                       type: object
                       properties:
-                        fsq_id:
+                        fsq_id:   # Places Core Data
                           type: string
                           description: "A unique identifier for a FSQ Place (formerly known as Venue ID)."
                         name:
@@ -378,6 +378,161 @@ paths:
                           description: "Probability that a POI is Open/Closed.
                                           - VeryLikelyOpen, VeryLikelyClosed: 95% Confidence that a POI is Open/Closed respectively
                                           - LikelyOpen, LikelyClosed: 80% Confidence that a POI identified as LikelyOpen/VeryLikelyOpen is Open . Similarly, 80% Confidence that a POI marked as LikelyClosed/VeryLikelyClosed is Closed"
+                          type: string
+                        description:  # Places Rich Data
+                          description: "A general description of the FSQ Place. Typically provided by the owner/claimant of the FSQ Place and/or updated by City Guide Superusers."
+                          type: string
+                        tel:
+                          description: "The best known telephone number, with local formatting."
+                          type: string
+                        fax:
+                          description: "The best known fax number, with local formatting."
+                          type: string
+                        email:
+                          description: "The primary contact email address for the FSQ Place."
+                          type: string
+                        website:
+                          description: "The official website for the FSQ Place."
+                          type: string
+                        social_media:
+                          description: "An object containing a FSQ Place's social media identifiers. Included subfields: facebook_id, instagram, and twitter. Not all FSQ Places will have all subfields."
+                          type: object
+                          properties:
+                            facebook_id:
+                              type: string
+                            instagram:
+                              type: string
+                            twitter:
+                              type: string
+                        verified:
+                          description: "A boolean that indicates whether or not the FSQ Place has been claimed."
+                          type: boolean
+                        hours:
+                          description: "An array containing the regular hours of operation, is_local_holiday, open_now, and a formatted display string.
+                          regular hours contain subfields: day (1 = Monday, 2 = Tuesday, 7 = Sunday) and open/close (24-hour time)."
+                          type: object
+                          properties:
+                            display:
+                              type: string
+                            is_local_holiday:
+                              type: boolean
+                            open_now:
+                              type: boolean
+                            regular:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  close:
+                                    type: string
+                                  day:
+                                    type: integer
+                                  open:
+                                    type: string
+                        hours_popular:
+                          description: "An array containing the hours during the week when a FSQ Place is most often visited. This place must have a minimum number of check-ins to be considered for the calculation.
+                          Similar to hours, this field contains subfields: day (1 = Monday, 2 = Tuesday, 7 = Sunday) and open/close (24-hour time)."
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              close:
+                                type: string
+                              day:
+                                type: integer
+                              open:
+                                type: string
+                        rating:
+                          description: "A numerical rating (from 0.0 to 10.0) of the FSQ Place, based on user votes, likes/dislikes, tips sentiment, and visit data. Not all FSQ Places will have a rating.
+                            NOTE: v3 does not include the following mapped ratings to colors as could be found in v2:
+                                - 0.0 = LightMediumGrey (#C7CDCF)
+                                - 0.0 <> 4.0 = Red (#E6092C)
+                                - 4.0 <> 5.0 = DarkOrange (#FF6701)
+                                - 5.0 <> 6.0 = Orange (#FF9600)
+                                - 6.0 <> 7.0 = Yellow (#FFC800)
+                                - 7.0 <> 8.0 = LightGreen (#C5DE35)
+                                - 8.0 <> 9.0 = Green (#73CF42)
+                                - 9.0 + = DarkGreen (#00B551)"
+                          type: number
+                        stats:
+                          description: "An object containing counts of photos, ratings, and tips. Included subfields: total_photos, total_ratings, and total_tips."
+                          type: object
+                          properties:
+                            total_photos:
+                              type: integer
+                            total_ratings:
+                              type: integer
+                            total_tips:
+                              type: integer
+                        popularity:
+                          description: "A measure of the FSQ Place's popularity, by foot traffic. This score is on a 0 to 1 scale and uses a 6-month span of Place visits for a given geographic area."
+                          type: number
+                        price:
+                          description: "A numerical value (from 1 to 4) that best describes the pricing tier of the FSQ Place, based on known prices for menu items and other offerings.
+                                        Values include:
+                                            - 1 = Cheap
+                                            - 2 = Moderate
+                                            - 3 = Expensive
+                                            - 4 = Very Expensive."
+                          type: integer
+                        menu:
+                          description: "A linked menu for the FSQ Place."
+                          type: string
+                        date_closed:
+                          description: "The recorded date when the FSQ Place was marked as permanently closed in Foursquare's databases. This does not necessarily indicate the Place was actually closed on this date."
+                          type: string
+                        photos:
+                          description: "An array of objects containing the following subfields:
+                                          - id
+                                          - created_at
+                                          - classifications
+                                          - prefix
+                                          - suffix
+                                          - width
+                                          - height."
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            created_at:
+                              type: string
+                            classifications:
+                              type: array
+                              items:
+                                type: string
+                            prefix:
+                              type: string
+                            suffix:
+                              type: string
+                            width:
+                              type: integer
+                            height:
+                              type: integer
+                        tips:
+                          description: "An array containing the following subfields: created_at and text."
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              created_at:
+                                type: string
+                              text:
+                                type: string
+                        tastes:
+                          description: "An array of up to 25 tastes that best describe the FSQ Place."
+                          type: array
+                          items:
+                            type: string
+                        features:
+                          description: "A list of boolean tags that help to describe services and additional metadata offered by the Place (e.g. takes_reservations: true)"
+                          type: object
+                          additionalProperties:
+                            type: object
+                        store_id:
+                          description: "The unique ID assigned to a venue in order to differentiate it from other stores within the same chain."
+                          type: string
+                        venue_reality_bucket:
+                          description: "This attribute represents how “real” Foursquare believes a venue to be. As venues can be submitted directly by users, Foursquare uses a proprietary algorithm to assess real venues (public places like a popular restaurant, store, concert venue, etc) vs a private or nonexistent venue. Foursquare’s Venue Reality algorithm uses a combination of explicit and implicit signals (examples include number of searches on Foursquare, number of photos/tips submitted, number of check-ins, etc) to bucket venues with an output of Low, Medium, High, VeryHigh"
                           type: string
                   context:
                     type: object
