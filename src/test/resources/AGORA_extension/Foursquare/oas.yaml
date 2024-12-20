@@ -147,7 +147,10 @@ paths:
             type: string
           description: "A Foursquare Venue ID to use as search bounds so only places within that venue are returned"
       x-dependencies:
-        - "abc"
+        - OnlyOne(polygon, near, (ll ^ radius), (ne ^ sw));
+        - ZeroOrOne(exclude_chains, exclude_all_chains);
+        - ZeroOrOne(open_at, open_now);
+        - min_price <= max_price;
       responses:
         '200':
           content:
