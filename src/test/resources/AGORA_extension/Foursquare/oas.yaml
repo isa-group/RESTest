@@ -26,6 +26,126 @@ paths:
       operationId: "placeSearch"
       parameters:
         - name: query
+          in: query
+          schema:
+            type: string
+          description: "A string to be matched against all content for this place, including but not limited to venue name, category, telephone number, taste, and tips."
+        - name: ll
+          in: query
+          schema:
+            type: string
+          description: "The latitude/longitude around which to retrieve place information. This must be specified as latitude,longitude (e.g., ll=41.8781,-87.6298)."
+        - name: radius
+          in: query
+          schema:
+            type: integer
+          description: "Sets a radius distance (in meters) used to define an area to bias search results. The maximum allowed radius is 100,000 meters. Radius can be used in combination with ll or ip biased geolocation only. By using radius, global search results will be omitted. If not provided, default radius applied is 22000 meters."
+        - name: categories
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          description: "Filters the response and returns FSQ Places matching the specified categories. Supports multiple Category IDs, separated by commas.
+          For a complete list of Foursquare Category IDs, refer to the Category Taxonomy page. [This endpoint prefers the 5-integer style id, but can accept theBSON style id]"
+        - name: chains
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          description: "Filters the response and returns FSQ Places matching the specified chains. Supports multiple chain IDs, separated by commas.
+          For more information on Foursquare Chain IDs, refer to the Chains page."
+        - name: exclude_chains
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          description: "Filters the response and returns FSQ Places not matching any of the specified chains. Supports multiple chain IDs, separated by commas. Cannot be used in conjunction with exclude_all_chains.
+          For more information on Foursquare Chain IDs, refer to the Chains page."
+        - name: exclude_all_chains
+          in: query
+          schema:
+            type: boolean
+          description: "Filters the response by only returning FSQ Places that are not known to be part of any chain. Cannot be used in conjunction with exclude_chains."
+        - name: fields
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          description: "Indicate which fields to return in the response, separated by commas. If no fields are specified, all Core Fields are returned by default.
+          For a complete list of returnable fields, refer to the Response Fields page."
+        - name: min_price
+          in: query
+          schema:
+            type: integer
+          description: "Restricts results to only those places within the specified price range. Valid values range between 1 (most affordable) to 4 (most expensive), inclusive."
+        - name: max_price
+          in: query
+          schema:
+            type: integer
+          description: "Restricts results to only those places within the specified price range. Valid values range between 1 (most affordable) to 4 (most expensive), inclusive."
+        - name: open_at
+          in: query
+          schema:
+            type: string
+          description: "Support local day and local time requests through this parameter. To be specified as DOWTHHMM (e.g., 1T2130), where DOW is the day number 1-7 (Monday = 1, Sunday = 7) and time is in 24 hour format.
+          Places that do not have opening hours will not be returned if this parameter is specified. Cannot be specified in conjunction with open_now."
+        - name: open_now
+          in: query
+          schema:
+            type: boolean
+          description: "Restricts results to only those places that are open now.
+          Places that do not have opening hours will not be returned if this parameter is specified. Cannot be specified in conjunction with open_at."
+        - name: ne
+          in: query
+          schema:
+            type: string
+          description: "The latitude/longitude representing the north/east points of a rectangle. Must be used with sw parameter to specify a rectangular search box. Global search results will be omitted."
+        - name: sw
+          in: query
+          schema:
+            type: string
+          description: "The latitude/longitude representing the south/west points of a rectangle. Must be used with ne parameter to specify a rectangular search box. Global search results will be omitted."
+        - name: near
+          in: query
+          schema:
+            type: string
+          description: "A string naming a locality in the world (e.g., 'Chicago, IL'). If the value is not geocodable, returns an error."
+        - name: polygon
+          in: query
+          schema:
+            type: string
+          description: "A string containing a list of coordinate pairs which define the edges of the polygon. Each pair must include latitude and longitude separated by a comma, with each pair separated by a tilde ~. Must have at least 4 coordinate pairs and be considered a 'closed' polygon."
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - relevance
+              - rating
+              - distance
+          description: "Specifies the order in which results are listed. Possible values are:
+            - relevance (default)
+            - rating
+            - distance"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          description: "The number of results to return, up to 50. Defaults to 10."
+#        - name: session_token
+#          in: query
+#          schema:
+#            type: string
+#          description: "A user-generated token to identify a session for billing purposes. Learn more about session tokens."
+        - name: super_venue_id
+          in: query
+          schema:
+            type: string
+          description: "A Foursquare Venue ID to use as search bounds so only places within that venue are returned"
       x-dependencies:
         - "abc"
       responses:
@@ -33,6 +153,11 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": ""
+                type: object
+                properties:
+                  fsq_id:
+                    type: string
+                    description: "A unique identifier for a FSQ Place (formerly known as Venue ID)."
+
 servers:
   - url: https://api.foursquare.com/v3
