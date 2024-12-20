@@ -163,9 +163,238 @@ paths:
               schema:
                 type: object
                 properties:
-                  fsq_id:
-                    type: string
-                    description: "A unique identifier for a FSQ Place (formerly known as Venue ID)."
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        fsq_id:
+                          type: string
+                          description: "A unique identifier for a FSQ Place (formerly known as Venue ID)."
+                        name:
+                          type: string
+                          description: "The best known name for the FSQ Place."
+                        geocodes:
+                          type: object
+                          description: "Set of geocodes (latitude, longitude) for the Place. The primary coordinates are identified by the main latitude and longitude.
+                          Where available, other coordinates may include:
+                            - roof
+                            - drop_off
+                            - front_door
+                            - road"
+                          properties:
+                            main:
+                              type: object
+                              properties:
+                                latitude:
+                                  type: number
+                                longitude:
+                                  type: number
+                            roof:
+                              type: object
+                              properties:
+                                latitude:
+                                  type: number
+                                longitude:
+                                  type: number
+                            drop_off:
+                              type: object
+                              properties:
+                                latitude:
+                                  type: number
+                                longitude:
+                                  type: number
+                            front_door:
+                              type: object
+                              properties:
+                                latitude:
+                                  type: number
+                                longitude:
+                                  type: number
+                            road:
+                              type: object
+                              properties:
+                                latitude:
+                                  type: number
+                                longitude:
+                                  type: number
+                        location:
+                          type: object
+                          description: "An object containing none, some, or all of the following fields:
+                              - address
+                              - address_extended
+                              - locality
+                              - dma
+                              - region
+                              - postcode
+                              - country
+                              - admin_region
+                              - post_town
+                              - po_box
+                              - cross_street
+                              - formatted_address
+                              - census_block: populated only for Places within the United States, in all other countries it will be null.
+                            
+                            NOTE: For the Autocomplete and Address Data APIs, the location object data is populated by the verified address data provided by Loqate."
+                          properties:
+                            address:
+                              type: string
+                            address_extended:
+                              type: string
+                            locality:
+                              type: string
+                            dma:
+                              type: string
+                            region:
+                              type: string
+                            postcode:
+                              type: string
+                            country:
+                              type: string
+                            admin_region:
+                              type: string
+                            post_town:
+                              type: string
+                            po_box:
+                              type: string
+                            cross_street:
+                              type: string
+                            formatted_address:
+                              type: string
+                        categories:
+                          description: "An array, possibly empty, of categories that describe the FSQ Place. Included subfields: id (Category ID), name (Category Label), and icon (Category's Icon)."
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                              name:
+                                type: string
+                              short_name:
+                                type: string
+                              plural_name:
+                                type: string
+                              icon:
+                                type: object
+                                properties:
+                                  prefix:
+                                    type: string
+                                  suffix:
+                                    type: string
+                        chains:
+                          description: "An array, possibly empty, of chains that the FSQ Place belongs to. Included subfields: id (Chain ID) and name (Chain Name)."
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                              name:
+                                type: string
+                        related_places:
+                          description: "An object containing the information for Places related to the FSQ Place. Included subfields: parent and children. Not all FSQ Places will have parent or children relationships.
+                          
+                          Some Children Place responses may not show a fsq_id. This indicates that Foursquare does not have enough data inputs to mark the Child Place as an official Place.
+                            Example:
+                              parent = Los Angeles International Airport
+                              children = Terminal 1, Terminal 2, Terminal 3..."
+                          type: object
+                          properties:
+                            parent:
+                              type: object
+                              properties:
+                                fsq_id:
+                                  type: string
+                                  description: "A unique identifier for a FSQ Place (formerly known as Venue ID)."
+                                name:
+                                  type: string
+                                  description: "The best known name for the FSQ Place."
+                                categories:
+                                  description: "An array, possibly empty, of categories that describe the FSQ Place. Included subfields: id (Category ID), name (Category Label), and icon (Category's Icon)."
+                                  type: array
+                                  items:
+                                    type: object
+                                    properties:
+                                      id:
+                                        type: integer
+                                      name:
+                                        type: string
+                                      short_name:
+                                        type: string
+                                      plural_name:
+                                        type: string
+                                      icon:
+                                        type: object
+                                        properties:
+                                          prefix:
+                                            type: string
+                                          suffix:
+                                            type: string
+                            children:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  fsq_id:
+                                    type: string
+                                    description: "A unique identifier for a FSQ Place (formerly known as Venue ID)."
+                                  name:
+                                    type: string
+                                    description: "The best known name for the FSQ Place."
+                                  categories:
+                                    description: "An array, possibly empty, of categories that describe the FSQ Place. Included subfields: id (Category ID), name (Category Label), and icon (Category's Icon)."
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        id:
+                                          type: integer
+                                        name:
+                                          type: string
+                                        short_name:
+                                          type: string
+                                        plural_name:
+                                          type: string
+                                        icon:
+                                          type: object
+                                          properties:
+                                            prefix:
+                                              type: string
+                                            suffix:
+                                              type: string
+                        timezone:
+                          description: "A string that denotes the region representing the FSQ Place's timezone."
+                          type: string
+                        distance:
+                          description: "The calculated distance (in meters) from the provided location (i.e. ll + radius OR near OR ne + sw) in the API call. This field will only be returned by the Place Search endpoint."
+                          type: integer
+                        link:
+                          description: "The URL associated with the corresponding Places Detail API call for the returned Place."
+                          type: string
+                        closed_bucket:
+                          description: "Probability that a POI is Open/Closed.
+                                          - VeryLikelyOpen, VeryLikelyClosed: 95% Confidence that a POI is Open/Closed respectively
+                                          - LikelyOpen, LikelyClosed: 80% Confidence that a POI identified as LikelyOpen/VeryLikelyOpen is Open . Similarly, 80% Confidence that a POI marked as LikelyClosed/VeryLikelyClosed is Closed"
+                          type: string
+                  context:
+                    type: object
+                    properties:
+                      geo_bounds:
+                        type: object
+                        properties:
+                          circle:
+                            type: object
+                            properties:
+                              center:
+                                type: object
+                                properties:
+                                  latitude:
+                                    type: number
+                                  longitude:
+                                    type: number
+                              radius:
+                                type: integer
 
 servers:
   - url: https://api.foursquare.com/v3
