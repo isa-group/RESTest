@@ -16,22 +16,22 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/query.csv
           objectValues: null
         valid: true
     - name: ll
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/ll_values.csv
           objectValues: null
         valid: true
     - name: radius
@@ -50,40 +50,64 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 100000
           objectValues: null
         valid: true
     - name: categories
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/categories.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
           objectValues: null
         valid: true
     - name: chains
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/chains.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
           objectValues: null
         valid: true
     - name: exclude_chains
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/chains.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
           objectValues: null
         valid: true
     - name: exclude_all_chains
@@ -97,11 +121,19 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/fields.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 34
           objectValues: null
         valid: true
     - name: min_price
@@ -120,7 +152,7 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 4
           objectValues: null
         valid: true
     - name: max_price
@@ -139,7 +171,7 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 4
           objectValues: null
         valid: true
     - name: open_at
@@ -164,44 +196,44 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/ne_values.csv
           objectValues: null
         valid: true
     - name: sw
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/sw_values.csv
           objectValues: null
         valid: true
     - name: near
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/city_names.csv
           objectValues: null
         valid: true
     - name: polygon
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/polygon.csv
           objectValues: null
         valid: true
     - name: sort
@@ -233,18 +265,18 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 50
           objectValues: null
         valid: true
     - name: super_venue_id
       in: query
-      weight: 0.5
+      weight: 0.1
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Foursquare/input_values/super_venue_ids.csv
           objectValues: null
         valid: true
     expectedResponse: 200
