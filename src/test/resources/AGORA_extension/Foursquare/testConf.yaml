@@ -178,11 +178,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomRegExp
         genParameters:
-        - name: maxWords
+        - name: regExp
           values:
-          - 1
+          - ([1-7]{1}T(([01]{1}[0-9]{1})|(2[0-3]{1}))[0-5]{1}[0-9]{1})
           objectValues: null
         valid: true
     - name: open_now
