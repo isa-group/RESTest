@@ -490,24 +490,26 @@ paths:
                                           - suffix
                                           - width
                                           - height."
-                          type: object
-                          properties:
-                            id:
-                              type: string
-                            created_at:
-                              type: string
-                            classifications:
-                              type: array
-                              items:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
                                 type: string
-                            prefix:
-                              type: string
-                            suffix:
-                              type: string
-                            width:
-                              type: integer
-                            height:
-                              type: integer
+                              created_at:
+                                type: string
+                              classifications:
+                                type: array
+                                items:
+                                  type: string
+                              prefix:
+                                type: string
+                              suffix:
+                                type: string
+                              width:
+                                type: integer
+                              height:
+                                type: integer
                         tips:
                           description: "An array containing the following subfields: created_at and text."
                           type: array
