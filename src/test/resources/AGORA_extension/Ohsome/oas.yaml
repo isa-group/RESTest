@@ -30,16 +30,21 @@ tags:
   - name: Users
     description: Compute data aggregation functions on users
 paths:
-  "/elements/area":
+  "/elements/{aggregation}":
     get:
       tags:
         - Area
-      summary: Area of OSM elements
-      operationId: area
+      summary: Get aggregation of OSM elements.
+      operationId: elementsAggregation
       produces:
         - application/json
-        - text/csv
+#        - text/csv
       parameters:
+        - name: aggregation
+          in: path
+          description: "Aggregation type: one of area, count, length, perimeter."
+          required: true
+          type: string
         - name: bboxes
           in: query
           description: 'WGS84 coordinates in the following format: id1:lon1,lat1,lon2,lat2|id2:lon1,lat1,lon2,lat2|...
@@ -47,7 +52,6 @@ paths:
           parameter must be defined)'
           required: false
           type: string
-          default: 8.625,49.3711,8.7334,49.4397
         - name: bcircles
           in: query
           description: 'WGS84 coordinates + radius in meter in the following format:
