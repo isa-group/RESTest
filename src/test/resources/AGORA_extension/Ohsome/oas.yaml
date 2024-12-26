@@ -14,7 +14,8 @@ info:
   license:
     name: License of the used data
     url: https://ohsome.org/copyrights
-host: api-test.ohsome.org
+#host: api-test.ohsome.org
+host: api.ohsome.org
 schemes:
   - https
 basePath: "/v1"
