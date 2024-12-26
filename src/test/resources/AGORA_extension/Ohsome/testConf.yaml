@@ -76,12 +76,24 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
+          - name: csv
+            values:
+              - src/test/resources/AGORA_extension/Ohsome/input_values/bpolys_values.csv
+            objectValues: null
+          - name: minValues
+            values:
+              - 1
+            objectValues: null
+          - name: maxValues
+            values:
+              - 4
+            objectValues: null
+          - name: separator
+            values:
+              - "|"
+            objectValues: null
         valid: true
     - name: time
       in: query
