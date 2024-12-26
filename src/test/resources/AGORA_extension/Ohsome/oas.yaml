@@ -178,11 +178,11 @@ definitions:
       attribution:
         description: License and copyright info
         "$ref": "#/definitions/Attribution"
-      features:
-        type: array
-        description: GeoJSON Features
-        items:
-          "$ref": "#/definitions/Feature"
+#      features:
+#        type: array
+#        description: GeoJSON Features
+#        items:
+#          "$ref": "#/definitions/Feature"
       metadata:
         description: Metadata describing the output
         "$ref": "#/definitions/Metadata"
@@ -191,9 +191,9 @@ definitions:
         description: ElementsResult holding timestamp-value pairs
         items:
           "$ref": "#/definitions/Result"
-      type:
-        type: string
-        description: Type of the GeoJSON
+#      type:
+#        type: string
+#        description: Type of the GeoJSON
     title: DefaultAggregationResponse
   Feature:
     title: Feature
@@ -550,7 +550,8 @@ definitions:
   Result:
     type: object
     properties:
+      timestamp:
+        type: string
       value:
         type: number
-        format: double
     title: Result
