@@ -110,11 +110,11 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Ohsome/input_values/filter_values.csv
           objectValues: null
         valid: true
     - name: showMetadata

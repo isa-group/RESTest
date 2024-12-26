@@ -1,0 +1,21 @@
+natural=tree
+addr:housenumber=*
+oneway!=yes
+name!=*
+"highway in (residential, living_street)"
+type:node
+geometry:polygon
+area:(123.4..1E6)
+length:(100..)
+perimeter:(100..)
+geometry.vertices:(1..10)
+geometry.outers:1
+geometry.outers:(2..)
+geometry.inners:0
+geometry.inners:(1..)
+geometry.roundness:(0.8..)
+geometry.squareness:(0.8..)
+highway=primary and (name=* or ref=*)
+not type:node
+highway=service and service=driveway
+natural=wood or landuse=forest
