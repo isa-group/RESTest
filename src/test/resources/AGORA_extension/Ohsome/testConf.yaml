@@ -16,22 +16,37 @@ testConfiguration:
       in: path
       weight: null
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - area
+          - count
+          - length
+          - perimeter
           objectValues: null
         valid: true
     - name: bboxes
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/Ohsome/input_values/bboxes_values.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 4
+          objectValues: null
+        - name: separator
+          values:
+            - "|"
           objectValues: null
         valid: true
     - name: bcircles
