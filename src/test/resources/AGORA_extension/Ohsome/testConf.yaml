@@ -121,11 +121,14 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - yes
+          - no
+          - true
+          - false
           objectValues: null
         valid: true
     expectedResponse: 200
