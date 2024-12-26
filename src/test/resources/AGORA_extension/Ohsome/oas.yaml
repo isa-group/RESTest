@@ -1,0 +1,556 @@
+---
+swagger: '2.0'
+info:
+  description: "This REST-based API aims to leverage the tools of the <a href=\"https://github.com/GIScience/oshdb\"
+    target=\"_blank\">OSHDB</a> through allowing to access some of its functionalities
+    via HTTP requests. \nThe official documentation can be found <a href=\"https://docs.ohsome.org/ohsome-api/stable\"
+    target=\"_blank\">here</a>. "
+  version: 1.2.3
+  title: ohsome API
+  contact:
+    name: Heidelberg Institute for Geoinformation Technology
+    url: https://www.heigit.org
+    email: info@heigit.org
+  license:
+    name: License of the used data
+    url: https://ohsome.org/copyrights
+host: api-test.ohsome.org
+schemes:
+  - https
+basePath: "/v1"
+tags:
+  - name: Area
+    description: Compute the area of polygonal OSM elements
+  - name: Count
+    description: Compute the count of point/linear/polygonal OSM elements
+  - name: Length
+    description: Compute the length of linear OSM elements
+  - name: Perimeter
+    description: Compute the perimeter of polygonal OSM elements
+  - name: Users
+    description: Compute data aggregation functions on users
+paths:
+  "/elements/area":
+    get:
+      tags:
+        - Area
+      summary: Area of OSM elements
+      operationId: area
+      produces:
+        - application/json
+        - text/csv
+      parameters:
+        - name: bboxes
+          in: query
+          description: 'WGS84 coordinates in the following format: id1:lon1,lat1,lon2,lat2|id2:lon1,lat1,lon2,lat2|...
+          OR lon1,lat1,lon2,lat2|lon1,lat1,lon2,lat2|...; no default value (one boundary
+          parameter must be defined)'
+          required: false
+          type: string
+          default: 8.625,49.3711,8.7334,49.4397
+        - name: bcircles
+          in: query
+          description: 'WGS84 coordinates + radius in meter in the following format:
+          id1:lon,lat,r|id2:lon,lat,r|... OR lon,lat,r|lon,lat,r|...; no default value
+          (one boundary parameter must be defined)'
+          required: false
+          type: string
+        - name: bpolys
+          in: query
+          description: WGS84 coordinates given as a list of coordinate pairs (as for
+            bboxes) or GeoJSON FeatureCollection. The first point has to be the same
+            as the last point and MultiPolygons are only supported in GeoJSON; no default
+            value (one boundary parameter must be defined)
+          required: false
+          type: string
+        - name: filter
+          in: query
+          description: Combines several attributive filters, e.g. OSM type, the geometry
+            (simple feature) type, as well as the OSM tag; no default value
+          required: false
+          type: string
+          default: type:way
+        - name: format
+          in: query
+          description: 'Output format geojson (for /groupBy/boundary resources only),
+          csv, or json; default: json'
+          required: false
+          type: string
+          default: json
+        - name: keys
+          in: query
+          description: This parameter has been deprecated since v1.0. We encourage you
+            to use the new parameter 'filter' instead.
+          required: false
+          type: string
+        - name: showMetadata
+          in: query
+          description: 'Boolean operator ''true'' or ''false''; default: ''false'''
+          required: false
+          type: string
+        - name: time
+          in: query
+          description: 'ISO-8601 conform timestring(s); default: latest timestamp within
+          dataset'
+          required: false
+          type: string
+          default: 2014-01-01/2017-01-01/P1Y
+        - name: timeout
+          in: query
+          description: Custom timeout in seconds; no default value
+          required: true
+          type: string
+        - name: types
+          in: query
+          description: This parameter has been deprecated since v1.0. We encourage you
+            to use the new parameter 'filter' instead.
+          required: false
+          type: string
+        - name: values
+          in: query
+          description: This parameter has been deprecated since v1.0. We encourage you
+            to use the new parameter 'filter' instead.
+          required: false
+          type: string
+      x-dependencies:
+        - OnlyOne(bboxes, bcircles, bpolys);
+        - ZeroOrOne(filter, Or(types, keys, values));
+        - IF values THEN keys;
+      responses:
+        '200':
+          description: OK
+          schema:
+            "$ref": "#/definitions/DefaultAggregationResponse"
+#        '400':
+#          description: Bad request
+#        '401':
+#          description: Unauthorized
+#        '404':
+#          description: Not found
+#        '405':
+#          description: Method not allowed
+#        '413':
+#          description: Payload too large
+#        '500':
+#          description: Internal server error
+#        '501':
+#          description: Not implemented
+#        '503':
+#          description: Service Unavailable
+      deprecated: false
+definitions:
+  Attribution:
+    type: object
+    required:
+      - text
+      - url
+    properties:
+      text:
+        type: string
+        description: Copyright info about the used data
+      url:
+        type: string
+        description: URL to the copyright and license info
+    title: Attribution
+  Crs:
+    type: object
+    properties:
+      properties:
+        type: object
+      type:
+        type: string
+        enum:
+          - name
+          - link
+    title: Crs
+  DefaultAggregationResponse:
+    type: object
+    required:
+      - apiVersion
+      - attribution
+      - features
+      - result
+      - type
+    properties:
+      apiVersion:
+        type: string
+        description: Version of this api
+      attribution:
+        description: License and copyright info
+        "$ref": "#/definitions/Attribution"
+      features:
+        type: array
+        description: GeoJSON Features
+        items:
+          "$ref": "#/definitions/Feature"
+      metadata:
+        description: Metadata describing the output
+        "$ref": "#/definitions/Metadata"
+      result:
+        type: array
+        description: ElementsResult holding timestamp-value pairs
+        items:
+          "$ref": "#/definitions/Result"
+      type:
+        type: string
+        description: Type of the GeoJSON
+    title: DefaultAggregationResponse
+  Feature:
+    title: Feature
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          crs:
+            "$ref": "#/definitions/Crs"
+          geometry:
+            "$ref": "#/definitions/GeoJsonObject"
+          id:
+            type: string
+          properties:
+            type: object
+        title: Feature
+  FeatureCollection:
+    title: FeatureCollection
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          crs:
+            "$ref": "#/definitions/Crs"
+          features:
+            type: array
+            items:
+              "$ref": "#/definitions/Feature"
+        title: FeatureCollection
+  GeoJsonObject:
+    type: object
+    discriminator: type
+    properties:
+      bbox:
+        type: array
+        items:
+          type: number
+          format: double
+      crs:
+        "$ref": "#/definitions/Crs"
+    title: GeoJsonObject
+  GeometryCollection:
+    title: GeometryCollection
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          crs:
+            "$ref": "#/definitions/Crs"
+          geometries:
+            type: array
+            items:
+              "$ref": "#/definitions/GeoJsonObject"
+        title: GeometryCollection
+  GroupByResponse:
+    type: object
+    required:
+      - apiVersion
+      - attribution
+      - features
+      - groupByResult
+      - type
+    properties:
+      apiVersion:
+        type: string
+        description: Version of this api
+      attribution:
+        description: License and copyright info
+        "$ref": "#/definitions/Attribution"
+      features:
+        type: array
+        description: GeoJSON Features
+        items:
+          "$ref": "#/definitions/Feature"
+      groupByResult:
+        type: array
+        description: GroupByResult array holding the respective objects with their
+          timestamp-value pairs
+        items:
+          "$ref": "#/definitions/GroupByResult"
+      metadata:
+        description: Metadata describing the output
+        "$ref": "#/definitions/Metadata"
+      type:
+        type: string
+        description: Type of the GeoJSON
+    title: GroupByResponse
+  GroupByResult:
+    type: object
+    required:
+      - groupByObject
+      - result
+    properties:
+      groupByObject:
+        type: object
+        description: Object on which the results are grouped on
+      result:
+        type: array
+        description: Result array holding timestamp-value pairs
+        items:
+          "$ref": "#/definitions/Result"
+    title: GroupByResult
+  LineString:
+    title: LineString
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          coordinates:
+            type: array
+            items:
+              "$ref": "#/definitions/LngLatAlt"
+          crs:
+            "$ref": "#/definitions/Crs"
+        title: LineString
+  Metadata:
+    type: object
+    required:
+      - description
+      - executionTime
+      - requestUrl
+    properties:
+      description:
+        type: string
+        description: Text describing the result in a sentence
+      executionTime:
+        type: integer
+        format: int64
+        description: Time the server needed to execute the request
+      requestUrl:
+        type: string
+        description: Request URL to which this whole output JSON was generated
+    title: Metadata
+  MultiLineString:
+    title: MultiLineString
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          coordinates:
+            type: array
+            items:
+              type: array
+              items:
+                "$ref": "#/definitions/LngLatAlt"
+          crs:
+            "$ref": "#/definitions/Crs"
+        title: MultiLineString
+  MultiPoint:
+    title: MultiPoint
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          coordinates:
+            type: array
+            items:
+              "$ref": "#/definitions/LngLatAlt"
+          crs:
+            "$ref": "#/definitions/Crs"
+        title: MultiPoint
+  MultiPolygon:
+    title: MultiPolygon
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          coordinates:
+            type: array
+            items:
+              type: array
+              items:
+                type: array
+                items:
+                  "$ref": "#/definitions/LngLatAlt"
+          crs:
+            "$ref": "#/definitions/Crs"
+        title: MultiPolygon
+  Point:
+    title: Point
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          coordinates:
+            "$ref": "#/definitions/LngLatAlt"
+          crs:
+            "$ref": "#/definitions/Crs"
+        title: Point
+  Polygon:
+    title: Polygon
+    allOf:
+      - "$ref": "#/definitions/GeoJsonObject"
+      - type: object
+        properties:
+          bbox:
+            type: array
+            items:
+              type: number
+              format: double
+          coordinates:
+            type: array
+            items:
+              type: array
+              items:
+                "$ref": "#/definitions/LngLatAlt"
+          crs:
+            "$ref": "#/definitions/Crs"
+        title: Polygon
+  RatioGroupByBoundaryResponse:
+    type: object
+    required:
+      - apiVersion
+      - attribution
+      - features
+      - groupByBoundaryResult
+      - type
+    properties:
+      apiVersion:
+        type: string
+        description: Version of this api
+      attribution:
+        description: License and copyright info
+        "$ref": "#/definitions/Attribution"
+      features:
+        type: array
+        description: GeoJSON Features
+        items:
+          "$ref": "#/definitions/Feature"
+      groupByBoundaryResult:
+        type: array
+        description: RatioGroupByResult array holding the respective objects with
+          their timestamp-value-value2-ratio values
+        items:
+          "$ref": "#/definitions/RatioGroupByResult"
+      metadata:
+        description: Metadata describing the output
+        "$ref": "#/definitions/Metadata"
+      type:
+        type: string
+        description: Type of the GeoJSON
+    title: RatioGroupByBoundaryResponse
+  RatioGroupByResult:
+    type: object
+    required:
+      - groupByObject
+      - ratioResult
+    properties:
+      groupByObject:
+        type: object
+        description: Object on which the results are grouped on
+      ratioResult:
+        type: array
+        description: RatioResult array holding timestamp, whole and part values
+        items:
+          "$ref": "#/definitions/RatioResult"
+    title: RatioGroupByResult
+  RatioResponse:
+    type: object
+    required:
+      - apiVersion
+      - attribution
+      - ratioResult
+    properties:
+      apiVersion:
+        type: string
+        description: Version of this api
+      attribution:
+        description: License and copyright info
+        "$ref": "#/definitions/Attribution"
+      metadata:
+        description: Metadata describing the output
+        "$ref": "#/definitions/Metadata"
+      ratioResult:
+        type: array
+        description: ElementsResult for /ratio requests
+        items:
+          "$ref": "#/definitions/RatioResult"
+    title: RatioResponse
+  RatioResult:
+    type: object
+    required:
+      - ratio
+      - timestamp
+      - value
+      - value2
+    properties:
+      ratio:
+        type: number
+        format: double
+        description: Ratio of value2/value
+      timestamp:
+        type: string
+        description: Timestamp in the format YYYY-MM-DDThh:mm:ssZ
+      value:
+        type: number
+        format: double
+        description: Value corresponding to the initial filter parameters
+      value2:
+        type: number
+        format: double
+        description: Value corresponding to the second (2) filter parameters
+    title: RatioResult
+  Response:
+    type: object
+    properties:
+      apiVersion:
+        type: string
+      attribution:
+        "$ref": "#/definitions/Attribution"
+      metadata:
+        "$ref": "#/definitions/Metadata"
+    title: Response
+  Result:
+    type: object
+    properties:
+      value:
+        type: number
+        format: double
+    title: Result
