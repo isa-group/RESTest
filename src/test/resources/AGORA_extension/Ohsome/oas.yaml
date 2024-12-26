@@ -78,44 +78,44 @@ paths:
           required: false
           type: string
           default: type:way
-        - name: format
-          in: query
-          description: "‘json’ or ‘csv’; default: ‘json’"
-          required: false
-          type: string
-          default: json
+#        - name: format
+#          in: query
+#          description: "‘json’ or ‘csv’; default: ‘json’"
+#          required: false
+#          type: string
+#          default: json
         - name: showMetadata
           in: query
           description: "Add additional metadata information to the response: ‘true’, ‘false’, ‘yes’, ‘no’; default: ‘false’"
           required: false
           type: string
-        - name: timeout
-          in: query
-          description: Custom timeout in seconds; no default value
-          required: true
-          type: string
-        - name: types
-          in: query
-          description: This parameter has been deprecated since v1.0. We encourage you
-            to use the new parameter 'filter' instead.
-          required: false
-          type: string
-        - name: keys
-          in: query
-          description: This parameter has been deprecated since v1.0. We encourage you
-            to use the new parameter 'filter' instead.
-          required: false
-          type: string
-        - name: values
-          in: query
-          description: This parameter has been deprecated since v1.0. We encourage you
-            to use the new parameter 'filter' instead.
-          required: false
-          type: string
+#        - name: timeout
+#          in: query
+#          description: Custom timeout in seconds; no default value
+#          required: true
+#          type: string
+#        - name: types
+#          in: query
+#          description: This parameter has been deprecated since v1.0. We encourage you
+#            to use the new parameter 'filter' instead.
+#          required: false
+#          type: string
+#        - name: keys
+#          in: query
+#          description: This parameter has been deprecated since v1.0. We encourage you
+#            to use the new parameter 'filter' instead.
+#          required: false
+#          type: string
+#        - name: values
+#          in: query
+#          description: This parameter has been deprecated since v1.0. We encourage you
+#            to use the new parameter 'filter' instead.
+#          required: false
+#          type: string
       x-dependencies:
         - OnlyOne(bboxes, bcircles, bpolys);
-        - ZeroOrOne(filter, Or(types, keys, values));
-        - IF values THEN keys;
+#        - ZeroOrOne(filter, Or(types, keys, values));
+#        - IF values THEN keys;
       responses:
         '200':
           description: OK
