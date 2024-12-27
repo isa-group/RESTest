@@ -93,7 +93,7 @@ paths:
         - name: timeout
           in: query
           description: Custom timeout in seconds; no default value
-          required: false
+          required: true
           type: integer
 #        - name: types
 #          in: query
