@@ -97,14 +97,48 @@ testConfiguration:
         valid: true
     - name: time
       in: query
-      weight: 0.0 # TODO: CHANGE
+      weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomDate
         genParameters:
-        - name: maxWords
-          values:
-          - 1
-          objectValues: null
+          - name: startDate
+            values:
+              - 2007-10-08
+            objectValues: null
+          - name: endDate
+            values:
+              - 2024-12-18
+            objectValues: null
+          - name: format
+            values:
+              - yyyy-MM-dd'T'HH:mm:ss'Z'
+            objectValues: null
+      - type: RandomDate
+        genParameters:
+          - name: startDate
+            values:
+              - 2007-10-08
+            objectValues: null
+          - name: endDate
+            values:
+              - 2024-12-18
+            objectValues: null
+          - name: format
+            values:
+              - yyyy-MM-dd
+            objectValues: null
+      - type: RandomInputValue
+        genParameters:
+          - name: values
+            values:
+              - "/"
+            objectValues: null
+      - type: RandomRegExp
+        genParameters:
+          - name: regExp
+            values:
+              - (//P[1-9]{1}Y[1-9]{1}M[1-9]{1}D)
+            objectValues: null
         valid: true
     - name: filter
       in: query
