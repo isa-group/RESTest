@@ -36,18 +36,18 @@ testConfiguration:
           values:
           - src/test/resources/AGORA_extension/Ohsome/input_values/bboxes_values.csv
           objectValues: null
-        - name: minValues
-          values:
-            - 1
-          objectValues: null
-        - name: maxValues
-          values:
-            - 4
-          objectValues: null
-        - name: separator
-          values:
-            - "|"
-          objectValues: null
+#        - name: minValues
+#          values:
+#            - 1
+#          objectValues: null
+#        - name: maxValues
+#          values:
+#            - 2
+#          objectValues: null
+#        - name: separator
+#          values:
+#            - "|"
+#          objectValues: null
         valid: true
     - name: bcircles
       in: query
@@ -59,18 +59,18 @@ testConfiguration:
             values:
               - src/test/resources/AGORA_extension/Ohsome/input_values/bcircles_values.csv
             objectValues: null
-          - name: minValues
-            values:
-              - 1
-            objectValues: null
-          - name: maxValues
-            values:
-              - 4
-            objectValues: null
-          - name: separator
-            values:
-              - "|"
-            objectValues: null
+#          - name: minValues
+#            values:
+#              - 1
+#            objectValues: null
+#          - name: maxValues
+#            values:
+#              - 2
+#            objectValues: null
+#          - name: separator
+#            values:
+#              - "|"
+#            objectValues: null
         valid: true
     - name: bpolys
       in: query
@@ -82,22 +82,22 @@ testConfiguration:
             values:
               - src/test/resources/AGORA_extension/Ohsome/input_values/bpolys_values.csv
             objectValues: null
-          - name: minValues
-            values:
-              - 1
-            objectValues: null
-          - name: maxValues
-            values:
-              - 4
-            objectValues: null
-          - name: separator
-            values:
-              - "|"
-            objectValues: null
+#          - name: minValues
+#            values:
+#              - 1
+#            objectValues: null
+#          - name: maxValues
+#            values:
+#              - 2
+#            objectValues: null
+#          - name: separator
+#            values:
+#              - "|"
+#            objectValues: null
         valid: true
     - name: time
       in: query
-      weight: 0.5
+      weight: 0.0 # TODO: CHANGE
       generators:
       - type: RandomEnglishWord
         genParameters:
