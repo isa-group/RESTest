@@ -90,11 +90,11 @@ paths:
           description: "Add additional metadata information to the response: ‘true’, ‘false’, ‘yes’, ‘no’; default: ‘false’"
           required: false
           type: string
-#        - name: timeout
-#          in: query
-#          description: Custom timeout in seconds; no default value
-#          required: true
-#          type: string
+        - name: timeout
+          in: query
+          description: Custom timeout in seconds; no default value
+          required: false
+          type: integer
 #        - name: types
 #          in: query
 #          description: This parameter has been deprecated since v1.0. We encourage you

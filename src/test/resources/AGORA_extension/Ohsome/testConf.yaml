@@ -165,4 +165,23 @@ testConfiguration:
           - false
           objectValues: null
         valid: true
+    - name: timeout
+      in: query
+      weight: 1.0
+      generators:
+        - type: RandomNumber
+          genParameters:
+            - name: type
+              values:
+                - integer
+              objectValues: null
+            - name: min
+              values:
+                - 120
+              objectValues: null
+            - name: max
+              values:
+                - 130
+              objectValues: null
+          valid: true
     expectedResponse: 200
