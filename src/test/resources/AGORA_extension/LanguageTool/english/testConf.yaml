@@ -77,7 +77,7 @@ testConfiguration:
         valid: true
     - name: enabledRules
       in: formData
-      weight: 0.5
+      weight: 0.0 # TODO: CHANGE WEIGHTS
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -88,7 +88,7 @@ testConfiguration:
         valid: true
     - name: disabledRules
       in: formData
-      weight: 0.5
+      weight: 0.0 # TODO: CHANGE WEIGHTS
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -99,7 +99,7 @@ testConfiguration:
         valid: true
     - name: enabledCategories
       in: formData
-      weight: 0.5
+      weight: 0.0 # TODO: CHANGE WEIGHTS
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -110,7 +110,7 @@ testConfiguration:
         valid: true
     - name: disabledCategories
       in: formData
-      weight: 0.5
+      weight: 0.0 # TODO: CHANGE WEIGHTS
       generators:
       - type: RandomEnglishWord
         genParameters:
@@ -121,7 +121,7 @@ testConfiguration:
         valid: true
     - name: enabledOnly
       in: formData
-      weight: 0.5
+      weight: 0.0 # TODO: CHANGE WEIGHTS
       generators:
       - type: RandomBoolean
         genParameters: []
