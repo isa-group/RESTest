@@ -231,6 +231,8 @@ paths:
                             type: string
                           confidence:
                             type: number
+                          type:
+                            type: string
                     context:
                       type: object
                       required:
