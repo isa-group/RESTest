@@ -9,7 +9,7 @@ auth:
 testConfiguration:
   operations:
   - testPath: /check
-    operationId: <SET OPERATION ID>
+    operationId: checkText
     method: post
     testParameters:
     - name: text

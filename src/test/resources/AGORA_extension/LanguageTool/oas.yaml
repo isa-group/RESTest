@@ -25,6 +25,7 @@ paths:
       summary: Check a text
       description: The main feature - check a text with LanguageTool for possible
         style and grammar issues.
+      operationId: checkText
       parameters:
         - name: text
           in: formData
