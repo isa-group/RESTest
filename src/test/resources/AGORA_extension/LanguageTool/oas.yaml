@@ -2,13 +2,13 @@
 swagger: '2.0'
 info:
   title: LanguageTool API
-  description: 'Check texts for style and grammar issues with LanguageTool. Please
-    consider the following default limitations:<ul><li>your daily request limit depending
-    on <a href=''https://languagetool.org/editor/settings/api''>your plan</a> <li>maximum
-    number of requests per minute: 20 (free) / 80 (Premium) <li>maximum number of
-    characters per minute: 75,000 (free) / 300,000 (Premium) <li>maximum number of
-    characters per request: 20,000 (free) / 60,000 (Premium) <li>for the free version,
-    also consider the <a href=''https://dev.languagetool.org/public-http-api''>limitations
+  description: 'Check texts for style and grammar issues with <a href=''https://languagetool.org''>LanguageTool</a>.
+    Please consider the following default limitations:<ul><li>your daily request limit
+    depending on <a href=''https://languagetool.org/editor/settings/access-tokens''>your
+    plan</a> <li>maximum number of requests per minute: 20 (free) / 80 (Premium) <li>maximum
+    number of characters per minute: 75,000 (free) / 300,000 (Premium) <li>maximum
+    number of characters per request: 20,000 (free) / 60,000 (Premium) <li>for the
+    free version, also consider the <a href=''https://dev.languagetool.org/public-http-api''>limitations
     documented here</a> <li><b>Note:</b> any parameters or outputs not part of this
     documentation are internal and must not be relied on</ul> Need more generous limits?
     Just <a href=''https://languagetool.org/proofreading-api''>contact us</a>.'
@@ -19,8 +19,6 @@ schemes:
 basePath: "/v2"
 produces:
   - application/json
-consumes:
-  - application/x-www-form-urlencoded
 paths:
   "/check":
     post:
@@ -61,7 +59,7 @@ paths:
           in: formData
           type: string
           format: password
-          description: 'Set to get Premium API access: <a target=''_blank'' href=''https://languagetool.org/editor/settings/api''>your
+          description: 'Set to get Premium API access: <a target=''_blank'' href=''https://languagetool.org/editor/settings/access-tokens''>your
           API key</a>'
         - name: dicts
           in: formData
@@ -86,7 +84,9 @@ paths:
         - name: enabledRules
           in: formData
           type: string
-          description: IDs of rules to be enabled, comma-separated
+          description: IDs of rules to be enabled, comma-separated. Note that 'level'
+            still applies, so the rule won't run unless 'level' is set to a level that
+            activates the rule.
         - name: disabledRules
           in: formData
           type: string
@@ -113,15 +113,10 @@ paths:
             - picky
           description: If set to `picky`, additional rules will be activated, i.e. rules
             that you might only find useful when checking formal text.
-      x-dependencies:
-        - OnlyOne(text, data);
-        - IF preferredVariants THEN language=='auto';
-        - IF enabledOnly==true THEN (enabledRules OR enabledCategories);
       responses:
         '200':
           description: the result of checking the text
           schema:
-            type: object
             properties:
               software:
                 type: object
