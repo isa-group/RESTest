@@ -126,6 +126,7 @@ paths:
         '200':
           description: the result of checking the text
           schema:
+            type: object
             properties:
               software:
                 type: object
@@ -285,3 +286,32 @@ paths:
                             name:
                               type: string
                               description: A short description of the category.
+              sentenceRanges:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: integer
+              extendedSentenceRanges:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    from:
+                      type: integer
+                    to:
+                      type: integer
+                    detectedLanguages:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          language:
+                            type: string
+                          rate:
+                            type: number
+              warnings:
+                type: object
+                properties:
+                  incompleteResults:
+                    type: boolean
