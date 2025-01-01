@@ -74,7 +74,9 @@ paths:
             friends checks for some language pairs.
         - name: preferredVariants
           in: formData
-          type: string
+          type: array
+          items:
+            type: string
           description: Comma-separated list of preferred language variants. The language
             detector used with `language=auto` can detect e.g. English, but it cannot
             decide whether British English or American English is used. Thus this parameter
