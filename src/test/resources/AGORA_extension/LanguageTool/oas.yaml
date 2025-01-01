@@ -302,6 +302,10 @@ paths:
                           type: boolean
                         sourceFile:
                           type: string
+                        tags:
+                          type: array
+                          items:
+                            type: string
                     contextForSureMatch:
                       type: integer
                     ignoreForIncompleteSentence:
