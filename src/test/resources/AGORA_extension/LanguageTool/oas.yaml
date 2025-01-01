@@ -158,6 +158,8 @@ paths:
                     type: boolean
                     description: true if you're using a Premium account with all the
                       premium text checks (since LanguageTool 4.2)
+                  premiumHint:
+                    type: string
               language:
                 type: object
                 description: The language used for checking the text.
@@ -186,6 +188,10 @@ paths:
                       code:
                         type: string
                         description: ISO 639-1 code like 'en', 'en-US', or 'ca-ES-valencia'.
+                      confidence:
+                        type: number
+                      source:
+                        type: string
               matches:
                 type: array
                 items:
@@ -221,6 +227,8 @@ paths:
                           value:
                             type: string
                             description: the replacement string
+                          shortDescription:
+                            type: string
                     context:
                       type: object
                       required:
@@ -286,6 +294,21 @@ paths:
                             name:
                               type: string
                               description: A short description of the category.
+                        confidence:
+                          type: number
+                        isPremium:
+                          type: boolean
+                        sourceFile:
+                          type: string
+                    contextForSureMatch:
+                      type: integer
+                    ignoreForIncompleteSentence:
+                      type: boolean
+                    type:
+                      type: object
+                      properties:
+                        typeName:
+                          type: string
               sentenceRanges:
                 type: array
                 items:
