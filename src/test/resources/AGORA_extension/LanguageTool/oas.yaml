@@ -22,6 +22,8 @@ produces:
 paths:
   "/check":
     post:
+      consumes:
+        - application/x-www-form-urlencoded
       summary: Check a text
       description: The main feature - check a text with LanguageTool for possible
         style and grammar issues.
