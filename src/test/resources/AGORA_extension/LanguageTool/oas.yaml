@@ -229,6 +229,8 @@ paths:
                             description: the replacement string
                           shortDescription:
                             type: string
+                          confidence:
+                            type: number
                     context:
                       type: object
                       required:
