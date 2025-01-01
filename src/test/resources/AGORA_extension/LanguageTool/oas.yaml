@@ -50,22 +50,22 @@ paths:
             with variants (English, German, Portuguese) spell checking will only be
             activated when you specify the variant, e.g. `en-GB` instead of just `en`.
           required: true
-        - name: username
-          in: formData
-          type: string
-          description: 'Set to get Premium API access: Your username/email as used to
-          log in at languagetool.org.'
-        - name: apiKey
-          in: formData
-          type: string
-          format: password
-          description: 'Set to get Premium API access: <a target=''_blank'' href=''https://languagetool.org/editor/settings/access-tokens''>your
-          API key</a>'
-        - name: dicts
-          in: formData
-          type: string
-          description: Comma-separated list of dictionaries to include words from; uses
-            special default dictionary if this is unset
+#        - name: username
+#          in: formData
+#          type: string
+#          description: 'Set to get Premium API access: Your username/email as used to
+#          log in at languagetool.org.'
+#        - name: apiKey
+#          in: formData
+#          type: string
+#          format: password
+#          description: 'Set to get Premium API access: <a target=''_blank'' href=''https://languagetool.org/editor/settings/access-tokens''>your
+#          API key</a>'
+#        - name: dicts
+#          in: formData
+#          type: string
+#          description: Comma-separated list of dictionaries to include words from; uses
+#            special default dictionary if this is unset
         - name: motherTongue
           in: formData
           type: string
