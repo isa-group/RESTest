@@ -130,6 +130,7 @@ paths:
         - OnlyOne(text, data);
         - IF preferredVariants THEN language=='auto';
         - IF enabledOnly==true THEN (enabledRules OR enabledCategories);
+        - IF (disabledRules OR disabledCategories) THEN enabledOnly==false;
       responses:
         '200':
           description: the result of checking the text
