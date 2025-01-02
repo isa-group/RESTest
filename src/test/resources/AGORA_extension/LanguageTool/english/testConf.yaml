@@ -27,11 +27,11 @@ testConfiguration:
       in: formData
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/LanguageTool/english/input_values/english_data.csv
           objectValues: null
         valid: true
     - name: language
