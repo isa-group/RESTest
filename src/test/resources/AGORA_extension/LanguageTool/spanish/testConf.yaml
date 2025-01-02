@@ -20,7 +20,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - ASD   # TODO: CONFIGURE
+          - src/test/resources/AGORA_extension/LanguageTool/spanish/input_values/spanish_texts.csv
           objectValues: null
         valid: true
     - name: data
