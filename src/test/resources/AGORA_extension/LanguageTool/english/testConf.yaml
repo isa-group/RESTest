@@ -77,51 +77,83 @@ testConfiguration:
         valid: true
     - name: enabledRules
       in: formData
-      weight: 0.0 # TODO: CHANGE WEIGHTS
+      weight: 0.2
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/LanguageTool/english/input_values/english_rules.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
           objectValues: null
         valid: true
     - name: disabledRules
       in: formData
-      weight: 0.0 # TODO: CHANGE WEIGHTS
+      weight: 0.2
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/LanguageTool/english/input_values/english_rules.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 5
           objectValues: null
         valid: true
     - name: enabledCategories
       in: formData
-      weight: 0.0 # TODO: CHANGE WEIGHTS
+      weight: 0.2
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/LanguageTool/english/input_values/english_categories.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 10
           objectValues: null
         valid: true
     - name: disabledCategories
       in: formData
-      weight: 0.0 # TODO: CHANGE WEIGHTS
+      weight: 0.2
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/AGORA_extension/LanguageTool/english/input_values/english_categories.csv
+          objectValues: null
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 5
           objectValues: null
         valid: true
     - name: enabledOnly
       in: formData
-      weight: 0.0 # TODO: CHANGE WEIGHTS
+      weight: 0.2
       generators:
       - type: RandomBoolean
         genParameters: []
