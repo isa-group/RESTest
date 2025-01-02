@@ -42,7 +42,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - ASD   # TODO: CONFIGURE
+          - src/test/resources/AGORA_extension/LanguageTool/portuguese/input_values/portuguese_language_codes.csv
           objectValues: null
         valid: true
     - name: motherTongue
