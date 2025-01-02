@@ -88,21 +88,29 @@ paths:
             as no spelling dictionary can be selected for just `en` or `de`.
         - name: enabledRules
           in: formData
-          type: string
+          type: array
+          items:
+            type: string
           description: IDs of rules to be enabled, comma-separated. Note that 'level'
             still applies, so the rule won't run unless 'level' is set to a level that
             activates the rule.
         - name: disabledRules
           in: formData
-          type: string
+          type: array
+          items:
+            type: string
           description: IDs of rules to be disabled, comma-separated
         - name: enabledCategories
           in: formData
-          type: string
+          type: array
+          items:
+            type: string
           description: IDs of categories to be enabled, comma-separated
         - name: disabledCategories
           in: formData
-          type: string
+          type: array
+          items:
+            type: string
           description: IDs of categories to be disabled, comma-separated
         - name: enabledOnly
           in: formData
