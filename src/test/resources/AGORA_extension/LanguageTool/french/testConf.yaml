@@ -83,7 +83,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - ASD   # TODO: CONFIGURE
+          - src/test/resources/AGORA_extension/LanguageTool/french/input_values/french_rules.csv
           objectValues: null
         - name: minValues
           values:
@@ -102,7 +102,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - ASD   # TODO: CONFIGURE
+          - src/test/resources/AGORA_extension/LanguageTool/french/input_values/french_rules.csv
           objectValues: null
         - name: minValues
           values:
@@ -121,7 +121,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - ASD   # TODO: CONFIGURE
+          - src/test/resources/AGORA_extension/LanguageTool/french/input_values/french_categories.csv
           objectValues: null
         - name: minValues
           values:
@@ -140,7 +140,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - ASD   # TODO: CONFIGURE
+          - src/test/resources/AGORA_extension/LanguageTool/french/input_values/french_categories.csv
           objectValues: null
         - name: minValues
           values:
