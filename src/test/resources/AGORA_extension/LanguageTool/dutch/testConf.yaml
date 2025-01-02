@@ -53,7 +53,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - ASD   # TODO: CONFIGURE
+          - src/test/resources/AGORA_extension/LanguageTool/dutch/input_values/all_language_codes.csv
           objectValues: null
         valid: true
     - name: preferredVariants
