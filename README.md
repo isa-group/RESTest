@@ -2,11 +2,13 @@
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest/badge.svg)](https://maven-badges.herokuapp.com/maven-central/es.us.isa/restest)
 [![javadoc](https://javadoc.io/badge2/es.us.isa/restest/javadoc.svg)](https://javadoc.io/doc/es.us.isa/restest)
+<!--
 [![Build Status](https://circleci.com/gh/isa-group/RESTest.svg?style=svg)](https://circleci.com/gh/isa-group/RESTest)
 [![Test coverage](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=coverage)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Coverage)
 [![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=sqale_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Maintainability)
 [![Reliability](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=reliability_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Reliability)
 [![Security](https://sonarcloud.io/api/project_badges/measure?project=isa-group_RESTest&metric=security_rating)](https://sonarcloud.io/component_measures?id=isa-group_RESTest&metric=Security)
+-->
 
 RESTest is a framework for automated black-box testing of RESTful web APIs. It follows a model-based approach, where test cases are automatically derived from the [OpenAPI Specification (OAS)](https://www.openapis.org/) of the API under test. No access to the source code is required, which makes it possible to test APIs written in any programming language, running in local or remote servers.
 
