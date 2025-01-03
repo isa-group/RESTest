@@ -37,7 +37,7 @@ import static es.us.isa.restest.util.Timer.TestStep.ALL;
 public class TestGenerationAndExecution {
 
 	// Properties file with configuration settings
-	private static String propertiesFilePath = "src/test/resources/AGORA_extension/LanguageTool/portuguese/languagetool_portuguese.properties";
+	private static String propertiesFilePath = "src/---/resources/AGORA_extension/LanguageTool/portuguese/languagetool_portuguese.properties";
 
 	private static List<String> argsList;								// List containing args
 	
