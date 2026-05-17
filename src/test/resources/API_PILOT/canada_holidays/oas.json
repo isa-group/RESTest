@@ -463,32 +463,6 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "$ref": "#/components/schemas/Error"
-                    }
-                  }
-                },
-                "examples": {
-                  "/provinces/100": {
-                    "value": {
-                      "error": {
-                        "status": 400,
-                        "message": "Error: request.params.provinceId should be equal to one of the allowed values: AB, BC, MB, NB, NL, NS, NT, NU, ON, PE, QC, SK, YT",
-                        "timestamp": "2020-04-28T04:02:38.813Z"
-                      }
-                    }
-                  }
-                }
-              }
-            }
           }
         },
         "operationId": "Province",
@@ -680,32 +654,6 @@
                             "optional": 1
                           }
                         ]
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "$ref": "#/components/schemas/Error"
-                    }
-                  }
-                },
-                "examples": {
-                  "/holidays/100": {
-                    "value": {
-                      "error": {
-                        "status": 400,
-                        "message": "Error: request.params.holidayId should be <= 31",
-                        "timestamp": "2020-04-28T03:59:56.605Z"
                       }
                     }
                   }
