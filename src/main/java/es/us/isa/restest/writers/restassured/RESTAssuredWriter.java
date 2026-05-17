@@ -1,6 +1,7 @@
 package es.us.isa.restest.writers.restassured;
 
 import java.io.FileWriter;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map.Entry;
 
@@ -9,6 +10,7 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.writers.IWriter;
 import io.swagger.v3.oas.models.PathItem.HttpMethod;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -24,8 +26,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeJava;
  *
  */
 public class RESTAssuredWriter implements IWriter {
-	
-	
+
 	private boolean OAIValidation = true;
 	private boolean logging = false;				// Log everything (ONLY IF THE TEST FAILS)
 	private boolean allureReport = false;			// Generate request and response attachment for allure reports
@@ -44,6 +45,7 @@ public class RESTAssuredWriter implements IWriter {
 	private boolean logToFile;						// If 'true', REST-Assured requests and responses will be logged into external files
 	private boolean statefulFilter;					// If 'true', stateful filter will be used in written classes
 	private String proxy;							// Proxy to use for all requests in format host:port
+	private String[] headers;
 
 	private String APIName;							// API name (necessary for folder name of exported data)
 
@@ -114,12 +116,16 @@ public class RESTAssuredWriter implements IWriter {
 				+  "import com.fasterxml.jackson.databind.ObjectMapper;\n"
 				+  "import static org.junit.Assert.assertTrue;\n"
 				+  "import org.junit.runners.MethodSorters;\n"
-		        +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
+		    +  "import io.qameta.allure.restassured.AllureRestAssured;\n"
 				+  "import es.us.isa.restest.writers.restassured.filters.StatusCode5XXFilter;\n"
 				+  "import es.us.isa.restest.writers.restassured.filters.NominalOrFaultyTestCaseFilter;\n"
 				+  "import es.us.isa.restest.writers.restassured.filters.StatefulFilter;\n"
 				+  "import java.io.File;\n";
-		
+
+		if (headers != null) {
+			content += "import es.us.isa.restest.writers.restassured.filters.HeadersFilter;\n";
+		}
+
 		// OAIValidation (Optional)
 //		if (OAIValidation)
 		content += 	"import es.us.isa.restest.writers.restassured.filters.ResponseValidationFilter;\n";
@@ -165,8 +171,13 @@ public class RESTAssuredWriter implements IWriter {
 		String content = "";
 		
 //		if (OAIValidation)
-		content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n"
-				+  "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
+		content += "\tprivate static final String OAI_JSON_URL = \"" + specPath + "\";\n";
+
+		if (headers != null) {
+			content += "\tprivate static final HeadersFilter headersFilter = new HeadersFilter();\n";
+		}
+
+		content += "\tprivate static final StatusCode5XXFilter statusCode5XXFilter = new StatusCode5XXFilter();\n"
 				+  "\tprivate static final NominalOrFaultyTestCaseFilter nominalOrFaultyTestCaseFilter = new NominalOrFaultyTestCaseFilter();\n"
 				+  "\tprivate static final ResponseValidationFilter validationFilter = new ResponseValidationFilter(OAI_JSON_URL);\n";
 		if (statefulFilter)
@@ -234,6 +245,16 @@ public class RESTAssuredWriter implements IWriter {
 					+  "\t\tnominalOrFaultyTestCaseFilter.setTestId(testId);\n"
 					+  "\t\tvalidationFilter.setAPIName(APIName);\n"
 					+  "\t\tvalidationFilter.setTestId(testId);\n";
+		}
+
+		if (headers != null && headers.length > 0) {
+			String headers = Arrays.stream(this.headers)
+					.map(header -> String.format("\"%s\"", header))
+					.collect(Collectors.joining(",\n\t\t\t"));
+
+			content += "\n\t\theadersFilter.setHeaders(\n"
+					+ "\t\t\t" + headers + "\n"
+					+ "\t\t);\n";
 		}
 
 		content += "\t}\n\n";
@@ -414,6 +435,10 @@ public class RESTAssuredWriter implements IWriter {
 	private String generateFilters(TestCase t) {
 		String content = "";
 
+		if (headers != null) {
+			content += "\t\t\t\t.filter(headersFilter)\n";
+		}
+
 		if(logToFile) {
 			content += "\t\t\t\t.filter(requestLoggingFilter)\n"
 					+  "\t\t\t\t.filter(responseLoggingFilter)\n";
@@ -581,5 +606,13 @@ public class RESTAssuredWriter implements IWriter {
 
 	public void setProxy(String proxy) {
 		this.proxy = proxy;
+	}
+
+	public String[] getHeaders() {
+		return headers;
+	}
+
+	public void setHeaders(String[] headers) {
+		this.headers = headers;
 	}
 }

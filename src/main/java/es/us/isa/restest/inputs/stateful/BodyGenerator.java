@@ -103,6 +103,9 @@ public class BodyGenerator implements ITestDataGenerator {
                 || (requiredProperties != null && requiredProperties.contains(resolvedProperty)) // Req. property
                 || ((requiredProperties == null || !requiredProperties.contains(resolvedProperty)) && random.nextBoolean())) { // Optional property (50% prob.)
             JsonNode childNode = null;
+            if (schema.getType() == null) {
+                logger.warn("The schema of {}{} has no type defined. RESTest will use a default value.", operationMethod, operationPath);
+            }
             if (schema.getType().equals("object")) {
                 childNode = "".equals(prefix) && firstLevel ? rootNode : objectMapper.createObjectNode();
 

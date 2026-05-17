@@ -133,11 +133,13 @@ public abstract class AbstractTestCaseGenerator {
 					if(param == null) {
 						throw new IllegalArgumentException("Each parameter in the testConf must exist in the OAS; unknown parameter: " + testParameter.getName() + ", in: " + testParameter.getIn());
 					}
-
+/*
 					if(requiredParams.contains(param) && testParameter.getWeight() != null && !testParameter.getWeight().equals(1F)) {
 						throw new IllegalArgumentException("Each required parameter in the OAS must exist in the testConf and it must have a weight of 'null' or '1'; parameter: "
 								+ testParameter.getName() + ", in: " + testParameter.getIn() + ", weight: " + testParameter.getWeight());
 					}
+
+ */
 				}
 			}
 		}

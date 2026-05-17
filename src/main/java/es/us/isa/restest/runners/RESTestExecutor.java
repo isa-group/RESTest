@@ -1,9 +1,12 @@
 package es.us.isa.restest.runners;
 
 
+import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.util.ClassLoader;
 
 import es.us.isa.restest.util.Timer;
+import io.qameta.allure.AllureLifecycle;
+import io.qameta.allure.junit4.AllureJunit4;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.runner.JUnitCore;
@@ -15,6 +18,13 @@ import java.nio.file.Paths;
 
 import static es.us.isa.restest.util.Timer.TestStep.TEST_SUITE_EXECUTION;
 
+/**
+ * This class implement execution of test cases according to the configuration properties.
+ * @author José Luis García
+ * @author Vicente Cambrón
+ *
+ */
+
 public class RESTestExecutor {
 
     private static final Logger logger = LogManager.getLogger(RESTestExecutor.class.getName());
@@ -22,7 +32,15 @@ public class RESTestExecutor {
     RESTestLoader loader;
 
     public RESTestExecutor(String propertyFilePath) {
-        loader = new RESTestLoader(propertyFilePath);
+        this(new RESTestLoader(propertyFilePath));
+    }
+
+    public RESTestExecutor(String propertyFilePath, boolean reloadProperties) {
+        this(new RESTestLoader(propertyFilePath, reloadProperties));
+    }
+
+    public RESTestExecutor(RESTestLoader loader) {
+        this.loader = loader;
     }
 
     public void execute() {
@@ -33,6 +51,8 @@ public class RESTestExecutor {
             logger.error("Test class {} not found in {}", className, filePath);
             throw new IllegalArgumentException("Test class " + className + " not found in " + filePath);
         }else{
+            String allureResultsDirectory = loader.allureResultsPath + "/" + loader.experimentName;
+            System.setProperty("allure.results.directory", allureResultsDirectory);
             Class<?> testClass = loadTestClass(filePath, className);
             runTests(testClass);
         }
@@ -45,9 +65,11 @@ public class RESTestExecutor {
     }
 
     private void runTests(Class<?> testClass) {
-
         JUnitCore junit = new JUnitCore();
-        junit.addListener(new io.qameta.allure.junit4.AllureJunit4());
+        AllureLifecycle allureLifecycle = new AllureLifecycle();
+        junit.addListener(new AllureJunit4(allureLifecycle));
+        loader.spec = new OpenAPISpecification(loader.OAISpecPath);
+        loader.createStatsReportManager();
         Timer.startCounting(TEST_SUITE_EXECUTION);
         Result result = junit.run(testClass);
         Timer.stopCounting(TEST_SUITE_EXECUTION);

@@ -4,7 +4,6 @@ import es.us.isa.restest.configuration.pojos.TestConfigurationObject;
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.generators.*;
-import es.us.isa.restest.main.CreateTestConf;
 import es.us.isa.restest.reporting.AllureReportManager;
 import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.specification.OpenAPISpecification;
@@ -19,7 +18,6 @@ import org.apache.logging.log4j.core.LoggerContext;
 import java.io.File;
 import java.io.PrintStream;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static es.us.isa.restest.configuration.TestConfigurationIO.loadConfiguration;
 import static es.us.isa.restest.util.FileManager.createDir;
@@ -51,9 +49,12 @@ public class RESTestLoader {
 	Boolean logToFile;									// If 'true', log messages will be printed to external files
 	Boolean executeTestCases;							// If 'false', test cases will be generated but not executed
 	Boolean allureReports;								// If 'true', Allure reports will be generated
+	String allureResultsPath;							// Path to Allure results
 	String allureReportsPath;							// Path to Allure reports
 	Boolean checkTestCases;								// If 'true', test cases will be checked with OASValidator before executing them
 	String proxy;										// Proxy to use for all requests in format host:port
+	String host;                            // Configurable host to override spec's
+	String[] headers;                       // Semicolon-delimited headers for requests
 
 	// For Constraint-based testing and AR Testing:
 	Float faultyDependencyRatio; 						// Percentage of faulty test cases due to dependencies to generate.
@@ -72,14 +73,20 @@ public class RESTestLoader {
 		readProperties();
 	}
 
+	public RESTestLoader(String userPropertiesFilePath, boolean reloadProperties) {
+		if (reloadProperties) {
+			PropertyManager.setUserPropertiesFilePath(null);
+		}
+		this.userPropertiesFilePath = userPropertiesFilePath;
+		readProperties();
+	}
+
 	public RESTestLoader() {
 		readProperties();
 	}
 
 	// Create a test case generator
 	public AbstractTestCaseGenerator createGenerator() throws RESTestException {
-		// Load specification
-		spec = new OpenAPISpecification(OAISpecPath);
 
 		// Load configuration
 		TestConfigurationObject conf = loadConfiguration(confPath, spec);
@@ -122,7 +129,7 @@ public class RESTestLoader {
 
 	// Create RESTAssured writer
 	public IWriter createWriter() {
-		String basePath = spec.getSpecification().getServers().get(0).getUrl();
+		String basePath = host != null ? host : spec.getSpecification().getServers().get(0).getUrl();
 		RESTAssuredWriter writer = new RESTAssuredWriter(OAISpecPath, confPath, targetDirJava, testClassName, packageName,
 				basePath, logToFile);
 		writer.setAllureReport(allureReports);
@@ -131,6 +138,7 @@ public class RESTestLoader {
 		writer.setAPIName(experimentName);
 		writer.setTestId(experimentName);
 		writer.setProxy(proxy);
+		writer.setHeaders(headers);
 		return writer;
 	}
 
@@ -138,7 +146,7 @@ public class RESTestLoader {
 	public AllureReportManager createAllureReportManager() {
 		AllureReportManager arm = null;
 		if(executeTestCases) {
-			String allureResultsDir = readProperty("allure.results.dir") + "/" + experimentName;
+			String allureResultsDir = allureResultsPath + "/" + experimentName;
 			String allureReportDir = allureReportsPath + "/" + experimentName;
 
 			// Delete previous results (if any)
@@ -166,11 +174,11 @@ public class RESTestLoader {
 		if (deletePreviousResults) {
 			deleteDir(testDataDir);
 			deleteDir(coverageDataDir);
-
-			// Recreate directories
-			createDir(testDataDir);
-			createDir(coverageDataDir);
 		}
+
+    // Create target directories if they don't exist
+		createDir(testDataDir);
+		createDir(coverageDataDir);
 
 		CoverageMeter coverageMeter = enableInputCoverage || enableOutputCoverage ? new CoverageMeter(new CoverageGatherer(spec)) : null;
 
@@ -179,7 +187,7 @@ public class RESTestLoader {
 	}
 
 	// Read the parameter values from the .properties file. If the value is not found, the system looks for it in the global .properties file (config.properties)
-	private void readProperties() {
+	public void readProperties() {
 
 		logToFile = Boolean.parseBoolean(readProperty("logToFile"));
 		if(logToFile) {
@@ -187,19 +195,22 @@ public class RESTestLoader {
 		}
 
 		logger.info("Loading configuration parameter values");
-		
+
 		generator = readProperty("generator");
 		logger.info("Generator: {}", generator);
-		
+
 		OAISpecPath = readProperty("oas.path");
 		logger.info("OAS path: {}", OAISpecPath);
-		
+
+		// Load OAS specification
+		spec = new OpenAPISpecification(OAISpecPath);
+
 		confPath = readProperty("conf.path");
 		logger.info("Test configuration path: {}", confPath);
-		
+
 		targetDirJava = readProperty("test.target.dir");
 		logger.info("Target dir for test classes: {}", targetDirJava);
-		
+
 		experimentName = readProperty("experiment.name");
 		logger.info("Experiment name: {}", experimentName);
 
@@ -213,6 +224,8 @@ public class RESTestLoader {
 		}
 		logger.info("Allure reports: {}", allureReports);
 
+		allureResultsPath = readProperty("allure.results.dir");
+		logger.info("Allure results path: {}", allureResultsPath);
 
 		allureReportsPath = readProperty("allure.report.dir");
 		logger.info("Allure reports path: {}", allureReportsPath);
@@ -225,11 +238,24 @@ public class RESTestLoader {
 				setProxy();
 		}
 		logger.info("Proxy: {}", proxy);
+    
+		host = readProperty("host");
+		if (host != null) {
+      logger.info("Host: {}", host);
+		} else {
+      logger.info("Host: using host/servers from the specification file");
+    }
+
+		String headers = readProperty("headers");
+		if (headers != null) {
+			this.headers = headers.split(";");
+		}
+		logger.info("Headers: {}", headers);
 
 		if (readProperty("testcases.check") != null)
 			checkTestCases = Boolean.parseBoolean(readProperty("testcases.check"));
 		logger.info("Check test cases: {}", checkTestCases);
-		
+
 		testClassName = readProperty("testclass.name");
 		logger.info("Test class name: {}", testClassName);
 
@@ -292,15 +318,15 @@ public class RESTestLoader {
 
 
 	// Read the parameter values from the user property file (if provided). If the value is not found, look for it in the global .properties file (config.properties)
-	private String readProperty(String propertyName) {
-		
+	public String readProperty(String propertyName) {
+
 		// Read property from user property file (if provided)
 		String value = PropertyManager.readProperty(userPropertiesFilePath, propertyName);
-		
+
 		// If null, read property from global property file (config.properties)
 		if (value ==null)
 			value = PropertyManager.readProperty(propertyName);
-		
+
 		return value;
 	}
 
@@ -343,14 +369,45 @@ public class RESTestLoader {
 		System.setProperty("https.nonProxyHosts", "localhost|127.0.0.1");
 	}
 
+	public OpenAPISpecification getSpec() {
+		return spec;
+	}
+
 	public String getTargetDirJava() {
 		return targetDirJava;
 	}
 
 	public String getExperimentName(){ return experimentName; }
 
+	public void setExperimentName(String experimentName) {
+		this.experimentName = experimentName;
+	}
+
 	public String getAllureReportsPath() {
 		return allureReportsPath;
 	}
 
+	public String getTestClassName() {
+		return testClassName;
+	}
+
+	public void setTestClassName(String testClassName) {
+		this.testClassName = testClassName;
+	}
+
+  public String getHost() {
+    return host;
+  }
+
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+	public String[] getHeaders() {
+		return headers;
+	}
+
+	public void setHeaders(String[] headers) {
+		this.headers = headers;
+	}
 }

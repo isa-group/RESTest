@@ -116,4 +116,8 @@ public class CreateTestConf {
         int end = sp[sp.length-1].isEmpty()? sp.length-2 : sp.length-1;
         confPath = Arrays.stream(sp, 0, end).collect(Collectors.joining("/", "", "/testConf.yaml"));
     }
+
+    public static String getConfPath() {
+    	return confPath;
+    }
 }
