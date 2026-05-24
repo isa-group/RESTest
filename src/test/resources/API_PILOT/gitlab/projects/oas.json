@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:30000/api/v4"
+      "url": "http://152.42.235.143:30000/api/v4"
     }
   ],
   "paths": {
@@ -213,6 +213,10 @@
               "type": "string"
             }
           }
+        ],
+        "x-dependencies": [
+          "id_after < id_before;",
+          "last_activity_after < last_activity_before;"
         ],
         "responses": {
           "200": {

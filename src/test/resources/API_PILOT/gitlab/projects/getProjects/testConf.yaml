@@ -4,7 +4,7 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: null
-  headersPath: null
+  headersPath: gitlab/headers.json
   oauthPath: null
 testConfiguration:
   operations:
@@ -21,7 +21,7 @@ testConfiguration:
         valid: true
     - name: id_after
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomNumber
         genParameters:
@@ -35,12 +35,12 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 3200
           objectValues: null
         valid: true
     - name: id_before
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomNumber
         genParameters:
@@ -54,12 +54,12 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 100
+          - 3200
           objectValues: null
         valid: true
     - name: last_activity_after
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomDate
         genParameters:
@@ -67,16 +67,32 @@ testConfiguration:
           values:
           - yyyy-MM-dd'T'HH:mm:ss'Z'
           objectValues: null
+        - name: startDate
+          values:
+          - 2025-06-01
+          objectValues: null
+        - name: endDays
+          values:
+          - 0
+          objectValues: null
         valid: true
     - name: last_activity_before
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomDate
         genParameters:
         - name: format
           values:
           - yyyy-MM-dd'T'HH:mm:ss'Z'
+          objectValues: null
+        - name: startDate
+          values:
+          - 2025-06-01
+          objectValues: null
+        - name: endDays
+          values:
+          - 0
           objectValues: null
         valid: true
     - name: membership
@@ -88,21 +104,18 @@ testConfiguration:
         valid: true
     - name: min_access_level
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
-      - type: RandomNumber
+      - type: RandomInputValue
         genParameters:
-        - name: type
+        - name: values
           values:
-          - integer
-          objectValues: null
-        - name: min
-          values:
-          - 1
-          objectValues: null
-        - name: max
-          values:
-          - 100
+          - 0
+          - 10
+          - 20
+          - 30
+          - 40
+          - 50
           objectValues: null
         valid: true
     - name: order_by
@@ -134,18 +147,22 @@ testConfiguration:
         valid: true
     - name: repository_storage
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: values
           values:
-          - 1
+          - default
+          - nfs-01
+          - nfs-02
+          - gitaly-1
+          - gitaly-2
           objectValues: null
         valid: true
     - name: search_namespaces
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomBoolean
         genParameters: []
@@ -154,16 +171,16 @@ testConfiguration:
       in: query
       weight: 0.5
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/API_PILOT/gitlab/projects/getProjects/input_values/search_terms.csv
           objectValues: null
         valid: true
     - name: simple
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomBoolean
         genParameters: []
@@ -182,14 +199,14 @@ testConfiguration:
         valid: true
     - name: starred
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomBoolean
         genParameters: []
         valid: true
     - name: statistics
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
       - type: RandomBoolean
         genParameters: []
@@ -209,34 +226,34 @@ testConfiguration:
         valid: true
     - name: with_custom_attributes
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomBoolean
         genParameters: []
         valid: true
     - name: with_issues_enabled
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomBoolean
         genParameters: []
         valid: true
     - name: with_merge_requests_enabled
       in: query
-      weight: 0.5
+      weight: 0.2
       generators:
       - type: RandomBoolean
         genParameters: []
         valid: true
     - name: with_programming_language
       in: query
-      weight: 0.5
+      weight: 0.3
       generators:
-      - type: RandomEnglishWord
+      - type: RandomInputValue
         genParameters:
-        - name: maxWords
+        - name: csv
           values:
-          - 1
+          - src/test/resources/API_PILOT/gitlab/projects/getProjects/input_values/programming_languages.csv
           objectValues: null
         valid: true
     expectedResponse: 200
