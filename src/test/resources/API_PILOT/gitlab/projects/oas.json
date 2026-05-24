@@ -4515,7 +4515,8 @@
             "type": "integer"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "default_branch": {
             "type": "string"
@@ -4533,7 +4534,8 @@
             "type": "string"
           },
           "readme_url": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "tag_list": {
             "type": "array",
@@ -4592,7 +4594,8 @@
             "format": "date-time"
           },
           "creator_id": {
-            "type": "integer"
+            "type": "integer",
+            "nullable": true
           },
           "namespace": {
             "$ref": "#/components/schemas/Namespace"
@@ -4610,7 +4613,8 @@
             "type": "boolean"
           },
           "avatar_url": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "shared_runners_enabled": {
             "type": "boolean"
@@ -4643,7 +4647,8 @@
             "type": "boolean"
           },
           "allow_merge_on_skipped_pipeline": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true
           },
           "only_allow_merge_if_all_discussions_are_resolved": {
             "type": "boolean"
@@ -4661,7 +4666,8 @@
             "type": "boolean"
           },
           "suggestion_commit_message": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "auto_devops_deploy_strategy": {
             "type": "string"
@@ -4705,7 +4711,8 @@
             "type": "boolean"
           },
           "service_desk_address": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "autoclose_referenced_issues": {
             "type": "boolean"
@@ -4715,6 +4722,208 @@
           },
           "_links": {
             "$ref": "#/components/schemas/Links"
+          },
+          "topics": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "custom_attributes": {
+            "type": "array",
+            "items": { "type": "object" }
+          },
+          "empty_repo": {
+            "type": "boolean"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "description_html": {
+            "type": "string"
+          },
+          "mr_default_target_self": {
+            "type": "boolean"
+          },
+          "repository_object_format": {
+            "type": "string"
+          },
+          "import_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "import_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "issues_access_level": {
+            "type": "string"
+          },
+          "repository_access_level": {
+            "type": "string"
+          },
+          "merge_requests_access_level": {
+            "type": "string"
+          },
+          "forking_access_level": {
+            "type": "string"
+          },
+          "wiki_access_level": {
+            "type": "string"
+          },
+          "builds_access_level": {
+            "type": "string"
+          },
+          "snippets_access_level": {
+            "type": "string"
+          },
+          "pages_access_level": {
+            "type": "string"
+          },
+          "analytics_access_level": {
+            "type": "string"
+          },
+          "container_registry_access_level": {
+            "type": "string"
+          },
+          "security_and_compliance_access_level": {
+            "type": "string"
+          },
+          "releases_access_level": {
+            "type": "string"
+          },
+          "environments_access_level": {
+            "type": "string"
+          },
+          "feature_flags_access_level": {
+            "type": "string"
+          },
+          "infrastructure_access_level": {
+            "type": "string"
+          },
+          "monitor_access_level": {
+            "type": "string"
+          },
+          "model_experiments_access_level": {
+            "type": "string"
+          },
+          "model_registry_access_level": {
+            "type": "string"
+          },
+          "emails_disabled": {
+            "type": "boolean"
+          },
+          "emails_enabled": {
+            "type": "boolean"
+          },
+          "lfs_enabled": {
+            "type": "boolean"
+          },
+          "ci_forward_deployment_rollback_allowed": {
+            "type": "boolean"
+          },
+          "ci_job_token_scope_enabled": {
+            "type": "boolean"
+          },
+          "ci_separated_caches": {
+            "type": "boolean"
+          },
+          "ci_allow_fork_pipelines_to_run_in_parent_project": {
+            "type": "boolean"
+          },
+          "build_git_strategy": {
+            "type": "string"
+          },
+          "keep_latest_artifact": {
+            "type": "boolean"
+          },
+          "restrict_user_defined_variables": {
+            "type": "boolean"
+          },
+          "runner_token_expiration_interval": {
+            "type": "integer",
+            "nullable": true
+          },
+          "group_runners_enabled": {
+            "type": "boolean"
+          },
+          "auto_cancel_pending_pipelines": {
+            "type": "string"
+          },
+          "build_timeout": {
+            "type": "integer"
+          },
+          "enforce_auth_checks_on_uploads": {
+            "type": "boolean"
+          },
+          "squash_option": {
+            "type": "string"
+          },
+          "merge_commit_template": {
+            "type": "string",
+            "nullable": true
+          },
+          "squash_commit_template": {
+            "type": "string",
+            "nullable": true
+          },
+          "issue_branch_template": {
+            "type": "string",
+            "nullable": true
+          },
+          "warn_about_potentially_unwanted_characters": {
+            "type": "boolean"
+          },
+          "requirements_enabled": {
+            "type": "boolean"
+          },
+          "requirements_access_level": {
+            "type": "string"
+          },
+          "security_and_compliance_enabled": {
+            "type": "boolean"
+          },
+          "compliance_frameworks": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "printing_merge_request_link_enabled": {
+            "type": "boolean"
+          },
+          "container_expiration_policy": {
+            "$ref": "#/components/schemas/ContainerExpirationPolicy"
+          },
+          "ci_config_path": {
+            "type": "string",
+            "nullable": true
+          },
+          "forked_from_project": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "id": {"type": "integer"},
+              "description": {"type": "string", "nullable": true},
+              "name": {"type": "string"},
+              "name_with_namespace": {"type": "string"},
+              "path": {"type": "string"},
+              "path_with_namespace": {"type": "string"},
+              "created_at": {"type": "string", "format": "date-time"},
+              "default_branch": {"type": "string"},
+              "tag_list": {"type": "array", "items": {"type": "string"}},
+              "topics": {"type": "array", "items": {"type": "string"}},
+              "ssh_url_to_repo": {"type": "string"},
+              "http_url_to_repo": {"type": "string"},
+              "web_url": {"type": "string"},
+              "readme_url": {"type": "string", "nullable": true},
+              "avatar_url": {"type": "string", "nullable": true},
+              "license_url": {"type": "string"},
+              "license": {"$ref": "#/components/schemas/License"},
+              "forks_count": {"type": "integer"},
+              "star_count": {"type": "integer"},
+              "last_activity_at": {"type": "string", "format": "date-time"},
+              "namespace": {"$ref": "#/components/schemas/Namespace"},
+              "repository_storage": {"type": "string"},
+              "custom_attributes": {"type": "array", "items": {"type": "object"}}
+            }
           }
         },
         "example": [
@@ -4905,7 +5114,8 @@
             "type": "integer"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "default_branch": {
             "type": "string"
@@ -4923,7 +5133,8 @@
             "type": "string"
           },
           "readme_url": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "tag_list": {
             "type": "array",
@@ -4982,7 +5193,8 @@
             "format": "date-time"
           },
           "creator_id": {
-            "type": "integer"
+            "type": "integer",
+            "nullable": true
           },
           "namespace": {
             "$ref": "#/components/schemas/Namespace"
@@ -5039,7 +5251,8 @@
             "type": "boolean"
           },
           "allow_merge_on_skipped_pipeline": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true
           },
           "only_allow_merge_if_all_discussions_are_resolved": {
             "type": "boolean"
@@ -5157,7 +5370,8 @@
             "type": "integer"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "default_branch": {
             "type": "string"
@@ -5175,7 +5389,8 @@
             "type": "string"
           },
           "readme_url": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "tag_list": {
             "type": "array",
@@ -5231,7 +5446,8 @@
             "format": "date-time"
           },
           "creator_id": {
-            "type": "integer"
+            "type": "integer",
+            "nullable": true
           },
           "namespace": {
             "$ref": "#/components/schemas/Namespace"
@@ -5243,7 +5459,8 @@
             "type": "boolean"
           },
           "avatar_url": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "shared_runners_enabled": {
             "type": "boolean"
@@ -5267,7 +5484,8 @@
             "type": "boolean"
           },
           "allow_merge_on_skipped_pipeline": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true
           },
           "only_allow_merge_if_all_discussions_are_resolved": {
             "type": "boolean"
@@ -5361,7 +5579,8 @@
             "type": "integer"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "default_branch": {
             "type": "string"
@@ -5379,7 +5598,8 @@
             "type": "string"
           },
           "readme_url": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "tag_list": {
             "type": "array",
@@ -5435,7 +5655,8 @@
             "format": "date-time"
           },
           "creator_id": {
-            "type": "integer"
+            "type": "integer",
+            "nullable": true
           },
           "namespace": {
             "$ref": "#/components/schemas/Namespace"
@@ -5477,7 +5698,8 @@
             "type": "boolean"
           },
           "allow_merge_on_skipped_pipeline": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true
           },
           "only_allow_merge_if_all_discussions_are_resolved": {
             "type": "boolean"
@@ -5577,7 +5799,8 @@
             "type": "integer"
           },
           "description": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "default_branch": {
             "type": "string"
@@ -5595,7 +5818,8 @@
             "type": "string"
           },
           "readme_url": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "tag_list": {
             "type": "array",
@@ -5657,7 +5881,8 @@
             "format": "date-time"
           },
           "creator_id": {
-            "type": "integer"
+            "type": "integer",
+            "nullable": true
           },
           "namespace": {
             "$ref": "#/components/schemas/Namespace"
@@ -5714,7 +5939,8 @@
             "type": "boolean"
           },
           "allow_merge_on_skipped_pipeline": {
-            "type": "boolean"
+            "type": "boolean",
+            "nullable": true
           },
           "only_allow_merge_if_all_discussions_are_resolved": {
             "type": "boolean"
@@ -5735,7 +5961,8 @@
             "type": "boolean"
           },
           "suggestion_commit_message": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "auto_devops_deploy_strategy": {
             "type": "string"
@@ -5785,7 +6012,8 @@
             "type": "boolean"
           },
           "service_desk_address": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "autoclose_referenced_issues": {
             "type": "boolean"
@@ -6075,7 +6303,8 @@
             "type": "string"
           },
           "name_regex_keep": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "next_run_at": {
             "type": "string",
@@ -6109,6 +6338,12 @@
           },
           "snippets_size": {
             "type": "integer"
+          },
+          "pipeline_artifacts_size": {
+            "type": "integer"
+          },
+          "uploads_size": {
+            "type": "integer"
           }
         }
       },
@@ -6116,10 +6351,28 @@
         "type": "object",
         "properties": {
           "project_access": {
-            "$ref": "#/components/schemas/ProjectAccess"
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "access_level": {
+                "type": "integer"
+              },
+              "notification_level": {
+                "type": "integer"
+              }
+            }
           },
           "group_access": {
-            "$ref": "#/components/schemas/GroupAccess"
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "access_level": {
+                "type": "integer"
+              },
+              "notification_level": {
+                "type": "integer"
+              }
+            }
           }
         }
       },
@@ -6162,6 +6415,17 @@
           },
           "full_path": {
             "type": "string"
+          },
+          "parent_id": {
+            "type": "integer",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "web_url": {
+            "type": "string"
           }
         }
       },
@@ -6174,9 +6438,31 @@
           "name": {
             "type": "string"
           },
+          "username": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "locked": {
+            "type": "boolean"
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "web_url": {
+            "type": "string"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "custom_attributes": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
           }
         }
       },
@@ -6482,6 +6768,9 @@
             "type": "string"
           },
           "members": {
+            "type": "string"
+          },
+          "cluster_agents": {
             "type": "string"
           }
         }

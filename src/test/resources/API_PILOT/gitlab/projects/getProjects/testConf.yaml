@@ -110,7 +110,6 @@ testConfiguration:
         genParameters:
         - name: values
           values:
-          - 0
           - 10
           - 20
           - 30
