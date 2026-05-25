@@ -285,19 +285,11 @@ testConfiguration:
           in: query
           weight: 0.5
           generators:
-            - type: RandomNumber
+            - type: RandomInputValue
               genParameters:
-                - name: type
+                - name: csv
                   values:
-                    - integer
-                  objectValues: null
-                - name: min
-                  values:
-                    - 1
-                  objectValues: null
-                - name: max
-                  values:
-                    - 100
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/namespace_id.csv
                   objectValues: null
               valid: true
         - name: only_allow_merge_if_all_discussions_are_resolved
@@ -398,11 +390,15 @@ testConfiguration:
           in: query
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: values
                   values:
-                    - 1
+                    - default
+                    - nfs-01
+                    - nfs-02
+                    - gitaly-1
+                    - gitaly-2
                   objectValues: null
               valid: true
         - name: request_access_enabled
@@ -457,22 +453,35 @@ testConfiguration:
           in: query
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/tag_list.csv
                   objectValues: null
               valid: true
         - name: template_name
           in: query
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: values
                   values:
-                    - 1
+                    - rails
+                    - spring
+                    - express
+                    - dotnetcore
+                    - android
+                    - ios
+                    - flutter
+                    - hugo
+                    - jekyll
+                    - gitbook
+                    - nfpm
+                    - pages/plain-html
+                    - pages/jekyll
+                    - pages/hugo
                   objectValues: null
               valid: true
         - name: visibility
@@ -512,11 +521,15 @@ testConfiguration:
           in: formData
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: values
                   values:
-                    - 1
+                    - 1d
+                    - 7d
+                    - 14d
+                    - 1month
+                    - 3month
                   objectValues: null
               valid: true
         - name: enabled
@@ -530,18 +543,15 @@ testConfiguration:
           in: formData
           weight: 0.5
           generators:
-            - type: RandomNumber
+            - type: RandomInputValue
               genParameters:
-                - name: type
-                  values:
-                    - integer
-                  objectValues: null
-                - name: min
+                - name: values
                   values:
                     - 1
-                  objectValues: null
-                - name: max
-                  values:
+                    - 5
+                    - 10
+                    - 25
+                    - 50
                     - 100
                   objectValues: null
               valid: true
@@ -549,44 +559,54 @@ testConfiguration:
           in: formData
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: values
                   values:
-                    - 1
+                    - 1d
+                    - 3d
+                    - 7d
+                    - 14d
+                    - 30d
+                    - 60d
+                    - 90d
+                    - 180d
+                    - 365d
+                    - 730d
+                    - 1095d
                   objectValues: null
               valid: true
         - name: name_regex
           in: formData
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/name_regex.csv
                   objectValues: null
               valid: true
         - name: name_regex_delete
           in: formData
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/name_regex.csv
                   objectValues: null
               valid: true
         - name: name_regex_keep
           in: formData
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/name_regex.csv
                   objectValues: null
               valid: true
         - name: next_run_at
