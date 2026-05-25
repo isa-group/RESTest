@@ -248,6 +248,7 @@
         "tags": [
           "Project"
         ],
+        "operationId": "postProject",
         "description": "Creates a new project owned by the authenticated user.",
         "parameters": [
           {

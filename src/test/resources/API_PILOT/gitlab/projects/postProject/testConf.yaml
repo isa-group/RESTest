@@ -1,0 +1,601 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: null
+testConfiguration:
+  operations:
+    - testPath: /projects
+      operationId: postProject
+      method: post
+      testParameters:
+        - name: allow_merge_on_skipped_pipeline
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: auto_cancel_pending_pipelines
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - enabled
+                    - disabled
+                  objectValues: null
+              valid: true
+        - name: auto_devops_deploy_strategy
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - continuous
+                    - manual
+                    - timed_incremental
+                  objectValues: null
+              valid: true
+        - name: auto_devops_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: autoclose_referenced_issues
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: avatar
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: build_coverage_regex
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: build_git_strategy
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: build_timeout
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: builds_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                  objectValues: null
+              valid: true
+        - name: ci_config_path
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: container_registry_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: default_branch
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: description
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: emails_disabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: forking_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                  objectValues: null
+              valid: true
+        - name: import_url
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: initialize_with_readme
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: issues_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                  objectValues: null
+              valid: true
+        - name: issues_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: jobs_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: lfs_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: merge_method
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - merge
+                    - rebase_merge
+                    - ff
+                  objectValues: null
+              valid: true
+        - name: merge_requests_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                  objectValues: null
+              valid: true
+        - name: merge_requests_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: name
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: namespace_id
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: only_allow_merge_if_all_discussions_are_resolved
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: only_allow_merge_if_pipeline_succeeds
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: packages_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: pages_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                    - public
+                  objectValues: null
+              valid: true
+        - name: requirements_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                    - public
+                  objectValues: null
+              valid: true
+        - name: path
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: printing_merge_request_link_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: public_builds
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: remove_source_branch_after_merge
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: repository_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                  objectValues: null
+              valid: true
+        - name: repository_storage
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: request_access_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: resolve_outdated_diff_discussions
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: shared_runners_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: show_default_award_emojis
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: snippets_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                  objectValues: null
+              valid: true
+        - name: snippets_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: tag_list
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: template_name
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: visibility
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - private
+                    - internal
+                    - public
+                  objectValues: null
+              valid: true
+        - name: wiki_access_level
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomInputValue
+              genParameters:
+                - name: values
+                  values:
+                    - disabled
+                    - private
+                    - enabled
+                  objectValues: null
+              valid: true
+        - name: wiki_enabled
+          in: query
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: cadence
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: enabled
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomBoolean
+              genParameters: []
+              valid: true
+        - name: keep_n
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomNumber
+              genParameters:
+                - name: type
+                  values:
+                    - integer
+                  objectValues: null
+                - name: min
+                  values:
+                    - 1
+                  objectValues: null
+                - name: max
+                  values:
+                    - 100
+                  objectValues: null
+              valid: true
+        - name: older_than
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: name_regex
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: name_regex_delete
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: name_regex_keep
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomEnglishWord
+              genParameters:
+                - name: maxWords
+                  values:
+                    - 1
+                  objectValues: null
+              valid: true
+        - name: next_run_at
+          in: formData
+          weight: 0.5
+          generators:
+            - type: RandomDate
+              genParameters:
+                - name: format
+                  values:
+                    - yyyy-MM-dd'T'HH:mm:ss'Z'
+                  objectValues: null
+              valid: true
+      expectedResponse: 200
