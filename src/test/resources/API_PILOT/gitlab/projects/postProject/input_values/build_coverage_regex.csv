@@ -1,0 +1,31 @@
+\d+\.\d+\%
+\d+\%
+Coverage: \d+\.\d+\%
+Total coverage: \d+\.\d+\%
+coverage: \d+\.\d+% of statements
+Total.*?([0-9]{1,3})\%
+TOTAL.*\s+(\d+)\%
+^\s*Lines:\s*\d+\.\d+\%
+Statements\s*:\s*\d+\.\d+\%
+Branches\s*:\s*\d+\.\d+\%
+Functions\s*:\s*\d+\.\d+\%
+Lines\s*:\s*\d+\.\d+\%
+(\d+\.\d+)% covered
+Lines executed:\d+\.\d+% of \d+
+line-rate="\d+\.\d+"
+Statement coverage: \d+\.\d+\%
+All files\s*\|\s*\d+\.\d+
+^\s*TOTAL\s+\d+\s+\d+\s+(\d+)%
+OK \(\d+ tests?, \d+\.\d+% coverage\)
+coverage report.*\d+\.\d+\%
+Overall coverage: \d+\.\d+\%
+Project coverage: \d+\.\d+\%
+Code coverage: \d+\.\d+\%
+Test coverage: \d+\.\d+\%
+\[coverage\] \d+\.\d+\%
+cov:\s*\d+\.\d+\%
+Cov\s+\d+\.\d+\%
+hit\s+\d+\.\d+\%
+covered\s+\d+\.\d+\%
+\|\s*Total\s*\|\s*\d+\.\d+\%
+avg:\s*\d+\.\d+\%

@@ -4,7 +4,7 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: null
-  headersPath: null
+  headersPath: gitlab/headers.json
   oauthPath: null
 testConfiguration:
   operations:
@@ -62,33 +62,35 @@ testConfiguration:
           in: query
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/avatar.csv
                   objectValues: null
               valid: true
         - name: build_coverage_regex
           in: query
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/build_coverage_regex.csv
                   objectValues: null
               valid: true
         - name: build_git_strategy
           in: query
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: values
                   values:
-                    - 1
+                    - fetch
+                    - clone
+                    - none
                   objectValues: null
               valid: true
         - name: build_timeout
@@ -107,7 +109,7 @@ testConfiguration:
                   objectValues: null
                 - name: max
                   values:
-                    - 100
+                    - 600
                   objectValues: null
               valid: true
         - name: builds_access_level
@@ -127,11 +129,11 @@ testConfiguration:
           in: query
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/ci_config_path.csv
                   objectValues: null
               valid: true
         - name: container_registry_enabled
@@ -145,11 +147,11 @@ testConfiguration:
           in: query
           weight: 0.5
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/default_branch.csv
                   objectValues: null
               valid: true
         - name: description
@@ -160,7 +162,7 @@ testConfiguration:
               genParameters:
                 - name: maxWords
                   values:
-                    - 1
+                    - 20
                   objectValues: null
               valid: true
         - name: emails_disabled
@@ -185,13 +187,13 @@ testConfiguration:
               valid: true
         - name: import_url
           in: query
-          weight: 0.5
+          weight: 0.2
           generators:
-            - type: RandomEnglishWord
+            - type: RandomInputValue
               genParameters:
-                - name: maxWords
+                - name: csv
                   values:
-                    - 1
+                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/import_url.csv
                   objectValues: null
               valid: true
         - name: initialize_with_readme
