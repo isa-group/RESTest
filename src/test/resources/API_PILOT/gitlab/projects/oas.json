@@ -4605,7 +4605,8 @@
             "type": "string"
           },
           "import_error": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "permissions": {
             "$ref": "#/components/schemas/Permissions"
