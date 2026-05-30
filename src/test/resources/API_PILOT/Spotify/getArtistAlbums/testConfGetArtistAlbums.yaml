@@ -1,0 +1,494 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: Spotify/oauth.json
+testConfiguration:
+  operations:
+  - testPath: "/artists/{id}/albums"
+    operationId: getArtistAlbums
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - 4iVhFmG8YCCEHANGeUUS9q
+          - 7LzTBVNarOeaDXFdzOugAI
+          - 5pKCCKE2ajJHZ9KAiaK11H
+          - 3f4OfcNtgL9MLgiyOdIHC7
+          - 3QJzdZJYIAcoET1GcfpNGi
+          - 6PAt558ZEZl0DmdXlnjMgD
+          - 2vhqxD07xr1Agkb3ieUarL
+          - 5F8v5xSIGtfukNxq0Jqgwh
+          - 0b2GL7Y02vu50qieoQmw1w
+          - 7dGJo4pcD2V6oG8kP0tJRR
+          - 4ShgdWtm52xvEr8uYmT0V6
+          - 7xeM7V59cA1X8GKyKKQV87
+          - 7iJrDbKM5fEkGdm5kpjFzS
+          - 5s6TJEuHTr9GR894wc6VfP
+          - 4tZwfgrHOc3mvqYlEYSvVi
+          - 63MQldklfxkjYDoUE4Tppz
+          - 5W5bDNCqJ1jbCgTxDD0Cb3
+          - 6DPYiyq5kWVQS4RGwxzPC7
+          - 5IqWDVLGThjmkm22e3oBU3
+          - 2mpeljBig2IXLXRAFO9AAs
+          - 4etuCZVdP8yiNPn4xf0ie5
+          - 2Fb5mOTrRvc3sEoLGtWJpC
+          - 3eqjTLE0HfPfh78zjh6TqT
+          - 4DpSdMOP7JLMUGjNpri704
+          - 3EiLUeyEcA6fbRPSHkG5kb
+          - 2uDsUIyCIqk9wKj17I8WAH
+          - 5PcieKHIXvRQ73ooTBA7eh
+          - 2wouN3QXejYa5tKetYdcVX
+          - 5nLYd9ST4Cnwy6NHaCxbj8
+          - 2TXpVEw5FbzDh93tLoDm0i
+          - 4LqQgcjARsWfPFvWke6I6k
+          - 2y8fwjC1HoQGIyBXCthRFi
+          - 7z3PalkoSmx3o1eh7Epxif
+          - 2NhdGz9EDv2FeUw6udu2g1
+          - 2FsZnS8gQ8jG1HGnPYNlm9
+          - 21ND47q78JLAfDR1qpKQmj
+          - 0z0BuLfVtAv6FarxqAWrDt
+          - 3hXDMlrPegHRO0zUvBsRSI
+          - 62k5LKMhymqlDNo2DWOvvv
+          - 791Z3924aa619hZ3xsOJEx
+          - 4phGZZrJZRo4ElhRtViYdl
+          - 7uNtuhVl0QBCpOBG6WB4UE
+          - 4tujQJicOnuZRLiBFdp3Ou
+          - 5HOu40y4JzaPi68Juxb7gF
+          - 2F6QSNmsgqt8e09mjWK4Sg
+          - 2z0SdfJJMftzqGXrjDVlph
+          - 2YZyLoL8N0Wb9xBt1NhZWg
+          - 4JBM3QQitBA3Aq3mZhvhrv
+          - 6DJEUXZm0e2rAohdoZ5Voo
+          - 3a9qv6NLHnsVxJUtKOMHvD
+          - 5QNhqwPZ8iarTac5KosBfO
+          - 74ASZWbe4lXaubB36ztrGX
+          - 4D75GcNG95ebPtNvoNVXhz
+          - 1l7ZsJRRS8wlW3WfJfPfNS
+          - 5eKLa1xyHLq8ERWmT1CRHj
+          - 6RWjTQqILL7a1tQ0VapyLK
+          - 3WrFJ7ztbogyGnTHbHJFl2
+          - 1Oa0bMld0A3u5OTYfMzp5h
+          - 61J0BktHv7PuP3tjTPYXSX
+          - 6MqiKfBDRVFapvmW8qtxHz
+          - 1VOaYBcQI1bCbeneMIbc3v
+          - 23wEWD21D4TPYiJugoXmYb
+          - 7DgpPXntG6DkNR4hCi4PjP
+          - 5F2Bwl7Is7KVwTbNbMclIS
+          - 0skgD66nfXZVj5NSNEMQKz
+          - 3MdG05syQeRYPPcClLaUGl
+          - 5QbtHVKsubg55KaqZp96NL
+          - 4TMHGUX5WI7OOm53PqSDAT
+          - 6v8FB84lnmJs434UJf2Mrm
+          - 7ceUfdWq2t5nbatS6ollHh
+          - 3OsRAKCvk37zwYcnzRf5XF
+          - 3MhnTc9AODdRGMrtntEqIz
+          - 1qUjOF5fzrpoNycD36b2jZ
+          - 32vWCbZh0xZ4o9gkz4PsEU
+          - 3odR1GtDKRGhCwheY7jpi9
+          - 1l2NYhptmHjo64MDOcej1x
+          - 4MCBfE4596Uoi2O4DtmEMz
+          - 23zg3TcAtWQy7J6upgbUnj
+          - 7qG3b048QCHVRO5Pv1T5lw
+          - 2Djz8cbEv5rtrYrJYdzQ20
+          - 7nw0vomAyUDDWzlrgRdjUY
+          - 5MO2kbaGGA2a8kL4c9qqHq
+          - 5ct8AlcDgWMp4O25vbcjpC
+          - 7eYoqLpLD211aYrxb64AzN
+          - 6GEykX11lQqp92UVOQQCC7
+          - 0E83eZ4FBoi019XTV6rIKC
+          - 4bGR05FEl1Y00iSlRPhoPM
+          - 0du5cEVh5yTK9QJze8zA0C
+          - 3m6alJyeKYSCZ8078ttfaH
+          - 6vdMPayKk8YJxxeNP5oMCb
+          - 5WUlDfRSoLAfcVSX1WnrxN
+          - 7FzXqfhbeFzALmcyi1j90U
+          - 4cOY0iUSp0UERCk4I23uoH
+          - 3frJniZNsChzTgI37gT54C
+          - 3ZotbHeyVQKxQCPDJuQ4SU
+          - 4utLUGcTvOJFr6aqIJtYWV
+          - 0z4gvV4rjIZ9wHck67ucSV
+          - 2k6fdnEIyk7t8Mfg6SoRg1
+          - 39PhMWg1aAuuZcph0OXGu6
+          - 4aeIWo5CMF1uRmqgJdwkZW
+          - 5I7l0lSOyusetwCv1aQPMf
+          - 4pQN0GB0fNEEOfQCaWotsY
+          - 5YvgNxxPf7g5RuWvLmqrbW
+          - 44Wi4QHWK4CzACCqCyxo3x
+          - 5HvBzCdIS5zc39TEciuOId
+          - 4nBsH2GSePetK23pAK70rZ
+          - 7LvoDJUNGnOrPdGRzVtOJ9
+          - 7c0XG5cIJTrrAgEC3ULPiq
+          - 7guDJrEfX3qb6FEbdPA5qi
+          - 0xgLzYXTSX00BF1UpyXQpi
+          - 7FIoB5PHdrMZVC3q2HE5MS
+          - 08j69Ndyx1P7RLO3Janb5P
+          - 3CfH3WZPzbk5mNDWXpGIy6
+          - 0Ty63ceoRnnJKVEYP0VQpk
+          - 0GSi3NJMnVPNp3vAsp9d7R
+          - 2fLCjXwadBsnYmn05uxFpi
+          - 1p6D0AbVLgyNSt6AtESToF
+          - 2DlGxzQSjYe5N6G9nkYghR
+          - 4CecgT3PfTiMzdO3pFCDNP
+          - 1vWImodgVqIgTUkekGEfR9
+          - 320TrJub4arztwXRm7kqVO
+          - 2rxtSTPBJawYhQAXIpgEAi
+          - 2A3KGd7NkgkLzqudWj7jbc
+          - 0jJszR81GjA87jeRq0Jgwz
+          - 7xGGqA85UIWX1GoTVM4itC
+          - 2TSvMFHlguDI495vujOAys
+          - 4obzFoKoKRHIphyHzJ35G3
+          - 5hW4L92KnC6dX9t7tYM4Ve
+          - 5o16x0FukFIsZd6byJiGku
+          - 0e9P96siQmxphVXAwTy2pa
+          - 5vxxGMGhgst939wtFPQMsp
+          - 5M9Bb4adKAgrOFOhc05Y50
+          - 5qEtLvXzYdv0G7c7rR6irX
+          - 6uothxMWeLWIhsGeF7cyo4
+          - 3BnF35ARlp8mMeyXTjUZsr
+          - 0TnOYISbd1XYRBk9myaseg
+          - 7mEIug7XUlQHikrFxjTWes
+          - 4BtYfxhqobUWOXZzqMabBO
+          - 3muGwkg7cEbK52vzp76J38
+          - 633wBWQrbgm4Tugw7MmsgA
+          - 7LfVhkAKfUhwfcrQ2n5PwS
+          - 17XXKfRBMCWvLrqGoNkJXm
+          - 79KQgTCu4wV38ECYKn62DZ
+          - 39W8ER2QJe2x3pKLIXTiwK
+          - 4STHEaNw4mPZ2tzheohgXB
+          - 1B8ySGDAiXTCvnJNH4HSCG
+          - 3CDKmzJu6uwEGnPLLZffpD
+          - 0uioawxHyc6pgvbUCq510I
+          - 1EVWYRr2obCRDoSoD6KSuM
+          - 4vpDg7Y7fU982Ds30zawDA
+          - 129EoLWGCJWoI6941COU2y
+          - 4qwGe91Bz9K2T8jXTZ815W
+          - 2viYME3n7SlMsIOEqWmEHv
+          - 1Mxqyy3pSjf8kZZL4QVxS0
+          - 5ndkK3dpZLKtBklKjxNQwT
+          - 6dU7gPN2BhEPfO5QHLt7es
+          - 6fFfnKGVI6X3lkCr8Qw1g1
+          - 4wLXwxDeWQ8mtUIRPxGiD6
+          - 6qzi6mPoJU4cBlO76U1Il1
+          - 4pU3BpenOZFEBzORx2YBJW
+          - 3k00aazgj6dYcmOCtFm3PG
+          - 3jK9MiCrA42lLAdMGUZpwa
+          - 7hJcb9fa4alzcOq3EaNPoG
+          - 1WjexdTcXHgvlVIPCE8D1Q
+          - 09M87xFMTKdsWJxpEWaiat
+          - 1Dxks5ixFTqeK87l6Jcz4C
+          - 0acSKGMIRsorWH3cQd5JrE
+          - 6eUKZXaKkcviH0Ku9w2n3V
+          - 02HWgoL7gYSPcVlNjrJWRb
+          - 3nlpTZci9O5W8RsNoNH559
+          - 4hFBhdNVZZuVk5FYThUwaN
+          - 2oQX8QiMXOyuqbcZEFsZfm
+          - 1wZtkThiXbVNtj6hee6dz9
+          - 1uid9dUz5STckJAH7kFCoE
+          - 4158uPqjX0abkCvGpVXDGv
+          - 44NX2ffIYHr6D4n7RaZF7A
+          - 3tAICgiSR5PfYY4B8qsoAU
+          - 2L8yW8GIoirHEdeW4bWQXq
+          - 0LALueHEQunQ2d61fXGeZh
+          - 6TQj5BFPooTa08A7pk8AQ1
+          - 4x1nvY2FN8jxqAFA0DA02H
+          - 3fMbdgg4jU18AjLCKBhRSm
+          - 2eQMfQXKQGV98HKiCOB7en
+          - 4jU0RacP9Tatdgc84kRVL7
+          - 2ZRQcIgzPCVaT9XKhXZIzh
+          - 3gqv1kgivAc92KnUm4elKv
+          - 6NFWb2y6S7PH2yvs5xbO2y
+          - 4XJl0Ba9LUbTemYMEYw794
+          - 3BJxpRUNoRVY28xuTgwXtA
+          - 1q13yHC6Syg5Y8iPLrRnCq
+          - 1h4iSQAKdvAAm07l6FX6dy
+          - 4y6J8jwRAwO4dssiSmN91R
+          - 0EmeFodog0BfCgMzAIvKQp
+          - 26h93j6LuNx7fnSjbdB2eN
+          - 0OcclcP5o8VKH2TRqSY2A7
+          - 6sNaam3Zukm6OulZGjgogi
+          - 3nwYsifpwrKmCIpw4i0HDW
+          - 4MHssKddnziCghmwBHRiEY
+          - 1mB4aweE1XGdjbFVFC8i5m
+          - 4DBNGKCWVHaxuDNBAgTiJH
+          - 1iQbAecYvKMXhpaFg7oSRq
+          - 35a4X2cbGfPU7Qg9LRYjwZ
+          - 14F3jEeosuaJHvcu2el861
+          - 2gOsYhOtw3zLeZa37kNn9H
+          - 5hQoh7nG0mKTwdzOxC3PE8
+          - 6DVipHzYsPlIoA0DW8Gmns
+          - 15jrieCvf3EklAScnD9kKl
+          - 0nmQIMXWTXfhgOBdNzhGOs
+          - 4Ws2otunReOa6BbwxxpCt6
+          - 5Qi4Bb7a8C0a00NZcA77L0
+          - 1vCWHaC5f2uS3yhpwWbIA6
+          - 7tLRDdqaS3HlX9cLbpY3Hl
+          - 4Gso3d4CscCijv0lmajZWs
+          - 1B8vzl6kObOf1cxN4myLS1
+          - 7bXgB6jMjp9ATFy66eO08Z
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 20
+          objectValues: null
+        valid: true
+    - name: include_groups
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: minValues
+          values:
+            - 1
+          objectValues: null
+        - name: maxValues
+          values:
+            - 4
+          objectValues: null
+        - name: values
+          values:
+          - album
+          - single
+          - appears_on
+          - compilation
+          objectValues: null
+        valid: true
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "AD"
+          - "AE"
+          - "AG"
+          - "AL"
+          - "AM"
+          - "AO"
+          - "AR"
+          - "AT"
+          - "AU"
+          - "AZ"
+          - "BA"
+          - "BB"
+          - "BD"
+          - "BE"
+          - "BF"
+          - "BG"
+          - "BH"
+          - "BI"
+          - "BJ"
+          - "BN"
+          - "BO"
+          - "BR"
+          - "BS"
+          - "BT"
+          - "BW"
+          - "BY"
+          - "BZ"
+          - "CA"
+          - "CD"
+          - "CG"
+          - "CH"
+          - "CI"
+          - "CL"
+          - "CM"
+          - "CO"
+          - "CR"
+          - "CV"
+          - "CW"
+          - "CY"
+          - "CZ"
+          - "DE"
+          - "DJ"
+          - "DK"
+          - "DM"
+          - "DO"
+          - "DZ"
+          - "EC"
+          - "EE"
+          - "EG"
+          - "ES"
+          - "FI"
+          - "FJ"
+          - "FM"
+          - "FR"
+          - "GA"
+          - "GB"
+          - "GD"
+          - "GE"
+          - "GH"
+          - "GM"
+          - "GN"
+          - "GQ"
+          - "GR"
+          - "GT"
+          - "GW"
+          - "GY"
+          - "HK"
+          - "HN"
+          - "HR"
+          - "HT"
+          - "HU"
+          - "ID"
+          - "IE"
+          - "IL"
+          - "IN"
+          - "IQ"
+          - "IS"
+          - "IT"
+          - "JM"
+          - "JO"
+          - "JP"
+          - "KE"
+          - "KG"
+          - "KH"
+          - "KI"
+          - "KM"
+          - "KN"
+          - "KR"
+          - "KW"
+          - "KZ"
+          - "LA"
+          - "LB"
+          - "LC"
+          - "LI"
+          - "LK"
+          - "LR"
+          - "LS"
+          - "LT"
+          - "LU"
+          - "LV"
+          - "LY"
+          - "MA"
+          - "MC"
+          - "MD"
+          - "ME"
+          - "MG"
+          - "MH"
+          - "MK"
+          - "ML"
+          - "MN"
+          - "MO"
+          - "MR"
+          - "MT"
+          - "MU"
+          - "MV"
+          - "MW"
+          - "MX"
+          - "MY"
+          - "MZ"
+          - "NA"
+          - "NE"
+          - "NG"
+          - "NI"
+          - "NL"
+          - "NO"
+          - "NP"
+          - "NR"
+          - "NZ"
+          - "OM"
+          - "PA"
+          - "PE"
+          - "PG"
+          - "PH"
+          - "PK"
+          - "PL"
+          - "PS"
+          - "PT"
+          - "PW"
+          - "PY"
+          - "QA"
+          - "RO"
+          - "RS"
+          - "RU"
+          - "RW"
+          - "SA"
+          - "SB"
+          - "SC"
+          - "SE"
+          - "SG"
+          - "SI"
+          - "SK"
+          - "SL"
+          - "SM"
+          - "SN"
+          - "SR"
+          - "ST"
+          - "SV"
+          - "SZ"
+          - "TD"
+          - "TG"
+          - "TH"
+          - "TJ"
+          - "TL"
+          - "TN"
+          - "TO"
+          - "TR"
+          - "TT"
+          - "TV"
+          - "TW"
+          - "TZ"
+          - "UA"
+          - "UG"
+          - "US"
+          - "UY"
+          - "UZ"
+          - "VC"
+          - "VE"
+          - "VN"
+          - "VU"
+          - "WS"
+          - "XK"
+          - "ZA"
+          - "ZM"
+          - "ZW"
+          objectValues: null
+        valid: true
+    expectedResponse: 200

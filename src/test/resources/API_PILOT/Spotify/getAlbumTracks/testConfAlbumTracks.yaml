@@ -1,0 +1,318 @@
+---
+auth:
+  required: true
+  queryParams: {}
+  headerParams: {}
+  apiKeysPath: null
+  headersPath: null
+  oauthPath: Spotify/oauth.json
+testConfiguration:
+  operations:
+  - testPath: "/albums/{id}/tracks"
+    operationId: getAlbumTracks
+    method: get
+    testParameters:
+    - name: id
+      in: path
+      weight: null
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - 382ObEPsp2rxGrnsizN5TX
+          - 1A2GTWGtFfWp7KSQTwWOyo
+          - 2noRn2Aes5aoNVsU6iWThc
+          - 4PgleR09JVnm3zY1fW3XBA
+          - 58ufpQsJ1DS5kq4hhzQDiI
+          - 6J84szYCnMfzEcvIcfWMFL
+          - 4YzNjecIvmLFEby13NOBmj
+          - 21GSy4UKShEpEfrojAEK9U
+          - 0swM8EuQkgYV2knrZ8rFl2
+          - 2B4G3D8pCGzk3ryWVPD6ga
+          - 2AW6HCRfGox94vO7GMQSLD
+          - 5FVNWYM95qgM8Wkzksnszy
+          - 3yaQNz5hglJrlaVJTLcUCb
+          - 6ajdXlPMknejXW5TxqTMr0
+          - 5XWqGM9qDxw3KjQCBgewAV
+          - 4s096NcPZeqXsj8gQ1R1aT
+          - 0T3RVlrWzids265ebYOkDq
+          - 6ixZvq546olo2LumeG66UW
+          - 3qrqWaQBRtiDvKnVgi2Jhk
+          - 6NnxUxgj1FlneEPzSaRflN
+          - 4aawyAB9vmqN3uQ7FjRGTy
+          - 0CR8Q3InJ651Wke81ihesx
+          - 7uqVE9qWdqjtDeLpdHyMxP
+          - 5c91uYKAFjDmwGCW87pRyx
+          - 1pBBIxK5yURfbv8Xd5lta1
+          - 3Lf8VA23cMAl5imbABTZoo
+          - 4l0xO28Y37MBBXQEcBIbXQ
+          - 0fDtkURAIQeQ7Kz7ZC60xi
+          - 4bCgcuGVc07xSfFJb0wXf3
+          - 4avLivYQqNDnkxfMDTSIsJ
+          - 6j3vuVPhMRB0H5CgPZ8wTd
+          - 6tgzqy3Keqge7DAPRw2asB
+          - 3EZpSEJ1k1BovW6Tp2Klz1
+          - 7l9AfB3E5teHyZ0g7WDlx1
+          - 29pkQOWIBGGFD1EncVkILn
+          - 2dey7kGDFAByEACexapiV6
+          - 0pDJt9M0HWkIs4vrTK6aC6
+          - 6l7VG02x1QGIOH9jWIwNDC
+          - 0oX4SealMgNXrvRDhqqOKg
+          - 3OBhnTLrvkoEEETjFA3Qfk
+          - 2GuROKcqyHdpIDcgxml1C7
+          - 4pJT0WKggr4xk149X8A6KC
+          - 3vRPk0p08qx02W2aGM5sfb
+          - 2zKqD5DUNUE4isjGLixU8v
+          - 0wMkc2tl7Ypq3n2mSV60Fx
+          - 5ZAaYcFudS0BtKhWJqeMCH
+          - 55RTkgUCP7t80hiTUhATMH
+          - 1MrqY9fdmJFExV6cWhxgQ6
+          - 3DdgFZ4HatZt4mO1bJTKEy
+          - 7I23Ozytuydr8LCgRiHNY5
+          - 0X0ZWOmMDsAJW7NDeMXIN4
+          - 4YQsbhCYkpmueqKC4aEn7f
+          - 4otkd9As6YaxxEkIjXPiZ6
+          - 3MKvhQoFSrR2PrxXXBHe9B
+          - 6t7956yu5zYf5A829XRiHC
+          - 2t1EvhAPgUWbd2jHITrLUj
+          - 3vOgbDjgsZBAPwV2M3bNOj
+          - 6DN7GcZF1HywzrkGN6Eeqk
+          - 7bHBKXxGoDv8OepZWqLw1p
+          - 1nzXLhEwX425ohlxbW98nK
+          - 7vfuTRXIAYJz5Uc8SddnTr
+          objectValues: null
+        valid: true
+    - name: limit
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 50
+          objectValues: null
+        valid: true
+    - name: offset
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomNumber
+        genParameters:
+        - name: type
+          values:
+          - integer
+          objectValues: null
+        - name: min
+          values:
+          - 1
+          objectValues: null
+        - name: max
+          values:
+          - 20
+          objectValues: null
+        valid: true
+    - name: market
+      in: query
+      weight: 0.5
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - "AD"
+          - "AE"
+          - "AG"
+          - "AL"
+          - "AM"
+          - "AO"
+          - "AR"
+          - "AT"
+          - "AU"
+          - "AZ"
+          - "BA"
+          - "BB"
+          - "BD"
+          - "BE"
+          - "BF"
+          - "BG"
+          - "BH"
+          - "BI"
+          - "BJ"
+          - "BN"
+          - "BO"
+          - "BR"
+          - "BS"
+          - "BT"
+          - "BW"
+          - "BY"
+          - "BZ"
+          - "CA"
+          - "CD"
+          - "CG"
+          - "CH"
+          - "CI"
+          - "CL"
+          - "CM"
+          - "CO"
+          - "CR"
+          - "CV"
+          - "CW"
+          - "CY"
+          - "CZ"
+          - "DE"
+          - "DJ"
+          - "DK"
+          - "DM"
+          - "DO"
+          - "DZ"
+          - "EC"
+          - "EE"
+          - "EG"
+          - "ES"
+          - "FI"
+          - "FJ"
+          - "FM"
+          - "FR"
+          - "GA"
+          - "GB"
+          - "GD"
+          - "GE"
+          - "GH"
+          - "GM"
+          - "GN"
+          - "GQ"
+          - "GR"
+          - "GT"
+          - "GW"
+          - "GY"
+          - "HK"
+          - "HN"
+          - "HR"
+          - "HT"
+          - "HU"
+          - "ID"
+          - "IE"
+          - "IL"
+          - "IN"
+          - "IQ"
+          - "IS"
+          - "IT"
+          - "JM"
+          - "JO"
+          - "JP"
+          - "KE"
+          - "KG"
+          - "KH"
+          - "KI"
+          - "KM"
+          - "KN"
+          - "KR"
+          - "KW"
+          - "KZ"
+          - "LA"
+          - "LB"
+          - "LC"
+          - "LI"
+          - "LK"
+          - "LR"
+          - "LS"
+          - "LT"
+          - "LU"
+          - "LV"
+          - "LY"
+          - "MA"
+          - "MC"
+          - "MD"
+          - "ME"
+          - "MG"
+          - "MH"
+          - "MK"
+          - "ML"
+          - "MN"
+          - "MO"
+          - "MR"
+          - "MT"
+          - "MU"
+          - "MV"
+          - "MW"
+          - "MX"
+          - "MY"
+          - "MZ"
+          - "NA"
+          - "NE"
+          - "NG"
+          - "NI"
+          - "NL"
+          - "NO"
+          - "NP"
+          - "NR"
+          - "NZ"
+          - "OM"
+          - "PA"
+          - "PE"
+          - "PG"
+          - "PH"
+          - "PK"
+          - "PL"
+          - "PS"
+          - "PT"
+          - "PW"
+          - "PY"
+          - "QA"
+          - "RO"
+          - "RS"
+          - "RU"
+          - "RW"
+          - "SA"
+          - "SB"
+          - "SC"
+          - "SE"
+          - "SG"
+          - "SI"
+          - "SK"
+          - "SL"
+          - "SM"
+          - "SN"
+          - "SR"
+          - "ST"
+          - "SV"
+          - "SZ"
+          - "TD"
+          - "TG"
+          - "TH"
+          - "TJ"
+          - "TL"
+          - "TN"
+          - "TO"
+          - "TR"
+          - "TT"
+          - "TV"
+          - "TW"
+          - "TZ"
+          - "UA"
+          - "UG"
+          - "US"
+          - "UY"
+          - "UZ"
+          - "VC"
+          - "VE"
+          - "VN"
+          - "VU"
+          - "WS"
+          - "XK"
+          - "ZA"
+          - "ZM"
+          - "ZW"
+          objectValues: null
+        valid: true
+    expectedResponse: 200
