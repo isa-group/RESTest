@@ -740,16 +740,6 @@
                 }
               }
             }
-          },
-          "default": {
-            "description": "bad input parameter",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
           }
         },
         "x-dependencies": [
