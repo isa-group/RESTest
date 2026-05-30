@@ -752,6 +752,20 @@
             }
           }
         },
+        "x-dependencies": [
+          "Or(name, path);",
+          "ZeroOrOne(import_url, template_name);",
+          "IF auto_devops_deploy_strategy THEN auto_devops_enabled;",
+          "IF allow_merge_on_skipped_pipeline THEN only_allow_merge_if_pipeline_succeeds;",
+          "IF repository_access_level THEN merge_requests_access_level;",
+          "IF repository_access_level THEN builds_access_level;",
+          "IF repository_access_level THEN issues_access_level;",
+          "IF repository_access_level THEN wiki_access_level;",
+          "IF repository_access_level THEN snippets_access_level;",
+          "IF repository_access_level THEN forking_access_level;",
+          "IF repository_access_level THEN pages_access_level;",
+          "IF repository_access_level THEN requirements_access_level;"
+        ],
         "x-codegen-request-body-name": "container_expiration_policy_attributes"
       }
     },

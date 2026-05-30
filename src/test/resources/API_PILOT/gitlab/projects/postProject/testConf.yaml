@@ -60,13 +60,13 @@ testConfiguration:
               valid: true
         - name: avatar
           in: query
-          weight: 0.5
+          weight: 0.0
           generators:
-            - type: RandomInputValue
+            - type: RandomEnglishWord
               genParameters:
-                - name: csv
+                - name: maxWords
                   values:
-                    - src/test/resources/API_PILOT/gitlab/projects/postProject/input_values/avatar.csv
+                    - 1
                   objectValues: null
               valid: true
         - name: build_coverage_regex
@@ -90,7 +90,6 @@ testConfiguration:
                   values:
                     - fetch
                     - clone
-                    - none
                   objectValues: null
               valid: true
         - name: build_timeout
@@ -105,11 +104,11 @@ testConfiguration:
                   objectValues: null
                 - name: min
                   values:
-                    - 1
+                    - 600
                   objectValues: null
                 - name: max
                   values:
-                    - 600
+                    - 2592000
                   objectValues: null
               valid: true
         - name: builds_access_level
@@ -122,7 +121,6 @@ testConfiguration:
                   values:
                     - disabled
                     - private
-                    - enabled
                   objectValues: null
               valid: true
         - name: ci_config_path
@@ -260,7 +258,6 @@ testConfiguration:
                   values:
                     - disabled
                     - private
-                    - enabled
                   objectValues: null
               valid: true
         - name: merge_requests_enabled
@@ -272,7 +269,7 @@ testConfiguration:
               valid: true
         - name: name
           in: query
-          weight: 0.5
+          weight: 1.0
           generators:
             - type: RandomEnglishWord
               genParameters:
@@ -283,7 +280,7 @@ testConfiguration:
               valid: true
         - name: namespace_id
           in: query
-          weight: 0.5
+          weight: 0.2
           generators:
             - type: RandomInputValue
               genParameters:
@@ -338,12 +335,11 @@ testConfiguration:
                     - disabled
                     - private
                     - enabled
-                    - public
                   objectValues: null
               valid: true
         - name: path
           in: query
-          weight: 0.5
+          weight: 1.0
           generators:
             - type: RandomEnglishWord
               genParameters:
@@ -381,7 +377,6 @@ testConfiguration:
               genParameters:
                 - name: values
                   values:
-                    - disabled
                     - private
                     - enabled
                   objectValues: null
@@ -395,10 +390,6 @@ testConfiguration:
                 - name: values
                   values:
                     - default
-                    - nfs-01
-                    - nfs-02
-                    - gitaly-1
-                    - gitaly-2
                   objectValues: null
               valid: true
         - name: request_access_enabled
@@ -473,15 +464,8 @@ testConfiguration:
                     - express
                     - dotnetcore
                     - android
-                    - ios
-                    - flutter
                     - hugo
                     - jekyll
-                    - gitbook
-                    - nfpm
-                    - pages/plain-html
-                    - pages/jekyll
-                    - pages/hugo
                   objectValues: null
               valid: true
         - name: visibility
