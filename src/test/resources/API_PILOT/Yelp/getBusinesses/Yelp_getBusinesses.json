@@ -216,7 +216,8 @@
                                 "type": "object",
                                 "properties": {
                                     "latitude": {
-                                        "type": "number"
+                                        "type": "number",
+                                        "nullable": true
                                     },
                                     "longitude": {
                                         "type": "number"
@@ -353,7 +354,8 @@
                                             "type": "string"
                                         },
                                         "zip_code": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "nullable": true
                                         }
                                     }
                                 }
