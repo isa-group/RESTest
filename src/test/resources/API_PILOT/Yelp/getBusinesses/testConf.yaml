@@ -317,7 +317,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/yelp-locales.csv
+          - src/test/resources/API_PILOT/Yelp/getBusinesses/input_values/locale.csv
           objectValues: null
         valid: true
     - name: limit
