@@ -443,7 +443,6 @@ testConfiguration:
           - request_a_quote
           - reservation
           - waitlist_reservation
-          - deals
           - gender_neutral_restrooms
           - open_to_all
           - wheelchair_accessible
