@@ -34,6 +34,81 @@ testConfiguration:
           - massage
           - thai
           - japanese
+          - pizza
+          - sushi
+          - burgers
+          - coffee
+          - breakfast
+          - bbq
+          - seafood
+          - italian
+          - mexican
+          - french
+          - vegan
+          - gym
+          - spa
+          - bar
+          - nightclub
+          - theater
+          - pharmacy
+          - dentist
+          - salon
+          - barber
+          - supermarket
+          - bookstore
+          - tacos
+          - ramen
+          - pho
+          - kebab
+          - falafel
+          - tapas
+          - curry
+          - dim sum
+          - steak
+          - sandwich
+          - bakery
+          - ice cream
+          - dessert
+          - smoothie
+          - brunch
+          - wine bar
+          - brewery
+          - cocktail
+          - electronics
+          - clothing
+          - shoes
+          - jewelry
+          - furniture
+          - florist
+          - gifts
+          - lawyer
+          - accountant
+          - real estate
+          - cleaning
+          - plumber
+          - electrician
+          - car repair
+          - car wash
+          - bowling
+          - escape room
+          - arcade
+          - karaoke
+          - yoga
+          - pilates
+          - dance
+          - martial arts
+          - swimming pool
+          - pet shop
+          - veterinarian
+          - dog grooming
+          - library
+          - nails
+          - waxing
+          - hostel
+          - resort
+          - chiropractor
+          - acupuncture
+          - optometrist
           objectValues: null
         valid: true
     - name: location
@@ -82,6 +157,86 @@ testConfiguration:
           - Melbourne
           - Adelaide
           - Auckland
+          - Valencia
+          - Bilbao
+          - Malaga
+          - Zaragoza
+          - Naples
+          - Turin
+          - Milan
+          - Bologna
+          - Palermo
+          - Marseille
+          - Nice
+          - Bordeaux
+          - Strasbourg
+          - Nantes
+          - Lille
+          - Frankfurt
+          - Cologne
+          - Stuttgart
+          - Dresden
+          - Dusseldorf
+          - Birmingham
+          - Edinburgh
+          - Glasgow
+          - Leeds
+          - Bristol
+          - Cardiff
+          - Chicago
+          - Houston
+          - Phoenix
+          - Seattle
+          - Denver
+          - Las Vegas
+          - Nashville
+          - Austin
+          - Portland
+          - San Diego
+          - Dallas
+          - Atlanta
+          - Minneapolis
+          - Toronto
+          - Montreal
+          - Vancouver
+          - Calgary
+          - Buenos Aires
+          - Santiago
+          - Lima
+          - Mexico City
+          - Guadalajara
+          - Rio de Janeiro
+          - Sao Paulo
+          - Medellin
+          - Bogota
+          - Beijing
+          - Shanghai
+          - Hong Kong
+          - Seoul
+          - Busan
+          - Bangkok
+          - Singapore
+          - Jakarta
+          - Manila
+          - Mumbai
+          - Delhi
+          - Bangalore
+          - Hanoi
+          - Ho Chi Minh City
+          - Taipei
+          - Kuala Lumpur
+          - Dubai
+          - Istanbul
+          - Tel Aviv
+          - Cairo
+          - Casablanca
+          - Cape Town
+          - Johannesburg
+          - Nairobi
+          - Lagos
+          - Brisbane
+          - Perth
+          - Wellington
           objectValues: null
         valid: true
     - name: latitude
@@ -145,7 +300,7 @@ testConfiguration:
         genParameters:
         - name: csv
           values:
-          - src/main/resources/TestData/yelp-categories.csv
+          - src/test/resources/API_PILOT/Yelp/getBusinesses/input_values/categories.csv
           objectValues: null
         - name: minValues
           values:
@@ -261,6 +416,19 @@ testConfiguration:
         - name: max
           values:
           - 1665933970
+          objectValues: null
+        valid: true
+    - name: device_platform
+      in: query
+      weight: 0.3
+      generators:
+      - type: RandomInputValue
+        genParameters:
+        - name: values
+          values:
+          - android
+          - ios
+          - mobile-generic
           objectValues: null
         valid: true
     - name: attributes

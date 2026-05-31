@@ -139,6 +139,19 @@
                         }
                     },
                     {
+                        "name": "device_platform",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "android",
+                                "ios",
+                                "mobile-generic"
+                            ]
+                        }
+                    },
+                    {
                         "name": "attributes",
                         "in": "query",
                         "required": false,
