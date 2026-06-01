@@ -427,6 +427,21 @@
                                             "type": "boolean",
                                             "nullable": true,
                                             "description": "Whether the business supports joining a waitlist remotely."
+                                        },
+                                        "business_temp_closed": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business is temporarily closed."
+                                        },
+                                        "menu_url": {
+                                            "type": "string",
+                                            "nullable": true,
+                                            "description": "URL to the business's menu."
+                                        },
+                                        "open24_hours": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business is open 24 hours a day."
                                         }
                                     }
                                 },
