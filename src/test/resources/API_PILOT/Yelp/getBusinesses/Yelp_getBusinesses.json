@@ -358,6 +358,119 @@
                                             "nullable": true
                                         }
                                     }
+                                },
+                                "attributes": {
+                                    "type": "object",
+                                    "description": "Special features and amenities offered by the business.",
+                                    "properties": {
+                                        "business_accepts_credit_cards": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business accepts credit card payments."
+                                        },
+                                        "bike_parking": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business has bike parking available."
+                                        },
+                                        "wheelchair_accessible": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business is accessible by wheelchair."
+                                        },
+                                        "dogs_allowed": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether dogs are allowed on the premises."
+                                        },
+                                        "hot_and_new": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business is new and trending."
+                                        },
+                                        "liked_by_vegetarians": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business is popular among vegetarians."
+                                        },
+                                        "gender_neutral_restrooms": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business has gender-neutral restrooms."
+                                        },
+                                        "open_to_all": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business is explicitly inclusive and open to all communities."
+                                        },
+                                        "restaurants_counter_service": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the restaurant offers counter service."
+                                        },
+                                        "restaurants_good_for_groups": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the restaurant is suitable for group dining."
+                                        },
+                                        "request_a_quote": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business accepts quote requests."
+                                        },
+                                        "reservation": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business accepts reservations."
+                                        },
+                                        "waitlist_reservation": {
+                                            "type": "boolean",
+                                            "nullable": true,
+                                            "description": "Whether the business supports joining a waitlist remotely."
+                                        }
+                                    }
+                                },
+                                "business_hours": {
+                                    "type": "array",
+                                    "description": "Opening hours for the business, grouped by hours type (e.g. REGULAR).",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "hours_type": {
+                                                "type": "string",
+                                                "description": "The type of hours, e.g. REGULAR."
+                                            },
+                                            "open": {
+                                                "type": "array",
+                                                "description": "List of time windows the business is open during the week.",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "day": {
+                                                            "type": "integer",
+                                                            "description": "Day of the week: 0 = Monday, 6 = Sunday."
+                                                        },
+                                                        "start": {
+                                                            "type": "string",
+                                                            "description": "Opening time in 24-hour format (e.g. 0900)."
+                                                        },
+                                                        "end": {
+                                                            "type": "string",
+                                                            "description": "Closing time in 24-hour format (e.g. 2100)."
+                                                        },
+                                                        "is_overnight": {
+                                                            "type": "boolean",
+                                                            "description": "Whether the hours span midnight into the next day."
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "is_open_now": {
+                                                "type": "boolean",
+                                                "description": "Whether the business is currently open."
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
