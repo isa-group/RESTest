@@ -2,10 +2,11 @@
 auth:
   required: true
   queryParams: {}
-  headerParams: {}
+  headerParams:
+    Authorization: "Bearer BQC1G2YGEIfuhuBvVUwl6kL60OPesWxeTXB4OX-5vkteChF3wD9CLd6ietW4EdSyaJ-5240D6rKj_ZYcuaLIIdI5Stq5AAvOZz2xFsIv7I_6L7nN0HGnhzqZxIcrGXgE9E7KD5yxNKs"
   apiKeysPath: null
   headersPath: null
-  oauthPath: Spotify/oauth.json
+  oauthPath: null
 testConfiguration:
   operations:
   - testPath: "/artists/{id}/albums"
