@@ -411,11 +411,11 @@ testConfiguration:
           objectValues: null
         - name: min
           values:
-          - 1779186360
+          - 1780659586
           objectValues: null
         - name: max
           values:
-          - 1780223160
+          - 1781444390
           objectValues: null
         valid: true
     - name: device_platform
