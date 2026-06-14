@@ -33,6 +33,7 @@ testConfiguration:
             - id
             - liveStreamingDetails
             - localizations
+            - paidProductPlacementDetails
             - player
 #            - processingDetails
             - recordingDetails
@@ -487,6 +488,7 @@ testConfiguration:
           - 26
           - 27
           - 28
+          - 29
           - 30
           - 31
           - 32
