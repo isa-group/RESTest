@@ -138,7 +138,7 @@
           "operationId": "getVideos",
           "parameters": [
             {
-              "description": "The *part* parameter specifies a comma-separated list of one or more video resource properties that the API response will include. If the parameter identifies a property that contains child properties, the child properties will be included in the response. For example, in a video resource, the snippet property contains the channelId, title, description, tags, and categoryId properties. As such, if you set *part=snippet*, the API response will contain all of those properties.",
+              "description": "The *part* parameter specifies a comma-separated list of one or more video resource properties that the API response will include. If the parameter identifies a property that contains child properties, the child properties will be included in the response. For example, in a video resource, the snippet property contains the channelId, title, description, tags, and categoryId properties. As such, if you set *part=snippet*, the API response will contain all of those properties. Valid values are: contentDetails, fileDetails, id, liveStreamingDetails, localizations, paidProductPlacementDetails, player, processingDetails, recordingDetails, snippet, statistics, status, suggestions, topicDetails.",
               "explode": true,
               "in": "query",
               "name": "part",
@@ -5554,6 +5554,10 @@
               "$ref": "#/components/schemas/VideoMonetizationDetails",
               "description": "The monetizationDetails object encapsulates information about the monetization status of the video."
             },
+            "paidProductPlacementDetails": {
+              "$ref": "#/components/schemas/VideoPaidProductPlacementDetails",
+              "description": "The paidProductPlacementDetails object contains information about whether the video contains paid product placement, as declared by the video creator."
+            },
             "player": {
               "$ref": "#/components/schemas/VideoPlayer",
               "description": "The player object contains information that you would use to play the video in an embedded player."
@@ -6141,6 +6145,16 @@
           },
           "type": "object"
         },
+        "VideoPaidProductPlacementDetails": {
+          "description": "Details about paid product placement in a YouTube video.",
+          "properties": {
+            "hasPaidProductPlacement": {
+              "description": "This value indicates whether the video contains paid product placement, brand sponsorship, or any other type of paid promotion. This value is set by the video creator.",
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
         "VideoProcessingDetails": {
           "description": "Describes processing status and progress and availability of some other Video resource parts.",
           "properties": {
@@ -6444,6 +6458,10 @@
               "type": "string"
             },
             "selfDeclaredMadeForKids": {
+              "type": "boolean"
+            },
+            "containsSyntheticMedia": {
+              "description": "Indicates whether the video contains synthetic (AI-generated) media, as declared by the uploader. This field is used to meet disclosure requirements for AI-generated content.",
               "type": "boolean"
             },
             "uploadStatus": {
