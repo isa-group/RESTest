@@ -378,6 +378,36 @@ testConfiguration:
             # Non-music (comedy/viral)
             - 4MjzAPYi2CM
             - Zhpk3ML7bIQ
+            # Children (most viewed globally)
+            - XqZsoesa55w
+            - e_04ZrNroTo
+            - WRVsOCh907o
+            - F4tHL8reNCs
+            - hq3yfQnllfQ
+            - MR5XSOdjKMA
+            - 020g-0hhCAU
+            # English pop (more)
+            - RgKAFK5djSk
+            - JGwWNGJdvx8
+            - OPf0YbXqDm0
+            - CevxZvSJLk8
+            - 2Vv-BfVoq4g
+            - fRh_vgS2dFE
+            - RBumgq5yVrA
+            - aJOTlE1K90k
+            - lp-EO5I60KA
+            # Entertainment / gaming (MrBeast)
+            - 0e3GPea1Tyg
+            - zxYjTTXc-J8
+            - 48h57PspBec
+            - FM7Z-Xq8Drc
+            - 4SNThp0YiU4
+            # Directos 24/7 activos
+            - wkhLHTmS_GI
+            - 1kbFgyT2rh0
+            - HvZt-nh9sGg
+            - LuKwFajn37U
+            - r-TPJDQSqv0
           objectValues: null
         valid: true
     - name: maxHeight
