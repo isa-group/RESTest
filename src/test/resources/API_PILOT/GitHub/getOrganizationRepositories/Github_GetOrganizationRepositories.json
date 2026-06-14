@@ -4868,6 +4868,42 @@
             "type": "object",
             "additionalProperties": true
           },
+          "security_and_analysis": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "secret_scanning": {
+                "type": "object",
+                "properties": {
+                  "status": { "type": "string" }
+                }
+              },
+              "secret_scanning_push_protection": {
+                "type": "object",
+                "properties": {
+                  "status": { "type": "string" }
+                }
+              },
+              "dependabot_security_updates": {
+                "type": "object",
+                "properties": {
+                  "status": { "type": "string" }
+                }
+              },
+              "secret_scanning_non_provider_patterns": {
+                "type": "object",
+                "properties": {
+                  "status": { "type": "string" }
+                }
+              },
+              "secret_scanning_validity_checks": {
+                "type": "object",
+                "properties": {
+                  "status": { "type": "string" }
+                }
+              }
+            }
+          },
           "archived": {
             "type": "boolean"
           },
