@@ -4,7 +4,7 @@ auth:
   queryParams: {}
   headerParams: {}
   apiKeysPath: null
-  headersPath: GitHub/headers4.json
+  headersPath: GitHub/headers.json
   oauthPath: null
 testConfiguration:
   operations:
