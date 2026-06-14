@@ -320,6 +320,64 @@ testConfiguration:
             - dCNMvcutJ8U
             - m-ai_7Rg-XA
             - S1bEBFjgCKA
+            # K-Pop (Korean)
+            - IHNzOHi8sJs
+            - 2S24-y0Ij3Y
+            - gdZLi9oWNZg
+            - XsX3ATc3FbA
+            - bwmSjveL3Lc
+            - MBdVXkSdhwU
+            - ASO_zypdnsQ
+            - 32si5cfrCNc
+            - kTlv5_Bs8aw
+            # Japanese
+            - SX_ViT4Ra7k
+            - ZRtdQ81jPUQ
+            - dy90tA3TT1c
+            - Qp3b-RXtz4w
+            - PDSkFeMVNFs
+            - x8VYWazR5mE
+            - WIKqgE4BwAY
+            - pgXpM4l_MwI
+            - K_xTet06SUo
+            - M2cckDmNLMI
+            - 1FliVTcX8bQ
+            - yzC4hFK5P3g
+            - o1sUaVJUeB0
+            - Xs0Lxif1u9E
+            - 51CH3dPaWXc
+            - 6YZlFdTIdzM
+            # Spanish / Latin
+            - kJQP7kiw5Fk
+            - DUT5rEU6pqM
+            - FzG4uDgje3M
+            - jZGpkLElSu8
+            - CocEMWdc7Ck
+            - lZiaYpD9ZrI
+            - 3inw26U-os4
+            - 3mchJ-EW9rM
+            - nYnLVWXmRm8
+            # English / Western pop
+            - Zi_XLOBDo_Y
+            - h_D3VFfhvs4
+            - kPa7bsKwL-c
+            - V9PVRfjEBTI
+            - kffacxfA7G4
+            - G7KNmW9a75Y
+            - k85mRPqvMbE
+            - t4H_Zoh7G5A
+            - TGtWWb9emYI
+            - QNJL6nfu__Q
+            # Hindi / Bollywood
+            - AETFvQonfV8
+            - YxWlaYCA8MU
+            - G8PU1HjZZj4
+            - QcQpqWhTBCE
+            # Vietnamese
+            - SlQR9iu09bQ
+            # Non-music (comedy/viral)
+            - 4MjzAPYi2CM
+            - Zhpk3ML7bIQ
           objectValues: null
         valid: true
     - name: maxHeight
