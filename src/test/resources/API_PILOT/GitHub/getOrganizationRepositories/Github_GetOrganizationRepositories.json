@@ -344,6 +344,9 @@
           "site_admin": {
             "type": "boolean"
           },
+          "user_view_type": {
+            "type": "string"
+          },
           "starred_at": {
             "type": "string",
             "example": "\"2020-07-09T00:17:55Z\""
@@ -4851,6 +4854,19 @@
           },
           "has_downloads": {
             "type": "boolean"
+          },
+          "has_discussions": {
+            "type": "boolean"
+          },
+          "has_pull_requests": {
+            "type": "boolean"
+          },
+          "pull_request_creation_policy": {
+            "type": "string"
+          },
+          "custom_properties": {
+            "type": "object",
+            "additionalProperties": true
           },
           "archived": {
             "type": "boolean"
