@@ -266,6 +266,11 @@
                   },
                   "merge_commit_message": {
                     "type": "string"
+                  },
+                  "custom_properties": {
+                    "type": "object",
+                    "description": "The custom properties for the new repository. The keys are the custom property names, and the values are the corresponding custom property values.",
+                    "additionalProperties": {}
                   }
                 },
                 "required": [
@@ -1938,6 +1943,123 @@
           },
           "web_commit_signoff_required": {
             "type": "boolean"
+          },
+          "has_discussions": {
+            "description": "Whether discussions are enabled.",
+            "default": false,
+            "type": "boolean"
+          },
+          "has_pull_requests": {
+            "type": "boolean"
+          },
+          "pull_request_creation_policy": {
+            "description": "Whether members can create pull requests.",
+            "type": "string",
+            "enum": [
+              "all",
+              "collaborators_only"
+            ]
+          },
+          "parent": {
+            "nullable": true,
+            "$ref": "#/components/schemas/repository"
+          },
+          "source": {
+            "$ref": "#/components/schemas/repository"
+          },
+          "code_of_conduct": {
+            "nullable": true,
+            "$ref": "#/components/schemas/code-of-conduct-simple"
+          },
+          "security_and_analysis": {
+            "nullable": true,
+            "type": "object",
+            "properties": {
+              "advanced_security": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "code_security": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "dependabot_security_updates": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "secret_scanning": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "secret_scanning_push_protection": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "secret_scanning_non_provider_patterns": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "secret_scanning_ai_detection": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["enabled", "disabled"]
+                  }
+                }
+              }
+            }
+          },
+          "anonymous_access_enabled": {
+            "description": "Whether anonymous git access is allowed.",
+            "default": true,
+            "type": "boolean"
+          },
+          "code_search_index_status": {
+            "type": "object",
+            "properties": {
+              "lexical_search_ok": {
+                "type": "boolean"
+              },
+              "lexical_commit_sha": {
+                "type": "string"
+              }
+            }
+          },
+          "custom_properties": {
+            "type": "object",
+            "description": "The custom properties of the repository. The keys are the custom property names, and the values are the corresponding custom property values.",
+            "additionalProperties": {}
           }
         },
         "required": [
