@@ -160,7 +160,7 @@
           },
           {
             "name": "type",
-            "description": "Specifies the types of repositories you want returned. Can be one of `all`, `public`, `private`, `forks`, `sources`, `member`, `internal`. Note: For GitHub AE, can be one of `all`, `private`, `forks`, `sources`, `member`, `internal`. Default: `all`. If your organization is associated with an enterprise account using GitHub Enterprise Cloud or GitHub Enterprise Server 2.20+, `type` can also be `internal`.",
+            "description": "Specifies the types of repositories you want returned.",
             "in": "query",
             "required": false,
             "schema": {
@@ -178,7 +178,7 @@
           },
           {
             "name": "sort",
-            "description": "Can be one of `created`, `updated`, `pushed`, `full_name`.",
+            "description": "The property to sort the results by.",
             "in": "query",
             "required": false,
             "schema": {
@@ -194,7 +194,7 @@
           },
           {
             "name": "direction",
-            "description": "Can be one of `asc` or `desc`. Default: when using `full_name`: `asc`, otherwise `desc`",
+            "description": "The order to sort by. Default: asc when using full_name, otherwise desc.",
             "in": "query",
             "required": false,
             "schema": {
@@ -39539,7 +39539,7 @@
     "parameters": {
       "per_page": {
         "name": "per_page",
-        "description": "Results per page (max 100).",
+        "description": "The number of results per page (max 100). For more information, see \"Using pagination in the REST API.\"",
         "in": "query",
         "schema": {
           "type": "integer",
@@ -39548,7 +39548,7 @@
       },
       "page": {
         "name": "page",
-        "description": "Page number of the results to fetch.",
+        "description": "The page number of the results to fetch. For more information, see \"Using pagination in the REST API.\"",
         "in": "query",
         "schema": {
           "type": "integer",
