@@ -40,14 +40,14 @@
                     {
                         "name": "s",
                         "in": "query",
-                        "description": "Title of movie or series",
+                        "description": "Movie title to search for.",
                         "required": true,
                         "type": "string"
                     },
                     {
                         "name": "type",
                         "in": "query",
-                        "description": "Return movie or series",
+                        "description": "Type of result to return.",
                         "required": false,
                         "type": "string",
                         "enum": [
@@ -59,14 +59,14 @@
                     {
                         "name": "y",
                         "in": "query",
-                        "description": "Year of release",
+                        "description": "Year of release.",
                         "required": false,
                         "type": "integer"
                     },
                     {
                         "name": "r",
                         "in": "query",
-                        "description": "The response type to return",
+                        "description": "The data type to return.",
                         "required": false,
                         "type": "string",
                         "enum": [
@@ -76,7 +76,7 @@
                     {
                         "name": "page",
                         "in": "query",
-                        "description": "Page number to return",
+                        "description": "Page number to return.",
                         "required": false,
                         "type": "integer"
                     }

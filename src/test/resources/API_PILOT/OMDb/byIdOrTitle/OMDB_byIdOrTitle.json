@@ -40,21 +40,21 @@
                     {
                         "name": "t",
                         "in": "query",
-                        "description": "Title of movie or series",
+                        "description": "Movie title to search for.",
                         "required": false,
                         "type": "string"
                     },
                     {
                         "name": "i",
                         "in": "query",
-                        "description": "A valid IMDb ID (e.g. tt0000001)",
+                        "description": "A valid IMDb ID (e.g. tt1285016)",
                         "required": false,
                         "type": "string"
                     },
                     {
                         "name": "type",
                         "in": "query",
-                        "description": "Return movie, series or episode",
+                        "description": "Type of result to return.",
                         "required": false,
                         "type": "string",
                         "enum": [
@@ -66,14 +66,14 @@
                     {
                         "name": "y",
                         "in": "query",
-                        "description": "Year of release",
+                        "description": "Year of release.",
                         "required": false,
                         "type": "integer"
                     },
                     {
                         "name": "plot",
                         "in": "query",
-                        "description": "Return short or full plot",
+                        "description": "Return short or full plot.",
                         "required": false,
                         "type": "string",
                         "enum": [
@@ -84,7 +84,7 @@
                     {
                         "name": "r",
                         "in": "query",
-                        "description": "The response type to return",
+                        "description": "The data type to return.",
                         "required": false,
                         "type": "string",
                         "enum": [
