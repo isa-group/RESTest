@@ -16,6 +16,7 @@
                         "name": "term",
                         "in": "query",
                         "required": false,
+                        "description": "Search term, e.g. \"food\" or \"restaurants\".\nThe term may also be the business's name, such as \"Starbucks\". If term is not included the endpoint will default to searching across businesses from a small number of popular categories.\n",
                         "schema": {
                             "type": "string"
                         }
@@ -24,6 +25,7 @@
                         "name": "location",
                         "in": "query",
                         "required": false,
+                        "description": "Required if either *latitude* or *longitude* is not provided.\nThis string indicates the geographic area to be used when searching for businesses.\nExamples: \"New York City\", \"NYC\", \"350 5th Ave, New York, NY 10118\".\nBusinesses returned in the response may not be strictly within the specified location.\n",
                         "schema": {
                             "type": "string"
                         }
@@ -32,6 +34,7 @@
                         "name": "latitude",
                         "in": "query",
                         "required": false,
+                        "description": "Required, if _location_ is not provided. Latitude of the location to search from. If latitude is provided, longitude is required too.",
                         "schema": {
                             "type": "string"
                         }
@@ -40,6 +43,7 @@
                         "name": "longitude",
                         "in": "query",
                         "required": false,
+                        "description": "Required if _location_ is not provided. Longitude of the location to search from. If longitude is provided, latitude is required too.",
                         "schema": {
                             "type": "string"
                         }
@@ -48,6 +52,7 @@
                         "name": "radius",
                         "in": "query",
                         "required": false,
+                        "description": "A suggested search radius in meters. This field is used as a suggestion to the search. The actual search radius may be lower than the suggested radius in dense urban areas, and higher in regions of less business density.\nIf the specified value is too large, a AREA_TOO_LARGE error may be returned. The max value is 40,000 meters (about 25 miles).\n",
                         "schema": {
                             "type": "integer",
                             "maximum": 40000
@@ -57,6 +62,7 @@
                         "name": "categories",
                         "in": "query",
                         "required": false,
+                        "description": "Categories to filter the search results with. See the list of supported categories. The category filter can be a list of comma delimited categories.\ne.g., \"bars,french\" will filter by Bars OR French.\nThe category alias should be used (e.g. \"discgolf\", not \"Disc Golf\").\n",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -68,6 +74,7 @@
                         "name": "locale",
                         "in": "query",
                         "required": false,
+                        "description": "Locale code in the format of {language code}_{country code}. See the list of supported locales.\n",
                         "schema": {
                             "type": "string"
                         }
@@ -76,6 +83,7 @@
                         "name": "limit",
                         "in": "query",
                         "required": false,
+                        "description": "Number of results to return.",
                         "schema": {
                             "type": "integer",
                             "maximum": 50
@@ -85,6 +93,7 @@
                         "name": "offset",
                         "in": "query",
                         "required": false,
+                        "description": "Offset the list of returned results by this amount.",
                         "schema": {
                             "type": "integer"
                         }
@@ -93,6 +102,7 @@
                         "name": "sort_by",
                         "in": "query",
                         "required": false,
+                        "description": "Suggestion to the search algorithm that the results be sorted by one of the these modes: *best_match*, *rating*, *review_count* or *distance*.\nThe default is *best_match*. Note that specifying the sort_by is a suggestion (not strictly enforced) to Yelp's search, which considers multiple input parameters to return the most relevant results.\n\ne.g., the *rating* sort is not strictly sorted by the rating value, but by an adjusted rating value that takes into account the number of ratings,\nsimilar to a Bayesian average. This is to prevent skewing results to businesses with a single review.\n",
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -107,6 +117,7 @@
                         "name": "price",
                         "in": "query",
                         "required": false,
+                        "description": "Pricing levels to filter the search result with: 1 = $, 2 = $$, 3 = $$$, 4 = $$$$. The price filter can be a list of comma delimited pricing levels.\ne.g., \"1, 2, 3\" will filter the results to show the ones that are $, $$, or $$$.\n",
                         "style": "form",
                         "explode": false,
                         "schema": {
@@ -126,6 +137,7 @@
                         "name": "open_now",
                         "in": "query",
                         "required": false,
+                        "description": "When set to true, only return the businesses that are open now.\nNotice that _open_at_ and _open_now_ cannot be used together.\n",
                         "schema": {
                             "type": "boolean"
                         }
@@ -134,6 +146,7 @@
                         "name": "open_at",
                         "in": "query",
                         "required": false,
+                        "description": "An integer representing the Unix time in the timezone of the search location. If specified, it will return businesses open at the given time.\nNotice that *open_at* and *open_now* cannot be used together.\n",
                         "schema": {
                             "type": "integer"
                         }
@@ -142,6 +155,7 @@
                         "name": "device_platform",
                         "in": "query",
                         "required": false,
+                        "description": "Determines the platform for mobile_link",
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -155,6 +169,7 @@
                         "name": "attributes",
                         "in": "query",
                         "required": false,
+                        "description": "Try these additional filters to return specific search results!\n- *hot_and_new* - popular businesses which recently joined Yelp\n- *request_a_quote* - businesses which actively reply to Request a Quote inquiries\n- *reservation* - businesses with Yelp Reservations bookings enabled on their profile page\n- *waitlist_reservation* - businesses with Yelp _Wait List_ bookings enabled on their profile screen (iOS/Android)\n- *gender_neutral_restrooms* - businesses which provide gender neutral restrooms\n- *open_to_all* - businesses which are Open To All\n- *wheelchair_accessible* - businesses which are Wheelchair Accessible\n",
                         "style": "form",
                         "explode": false,
                         "schema": {
@@ -207,20 +222,25 @@
                 "type": "object",
                 "properties": {
                     "total": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Total number of businesses Yelp finds based on the search criteria. Sometimes, the value may exceed 240. In such case, you still can only get up to 240 businesses using multiple queries and combinations of the \"limit\" and \"offset\" parameters.\n"
                     },
                     "region": {
                         "type": "object",
+                        "description": "Suggested area in a map to display results in.",
                         "properties": {
                             "center": {
                                 "type": "object",
+                                "description": "Center location of the region.",
                                 "properties": {
                                     "latitude": {
                                         "type": "number",
-                                        "nullable": true
+                                        "nullable": true,
+                                        "description": "Latitude of this business."
                                     },
                                     "longitude": {
-                                        "type": "number"
+                                        "type": "number",
+                                        "description": "Longitude of this business."
                                     }
                                 }
                             }
@@ -228,60 +248,77 @@
                     },
                     "businesses": {
                         "type": "array",
+                        "description": "Array of businesses matching the search criteria.",
                         "items": {
                             "type": "object",
+                            "description": "A Business Yelp finds based on the search criteria.",
                             "properties": {
                                 "categories": {
                                     "type": "array",
+                                    "description": "List of category title and alias pairs associated with this business.",
                                     "items": {
                                         "type": "object",
                                         "properties": {
                                             "alias": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description": "Alias of a category, when searching for business in certain categories."
                                             },
                                             "title": {
-                                                "type": "string"
+                                                "type": "string",
+                                                "description": "Title of a category for display purposes."
                                             }
                                         }
                                     }
                                 },
                                 "coordinates": {
                                     "type": "object",
+                                    "description": "Latitude and longitude coordinates of this business.",
                                     "properties": {
                                         "latitude": {
-                                            "type": "number"
+                                            "type": "number",
+                                            "description": "Latitude of this business."
                                         },
                                         "longitude": {
-                                            "type": "number"
+                                            "type": "number",
+                                            "description": "Longitude of this business."
                                         }
                                     }
                                 },
                                 "display_phone": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Phone number of the business formatted nicely to be displayed to users. The format is the standard phone number format for the business's country."
                                 },
                                 "distance": {
-                                    "type": "number"
+                                    "type": "number",
+                                    "description": "Distance in meters from the search location. This value is in meters(m) regardless of the locale."
                                 },
                                 "id": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Unique Yelp ID of this business."
                                 },
                                 "alias": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Unique Yelp alias of this business. Can contain unicode characters.\nExample: 'yelp-san-francisco'.\n"
                                 },
                                 "image_url": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "URL of photo for this business"
                                 },
                                 "is_closed": {
-                                    "type": "boolean"
+                                    "type": "boolean",
+                                    "description": "Whether business has been (permanently) closed"
                                 },
                                 "name": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Name of this business."
                                 },
                                 "phone": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "Phone number of the business."
                                 },
                                 "price": {
                                     "type": "string",
+                                    "description": "Price level of the business. Uses the currency symbol of the provided locale. Value for en_US is one of $, $$, $$$ or $$$$.",
                                     "enum": [
                                         "$",
                                         "$$",
@@ -303,17 +340,21 @@
                                 },
                                 "rating": {
                                     "type": "number",
+                                    "description": "Rating for this business (value ranges from 1, 1.5, ... 4.5, 5).",
                                     "minimum": 1,
                                     "maximum": 5
                                 },
                                 "review_count": {
-                                    "type": "integer"
+                                    "type": "integer",
+                                    "description": "Number of reviews for this business."
                                 },
                                 "url": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "description": "URL for business page on Yelp."
                                 },
                                 "transactions": {
                                     "type": "array",
+                                    "description": "List of Yelp transactions that the business is registered for. Current supported values are pickup, delivery and restaurant_reservation.",
                                     "items": {
                                         "type": "string",
                                         "enum": [
@@ -325,43 +366,52 @@
                                 },
                                 "location": {
                                     "type": "object",
+                                    "description": "Location of this business, including address, city, state, zip code and country.",
                                     "properties": {
                                         "address1": {
                                             "type": "string",
-                                            "nullable": true
+                                            "nullable": true,
+                                            "description": "Street address of this business."
                                         },
                                         "address2": {
                                             "type": "string",
-                                            "nullable": true
+                                            "nullable": true,
+                                            "description": "Street address of this business, continued."
                                         },
                                         "address3": {
                                             "type": "string",
-                                            "nullable": true
+                                            "nullable": true,
+                                            "description": "Street address of this business, continued (usually secondary unit or floor number)."
                                         },
                                         "city": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "description": "City of this business."
                                         },
                                         "country": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "description": "ISO 3166-1 alpha-2 country code of this business."
                                         },
                                         "display_address": {
                                             "type": "array",
+                                            "description": "Array of strings that if joined with a newline, addresses the business.",
                                             "items": {
                                                 "type": "string"
                                             }
                                         },
                                         "state": {
-                                            "type": "string"
+                                            "type": "string",
+                                            "description": "ISO 3166-2 state code of this business."
                                         },
                                         "zip_code": {
                                             "type": "string",
-                                            "nullable": true
+                                            "nullable": true,
+                                            "description": "Zip code of this business."
                                         }
                                     }
                                 },
                                 "attributes": {
                                     "type": "object",
-                                    "description": "Special features and amenities offered by the business.",
+                                    "description": "Various features or facilities provided by the business.",
                                     "properties": {
                                         "business_accepts_credit_cards": {
                                             "type": "boolean",
@@ -447,7 +497,7 @@
                                 },
                                 "business_hours": {
                                     "type": "array",
-                                    "description": "Opening hours for the business, grouped by hours type (e.g. REGULAR).",
+                                    "description": "Regular business hours.\n",
                                     "items": {
                                         "type": "object",
                                         "properties": {
