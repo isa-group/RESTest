@@ -94,15 +94,19 @@
               "schema": {
                 "properties": {
                   "name": {
+                    "description": "The name for the new playlist, for example \"Your Coolest Playlist\". This name does not need to be unique; a user may have several playlists with the same name.",
                     "type": "string"
                   },
                   "description": {
+                    "description": "value for playlist description as displayed in Spotify Clients and in the Web API.",
                     "type": "string"
                   },
                   "public": {
+                    "description": "Defaults to true. The playlist's public/private status (if it should be added to the user's profile or not): true the playlist will be public, false the playlist will be private. To be able to create private playlists, the user must have granted the playlist-modify-private scope. For more about public/private status, see Working with Playlists",
                     "type": "boolean"
                   },
                   "collaborative": {
+                    "description": "Defaults to false. If true the playlist will be collaborative. Note: to create a collaborative playlist you must also set public to false. To create collaborative playlists you must have granted playlist-modify-private and playlist-modify-public scopes.",
                     "type": "boolean"
                   }
                 },
@@ -594,7 +598,7 @@
     "image": {
       "properties": {
         "height": {
-          "description": "The image height in pixels. If unknown: null or not returned.",
+          "description": "The image height in pixels.",
           "type": "integer"
         },
         "url": {
@@ -602,7 +606,7 @@
           "type": "string"
         },
         "width": {
-          "description": "The image width in pixels. If unknown: null or not returned.",
+          "description": "The image width in pixels.",
           "type": "integer"
         }
       },
@@ -616,7 +620,7 @@
           "x-nullable": true
         },
         "collaborative": {
-          "description": "True if the owner allows other users to modify the playlist.",
+          "description": "true if the owner allows other users to modify the playlist.",
           "type": "boolean"
         },
         "description": {
@@ -624,10 +628,11 @@
           "type": "string"
         },
         "external_urls": {
-          "description": "Known external URLs for this album.",
+          "description": "Known external URLs for this playlist.",
           "type": "object",
           "properties": {
             "spotify": {
+              "description": "The Spotify URL for the object.",
               "type": "string"
             }
           }
@@ -636,7 +641,7 @@
           "description": "Information about the followers of the playlist.",
           "properties": {
             "href": {
-              "description": "A link to the Web API endpoint providing full details of the followers; null if not available.",
+              "description": "This will always be set to null, as the Web API does not support it at the moment.",
               "type": "string",
               "x-nullable": true
             },
@@ -652,11 +657,11 @@
           "type": "string"
         },
         "id": {
-          "description": "The Spotify ID of the playlist.",
+          "description": "The Spotify ID for the playlist.",
           "type": "string"
         },
         "images": {
-          "description": "The cover art for the album in various sizes, widest first.",
+          "description": "Images for the playlist. The array may be empty or contain up to three images. The images are returned by size in descending order. See Working with Playlists. Note: If returned, the source URL for the image (url) is temporary and will expire in less than a day.",
           "items": {
             "$ref": "#/definitions/image"
           },
@@ -670,7 +675,7 @@
           "$ref": "#/definitions/user-profile"
         },
         "public": {
-          "description": "The playlist's public/private status: true the playlist is public, false the playlist is private, null the playlist status is not relevant. For more about public/private status, see Working with Playlists.",
+          "description": "The playlist's public/private status (if it is added to the user's profile): true the playlist is public, false the playlist is private, null the playlist status is not relevant. For more about public/private status, see Working with Playlists.",
           "type": "boolean"
         },
         "snapshot_id": {
@@ -681,7 +686,7 @@
           "$ref": "#/definitions/playlist-track-page"
         },
         "type": {
-          "description": "The object type: 'playlist'.",
+          "description": "The object type.",
           "type": "string"
         },
         "uri": {
@@ -812,17 +817,18 @@
     "playlist-track": {
       "properties": {
         "added_at": {
-          "description": "The date and time the track was added in ISO 8601 format. Note that some very old playlists may return null in this field.",
+          "description": "The date and time the track or episode was added. Note: some very old playlists may return null in this field.",
           "type": "string"
         },
         "added_by": {
           "$ref": "#/definitions/user-profile"
         },
         "is_local": {
-          "description": "Whether this track is a [local file](https://developer.spotify.com/web-api/local-files-spotify-playlists/) or not.",
+          "description": "Whether this track or episode is a [local file](/documentation/web-api/concepts/playlists#local-files) or not.",
           "type": "boolean"
         },
         "track": {
+          "description": "Information about the track or episode.",
           "type": "string"
         }
       },
@@ -831,7 +837,7 @@
     "playlist-track-page": {
       "properties": {
         "href": {
-          "description": "A link to the Web API endpoint returning the full result of the request.",
+          "description": "A link to the Web API endpoint returning the full result of the request",
           "type": "string"
         },
         "items": {
@@ -846,16 +852,16 @@
           "type": "integer"
         },
         "next": {
-          "description": "URL to the next page of items. (null if none)",
+          "description": "URL to the next page of items. ( null if none)",
           "type": "string",
           "x-nullable": true
         },
         "offset": {
-          "description": "The offset of the items returned (as set in the query or by default).",
+          "description": "The offset of the items returned (as set in the query or by default)",
           "type": "integer"
         },
         "previous": {
-          "description": "URL to the previous page of items. (null if none)",
+          "description": "URL to the previous page of items. ( null if none)",
           "type": "string",
           "x-nullable": true
         },
@@ -1314,16 +1320,17 @@
     "user-profile": {
       "properties": {
         "display_name": {
-          "description": "The name displayed on the user's profile.",
+          "description": "The name displayed on the user's profile. null if not available.",
           "type": "string"
         },
         "external_urls": {
           "properties": {
             "spotify": {
+              "description": "The Spotify URL for the object.",
               "type": "string"
             }
           },
-          "description": "Known external URLs for this user.",
+          "description": "Known public external URLs for this user.",
           "type": "object"
         },
         "followers": {
@@ -1334,15 +1341,15 @@
           "type": "string"
         },
         "id": {
-          "description": "The Spotify ID for this user.",
+          "description": "The Spotify user ID for this user.",
           "type": "string"
         },
         "type": {
-          "description": "The object type: 'user'",
+          "description": "The object type.",
           "type": "string"
         },
         "uri": {
-          "description": "The Spotify URI for the user.",
+          "description": "The Spotify URI for this user.",
           "type": "string"
         }
       },
