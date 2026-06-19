@@ -81,7 +81,7 @@
                 "description": "[Get an Album's Tracks](https://developer.spotify.com/web-api/get-albums-tracks/)\n",
                 "parameters": [
                     {
-                        "description": "The Spotify ID for the album",
+                        "description": "The Spotify ID of the album.",
                         "in": "path",
                         "name": "id",
                         "required": true,
@@ -89,7 +89,7 @@
                     },
                     {
                         "default": 20,
-                        "description": "The maximum number of items to return",
+                        "description": "The maximum number of items to return. Default: 20. Minimum: 1. Maximum: 50.",
                         "in": "query",
                         "maximum": 50,
                         "minimum": 0,
@@ -99,14 +99,14 @@
                     },
                     {
                         "default": 0,
-                        "description": "The index of the first item to return",
+                        "description": "The index of the first item to return. Default: 0 (the first item). Use with limit to get the next set of items.",
                         "in": "query",
                         "name": "offset",
                         "required": false,
                         "type": "integer"
                     },
                     {
-                        "description": "The market (an ISO 3166-1 alpha-2 country code)",
+                        "description": "An ISO 3166-1 alpha-2 country code. If a country code is specified, only content that is available in that market will be returned. If a valid user access token is specified in the request header, the country associated with the user account will take priority over this parameter. Note: If neither market or user country are provided, the content is considered unavailable for the client. Users can view the country that is associated with their account in the account settings.",
                         "in": "query",
                         "name": "market",
                         "required": false,
@@ -427,7 +427,7 @@
                     "type": "string"
                 },
                 "type": {
-                    "description": "The object type: 'artist'",
+                    "description": "The object type.",
                     "type": "string"
                 },
                 "uri": {
@@ -1009,7 +1009,7 @@
                     "type": "array"
                 },
                 "available_markets": {
-                    "description": "A list of the countries in which the track can be played, identified by their ISO 3166-1 alpha-2 code. ",
+                    "description": "A list of the countries in which the track can be played, identified by their ISO 3166-1 alpha-2 code.",
                     "items": {
                         "type": "string"
                     },
@@ -1055,7 +1055,7 @@
                     "type": "boolean"
                 },
                 "linked_from": {
-                    "description": "Part of the response when Track Relinking is applied, and the requested track has been replaced with different track. The track in the linked_from object contains information about the originally requested track.",
+                    "description": "Part of the response when Track Relinking is applied and is only part of the response if the track linking, in fact, exists. The requested track has been replaced with a different track. The track in the linked_from object contains information about the originally requested track.",
                     "properties": {
                         "external_urls": {
                             "additionalProperties": {
@@ -1073,7 +1073,7 @@
                             "type": "string"
                         },
                         "type": {
-                            "description": "The object type: 'track'.",
+                            "description": "The object type: \"track\".",
                             "type": "string"
                         },
                         "uri": {
@@ -1096,7 +1096,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "description": "The object type: 'track'.",
+                    "description": "The object type: \"track\".",
                     "type": "string"
                 },
                 "uri": {
@@ -1116,7 +1116,7 @@
                     "type": "array"
                 },
                 "available_markets": {
-                    "description": "A list of the countries in which the track can be played, identified by their ISO 3166-1 alpha-2 code. ",
+                    "description": "A list of the countries in which the track can be played, identified by their ISO 3166-1 alpha-2 code.",
                     "items": {
                         "type": "string"
                     },
@@ -1138,7 +1138,7 @@
                     "additionalProperties": {
                         "type": "string"
                     },
-                    "description": "Known external URLs for this track.",
+                    "description": "External URLs for this track.",
                     "type": "object"
                 },
                 "href": {
@@ -1150,7 +1150,7 @@
                     "type": "string"
                 },
                 "is_local": {
-                    "description": "Is local",
+                    "description": "Whether or not the track is from a local file.",
                     "type": "boolean"
                 },
                 "is_playable": {
@@ -1158,7 +1158,7 @@
                     "type": "boolean"
                 },
                 "linked_from": {
-                    "description": "Part of the response when Track Relinking is applied, and the requested track has been replaced with different track. The track in the linked_from object contains information about the originally requested track.",
+                    "description": "Part of the response when Track Relinking is applied and is only part of the response if the track linking, in fact, exists. The requested track has been replaced with a different track. The track in the linked_from object contains information about the originally requested track.",
                     "properties": {
                         "external_urls": {
                             "additionalProperties": {
@@ -1176,7 +1176,7 @@
                             "type": "string"
                         },
                         "type": {
-                            "description": "The object type: 'track'.",
+                            "description": "The object type: \"track\".",
                             "type": "string"
                         },
                         "uri": {
@@ -1196,9 +1196,11 @@
                     "x-nullable": true
                 },
                 "restrictions": {
+                    "description": "Included in the response when a content restriction is applied.",
                     "type": "object",
                     "properties": {
                         "reason": {
+                            "description": "The reason for the restriction. Supported values: market - The content item is not available in the given market. product - The content item is not available for the user's subscription type. explicit - The content item is explicit and the user's account is set to not play explicit content. Additional reasons may be added in the future. Note: If you use this field, make sure that your application safely handles unknown values.",
                             "type": "string"
                         }
                     }
@@ -1208,7 +1210,7 @@
                     "type": "integer"
                 },
                 "type": {
-                    "description": "The object type: 'track'.",
+                    "description": "The object type: \"track\".",
                     "type": "string"
                 },
                 "uri": {
@@ -1221,7 +1223,7 @@
         "track-simple-page": {
             "properties": {
                 "href": {
-                    "description": "A link to the Web API endpoint returning the full result of the request.",
+                    "description": "A link to the Web API endpoint returning the full result of the request",
                     "type": "string"
                 },
                 "items": {
@@ -1236,16 +1238,16 @@
                     "type": "integer"
                 },
                 "next": {
-                    "description": "URL to the next page of items. (null if none)",
+                    "description": "URL to the next page of items. ( null if none)",
                     "type": "string",
                     "x-nullable": true
                 },
                 "offset": {
-                    "description": "The offset of the items returned (as set in the query or by default).",
+                    "description": "The offset of the items returned (as set in the query or by default)",
                     "type": "integer"
                 },
                 "previous": {
-                    "description": "URL to the previous page of items. (null if none)",
+                    "description": "URL to the previous page of items. ( null if none)",
                     "type": "string",
                     "x-nullable": true
                 },
