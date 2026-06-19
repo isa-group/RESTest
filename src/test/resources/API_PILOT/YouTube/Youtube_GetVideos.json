@@ -138,7 +138,7 @@
           "operationId": "getVideos",
           "parameters": [
             {
-              "description": "The *part* parameter specifies a comma-separated list of one or more video resource properties that the API response will include. If the parameter identifies a property that contains child properties, the child properties will be included in the response. For example, in a video resource, the snippet property contains the channelId, title, description, tags, and categoryId properties. As such, if you set *part=snippet*, the API response will contain all of those properties. Valid values are: contentDetails, fileDetails, id, liveStreamingDetails, localizations, paidProductPlacementDetails, player, processingDetails, recordingDetails, snippet, statistics, status, suggestions, topicDetails.",
+              "description": "The `part` parameter specifies a comma-separated list of one or more `video` resource properties that the API response will include. If the parameter identifies a property that contains child properties, the child properties will be included in the response. For example, in a `video` resource, the `snippet` property contains the `channelId`, `title`, `description`, `tags`, and `categoryId` properties. As such, if you set `part=snippet`, the API response will contain all of those properties. The following list contains the `part` names that you can include in the parameter value: contentDetails, fileDetails, id, liveStreamingDetails, localizations, paidProductPlacementDetails, player, processingDetails, recordingDetails, snippet, statistics, status, suggestions, topicDetails",
               "explode": true,
               "in": "query",
               "name": "part",
@@ -152,7 +152,7 @@
               "style": "form"
             },
             {
-              "description": "Return the videos that are in the specified chart.",
+              "description": "The `chart` parameter identifies the chart that you want to retrieve. Acceptable values are: mostPopular – Return the most popular videos for the specified content region and video category.",
               "in": "query",
               "name": "chart",
               "schema": {
@@ -164,7 +164,7 @@
               }
             },
             {
-              "description": "Stands for \"host language\". Specifies the localization language of the metadata to be filled into snippet.localized. The field is filled with the default metadata if there is no localization in the specified language. The parameter value must be a language code included in the list returned by the i18nLanguages.list method (e.g. en_US, es_MX).",
+              "description": "The `hl` parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the `i18nLanguages.list` method. If localized resource details are available in that language, the resource's `snippet.localized` object will contain the localized values. However, if localized details are not available, the `snippet.localized` object will contain resource details in the resource's default language.",
               "in": "query",
               "name": "hl",
               "schema": {
@@ -172,7 +172,7 @@
               }
             },
             {
-              "description": "Return videos with the given ids.",
+              "description": "The `id` parameter specifies a comma-separated list of the YouTube video ID(s) for the resource(s) that are being retrieved. In a `video` resource, the `id` property specifies the video's ID.",
               "explode": true,
               "in": "query",
               "name": "id",
@@ -185,6 +185,7 @@
               "style": "form"
             },
             {
+              "description": "The `maxHeight` parameter specifies the maximum height of the embedded player returned in the `player.embedHtml` property. You can use this parameter to specify that instead of the default dimensions, the embed code should use a height appropriate for your application layout. If the `maxWidth` parameter is also provided, the player may be shorter than the `maxHeight` in order to not violate the maximum width. Acceptable values are `72` to `8192`, inclusive.",
               "in": "query",
               "name": "maxHeight",
               "schema": {
@@ -194,7 +195,7 @@
               }
             },
             {
-              "description": "The *maxResults* parameter specifies the maximum number of items that should be returned in the result set. *Note:* This parameter is supported for use in conjunction with the myRating and chart parameters, but it is not supported for use in conjunction with the id parameter.",
+              "description": "The `maxResults` parameter specifies the maximum number of items that should be returned in the result set. Note: This parameter is supported for use in conjunction with the `myRating` parameter, but it is not supported for use in conjunction with the `id` parameter. Acceptable values are `1` to `50`, inclusive. The default value is `5`.",
               "in": "query",
               "name": "maxResults",
               "schema": {
@@ -204,7 +205,7 @@
               }
             },
             {
-              "description": "Return the player with maximum height specified in",
+              "description": "The `maxWidth` parameter specifies the maximum width of the embedded player returned in the `player.embedHtml` property. You can use this parameter to specify that instead of the default dimensions, the embed code should use a width appropriate for your application layout. If the `maxHeight` parameter is also provided, the player may be narrower than `maxWidth` in order to not violate the maximum height. Acceptable values are `72` to `8192`, inclusive.",
               "in": "query",
               "name": "maxWidth",
               "schema": {
@@ -214,7 +215,7 @@
               }
             },
             {
-              "description": "Return videos liked/disliked by the authenticated user. Does not support RateType.RATED_TYPE_NONE.",
+              "description": "This parameter can only be used in a properly authorized request. Set this parameter's value to `like` or `dislike` to instruct the API to only return videos liked or disliked by the authenticated user. Acceptable values are: dislike – Returns only videos disliked by the authenticated user. like – Returns only video liked by the authenticated user.",
               "in": "query",
               "name": "myRating",
               "schema": {
@@ -227,7 +228,7 @@
               }
             },
             {
-              "description": "*Note:* This parameter is intended exclusively for YouTube content partners. The *onBehalfOfContentOwner* parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
+              "description": "This parameter can only be used in a properly authorized request. Note: This parameter is intended exclusively for YouTube content partners. The `onBehalfOfContentOwner` parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
               "in": "query",
               "name": "onBehalfOfContentOwner",
               "schema": {
@@ -235,7 +236,7 @@
               }
             },
             {
-              "description": "The *pageToken* parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved. *Note:* This parameter is supported for use in conjunction with the myRating and chart parameters, but it is not supported for use in conjunction with the id parameter.",
+              "description": "The `pageToken` parameter identifies a specific page in the result set that should be returned. In an API response, the `nextPageToken` and `prevPageToken` properties identify other pages that could be retrieved. Note: This parameter is supported for use in conjunction with the `myRating` parameter, but it is not supported for use in conjunction with the `id` parameter.",
               "in": "query",
               "name": "pageToken",
               "schema": {
@@ -243,7 +244,7 @@
               }
             },
             {
-              "description": "Use a chart that is specific to the specified region",
+              "description": "The `regionCode` parameter instructs the API to select a video chart available in the specified region. This parameter can only be used in conjunction with the `chart` parameter. The parameter value is an ISO 3166-1 alpha-2 country code.",
               "in": "query",
               "name": "regionCode",
               "schema": {
@@ -251,7 +252,7 @@
               }
             },
             {
-              "description": "Use chart that is specific to the specified video category",
+              "description": "The `videoCategoryId` parameter identifies the video category for which the chart should be retrieved. This parameter can only be used in conjunction with the `chart` parameter. By default, charts are not restricted to a particular category. The default value is `0`.",
               "in": "query",
               "name": "videoCategoryId",
               "schema": {
@@ -5816,7 +5817,7 @@
           "description": "Details about the content of a YouTube Video.",
           "properties": {
             "caption": {
-              "description": "The value of captions indicates whether the video has captions or not.",
+              "description": "Indicates whether captions are available for the video.",
               "enum": [
                 "true",
                 "false"
@@ -5832,7 +5833,7 @@
               "description": "The countryRestriction object contains information about the countries where a video is (or is not) viewable."
             },
             "definition": {
-              "description": "The value of definition indicates whether the video is available in high definition or only in standard definition.",
+              "description": "Indicates whether the video is available in high definition (`HD`) or only in standard definition.",
               "enum": [
                 "sd",
                 "hd"
@@ -5840,11 +5841,11 @@
               "type": "string"
             },
             "dimension": {
-              "description": "The value of dimension indicates whether the video is available in 3D or in 2D.",
+              "description": "Indicates whether the video is available in 3D or in 2D.",
               "type": "string"
             },
             "duration": {
-              "description": "The length of the video. The tag value is an ISO 8601 duration in the format PT#M#S, in which the letters PT indicate that the value specifies a period of time, and the letters M and S refer to length in minutes and seconds, respectively. The # characters preceding the M and S letters are both integers that specify the number of minutes (or seconds) of the video. For example, a value of PT15M51S indicates that the video is 15 minutes and 51 seconds long.",
+              "description": "The length of the video. The property value is an ISO 8601 duration.",
               "type": "string"
             },
             "hasCustomThumbnail": {
@@ -5852,7 +5853,7 @@
               "type": "boolean"
             },
             "licensedContent": {
-              "description": "The value of is_license_content indicates whether the video is licensed content.",
+              "description": "Indicates whether the video represents licensed content, which means that the content was uploaded to a channel linked to a YouTube content partner.",
               "type": "boolean"
             },
             "projection": {
@@ -5865,7 +5866,7 @@
             },
             "regionRestriction": {
               "$ref": "#/components/schemas/VideoContentDetailsRegionRestriction",
-              "description": "The regionRestriction object contains information about the countries where a video is (or is not) viewable. The object will contain either the contentDetails.regionRestriction.allowed property or the contentDetails.regionRestriction.blocked property."
+              "description": "The `regionRestriction` object contains information about the countries where a video is (or is not) viewable."
             }
           },
           "type": "object"
@@ -6027,7 +6028,7 @@
         "VideoListResponse": {
           "properties": {
             "etag": {
-              "description": "Etag of this resource.",
+              "description": "The Etag of this resource.",
               "type": "string"
             },
             "eventId": {
@@ -6035,6 +6036,7 @@
               "type": "string"
             },
             "items": {
+              "description": "A list of videos that match the request criteria.",
               "items": {
                 "$ref": "#/components/schemas/Video"
               },
@@ -6042,19 +6044,19 @@
             },
             "kind": {
               "default": "youtube#videoListResponse",
-              "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#videoListResponse\".",
+              "description": "Identifies the API resource's type. The value will be `youtube#videoListResponse`.",
               "type": "string"
             },
             "nextPageToken": {
-              "description": "The token that can be used as the value of the pageToken parameter to retrieve the next page in the result set.",
+              "description": "The token that can be used as the value of the `pageToken` parameter to retrieve the next page in the result set.",
               "type": "string"
             },
             "pageInfo": {
               "$ref": "#/components/schemas/PageInfo",
-              "description": "General pagination information."
+              "description": "The `pageInfo` object encapsulates paging information for the result set."
             },
             "prevPageToken": {
-              "description": "The token that can be used as the value of the pageToken parameter to retrieve the previous page in the result set.",
+              "description": "The token that can be used as the value of the `pageToken` parameter to retrieve the previous page in the result set.",
               "type": "string"
             },
             "tokenPagination": {
@@ -6106,11 +6108,11 @@
           "description": "Localized versions of certain video properties (e.g. title).",
           "properties": {
             "description": {
-              "description": "Localized version of the video's description.",
+              "description": "The localized video description.",
               "type": "string"
             },
             "title": {
-              "description": "Localized version of the video's title.",
+              "description": "The localized video title.",
               "type": "string"
             }
           },
@@ -6130,15 +6132,16 @@
           "description": "Player to be used for a video playback.",
           "properties": {
             "embedHeight": {
+              "description": "The height of the embedded player returned in the `player.embedHtml` property.",
               "format": "int64",
               "type": "string"
             },
             "embedHtml": {
-              "description": "An <iframe> tag that embeds a player that will play the video.",
+              "description": "An `<iframe>` tag that embeds a player that plays the video.",
               "type": "string"
             },
             "embedWidth": {
-              "description": "The embed width",
+              "description": "The width of the embedded player returned in the `player.embedHtml` property.",
               "format": "int64",
               "type": "string"
             }
@@ -6302,7 +6305,7 @@
           "description": "Basic details about a video, including title, description, uploader, thumbnails and category.",
           "properties": {
             "categoryId": {
-              "description": "The YouTube video category associated with the video.",
+              "description": "The YouTube video category associated with the video. You must set a value for this property if you call the `videos.update` method.",
               "type": "string"
             },
             "channelId": {
@@ -6314,19 +6317,19 @@
               "type": "string"
             },
             "defaultAudioLanguage": {
-              "description": "The default_audio_language property specifies the language spoken in the video's default audio track.",
+              "description": "The `default_audio_language` property specifies the language spoken in the video's default audio track.",
               "type": "string"
             },
             "defaultLanguage": {
-              "description": "The language of the videos's default snippet.",
+              "description": "The language of the text in the `video` resource's `snippet.title` and `snippet.description` properties.",
               "type": "string"
             },
             "description": {
-              "description": "The video's description. @mutable youtube.videos.insert youtube.videos.update",
+              "description": "The video's description. The property value has a maximum length of 5000 bytes and may contain all valid UTF-8 characters except < and >.",
               "type": "string"
             },
             "liveBroadcastContent": {
-              "description": "Indicates if the video is an upcoming/active live broadcast. Or it's \"none\" if the video is not an upcoming/active live broadcast.",
+              "description": "Indicates if the video is an upcoming/active live broadcast. Its value is `none` if the video is not an upcoming/active live broadcast.",
               "enum": [
                 "none",
                 "upcoming",
@@ -6337,15 +6340,15 @@
             },
             "localized": {
               "$ref": "#/components/schemas/VideoLocalization",
-              "description": "Localized snippet selected with the hl parameter. If no such localization exists, this field is populated with the default snippet. (Read-only)"
+              "description": "The `snippet.localized` object contains either a localized title and description for the video or the title in the default language for the video's metadata."
             },
             "publishedAt": {
-              "description": "The date and time when the video was uploaded.",
+              "description": "The date and time that the video was published. Note that this time might be different than the time that the video was uploaded.",
               "format": "date-time",
               "type": "string"
             },
             "tags": {
-              "description": "A list of keyword tags associated with the video. Tags may contain spaces.",
+              "description": "A list of keyword tags associated with the video. Tags may contain spaces. The property value has a maximum length of 500 characters.",
               "items": {
                 "type": "string"
               },
@@ -6356,7 +6359,7 @@
               "description": "A map of thumbnail images associated with the video. For each object in the map, the key is the name of the thumbnail image, and the value is an object that contains other information about the thumbnail."
             },
             "title": {
-              "description": "The video's title. @mutable youtube.videos.insert youtube.videos.update",
+              "description": "The video's title. The property value has a maximum length of 100 characters and may contain all valid UTF-8 characters except < and >.",
               "type": "string"
             }
           },
@@ -6371,17 +6374,17 @@
               "type": "string"
             },
             "dislikeCount": {
-              "description": "The number of users who have indicated that they disliked the video by giving it a negative rating.",
+              "description": "The number of users who have indicated that they disliked the video.",
               "format": "uint64",
               "type": "string"
             },
             "favoriteCount": {
-              "description": "The number of users who currently have the video marked as a favorite video.",
+              "description": "This property has been deprecated. The deprecation is effective as of August 28, 2015. The property's value is now always set to `0`.",
               "format": "uint64",
               "type": "string"
             },
             "likeCount": {
-              "description": "The number of users who have indicated that they liked the video by giving it a positive rating.",
+              "description": "The number of users who have indicated that they liked the video.",
               "format": "uint64",
               "type": "string"
             },
@@ -6397,7 +6400,7 @@
           "description": "Basic details about a video category, such as its localized title. Next Id: 17",
           "properties": {
             "embeddable": {
-              "description": "This value indicates if the video can be embedded on another website. @mutable youtube.videos.insert youtube.videos.update",
+              "description": "This value indicates whether the video can be embedded on another website.",
               "type": "boolean"
             },
             "failureReason": {
@@ -6413,7 +6416,7 @@
               "type": "string"
             },
             "license": {
-              "description": "The video's license. @mutable youtube.videos.insert youtube.videos.update",
+              "description": "The video's license.",
               "enum": [
                 "youtube",
                 "creativeCommon"
@@ -6421,6 +6424,7 @@
               "type": "string"
             },
             "madeForKids": {
+              "description": "This value indicates whether the video is designated as child-directed, and it contains the current \"made for kids\" status of the video.",
               "type": "boolean"
             },
             "privacyStatus": {
@@ -6433,11 +6437,11 @@
               "type": "string"
             },
             "publicStatsViewable": {
-              "description": "This value indicates if the extended video statistics on the watch page can be viewed by everyone. Note that the view count, likes, etc will still be visible if this is disabled. @mutable youtube.videos.insert youtube.videos.update",
+              "description": "This value indicates whether the extended video statistics on the video's watch page are publicly viewable.",
               "type": "boolean"
             },
             "publishAt": {
-              "description": "The date and time when the video is scheduled to publish. It can be set only if the privacy status of the video is private..",
+              "description": "The date and time when the video is scheduled to publish. It can be set only if the privacy status of the video is private.",
               "format": "date-time",
               "type": "string"
             },
@@ -6458,6 +6462,7 @@
               "type": "string"
             },
             "selfDeclaredMadeForKids": {
+              "description": "In a `videos.insert` or `videos.update` request, this property allows the channel owner to designate the video as being child-directed.",
               "type": "boolean"
             },
             "containsSyntheticMedia": {
@@ -6577,7 +6582,7 @@
           "description": "Freebase topic information related to the video.",
           "properties": {
             "relevantTopicIds": {
-              "description": "Similar to topic_id, except that these topics are merely relevant to the video. These are topics that may be mentioned in, or appear in the video. You can retrieve information about each topic using Freebase Topic API.",
+              "description": "A list of topic IDs that are relevant to the video.",
               "items": {
                 "type": "string"
               },
@@ -6591,7 +6596,7 @@
               "type": "array"
             },
             "topicIds": {
-              "description": "A list of Freebase topic IDs that are centrally associated with the video. These are topics that are centrally featured in the video, and it can be said that the video is mainly about each of these. You can retrieve information about each topic using the < a href=\"http://wiki.freebase.com/wiki/Topic_API\">Freebase Topic API.",
+              "description": "This property has been deprecated as of November 10, 2016. The API no longer returns values for this property.",
               "items": {
                 "type": "string"
               },
