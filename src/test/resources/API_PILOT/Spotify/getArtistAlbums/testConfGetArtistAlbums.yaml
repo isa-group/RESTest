@@ -3,7 +3,7 @@ auth:
   required: true
   queryParams: {}
   headerParams:
-    Authorization: "Bearer BQC1G2YGEIfuhuBvVUwl6kL60OPesWxeTXB4OX-5vkteChF3wD9CLd6ietW4EdSyaJ-5240D6rKj_ZYcuaLIIdI5Stq5AAvOZz2xFsIv7I_6L7nN0HGnhzqZxIcrGXgE9E7KD5yxNKs"
+    Authorization: "Bearer BQDVq5R-BM3KthV0X4jOEh2yatBT9EwsQWtTaM22gW_aYQm_tzlWp6O27JwYXTM0oaDFMsZylIuLhYFYNlx1ZRA407GRa866tiWstv7P8aDIgSLY_4Yhof8hmXHHWE5j7nq088ZyTZPlqSdatv5yNYQPUlY1iD2iDQUzu7usvrfYOYR1E93jSM1T-LXav4DGoRAoP4mNtF9o_5zW6sVmpHrMd6vZ-phFzQMSiqEch3GqWhrwM7ATXTRzitVUlSPVEU-EK3J_nF0EDgpJqQ0TNdXKgwexZLzmoB_3OO_PgrGjY_qqX1HA_kc42c-mn_Xx7FLEZbs9egKr17jwd0jahsLEKadTCKZYkzZh8klP-IhgqFwa-IdqO6NY2l8q4yIhi050JkN3-RZmXo_8rY4ULDZMa6KFNA"
   apiKeysPath: null
   headersPath: null
   oauthPath: null
@@ -254,7 +254,7 @@ testConfiguration:
           objectValues: null
         - name: max
           values:
-          - 50
+          - 10
           objectValues: null
         valid: true
     - name: offset
