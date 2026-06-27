@@ -9,25 +9,10 @@ auth:
   oauthPath: null
 testConfiguration:
   operations:
-  - testPath: "/users/{user_id}/playlists"
+  - testPath: "/me/playlists"
     operationId: createPlaylist
     method: post
     testParameters:
-    - name: user_id
-      in: path
-      weight: null
-      generators:
-      - type: RandomInputValue
-        genParameters:
-        - name: values
-          values:
-          - f7r7r4wp6bk4t2dazcbsf3b6h # benchmark
-#          - 314p6dat3wsraktwd2tawz6vzr3q # benchmark1
-#          - 31q3hnw36axarvbryjncmdxod7bu # benchmark2
-#          - 31hae73dc27cjg75derzdd3vvcja # benchmark3
-#          - 312xh5dwfxwwxkkauxvxdjvqmvgy # benchmark 4
-          objectValues: null
-        valid: true
     - name: Accept
       in: header
       weight: 0.0

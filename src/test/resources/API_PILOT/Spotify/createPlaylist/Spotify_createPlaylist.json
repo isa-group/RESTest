@@ -64,18 +64,11 @@
     }
   },
   "paths": {
-    "/users/{user_id}/playlists": {
+    "/me/playlists": {
       "post": {
         "operationId": "createPlaylist",
-        "description": "[Create a Playlist](https://developer.spotify.com/web-api/create-playlist/)\n",
+        "description": "[Create a Playlist](https://developer.spotify.com/documentation/web-api/reference/create-playlist)\n",
         "parameters": [
-          {
-            "description": "The user's Spotify user ID.",
-            "in": "path",
-            "name": "user_id",
-            "required": true,
-            "type": "string"
-          },
           {
             "description": "It is used to set specified media type.",
             "in": "header",
