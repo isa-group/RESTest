@@ -670,6 +670,11 @@
           "type": "string"
         },
         "tracks": {
+          "description": "Deprecated: Use `items` instead.",
+          "$ref": "#/definitions/playlist-track-page"
+        },
+        "items": {
+          "description": "The tracks of the playlist. Only available to the owner or collaborators of the playlist.",
           "$ref": "#/definitions/playlist-track-page"
         },
         "type": {
@@ -1308,7 +1313,8 @@
       "properties": {
         "display_name": {
           "description": "The name displayed on the user's profile. null if not available.",
-          "type": "string"
+          "type": "string",
+          "x-nullable": true
         },
         "external_urls": {
           "properties": {
