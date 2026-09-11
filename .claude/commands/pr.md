@@ -32,7 +32,8 @@ number to compare.
 
 **How it works.** Three short paragraphs at most, for a reader who does not program in Java. Explain
 the idea, not the syntax. Define any unavoidable term inline, or point at the glossary in
-`docs/PROPOSAL.md` §0. A small ASCII or Mermaid diagram is welcome when it replaces a paragraph.
+the glossary in `docs/DESIGN.md`. A small ASCII or Mermaid diagram is welcome when it replaces a
+paragraph.
 
 **What changed in the code.** For the code reviewer: files, key classes, design decisions, anything
 deliberately left for later.

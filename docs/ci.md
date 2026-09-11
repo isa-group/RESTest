@@ -59,7 +59,8 @@ would hide both today's emptiness and a real break later.
 
 There is deliberately **no** blocking threshold yet. At M0.2 no module contains production code, so
 any minimum would be an assertion about zero classes. The `check` goal arrives in M1.6 on
-`restest-core` and `restest-oracles`, the two modules `docs/PROPOSAL.md` §8.3 names. The commitment
+`restest-core` and `restest-oracles`, the two modules `docs/DESIGN.md` names under "Quality
+gates". The commitment
 is recorded as `TODO(M1.6)` beside the JaCoCo block in the root POM.
 
 ### Why the rules are tested

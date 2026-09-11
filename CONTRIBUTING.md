@@ -11,7 +11,8 @@ Read, in this order:
 2. `CLAUDE.md` — the rules of the project. Short, and binding on humans as much as on assistants.
 3. `ROADMAP.md` — what is being built, in what order, and where the review points are.
 4. `docs/adr/` — why the system is shaped the way it is. Eleven short files.
-5. `docs/PROPOSAL.md` — the full analysis behind all of the above, including a glossary in §0.
+5. `docs/DESIGN.md` — the architecture, the extension points and the quality gates, with a
+   glossary of the terms used throughout the repository.
 
 ## The loop
 
@@ -46,7 +47,7 @@ These fail the build, and they are not negotiable in a pull request:
 - English everywhere: code, comments, tests, commits, branches, issues, documentation.
 - No AI-specific abstraction anywhere (ADR-0008).
 - No reference to any evaluation platform under `src/` (ADR-0011).
-- Nothing from the deferred backlog in `docs/PROPOSAL.md` §11 without explicit approval.
+- Nothing from "Out of scope for v2.0" in `docs/DESIGN.md` without explicit approval.
 - No architecture test, coverage threshold or mutation threshold is ever weakened to make a build
   pass. If a rule is wrong, change it deliberately, in its own pull request, with the reasoning.
 - No source copied from RESTest 1.x (ADR-0002). Ideas and the IDL grammar, yes; files, no.

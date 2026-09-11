@@ -65,7 +65,7 @@
         <!-- Every module targets Java 21, restest-cli included (ADR-0003, Amendment (M0.2)). -->
         <maven.compiler.release>21</maven.compiler.release>
 
-        <!-- Versions fixed by docs/PROPOSAL.md, Appendix A. -->
+        <!-- Versions fixed by the stack table in docs/DESIGN.md. -->
         <junit.version>6.1.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
         <archunit.version>1.5.0</archunit.version>
@@ -184,7 +184,8 @@
                     </execution>
                     <!--
                       TODO(M1.6): add a `check` execution enforcing line and branch minima on
-                      restest-core and restest-oracles, the two modules docs/PROPOSAL.md 8.3 names.
+                      restest-core and restest-oracles, the two modules docs/DESIGN.md names under
+                      "Quality gates".
                       Deferred deliberately: at M0.2 no module contains production code, so any
                       threshold would be an assertion about zero classes.
 
