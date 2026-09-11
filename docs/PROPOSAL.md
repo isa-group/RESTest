@@ -484,16 +484,21 @@ code moved wholesale.
 | 9 | Fundamental design principles | **Agreed, plus mechanical enforcement** | Architecture tests, mutation testing |
 | 10 | Code and documentation in English | **Agreed** | Including commits, issues and design records |
 
-### 7.1 Java version — build on JDK 25, compile the library for Java 21
+### 7.1 Java version — build on JDK 25, compile everything for Java 21
 
 Latest JDK is 26; latest long-term-support release is 25. Everything this tool needs — records, sealed
 interfaces, pattern matching, virtual threads — is final in 21. Targeting 25 buys nothing semantically
 and excludes the large installed base still on 21, which matters precisely because requirement #5 asks
 for a consumable dependency.
 
-**Library modules target Java 21; the command-line module runs on 25; the build toolchain is 25; CI
-tests 21, 25 and 26.** Avoid Structured Concurrency and Lazy Constants in any published interface —
-both are still preview features and their APIs have changed between releases.
+**Every module targets Java 21, the command-line module included; the build toolchain is 25; CI
+tests 21, 25 and 26.** The CLI was originally to target 25. ADR-0003 was amended at M0.2: a JDK 21
+CI row cannot compile a module targeting 25, and each way around that hid something — either one
+matrix row building a different subset, or a toolchain that `surefire` would honour too, quietly
+running every row's tests on 25.
+
+Avoid Structured Concurrency and Lazy Constants in any published interface — both are still preview
+features and their APIs have changed between releases.
 
 ### 7.2 OAS versions — 2.0, 3.0.x and 3.1.x, fully
 
@@ -942,7 +947,7 @@ Settled with the maintainer, 11 September 2026. These become design records 001�
 |---|---|
 | D1 | **Repository:** long-lived `v2` branch in `isa-group/RESTest`; one short-lived branch per increment; `main` untouched until the end |
 | D2 | **Licence: Apache-2.0** for v2 and for the relicensed IDL assets; add the missing licence file to IDLReasoner-choco; carry over no 1.x source. *Administrative lead time — start now, it blocks M5* |
-| D3 | **Java:** library modules target 21; command-line module and toolchain on 25; CI matrix 21/25/26; no preview features in published interfaces |
+| D3 | **Java:** every module targets 21, CLI included (ADR-0003 amended at M0.2); build toolchain on 25; CI matrix 21/25/26; no preview features in published interfaces |
 | D4 | **IDL parser:** port the grammar to ANTLR4 with a differential conformance test; the `.xtext` grammar remains normative; reuse the IDL-to-CSP mapping as-is |
 | D5 | **Priority:** benchmark metrics first; no external deadline drives the schedule |
 | D6 | **OAS scope:** 2.0, 3.0.x and 3.1.x, fully. 3.2 and 4.0 are out of scope |
@@ -962,7 +967,7 @@ earns its place (decide at the end of M4).
 | Component | Choice | Version (11 Sep 2026) |
 |---|---|---|
 | Library bytecode | Java 21 | — |
-| Command-line module and toolchain | JDK 25 (long-term support) | 25 |
+| Build toolchain | JDK 25 (long-term support) | 25 |
 | Build | Maven with wrapper | 3.9.16 |
 | OAS parser | `io.swagger.parser.v3:swagger-parser`, behind our own interface | 2.1.47 |
 | JSON Schema validation | `com.networknt:json-schema-validator` | 3.0.7 |

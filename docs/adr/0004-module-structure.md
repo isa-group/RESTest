@@ -56,3 +56,35 @@ nothing in `src/` references a benchmark platform.
   conventions too.
 - **Three modules (core / engine / cli).** Not enough separation to express "no AI in the core" or
   "only one module may see the parser" as compiled facts.
+
+## Amendment (M0.2)
+
+**Date:** 2026-09-11
+
+The repository holds **nine production modules**, exactly as decided above, plus **one verification
+module**, `restest-arch-tests`, which is not published.
+
+### Why
+
+This ADR ends by listing the rules ArchUnit must enforce. Writing them exposed a mechanical problem:
+ArchUnit reads bytecode, so a rule such as "`io.swagger` appears only in `restest-spec`" can only
+run somewhere whose classpath holds every module's classes at once. Inside `restest-core` that rule
+would see one module and pass whether it is correct or broken — the vacuous green build this ADR
+exists to prevent.
+
+`restest-arch-tests` has no `src/main`. It depends on all nine modules at test scope, and nothing
+depends on it, so it is a leaf of the dependency graph and cannot distort the architecture it
+polices. `maven.deploy.skip` keeps it off Maven Central.
+
+The alternative was `restest-cli/src/test/java`, whose classpath already sees the other eight. It
+needed no new module and no amendment, but it would put project-wide rules inside the command-line
+module, where nobody looks for them, and `./mvnw verify -pl restest-core` would run no architecture
+checks at all while appearing to pass.
+
+### Consequences
+
+- The nine-module production structure, and the rule that dependencies point inwards, are unchanged.
+- `restest-arch-tests` is exempt from "each module has a `module-info.java`" because it has no main
+  sources. The exemption is named in `SourceTreeRulesTest` rather than implied.
+- The module produces an empty jar, and Maven says so on every build. Suppressing it with
+  `skipIfEmpty` would leave `mvn install` without an artifact to install, so the warning stays.

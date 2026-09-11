@@ -11,56 +11,85 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>restest-cli</artifactId>
-    <name>RESTest :: CLI</name>
-    <description>Command line. The only module permitted to terminate the process.</description>
+    <artifactId>restest-arch-tests</artifactId>
+    <name>RESTest :: Architecture tests</name>
+    <description>
+        Verification only. Holds the ArchUnit rules that enforce ADR-0004, and the source-tree
+        rules that enforce invariants no bytecode can express. See ADR-0004, Amendment (M0.2).
 
-    <!--
-      No maven.compiler.release override here. The CLI targets Java 21 like every other
-      module, so a single reactor build works on any JDK from 21 upwards, and no toolchain
-      configuration is needed. See ADR-0003, Amendment (M0.2).
-    -->
+        This module has no src/main. It depends on all nine production modules because ArchUnit
+        reads bytecode: a rule such as "io.swagger appears only in restest-spec" can only run
+        somewhere whose classpath holds every module's classes at once. Nothing depends on this
+        module in turn, so it is a leaf of the dependency graph and cannot distort the
+        architecture it polices.
+    </description>
+
+    <properties>
+        <!-- Verification scaffolding, never published. -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- All nine production modules, so their classes are on the test classpath. -->
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-core</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-spec</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-idl</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-gen</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-exec</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-store</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-oracles</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-report</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-cli</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
