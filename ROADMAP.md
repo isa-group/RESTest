@@ -1,7 +1,7 @@
 # RESTest 2.0 — roadmap
 
 41 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
-Take them in order unless told otherwise. Full rationale in `docs/PROPOSAL.md`.
+Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
 
@@ -100,7 +100,8 @@ Take them in order unless told otherwise. Full rationale in `docs/PROPOSAL.md`.
 ## Deferred — not in v2.0
 
 Do not start any of these without explicit approval. Each names the extension point it will use,
-so none of them requires re-architecting. Full table in `docs/PROPOSAL.md` §11.
+so none of them requires re-architecting. Full table under "Out of scope for v2.0" in
+`docs/DESIGN.md`.
 
 - Re-integrating the LangGraph / small-model data generator → external provider
 - Fine-tuned small models for input values → external provider

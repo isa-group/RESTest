@@ -7,7 +7,7 @@ Keep it under 200 lines. Facts and rules belong here; procedures belong in `docs
 
 A complete rewrite of RESTest, a black-box testing tool for REST APIs. Input: an OpenAPI
 specification. Output: generated and executed test cases, plus a report of the failures found.
-Rationale, analysis and the full plan: `docs/PROPOSAL.md`. Decisions: `docs/adr/`.
+Architecture and rationale: `docs/DESIGN.md`. Decisions: `docs/adr/`.
 Work breakdown: `ROADMAP.md`.
 
 **Design target:** an unknown API, no human configuration, a fixed time budget.
@@ -36,7 +36,7 @@ Use `.github/PULL_REQUEST_TEMPLATE.md` and fill in every section. The two that m
   Must work on a laptop with only Java and git installed.
 
 "How it works" is written for a reader who does not program in Java. Define any unavoidable term
-inline or point at the glossary in `docs/PROPOSAL.md`. Titles say what became possible, not what
+inline or point at the glossary in `docs/DESIGN.md`. Titles say what became possible, not what
 was edited.
 
 ## The ten design principles
@@ -60,7 +60,8 @@ was edited.
   constraint and flow sources that can fire mid-run. See ADR-0008.
 - **No benchmark platform inside `src/`.** Searching `src/` for "restgym" must return zero hits.
   All of it lives in `evaluation/`, which is not a Maven module. See ADR-0011.
-- **Nothing from the deferred backlog** (`docs/PROPOSAL.md` §11) without explicit approval, even
+- **Nothing from the deferred backlog** ("Out of scope for v2.0" in `docs/DESIGN.md`) without
+  explicit approval, even
   if it looks easy. That list includes dependency inference, semantic-oracle inference, metamorphic
   relations, response classifiers and search-based scheduling.
 - **Never weaken an architecture test, a coverage threshold or a mutation threshold to make a build

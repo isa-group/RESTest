@@ -55,5 +55,9 @@ src/test/resources/auth/Sample/oauth_short_expiration.json
 # ---------------------------------------------------------------------------
 # Personal guide (Spanish; the repo is English-only)
 GUIA-CLAUDE-CODE.md
+
+# Internal planning notes, addressed to the maintainer and not written for publication.
+# The public design rationale is docs/DESIGN.md.
+docs/PROPOSAL.md
 # Bootstrap archive from the initial import
 .restest2-bootstrap.zip

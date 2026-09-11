@@ -44,7 +44,7 @@ run, a file to open, a number to compare.
 
 <!--
 Three short paragraphs at most, for a reader who does not program in Java. Explain the idea, not the
-syntax. Define any unavoidable term inline or point at the glossary in docs/PROPOSAL.md section 0.
+syntax. Define any unavoidable term inline or point at the glossary in docs/DESIGN.md.
 A small diagram is welcome when it replaces a paragraph.
 -->
 
@@ -77,6 +77,6 @@ you decided not to act on, and why. If a decision is expensive to reverse, it ne
 
 - [ ] Targets `v2`, not `main`
 - [ ] English throughout, including comments and test names
-- [ ] Nothing from the deferred backlog (`docs/PROPOSAL.md` §11)
+- [ ] Nothing from the deferred backlog ("Out of scope for v2.0" in `docs/DESIGN.md`)
 - [ ] No AI abstraction; no benchmark-platform reference under `src/`
 - [ ] Reviewed by the `reviewer` subagent

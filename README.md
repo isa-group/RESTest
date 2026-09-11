@@ -11,8 +11,8 @@ executes test cases and reports the failures it finds — with zero configuratio
 
 ## Status
 
-Active development. See `ROADMAP.md` for the milestone plan and `docs/PROPOSAL.md` for the
-full design rationale.
+Active development. See [`ROADMAP.md`](ROADMAP.md) for the milestone plan and
+[`docs/DESIGN.md`](docs/DESIGN.md) for the architecture and design rationale.
 
 ## License
 

@@ -19,7 +19,7 @@ You cannot edit anything. Report; do not fix.
 **1. Hard rules.** These are non-negotiable and each has a specific check:
 - No AI abstraction anywhere. Search the diff for `Llm`, `openai`, `anthropic`, `langchain`, `ollama`.
 - Nothing under `src/` references a benchmark platform. Search for `restgym`, case-insensitive.
-- Nothing from the deferred backlog in `docs/PROPOSAL.md` §11 has been started.
+- Nothing from "Out of scope for v2.0" in `docs/DESIGN.md` has been started.
 - No architecture test, coverage threshold or mutation threshold has been weakened or disabled.
   Check the diff for changes to test files that remove or relax assertions.
 - No source file copied from RESTest 1.x. Look for 1.x idioms: `es.us.isa.restest` package names
