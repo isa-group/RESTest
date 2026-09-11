@@ -25,7 +25,7 @@ grammar and the test corpus do.
 
 | | |
 |---|---|
-| Specification formats | OpenAPI 2.0, 3.0.x, 3.1.x. Not 3.2, not 4.0 |
+| Specification formats | OpenAPI 2.0 and every 3.x, 3.2 included. New 3.x minors are tracked as they are published. Not 4.x, which has no specification text |
 | Testing style | Black-box only: the specification and the API's responses, never its source |
 | Test kinds | Stateless single requests, and stateful sequences across several operations |
 | Distribution | Command-line tool, library dependency, container image, and native binary |
