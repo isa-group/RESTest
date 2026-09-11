@@ -1,7 +1,8 @@
 # RESTest 2.0 — design
 
 What RESTest 2.0 is, how it is put together, and which rules the build enforces. Written for
-somebody arriving at the repository for the first time, including readers who do not program in Java.
+somebody arriving at the repository for the first time, including readers who do not program in
+Java.
 
 Individual decisions and the reasoning behind them live in [`docs/adr/`](adr/). The work breakdown
 lives in [`ROADMAP.md`](../ROADMAP.md). Continuous integration and the architecture rules are
@@ -55,7 +56,8 @@ Terms used throughout the repository, in commit messages and in pull requests.
 | **AUC** (Area Under the Curve) | A measure of *how fast* a tool achieves something, not just how much it achieves in the end. A tool that covers 15 operations in the first minute scores far better than one covering 15 in the last minute. |
 | **Idle time** | The fraction of the test budget during which the tool had no request in flight — time spent computing instead of testing. Reported on every run. |
 | **Fuzzing** | Sending deliberately malformed or extreme inputs to see whether the API handles them correctly. |
-| **WFC** (Web Fuzzing Commons) | A shared, numbered catalogue of API fault types. Adopting it makes our fault reports directly comparable with those of other tools. |
+| **WFC** (Web Fuzzing Commons) | A shared, numbered catalogue of API fault types, already adopted by EvoMaster and Schemathesis. Using the same codes makes our fault reports directly comparable with theirs, instead of each tool inventing its own taxonomy. |
+| **RESTGym** | The Docker-based infrastructure behind the SBFT REST League: it runs testing tools against a fixed set of instrumented APIs and computes comparable metrics. We drive it for milestone campaigns; the tool itself never references it. |
 | **ANTLR4** | A library for turning a grammar — the formal definition of a language such as IDL — into a parser. |
 | **ArchUnit** | A library for writing *tests about the structure of the code itself*, for example "no class in the core may depend on the network layer", so architectural rules fail the build instead of eroding silently. |
 | **Native image** | Compiling the tool into a standalone executable that starts in well under a second, with no Java installation required. |
@@ -67,7 +69,8 @@ enforcement is listed under [Quality gates](#quality-gates).
 
 1. Zero configuration to start; full configuration available.
 2. Never crash on a bad specification — skip the offending operation and report it.
-3. Interpret, don't generate. Test cases are data; emitting code is a *report*, never the execution path.
+3. Interpret, don't generate. Test cases are data; emitting code is a *report*, never the execution
+   path.
 4. One event stream, many listeners.
 5. Narrow interfaces, discovered implementations, enforced module boundaries.
 6. No global mutable state. Two runs must coexist in one JVM.
@@ -98,9 +101,9 @@ restest-arch-tests   architecture rules. No main sources, never published.
 
 ### Execution pipeline
 
-A run is a loop, not a batch. The specification is parsed into a canonical model of our own — not the
-parser library's types — operations are scheduled, requests are generated and sent, responses are
-captured verbatim, oracles judge them, and every step is announced on the event stream. Everything
+A run is a loop, not a batch. The specification is parsed into a canonical model of our own — not
+the parser library's types — operations are scheduled, requests are generated and sent, responses
+are captured verbatim, oracles judge them, and every step is announced on the event stream. Everything
 observed is persisted, which is what makes offline re-analysis possible.
 
 ### Key decisions
@@ -156,11 +159,37 @@ how to reproduce it locally.
 - **A golden corpus of specifications** — large, real, ugly ones, with recursive references,
   composition chains and OAS 3.1 type arrays — asserting "parses without throwing, and reports
   exactly N skipped operations".
-- **Per-request overhead regression test** against a local stub with fixed latency. The comparison is
-  against our own measured overhead, not an arbitrary throughput floor, because throughput depends
+- **Per-request overhead regression test** against a local stub with fixed latency. The comparison
+  is against our own measured overhead, not an arbitrary throughput floor, because throughput depends
   on the API's response time and a fixed threshold would punish us for slow APIs.
 - **Native binary smoke test that actually runs the binary**, because a native build that succeeds
   and then dies on first use is the classic failure mode.
+
+## Evaluation
+
+The quality gates above answer "does the tool work". They do not answer "is it any good", which
+needs a comparison against other tools on the same APIs with the same budget.
+
+That comparison runs on **RESTGym**, the Docker-based infrastructure behind the SBFT REST League: it
+executes testing tools against a fixed set of instrumented APIs and computes comparable metrics.
+Comparability with published results is exactly what it provides, which is why we use it rather than
+inventing a private benchmark. Milestone campaigns are driven from this repository, against a pinned
+RESTGym commit, so a campaign can be re-run and get the same numbers.
+
+Two boundaries make that a measurement rather than a dependency, and both are enforced rather than
+intended:
+
+- **The harness is not part of the build.** It lives in a top-level `evaluation/` directory that is
+  not a Maven module. The tool builds, ships and runs without it.
+- **Nothing under `src/` references it.** No dictionaries shipped by the benchmark, no thresholds
+  derived from its verification rules, no assumptions about its layout. A test fails the build if
+  the platform's name appears anywhere in the source tree.
+
+A tool that has absorbed assumptions from the benchmark it is measured on is both worse engineering
+and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reasoning and the layout.
+
+Fault reports use the WFC codes rather than a taxonomy of our own, for the same reason: a fault
+count is only meaningful next to somebody else's fault count.
 
 ## Out of scope for v2.0
 
@@ -209,11 +238,17 @@ Versions are pinned here and in the root POM; the two are expected to agree.
 | Release automation | JReleaser | 1.26.0 |
 | Maven Central publication | `central-publishing-maven-plugin` (Central Portal) | 0.11.0 |
 
-## Standards referenced
+## External references
+
+Standards:
 
 - OpenAPI Specification — https://spec.openapis.org/oas/
 - Arazzo Specification — https://spec.openapis.org/arazzo/
-- Web Fuzzing Commons — https://github.com/WebFuzzing/Commons
+- Web Fuzzing Commons, the shared fault catalogue — https://github.com/WebFuzzing/Commons
+
+Evaluation:
+
+- RESTGym, the benchmark infrastructure used for milestone campaigns — https://github.com/restgym/restgym
 
 ## Contributing
 
