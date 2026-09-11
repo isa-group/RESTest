@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.restest</groupId>
+        <artifactId>restest</artifactId>
+        <version>2.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>restest-cli</artifactId>
+    <name>RESTest :: CLI</name>
+    <description>Command line. The only module permitted to terminate the process.</description>
+
+    <!-- CLI targets JDK 25 (ADR-0003). Activated in M0.2 when CI provides JDK 25. -->
+    <!-- <properties><maven.compiler.release>25</maven.compiler.release></properties> -->
+
+    <dependencies>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-spec</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-idl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-gen</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-exec</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-store</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-oracles</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-report</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+</project>

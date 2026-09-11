@@ -1,61 +1,14 @@
-/.idea/
-/.settings/
-/.vscode/
-/.classpath/
-/.project/
-/bin/
-/target
-/log/*
-
-/allure-results/
-/src/test/resources/csvData/csvSample.csv
-/src/test/resources/csvData/coverage-results.csv
-/src/test/resources/csvData/test-cases.csv
-/src/test/resources/csvData/test-cases-coverage.csv
-/src/test/resources/csvData/test-results.csv
-/src/test/resources/csvData/test-results-coverage.csv
-/src/test/resources/csvData/test-coverage.json
-/src/test/resources/csvData/test-coverage.csv
-/src/test/resources/auth/*
-/src/test/resources/auth/Sample
-/src/test/resources/auth/Sample/*
-/src/test/resources/auth/Sample/apikeys.json
-/src/test/resources/auth/Sample/headers.json
-/src/test/resources/auth/Sample/oauth.json
-/src/test/resources/auth/Sample/oauth_wrong.json
-/src/test/resources/auth/Sample/oauth_short_expiration.json
-
-/idl_aux_files
-src/test/resources/file-manager/*
-
-src/main/resources/TestConfigurationMetamodel/configuration-model-output.yaml
-src/test/resources/restest-test-resources/compare2.postman_collection.json
-src/test/resources/restest-test-resources/test_collection.postman_collection.json
-src/test/resources/restest-test-resources/test_collection_urlencoded.postman_collection.json
-
-stateful_data.json
-/src/main/resources/TestData/Generated/
-
-/src/main/resources/Examples/Ex1_RandomGeneration/test_cases/
-/src/main/resources/Examples/Ex2_CreateTestConf/default_test_conf.yaml
-/src/main/resources/Examples/Ex3_CBTGeneration/test_cases/
-/src/main/resources/Examples/Ex4_ARTestGeneration/test_cases/
-/src/main/resources/Examples/Ex5_CBTGenerationAuth/test_cases/
-/src/main/resources/Examples/Ex6_RandomGeneration_DataMutation/test_cases/
-/src/main/resources/Examples/Ex9_Generation_Execution/allure_report/anApiOfIceAndFire/
-/src/main/resources/Examples/Ex9_Generation_Execution/csv_report/anApiOfIceAndFire/
-/src/main/resources/Examples/Ex10_Iterative_Generation_Execution/allure_report/anApiOfIceAndFire/
-
-# ---------------------------------------------------------------------------
-# RESTest 2.0
 # ---------------------------------------------------------------------------
 # Build output
+# ---------------------------------------------------------------------------
 target/
 *.class
 *.jar
 !.mvn/wrapper/maven-wrapper.jar
 
+# ---------------------------------------------------------------------------
 # IDEs
+# ---------------------------------------------------------------------------
 .idea/
 *.iml
 .vscode/
@@ -63,24 +16,44 @@ target/
 .project
 .classpath
 
+# ---------------------------------------------------------------------------
 # OS
+# ---------------------------------------------------------------------------
 .DS_Store
 Thumbs.db
 
-# Test and run output
-restest-report/
+# ---------------------------------------------------------------------------
+# RESTest 2.0 run output
+# ---------------------------------------------------------------------------
+# restest-report/ is a Maven module — do NOT ignore the module directory.
+# The CLI writes its HTML output to restest-out/ at runtime.
+restest-out/
 *.log
 /tmp/
 
-# Evaluation: scoreboards are committed, raw output is not
+# ---------------------------------------------------------------------------
+# Evaluation harness
+# Scoreboards are committed; raw run output is not.
+# ---------------------------------------------------------------------------
 evaluation/results/raw/
 evaluation/.scratch/
 
-# Personal notes, not part of the project documentation (Spanish; the repo is English-only)
-GUIA-CLAUDE-CODE.md
-
-# Claude Code local overrides
+# ---------------------------------------------------------------------------
+# Credentials and local overrides
+# ---------------------------------------------------------------------------
+src/test/resources/auth/*
+!src/test/resources/auth/Sample/
+src/test/resources/auth/Sample/apikeys.json
+src/test/resources/auth/Sample/headers.json
+src/test/resources/auth/Sample/oauth.json
+src/test/resources/auth/Sample/oauth_wrong.json
+src/test/resources/auth/Sample/oauth_short_expiration.json
 .claude/settings.local.json
 
-# Bootstrap archive, left over from the initial import
+# ---------------------------------------------------------------------------
+# Miscellaneous
+# ---------------------------------------------------------------------------
+# Personal guide (Spanish; the repo is English-only)
+GUIA-CLAUDE-CODE.md
+# Bootstrap archive from the initial import
 .restest2-bootstrap.zip

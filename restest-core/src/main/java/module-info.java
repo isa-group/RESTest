@@ -1,0 +1,2 @@
+module io.restest.core {
+}
