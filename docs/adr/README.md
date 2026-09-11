@@ -40,8 +40,8 @@ licence. Do not write one for ordinary implementation choices — those belong i
 |---|---|---|
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
 | [0002](0002-rewrite-not-refactor.md) | Rewrite rather than refactor; Apache-2.0; no 1.x source | Accepted |
-| [0003](0003-java-baseline.md) | Library targets Java 21; CLI and toolchain on 25 | Accepted |
-| [0004](0004-module-structure.md) | Multi-module structure and inward dependencies | Accepted |
+| [0003](0003-java-baseline.md) | Every module targets Java 21; toolchain on 25 | Accepted, amended at M0.2 |
+| [0004](0004-module-structure.md) | Multi-module structure and inward dependencies | Accepted, amended at M0.2 |
 | [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted |
 | [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted |
 | [0007](0007-specification-parser-boundary.md) | The parser sits behind our own interface; OAS 2.0/3.0/3.1 | Accepted |

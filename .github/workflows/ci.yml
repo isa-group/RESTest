@@ -1,0 +1,66 @@
+# Continuous integration for RESTest 2.0.
+#
+# Three operating systems x Java 21, 25 and 26, every row building and testing the whole reactor
+# (ADR-0003). Every action is pinned to a commit SHA rather than a tag: a tag can be repointed at
+# any commit by whoever owns the action, a SHA cannot. The trailing comment is what lets Dependabot
+# recognise and bump the pin, and SourceTreeRulesTest fails the build if a pin regresses to a tag.
+name: CI
+
+on:
+  push:
+    branches: [master, v2]
+  pull_request:
+    branches: [master, v2]
+  workflow_dispatch:
+
+# A new push supersedes the runs still queued for the same ref.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# Windows runners default to PowerShell, which cannot execute mvnw: it is a POSIX shell script with
+# no extension, so CreateProcess rejects it outright. Git Bash is present on every runner image, so
+# one default makes the same command work on all three operating systems.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    name: Java ${{ matrix.java }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # One red row must not hide the state of the other eight.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: ['21', '25', '26']
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      - name: Build and test
+        run: ./mvnw --batch-mode --no-transfer-progress verify
+
+      # Uploaded from one row only: nine identical reports would be noise.
+      - name: Upload the coverage report
+        if: matrix.os == 'ubuntu-latest' && matrix.java == '25'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: jacoco-report
+          path: '*/target/site/jacoco/'
+          # Warn rather than ignore. Until the modules have tests there is no execution data and
+          # so no report, and a silent green upload of nothing would hide that - as well as hiding
+          # a real break later.
+          if-no-files-found: warn
+          retention-days: 14

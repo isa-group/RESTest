@@ -1,0 +1,38 @@
+# Dependency updates arrive as reviewable pull requests rather than as drift.
+#
+# Grouped on purpose: nine modules share one version property per dependency, so an ungrouped
+# update would open several pull requests that all have to land together anyway.
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      test-libraries:
+        patterns:
+          - org.junit*
+          - org.assertj*
+          - com.tngtech.archunit*
+          - org.testcontainers*
+          - org.wiremock*
+      build-plugins:
+        patterns:
+          - org.apache.maven.plugins*
+          - org.jacoco*
+          - org.pitest*
+
+  # Keeps the commit-SHA pins in .github/workflows current. Dependabot rewrites both the SHA and
+  # the trailing version comment, which is why that comment is required rather than decorative.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci

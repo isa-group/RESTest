@@ -1,5 +1,8 @@
 # RESTest 2.0
 
+[![CI](https://github.com/isa-group/RESTest/actions/workflows/ci.yml/badge.svg?branch=v2)](https://github.com/isa-group/RESTest/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 > **This branch (`v2`) is a complete rewrite.** It is not backwards-compatible with RESTest 1.x.
 > The 1.x code and documentation remain on `master`.
 
@@ -25,3 +28,7 @@ cd RESTest
 git switch v2
 ./mvnw verify
 ```
+
+That builds all ten modules, runs the test suite and checks the architecture rules. Every push and
+pull request runs the same command on Linux, macOS and Windows against Java 21, 25 and 26 — see
+[docs/ci.md](docs/ci.md).

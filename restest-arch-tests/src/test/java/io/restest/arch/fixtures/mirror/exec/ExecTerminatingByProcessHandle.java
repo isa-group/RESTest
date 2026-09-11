@@ -1,0 +1,32 @@
+/*
+ * Copyright 2026 ISA Research Group, Universidad de Sevilla.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.restest.arch.fixtures.mirror.exec;
+
+/**
+ * Violates {@code onlyOneModuleMayTerminateTheProcess} without naming {@code System} or
+ * {@code Runtime} at all.
+ *
+ * <p>{@code ProcessHandle.current().destroy()} signals the JVM's own process, which ends it as
+ * thoroughly as {@code System.exit} does. It is also the API a reader is most likely to reach for
+ * today, which is exactly why a rule that enumerated only the two older ones would look complete
+ * and let this through.
+ */
+public final class ExecTerminatingByProcessHandle {
+
+    public void giveUp() {
+        ProcessHandle.current().destroy();
+    }
+}

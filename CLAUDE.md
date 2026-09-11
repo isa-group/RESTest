@@ -72,11 +72,11 @@ was edited.
 
 ## Technical baseline
 
-- Library modules compile with `--release 21`. The CLI module and the toolchain are JDK 25.
-  CI tests 21, 25 and 26.
+- Every module compiles with `--release 21`, the CLI included (ADR-0003, amended at M0.2). The
+  build toolchain is JDK 25. CI tests 21, 25 and 26 on Linux, macOS and Windows.
 - No preview features in any published API — in particular no Structured Concurrency and no Lazy
   Constants.
-- Maven with the wrapper (`./mvnw`). Every module has a `module-info.java`.
+- Maven with the wrapper (`./mvnw`). Every production module has a `module-info.java`.
 - OpenAPI scope: 2.0, 3.0.x, 3.1.x. Not 3.2, not 4.0.
 - Stack: swagger-parser (behind our own interface), networknt json-schema-validator, picocli,
   OkHttp, virtual threads, ANTLR4, Choco, SQLite, JUnit 6, AssertJ, Testcontainers, WireMock,
@@ -97,6 +97,10 @@ restest-cli       command line. The only module allowed to terminate the process
 ```
 
 Dependencies point inwards, towards `restest-core`. Architecture tests enforce this.
+
+A tenth module, `restest-arch-tests`, holds those tests. It has no `src/main`, depends on all nine
+at test scope and is never published — ArchUnit reads bytecode, so the rules can only run somewhere
+that sees every module at once. See ADR-0004, Amendment (M0.2), and `docs/ci.md`.
 
 ## Commands
 
