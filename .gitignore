@@ -45,3 +45,42 @@ stateful_data.json
 /src/main/resources/Examples/Ex9_Generation_Execution/allure_report/anApiOfIceAndFire/
 /src/main/resources/Examples/Ex9_Generation_Execution/csv_report/anApiOfIceAndFire/
 /src/main/resources/Examples/Ex10_Iterative_Generation_Execution/allure_report/anApiOfIceAndFire/
+
+# ---------------------------------------------------------------------------
+# RESTest 2.0
+# ---------------------------------------------------------------------------
+# Build output
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test and run output
+restest-report/
+*.log
+/tmp/
+
+# Evaluation: scoreboards are committed, raw output is not
+evaluation/results/raw/
+evaluation/.scratch/
+
+# Personal notes, not part of the project documentation (Spanish; the repo is English-only)
+GUIA-CLAUDE-CODE.md
+
+# Claude Code local overrides
+.claude/settings.local.json
+
+# Bootstrap archive, left over from the initial import
+.restest2-bootstrap.zip

@@ -1,0 +1,105 @@
+name: CI
+
+on:
+  push:
+    branches: [v2]
+  pull_request:
+    branches: [v2]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test (Java ${{ matrix.java }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        java: ['21', '25', '26']
+    steps:
+      # NOTE: pin these to commit SHAs before the first release. Tags are mutable.
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Build and test
+        run: ./mvnw -B verify
+
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      # Architecture tests run as ordinary JUnit tests, so `verify` covers them.
+      # Coverage thresholds are configured in the JaCoCo plugin and fail the build themselves.
+      - name: Verify with coverage
+        run: ./mvnw -B verify -Pcoverage
+
+      # Deliberately corrupt our own code and check the tests notice. Scoped to the two
+      # modules where a silent mistake would be most damaging.
+      - name: Mutation testing (oracles and constraints)
+        run: ./mvnw -B org.pitest:pitest-maven:mutationCoverage -pl restest-oracles,restest-idl
+
+      # Hard rules from CLAUDE.md, checked mechanically rather than by reading.
+      - name: No benchmark-platform references in the tool
+        run: |
+          if grep -ril --exclude-dir=target "restgym" */src 2>/dev/null | grep .; then
+            echo "::error::A module under src/ references the evaluation platform. See ADR-0011."
+            exit 1
+          fi
+          echo "OK: no benchmark-platform references under src/"
+
+      - name: No AI abstractions
+        run: |
+          if grep -rilE --exclude-dir=target "langchain|openai|anthropic|\bLlmProvider\b" */src 2>/dev/null | grep .; then
+            echo "::error::An AI-specific abstraction appeared under src/. See ADR-0008."
+            exit 1
+          fi
+          echo "OK: no AI abstractions under src/"
+
+  integration:
+    name: Integration tests (containerised APIs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Integration tests
+        run: ./mvnw -B verify -Pit
+
+  smoke:
+    name: Smoke run (two APIs, short budget)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+      - name: Smoke run
+        run: ./mvnw -B verify -Psmoke
+      - name: Publish the smoke scoreboard
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-scoreboard
+          path: target/smoke/
+          if-no-files-found: ignore
