@@ -17,8 +17,8 @@
 /**
  * The domain model: what an API is, in types we own.
  *
- * <p>Three packages are exported and one is not. {@code io.restest.core.internal} holds plumbing
- * shared between the other three and is deliberately kept internal, so that it can change without
+ * <p>Four packages are exported and one is not. {@code io.restest.core.internal} holds plumbing
+ * shared between the other four and is deliberately kept internal, so that it can change without
  * changing anything a consumer compiled against.
  *
  * <p>The module requires nothing. That is the point of ADR-0004: a consumer depending on
@@ -26,6 +26,7 @@
  * driver.
  */
 module io.restest.core {
+    exports io.restest.core.execution;
     exports io.restest.core.json;
     exports io.restest.core.model;
     exports io.restest.core.schema;
