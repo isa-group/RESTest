@@ -27,13 +27,13 @@ class ValueOriginTest {
     private static final List<ValueOrigin> EVERY_KIND = List.of(
             ValueOrigin.DECLARED,
             new ValueOrigin.Generated("random"),
-            new ValueOrigin.Derived(TestCaseId.of("tc-1"), "response body field 'id'"));
+            new ValueOrigin.Derived(InteractionId.of("i-1"), "response body field 'id'"));
 
     @Test
     @DisplayName("every kind of origin can be told apart without a default case")
     void the_hierarchy_is_exhaustive() {
         assertThat(EVERY_KIND).map(ValueOriginTest::describe)
-                .containsExactly("declared", "generated: random", "derived from tc-1");
+                .containsExactly("declared", "generated: random", "derived from i-1");
     }
 
     @Test
@@ -51,24 +51,21 @@ class ValueOriginTest {
     }
 
     @Test
-    @DisplayName("a derived value must say what was taken from the test case it depends on")
+    @DisplayName("a derived value must say what was taken from the interaction it depends on")
     void derived_requires_a_description() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new ValueOrigin.Derived(TestCaseId.of("tc-1"), " "))
-                .withMessageContaining("tc-1");
+                .isThrownBy(() -> new ValueOrigin.Derived(InteractionId.of("i-1"), " "))
+                .withMessageContaining("i-1");
     }
 
     @Test
-    @DisplayName("a derived value names the test case it depends on, not an interaction")
-    void derived_points_at_a_test_case_identifier() {
-        // The property this fixes is enforced by the compiler, not by this assertion: Derived's
-        // canonical constructor takes a TestCaseId, so a caller cannot pass an InteractionId here
-        // even if one already existed. What the assertion checks is the ordinary getter contract.
-        TestCaseId earlierStep = TestCaseId.generate();
+    @DisplayName("a derived value names the interaction it was read from")
+    void derived_points_at_an_interaction_identifier() {
+        InteractionId sourceInteraction = InteractionId.generate();
 
-        ValueOrigin.Derived derived = new ValueOrigin.Derived(earlierStep, "the created id");
+        ValueOrigin.Derived derived = new ValueOrigin.Derived(sourceInteraction, "the created id");
 
-        assertThat(derived.from()).isEqualTo(earlierStep);
+        assertThat(derived.from()).isEqualTo(sourceInteraction);
     }
 
     /**

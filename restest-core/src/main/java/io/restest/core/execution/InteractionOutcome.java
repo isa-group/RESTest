@@ -59,25 +59,29 @@ public sealed interface InteractionOutcome {
      * <p>The status line and the headers are kept separately from {@code partial}, not folded into
      * it, because the common shape of this outcome parses both cleanly and only the body breaks - a
      * declared {@code Content-Length} the actual bytes fall short of, a chunked stream that never
-     * sends its final chunk. An oracle judging that (M3.2, WFC 900-909) needs the status and the
-     * headers the API claimed, not only the reason text; without them, the one detail that matters -
-     * what the response said about itself before failing to deliver it - would be exactly what this
-     * outcome discarded.
+     * sends its final chunk. An oracle judging that (M3.2, WFC 900-909) needs what the response
+     * claimed about itself, not only the reason text - the protocol version and reason phrase
+     * included, since whether a given framing failure is even possible (chunked encoding exists only
+     * under HTTP/1.1) depends on which protocol was in use.
      *
      * @param reason what was wrong, in a form fit to print in a report - "chunked encoding ended
      *     without a final zero-length chunk", not a stack trace
      * @param statusCode the status code, when the status line itself parsed
+     * @param reasonPhrase the reason phrase, when the protocol carries one and it parsed
+     * @param protocolVersion the protocol version, when it is known
      * @param headers the headers, when they parsed, in wire order, repeats kept
      * @param partial whatever body bytes were received before the exchange broke, when any were.
-     *     Declared under {@code application/octet-stream} when nothing said what they were meant to
-     *     be - the standard media type for exactly that - rather than repeating a
-     *     {@code Content-Type} the response may never have sent
+     *     Declared under {@link Payload#UNKNOWN_MEDIA_TYPE} when nothing said what they were meant
+     *     to be, rather than repeating a {@code Content-Type} the response may never have sent
      */
-    record MalformedResponse(String reason, Optional<Integer> statusCode, List<Header> headers,
+    record MalformedResponse(String reason, Optional<Integer> statusCode,
+            Optional<String> reasonPhrase, Optional<String> protocolVersion, List<Header> headers,
             Optional<Payload> partial) implements InteractionOutcome {
         public MalformedResponse {
             Objects.requireNonNull(reason, "reason");
             Objects.requireNonNull(statusCode, "statusCode");
+            Objects.requireNonNull(reasonPhrase, "reasonPhrase");
+            Objects.requireNonNull(protocolVersion, "protocolVersion");
             Objects.requireNonNull(headers, "headers");
             Objects.requireNonNull(partial, "partial");
             if (reason.isBlank()) {

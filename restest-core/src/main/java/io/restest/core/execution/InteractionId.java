@@ -21,12 +21,13 @@ import java.util.UUID;
 /**
  * Identity for an {@link Interaction}, stable across storage and re-analysis.
  *
- * <p>Not what {@link ValueOrigin.Derived} points at. It names the {@link TestCaseId} of the step it
- * depends on instead, precisely because that identifier exists at plan time and this one does not -
- * see {@link ValueOrigin.Derived} and {@link Interaction} for why the distinction matters and what it
- * relies on ({@link Interaction} documents the invariant that makes the resulting lookup
- * unambiguous). This identifier's job is narrower: giving the store and {@code restest recheck}
- * (M3.3) something stable to key one persisted attempt on.
+ * <p>This is also the value a {@link ValueOrigin.Derived} points at: a stateful value is read out of
+ * a specific interaction's response, and by the time it can be constructed at all that interaction
+ * already exists (see {@link ValueOrigin.Derived} for why there is no earlier moment the reference
+ * would need to be made). Pointing at this identifier, rather than at the {@link TestCaseId} of the
+ * step that produced it, is what keeps the dependency unaffected by anything the engine later does
+ * with that test case - a retry, a replay, or nothing at all: this identifies the one interaction
+ * whose data was actually used, permanently.
  */
 public record InteractionId(String value) {
 

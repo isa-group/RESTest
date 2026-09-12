@@ -35,7 +35,7 @@ import java.util.Objects;
  *       a boundary walk, a value dictionary, an external provider. {@code source} is an open name
  *       rather than an enumerated set, because none of those mechanisms exist yet in {@code core}
  *       and ADR-0008 forbids naming them here even once they do.</li>
- *   <li>{@link Derived} - taken from an earlier test case in this run, which is what makes a
+ *   <li>{@link Derived} - read out of an earlier interaction's response, which is what makes a
  *       stateful step representable: "the {@code petId} for this request is the {@code id} the
  *       server returned when we created the pet."</li>
  * </ul>
@@ -83,27 +83,29 @@ public sealed interface ValueOrigin {
     }
 
     /**
-     * Taken from an earlier test case in this run - the mechanism that makes a stateful step
+     * Read out of an earlier interaction's response - the mechanism that makes a stateful step
      * representable at all.
      *
-     * <p>{@code from} names a {@link TestCaseId}, not an {@link InteractionId}. This matters: a
-     * value's provenance has to be decidable at the moment a stateful generator plans it, which is
-     * before the earlier step has been sent - a {@link TestCaseId} exists from the instant
-     * {@link TestCase#of} is called, while an {@link InteractionId} is not minted until
-     * {@link Interaction#answered} or one of its siblings runs, by which time it is too late to have
-     * been the value the generator already committed to. Resolving the dependency - reading the
-     * response the referenced test case actually produced - is done by looking up, in the store, the
-     * {@link Interaction} whose {@link Interaction#testCase()} carries this identifier: one test
-     * case is attempted at most once, so the join is unambiguous.
+     * <p>{@code from} names an {@link InteractionId}, not a {@link TestCaseId}, and this is not a
+     * limitation: by the time a stateful generator can construct this value at all, the interaction
+     * it depends on already exists and has already been read. {@link TestCase} holds concrete,
+     * already-resolved values - never a placeholder to fill in later, per ADR-0005 - so a
+     * {@code ParameterValue} carrying {@code Derived} can only be built once its {@code value()} is
+     * known, which means the earlier interaction's response has already been inspected to produce
+     * it. There is no earlier moment at which this edge would need to be committed to, and therefore
+     * nothing gained by pointing at an identifier, such as {@link TestCaseId}, that exists sooner: an
+     * {@link InteractionId} names exactly the interaction whose data was actually used, which is
+     * unaffected by whatever the engine does afterwards with the test case that produced it - a
+     * retry, a replay, or nothing at all.
      *
-     * @param from the test case this value depends on
-     * @param description what was taken from its outcome, for a human to read - "response body
-     *     field 'id'" - not a parseable expression. The extraction grammar a stateful generator
-     *     actually uses (a JSONPath, an OpenAPI {@code links} runtime expression, whatever the
-     *     operation dependency graph infers) is M4.1-4.3's decision, none of which exist yet;
-     *     committing to one now would mean guessing at a design several milestones away
+     * @param from the interaction this value was read from
+     * @param description what was taken from it, for a human to read - "response body field 'id'" -
+     *     not a parseable expression. The extraction grammar a stateful generator actually uses (a
+     *     JSONPath, an OpenAPI {@code links} runtime expression, whatever the operation dependency
+     *     graph infers) is M4.1-4.3's decision, none of which exist yet; committing to one now would
+     *     mean guessing at a design several milestones away
      */
-    record Derived(TestCaseId from, String description) implements ValueOrigin {
+    record Derived(InteractionId from, String description) implements ValueOrigin {
         public Derived {
             Objects.requireNonNull(from, "from");
             Objects.requireNonNull(description, "description");

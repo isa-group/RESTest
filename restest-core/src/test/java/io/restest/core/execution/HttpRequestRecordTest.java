@@ -19,7 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import io.restest.core.model.HttpMethod;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +44,7 @@ class HttpRequestRecordTest {
         HttpRequestRecord request = new HttpRequestRecord(HttpMethod.GET,
                 "https://api.example.com/pets", List.of(
                         Header.of("X-Trace", "a"),
-                        Header.of("X-Trace", "b")), java.util.Optional.empty());
+                        Header.of("X-Trace", "b")), Optional.empty());
 
         assertThat(request.headerValues("X-Trace")).containsExactly("a", "b");
     }
@@ -52,7 +54,7 @@ class HttpRequestRecordTest {
     void headers_are_found_case_insensitively() {
         HttpRequestRecord request = new HttpRequestRecord(HttpMethod.GET,
                 "https://api.example.com/pets",
-                List.of(Header.of("Authorization", "Bearer x")), java.util.Optional.empty());
+                List.of(Header.of("Authorization", "Bearer x")), Optional.empty());
 
         assertThat(request.headerValues("authorization")).containsExactly("Bearer x");
         assertThat(request.headerValues("AUTHORIZATION")).containsExactly("Bearer x");
@@ -64,7 +66,7 @@ class HttpRequestRecordTest {
         HttpRequestRecord request = new HttpRequestRecord(HttpMethod.POST,
                 "https://api.example.com/pets",
                 List.of(Header.of("Authorization", "Bearer super-secret")),
-                java.util.Optional.of(Payload.text("{}", "application/json")));
+                Optional.of(Payload.text("{}", "application/json")));
 
         assertThat(request).hasToString("HttpRequestRecord[POST https://api.example.com/pets, "
                 + "headers=[Authorization], body=Payload[2 bytes, application/json]]");
@@ -90,10 +92,10 @@ class HttpRequestRecordTest {
     @Test
     @DisplayName("changing the list a request was built from does not change the request")
     void headers_are_copied() {
-        List<Header> headers = new java.util.ArrayList<>(List.of(Header.of("X-Trace", "a")));
+        List<Header> headers = new ArrayList<>(List.of(Header.of("X-Trace", "a")));
 
         HttpRequestRecord request = new HttpRequestRecord(HttpMethod.GET,
-                "https://api.example.com/pets", headers, java.util.Optional.empty());
+                "https://api.example.com/pets", headers, Optional.empty());
         headers.clear();
 
         assertThat(request.headers()).hasSize(1);

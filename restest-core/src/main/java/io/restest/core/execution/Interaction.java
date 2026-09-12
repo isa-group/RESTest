@@ -17,6 +17,7 @@ package io.restest.core.execution;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -35,29 +36,17 @@ import java.util.Optional;
  * inventing one would mean fabricating {@link #sentAt()}. Counting "planned versus attempted" is the
  * engine's and the report's job (M1.3, M3.6).
  *
- * <p><b>Invariant: one test case produces at most one interaction.</b> This is what makes
- * {@link ValueOrigin.Derived}'s reference sound - it names a {@link TestCaseId}, not this type's own
- * identity, precisely so that a dependency can be committed to before the interaction it resolves
- * against exists; resolving it means finding the one interaction whose {@link #testCase()} carries
- * that identifier, which only works if there is exactly one. Two consequences follow, both the
- * engine's (M1.3) to keep:
- *
- * <ul>
- *   <li>A retry is a new {@link TestCase} - a fresh {@link TestCaseId} - not a second interaction
- *       for the one that failed. Retrying while reusing the identifier would give a later step's
- *       {@code Derived} edge two interactions to resolve against, with nothing here to break the
- *       tie.</li>
- *   <li>A redirect the engine follows is not a second interaction either. This record's
- *       {@link #request()} is what the test case asked for; the {@link #outcome()} recorded is the
- *       final one, the way an ordinary HTTP client already reports it after following any redirects
- *       itself. Whether the intermediate hops are worth capturing at all is a question for whoever
- *       first needs to judge a redirect in its own right, not for this increment.</li>
- * </ul>
+ * <p>Nothing here constrains how many interactions one {@link TestCase} may end up producing - a
+ * retry, a replay, a redirect the engine chooses to record as its own attempt rather than fold into
+ * one outcome are all the engine's and the store's business, not a shape this record has to
+ * anticipate. That is what {@link ValueOrigin.Derived} points at an {@link InteractionId} rather than
+ * at a {@link TestCase}'s own identity for: it names the one interaction whose data was actually
+ * read, which stays meaningful whatever else happens to the test case that produced it.
  *
  * <p>A stateful step's {@link Interaction} is otherwise not a different shape from a stateless one's
  * - it is one whose {@link TestCase} happens to carry a {@link ValueOrigin.Derived}. A chain of steps
- * is a chain of {@link TestCaseId}s, discoverable from the store, rather than a container this type
- * introduces.
+ * is a chain of {@link InteractionId}s, discoverable from the store, rather than a container this
+ * type introduces.
  *
  * @param id this interaction's identity, stable across storage and re-analysis
  * @param testCase the test case that produced this attempt
@@ -95,10 +84,12 @@ public record Interaction(
 
     /** A fresh interaction whose response broke HTTP framing before it could be read as one. */
     public static Interaction malformedResponse(TestCase testCase, HttpRequestRecord request,
-            String reason, Optional<Integer> statusCode, java.util.List<Header> headers,
-            Optional<Payload> partial, Instant sentAt, Duration elapsed) {
+            String reason, Optional<Integer> statusCode, Optional<String> reasonPhrase,
+            Optional<String> protocolVersion, List<Header> headers, Optional<Payload> partial,
+            Instant sentAt, Duration elapsed) {
         return new Interaction(InteractionId.generate(), testCase, request,
-                new InteractionOutcome.MalformedResponse(reason, statusCode, headers, partial),
+                new InteractionOutcome.MalformedResponse(reason, statusCode, reasonPhrase,
+                        protocolVersion, headers, partial),
                 sentAt, elapsed);
     }
 

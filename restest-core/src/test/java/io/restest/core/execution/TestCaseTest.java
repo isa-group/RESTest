@@ -101,11 +101,11 @@ class TestCaseTest {
     }
 
     @Test
-    @DisplayName("a stateful step's value names the earlier test case it depends on")
-    void a_stateful_value_names_its_source_test_case() {
-        TestCase createPet = TestCase.of(OperationId.of("addPet"), List.of());
+    @DisplayName("a stateful step's value names the interaction it was read from")
+    void a_stateful_value_names_its_source_interaction() {
+        InteractionId createdPet = InteractionId.generate();
         ParameterValue petId = ParameterValue.of("petId", ParameterLocation.PATH,
-                JsonValue.of(7L), new ValueOrigin.Derived(createPet.id(),
+                JsonValue.of(7L), new ValueOrigin.Derived(createdPet,
                         "response body field 'id'"));
 
         TestCase deletePet = TestCase.of(
@@ -114,7 +114,7 @@ class TestCaseTest {
         ValueOrigin origin = deletePet.parameterValue("petId", ParameterLocation.PATH)
                 .orElseThrow().origin();
         assertThat(origin).isInstanceOf(ValueOrigin.Derived.class);
-        assertThat(((ValueOrigin.Derived) origin).from()).isEqualTo(createPet.id());
+        assertThat(((ValueOrigin.Derived) origin).from()).isEqualTo(createdPet);
     }
 
     @Test
