@@ -20,11 +20,11 @@
  * shapes ({@code schema}) that data must follow. Every other part of RESTest is built on top of
  * these definitions.
  *
- * <p>Six packages are exported and one is not. {@code io.restest.core.internal} holds small
- * helpers shared between the other six and is deliberately kept internal, so it can change freely
+ * <p>Seven packages are exported and one is not. {@code io.restest.core.internal} holds small
+ * helpers shared between the other seven and is deliberately kept internal, so it can change freely
  * without affecting anything built on top of this module.
  *
- * <p>Two of the six have names close enough to be worth telling apart on sight.
+ * <p>Two of the seven have names close enough to be worth telling apart on sight.
  * {@code io.restest.core.execution} is data: one test attempt, the request sent, the reply received.
  * {@code io.restest.core.exec} is the door that produces that data - the interface an HTTP client
  * implements - and it is named after the module that implements it, {@code restest-exec}, exactly as
@@ -42,4 +42,5 @@ module io.restest.core {
     exports io.restest.core.model;
     exports io.restest.core.schema;
     exports io.restest.core.spec;
+    exports io.restest.core.store;
 }

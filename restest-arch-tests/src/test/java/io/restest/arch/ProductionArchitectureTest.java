@@ -68,6 +68,13 @@ class ProductionArchitectureTest {
     }
 
     @Test
+    @DisplayName("only restest-store references the database driver and the JSON library (ADR-0004)")
+    void only_restest_store_references_the_database_and_json_libraries() {
+        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "store", "org.sqlite.."));
+        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "store", "com.fasterxml.."));
+    }
+
+    @Test
     @DisplayName("only restest-cli terminates the process (ADR-0004)")
     void only_restest_cli_terminates_the_process() {
         check(ArchitectureRules.onlyOneModuleMayTerminateTheProcess(ROOT, "cli"));

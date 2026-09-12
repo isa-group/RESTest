@@ -106,9 +106,10 @@ final class ArchitectureRules {
 
     /**
      * A third-party library is confined to one module, so replacing it later is a change limited to
-     * that one module. Two of them are: the library that reads OpenAPI documents, and the one that
-     * sends HTTP requests. The forbidden package is a parameter so the self-test can point the same
-     * rule at something it can actually depend on, without needing either real library itself.
+     * that one module. Four are, so far: the library that reads OpenAPI documents, the one that sends
+     * HTTP requests, the database that stores a run, and the one that turns JSON into text. The
+     * forbidden package is a parameter so the self-test can point the same rule at something it can
+     * actually depend on, without needing any of those real libraries itself.
      */
     static ArchRule onlyOneModuleDependsOn(String root, String module, String forbiddenPackage) {
         return noClasses()
