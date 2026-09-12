@@ -114,7 +114,9 @@ observed is persisted, which is what makes offline re-analysis possible.
 2. **One event stream, many listeners.** Reports, metrics, feedback and oracles all subscribe.
    [ADR-0006](adr/0006-event-stream-and-store.md)
 3. **Persist everything.** The interaction store is what makes offline re-checking, corpus oracles
-   and honest post-hoc analysis possible, and it costs almost nothing.
+   and honest post-hoc analysis possible, and it costs almost nothing. One run is one SQLite file,
+   readable by anything that reads SQLite; NDJSON is one of the report formats at M3.5, not a second
+   store. [ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4
 4. **No global mutable state.** Two runs coexist in one JVM. Enforced by an architecture test.
 5. **The loop is never blocked; idle time is reported.** [ADR-0009](adr/0009-non-blocking-engine.md)
 6. **Narrow SPIs, service discovery, module boundaries.** A new oracle or provider is one class.
@@ -317,7 +319,8 @@ Versions are pinned here and in the root POM; the two are expected to agree.
 | Concurrency | Virtual threads | JDK 21+ |
 | IDL parser | ANTLR4 | 4.13.x |
 | Constraint solver | Choco, behind an interface | 4.10.x |
-| Interaction store | SQLite (`org.xerial:sqlite-jdbc`) plus NDJSON | — |
+| Interaction store | SQLite (`org.xerial:sqlite-jdbc`), one file per run ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4) | 3.50.3.0 |
+| JSON text, at the store's edge only | `com.fasterxml.jackson.core:jackson-core` | 2.22.1 |
 | Unit tests | JUnit Jupiter | 6.1.3 |
 | Assertions | AssertJ | 3.27.7 |
 | Container-based integration tests | Testcontainers | 2.0.5 |

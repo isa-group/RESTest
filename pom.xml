@@ -78,6 +78,16 @@
         <snakeyaml.version>2.6</snakeyaml.version>
         <okhttp.version>5.5.0</okhttp.version>
         <wiremock.version>3.13.2</wiremock.version>
+        <sqlite.version>3.50.3.0</sqlite.version>
+        <jackson.version>2.22.1</jackson.version>
+
+        <!--
+          Default for the JVM arguments surefire passes on. JaCoCo's prepare-agent goal replaces
+          this with the agent it needs, so a module adding its own argument writes
+          "@{argLine} ..." and keeps coverage working; this empty default is what stops that
+          reference from failing to resolve when coverage is switched off.
+        -->
+        <argLine></argLine>
     </properties>
 
     <dependencyManagement>
@@ -120,6 +130,16 @@
                 <groupId>org.wiremock</groupId>
                 <artifactId>wiremock</artifactId>
                 <version>${wiremock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial</groupId>
+                <artifactId>sqlite-jdbc</artifactId>
+                <version>${sqlite.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
