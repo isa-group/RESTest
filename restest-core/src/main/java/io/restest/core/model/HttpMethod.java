@@ -19,11 +19,12 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * The HTTP methods an operation can use.
+ * The HTTP methods (GET, POST, and so on) that an API operation can use.
  *
- * <p>The eight OpenAPI has always allowed, plus {@code QUERY}, which OpenAPI 3.2 adds for
- * safe requests that carry a body. The scope in {@code docs/DESIGN.md} covers every 3.x, so a 3.2
- * document using it must land somewhere rather than being skipped.
+ * <p>These are the eight methods OpenAPI has always allowed, plus {@code QUERY}, added by OpenAPI
+ * 3.2 for requests that carry a body without changing anything on the server. RESTest supports every
+ * version of OpenAPI 3.x, so an operation using {@code QUERY} must be represented too, rather than
+ * being skipped.
  */
 public enum HttpMethod {
     GET,

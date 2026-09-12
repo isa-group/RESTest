@@ -24,23 +24,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Applies every rule in {@link ArchitectureRules} to the nine production modules.
+ * Applies every rule in {@link ArchitectureRules} to the project's real, production code.
  *
- * <p>Tests are excluded from the import, so the deliberate violations under
- * {@code io.restest.arch.fixtures} - which compile to {@code target/test-classes} - are invisible
- * here. {@link ArchitectureRulesSelfTest} is where those are used.
+ * <p>Test code is excluded from the import, so the small examples under
+ * {@code io.restest.arch.fixtures}, which deliberately break these rules, are invisible here.
+ * {@link ArchitectureRulesSelfTest} is where those are used instead, to prove the rules actually
+ * report what they claim to.
  *
- * <p>Until M1.1a the production modules contained nothing but {@code module-info.java}, and each
- * check here skipped with a stated reason rather than passing over an empty set - a green build that
- * guards nothing is the failure mode ADR-0004 exists to prevent. The domain model has since arrived,
- * so every check now runs against real classes and the skips are gone. What proved the rules worked
- * in the meantime, and still proves that each of them reports what it claims to, is
- * {@link ArchitectureRulesSelfTest}.
- *
- * <p>{@link HarnessCoverageTest} is what keeps this test honest from here on: it compares the
- * classes each module compiled against the classes this import actually contains, so a module that
- * quietly leaves the import - a dropped dependency, a mis-scoped jar - fails there instead of
- * silently shrinking the subject set here.
+ * <p>{@link HarnessCoverageTest} keeps this test honest: it compares the classes each module
+ * compiled against the classes this import actually contains, so a module that quietly drops out of
+ * the import - a missing dependency, a misconfigured build - fails there instead of silently
+ * shrinking what gets checked here.
  */
 class ProductionArchitectureTest {
 
@@ -89,13 +83,10 @@ class ProductionArchitectureTest {
     /**
      * Runs a rule against the production modules.
      *
-     * <p>{@code allowEmptyShould} stays on for a reason that outlasted M0.2: the modules fill in
-     * across different milestones, so a rule scoped to one of them - the parser confinement rule
-     * now that {@code restest-core} holds classes but {@code restest-spec} does not yet -
-     * legitimately has an empty subject set for a while. The case it must not excuse is every rule
-     * being empty at once, which stopped being possible when the domain model arrived: the
-     * inward-dependency rule and the no-network rule both have subjects now, and
-     * {@link HarnessCoverageTest} fails if the import ever loses a module.
+     * <p>{@code allowEmptyShould} stays on because the modules fill in one at a time as the project
+     * grows, so a rule scoped to a module that has no classes in it yet legitimately has nothing to
+     * check for a while. What it must not excuse is every rule being empty at once - and
+     * {@link HarnessCoverageTest} fails if the import ever silently loses a whole module.
      */
     private static void check(ArchRule rule) {
         rule.allowEmptyShould(true).check(productionClasses);

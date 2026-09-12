@@ -21,16 +21,15 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * The request as it actually went out: the method, the resolved URL and the exact headers and body -
- * not the operation's template, the values already substituted in.
+ * A request exactly as it was actually sent to the API: the method, the final URL, and the exact
+ * headers and body - with every value already filled in, not the operation's template.
  *
- * <p>This is the request for whichever attempt the {@link Interaction} it belongs to represents.
- * Nothing here decides, on its own, what "one attempt" means when the engine follows a redirect:
- * {@link Interaction}'s Javadoc says plainly that the engine is free to record each hop as its own
- * interaction, in which case this is that hop's own request, or to fold a whole redirect chain into
- * one interaction, in which case this is the first request of the chain and the outcome is the
- * chain's final result. Either way, this record is one HTTP request, exactly as it was sent - which
- * is also what a {@code curl} reproduction (M3.6) needs to show for whichever request it names.
+ * <p>This is the request belonging to whichever {@link Interaction} it is part of. If the HTTP
+ * client follows a redirect, it may record each hop as its own interaction, in which case this is
+ * that one hop's request, or it may fold a whole redirect chain into a single interaction, in which
+ * case this is the first request of the chain. Either way, this record always describes one HTTP
+ * request, exactly as it was sent - which is also what letting someone reproduce a request by hand
+ * (for example as a {@code curl} command) needs to show.
  *
  * @param method the HTTP method used
  * @param url the exact URL requested, path parameters substituted and the query string appended
@@ -62,14 +61,13 @@ public record HttpRequestRecord(HttpMethod method, String url, List<Header> head
     }
 
     /**
-     * The method, the URL, the sent headers' *names* and the body's own summary - never a header's
-     * value. A record's generated {@code toString} would print every header verbatim, and a header
-     * is exactly where an {@code Authorization} bearer token or an API key (M2.6) is carried; a log
-     * line or a report that prints an interaction must not repeat one back.
+     * The method, the URL, the *names* of the headers that were sent, and a summary of the body -
+     * but never a header's value. Headers commonly carry credentials such as an {@code Authorization}
+     * token or an API key, so a log line or report that prints an interaction must not repeat one
+     * back by accident.
      *
-     * <p>This does not solve secret redaction in general - a credential inside a query string or a
-     * request body is not caught by it, and doing that properly needs the request's meaning, not
-     * just its shape. That is left to the reporting work in M3.6.
+     * <p>This does not protect every kind of secret - a credential placed inside a query string or a
+     * request body is not caught by this alone.
      */
     @Override
     public String toString() {

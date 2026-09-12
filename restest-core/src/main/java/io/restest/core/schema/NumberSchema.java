@@ -22,17 +22,17 @@ import java.util.Optional;
 /**
  * A number, whole or not, with the bounds the document states.
  *
- * <p>{@link BigDecimal} rather than {@code double} throughout: a bound is a fact the API will
- * enforce exactly, and the whole point of M2.3's boundary walk is to send precisely the documented
- * limit and precisely one step past it. Rounding the limit on the way in would make that test a
+ * <p>{@link BigDecimal} is used instead of {@code double} throughout: a bound is a fact the API will
+ * enforce exactly, and one useful way RESTest tests that is by sending precisely the documented limit
+ * and precisely one step past it. Rounding the limit on the way in would turn that check into a
  * guess.
  *
- * <p>The exclusive bounds are numbers, not flags, which is the JSON Schema 2020-12 and OpenAPI 3.1
- * shape and the one that loses nothing. OpenAPI 3.0 writes the same fact as {@code minimum: 5}
- * alongside {@code exclusiveMinimum: true}, and the parser converts: the value moves to
- * {@link #exclusiveMinimum()} and {@link #minimum()} is left empty. Modelled the other way round -
- * a {@code minimum} plus a boolean - a 3.1 document writing {@code exclusiveMinimum: 5} with no
- * {@code minimum} has nowhere to put the number, and the bound is silently lost.
+ * <p>The exclusive bounds ("must be strictly less/greater than") are stored as numbers, not as a flag
+ * next to a plain bound, since that is the shape that loses no information across OpenAPI versions:
+ * an older document writing {@code minimum: 5} alongside {@code exclusiveMinimum: true} is converted
+ * on reading so that the value moves to {@link #exclusiveMinimum()} and {@link #minimum()} is left
+ * empty, and a newer document writing {@code exclusiveMinimum: 5} directly has a natural place to put
+ * it too.
  *
  * @param metadata the type-independent facts
  * @param kind whether the value must be whole
@@ -88,11 +88,10 @@ public record NumberSchema(
 
     /*
      * There is deliberately no lowerBound()/upperBound() pair collapsing the four components into
-     * two. A bound without its strictness is the wrong answer to every question worth asking:
-     * M2.3's boundary walk sends precisely the documented limit and precisely one step past it, and
-     * whether the limit itself is accepted is the whole difference between the two. Collapsing also
-     * has to decide what a document stating both an inclusive and an exclusive bound means, which
-     * JSON Schema answers (the tighter wins) and a convenience accessor would get wrong quietly.
-     * Whatever M2.3 needs, it can introduce with the strictness attached.
+     * two. A bound without knowing whether it is inclusive or exclusive is the wrong answer to every
+     * question worth asking here, since whether the limit itself is accepted is the whole difference
+     * between the two. Collapsing them would also have to decide what a document stating both an
+     * inclusive and an exclusive bound means, which JSON Schema already answers (the tighter one
+     * wins) and a convenience accessor could easily get wrong.
      */
 }

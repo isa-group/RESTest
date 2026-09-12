@@ -33,10 +33,12 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * The architecture rules that ADR-0004 and the design principles in {@code CLAUDE.md} describe in
- * prose. This class holds the rules; {@link ProductionArchitectureTest} applies them to the real
- * modules and {@link ArchitectureRulesSelfTest} applies them to deliberate violations, proving each
- * rule actually reports what it claims to.
+ * The rules that keep this project's own code organised the way it is meant to be: which parts of
+ * the tool are allowed to depend on which others, and which parts may end the program.
+ *
+ * <p>This class holds the rules themselves; {@link ProductionArchitectureTest} applies them to the
+ * real code and {@link ArchitectureRulesSelfTest} applies them to small examples that deliberately
+ * break each rule, proving that the rule actually reports what it claims to.
  *
  * <p>Every rule is a factory taking the root package it should reason about. Rules such as "only
  * {@code restest-spec} may see the parser" name module packages in their own text, so they can only
@@ -50,27 +52,24 @@ final class ArchitectureRules {
     }
 
     /**
-     * ADR-0004: "Dependencies point inwards, towards restest-core." Expressed as the exact graph the
-     * module POMs declare, so a POM that grows an outward dependency fails here rather than being
-     * noticed years later.
+     * "Dependencies point inwards, towards restest-core" - one of this project's own module rules,
+     * expressed here as the exact graph the module build files declare, so a change that adds a
+     * dependency in the wrong direction fails here rather than being noticed years later.
      *
-     * <p>{@code withOptionalLayers} is required because the layers are empty until M1.1 introduces
-     * the domain model. It permits a layer to have no classes; it does not permit a layer to be
-     * accessed by someone who may not access it.
+     * <p>{@code withOptionalLayers} is required because some of these module packages start out with
+     * no classes in them and fill in over time. It permits a layer to have no classes; it does not
+     * permit a layer to be accessed by someone who may not access it.
      *
-     * <p>{@code ensureAllClassesAreContainedInArchitecture} closes the gap that pairing would
-     * otherwise open. {@code consideringOnlyDependenciesInLayers} ignores dependencies of any class
-     * that matches no layer, so a package outside the nine - {@code io.restest.model}, or
-     * {@code io.restest.oracle} written in the singular - would have every one of its dependencies
-     * unchecked while the build stayed green. Requiring every class to belong to a layer turns that
-     * silent gap into a failure that names the package.
+     * <p>{@code ensureAllClassesAreContainedInArchitecture} closes a gap that would otherwise exist.
+     * {@code consideringOnlyDependenciesInLayers} ignores dependencies of any class that matches no
+     * layer, so a package outside the nine module packages this project uses - a misspelling, for
+     * example - would have every one of its dependencies unchecked while the build stayed green.
+     * Requiring every class to belong to a layer turns that silent gap into a failure that names the
+     * package.
      *
-     * <p>A consequence worth knowing before meeting it: this also rejects a class placed directly in
-     * {@code io.restest}, a root {@code package-info} included, because that package is not one of
-     * the nine modules. That is the intended reading of ADR-0004 - every class belongs to a module -
-     * and not an oversight. If a genuine root-level class is ever wanted, add it through
-     * {@code ensureAllClassesAreContainedInArchitectureIgnoring} deliberately rather than widening
-     * a layer to accommodate it.
+     * <p>A consequence worth knowing before meeting it: this also rejects a class placed directly
+     * outside all nine module packages, a root package-level file included. That is the intended
+     * reading of the rule - every class belongs to a module - and not an oversight.
      */
     static ArchRule dependenciesPointInwards(String root) {
         LayeredArchitecture architecture = Architectures.layeredArchitecture()
@@ -103,9 +102,10 @@ final class ArchitectureRules {
     }
 
     /**
-     * ADR-0007: the third-party specification parser is confined to one module, so replacing it is a
-     * module-sized change. The forbidden package is a parameter so the self-test can point the same
-     * rule at something it can actually depend on without dragging swagger-parser into this module.
+     * The third-party library that reads OpenAPI documents is confined to one module, so replacing it
+     * later is a change limited to that one module. The forbidden package is a parameter so the
+     * self-test can point the same rule at something it can actually depend on, without needing that
+     * real third-party library itself.
      */
     static ArchRule onlyOneModuleDependsOn(String root, String module, String forbiddenPackage) {
         return noClasses()
@@ -117,9 +117,9 @@ final class ArchitectureRules {
     }
 
     /**
-     * ADR-0004 and design principle 9: RESTest is usable as a library, so nothing but the
-     * command-line module may end the JVM. A library that ends the process takes its host down
-     * with it.
+     * RESTest is usable as a library, embedded inside someone else's program, so nothing but its own
+     * command-line module may end the whole process. A library that ends the process takes its host
+     * program down with it.
      */
     static ArchRule onlyOneModuleMayTerminateTheProcess(String root, String module) {
         return noClasses()
@@ -148,8 +148,8 @@ final class ArchitectureRules {
      * <p>The {@code ProcessHandle} clause is narrowed, for a reason that would otherwise surface as
      * a false positive in someone else's pull request. {@code processHandle.destroy()} reads
      * identically in bytecode whether the handle is this JVM's or a child process's: both are an
-     * {@code invokeinterface} on {@code java.lang.ProcessHandle}. Killing a child is legitimate and
-     * necessary - the out-of-process transport at M6.2 has to reap its helper - so flagging every
+     * {@code invokeinterface} on {@code java.lang.ProcessHandle}. Killing a child process is
+     * legitimate and sometimes necessary, and does not end our own process, so flagging every
      * {@code destroy} would fail correct code, and a rule that fails correct code gets switched off.
      * The clause therefore fires only where the same class also calls {@code ProcessHandle.current()},
      * which is the only way to obtain a handle on this JVM. Both shapes have fixtures: one that
@@ -192,20 +192,20 @@ final class ArchitectureRules {
     }
 
     /**
-     * Design principle 6: "No global mutable state. Two runs must coexist in one JVM." A static
-     * field that one run can write is a channel through which it can corrupt another.
+     * "No global mutable state. Two runs must coexist in one JVM." A static field that one run can
+     * write to is a channel through which it can corrupt another run happening at the same time.
      *
      * <p>Synthetic fields are excluded, which narrows the rule to what a person can actually write.
-     * The exclusion is not theoretical tidiness: it was added at M1.1a after the first production
-     * enum switch arrived. A switch over an enum makes the compiler generate a lookup table, and the
-     * two compilers this repository meets disagree about it. {@code javac} puts a
+     * The exclusion is not theoretical tidiness: it was added after the first production enum switch
+     * arrived. A switch over an enum makes the compiler generate a lookup table, and the two
+     * compilers this repository meets disagree about it. {@code javac} puts a
      * {@code static final int[] $SwitchMap$...} on a synthetic nested class - final, no violation.
      * The Eclipse compiler, which is what an IDE writes into {@code target/classes} when it builds
      * alongside Maven, puts a {@code private static volatile int[] $SWITCH_TABLE$...} on the enum
      * itself - not final, and reported.
      *
      * <p>The rule would therefore have failed for any contributor whose IDE compiled last, naming
-     * their enum switch as a breach of design principle 6. Nothing about that report would have been
+     * their enum switch as global mutable state. Nothing about that report would have been
      * actionable: the field is not in the source, and no run can reach it. A rule that fails correct
      * code gets switched off, and then it guards nothing.
      *
@@ -246,9 +246,8 @@ final class ArchitectureRules {
      */
 
     /**
-     * ADR-0004: "restest-core: domain model and interfaces. No network, no parser, no heavy
-     * dependencies." The rule states the "no network" half, which is the one a well-meaning change
-     * is most likely to breach.
+     * The domain-model module holds no network, parser or other heavy dependency. This checks the
+     * "no network" half, which is the one a well-meaning change is most likely to breach by accident.
      */
     static ArchRule moduleHoldsNoDependencyOn(String root, String module, String... forbidden) {
         DescribedPredicate<JavaClass> forbiddenPackages = resideInAnyPackage(forbidden);

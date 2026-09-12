@@ -16,16 +16,19 @@
 package io.restest.core.schema;
 
 /**
- * The shape of a value: what an API says it will accept or return, in types we own.
+ * The shape of a value: what an API says a field, a parameter or a whole request or response body
+ * is allowed to look like.
  *
- * <p>A specification describes shapes in JSON Schema, whose vocabulary is far wider than a black-box
- * tester can act on and whose spelling differs between OpenAPI 2.0, 3.0 and 3.1. Everything after
- * the parser - generating a value, judging a response, explaining a failure - works against this
- * hierarchy instead, so those differences are dealt with once, in {@code restest-spec}, and nowhere
- * else.
+ * <p>An API's specification describes these shapes using JSON Schema, a much richer notation than a
+ * tool that only sends requests and checks responses actually needs, and one whose exact spelling
+ * differs across OpenAPI versions. Everything in RESTest that comes after reading the specification -
+ * choosing what value to send, checking whether a response matches, explaining a failure - works
+ * against this simpler set of ten shapes instead, so those version differences only ever have to be
+ * dealt with once, in the part of RESTest that reads the specification, and nowhere else.
  *
- * <p>Sealed, so that a generator or an oracle that handles nine of the ten cases fails to
- * compile rather than falling through to a default and quietly producing nothing:
+ * <p>There are exactly ten kinds of shape, which the compiler enforces: code that is meant to handle
+ * every kind must actually handle all ten, rather than falling through to a default and quietly
+ * doing nothing useful for the one it missed:
  *
  * {@snippet :
  * Object value = switch (schema) {
@@ -42,14 +45,14 @@ package io.restest.core.schema;
  * };
  * }
  *
- * <p>Three of those cases are worth separating. {@link AnySchema} is a schema that declares no type -
- * legal, common, and meaning "any value will do". {@link UnsupportedSchema} is a shape we could not
- * represent: a composition we do not read until M2.1, a reference that does not resolve, a
- * construct from a version of the format we have not caught up with. Design principle 2 says a bad
- * specification must never crash the tool, and this is where that principle lands in the data: the
- * problem is carried, with its reason, instead of being thrown or silently flattened into
- * "anything". {@link NothingSchema} is the third: the document was understood and what it said is
- * that no value is acceptable.
+ * <p>Three of those ten are worth calling out. {@link AnySchema} is a schema that declares no type at
+ * all - legal, common, and meaning "any value will do". {@link UnsupportedSchema} is a shape RESTest
+ * could not represent: a combination of shapes it does not yet understand, a reference that does not
+ * resolve, a construct from a newer version of the format. RESTest's rule is that a badly written or
+ * unusual specification must never crash the tool, and this is that rule applied to data: the
+ * problem is recorded, with its reason, instead of stopping the run or silently pretending "anything
+ * goes". {@link NothingSchema} is the third: the document was understood perfectly, and what it said
+ * is that no value at all is acceptable.
  *
  * <p>Every implementation is an immutable record whose first component is its {@link SchemaMetadata}
  * - the facts JSON Schema attaches to a value regardless of its type.

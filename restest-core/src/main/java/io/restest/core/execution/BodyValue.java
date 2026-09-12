@@ -19,25 +19,20 @@ import io.restest.core.json.JsonValue;
 import java.util.Objects;
 
 /**
- * The request body chosen for a {@link TestCase}, when the operation takes one.
+ * The request body chosen for one {@link TestCase}, for an operation that takes one.
  *
- * <p>{@code mediaType} is kept as chosen, not normalised: it is not a lookup key here the way
- * {@link io.restest.core.model.RequestBodyModel#schemaFor(String)}'s argument is, it is the
- * media type this attempt actually used, and whoever judges it against the declared shape
- * normalises at that point.
+ * <p>{@code mediaType} is kept exactly as chosen for this attempt, not adjusted in any way; matching
+ * it against what the API's specification declares is a separate step, done elsewhere.
  *
- * <p>{@code origin} is one {@link ValueOrigin} for the whole body, not one per field. A body whose
- * fields come from several places at once - {@code {"id": <derived from the resource just created>,
- * "name": <generated>}}, the ordinary shape of an update in a CRUD sequence - cannot have that
- * distinction recorded here; the store can say the body as a whole was, say, partly derived, but
- * not which field. Recording per-field provenance inside a JSON document is a real design question
- * - it needs an annotated-value shape this record does not have - and it belongs with M2.5, which
- * builds request-body generation, or with M4 once a generator actually produces such bodies. Nothing
- * here should be read as having solved it.
+ * <p>{@code origin} records where the body as a whole came from, not a separate origin for each of
+ * its fields. A body can well have fields that came from different places at once - for example, an
+ * identifier read from an earlier response and a name that was freely generated - but this record
+ * cannot yet say which field came from where, only that the body as a whole was, say, partly derived
+ * from an earlier response. Recording each field's own origin is a more advanced feature this record
+ * does not attempt yet.
  *
- * <p>{@code value} is a {@link JsonValue}, which is as far as this increment's scope goes: the form
- * and multipart bodies M2.5 adds are not representable yet, and this record is not where that arrives
- * either - it is extended, or given siblings, once M2.5 defines what those bodies need.
+ * <p>{@code value} only represents bodies that are plain JSON for now. Bodies sent as web forms or as
+ * file uploads are not represented by this type yet either.
  *
  * @param mediaType the media type the body was sent as
  * @param value the body's content, before serialisation

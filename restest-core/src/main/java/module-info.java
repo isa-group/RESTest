@@ -15,15 +15,18 @@
  */
 
 /**
- * The domain model: what an API is, in types we own.
+ * This is the module that describes, in plain data, what a REST API and a test against it look
+ * like: the operations an API offers, the requests and responses of one test attempt, and the
+ * shapes ({@code schema}) that data must follow. Every other part of RESTest is built on top of
+ * these definitions.
  *
- * <p>Four packages are exported and one is not. {@code io.restest.core.internal} holds plumbing
- * shared between the other four and is deliberately kept internal, so that it can change without
- * changing anything a consumer compiled against.
+ * <p>Four packages are exported and one is not. {@code io.restest.core.internal} holds small
+ * helpers shared between the other four and is deliberately kept internal, so it can change freely
+ * without affecting anything built on top of this module.
  *
- * <p>The module requires nothing. That is the point of ADR-0004: a consumer depending on
- * {@code restest-core} takes on the model and no parser, no HTTP client, no solver and no database
- * driver.
+ * <p>This module depends on nothing else in RESTest: it defines the vocabulary that the parser, the
+ * test generator, the HTTP engine and the reporting code all share, without needing any of them
+ * itself.
  */
 module io.restest.core {
     exports io.restest.core.execution;

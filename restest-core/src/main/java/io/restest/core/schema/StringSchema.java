@@ -25,12 +25,12 @@ import java.util.Optional;
  * @param minLength the shortest accepted string
  * @param maxLength the longest
  * @param pattern the regular expression an accepted string must match, exactly as the document
- *     wrote it. It is not compiled here: JSON Schema's dialect is ECMA-262 and Java's is not, so
- *     translating it is the generator's job at M2.4, and compiling it here would reject patterns
- *     that are valid in the format we are reading
+ *     wrote it. It is not compiled here: JSON Schema's regular-expression dialect is not quite the
+ *     same as Java's, so translating it is left to the code that generates values, and compiling it
+ *     here could reject patterns that are perfectly valid in the format being read
  * @param format the format name - {@code date-time}, {@code email}, {@code uuid} and the rest -
- *     kept as a string because the list is open: a document may use a name nobody has standardised,
- *     and an enum would lose it. Format-aware generation arrives at M2.4
+ *     kept as a plain string rather than a fixed list, since a document may use a name nobody has
+ *     standardised and a fixed list would lose it
  */
 public record StringSchema(
         SchemaMetadata metadata,

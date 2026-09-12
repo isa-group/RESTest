@@ -19,21 +19,18 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Something in the document we could not use: where it was, what it cost, and which operation it
- * belongs to.
+ * Something in the API's specification document that RESTest could not fully use: where it was,
+ * what it cost, and which operation it belongs to.
  *
- * <p>Design principle 2 says the tool never crashes on a bad specification: it skips the offending
- * operation and reports it. This is the reporting half. Without it the skipping half is dishonest -
- * a run that silently tested 40 of an API's 60 operations looks exactly like a run of a
- * 40-operation API, and the user has no way to tell which they got.
+ * <p>A broken or unusual specification must never crash RESTest: instead, the affected operation is
+ * skipped and the problem is reported here. Without that report, a run that silently tested 40 of an
+ * API's 60 operations would look exactly like a run of a 40-operation API, leaving the user no way
+ * to tell which one they got.
  *
- * <p>{@link Effect} is what separates "this operation is not being tested at all" from "it is being
- * tested with less information than the document actually contains". M1.2 has to report both - a
- * malformed operation is skipped, an OpenAPI 3.2 construct we do not read yet only degrades what we
- * know - and a reader who cannot tell them apart cannot judge the run. The operation identifier is
- * carried for the same reason: a report that groups findings by operation should be able to show
- * "and here is what we could not read about this one" beside them, without parsing it back out of
- * a location string.
+ * <p>{@link Effect} tells apart "this operation is not being tested at all" from "it is being tested
+ * with less information than the document actually contains" - a reader who cannot tell those apart
+ * cannot properly judge the run. The operation identifier is kept for the same reason: a report that
+ * groups findings by operation can show what could not be read about each one, right next to it.
  *
  * @param location where in the document the problem is, written the way the document is navigated:
  *     {@code paths./pets.get.parameters[2]}. Precise enough to open the file and look

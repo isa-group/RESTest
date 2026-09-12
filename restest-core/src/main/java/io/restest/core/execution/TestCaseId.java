@@ -43,9 +43,8 @@ public record TestCaseId(String value) {
     /**
      * A fresh identifier.
      *
-     * <p>Random rather than sequential: two runs generating test cases concurrently - two JVMs, or
-     * two threads in one, which design principle 6 requires to coexist - must not race to hand out
-     * the same identifier.
+     * <p>Random rather than sequential: two runs generating test cases at the same time - whether two
+     * separate processes or two threads within one - must not race to hand out the same identifier.
      */
     public static TestCaseId generate() {
         return new TestCaseId(UUID.randomUUID().toString());

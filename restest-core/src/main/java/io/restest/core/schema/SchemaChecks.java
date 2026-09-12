@@ -27,18 +27,15 @@ import java.util.Optional;
  * {@code minItems: -1} describes nothing at all. Letting either through would mean every generator
  * and every oracle downstream re-discovering the contradiction, or worse, not noticing it.
  *
- * <p>This is not a satisfiability check, and nothing downstream should treat it as one.
- * {@code type: integer, minimum: 1.2, maximum: 1.8} and {@code minimum: 10, maximum: 19,
- * multipleOf: 100} are both accepted here and satisfied by no value; deciding those needs the
- * solver, which arrives at M5.2, not a constructor. The promise is only that the bounds a
- * constructor can compare do not contradict each other.
+ * <p>This is not a full check of whether any value could ever satisfy the bounds, and nothing
+ * downstream should treat it as one. {@code type: integer, minimum: 1.2, maximum: 1.8} and
+ * {@code minimum: 10, maximum: 19, multipleOf: 100} are both accepted here even though no value
+ * actually satisfies either; working that out needs a more thorough check elsewhere. The promise
+ * here is only that the bounds a simple comparison can catch do not contradict each other.
  *
- * <p>What is rejected does not make a specification fatal. Design principle 2 requires the tool to
- * carry on, and the division of labour is that the model throws and the parser catches: from M1.2,
- * {@code restest-spec} turns the exception into a
- * {@link io.restest.core.model.SpecificationIssue}, skips the operation, and reads the next one.
- * The alternative - a model that accepts nonsense so that nothing has to catch anything - only
- * moves the failure to somewhere with less context to report it.
+ * <p>Rejecting a contradiction here does not make the whole specification unusable. RESTest never
+ * crashes on a bad specification: the part of RESTest that reads the document catches this rejection,
+ * records it as an issue, skips just the affected operation, and reads the next one.
  */
 final class SchemaChecks {
 

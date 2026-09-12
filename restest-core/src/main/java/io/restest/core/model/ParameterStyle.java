@@ -20,10 +20,10 @@ import java.util.Objects;
 /**
  * How a parameter's value is written onto the wire.
  *
- * <p>It matters as soon as a value is not a single scalar: a list of tags in the query string is
- * {@code tags=a&tags=b} in one style and {@code tags=a,b} in another, and an API that documents one
- * will reject the other. The engine at M1.3 needs to be told which, so the model carries it rather
- * than guessing.
+ * <p>It matters as soon as a value is more than a single item: a list of tags in the query string is
+ * {@code tags=a&tags=b} in one style and {@code tags=a,b} in another, and an API documented for one
+ * will reject a request written in the other. RESTest needs to be told which style applies, so it is
+ * recorded here rather than guessed.
  *
  * <p>The names are OpenAPI's. Where a document says nothing, {@link #defaultFor} gives the default
  * the format defines.

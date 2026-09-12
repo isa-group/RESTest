@@ -18,35 +18,33 @@ package io.restest.core.execution;
 import java.util.Objects;
 
 /**
- * Where one chosen value came from.
+ * Where one specific value used in a test came from.
  *
- * <p>ADR-0006 promises that every run persists "the provenance of each parameter value"; this is
- * that promise as a type. A {@link TestCase} is a concrete, already-decided attempt - one value per
- * parameter, not a distribution of candidates - so provenance answers one question per value: which
- * of the three things that can produce a value produced this one.
- *
- * <p>The three cases are the whole of what a value can be, and the amendment to ADR-0005 explains
- * why each is shaped the way it is. In short:
+ * <p>RESTest keeps track of how every value it sends was chosen, so that a report or a person
+ * reading it later can tell whether a value came straight from the API's own documentation, was
+ * produced by a generator, or was taken from a previous request's response. A {@link TestCase} is a
+ * concrete, already-decided attempt - one specific value per input, not a range of possibilities -
+ * so this answers one simple question about each value: which of three things produced it.
  *
  * <ul>
- *   <li>{@link Declared} - taken from the schema's own default or enumeration
- *       ({@link io.restest.core.schema.SchemaMetadata}), stated by the document itself.</li>
- *   <li>{@link Generated} - produced by whichever stateless mechanism was tried: a random provider,
- *       a boundary walk, a value dictionary, an external provider. {@code source} is an open name
- *       rather than an enumerated set, because none of those mechanisms exist yet in {@code core}
- *       and ADR-0008 forbids naming them here even once they do.</li>
- *   <li>{@link Derived} - read out of an earlier interaction's response, which is what makes a
- *       stateful step representable: "the {@code petId} for this request is the {@code id} the
- *       server returned when we created the pet."</li>
+ *   <li>{@link Declared} - taken directly from the API's own specification: a default value or one
+ *       of a fixed list of choices it declares.</li>
+ *   <li>{@link Generated} - produced by RESTest itself, using whichever technique was tried: a
+ *       random value, a boundary case, a value picked from a dictionary, or a value supplied by an
+ *       external source. {@code source} names that technique in plain text rather than from a fixed
+ *       list, since RESTest is designed to support new techniques being added later.</li>
+ *   <li>{@link Derived} - read out of an earlier request's response. This is what makes it possible
+ *       to test a sequence of related requests: "the {@code petId} used in this request is the
+ *       {@code id} the server returned when we created the pet."</li>
  * </ul>
  *
- * <p>Which of the three wins for a given parameter, in a given run, is a generation-time decision -
- * M1.5's value-provider chain and M4.2's runtime resource pool and value-source selection - and
- * belongs to {@code restest-gen}, not here. This type only has to be able to name the winner
- * afterwards.
+ * <p>Deciding which of the three applies to a given value, in a given run, is a decision made while
+ * building the test case, elsewhere in RESTest. This type only has to be able to name, afterwards,
+ * which one won.
  *
- * <p>Sealed, so that a report or a metrics collector counting values by origin fails to compile
- * rather than silently miscounting the day a fourth case is added:
+ * <p>These three are the only possibilities, which is enforced by the compiler: any code that
+ * handles values by their origin must handle all three cases, or it will not compile, rather than
+ * silently ignoring a case that gets added later:
  *
  * {@snippet :
  * String describe(ValueOrigin origin) {
@@ -83,28 +81,18 @@ public sealed interface ValueOrigin {
     }
 
     /**
-     * Read out of an earlier interaction's response - the mechanism that makes a stateful step
-     * representable at all.
+     * A value read out of an earlier interaction's response - the mechanism that makes a "stateful"
+     * step (one that depends on an earlier request) possible at all.
      *
-     * <p>{@code from} names an {@link InteractionId}, not a {@link TestCaseId}. {@link TestCase}
-     * holds concrete, already-resolved values - never a placeholder to fill in later, per ADR-0005 -
-     * so a correct generator has no reason to build a {@code ParameterValue} carrying {@code Derived}
-     * before it has already read the response {@code value()} comes from: the value itself cannot be
-     * known any other way. That is a rule for the generator (M4.2) to keep, not a property this type
-     * enforces - nothing here stops a caller from minting an {@link InteractionId} early and naming
-     * it before the interaction exists, which would simply be a mistake with no data behind it, the
-     * same way naming an operation that does not exist would be. Given that a correct generator
-     * always has the interaction in hand already, {@link InteractionId} is the more useful pointer of
-     * the two: unlike a {@link TestCaseId}, it survives whatever the engine does afterwards with the
-     * test case that produced it - a retry, a replay, or nothing at all - because it names one
-     * specific interaction rather than "whichever interaction this test case eventually produces".
+     * <p>{@code from} names the specific {@link InteractionId} the value was read from, not the
+     * {@link TestCase} that produced that interaction. By the time this value exists, the response it
+     * was read from already happened, so pointing at the exact interaction is both accurate and more
+     * durable: it keeps meaning the same thing regardless of whatever RESTest later does with the
+     * test case that produced that interaction, such as retrying or repeating it.
      *
      * @param from the interaction this value was read from
      * @param description what was taken from it, for a human to read - "response body field 'id'" -
-     *     not a parseable expression. The extraction grammar a stateful generator actually uses (a
-     *     JSONPath, an OpenAPI {@code links} runtime expression, whatever the operation dependency
-     *     graph infers) is M4.1-4.3's decision, none of which exist yet; committing to one now would
-     *     mean guessing at a design several milestones away
+     *     rather than a machine-readable expression
      */
     record Derived(InteractionId from, String description) implements ValueOrigin {
         public Derived {

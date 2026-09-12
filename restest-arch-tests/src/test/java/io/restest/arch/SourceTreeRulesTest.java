@@ -42,19 +42,18 @@ import org.junit.jupiter.api.Test;
 class SourceTreeRulesTest {
 
     /**
-     * ADR-0011 and the hard rules in CLAUDE.md: the benchmark platform lives in {@code evaluation/},
-     * which is not a Maven module, and the tool must know nothing about it. CLAUDE.md phrases the
-     * rule as a search over {@code src/} that must return zero hits, which is what this test runs.
+     * The benchmark platform used to evaluate RESTest lives entirely under {@code evaluation/},
+     * outside the tool's own build, and the tool itself must know nothing about it. This test runs a
+     * search over {@code src/} that must return zero hits for its name.
      *
-     * <p>Checked as text rather than as a dependency because the danger is not only a compiled
-     * reference. A path, a property name or a comment that assumes the harness's layout couples the
-     * tool to it just as effectively, and no bytecode rule would see any of them. The POM files are
-     * scanned for the same reason: a Maven property pinning the harness's commit would couple the
-     * build to it while leaving every source file clean.
+     * <p>Checked as text rather than as a compiled dependency, because the danger is not only a
+     * compiled reference. A path, a property name or a comment that assumes the benchmark's layout
+     * couples the tool to it just as effectively, and no bytecode rule would see any of them. The
+     * build files are scanned for the same reason: a build property pinning the benchmark's version
+     * would couple the two while leaving every source file clean.
      *
-     * <p>{@code evaluation/} is excluded, and must be. ADR-0011 puts the harness there, so naming it
-     * inside that directory is the intended state rather than a violation - a rule that failed on
-     * ADR-sanctioned work would be weakened by the first person to hit it.
+     * <p>{@code evaluation/} itself is excluded, and must be: that is exactly where the benchmark
+     * platform is meant to live, so naming it inside that directory is expected, not a violation.
      */
     @Test
     @DisplayName("no benchmark platform is referenced anywhere under src (ADR-0011)")
@@ -73,9 +72,9 @@ class SourceTreeRulesTest {
     }
 
     /**
-     * ADR-0004: "Nine Maven modules, each with a module-info.java." The declaration is what makes
-     * the boundary compiled rather than conventional, so losing one silently turns a module back
-     * into a package.
+     * Every production module has a {@code module-info.java}. That file is what makes each module a
+     * real, enforced boundary rather than just a naming convention, so silently losing one would turn
+     * a module back into an ordinary package.
      *
      * <p>The module list is read from the aggregator POM rather than hard-coded, so a module added
      * later is covered without anyone remembering to extend this test.
@@ -101,9 +100,9 @@ class SourceTreeRulesTest {
     }
 
     /**
-     * Supply-chain hygiene, and the reason M0.2 lists it: a tag is a moving pointer. {@code @v5} can
-     * be repointed at any commit by whoever owns the action, so a workflow pinned to a tag runs
-     * whatever that account decides to publish tomorrow. A 40-character commit SHA cannot move.
+     * Supply-chain hygiene: a tag is a moving pointer. {@code @v5} can be repointed at any commit by
+     * whoever owns the action, so a workflow pinned to a tag runs whatever that account decides to
+     * publish tomorrow. A 40-character commit SHA cannot move.
      *
      * <p>Dependabot updates these pins, which is why the version belongs in a trailing comment: it
      * is what lets Dependabot tell a v5 pin from a v6 one. That comment is checked here too - both

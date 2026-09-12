@@ -20,16 +20,15 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A well-formed response, as it was actually received: the status line, headers and body verbatim.
+ * A well-formed HTTP response, exactly as it was received: the status, headers and body, verbatim.
  *
- * <p>This is what {@link InteractionOutcome.Answered} carries. A response that broke HTTP framing
- * before it could be read as one is not this type at all - see
- * {@link InteractionOutcome.MalformedResponse}, which is what {@code Answered} does not have to
- * account for.
+ * <p>This is what {@link InteractionOutcome.Answered} carries: a response that arrived and could be
+ * read as valid HTTP. A response so broken that it could not even be parsed as HTTP is a different
+ * type entirely - see {@link InteractionOutcome.MalformedResponse}.
  *
- * <p>The status code is kept exactly as received, with no range check. A server sending something
- * outside 100-599 is itself a fault - HTTP-semantics oracles report it from M3.2 - and a model that
- * refused to hold the observation could not report the very thing it was sent to catch.
+ * <p>The status code is kept exactly as received, with no range check. A server sending a status
+ * code outside the normal 100-599 range is itself misbehaving, and that is exactly the kind of fact
+ * RESTest exists to catch and report, so this type must be able to hold it rather than reject it.
  *
  * @param statusLine the status code and whatever else of the status line the engine reports
  * @param headers the headers received, in wire order, repeats kept

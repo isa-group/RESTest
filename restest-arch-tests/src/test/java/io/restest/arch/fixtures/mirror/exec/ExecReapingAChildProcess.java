@@ -22,8 +22,8 @@ import java.io.IOException;
  *
  * <p>In bytecode this is indistinguishable from {@link ExecTerminatingByProcessHandle}: both are an
  * {@code invokeinterface} on {@code java.lang.ProcessHandle.destroy}. The difference is whose
- * process the handle refers to, and killing a child is legitimate - the out-of-process transport at
- * M6.2 must be able to reap its helper. The rule tells them apart by whether the class also calls
+ * process the handle refers to: killing a child process is legitimate, since it does not end our
+ * own process. The rule tells the two apart by whether the class also calls
  * {@code ProcessHandle.current()}, which this one does not.
  */
 public final class ExecReapingAChildProcess {

@@ -35,10 +35,9 @@ import java.util.Optional;
  * @param statusCode the status code
  * @param reasonPhrase the reason phrase, when the protocol carries one and it parsed - HTTP/2 and
  *     HTTP/3 do not
- * @param protocolVersion the protocol version, as reported by the engine - {@code "HTTP/1.1"},
- *     {@code "HTTP/2"} - kept as a string for the same reason as
- *     {@link io.restest.core.schema.StringSchema#format()}: the engine (M1.3) reports whatever its
- *     own HTTP client calls the protocol, and the exact spelling is not this record's to standardise
+ * @param protocolVersion the protocol version, as reported by the HTTP client - {@code "HTTP/1.1"},
+ *     {@code "HTTP/2"} - kept as a plain string rather than a fixed set of values, since it is simply
+ *     reported as given and is not this record's job to standardise
  */
 public record StatusLine(int statusCode, Optional<String> reasonPhrase,
         Optional<String> protocolVersion) {

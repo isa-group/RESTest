@@ -22,10 +22,10 @@ package io.restest.core.model;
  * with one of them: {@code id} in the query string and {@code id} in the path are two different
  * parameters, which is why {@link Operation#parameter(String, ParameterLocation)} asks for both.
  *
- * <p>OpenAPI 2.0 has two more, {@code body} and {@code formData}, and they are deliberately absent
- * here: a body is not a parameter in the 3.x shape this model follows, it is
- * {@link Operation#requestBody()}. Converting is the parser's job from M1.2, and it is worth
- * writing down because only one of the two conversions is obvious:
+ * <p>The older OpenAPI 2.0 format has two more locations, {@code body} and {@code formData}, and
+ * they are deliberately absent here: a body is not treated as a parameter in this model, it is
+ * {@link Operation#requestBody()}. Documents written in that older format are converted when they
+ * are read, and it is worth writing down how, because only one of the two conversions is obvious:
  *
  * <ul>
  *   <li>{@code in: body} becomes a {@link RequestBodyModel} whose schema is the parameter's. The

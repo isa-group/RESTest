@@ -20,11 +20,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A header a response declares it will carry.
+ * A header that a response declares it will carry.
  *
- * <p>{@code required} is kept as well as the shape, because it is what the "missing required
- * header" oracle at M3.1 judges against: without it, a header the API promised and did not send is
- * indistinguishable from one it never promised.
+ * <p>{@code required} is kept alongside the header's shape because it is what makes it possible to
+ * check for a missing header later: without it, a header the API promised and failed to send would
+ * be indistinguishable from one it never promised at all.
  *
  * @param required whether the API states the header is always present
  * @param schema the shape of its value

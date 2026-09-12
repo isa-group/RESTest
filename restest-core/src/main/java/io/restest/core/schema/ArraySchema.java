@@ -21,9 +21,10 @@ import java.util.Optional;
 /**
  * An array of values that all share one shape.
  *
- * <p>Per-position shapes - JSON Schema's tuple form, {@code prefixItems} - are not represented.
- * A document using one parses to an {@link UnsupportedSchema} from M1.2, which says so, rather than
- * being silently read as an array of the first element's shape.
+ * <p>Arrays whose elements each have their own, different declared shape (JSON Schema's tuple form,
+ * {@code prefixItems}) are not represented here. A document using that is read as an
+ * {@link UnsupportedSchema}, which says so, rather than being silently misread as an array of just
+ * the first element's shape.
  *
  * @param metadata the type-independent facts
  * @param items the shape every element has

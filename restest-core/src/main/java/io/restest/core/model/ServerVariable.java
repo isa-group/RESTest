@@ -22,11 +22,10 @@ import java.util.Optional;
 /**
  * A variable in a server's URL template, and what the document says to put there.
  *
- * <p>OpenAPI requires a default for every server variable, which is what makes
- * {@link Server#resolvedUrl()} possible and design principle 1 - zero configuration to start -
- * keepable for an API whose only declared server is templated. Dropping the variables would leave
- * the tool unable to send a single request to such an API without {@code --url}, using a document
- * that said exactly where to send it.
+ * <p>OpenAPI requires every server variable to have a default value, which is what lets
+ * {@link Server#resolvedUrl()} build a working URL on its own. That, in turn, is what lets RESTest
+ * send a request straight away to an API whose base URL is templated, without asking the user to
+ * supply one first.
  *
  * @param defaultValue the value to use when nobody chooses another. Always present in a valid
  *     document

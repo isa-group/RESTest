@@ -27,10 +27,10 @@ import java.util.Objects;
  * to some arbitrary depth and describe a shape the document does not, or declare a construct
  * unsupported that the tool could in fact test.
  *
- * <p>Referring by name also keeps the name, which is thrown away by inlining and wanted later: the
- * operation dependency graph at M4.1 infers relationships from names as well as types, a value
- * dictionary at M6.1 is keyed on them, and {@code restest explain} reads better saying "a Pet" than
- * repeating a shape.
+ * <p>Referring by name also keeps the name itself, which would otherwise be thrown away, and the
+ * name is useful later: it helps relate one part of the API to another, it can be used to look up a
+ * value someone has prepared specifically for that named shape, and an explanation of a test reads
+ * better saying "a Pet" than repeating the whole shape.
  *
  * <p>Resolution is {@link io.restest.core.model.ApiModel#schema(String)}, which holds the named
  * schemas the document declared. A reference whose name the document never declares resolves to

@@ -23,7 +23,7 @@ import java.util.Objects;
  *
  * <p>Distinct from a nullable schema. {@code SchemaMetadata.nullable()} says "this string may also
  * be null"; this says "null is the only accepted value", which is rare but real - most often one
- * arm of a composition that M2.1 will fold in.
+ * option among several possible shapes a document offers for the same value.
  */
 public record NullSchema(SchemaMetadata metadata) implements CanonicalSchema {
 
