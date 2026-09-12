@@ -76,6 +76,8 @@
              whatever Maven's dependency mediation happens to resolve (ADR-0007's own complaint about
              RESTest 1.x's undeclared swagger-parser dependency, repeated one level down). -->
         <snakeyaml.version>2.6</snakeyaml.version>
+        <okhttp.version>5.5.0</okhttp.version>
+        <wiremock.version>3.13.2</wiremock.version>
     </properties>
 
     <dependencyManagement>
@@ -106,6 +108,18 @@
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp-bom</artifactId>
+                <version>${okhttp.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>${wiremock.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -21,5 +21,20 @@
             <artifactId>restest-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp-jvm</artifactId>
+        </dependency>
+
+        <!--
+          The HTTP layer is tested against a stub server rather than against a real API: WireMock
+          can be told to answer slowly, to hang up mid-reply or to send nothing at all, which is how
+          the fault-handling paths below get exercised deterministically and offline.
+        -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
