@@ -42,7 +42,7 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0002](0002-rewrite-not-refactor.md) | Rewrite rather than refactor; Apache-2.0; no 1.x source | Accepted |
 | [0003](0003-java-baseline.md) | Every module targets Java 21; toolchain on 25 | Accepted, amended at M0.2 |
 | [0004](0004-module-structure.md) | Multi-module structure and inward dependencies | Accepted, amended at M0.2 |
-| [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted |
+| [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted, amended at M1.1b |
 | [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted |
 | [0007](0007-specification-parser-boundary.md) | The parser sits behind our own interface; OAS 2.0 and every 3.x | Accepted, amended at M0.2 |
 | [0008](0008-extension-points-no-ai-abstractions.md) | Extension points, and no AI-specific abstractions | Accepted |
