@@ -28,6 +28,10 @@ import java.util.Set;
  * XML and describe each differently. Which one to send is a generation decision, not a modelling
  * one, so the model keeps them all.
  *
+ * <p>This is also where an OpenAPI 2.0 {@code in: body} or {@code in: formData} parameter arrives,
+ * since 2.0 describes a body as a parameter and 3.x does not. {@link ParameterLocation} sets out
+ * both conversions.
+ *
  * @param required whether the API refuses a request that has no body
  * @param content the shape accepted for each media type, keyed by the normalised media type
  * @param description what the document says the body is for
