@@ -23,6 +23,7 @@ import io.restest.core.model.OperationId;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +44,38 @@ class InteractionTest {
 
         assertThat(interaction.isAnswered()).isTrue();
         assertThat(interaction.response()).contains(ok);
+    }
+
+    @Test
+    @DisplayName("a malformed response carries no well-formed response, and is not a transport failure")
+    void a_malformed_response_is_a_third_outcome() {
+        Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
+                "chunked encoding ended without a final zero-length chunk", Optional.empty(),
+                Instant.now(), Duration.ofMillis(50));
+
+        assertThat(interaction.isAnswered()).isFalse();
+        assertThat(interaction.response()).isEmpty();
+        assertThat(interaction.outcome()).isInstanceOf(InteractionOutcome.MalformedResponse.class);
+    }
+
+    @Test
+    @DisplayName("a malformed response can carry whatever bytes were received before it broke")
+    void a_malformed_response_can_carry_partial_bytes() {
+        Payload partial = Payload.truncated(new byte[] {1, 2, 3}, "application/json");
+
+        Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
+                "truncated body", Optional.of(partial), Instant.now(), Duration.ZERO);
+
+        InteractionOutcome.MalformedResponse outcome =
+                (InteractionOutcome.MalformedResponse) interaction.outcome();
+        assertThat(outcome.partial()).contains(partial);
+    }
+
+    @Test
+    @DisplayName("a malformed response must say what was wrong with it")
+    void a_malformed_response_requires_a_reason() {
+        assertThatIllegalArgumentException().isThrownBy(() -> Interaction.malformedResponse(
+                TEST_CASE, REQUEST, " ", Optional.empty(), Instant.now(), Duration.ZERO));
     }
 
     @Test
@@ -84,21 +117,25 @@ class InteractionTest {
 
     /**
      * Compiling is the assertion: a switch with no default over InteractionOutcome stops compiling
-     * the day a third outcome is added and not handled here.
+     * the day a fourth outcome is added and not handled here.
      */
     @Test
-    @DisplayName("both outcomes can be told apart without a default case")
+    @DisplayName("all three outcomes can be told apart without a default case")
     void the_hierarchy_is_exhaustive() {
         InteractionOutcome answered = new InteractionOutcome.Answered(HttpResponseRecord.of(200));
+        InteractionOutcome malformed = new InteractionOutcome.MalformedResponse(
+                "bad framing", Optional.empty());
         InteractionOutcome failed = new InteractionOutcome.TransportFailure("timed out");
 
         assertThat(describe(answered)).isEqualTo("answered: 200");
+        assertThat(describe(malformed)).isEqualTo("malformed: bad framing");
         assertThat(describe(failed)).isEqualTo("failed: timed out");
     }
 
     private static String describe(InteractionOutcome outcome) {
         return switch (outcome) {
             case InteractionOutcome.Answered a -> "answered: " + a.response().statusCode();
+            case InteractionOutcome.MalformedResponse m -> "malformed: " + m.reason();
             case InteractionOutcome.TransportFailure f -> "failed: " + f.reason();
         };
     }

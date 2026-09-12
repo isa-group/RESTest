@@ -1,18 +1,3 @@
-/*
- * Copyright 2026 ISA Research Group, Universidad de Sevilla.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package io.restest.core.execution;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,13 +12,13 @@ class ValueOriginTest {
     private static final List<ValueOrigin> EVERY_KIND = List.of(
             ValueOrigin.DECLARED,
             new ValueOrigin.Generated("random"),
-            new ValueOrigin.Derived(InteractionId.of("i-1"), "response body field 'id'"));
+            new ValueOrigin.Derived(TestCaseId.of("tc-1"), "response body field 'id'"));
 
     @Test
     @DisplayName("every kind of origin can be told apart without a default case")
     void the_hierarchy_is_exhaustive() {
         assertThat(EVERY_KIND).map(ValueOriginTest::describe)
-                .containsExactly("declared", "generated: random", "derived from i-1");
+                .containsExactly("declared", "generated: random", "derived from tc-1");
     }
 
     @Test
@@ -51,21 +36,24 @@ class ValueOriginTest {
     }
 
     @Test
-    @DisplayName("a derived value must say what was taken from the interaction it depends on")
+    @DisplayName("a derived value must say what was taken from the test case it depends on")
     void derived_requires_a_description() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new ValueOrigin.Derived(InteractionId.of("i-1"), " "))
-                .withMessageContaining("i-1");
+                .isThrownBy(() -> new ValueOrigin.Derived(TestCaseId.of("tc-1"), " "))
+                .withMessageContaining("tc-1");
     }
 
     @Test
-    @DisplayName("a value can name the interaction it depends on before that interaction runs")
-    void a_dependency_is_representable_without_execution() {
-        InteractionId notYetPersisted = InteractionId.generate();
+    @DisplayName("a value can name the test case it depends on before that test case is ever sent")
+    void a_dependency_is_representable_before_execution() {
+        TestCaseId earlierStep = TestCaseId.generate();
 
-        ValueOrigin.Derived derived = new ValueOrigin.Derived(notYetPersisted, "the created id");
+        // No Interaction is built here at all - the point is that a stateful generator can commit
+        // to this dependency the moment it plans the earlier step, long before an engine exists to
+        // send it and produce the InteractionId a response would carry.
+        ValueOrigin.Derived derived = new ValueOrigin.Derived(earlierStep, "the created id");
 
-        assertThat(derived.from()).isEqualTo(notYetPersisted);
+        assertThat(derived.from()).isEqualTo(earlierStep);
     }
 
     /**

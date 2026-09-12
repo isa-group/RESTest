@@ -59,6 +59,28 @@ class HttpRequestRecordTest {
     }
 
     @Test
+    @DisplayName("toString shows header names and a body summary, never a header's value")
+    void to_string_does_not_leak_header_values() {
+        HttpRequestRecord request = new HttpRequestRecord(HttpMethod.POST,
+                "https://api.example.com/pets",
+                List.of(Header.of("Authorization", "Bearer super-secret")),
+                java.util.Optional.of(Payload.text("{}", "application/json")));
+
+        assertThat(request).hasToString("HttpRequestRecord[POST https://api.example.com/pets, "
+                + "headers=[Authorization], body=Payload[2 bytes, application/json]]");
+    }
+
+    @Test
+    @DisplayName("toString reports no body when the request carried none")
+    void to_string_reports_no_body() {
+        HttpRequestRecord request = HttpRequestRecord.of(HttpMethod.GET,
+                "https://api.example.com/pets");
+
+        assertThat(request).hasToString(
+                "HttpRequestRecord[GET https://api.example.com/pets, headers=[], body=none]");
+    }
+
+    @Test
     @DisplayName("a request must have a URL")
     void a_request_has_a_url() {
         assertThatIllegalArgumentException()

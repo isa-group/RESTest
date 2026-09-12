@@ -30,7 +30,7 @@ class PayloadTest {
     void a_payload_copies_what_it_is_given() {
         byte[] source = {1, 2, 3};
 
-        Payload payload = new Payload(source, "application/octet-stream");
+        Payload payload = new Payload(source, "application/octet-stream", false);
         source[0] = 99;
 
         assertThat(payload.content()).containsExactly(1, 2, 3);
@@ -39,7 +39,7 @@ class PayloadTest {
     @Test
     @DisplayName("changing the array a payload hands back does not change the payload")
     void a_payload_hands_back_a_copy() {
-        Payload payload = new Payload(new byte[] {1, 2, 3}, "application/octet-stream");
+        Payload payload = new Payload(new byte[] {1, 2, 3}, "application/octet-stream", false);
 
         payload.content()[0] = 99;
 
@@ -49,8 +49,8 @@ class PayloadTest {
     @Test
     @DisplayName("two payloads with equal bytes from different arrays are equal")
     void equality_is_by_content_not_by_reference() {
-        Payload first = new Payload(new byte[] {1, 2, 3}, "application/json");
-        Payload second = new Payload(new byte[] {1, 2, 3}, "application/json");
+        Payload first = new Payload(new byte[] {1, 2, 3}, "application/json", false);
+        Payload second = new Payload(new byte[] {1, 2, 3}, "application/json", false);
 
         assertThat(first).isEqualTo(second).hasSameHashCodeAs(second);
     }
@@ -58,10 +58,13 @@ class PayloadTest {
     @Test
     @DisplayName("payloads with different content, or a different media type, are not equal")
     void inequality_is_detected_in_both_components() {
-        Payload reference = new Payload(new byte[] {1, 2, 3}, "application/json");
+        Payload reference = new Payload(new byte[] {1, 2, 3}, "application/json", false);
 
-        assertThat(reference).isNotEqualTo(new Payload(new byte[] {1, 2, 4}, "application/json"));
-        assertThat(reference).isNotEqualTo(new Payload(new byte[] {1, 2, 3}, "text/plain"));
+        assertThat(reference)
+                .isNotEqualTo(new Payload(new byte[] {1, 2, 4}, "application/json", false));
+        assertThat(reference).isNotEqualTo(new Payload(new byte[] {1, 2, 3}, "text/plain", false));
+        assertThat(reference)
+                .isNotEqualTo(new Payload(new byte[] {1, 2, 3}, "application/json", true));
         assertThat(reference).isNotEqualTo("not a payload");
     }
 
@@ -86,15 +89,31 @@ class PayloadTest {
     @Test
     @DisplayName("toString prints a size and a media type, not the bytes themselves")
     void to_string_does_not_dump_the_bytes() {
-        Payload payload = new Payload(new byte[] {1, 2, 3}, "application/json");
+        Payload payload = new Payload(new byte[] {1, 2, 3}, "application/json", false);
 
         assertThat(payload).hasToString("Payload[3 bytes, application/json]");
     }
 
     @Test
+    @DisplayName("a truncated payload says so, in its state and in its toString")
+    void a_truncated_payload_says_so() {
+        Payload truncated = Payload.truncated(new byte[] {1, 2, 3}, "application/json");
+
+        assertThat(truncated.truncated()).isTrue();
+        assertThat(truncated).hasToString("Payload[3 bytes (truncated), application/json]");
+    }
+
+    @Test
+    @DisplayName("empty() and text() build a payload that is not truncated")
+    void factories_build_untruncated_payloads() {
+        assertThat(Payload.empty("application/json").truncated()).isFalse();
+        assertThat(Payload.text("x", "text/plain").truncated()).isFalse();
+    }
+
+    @Test
     @DisplayName("a payload must declare a media type")
     void a_media_type_is_required() {
-        assertThatNullPointerException().isThrownBy(() -> new Payload(new byte[0], null));
-        assertThatIllegalArgumentException().isThrownBy(() -> new Payload(new byte[0], " "));
+        assertThatNullPointerException().isThrownBy(() -> new Payload(new byte[0], null, false));
+        assertThatIllegalArgumentException().isThrownBy(() -> new Payload(new byte[0], " ", false));
     }
 }

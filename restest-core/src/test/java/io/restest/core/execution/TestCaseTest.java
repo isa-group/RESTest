@@ -49,12 +49,12 @@ class TestCaseTest {
     }
 
     @Test
-    @DisplayName("a body can be added afterwards")
-    void a_body_is_added_with_with_body() {
+    @DisplayName("a body can be supplied alongside the parameter values")
+    void a_test_case_can_carry_a_body() {
         BodyValue body = new BodyValue("application/json", JsonValue.of("payload"),
                 new ValueOrigin.Generated("random"));
 
-        TestCase testCase = TestCase.of(GET_PET, List.of()).withBody(body);
+        TestCase testCase = TestCase.of(GET_PET, List.of(), body);
 
         assertThat(testCase.body()).contains(body);
     }
@@ -101,19 +101,23 @@ class TestCaseTest {
     }
 
     @Test
-    @DisplayName("a stateful step's value carries where the earlier interaction is, not a live reference")
-    void a_stateful_value_names_its_source_interaction() {
-        InteractionId createdPet = InteractionId.generate();
+    @DisplayName("a stateful step's value names the earlier test case it depends on, before it ran")
+    void a_stateful_value_names_its_source_test_case() {
+        TestCase createPet = TestCase.of(OperationId.of("addPet"), List.of());
         ParameterValue petId = ParameterValue.of("petId", ParameterLocation.PATH,
-                JsonValue.of(7L), new ValueOrigin.Derived(createdPet, "response body field 'id'"));
+                JsonValue.of(7L), new ValueOrigin.Derived(createPet.id(),
+                        "response body field 'id'"));
 
+        // createPet is never sent and no Interaction is built - the dependency is representable
+        // purely from the earlier step's own identity, which is exactly what a stateful generator
+        // has available at the moment it plans the second step.
         TestCase deletePet = TestCase.of(
                 OperationId.synthesised(HttpMethod.DELETE, "/pets/{petId}"), List.of(petId));
 
         ValueOrigin origin = deletePet.parameterValue("petId", ParameterLocation.PATH)
                 .orElseThrow().origin();
         assertThat(origin).isInstanceOf(ValueOrigin.Derived.class);
-        assertThat(((ValueOrigin.Derived) origin).from()).isEqualTo(createdPet);
+        assertThat(((ValueOrigin.Derived) origin).from()).isEqualTo(createPet.id());
     }
 
     @Test

@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 class TestCaseIdTest {
 
     @Test
-    @DisplayName("two generated identifiers are not the same, so two runs cannot collide")
+    @DisplayName("two generated identifiers are different")
     void generated_identifiers_are_not_shared() {
         assertThat(TestCaseId.generate()).isNotEqualTo(TestCaseId.generate());
     }

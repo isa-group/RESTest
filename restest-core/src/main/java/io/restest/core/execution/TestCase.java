@@ -37,6 +37,13 @@ import java.util.Set;
  * produced it still being in memory - the two are decoupled the same way a stored interaction is
  * decoupled from the run that created it.
  *
+ * <p>{@link #id()} is built with everything else already decided, and there is deliberately no
+ * {@code withX} method that would let a caller change the parameter values or the body of an
+ * existing instance: {@link TestCaseId}'s own contract is an identity stable across generation,
+ * execution and storage, and an identity that could be attached to two different sets of values
+ * would not be stable at all - it is exactly the "answers its own lookup with whichever content was
+ * built first" failure {@link #rejectDuplicateParameterValues} refuses one level down.
+ *
  * <p>A stateful step is not a different kind of test case. It is one whose {@link ParameterValue}s
  * or {@link #body()} carry a {@link ValueOrigin.Derived} instead of a {@link ValueOrigin.Generated}
  * or {@link ValueOrigin.Declared} - see {@link ValueOrigin}. A whole stateful *test*, in the sense
@@ -59,6 +66,7 @@ public record TestCase(
     public TestCase {
         Objects.requireNonNull(id, "id");
         Objects.requireNonNull(operation, "operation");
+        Objects.requireNonNull(parameterValues, "parameterValues");
         Objects.requireNonNull(body, "body");
         parameterValues = List.copyOf(parameterValues);
         rejectDuplicateParameterValues(parameterValues);
@@ -69,13 +77,23 @@ public record TestCase(
         return new TestCase(TestCaseId.generate(), operation, parameterValues, Optional.empty());
     }
 
-    /** The same test case, sent with the given body. */
-    public TestCase withBody(BodyValue value) {
-        return new TestCase(id, operation, parameterValues,
-                Optional.of(Objects.requireNonNull(value, "value")));
+    /** A fresh test case for the given operation, with the given parameter values and body. */
+    public static TestCase of(OperationId operation, List<ParameterValue> parameterValues,
+            BodyValue body) {
+        return new TestCase(TestCaseId.generate(), operation, parameterValues,
+                Optional.of(Objects.requireNonNull(body, "body")));
     }
 
-    /** The chosen value for the named parameter in the given location, if this test case supplies one. */
+    /**
+     * The chosen value for the named parameter in the given location, if this test case supplies
+     * one.
+     *
+     * <p>Matched case-sensitively on the name: unlike an HTTP header, a parameter's name is part of
+     * its identity as OpenAPI declares it, and {@code id} and {@code ID} are two different
+     * parameters if a document were ever to declare both. Contrast
+     * {@link HttpRequestRecord#headerValues(String)}, which is deliberately case-insensitive because
+     * header names are.
+     */
     public Optional<ParameterValue> parameterValue(String name, ParameterLocation location) {
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(location, "location");

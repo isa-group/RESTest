@@ -26,7 +26,8 @@ import java.util.Objects;
  * {@link io.restest.core.model.ResponseModel#header(String)} already accounts for on the declared
  * side; this is its counterpart for what was actually observed on the wire.
  *
- * <p>Not exported: this is plumbing shared within the package, not part of the model.
+ * <p>Package-private: {@code io.restest.core.execution} is exported, but this class is not part of
+ * its public surface - plumbing shared between two records in the package, not part of the model.
  */
 final class Headers {
 

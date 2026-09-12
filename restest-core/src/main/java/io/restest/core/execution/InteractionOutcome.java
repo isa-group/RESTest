@@ -16,21 +16,33 @@
 package io.restest.core.execution;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
- * What happened when a {@link TestCase} was sent: a response came back, or none did.
+ * What happened when a {@link TestCase} was sent.
  *
- * <p>The two are different facts for an oracle. A response the wrong shape is the API's fault; no
- * response at all - a timeout, a refused connection, a broken TLS handshake - is a fact about the
- * attempt itself, and most oracles (M1.6's server-error and schema-conformance oracles among them)
- * have nothing to judge without a response. Sealing the two apart means an oracle that only means to
- * handle {@link Answered} gets a compiler error if a third outcome is ever added, rather than
- * quietly doing nothing useful with it.
+ * <p>Three outcomes, not two, because they are different facts for an oracle and conflating any
+ * pair of them hides one. A well-formed response the wrong shape is the API's fault, and most
+ * oracles (M1.6's schema-conformance oracle among them) need {@link Answered} to have anything to
+ * judge. A response that is not well-formed HTTP at all - broken chunked encoding, a truncated
+ * status line, a body shorter than its own declared {@code Content-Length} - is also the API's
+ * fault, and a different one: the HTTP-semantics oracles WFC reserves codes 900-909 for (M3.2) exist
+ * specifically to report it, and they cannot fire on an outcome that looks identical to a dropped
+ * connection. No response at all - refused, timed out, a broken TLS handshake - is a fact about the
+ * attempt, not about the API, and is the one case with nothing to show an oracle.
+ *
+ * <p>Sealed over exactly these three, so an oracle or a report that means to handle one case gets a
+ * compiler error if a fourth is ever added, rather than quietly doing nothing useful with it.
+ *
+ * <p>Not represented here: a {@link TestCase} the engine planned but never attempted at all - shed by
+ * adaptive concurrency, cut off by the budget running out. That is not an outcome of sending a
+ * request; nothing was sent, so no {@link Interaction} exists for it. A run's accounting of "planned
+ * versus attempted" is the engine's and the report's to keep (M1.3, M3.6), not a fourth case here.
  */
 public sealed interface InteractionOutcome {
 
     /**
-     * A response came back.
+     * A well-formed response came back.
      *
      * @param response the response received
      */
@@ -41,7 +53,26 @@ public sealed interface InteractionOutcome {
     }
 
     /**
-     * No response came back.
+     * Bytes came back, but they were not a well-formed HTTP response.
+     *
+     * @param reason what was wrong with them, in a form fit to print in a report - "chunked
+     *     encoding ended without a final zero-length chunk", not a stack trace
+     * @param partial whatever bytes were received before the exchange broke, when any were - not
+     *     necessarily interpretable as a body, since the break may have happened in the headers
+     */
+    record MalformedResponse(String reason, Optional<Payload> partial) implements InteractionOutcome {
+        public MalformedResponse {
+            Objects.requireNonNull(reason, "reason");
+            Objects.requireNonNull(partial, "partial");
+            if (reason.isBlank()) {
+                throw new IllegalArgumentException(
+                        "a malformed response must say what was wrong with it");
+            }
+        }
+    }
+
+    /**
+     * No response came back at all.
      *
      * @param reason what went wrong, in a form fit to print in a report - "connection refused",
      *     "read timed out after 30s" - not a stack trace

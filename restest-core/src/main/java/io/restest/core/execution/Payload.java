@@ -28,19 +28,27 @@ import java.util.Objects;
  * the bytes actually received, not a JSON tree that normalises away whatever made the response
  * malformed in the first place.
  *
- * <p>This is the first record in {@code restest-core} holding a mutable component - the exact case
- * the {@code TODO(M1.1b)} on {@code ArchitectureRules.noStaticMutableState} was left for, and the
- * reason it is a {@code TODO} rather than a rule: no static analysis of a compact constructor can
- * tell "copies the array" from "keeps the reference", so the discipline is enforced by convention
- * and by the test below, not mechanically. The convention: clone on the way in, clone on the way
- * out, and override {@code equals}/{@code hashCode} by hand - the ones a record generates for an
- * array component compare references, which is silently wrong for two payloads with identical
- * content built from two different arrays.
+ * <p>{@code truncated} exists because ADR-0006 names "configurable response-body truncation" as the
+ * store's (M1.4) answer to storage cost - so a stored payload is not always the whole body, and a
+ * record silent about that would have an oracle read a cut-off document, fail to parse it, and
+ * report a fault the API never committed. A payload therefore always says whether {@code content} is
+ * everything that was on the wire.
  *
- * @param content the exact bytes, defensively copied on construction and on every read
+ * <p>This is the first record in {@code restest-core} holding a mutable component - not the case the
+ * {@code TODO(M1.1b)} on {@code ArchitectureRules.noStaticMutableState} was left for, since that gap
+ * is about {@code static final} fields and this is an instance field, but the same discipline
+ * applies: no static analysis of a compact constructor can tell "copies the array" from "keeps the
+ * reference", so it is enforced by convention and by the test below, not mechanically. The
+ * convention: clone on the way in, clone on the way out, and override {@code equals}/{@code
+ * hashCode} by hand - the ones a record generates for an array component compare references, which
+ * is silently wrong for two payloads with identical content built from two different arrays.
+ *
+ * @param content the exact bytes actually retained, defensively copied on construction and on every
+ *     read - not necessarily the whole body; see {@link #truncated()}
  * @param mediaType the media type these bytes were declared or observed under, kept as written
+ * @param truncated whether {@code content} is less than what was actually on the wire
  */
-public record Payload(byte[] content, String mediaType) {
+public record Payload(byte[] content, String mediaType, boolean truncated) {
 
     public Payload {
         Objects.requireNonNull(content, "content");
@@ -53,13 +61,18 @@ public record Payload(byte[] content, String mediaType) {
 
     /** An empty payload of the given media type, for a body that was declared but sent empty. */
     public static Payload empty(String mediaType) {
-        return new Payload(new byte[0], mediaType);
+        return new Payload(new byte[0], mediaType, false);
     }
 
     /** A payload holding the given text, encoded as UTF-8. */
     public static Payload text(String text, String mediaType) {
         Objects.requireNonNull(text, "text");
-        return new Payload(text.getBytes(StandardCharsets.UTF_8), mediaType);
+        return new Payload(text.getBytes(StandardCharsets.UTF_8), mediaType, false);
+    }
+
+    /** A payload holding only the given prefix of a body that was larger. */
+    public static Payload truncated(byte[] retained, String mediaType) {
+        return new Payload(retained, mediaType, true);
     }
 
     /**
@@ -74,13 +87,14 @@ public record Payload(byte[] content, String mediaType) {
         return content.clone();
     }
 
-    /** How many bytes this payload holds. */
+    /** How many bytes this payload holds - the retained length, not necessarily the wire length. */
     public int size() {
         return content.length;
     }
 
     /**
-     * Equal when the bytes are equal element-by-element and the media type matches.
+     * Equal when the bytes are equal element-by-element, and the media type and truncation flag
+     * match.
      *
      * <p>Overridden because a record's generated {@code equals} compares an array component by
      * reference ({@code Object.equals}), not by content, which would make two payloads built from
@@ -91,21 +105,24 @@ public record Payload(byte[] content, String mediaType) {
     public boolean equals(Object other) {
         return other instanceof Payload payload
                 && Arrays.equals(content, payload.content)
-                && mediaType.equals(payload.mediaType);
+                && mediaType.equals(payload.mediaType)
+                && truncated == payload.truncated;
     }
 
     /** Consistent with the overridden {@link #equals(Object)}. */
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(content), mediaType);
+        return Objects.hash(Arrays.hashCode(content), mediaType, truncated);
     }
 
     /**
-     * A size and a media type, not the bytes themselves - which may be large or binary and are the
-     * one thing about this record not fit to print.
+     * A size, a media type and, when it applies, a note that this is not the whole body - not the
+     * bytes themselves, which may be large or binary and are the one thing about this record not fit
+     * to print.
      */
     @Override
     public String toString() {
-        return "Payload[" + content.length + " bytes, " + mediaType + "]";
+        return "Payload[" + content.length + " bytes" + (truncated ? " (truncated)" : "")
+                + ", " + mediaType + "]";
     }
 }
