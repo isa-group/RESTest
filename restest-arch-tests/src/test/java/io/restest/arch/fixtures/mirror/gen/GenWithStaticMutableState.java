@@ -23,7 +23,22 @@ public final class GenWithStaticMutableState {
 
     static int requestsSoFar;
 
-    public void count() {
+    /*
+     * Three visibilities rather than one, so that the rule cannot be narrowed by modifier without
+     * something failing. The synthetic exclusion added at M1.1a is the only exclusion the rule is
+     * meant to have; another `doNotHaveModifier(...)` appended to it would silence one of these.
+     */
+    private static int failuresSoFar;
+
+    public static int lastStatusCode;
+
+    public void count(int statusCode) {
         requestsSoFar++;
+        failuresSoFar += statusCode >= 500 ? 1 : 0;
+        lastStatusCode = statusCode;
+    }
+
+    public int failures() {
+        return failuresSoFar;
     }
 }

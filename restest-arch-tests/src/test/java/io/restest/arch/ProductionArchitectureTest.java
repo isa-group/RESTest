@@ -19,7 +19,6 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.lang.ArchRule;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,17 +30,17 @@ import org.junit.jupiter.api.Test;
  * {@code io.restest.arch.fixtures} - which compile to {@code target/test-classes} - are invisible
  * here. {@link ArchitectureRulesSelfTest} is where those are used.
  *
- * <p>At M0.2 the production modules contain nothing but {@code module-info.java}, so there is
- * nothing here to check yet. Rather than let the rules pass over an empty set - a green build that
- * guards nothing, which is the failure mode ADR-0004 exists to prevent - each check is skipped with
- * a stated reason. They begin running by themselves at M1.1, when the first classes arrive. What
- * proves the rules work in the meantime is {@link ArchitectureRulesSelfTest}.
+ * <p>Until M1.1a the production modules contained nothing but {@code module-info.java}, and each
+ * check here skipped with a stated reason rather than passing over an empty set - a green build that
+ * guards nothing is the failure mode ADR-0004 exists to prevent. The domain model has since arrived,
+ * so every check now runs against real classes and the skips are gone. What proved the rules worked
+ * in the meantime, and still proves that each of them reports what it claims to, is
+ * {@link ArchitectureRulesSelfTest}.
  *
- * <p>The skip is per test, not in {@code @BeforeAll}. An assumption that fails during setup aborts
- * the whole container, and surefire then records {@code tests="0" skipped="0"} with the reason
- * nowhere in the XML - so five architecture checks would vanish from every report that reads it,
- * unexplained. Skipping each test individually keeps all five visible as skipped and attaches the
- * reason to each.
+ * <p>{@link HarnessCoverageTest} is what keeps this test honest from here on: it compares the
+ * classes each module compiled against the classes this import actually contains, so a module that
+ * quietly leaves the import - a dropped dependency, a mis-scoped jar - fails there instead of
+ * silently shrinking the subject set here.
  */
 class ProductionArchitectureTest {
 
@@ -90,21 +89,15 @@ class ProductionArchitectureTest {
     /**
      * Runs a rule against the production modules.
      *
-     * <p>{@code allowEmptyShould} stays on for a reason that outlasts M0.2: the modules fill in
+     * <p>{@code allowEmptyShould} stays on for a reason that outlasted M0.2: the modules fill in
      * across different milestones, so a rule scoped to one of them - the parser confinement rule
-     * once {@code restest-spec} exists but {@code restest-oracles} does not - legitimately has an
-     * empty subject set for a while. The case it must not excuse is *every* rule being empty at
-     * once, and the assumption immediately below is what rules that out.
+     * now that {@code restest-core} holds classes but {@code restest-spec} does not yet -
+     * legitimately has an empty subject set for a while. The case it must not excuse is every rule
+     * being empty at once, which stopped being possible when the domain model arrived: the
+     * inward-dependency rule and the no-network rule both have subjects now, and
+     * {@link HarnessCoverageTest} fails if the import ever loses a module.
      */
     private static void check(ArchRule rule) {
-        // TODO(M1.1): this assumption stops holding as soon as the domain model lands, at which
-        // point every check below starts running on its own and this call can be deleted.
-        Assumptions.assumeFalse(productionClasses.isEmpty(),
-                "No production classes under " + ROOT + " yet: every module holds only a "
-                        + "module-info.java until M1.1. Skipping rather than passing over an empty "
-                        + "set, which would prove nothing. The rules themselves are proven by "
-                        + "ArchitectureRulesSelfTest.");
-
         rule.allowEmptyShould(true).check(productionClasses);
     }
 }

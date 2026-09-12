@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -64,13 +63,13 @@ class HarnessCoverageTest {
     void every_compiled_class_is_visible_to_the_rules() {
         Map<String, Long> compiled = compiledClassesPerModule();
 
-        // TODO(M1.1): this assumption stops holding with the first production class. Until then the
-        // comparison has nothing to compare, and passing an empty list against an empty list would
-        // look like evidence that the rules see every module - while this test's body had never run.
-        Assumptions.assumeFalse(compiled.isEmpty(),
-                "No module has compiled any class beyond its module descriptor yet, so there is "
-                        + "nothing to compare. Skipping rather than asserting emptiness against "
-                        + "emptiness.");
+        assertThat(compiled)
+                .describedAs("No module has compiled a class beyond its module descriptor, so this "
+                        + "comparison would assert emptiness against emptiness and look like "
+                        + "evidence while proving nothing. Since M1.1a restest-core holds the "
+                        + "domain model, so an empty map here means the reactor was not built, not "
+                        + "that there is nothing to check")
+                .isNotEmpty();
 
         JavaClasses imported = new ClassFileImporter()
                 .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)

@@ -22,6 +22,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAccess;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
@@ -193,17 +194,36 @@ final class ArchitectureRules {
     /**
      * Design principle 6: "No global mutable state. Two runs must coexist in one JVM." A static
      * field that one run can write is a channel through which it can corrupt another.
+     *
+     * <p>Synthetic fields are excluded, which narrows the rule to what a person can actually write.
+     * The exclusion is not theoretical tidiness: it was added at M1.1a after the first production
+     * enum switch arrived. A switch over an enum makes the compiler generate a lookup table, and the
+     * two compilers this repository meets disagree about it. {@code javac} puts a
+     * {@code static final int[] $SwitchMap$...} on a synthetic nested class - final, no violation.
+     * The Eclipse compiler, which is what an IDE writes into {@code target/classes} when it builds
+     * alongside Maven, puts a {@code private static volatile int[] $SWITCH_TABLE$...} on the enum
+     * itself - not final, and reported.
+     *
+     * <p>The rule would therefore have failed for any contributor whose IDE compiled last, naming
+     * their enum switch as a breach of design principle 6. Nothing about that report would have been
+     * actionable: the field is not in the source, and no run can reach it. A rule that fails correct
+     * code gets switched off, and then it guards nothing.
+     *
+     * <p>Nothing is lost by the exclusion. {@code synthetic} is a modifier only a compiler can set;
+     * every static field written in Java source is still subject to the rule, which
+     * {@code GenWithStaticMutableState} proves and {@code GenSwitchingOverAnEnum} keeps honest.
      */
     static ArchRule noStaticMutableState(String root) {
         return fields()
                 .that().areStatic()
+                .and().doNotHaveModifier(JavaModifier.SYNTHETIC)
                 .and().areDeclaredInClassesThat().resideInAPackage(root + "..")
                 .should().beFinal()
                 .as("no static mutable state under " + root + " (design principle 6)");
     }
 
     /*
-     * TODO(M1.1): extend the rule above to static *final* fields of a mutable type, which it cannot
+     * TODO(M1.1b): extend the rule above to static *final* fields of a mutable type, which it cannot
      * currently see. `static final List<String> SEEN = new ArrayList<>()` has a final reference and
      * writable contents, so it passes the rule while remaining exactly the cross-run channel
      * design principle 6 forbids.
@@ -213,7 +233,8 @@ final class ArchitectureRules {
      * reading only `field.getRawType()` either misses the first or falsely reports the second - and
      * a rule with false positives gets switched off, at which point it guards nothing. Doing it
      * properly means inspecting each class's static initializer for the constructor it calls,
-     * which belongs with M1.1, where the first real classes and their constants arrive together.
+     * which belongs with M1.1b, the increment that introduces the first record holding a byte array
+     * and therefore the first code that has to defend its own immutability.
      */
 
     /**

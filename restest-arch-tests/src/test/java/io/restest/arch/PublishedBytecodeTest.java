@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -43,12 +42,12 @@ import org.junit.jupiter.api.Test;
  * RESTest and a large share of its potential users. A setting is easy to lose in a POM edit; the
  * class file header is the evidence.
  *
- * <p>At M0.2 the production modules hold nothing but {@code module-info.java}, which this test
- * excludes for the reason given on {@link #MODULE_DESCRIPTOR}. There is therefore nothing yet to
- * measure, and the scan reports as skipped rather than passing over an empty set. What is proven
- * today is the mechanism: {@link #reads_the_major_version_from_a_class_file_header()} checks the
- * header reader against bytes whose version is known, so when the first real class arrives at M1.1
- * the scan is measuring with an instrument that has been calibrated.
+ * <p>Module descriptors are excluded for the reason given on {@link #MODULE_DESCRIPTOR}, so until
+ * M1.1a - when the domain model became the first compiled code in the reactor - there was nothing
+ * to measure and the scan reported as skipped rather than passing over an empty set. It now reads
+ * real classes. The instrument it reads them with is itself calibrated by
+ * {@link #reads_the_major_version_from_a_class_file_header()}, which checks the header reader
+ * against bytes whose version is known.
  */
 class PublishedBytecodeTest {
 
@@ -75,12 +74,12 @@ class PublishedBytecodeTest {
     void every_published_class_file_is_java_21_bytecode() {
         List<Path> classFiles = publishedClassFiles();
 
-        // TODO(M1.1): delete this assumption once the domain model gives the scan something to
-        // measure. Until then it reports as skipped, which is the truth; passing over an empty set
-        // would read as evidence that the bytecode is Java 21 when nothing was examined.
-        Assumptions.assumeFalse(classFiles.isEmpty(),
-                "No compiled classes in the production modules yet, only module descriptors, which "
-                        + "this test excludes by design. Nothing to measure until M1.1.");
+        assertThat(classFiles)
+                .describedAs("Nothing was examined, so a pass here would read as evidence that the "
+                        + "published bytecode is Java 21 when nothing was measured. Since M1.1a the "
+                        + "domain model is compiled, so an empty scan means the reactor was not "
+                        + "built rather than that there is nothing to scan")
+                .isNotEmpty();
 
         Map<String, Integer> wrongVersion = new LinkedHashMap<>();
         for (Path classFile : classFiles) {

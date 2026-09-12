@@ -110,11 +110,28 @@ class ArchitectureRulesSelfTest {
     }
 
     @Test
-    @DisplayName("the static-state rule catches a writable static field")
+    @DisplayName("the static-state rule catches a writable static field, whatever its visibility")
     void static_state_rule_reports_a_non_final_static_field() {
-        expectViolation(
-                ArchitectureRules.noStaticMutableState(MIRROR),
-                "requestsSoFar");
+        expectViolation(ArchitectureRules.noStaticMutableState(MIRROR), "requestsSoFar");
+        // Three visibilities, so that narrowing the rule by modifier - which is how the synthetic
+        // exclusion is written - cannot silence part of it without failing here.
+        expectViolation(ArchitectureRules.noStaticMutableState(MIRROR), "failuresSoFar");
+        expectViolation(ArchitectureRules.noStaticMutableState(MIRROR), "lastStatusCode");
+    }
+
+    @Test
+    @DisplayName("the static-state rule ignores the table a compiler generates for an enum switch")
+    void static_state_rule_ignores_a_compiler_generated_field() {
+        assertThatThrownBy(() -> ArchitectureRules.noStaticMutableState(MIRROR)
+                .check(mirrorClasses))
+                .describedAs("a switch over an enum is not global mutable state, whoever compiled "
+                        + "it. Under javac the generated table is final and this assertion is "
+                        + "trivially true; under the Eclipse compiler, which an IDE may use to "
+                        + "write the very class files being read here, it is a volatile non-final "
+                        + "field and this is the assertion that fails if the synthetic exclusion "
+                        + "is removed")
+                .hasMessageNotContaining("GenSwitchingOverAnEnum")
+                .hasMessageNotContaining("SWITCH_TABLE");
     }
 
     @Test
