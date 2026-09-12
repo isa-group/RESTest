@@ -45,6 +45,10 @@ public interface InteractionStore extends AutoCloseable {
      * <p>Recording the same interaction twice is not an error: the second one replaces the first,
      * which is what makes a re-run of the same attempt after a crash produce one row rather than two.
      *
+     * <p>The writing happens on the calling thread and is finished when this returns, so a caller
+     * that must not wait for a disk - the loop that decides what to send next, above all - should
+     * hand the interaction to something else to record rather than call this from there.
+     *
      * @param interaction what was tried, sent, and came back. Never {@code null}
      */
     void record(Interaction interaction);

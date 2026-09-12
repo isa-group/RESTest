@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import io.restest.core.json.JsonValue;
 import io.restest.core.store.InteractionStoreException;
 import java.io.IOException;
@@ -41,20 +42,42 @@ import java.util.Objects;
  * anywhere a user of RESTest would meet it.
  *
  * <p>Numbers keep their exact written form, so an identifier with twenty digits comes back as itself
- * rather than as the nearest number a computer could hold.
+ * rather than as the nearest number a computer could hold - and they are written the way people
+ * write them. A status code of 200 is stored as {@code 200}: the obvious-looking shortcut here
+ * produces {@code 2E+2}, which is the same number and is not what anybody reading a stored run
+ * expects to see.
  */
-final class Json {
+public final class Json {
 
-    private static final JsonFactory FACTORY = JsonFactory.builder().build();
+    /**
+     * The reader refuses very long pieces of text by default, as a defence against hostile input.
+     * That defence is aimed at data arriving from strangers; here the text is a run this tool wrote
+     * itself moments earlier, and the size of a reply body is the user's own setting to make. Left at
+     * the default, a run that kept a twenty-megabyte reply would be written happily and then be
+     * unreadable for ever.
+     */
+    private static final JsonFactory FACTORY = JsonFactory.builder()
+            .streamReadConstraints(StreamReadConstraints.builder()
+                    .maxStringLength(Integer.MAX_VALUE)
+                    .maxNumberLength(Integer.MAX_VALUE)
+                    .maxNestingDepth(10_000)
+                    .build())
+            .build();
 
     private Json() {
     }
 
-    /** The value as compact JSON text, on one line. */
-    static String write(JsonValue value) {
+    /**
+     * The value as compact JSON text, on one line.
+     *
+     * @param value what to write
+     * @return the JSON text
+     */
+    public static String write(JsonValue value) {
         Objects.requireNonNull(value, "value");
         StringWriter text = new StringWriter();
         try (JsonGenerator out = FACTORY.createGenerator(text)) {
+            out.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
             writeValue(out, value);
         } catch (IOException e) {
             throw new InteractionStoreException("This value could not be written as JSON", e);
@@ -62,8 +85,13 @@ final class Json {
         return text.toString();
     }
 
-    /** The value the text describes. */
-    static JsonValue read(String text) {
+    /**
+     * The value the text describes.
+     *
+     * @param text JSON text, as {@link #write} produces
+     * @return the value it describes
+     */
+    public static JsonValue read(String text) {
         Objects.requireNonNull(text, "text");
         try (JsonParser in = FACTORY.createParser(text)) {
             if (in.nextToken() == null) {
@@ -72,7 +100,7 @@ final class Json {
             return readValue(in);
         } catch (IOException e) {
             throw new InteractionStoreException(
-                    "This is not the JSON it was recorded as: " + e.getMessage(), e);
+                    "Stored JSON could not be read back: " + e.getMessage(), e);
         }
     }
 

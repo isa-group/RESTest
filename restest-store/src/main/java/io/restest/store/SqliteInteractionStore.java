@@ -52,11 +52,24 @@ import org.sqlite.SQLiteDataSource;
  * anything that reads JSON.
  *
  * <p>The file is written in a mode that lets somebody read a run while it is still going on, which is
- * what a live dashboard or an impatient person with {@code sqlite3} will want.
+ * what a live dashboard or an impatient person with {@code sqlite3} will want. While a run is in
+ * progress that mode keeps two working files beside the main one, named after it and ending in
+ * {@code -wal} and {@code -shm}; closing the store folds them back in and deletes them. A run that is
+ * interrupted before the store is closed leaves all three, and all three together are the evidence -
+ * copying only the main file out of an interrupted run would leave the most recent interactions
+ * behind.
  */
 public final class SqliteInteractionStore implements InteractionStore {
 
-    private static final String SCHEMA = """
+    /**
+     * Stamped into every file this version writes. A later version that changes the shape of the
+     * table raises it, and this one then says plainly that the run was written by something newer
+     * rather than failing later with a complaint about a missing column.
+     */
+    private static final int LAYOUT = 1;
+
+    private static final List<String> SCHEMA = List.of(
+            """
             CREATE TABLE IF NOT EXISTS interaction (
                 id            TEXT PRIMARY KEY,
                 test_case     TEXT    NOT NULL,
@@ -66,23 +79,31 @@ public final class SqliteInteractionStore implements InteractionStore {
                 status_code   INTEGER,
                 outcome       TEXT    NOT NULL,
                 sent_at       TEXT    NOT NULL,
+                sent_at_nanos INTEGER NOT NULL,
                 elapsed_nanos INTEGER NOT NULL,
                 document      TEXT    NOT NULL
-            );
-            CREATE INDEX IF NOT EXISTS interaction_by_operation ON interaction (operation);
-            CREATE INDEX IF NOT EXISTS interaction_by_status ON interaction (status_code);
-            CREATE INDEX IF NOT EXISTS interaction_by_outcome ON interaction (outcome);
-            """;
+            )""",
+            "CREATE INDEX IF NOT EXISTS interaction_by_operation ON interaction (operation)",
+            "CREATE INDEX IF NOT EXISTS interaction_by_status ON interaction (status_code)",
+            "CREATE INDEX IF NOT EXISTS interaction_by_outcome ON interaction (outcome)",
+            "CREATE INDEX IF NOT EXISTS interaction_in_order ON interaction (sent_at_nanos)");
 
     private static final String INSERT = """
             INSERT OR REPLACE INTO interaction
                 (id, test_case, operation, method, url, status_code, outcome, sent_at,
-                 elapsed_nanos, document)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 sent_at_nanos, elapsed_nanos, document)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
-    /** Oldest first, and the row number settles the order of two requests sent in the same instant. */
-    private static final String ORDER = " ORDER BY sent_at, rowid";
+    /**
+     * Oldest first.
+     *
+     * <p>Ordered by the moment the request went out, counted as a number rather than compared as
+     * written text. Written out, an instant prints however many decimals it needs - {@code 12:00:00Z}
+     * and {@code 12:00:00.5Z} and {@code 12:00:00.123456Z} - and comparing those as text puts them in
+     * an order that has nothing to do with time. The row number settles the rare tie.
+     */
+    private static final String ORDER = " ORDER BY sent_at_nanos, rowid";
 
     private final ReentrantLock lock = new ReentrantLock();
     private final String describedAs;
@@ -97,18 +118,62 @@ public final class SqliteInteractionStore implements InteractionStore {
         settings.setSynchronous(SQLiteConfig.SynchronousMode.NORMAL);
         SQLiteDataSource source = new SQLiteDataSource(settings);
         source.setUrl(url);
+        Connection opened = null;
         try {
-            this.connection = source.getConnection();
-            try (Statement schema = connection.createStatement()) {
-                for (String statement : SCHEMA.split(";")) {
-                    if (!statement.isBlank()) {
-                        schema.execute(statement);
-                    }
-                }
+            opened = source.getConnection();
+            prepare(opened, describedAs);
+            this.connection = opened;
+        } catch (SQLException | RuntimeException e) {
+            // Without this the failed connection would be left open and unreachable, and a program
+            // that opens one store per API under test would run out of files it is allowed to hold.
+            closeQuietly(opened);
+            if (e instanceof InteractionStoreException already) {
+                throw already;
             }
-        } catch (SQLException e) {
             throw new InteractionStoreException("The run's evidence could not be opened at "
                     + describedAs + ": " + e.getMessage(), e);
+        }
+    }
+
+    private static void prepare(Connection connection, String describedAs) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            int written;
+            try (ResultSet rows = statement.executeQuery("PRAGMA user_version")) {
+                written = rows.next() ? rows.getInt(1) : 0;
+            }
+            if (written > LAYOUT) {
+                throw new InteractionStoreException("The run at " + describedAs + " was written by "
+                        + "a newer version of RESTest (its layout is " + written + ", this version "
+                        + "knows " + LAYOUT + "), so it cannot be read here");
+            }
+            for (String schema : SCHEMA) {
+                statement.execute(schema);
+            }
+            statement.execute("PRAGMA user_version = " + LAYOUT);
+        }
+    }
+
+    private static void closeQuietly(Connection connection) {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException beyondHelp) {
+                // Already failing; the original failure is the one worth reporting.
+            }
+        }
+    }
+
+    /**
+     * The moment a request went out, as a plain count of nanoseconds, so that rows can be put in the
+     * order they happened. Clamped rather than refused for a date far outside any real run: a
+     * nonsensical timestamp is not a reason to lose the interaction it belongs to.
+     */
+    private static long instantAsNumber(java.time.Instant instant) {
+        try {
+            return Math.addExact(
+                    Math.multiplyExact(instant.getEpochSecond(), 1_000_000_000L), instant.getNano());
+        } catch (ArithmeticException farFuture) {
+            return instant.isAfter(java.time.Instant.EPOCH) ? Long.MAX_VALUE : Long.MIN_VALUE;
         }
     }
 
@@ -155,8 +220,9 @@ public final class SqliteInteractionStore implements InteractionStore {
             }
             insert.setString(7, outcomeOf(interaction));
             insert.setString(8, interaction.sentAt().toString());
-            insert.setLong(9, interaction.elapsed().toNanos());
-            insert.setString(10, document);
+            insert.setLong(9, instantAsNumber(interaction.sentAt()));
+            insert.setLong(10, interaction.elapsed().toNanos());
+            insert.setString(11, document);
             insert.executeUpdate();
         } catch (SQLException e) {
             throw failure("write an interaction to", e);
@@ -169,22 +235,40 @@ public final class SqliteInteractionStore implements InteractionStore {
     public List<Interaction> find(InteractionQuery query) {
         Objects.requireNonNull(query, "query");
         List<Object> values = new ArrayList<>();
-        String sql = "SELECT document FROM interaction" + where(query, values) + ORDER
+        String sql = "SELECT id, document FROM interaction" + where(query, values) + ORDER
                 + query.limit().map(limit -> " LIMIT " + limit).orElse("");
+        // The rows are fetched while holding the lock and turned back into interactions afterwards.
+        // Rebuilding a hundred thousand interactions takes a while, and nothing should have to wait
+        // to record what an API just answered because somebody is reading the run at the same time.
+        List<String[]> rowsRead = new ArrayList<>();
         lock.lock();
         try (PreparedStatement select = statement(sql)) {
             bind(select, values);
             try (ResultSet rows = select.executeQuery()) {
-                List<Interaction> found = new ArrayList<>();
                 while (rows.next()) {
-                    found.add(InteractionDocument.toInteraction(Json.read(rows.getString(1))));
+                    rowsRead.add(new String[] {rows.getString(1), rows.getString(2)});
                 }
-                return List.copyOf(found);
             }
         } catch (SQLException e) {
             throw failure("read interactions from", e);
         } finally {
             lock.unlock();
+        }
+        return rowsRead.stream().map(row -> read(row[0], row[1])).toList();
+    }
+
+    /**
+     * One stored row as an interaction again, saying which row it was if it cannot be read. Without
+     * the identifier, a single damaged interaction in a run of thousands is a complaint nobody can
+     * act on.
+     */
+    private static Interaction read(String id, String document) {
+        try {
+            return InteractionDocument.toInteraction(Json.read(document));
+        } catch (InteractionStoreException e) {
+            throw new InteractionStoreException(
+                    "The interaction recorded as " + id + " could not be read back: "
+                            + e.getMessage(), e);
         }
     }
 
@@ -222,8 +306,7 @@ public final class SqliteInteractionStore implements InteractionStore {
             select.setString(1, id.value());
             try (ResultSet rows = select.executeQuery()) {
                 return rows.next()
-                        ? Optional.of(
-                                InteractionDocument.toInteraction(Json.read(rows.getString(1))))
+                        ? Optional.of(read(id.value(), rows.getString(1)))
                         : Optional.empty();
             }
         } catch (SQLException e) {

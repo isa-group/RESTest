@@ -117,7 +117,7 @@ final class ArchitectureRules {
                 .and().resideInAPackage(root + "..")
                 .should().dependOnClassesThat().resideInAPackage(forbiddenPackage)
                 .as("only " + root + "." + module + " depends on " + forbiddenPackage
-                        + " (ADR-0007)");
+                        + " (ADR-0004)");
     }
 
     /**

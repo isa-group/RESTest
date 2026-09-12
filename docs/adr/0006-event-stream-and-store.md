@@ -91,8 +91,13 @@ the golden corpus, and simpler for a reader to reason about."*
 - `restest-store` has exactly one `InteractionStore`, backed by SQLite: one file per run, the facts
   worth filtering on as indexed columns, and the interaction itself stored beside them as a JSON
   document.
-- That document is what M3.5's NDJSON report writes out, one row per line. There is one serialised
-  shape in the project, not two that can drift apart.
+- There is one serialised shape in the project, defined in one class (`InteractionDocument`), and
+  M3.5's NDJSON report writes *that* shape rather than inventing a second one. Note what this does
+  **not** yet settle: `restest-report` may not depend on `restest-store` under the current layer
+  rules, so M3.5 must either take that dependency deliberately (a rule change, argued at the time) or
+  move the document shape into `restest-core` — which can hold it without gaining a JSON library,
+  because building a `JsonValue` needs none; only turning it into text does. Whichever is chosen, the
+  requirement is that no second mapping from an interaction to JSON is written.
 - The `InteractionStore` interface stays, with one implementation behind it, for the reason it was
   introduced: it is what M3.3 and the corpus oracles consume, and replacing the container later is a
   change to one module.

@@ -165,6 +165,127 @@ class SqliteInteractionStoreTest {
     }
 
     @Test
+    @DisplayName("requests sent within the same second are still ordered by when they went out")
+    void the_order_holds_for_requests_a_fraction_of_a_second_apart() {
+        // A real clock produces instants that print with however many decimals they need, and
+        // comparing those as written text puts them in an order that has nothing to do with time.
+        Interaction first = Interactions.answered("GET /first", 200, Interactions.NOON);
+        Interaction second = Interactions.answered("GET /second", 200,
+                Interactions.NOON.plusMillis(500));
+        Interaction third = Interactions.answered("GET /third", 200,
+                Interactions.NOON.plusNanos(700_123_456));
+
+        store.record(third);
+        store.record(first);
+        store.record(second);
+
+        assertThat(store.find(InteractionQuery.all()))
+                .extracting(interaction -> interaction.testCase().operation().value())
+                .containsExactly("GET /first", "GET /second", "GET /third");
+    }
+
+    @Test
+    @DisplayName("a run kept alongside is still readable, and a newer layout says so plainly")
+    void a_run_written_by_a_newer_version_is_refused_clearly() throws Exception {
+        Path file = directory.resolve("from-the-future.sqlite");
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(Interactions.answered("GET /widgets", 200));
+        }
+        execute(file, "PRAGMA user_version = 99");
+
+        assertThatExceptionOfType(InteractionStoreException.class)
+                .isThrownBy(() -> SqliteInteractionStore.at(file))
+                .withMessageContaining("newer version");
+    }
+
+    @Test
+    @DisplayName("a stored interaction that has been damaged is reported, not thrown at the reader")
+    void a_damaged_interaction_is_reported_as_one() throws Exception {
+        Path file = directory.resolve("damaged.sqlite");
+        Interaction stored = Interactions.answered("GET /widgets", 200);
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(stored);
+        }
+        execute(file, "UPDATE interaction SET document = "
+                + "json_set(document, '$.sentAt', 'not a time')");
+
+        try (SqliteInteractionStore reading = SqliteInteractionStore.at(file)) {
+            assertThatExceptionOfType(InteractionStoreException.class)
+                    .describedAs("the interface promises this is the only exception it throws")
+                    .isThrownBy(() -> reading.find(InteractionQuery.all()))
+                    .withMessageContaining("could not be read back");
+        }
+    }
+
+    @Test
+    @DisplayName("a reply that named its length and was not cut short keeps that length")
+    void a_body_that_knows_its_length_keeps_it_even_when_nothing_was_dropped() {
+        byte[] content = "12345".getBytes(StandardCharsets.UTF_8);
+        Interaction stored = Interaction.answered(
+                Interactions.testCase("GET /widgets"),
+                io.restest.core.execution.HttpRequestRecord.of(
+                        io.restest.core.model.HttpMethod.GET, "http://localhost:8080/widgets"),
+                new io.restest.core.execution.HttpResponseRecord(
+                        io.restest.core.execution.StatusLine.of(200), List.of(),
+                        java.util.Optional.of(new Payload(content, "text/plain",
+                                java.util.Optional.of(5L)))),
+                Interactions.NOON, Duration.ofMillis(3));
+
+        store.record(stored);
+
+        assertThat(store.find(InteractionQuery.all())).containsExactly(stored);
+    }
+
+    @Test
+    @DisplayName("a large reply survives: the reader's defence against strangers is not aimed at us")
+    void a_large_body_can_be_read_back() {
+        String large = "x".repeat(2_000_000);
+        Interaction stored = Interaction.answered(
+                Interactions.testCase("GET /large"),
+                io.restest.core.execution.HttpRequestRecord.of(
+                        io.restest.core.model.HttpMethod.GET, "http://localhost:8080/large"),
+                new io.restest.core.execution.HttpResponseRecord(
+                        io.restest.core.execution.StatusLine.of(200), List.of(),
+                        java.util.Optional.of(Payload.text(large, "text/plain"))),
+                Interactions.NOON, Duration.ofSeconds(1));
+
+        store.record(stored);
+
+        assertThat(store.find(InteractionQuery.all()).get(0)
+                .response().orElseThrow().body().orElseThrow().size()).isEqualTo(2_000_000);
+    }
+
+    @Test
+    @DisplayName("two runs of the same program store the same interaction identically")
+    void the_stored_shape_does_not_change_between_runs() {
+        Interaction stored = Interactions.elaborate();
+
+        String once = Json.write(InteractionDocument.of(stored));
+        String again = Json.write(InteractionDocument.of(stored));
+
+        assertThat(once)
+                .describedAs("field order comes from the code, not from how a particular run of "
+                        + "the program happened to lay out a map")
+                .isEqualTo(again)
+                .contains("{\"name\":\"Accept\",\"value\":\"application/json\"}")
+                .contains("\"mediaType\":\"application/json\",\"value\":");
+    }
+
+    @Test
+    @DisplayName("ordinary numbers are stored as people write them, not in exponent notation")
+    void numbers_are_stored_readably() {
+        Interaction stored = Interactions.answered("GET /widgets", 500);
+
+        String document = Json.write(InteractionDocument.of(stored));
+
+        assertThat(document)
+                .describedAs("a stored run is meant to be readable by anything that reads JSON, "
+                        + "and 5E+2 is not what anybody expects a status code to look like")
+                .contains("\"status\":500")
+                .doesNotContain("E+");
+    }
+
+    @Test
     @DisplayName("every question the query API can ask")
     void the_queries_answer_what_they_claim() {
         store.record(Interactions.answered("GET /widgets", 200));
@@ -320,6 +441,14 @@ class SqliteInteractionStoreTest {
                 .describedAs("the facts people filter on are plain columns, so SQL can be used "
                         + "directly against a stored run")
                 .containsExactly("POST /widgets");
+    }
+
+    private static void execute(Path file, String sql) throws Exception {
+        org.sqlite.SQLiteDataSource source = new org.sqlite.SQLiteDataSource();
+        source.setUrl("jdbc:sqlite:" + file.toAbsolutePath());
+        try (var connection = source.getConnection(); var statement = connection.createStatement()) {
+            statement.execute(sql);
+        }
     }
 
     private static List<String> readColumn(Path file, String sql) throws Exception {

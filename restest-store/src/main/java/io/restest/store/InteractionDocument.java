@@ -66,12 +66,18 @@ import java.util.Optional;
  * {@code 2026-09-12T16:00:00Z} and a duration as {@code PT0.403S}. Both read plainly and both come
  * back exactly as they went in.
  */
-final class InteractionDocument {
+public final class InteractionDocument {
 
     private InteractionDocument() {
     }
 
-    static JsonValue of(Interaction interaction) {
+    /**
+     * The interaction as the JSON object it is stored as.
+     *
+     * @param interaction what was tried, sent and came back
+     * @return the document
+     */
+    public static JsonValue of(Interaction interaction) {
         Map<String, JsonValue> document = new LinkedHashMap<>();
         document.put("id", JsonValue.of(interaction.id().value()));
         document.put("sentAt", JsonValue.of(interaction.sentAt().toString()));
@@ -82,15 +88,32 @@ final class InteractionDocument {
         return JsonValue.object(document);
     }
 
-    static Interaction toInteraction(JsonValue value) {
+    /**
+     * The interaction a stored document describes.
+     *
+     * <p>A document that is not one - written by a later version of RESTest, or edited by hand into
+     * something impossible - is reported as a stored interaction that could not be read, rather than
+     * as whatever low-level complaint the mangled part happened to produce.
+     *
+     * @param value the stored document
+     * @return the interaction it describes
+     */
+    public static Interaction toInteraction(JsonValue value) {
         JsonValue.JsonObject document = object(value, "the interaction");
-        return new Interaction(
-                InteractionId.of(string(document, "id")),
-                toTestCase(member(document, "testCase")),
-                toRequest(member(document, "request")),
-                toOutcome(member(document, "outcome")),
-                Instant.parse(string(document, "sentAt")),
-                Duration.parse(string(document, "elapsed")));
+        try {
+            return new Interaction(
+                    InteractionId.of(string(document, "id")),
+                    toTestCase(member(document, "testCase")),
+                    toRequest(member(document, "request")),
+                    toOutcome(member(document, "outcome")),
+                    Instant.parse(string(document, "sentAt")),
+                    Duration.parse(string(document, "elapsed")));
+        } catch (InteractionStoreException alreadyExplained) {
+            throw alreadyExplained;
+        } catch (RuntimeException e) {
+            throw new InteractionStoreException("A stored interaction could not be read back: "
+                    + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+        }
     }
 
     // --- the test case -------------------------------------------------------------------------
@@ -136,10 +159,11 @@ final class InteractionDocument {
     }
 
     private static JsonValue of(BodyValue body) {
-        return JsonValue.object(new LinkedHashMap<>(Map.of(
-                "mediaType", JsonValue.of(body.mediaType()),
-                "value", body.value(),
-                "origin", of(body.origin()))));
+        Map<String, JsonValue> document = new LinkedHashMap<>();
+        document.put("mediaType", JsonValue.of(body.mediaType()));
+        document.put("value", body.value());
+        document.put("origin", of(body.origin()));
+        return JsonValue.object(document);
     }
 
     private static BodyValue toBodyValue(JsonValue value) {
@@ -265,10 +289,18 @@ final class InteractionDocument {
 
     private static JsonValue of(List<Header> headers) {
         return JsonValue.array(headers.stream()
-                .map(header -> (JsonValue) JsonValue.object(new LinkedHashMap<>(Map.of(
-                        "name", JsonValue.of(header.name()),
-                        "value", JsonValue.of(header.value())))))
+                .map(InteractionDocument::of)
                 .toList());
+    }
+
+    private static JsonValue of(Header header) {
+        // Written member by member, not built from a map literal: the order of a small map literal
+        // is scrambled differently in every run of the program, and a stored run that came out
+        // byte-different every time would be impossible to compare with itself.
+        Map<String, JsonValue> document = new LinkedHashMap<>();
+        document.put("name", JsonValue.of(header.name()));
+        document.put("value", JsonValue.of(header.value()));
+        return JsonValue.object(document);
     }
 
     private static List<Header> toHeaders(JsonValue.JsonObject document) {
@@ -290,9 +322,8 @@ final class InteractionDocument {
                 text -> document.put("text", JsonValue.of(text)),
                 () -> document.put("base64",
                         JsonValue.of(Base64.getEncoder().encodeToString(content))));
-        if (payload.truncated()) {
-            document.put("wireLength", JsonValue.of(payload.deliveredLength()));
-        }
+        payload.wireLength().ifPresent(length ->
+                document.put("wireLength", JsonValue.of(length)));
         return JsonValue.object(document);
     }
 
@@ -302,10 +333,8 @@ final class InteractionDocument {
         byte[] content = document.member("text")
                 .map(text -> text(text, "text").getBytes(StandardCharsets.UTF_8))
                 .orElseGet(() -> Base64.getDecoder().decode(string(document, "base64")));
-        return document.member("wireLength")
-                .map(length -> Payload.partial(content, mediaType,
-                        number(length, "wireLength").longValueExact()))
-                .orElseGet(() -> Payload.of(content, mediaType));
+        return new Payload(content, mediaType, document.member("wireLength")
+                .map(length -> number(length, "wireLength").longValueExact()));
     }
 
     /**
