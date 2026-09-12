@@ -81,10 +81,11 @@ class InteractionTest {
             + "not from the partial payload's own wireLength")
     void a_declared_length_the_response_failed_to_honour_is_visible_via_headers() {
         // Only 3 bytes actually arrived over the wire before the connection broke - nothing was
-        // dropped by our own storage, so the partial payload carries no wireLength of its own. The
-        // gap between what the API promised and what it delivered is visible by comparing this
-        // payload's size against the Content-Length header, which is what an oracle judging this
-        // outcome is expected to do.
+        // dropped by our own storage, so the partial payload carries no wireLength of its own, and
+        // deliveredLength() falls back to the retained size. The gap between what the API promised
+        // and what it delivered is visible by comparing deliveredLength() against the Content-Length
+        // header - never size(), which is only safe to use directly here because nothing was
+        // further truncated; see the next test for the case where that matters.
         Payload partial = Payload.of(new byte[] {1, 2, 3}, Payload.UNKNOWN_MEDIA_TYPE);
 
         Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
@@ -97,7 +98,21 @@ class InteractionTest {
                 (InteractionOutcome.MalformedResponse) interaction.outcome();
         assertThat(outcome.partial()).contains(partial);
         assertThat(outcome.partial().orElseThrow().wireLength()).isEmpty();
+        assertThat(outcome.partial().orElseThrow().deliveredLength()).isEqualTo(3L);
         assertThat(outcome.headers()).extracting(Header::value).containsExactly("10");
+    }
+
+    @Test
+    @DisplayName("deliveredLength(), not size(), stays correct when the store also truncated the body")
+    void delivered_length_accounts_for_our_own_storage_truncation_too() {
+        // The API genuinely delivered all 900 bytes it declared via Content-Length - nothing is
+        // wrong with this response - but our own store (M1.4) only retained the first 100. size()
+        // would understate delivery and make an oracle blame the API for our retention policy;
+        // deliveredLength() reports the confirmed original length instead.
+        Payload storeTruncated = Payload.partial(new byte[100], Payload.UNKNOWN_MEDIA_TYPE, 900L);
+
+        assertThat(storeTruncated.size()).isEqualTo(100);
+        assertThat(storeTruncated.deliveredLength()).isEqualTo(900L);
     }
 
     @Test

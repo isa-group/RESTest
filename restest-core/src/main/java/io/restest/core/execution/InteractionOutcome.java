@@ -70,11 +70,12 @@ public sealed interface InteractionOutcome {
      * <p>{@code partial}'s {@link Payload#wireLength()}, if set, means only "our own storage kept
      * fewer bytes than were actually delivered" - never "the response claimed more than it
      * delivered". That second fact, a declared length the API failed to honour, is already visible
-     * by comparing {@code partial}'s size against a {@code Content-Length} in {@code headers}; it is
-     * not this field's job to restate it. Bytes that simply stopped arriving, with no declared
-     * length to compare against - a chunked stream with no final chunk - are exactly what
-     * {@code partial} with no {@code wireLength} represents: everything we have, with nothing said
-     * about whether more was coming.
+     * by comparing {@link Payload#deliveredLength()} - not {@link Payload#size()}, which understates
+     * delivery whenever this payload was also cut short by our own storage - against a
+     * {@code Content-Length} in {@code headers}; it is not this field's job to restate it. Bytes that
+     * simply stopped arriving, with no declared length to compare against - a chunked stream with no
+     * final chunk - are exactly what {@code partial} with no {@code wireLength} represents: everything
+     * we have, with nothing said about whether more was coming.
      *
      * @param reason what was wrong, in a form fit to print in a report - "chunked encoding ended
      *     without a final zero-length chunk", not a stack trace

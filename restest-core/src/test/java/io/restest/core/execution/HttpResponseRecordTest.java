@@ -88,4 +88,12 @@ class HttpResponseRecordTest {
         assertThat(response).hasToString(
                 "HttpResponseRecord[200 OK, headers=[Set-Cookie], body=none]");
     }
+
+    @Test
+    @DisplayName("toString omits the reason phrase when the protocol carries none, as HTTP/2 does not")
+    void to_string_omits_an_absent_reason_phrase() {
+        HttpResponseRecord response = HttpResponseRecord.of(204);
+
+        assertThat(response).hasToString("HttpResponseRecord[204, headers=[], body=none]");
+    }
 }

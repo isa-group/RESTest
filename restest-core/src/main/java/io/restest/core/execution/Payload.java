@@ -52,6 +52,15 @@ import java.util.Optional;
  * chunk - are {@code content} with no {@code wireLength} at all: everything retained, nothing said
  * about whether more was coming.
  *
+ * <p>An oracle comparing what the API declared against what it delivered must use
+ * {@link #deliveredLength()}, never {@link #size()}. {@code size()} is how much *this payload holds*,
+ * which is smaller than what was delivered whenever our own storage truncated it - comparing that
+ * number against a {@code Content-Length} would blame the API for our retention policy.
+ * {@code deliveredLength()} corrects for exactly that, and reduces to {@code size()} when nothing was
+ * further truncated. Neither number is meaningful against a {@code Content-Length} that counts
+ * encoded octets while {@code content} holds a decoded body - the same content-coding warning above
+ * applies to this comparison too, and is the engine's to get right, not this record's to enforce.
+ *
  * <p>This is the first record in {@code restest-core} holding a mutable component - not the case the
  * {@code TODO} on {@code ArchitectureRules.noStaticMutableState} was left for, since that gap is
  * about {@code static final} fields and this is an instance field, but the same discipline applies:
@@ -134,6 +143,16 @@ public record Payload(byte[] content, String mediaType, Optional<Long> wireLengt
     /** How many bytes this payload holds - the retained length, not necessarily the wire length. */
     public int size() {
         return content.length;
+    }
+
+    /**
+     * How many bytes the source actually delivered: {@link #wireLength()} when it is known, the
+     * retained length otherwise. This, not {@link #size()}, is what a declared length like
+     * {@code Content-Length} should be compared against - {@code size()} understates delivery
+     * whenever this payload was itself truncated by our own storage.
+     */
+    public long deliveredLength() {
+        return wireLength.orElse((long) content.length);
     }
 
     /** Whether {@code content} is less than what was actually on the wire. */

@@ -206,8 +206,9 @@ show header *names* only, plus the body's own already-safe summary. This does no
 redaction in general - a credential in a query string or inside a body is not caught by it - which is
 left to the reporting work in M3.6; it closes the one leak this increment could close cheaply.
 
-`HttpResponseRecord` also gained `reasonPhrase` and `protocolVersion`, both optional: they are part of
-the same status line as the code already kept, and M3.2's HTTP-semantics oracles want them.
+`HttpResponseRecord` also gained the reason phrase and protocol version, both optional, as part of
+its `StatusLine` (see above) rather than as fields of its own: M3.2's HTTP-semantics oracles want
+them, and they are the same status line the code already came from.
 
 **Deliberately left open.** Two considerations surfaced in review that this increment does not
 settle, because settling them now would mean guessing at a design that belongs to a later milestone:
