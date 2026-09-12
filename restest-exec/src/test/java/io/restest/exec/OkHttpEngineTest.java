@@ -247,6 +247,11 @@ class OkHttpEngineTest {
                 StandardCharsets.UTF_8))
                 .describedAs("what is recorded is the reply the API meant, not its packaging")
                 .isEqualTo(json);
+        assertThat(interaction.response().orElseThrow().headerValues("Content-Encoding"))
+                .describedAs("the packaging is undone, so the header describing it is not kept: "
+                        + "a record saying 'gzip' beside a body that is plain text would be worse "
+                        + "than one that says nothing")
+                .isEmpty();
     }
 
     @Test
@@ -294,16 +299,40 @@ class OkHttpEngineTest {
                 .isThrownBy(() -> engine.sendAsync(Requests.testCase(HttpMethod.GET, "/widgets"),
                         Requests.get(url("/widgets"))))
                 .withMessageContaining("closed");
+        assertThatIllegalStateException()
+                .isThrownBy(() -> engine.send(Requests.testCase(HttpMethod.GET, "/widgets"),
+                        Requests.get(url("/widgets"))))
+                .withMessageContaining("closed");
     }
 
     @Test
-    @DisplayName("an address that is not an address is reported, and nothing is sent")
+    @DisplayName("an address that is not an address is reported, counted, and nothing is sent")
     void an_unusable_address_is_reported_rather_than_thrown() {
         Interaction interaction = engine.send(Requests.testCase(HttpMethod.GET, "/widgets"),
                 Requests.get("not even a URL"));
 
         assertThat(interaction.isAnswered()).isFalse();
         assertThat(interaction.outcome().toString()).contains("could not be assembled");
+        assertThat(engine.statistics().requestsSent())
+                .describedAs("a run whose every address is unusable must not read as a flawless "
+                        + "run that sent nothing")
+                .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a body the API promised and then did not send is not the same as no body")
+    void an_empty_body_with_a_declared_type_is_kept() {
+        api.stubFor(get(urlEqualTo("/promised")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("")));
+
+        Interaction interaction = engine.send(Requests.testCase(HttpMethod.GET, "/promised"),
+                Requests.get(url("/promised")));
+
+        Payload body = interaction.response().orElseThrow().body().orElseThrow();
+        assertThat(body.size()).isZero();
+        assertThat(body.mediaType()).isEqualTo("application/json");
     }
 
     private static String url(String path) {

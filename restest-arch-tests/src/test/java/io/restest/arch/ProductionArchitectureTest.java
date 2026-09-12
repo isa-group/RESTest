@@ -62,6 +62,12 @@ class ProductionArchitectureTest {
     }
 
     @Test
+    @DisplayName("only restest-exec references the HTTP client (ADR-0004)")
+    void only_restest_exec_references_the_http_client() {
+        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "exec", "okhttp3.."));
+    }
+
+    @Test
     @DisplayName("only restest-cli terminates the process (ADR-0004)")
     void only_restest_cli_terminates_the_process() {
         check(ArchitectureRules.onlyOneModuleMayTerminateTheProcess(ROOT, "cli"));

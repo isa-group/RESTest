@@ -22,7 +22,6 @@ import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,10 +31,9 @@ import org.junit.jupiter.api.Test;
  */
 class ConcurrencyLimiterTest {
 
-    private static final long FAST = Duration.ofMillis(10).toNanos();
-    private static final long SLOW = Duration.ofMillis(100).toNanos();
-
-    private final AtomicLong clock = new AtomicLong();
+    private static final long FAST = Duration.ofMillis(1).toNanos();
+    private static final long USUAL = Duration.ofMillis(50).toNanos();
+    private static final long SLOW = Duration.ofMillis(400).toNanos();
 
     @Test
     @DisplayName("the engine starts where the settings say, before anything is known about the API")
@@ -70,11 +68,53 @@ class ConcurrencyLimiterTest {
     @DisplayName("answers much slower than the quickest one mean requests are queueing: allow fewer")
     void a_slowdown_lowers_the_limit() throws InterruptedException {
         ConcurrencyLimiter limiter = limiter(1, 4, 16);
-        limiter.observe(FAST, false);
+        for (int i = 0; i < 5; i++) {
+            limiter.observe(FAST, false);
+        }
 
         limiter.observe(SLOW, false);
 
         assertThat(limiter.limit()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("one unusually quick answer does not convince the engine that everything else is slow")
+    void a_single_fast_answer_does_not_collapse_the_limit() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 4, 16);
+        for (int i = 0; i < 10; i++) {
+            limiter.observe(USUAL, false);
+        }
+        int before = limiter.limit();
+
+        // A 404 for an identifier that does not exist, or a 400 refusing deliberately invalid
+        // input: this tool produces those constantly, and they come back in no time at all.
+        limiter.observe(FAST, false);
+        for (int i = 0; i < 20; i++) {
+            limiter.observe(USUAL, false);
+        }
+
+        assertThat(limiter.limit())
+                .describedAs("ordinary answers after a quick one are still ordinary answers")
+                .isEqualTo(before);
+    }
+
+    @Test
+    @DisplayName("a slowdown that passes is recovered from, rather than held against the API")
+    void the_limit_climbs_back_after_a_slowdown_ends() throws InterruptedException {
+        ConcurrencyLimiter limiter = limiter(1, 4, 16);
+        for (int i = 0; i < 10; i++) {
+            limiter.observe(USUAL, false);
+        }
+        for (int i = 0; i < 3; i++) {
+            limiter.observe(SLOW, false);
+        }
+        assertThat(limiter.limit()).isLessThan(4);
+
+        for (int i = 0; i < 6; i++) {
+            useEverySlot(limiter);
+        }
+
+        assertThat(limiter.limit()).isGreaterThanOrEqualTo(4);
     }
 
     @Test
@@ -142,8 +182,8 @@ class ConcurrencyLimiterTest {
         }
     }
 
-    private ConcurrencyLimiter limiter(int minimum, int initial, int maximum) {
+    private static ConcurrencyLimiter limiter(int minimum, int initial, int maximum) {
         return new ConcurrencyLimiter(
-                EngineSettings.defaults().withConcurrency(minimum, initial, maximum), clock::get);
+                EngineSettings.defaults().withConcurrency(minimum, initial, maximum));
     }
 }

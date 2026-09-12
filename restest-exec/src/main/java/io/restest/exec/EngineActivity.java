@@ -30,8 +30,11 @@ import java.util.function.LongSupplier;
  * matter how fast the API is. That is the number this class exists to produce, and it is why the
  * project measures idle time rather than requests per second.
  *
- * <p>The clock starts at the first request, not when the engine is built: time spent before anybody
- * asked for anything is nobody's waste. Time after the last answer does count, because from then on
+ * <p>The clock starts when the engine is built, which is the start of the run, and it keeps running
+ * to the moment somebody asks. That is deliberate and it is the whole point: the failure this
+ * measurement exists to catch is a tool that spends the first minutes of its budget computing before
+ * it sends anything, and a clock that only started at the first request would report that run as
+ * perfectly efficient. Time before the first request and time after the last answer are both time
  * the engine had nothing in flight and could have.
  *
  * <p>Where the time comes from is a parameter, so that the tests can hand it a clock they control
@@ -40,9 +43,8 @@ import java.util.function.LongSupplier;
 final class EngineActivity {
 
     private final LongSupplier nanoTime;
+    private final long startedAt;
 
-    private boolean started;
-    private long startedAt;
     private int inFlight;
     private int peakConcurrency;
     private long idleNanos;
@@ -52,15 +54,14 @@ final class EngineActivity {
 
     EngineActivity(LongSupplier nanoTime) {
         this.nanoTime = nanoTime;
+        this.startedAt = nanoTime.getAsLong();
+        this.idleSince = startedAt;
     }
 
     /** A request is about to go out; the engine stops being idle. */
     synchronized void requestStarted() {
         long now = nanoTime.getAsLong();
-        if (!started) {
-            started = true;
-            startedAt = now;
-        } else if (inFlight == 0) {
+        if (inFlight == 0) {
             idleNanos += now - idleSince;
         }
         inFlight++;
@@ -82,6 +83,19 @@ final class EngineActivity {
     }
 
     /**
+     * An attempt that never reached the network - an address nothing could be sent to, a run
+     * interrupted before the request went out - which still counts as a request the engine failed to
+     * get an answer to.
+     *
+     * <p>Counting these matters: a run whose every address is unusable produces nothing but failures,
+     * and one that reported "no requests sent, no time spent" would read as a flawless run rather
+     * than as the broken one it is.
+     */
+    synchronized void requestNeverSent() {
+        requestsSent++;
+    }
+
+    /**
      * Everything above, as of this moment.
      *
      * @param concurrencyLimit how many requests the engine is currently willing to have in flight,
@@ -90,8 +104,8 @@ final class EngineActivity {
      */
     synchronized EngineStatistics snapshot(int concurrencyLimit) {
         long now = nanoTime.getAsLong();
-        long wallNanos = started ? now - startedAt : 0;
-        long idle = idleNanos + (started && inFlight == 0 ? now - idleSince : 0);
+        long wallNanos = now - startedAt;
+        long idle = idleNanos + (inFlight == 0 ? now - idleSince : 0);
         return new EngineStatistics(requestsSent, Duration.ofNanos(wallNanos),
                 Duration.ofNanos(idle), Duration.ofNanos(totalResponseNanos), peakConcurrency,
                 concurrencyLimit);

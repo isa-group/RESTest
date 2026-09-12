@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.LongSupplier;
@@ -109,7 +110,7 @@ public final class OkHttpEngine implements HttpEngine {
         this.settings = Objects.requireNonNull(settings, "settings");
         this.nanoTime = Objects.requireNonNull(nanoTime, "nanoTime");
         this.activity = new EngineActivity(nanoTime);
-        this.limiter = new ConcurrencyLimiter(settings, nanoTime);
+        this.limiter = new ConcurrencyLimiter(settings);
         this.requests = Executors.newThreadPerTaskExecutor(
                 Thread.ofVirtual().name("restest-request-", 0).factory());
         this.client = new OkHttpClient.Builder()
@@ -131,21 +132,27 @@ public final class OkHttpEngine implements HttpEngine {
     public CompletableFuture<Interaction> sendAsync(TestCase testCase, HttpRequestRecord request) {
         Objects.requireNonNull(testCase, "testCase");
         Objects.requireNonNull(request, "request");
-        if (closed.get()) {
-            throw new IllegalStateException("this engine is closed and cannot send anything else");
+        refuseIfClosed();
+        try {
+            return CompletableFuture.supplyAsync(() -> send(testCase, request), requests);
+        } catch (RejectedExecutionException e) {
+            // close() from another thread, between the check above and here.
+            throw new IllegalStateException(
+                    "this engine is closed and cannot send anything else", e);
         }
-        return CompletableFuture.supplyAsync(() -> send(testCase, request), requests);
     }
 
     @Override
     public Interaction send(TestCase testCase, HttpRequestRecord request) {
         Objects.requireNonNull(testCase, "testCase");
         Objects.requireNonNull(request, "request");
+        refuseIfClosed();
         WireCapture.Slot slot = new WireCapture.Slot(request);
         Request outgoing;
         try {
             outgoing = build(request, slot);
         } catch (RuntimeException e) {
+            activity.requestNeverSent();
             return Interaction.transportFailure(testCase, request,
                     "the request could not be assembled, so nothing was sent: " + reason(e),
                     Instant.now(), Duration.ZERO);
@@ -155,17 +162,28 @@ public final class OkHttpEngine implements HttpEngine {
             limiter.acquire();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            activity.requestNeverSent();
             return Interaction.transportFailure(testCase, request,
                     "the run was interrupted before this request was sent", Instant.now(),
                     Duration.ZERO);
         }
 
+        // The slot has to come back even if something no method here catches goes wrong on the way:
+        // a slot that is never returned is one fewer request this engine can ever have in flight
+        // again, and enough of them would leave it waiting for ever on a slot nobody holds.
         activity.requestStarted();
-        Interaction interaction = attempt(testCase, request, outgoing, slot);
-        activity.requestFinished(interaction.elapsed());
-        limiter.release();
-        limiter.observe(interaction.elapsed().toNanos(), !interaction.isAnswered());
-        return interaction;
+        Interaction interaction = null;
+        try {
+            interaction = attempt(testCase, request, outgoing, slot);
+            return interaction;
+        } finally {
+            Duration elapsed = interaction == null ? Duration.ZERO : interaction.elapsed();
+            activity.requestFinished(elapsed);
+            limiter.release();
+            if (interaction != null) {
+                limiter.observe(elapsed.toNanos(), !interaction.isAnswered());
+            }
+        }
     }
 
     @Override
@@ -181,6 +199,12 @@ public final class OkHttpEngine implements HttpEngine {
         requests.shutdown();
         client.dispatcher().executorService().shutdown();
         client.connectionPool().evictAll();
+    }
+
+    private void refuseIfClosed() {
+        if (closed.get()) {
+            throw new IllegalStateException("this engine is closed and cannot send anything else");
+        }
     }
 
     /** One attempt, from the first byte out to the last byte in, never throwing. */
@@ -221,9 +245,8 @@ public final class OkHttpEngine implements HttpEngine {
      * would run out of memory long before it ran out of budget.
      */
     private Reply read(ResponseBody body) {
-        String mediaType = body.contentType() == null
-                ? Payload.UNKNOWN_MEDIA_TYPE
-                : body.contentType().toString();
+        boolean typeDeclared = body.contentType() != null;
+        String mediaType = typeDeclared ? body.contentType().toString() : Payload.UNKNOWN_MEDIA_TYPE;
         ByteArrayOutputStream kept = new ByteArrayOutputStream();
         byte[] chunk = new byte[CHUNK];
         long delivered = 0;
@@ -238,16 +261,24 @@ public final class OkHttpEngine implements HttpEngine {
                 }
             }
         } catch (IOException e) {
-            return new Reply(payload(kept, delivered, mediaType),
+            return new Reply(payload(kept, delivered, mediaType, typeDeclared),
                     "the reply stopped after " + delivered + " bytes: " + reason(e));
         }
-        return new Reply(payload(kept, delivered, mediaType), null);
+        return new Reply(payload(kept, delivered, mediaType, typeDeclared), null);
     }
 
+    /**
+     * What to record as the body.
+     *
+     * <p>"No body at all" and "a body the API said would be JSON and then sent empty" are different
+     * facts about an API, and only the second one is a possible bug, so they are recorded
+     * differently: a reply that named a content type keeps an empty body of that type, and one that
+     * named none has no body.
+     */
     private static Optional<Payload> payload(ByteArrayOutputStream kept, long delivered,
-            String mediaType) {
+            String mediaType, boolean typeDeclared) {
         if (delivered == 0) {
-            return Optional.empty();
+            return typeDeclared ? Optional.of(Payload.empty(mediaType)) : Optional.empty();
         }
         byte[] retained = kept.toByteArray();
         return Optional.of(delivered > retained.length

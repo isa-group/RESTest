@@ -33,15 +33,29 @@ class EngineActivityTest {
     private final EngineActivity activity = new EngineActivity(clock::get);
 
     @Test
-    @DisplayName("an engine nobody has asked for anything has not been idle, it has not started")
-    void time_before_the_first_request_is_nobody_s_waste() {
+    @DisplayName("time spent before the first request is idle: that is the whole point of measuring")
+    void the_wait_before_the_first_request_is_idle_time() {
         clock.set(seconds(30));
 
         EngineStatistics statistics = activity.snapshot(4);
 
-        assertThat(statistics.wallClock()).isEqualTo(Duration.ZERO);
-        assertThat(statistics.idle()).isEqualTo(Duration.ZERO);
+        assertThat(statistics.wallClock()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(statistics.idle()).isEqualTo(Duration.ofSeconds(30));
+        assertThat(statistics.idleFraction()).isEqualTo(1.0);
         assertThat(statistics.requestsSent()).isZero();
+    }
+
+    @Test
+    @DisplayName("a request that never reached the network still counts as one the engine failed")
+    void an_attempt_that_never_went_out_is_still_counted() {
+        clock.set(seconds(2));
+        activity.requestNeverSent();
+        activity.requestNeverSent();
+
+        EngineStatistics statistics = activity.snapshot(4);
+
+        assertThat(statistics.requestsSent()).isEqualTo(2);
+        assertThat(statistics.idle()).isEqualTo(Duration.ofSeconds(2));
     }
 
     @Test
@@ -55,9 +69,10 @@ class EngineActivityTest {
 
         EngineStatistics statistics = activity.snapshot(4);
 
-        assertThat(statistics.wallClock()).isEqualTo(Duration.ofSeconds(4));
-        assertThat(statistics.idle()).isEqualTo(Duration.ofSeconds(2));
-        assertThat(statistics.idleFraction()).isEqualTo(0.5);
+        assertThat(statistics.wallClock()).isEqualTo(Duration.ofSeconds(5));
+        assertThat(statistics.idle())
+                .describedAs("one second before the request, two after it")
+                .isEqualTo(Duration.ofSeconds(3));
         assertThat(statistics.busy()).isEqualTo(Duration.ofSeconds(2));
     }
 
@@ -112,8 +127,8 @@ class EngineActivityTest {
         EngineStatistics taken = activity.snapshot(4);
         clock.set(seconds(60));
 
-        assertThat(taken.wallClock()).isEqualTo(Duration.ofSeconds(1));
-        assertThat(activity.snapshot(4).wallClock()).isEqualTo(Duration.ofSeconds(59));
+        assertThat(taken.wallClock()).isEqualTo(Duration.ofSeconds(2));
+        assertThat(activity.snapshot(4).wallClock()).isEqualTo(Duration.ofSeconds(60));
     }
 
     private static long seconds(long value) {

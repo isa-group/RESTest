@@ -70,7 +70,9 @@ final class WireCapture implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
         Slot slot = request.tag(Slot.class);
-        if (slot != null) {
+        if (slot != null && slot.sent == null) {
+            // Only the first one. When redirections are followed this runs once per hop, and the
+            // interaction describes the request that started the chain, not the last hop of it.
             slot.sent = record(request, slot.asked);
         }
         return chain.proceed(request);
