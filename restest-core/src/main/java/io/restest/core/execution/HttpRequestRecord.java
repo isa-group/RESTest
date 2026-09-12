@@ -24,10 +24,12 @@ import java.util.Optional;
  * The request as it actually went out: the method, the resolved URL and the exact headers and body -
  * not the operation's template, the values already substituted in.
  *
- * <p>Represents one HTTP exchange. Where the engine follows a redirect, each hop is its own
- * {@link Interaction} with its own request and response - this record does not try to collapse a
- * chain into one, which would leave no way to say which of the two URLs or which of the two sets of
- * headers actually produced a given response.
+ * <p>This is the request as {@link TestCase} asked for it, not necessarily the last one on the wire.
+ * {@link Interaction} requires one test case to produce at most one interaction (see its Javadoc for
+ * why), so where the engine follows a redirect, that is internal to producing this interaction's
+ * single outcome: the response recorded is the final one, the way an ordinary HTTP client already
+ * reports it, and this record stays the request that was actually asked for - which is also the one
+ * a {@code curl} reproduction (M3.6) needs to show.
  *
  * @param method the HTTP method used
  * @param url the exact URL requested, path parameters substituted and the query string appended

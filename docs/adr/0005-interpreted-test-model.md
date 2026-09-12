@@ -75,14 +75,11 @@ in one test case pointing at an earlier one. Without `Derived`, no stateful step
 representable until M4 landed as a whole; a data model that cannot hold the input to a feature four
 milestones away, when holding it costs one sealed case with no caller yet, is the wrong economy.
 
-`Derived` points at a `TestCaseId`, not an `InteractionId` — changed during review, and worth
-recording why. A stateful generator has to commit to a dependency at the moment it *plans* the
-second step, which is before the first has been sent; a `TestCaseId` exists from the instant
-`TestCase.of` is called, while an `InteractionId` is not minted until an `Interaction` factory runs,
-by which point the value that depends on it would already have had to exist. Resolving the
-dependency later means looking up, in the store, the interaction whose `testCase().id()` matches -
-one test case is attempted at most once, so the join is unambiguous without needing the interaction's
-own identity as the pointer.
+`Derived` points at a `TestCaseId`, not an `InteractionId`. A stateful generator has to commit to a
+dependency at the moment it *plans* the second step, which is before the first has been sent; a
+`TestCaseId` exists from the instant `TestCase.of` is called, while an `InteractionId` is not minted
+until an `Interaction` factory runs, by which time it is too late to have been the value the
+generator already committed to.
 
 What `Derived` deliberately does **not** do is specify how a value is extracted from the test case it
 depends on. Its `description` is free text — "response body field 'id'" — not a JSONPath, not an
@@ -99,6 +96,22 @@ earlier steps cannot be expressed. Nothing in the roadmap currently needs that, 
 to a list later is a cheap, additive change with no caller yet depending on the narrower shape -
 narrower was chosen deliberately over guessing at a generalisation nothing asks for.
 
+**Resolving a `Derived` edge depends on an invariant, so `Interaction` states it as one: a test case
+produces at most one interaction.** This is what `TestCaseId` being the pointer relies on - reading
+the dependency back means finding the one interaction whose `testCase().id()` matches, and that only
+works if there is exactly one. Two things the engine (M1.3) must therefore do, both recorded on
+`Interaction` rather than left implicit:
+
+- **A retry is a new test case**, with a fresh `TestCaseId`, not a second interaction for the one
+  that failed. This surfaced as a real gap in review: the first draft let a redirect be "each hop is
+  its own interaction" while simultaneously relying on one-test-case-one-interaction for `Derived` to
+  resolve, which is a direct contradiction the moment a test case is retried or redirected.
+- **A redirect the engine follows is not a second interaction either.** `HttpRequestRecord` is the
+  request the test case asked for; the outcome recorded is the final one, exactly as an ordinary HTTP
+  client already reports it once it has followed whatever redirects it followed. Capturing the
+  intermediate hops in their own right is left to whoever first needs to judge a redirect
+  specifically - not decided here, and not needed to fix the contradiction.
+
 **`BodyValue` carries one `ValueOrigin` for the whole body, not one per field.** A body whose fields
 come from different places at once - `{"id": <derived>, "name": <generated>}`, the ordinary shape of
 a CRUD update - cannot have that distinction recorded; the store can say the body as a whole was
@@ -109,29 +122,40 @@ increment. This is a real, acknowledged limitation, not a claim that stateful bo
 **`InteractionOutcome` is sealed over three cases, not two as first drafted.** A well-formed response
 (`Answered`) and no response at all (`TransportFailure`) are not the whole of what an HTTP exchange
 can produce: bytes can come back that are not a valid HTTP response - broken chunked encoding, a
-truncated status line, a body shorter than its own `Content-Length`. That is a fault of the API under
-test, the exact class WFC reserves codes 900-909 for (M3.2), and it must not be indistinguishable
-from a connection nobody answered, which is not the API's fault at all. `MalformedResponse` is the
-third case, carrying why and whatever bytes were retained before the exchange broke.
+truncated status line, a body shorter than its own declared `Content-Length`. That is a fault of the
+API under test, the exact class WFC reserves codes 900-909 for (M3.2), and it must not be
+indistinguishable from a connection nobody answered, which is not the API's fault at all.
+
+`MalformedResponse` carries the status code and headers when they parsed, separately from the body
+bytes, rather than folding everything into one opaque "reason" string. The common shape of this
+outcome is that the status line and headers parse cleanly and only the body breaks against its own
+declared length or encoding; an oracle judging that needs what the response claimed about itself, not
+only a description of how it failed. Whatever body bytes were retained before the exchange broke are
+declared under `application/octet-stream` when nothing said what they were meant to be - the standard
+media type for "unknown binary content," not a guess at a `Content-Type` the response may never have
+sent.
 
 Not represented, deliberately: a `TestCase` the engine planned but never attempted - shed by adaptive
 concurrency, cut off by the budget. No request went out, so no `Interaction` exists for it; inventing
 one would mean fabricating `sentAt`. Counting "planned versus attempted" stays the engine's and the
 report's job (M1.3, M3.6).
 
-**`Payload` gained a `truncated` flag** after review. ADR-0006 names "configurable response-body
-truncation" as the store's answer to storage cost, so a stored payload is not always the whole body;
-without a way to say so, a truncated document would be read as a genuinely malformed one and reported
-as the API's fault. `Payload` is the first record in `restest-core` holding a mutable component, and
-the `TODO(M1.1)` on `ArchitectureRules.noStaticMutableState` — extending the rule to a static final
-field of a mutable type — turns out not to be the gap that matters here: `Payload`'s array is an
-*instance* component, not a static field, so that rule was never going to reach it. What actually
-protects it is convention, checked by test rather than by ArchUnit: the compact constructor clones on
-the way in, the accessor clones on the way out, and `equals`/`hashCode` are written by hand, because a
-record's generated versions compare an array component by reference and would be silently wrong for
-two payloads holding identical bytes in two different arrays. No static-analysis rule can tell
-"copies the array" from "keeps the reference" by reading a compact constructor, so this is recorded
-here rather than mechanised.
+**`Payload` gained `truncated` and `wireLength`** after review. ADR-0006 names "configurable
+response-body truncation" as the store's answer to storage cost, so a stored payload is not always
+the whole body; a boolean alone would say "do not trust this," but a `Content-Length` conformance
+oracle (M3.2) needs the actual wire length to compare the retained bytes against, not merely a
+warning that one is missing. `Payload.partial(bytes, mediaType, wireLength)` sets both together.
+`Payload` is the first record in `restest-core` holding a mutable component, and the `TODO` on
+`ArchitectureRules.noStaticMutableState` — extending the rule to a static final field of a mutable
+type — turns out not to be the gap that matters here: `Payload`'s array is an *instance* component,
+not a static field, so that rule was never going to reach it. What actually protects it is
+convention, checked by test rather than by ArchUnit: the compact constructor clones on the way in,
+the accessor clones on the way out, and `equals`/`hashCode` are written by hand, because a record's
+generated versions compare an array component by reference and would be silently wrong for two
+payloads holding identical bytes in two different arrays. No static-analysis rule can tell "copies
+the array" from "keeps the reference" by reading a compact constructor, so this is recorded here
+rather than mechanised. (The TODO itself is left untagged with a milestone, having now missed one: it
+stays open for the first `static final` field of a mutable type to actually appear, whenever that is.)
 
 **`HttpRequestRecord` and `HttpResponseRecord` do not print header values in `toString`.** A header
 is exactly where an `Authorization` bearer token or an API key (M2.6) travels, and the record-
@@ -141,9 +165,7 @@ redaction in general - a credential in a query string or inside a body is not ca
 left to the reporting work in M3.6; it closes the one leak this increment could close cheaply.
 
 `HttpResponseRecord` also gained `reasonPhrase` and `protocolVersion`, both optional: they are part of
-the same status line as the code already kept, and M3.2's HTTP-semantics oracles want them. Redirect
-chains are not collapsed into one record: where the engine follows one, each hop is its own
-`Interaction` with its own request and response, which needs no change here.
+the same status line as the code already kept, and M3.2's HTTP-semantics oracles want them.
 
 **Deliberately left open.** Two considerations surfaced in review that this increment does not
 settle, because settling them now would mean guessing at a design that belongs to a later milestone:
@@ -171,6 +193,9 @@ consumer to derive rather than being restated here.
   M3.3) without the `ApiModel` that produced it.
 - `TestCase` has no `withX` method: everything it carries is decided once, at construction, so its
   identifier cannot end up attached to two different sets of parameter values or bodies.
+- The engine (M1.3) must uphold "one test case, at most one interaction": retries and redirects are
+  the engine's business, not a reason to multiply interactions per test case, because `Derived`'s
+  resolution depends on the join staying unambiguous.
 - A stateful step costs little extra to store or reason about beyond acknowledging that a whole
   body's provenance is coarser than a whole parameter's: it is a `TestCase` like any other, with one
   `ValueOrigin.Derived` instead of a `Generated` or `Declared`, except where the dependency lands

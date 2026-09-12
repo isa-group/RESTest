@@ -18,6 +18,7 @@ package io.restest.core.execution;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Exact bytes, with their declared media type.
@@ -28,11 +29,13 @@ import java.util.Objects;
  * the bytes actually received, not a JSON tree that normalises away whatever made the response
  * malformed in the first place.
  *
- * <p>{@code truncated} exists because ADR-0006 names "configurable response-body truncation" as the
- * store's (M1.4) answer to storage cost - so a stored payload is not always the whole body, and a
- * record silent about that would have an oracle read a cut-off document, fail to parse it, and
- * report a fault the API never committed. A payload therefore always says whether {@code content} is
- * everything that was on the wire.
+ * <p>{@code truncated} and {@code wireLength} exist because ADR-0006 names "configurable
+ * response-body truncation" as the store's (M1.4) answer to storage cost - so a stored payload is
+ * not always the whole body, and a record silent about that would have an oracle read a cut-off
+ * document, fail to parse it, and report a fault the API never committed. {@code truncated} alone
+ * would only say "do not trust this"; a {@code Content-Length} conformance oracle (M3.2) needs the
+ * actual wire length to compare against, not merely a warning that one is missing, so the two travel
+ * together: {@link #partial(byte[], String, long)} always sets both.
  *
  * <p>This is the first record in {@code restest-core} holding a mutable component - not the case the
  * {@code TODO(M1.1b)} on {@code ArchitectureRules.noStaticMutableState} was left for, since that gap
@@ -47,32 +50,46 @@ import java.util.Objects;
  *     read - not necessarily the whole body; see {@link #truncated()}
  * @param mediaType the media type these bytes were declared or observed under, kept as written
  * @param truncated whether {@code content} is less than what was actually on the wire
+ * @param wireLength how many bytes were actually on the wire, when known - present whenever
+ *     {@code truncated} is true, and possibly present otherwise too, when the source confirmed the
+ *     full length independently of what was retained
  */
-public record Payload(byte[] content, String mediaType, boolean truncated) {
+public record Payload(byte[] content, String mediaType, boolean truncated,
+        Optional<Long> wireLength) {
 
     public Payload {
         Objects.requireNonNull(content, "content");
         Objects.requireNonNull(mediaType, "mediaType");
+        Objects.requireNonNull(wireLength, "wireLength");
         if (mediaType.isBlank()) {
             throw new IllegalArgumentException("a payload has a media type");
         }
         content = content.clone();
     }
 
+    /** A payload of the given bytes and media type, not truncated. */
+    public static Payload of(byte[] content, String mediaType) {
+        return new Payload(content, mediaType, false, Optional.empty());
+    }
+
     /** An empty payload of the given media type, for a body that was declared but sent empty. */
     public static Payload empty(String mediaType) {
-        return new Payload(new byte[0], mediaType, false);
+        return new Payload(new byte[0], mediaType, false, Optional.empty());
     }
 
     /** A payload holding the given text, encoded as UTF-8. */
     public static Payload text(String text, String mediaType) {
         Objects.requireNonNull(text, "text");
-        return new Payload(text.getBytes(StandardCharsets.UTF_8), mediaType, false);
+        return new Payload(text.getBytes(StandardCharsets.UTF_8), mediaType, false,
+                Optional.empty());
     }
 
-    /** A payload holding only the given prefix of a body that was larger. */
-    public static Payload truncated(byte[] retained, String mediaType) {
-        return new Payload(retained, mediaType, true);
+    /**
+     * A payload holding only a prefix of a body that was larger, with the actual wire length an
+     * oracle needs to judge the truncation against.
+     */
+    public static Payload partial(byte[] retained, String mediaType, long wireLength) {
+        return new Payload(retained, mediaType, true, Optional.of(wireLength));
     }
 
     /**
@@ -93,8 +110,8 @@ public record Payload(byte[] content, String mediaType, boolean truncated) {
     }
 
     /**
-     * Equal when the bytes are equal element-by-element, and the media type and truncation flag
-     * match.
+     * Equal when the bytes are equal element-by-element, and the media type, truncation flag and
+     * wire length match.
      *
      * <p>Overridden because a record's generated {@code equals} compares an array component by
      * reference ({@code Object.equals}), not by content, which would make two payloads built from
@@ -106,13 +123,14 @@ public record Payload(byte[] content, String mediaType, boolean truncated) {
         return other instanceof Payload payload
                 && Arrays.equals(content, payload.content)
                 && mediaType.equals(payload.mediaType)
-                && truncated == payload.truncated;
+                && truncated == payload.truncated
+                && wireLength.equals(payload.wireLength);
     }
 
     /** Consistent with the overridden {@link #equals(Object)}. */
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(content), mediaType, truncated);
+        return Objects.hash(Arrays.hashCode(content), mediaType, truncated, wireLength);
     }
 
     /**
@@ -122,7 +140,9 @@ public record Payload(byte[] content, String mediaType, boolean truncated) {
      */
     @Override
     public String toString() {
-        return "Payload[" + content.length + " bytes" + (truncated ? " (truncated)" : "")
-                + ", " + mediaType + "]";
+        String size = truncated
+                ? content.length + " of " + wireLength.map(String::valueOf).orElse("?") + " bytes"
+                : content.length + " bytes";
+        return "Payload[" + size + (truncated ? " (truncated)" : "") + ", " + mediaType + "]";
     }
 }

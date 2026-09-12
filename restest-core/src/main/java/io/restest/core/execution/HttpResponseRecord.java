@@ -35,7 +35,9 @@ import java.util.Optional;
  * @param reasonPhrase the reason phrase on the status line, when the protocol carries one - HTTP/2
  *     and HTTP/3 do not
  * @param protocolVersion the protocol version the response was received over, as reported by the
- *     engine - {@code "HTTP/1.1"}, {@code "h2"}
+ *     engine - {@code "HTTP/1.1"}, {@code "HTTP/2"} - kept as a string for the same reason as
+ *     {@link io.restest.core.schema.StringSchema#format()}: the engine (M1.3) reports whatever its
+ *     own HTTP client calls the protocol, and the exact spelling is not this record's to standardise
  * @param headers the headers received, in wire order, repeats kept
  * @param body the body received, absent when the response carried none
  */

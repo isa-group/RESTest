@@ -15,6 +15,7 @@
  */
 package io.restest.core.execution;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -55,19 +56,35 @@ public sealed interface InteractionOutcome {
     /**
      * Bytes came back, but they were not a well-formed HTTP response.
      *
-     * @param reason what was wrong with them, in a form fit to print in a report - "chunked
-     *     encoding ended without a final zero-length chunk", not a stack trace
-     * @param partial whatever bytes were received before the exchange broke, when any were - not
-     *     necessarily interpretable as a body, since the break may have happened in the headers
+     * <p>The status line and the headers are kept separately from {@code partial}, not folded into
+     * it, because the common shape of this outcome parses both cleanly and only the body breaks - a
+     * declared {@code Content-Length} the actual bytes fall short of, a chunked stream that never
+     * sends its final chunk. An oracle judging that (M3.2, WFC 900-909) needs the status and the
+     * headers the API claimed, not only the reason text; without them, the one detail that matters -
+     * what the response said about itself before failing to deliver it - would be exactly what this
+     * outcome discarded.
+     *
+     * @param reason what was wrong, in a form fit to print in a report - "chunked encoding ended
+     *     without a final zero-length chunk", not a stack trace
+     * @param statusCode the status code, when the status line itself parsed
+     * @param headers the headers, when they parsed, in wire order, repeats kept
+     * @param partial whatever body bytes were received before the exchange broke, when any were.
+     *     Declared under {@code application/octet-stream} when nothing said what they were meant to
+     *     be - the standard media type for exactly that - rather than repeating a
+     *     {@code Content-Type} the response may never have sent
      */
-    record MalformedResponse(String reason, Optional<Payload> partial) implements InteractionOutcome {
+    record MalformedResponse(String reason, Optional<Integer> statusCode, List<Header> headers,
+            Optional<Payload> partial) implements InteractionOutcome {
         public MalformedResponse {
             Objects.requireNonNull(reason, "reason");
+            Objects.requireNonNull(statusCode, "statusCode");
+            Objects.requireNonNull(headers, "headers");
             Objects.requireNonNull(partial, "partial");
             if (reason.isBlank()) {
                 throw new IllegalArgumentException(
                         "a malformed response must say what was wrong with it");
             }
+            headers = List.copyOf(headers);
         }
     }
 

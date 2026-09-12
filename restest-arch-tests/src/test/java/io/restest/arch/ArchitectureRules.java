@@ -223,7 +223,7 @@ final class ArchitectureRules {
     }
 
     /*
-     * TODO(M1.1b): extend the rule above to static *final* fields of a mutable type, which it cannot
+     * TODO: extend the rule above to static *final* fields of a mutable type, which it cannot
      * currently see. `static final List<String> SEEN = new ArrayList<>()` has a final reference and
      * writable contents, so it passes the rule while remaining exactly the cross-run channel
      * design principle 6 forbids.

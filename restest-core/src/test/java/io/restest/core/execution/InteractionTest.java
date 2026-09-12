@@ -51,7 +51,7 @@ class InteractionTest {
     void a_malformed_response_is_a_third_outcome() {
         Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
                 "chunked encoding ended without a final zero-length chunk", Optional.empty(),
-                Instant.now(), Duration.ofMillis(50));
+                List.of(), Optional.empty(), Instant.now(), Duration.ofMillis(50));
 
         assertThat(interaction.isAnswered()).isFalse();
         assertThat(interaction.response()).isEmpty();
@@ -59,12 +59,27 @@ class InteractionTest {
     }
 
     @Test
+    @DisplayName("a malformed response keeps whatever status and headers parsed before it broke")
+    void a_malformed_response_keeps_what_did_parse() {
+        Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
+                "declared Content-Length exceeds the bytes actually sent", Optional.of(200),
+                List.of(Header.of("Content-Type", "application/json")), Optional.empty(),
+                Instant.now(), Duration.ZERO);
+
+        InteractionOutcome.MalformedResponse outcome =
+                (InteractionOutcome.MalformedResponse) interaction.outcome();
+        assertThat(outcome.statusCode()).contains(200);
+        assertThat(outcome.headers()).extracting(Header::name).containsExactly("Content-Type");
+    }
+
+    @Test
     @DisplayName("a malformed response can carry whatever bytes were received before it broke")
     void a_malformed_response_can_carry_partial_bytes() {
-        Payload partial = Payload.truncated(new byte[] {1, 2, 3}, "application/json");
+        Payload partial = Payload.partial(new byte[] {1, 2, 3}, "application/octet-stream", 10L);
 
         Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
-                "truncated body", Optional.of(partial), Instant.now(), Duration.ZERO);
+                "truncated body", Optional.empty(), List.of(), Optional.of(partial), Instant.now(),
+                Duration.ZERO);
 
         InteractionOutcome.MalformedResponse outcome =
                 (InteractionOutcome.MalformedResponse) interaction.outcome();
@@ -75,7 +90,8 @@ class InteractionTest {
     @DisplayName("a malformed response must say what was wrong with it")
     void a_malformed_response_requires_a_reason() {
         assertThatIllegalArgumentException().isThrownBy(() -> Interaction.malformedResponse(
-                TEST_CASE, REQUEST, " ", Optional.empty(), Instant.now(), Duration.ZERO));
+                TEST_CASE, REQUEST, " ", Optional.empty(), List.of(), Optional.empty(),
+                Instant.now(), Duration.ZERO));
     }
 
     @Test
@@ -124,7 +140,7 @@ class InteractionTest {
     void the_hierarchy_is_exhaustive() {
         InteractionOutcome answered = new InteractionOutcome.Answered(HttpResponseRecord.of(200));
         InteractionOutcome malformed = new InteractionOutcome.MalformedResponse(
-                "bad framing", Optional.empty());
+                "bad framing", Optional.empty(), List.of(), Optional.empty());
         InteractionOutcome failed = new InteractionOutcome.TransportFailure("timed out");
 
         assertThat(describe(answered)).isEqualTo("answered: 200");

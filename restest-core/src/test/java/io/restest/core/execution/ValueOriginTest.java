@@ -1,3 +1,18 @@
+/*
+ * Copyright 2026 ISA Research Group, Universidad de Sevilla.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.restest.core.execution;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,13 +59,13 @@ class ValueOriginTest {
     }
 
     @Test
-    @DisplayName("a value can name the test case it depends on before that test case is ever sent")
-    void a_dependency_is_representable_before_execution() {
+    @DisplayName("a derived value names the test case it depends on, not an interaction")
+    void derived_points_at_a_test_case_identifier() {
+        // The property this fixes is enforced by the compiler, not by this assertion: Derived's
+        // canonical constructor takes a TestCaseId, so a caller cannot pass an InteractionId here
+        // even if one already existed. What the assertion checks is the ordinary getter contract.
         TestCaseId earlierStep = TestCaseId.generate();
 
-        // No Interaction is built here at all - the point is that a stateful generator can commit
-        // to this dependency the moment it plans the earlier step, long before an engine exists to
-        // send it and produce the InteractionId a response would carry.
         ValueOrigin.Derived derived = new ValueOrigin.Derived(earlierStep, "the created id");
 
         assertThat(derived.from()).isEqualTo(earlierStep);

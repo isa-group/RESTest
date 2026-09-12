@@ -101,16 +101,13 @@ class TestCaseTest {
     }
 
     @Test
-    @DisplayName("a stateful step's value names the earlier test case it depends on, before it ran")
+    @DisplayName("a stateful step's value names the earlier test case it depends on")
     void a_stateful_value_names_its_source_test_case() {
         TestCase createPet = TestCase.of(OperationId.of("addPet"), List.of());
         ParameterValue petId = ParameterValue.of("petId", ParameterLocation.PATH,
                 JsonValue.of(7L), new ValueOrigin.Derived(createPet.id(),
                         "response body field 'id'"));
 
-        // createPet is never sent and no Interaction is built - the dependency is representable
-        // purely from the earlier step's own identity, which is exactly what a stateful generator
-        // has available at the moment it plans the second step.
         TestCase deletePet = TestCase.of(
                 OperationId.synthesised(HttpMethod.DELETE, "/pets/{petId}"), List.of(petId));
 

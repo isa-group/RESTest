@@ -46,8 +46,8 @@ import java.util.Set;
  *
  * <p>A stateful step is not a different kind of test case. It is one whose {@link ParameterValue}s
  * or {@link #body()} carry a {@link ValueOrigin.Derived} instead of a {@link ValueOrigin.Generated}
- * or {@link ValueOrigin.Declared} - see {@link ValueOrigin}. A whole stateful *test*, in the sense
- * `docs/DESIGN.md`'s glossary uses the word - a sequence where each step depends on the last - is
+ * or {@link ValueOrigin.Declared} - see {@link ValueOrigin}. A whole stateful test, in the sense
+ * {@code docs/DESIGN.md}'s glossary uses the word - a sequence where each step depends on the last - is
  * the chain of {@code Derived} edges across several test cases and interactions, not a container
  * this type introduces.
  *
