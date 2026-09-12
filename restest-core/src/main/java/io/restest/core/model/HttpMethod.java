@@ -22,9 +22,10 @@ import java.util.Optional;
  * The HTTP methods (GET, POST, and so on) that an API operation can use.
  *
  * <p>These are the eight methods OpenAPI has always allowed, plus {@code QUERY}, added by OpenAPI
- * 3.2 for requests that carry a body without changing anything on the server. RESTest supports every
- * version of OpenAPI 3.x, so an operation using {@code QUERY} must be represented too, rather than
- * being skipped.
+ * 3.2 for requests that carry a body without changing anything on the server. RESTest's current
+ * scope does not include OpenAPI 3.2 (too recent for a second parser backend to be worth its
+ * upkeep), so no operation actually reaching this model declares {@code QUERY} today; it is modeled
+ * anyway so this enum does not need to change the day that scope is revisited.
  */
 public enum HttpMethod {
     GET,
@@ -35,7 +36,7 @@ public enum HttpMethod {
     HEAD,
     PATCH,
     TRACE,
-    /** Added by OpenAPI 3.2: a safe request that carries a body. */
+    /** Added by OpenAPI 3.2: a safe request that carries a body. Not reachable at the current scope. */
     QUERY;
 
     /**

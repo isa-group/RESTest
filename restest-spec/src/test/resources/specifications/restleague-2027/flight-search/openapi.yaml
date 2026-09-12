@@ -1,0 +1,2001 @@
+---
+openapi: 3.0.1
+info:
+  title: flightsearchapi
+  description: 'Case Study - Flight Search Api (Java 21, Spring Boot, Mongodb, JUnit,
+    Spring Security, JWT, Docker, Kubernetes, Prometheus, Grafana, Github Actions
+    (CI/CD) ) '
+  contact:
+    name: Sercan Noyan Germiyanoğlu
+    url: https://github.com/Rapter1990/flightsearchapi
+  version: 1.0.0
+servers:
+- url: http://localhost:1133
+  description: Generated server url
+tags:
+- name: Search Flight
+  description: Endpoints for searching flights based on given criteria.
+- name: Actuator
+  description: Monitor and interact
+  externalDocs:
+    description: Spring Boot Actuator Web API Documentation
+    url: https://docs.spring.io/spring-boot/docs/current/actuator-api/html/
+- name: Authentication
+  description: Handles user authentication and authorization operations.
+- name: Flight Management
+  description: Endpoints for managing flights including creation, retrieval, updating,
+    and deletion.
+- name: Airport Management
+  description: Endpoints for managing airports including creation, retrieval, updating,
+    and deletion.
+paths:
+  "/api/v1/flights/{id}":
+    get:
+      tags:
+      - Flight Management
+      summary: Get flight by ID
+      description: Retrieves a flight by its ID. Accessible by both ADMIN and USER
+        roles.
+      operationId: getFlightById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Flight successfully retrieved
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+        '400':
+          description: Invalid flight details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+        '404':
+          description: Airport not found
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+    put:
+      tags:
+      - Flight Management
+      summary: Update an flight
+      description: Updates an existing flight by its ID. Accessible by ADMIN only.
+      operationId: updateFlightById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateFlightRequest"
+        required: true
+      responses:
+        '200':
+          description: Flight successfully updated
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+        '400':
+          description: Invalid update details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+        '404':
+          description: Flight not found
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseFlightResponse"
+    delete:
+      tags:
+      - Flight Management
+      summary: Delete an flight
+      description: Deletes a flight by its ID. Accessible by ADMIN only.
+      operationId: deleteAirportById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Flight successfully deleted
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '400':
+          description: Invalid update details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '404':
+          description: Flight not found
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+  "/api/v1/airports/{id}":
+    get:
+      tags:
+      - Airport Management
+      summary: Get airport by ID
+      description: Retrieves an airport by its ID. Accessible by both ADMIN and USER
+        roles.
+      operationId: getAirportById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Airport successfully retrieved
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+        '400':
+          description: Invalid airport details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+        '404':
+          description: Airport not found
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+    put:
+      tags:
+      - Airport Management
+      summary: Update an airport
+      description: Updates an existing airport by its ID. Accessible by ADMIN only.
+      operationId: updateAirportById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/UpdateAirportRequest"
+        required: true
+      responses:
+        '200':
+          description: Airport successfully updated
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+        '400':
+          description: Invalid update details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+        '404':
+          description: Airport not found
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseAirportResponse"
+    delete:
+      tags:
+      - Airport Management
+      summary: Delete an airport
+      description: Deletes an airport by its ID. Accessible by ADMIN only.
+      operationId: deleteAirportById_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Airport successfully deleted
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '400':
+          description: Invalid update details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '404':
+          description: Airport not found
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+  "/api/v1/flights":
+    get:
+      tags:
+      - Flight Management
+      summary: Get all flights
+      description: Retrieves a paginated list of flights. Accessible by both ADMIN
+        and USER roles.
+      operationId: getAllFlights
+      parameters:
+      - name: request
+        in: query
+        required: true
+        schema:
+          "$ref": "#/components/schemas/AirportPagingRequest"
+      responses:
+        '200':
+          description: Flights successfully retrieved
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+        '400':
+          description: Invalid flights details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+        '404':
+          description: Flight not found
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+    post:
+      tags:
+      - Flight Management
+      summary: Create a new flight
+      description: Creates a new flight and saves it to the database. Accessible by
+        ADMIN only.
+      operationId: createFlight
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateFlightRequest"
+        required: true
+      responses:
+        '200':
+          description: Flight successfully created
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '400':
+          description: Invalid flight details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+  "/api/v1/flights/search":
+    post:
+      tags:
+      - Search Flight
+      summary: Search for flights
+      description: Searches for flights based on departure, arrival airports, departure
+        date, and optionally return date. Accessible by ADMIN and USER roles.
+      operationId: searchFlights
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SearchFlightRequest"
+        required: true
+      responses:
+        '200':
+          description: Flights successfully retrieved
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+        '400':
+          description: Invalid search criteria provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseFlightResponse"
+  "/api/v1/authentication/user/register":
+    post:
+      tags:
+      - Authentication
+      summary: Register a new user
+      description: Registers a new user in the system.
+      operationId: registerAdmin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        '200':
+          description: User successfully registered
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseVoid"
+        '400':
+          description: Invalid request data
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseVoid"
+        '409':
+          description: User already exists
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseVoid"
+  "/api/v1/authentication/user/refresh-token":
+    post:
+      tags:
+      - Authentication
+      summary: Refresh access token
+      description: Refreshes an expired access token using a valid refresh token.
+      operationId: refreshToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/TokenRefreshRequest"
+        required: true
+      responses:
+        '200':
+          description: Token successfully refreshed
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseTokenResponse"
+        '400':
+          description: Invalid refresh token
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseTokenResponse"
+        '401':
+          description: Refresh token expired or invalid
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseTokenResponse"
+  "/api/v1/authentication/user/logout":
+    post:
+      tags:
+      - Authentication
+      summary: Log out a user
+      description: Invalidates the provided token, effectively logging out the user.
+      operationId: logout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/TokenInvalidateRequest"
+        required: true
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseVoid"
+        '400':
+          description: Invalid token provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseVoid"
+  "/api/v1/authentication/user/login":
+    post:
+      tags:
+      - Authentication
+      summary: User login
+      description: Authenticates a user and returns an access and refresh token.
+      operationId: loginAdmin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        '200':
+          description: Login successful
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseTokenResponse"
+        '401':
+          description: Invalid login credentials
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseTokenResponse"
+  "/api/v1/airports":
+    get:
+      tags:
+      - Airport Management
+      summary: Get all airports
+      description: Retrieves a paginated list of airports. Accessible by both ADMIN
+        and USER roles.
+      operationId: getAllAirports
+      parameters:
+      - name: request
+        in: query
+        required: true
+        schema:
+          "$ref": "#/components/schemas/AirportPagingRequest"
+      responses:
+        '200':
+          description: Airports successfully retrieved
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseAirportResponse"
+        '400':
+          description: Invalid airports details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseAirportResponse"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseAirportResponse"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseAirportResponse"
+        '404':
+          description: Airport not found
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseCustomPagingResponseAirportResponse"
+    post:
+      tags:
+      - Airport Management
+      summary: Create a new airport
+      description: Creates a new airport and saves it to the database. Accessible
+        by ADMIN only.
+      operationId: createAirport
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CreateAirportRequest"
+        required: true
+      responses:
+        '200':
+          description: Airport successfully created
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '400':
+          description: Invalid airport details provided
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '401':
+          description: Unauthorized, authentication is required
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+        '403':
+          description: Access forbidden
+          content:
+            "*/*":
+              schema:
+                "$ref": "#/components/schemas/CustomResponseString"
+  "/actuator/loggers/{name}":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'loggers-name'
+      operationId: loggerLevels
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Not Found
+    post:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'loggers-name'
+      operationId: configureLogLevel
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              enum:
+              - TRACE
+              - DEBUG
+              - INFO
+              - WARN
+              - ERROR
+              - FATAL
+              - 'OFF'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+  "/actuator":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator root web endpoint
+      operationId: links
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    "$ref": "#/components/schemas/Link"
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    "$ref": "#/components/schemas/Link"
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    "$ref": "#/components/schemas/Link"
+  "/actuator/threaddump":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'threaddump'
+      operationId: threadDump
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain;charset=UTF-8:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/scheduledtasks":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'scheduledtasks'
+      operationId: scheduledTasks
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/sbom":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'sbom'
+      operationId: sboms
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/sbom/{id}":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'sbom-id'
+      operationId: sbom
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+        '404':
+          description: Not Found
+  "/actuator/prometheus":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'prometheus'
+      operationId: scrape
+      parameters:
+      - name: format
+        in: query
+        schema:
+          type: string
+          enum:
+          - CONTENT_TYPE_004
+          - CONTENT_TYPE_OPENMETRICS_100
+          - CONTENT_TYPE_PROTOBUF
+      - name: includedNames
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain;version=0.0.4;charset=utf-8:
+              schema:
+                type: object
+            application/openmetrics-text;version=1.0.0;charset=utf-8:
+              schema:
+                type: object
+            application/vnd.google.protobuf;proto=io.prometheus.client.MetricFamily;encoding=delimited:
+              schema:
+                type: object
+  "/actuator/metrics":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'metrics'
+      operationId: listNames
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/metrics/{requiredMetricName}":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'metrics-requiredMetricName'
+      operationId: metric
+      parameters:
+      - name: requiredMetricName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: tag
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Not Found
+  "/actuator/mappings":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'mappings'
+      operationId: mappings
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/loggers":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'loggers'
+      operationId: loggers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/info":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'info'
+      operationId: info
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/heapdump":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'heapdump'
+      operationId: heapDump
+      parameters:
+      - name: live
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: object
+  "/actuator/health":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'health'
+      operationId: health
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/env":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'env'
+      operationId: environment
+      parameters:
+      - name: pattern
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/env/{toMatch}":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'env-toMatch'
+      operationId: environmentEntry
+      parameters:
+      - name: toMatch
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Not Found
+  "/actuator/configprops":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'configprops'
+      operationId: configurationProperties
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/configprops/{prefix}":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'configprops-prefix'
+      operationId: configurationPropertiesWithPrefix
+      parameters:
+      - name: prefix
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Not Found
+  "/actuator/conditions":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'conditions'
+      operationId: conditions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+  "/actuator/caches":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'caches'
+      operationId: caches
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+    delete:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'caches'
+      operationId: clearCaches
+      responses:
+        '204':
+          description: No Content
+  "/actuator/caches/{cache}":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'caches-cache'
+      operationId: cache
+      parameters:
+      - name: cache
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: cacheManager
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Not Found
+    delete:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'caches-cache'
+      operationId: clearCache
+      parameters:
+      - name: cache
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: cacheManager
+        in: query
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+  "/actuator/beans":
+    get:
+      tags:
+      - Actuator
+      summary: Actuator web endpoint 'beans'
+      operationId: beans
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.spring-boot.actuator.v3+json:
+              schema:
+                type: object
+            application/vnd.spring-boot.actuator.v2+json:
+              schema:
+                type: object
+            application/json:
+              schema:
+                type: object
+components:
+  schemas:
+    UpdateFlightRequest:
+      required:
+      - arrivalTime
+      - departureTime
+      - fromAirportId
+      - price
+      - toAirportId
+      type: object
+      properties:
+        fromAirportId:
+          type: string
+        toAirportId:
+          type: string
+        departureTime:
+          type: string
+          format: date-time
+        arrivalTime:
+          type: string
+          format: date-time
+        price:
+          type: number
+          format: double
+    AirportResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        cityName:
+          type: string
+    CustomResponseFlightResponse:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date-time
+        httpStatus:
+          type: string
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        isSuccess:
+          type: boolean
+        response:
+          "$ref": "#/components/schemas/FlightResponse"
+    FlightResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        fromAirport:
+          "$ref": "#/components/schemas/AirportResponse"
+        toAirport:
+          "$ref": "#/components/schemas/AirportResponse"
+        departureTime:
+          type: string
+          format: date-time
+        arrivalTime:
+          type: string
+          format: date-time
+        price:
+          type: number
+          format: double
+    UpdateAirportRequest:
+      required:
+      - cityName
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+        cityName:
+          type: string
+    CustomResponseAirportResponse:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date-time
+        httpStatus:
+          type: string
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        isSuccess:
+          type: boolean
+        response:
+          "$ref": "#/components/schemas/AirportResponse"
+    CreateFlightRequest:
+      required:
+      - arrivalTime
+      - departureTime
+      - fromAirportId
+      - price
+      - toAirportId
+      type: object
+      properties:
+        fromAirportId:
+          type: string
+        toAirportId:
+          type: string
+        departureTime:
+          type: string
+          format: date-time
+        arrivalTime:
+          type: string
+          format: date-time
+        price:
+          type: number
+          format: double
+    CustomResponseString:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date-time
+        httpStatus:
+          type: string
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        isSuccess:
+          type: boolean
+        response:
+          type: string
+    CustomPaging:
+      type: object
+      properties:
+        pageNumber:
+          minimum: 1
+          type: integer
+          format: int32
+        pageSize:
+          minimum: 1
+          type: integer
+          format: int32
+    SearchFlightRequest:
+      required:
+      - departureTime
+      - fromAirportId
+      - toAirportId
+      type: object
+      properties:
+        pagination:
+          "$ref": "#/components/schemas/CustomPaging"
+        fromAirportId:
+          type: string
+        toAirportId:
+          type: string
+        departureTime:
+          type: string
+          format: date-time
+        arrivalTime:
+          type: string
+          format: date-time
+    CustomPagingResponseFlightResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            "$ref": "#/components/schemas/FlightResponse"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalElementCount:
+          type: integer
+          format: int64
+        totalPageCount:
+          type: integer
+          format: int32
+    CustomResponseCustomPagingResponseFlightResponse:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date-time
+        httpStatus:
+          type: string
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        isSuccess:
+          type: boolean
+        response:
+          "$ref": "#/components/schemas/CustomPagingResponseFlightResponse"
+    RegisterRequest:
+      required:
+      - firstName
+      - lastName
+      - phoneNumber
+      type: object
+      properties:
+        email:
+          maxLength: 2147483647
+          minLength: 7
+          type: string
+        password:
+          maxLength: 2147483647
+          minLength: 8
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          maxLength: 20
+          minLength: 11
+          type: string
+        userType:
+          type: string
+          enum:
+          - USER
+          - ADMIN
+    CustomResponseVoid:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date-time
+        httpStatus:
+          type: string
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        isSuccess:
+          type: boolean
+        response:
+          type: object
+    TokenRefreshRequest:
+      required:
+      - refreshToken
+      type: object
+      properties:
+        refreshToken:
+          type: string
+    CustomResponseTokenResponse:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date-time
+        httpStatus:
+          type: string
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        isSuccess:
+          type: boolean
+        response:
+          "$ref": "#/components/schemas/TokenResponse"
+    TokenResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+        accessTokenExpiresAt:
+          type: integer
+          format: int64
+        refreshToken:
+          type: string
+    TokenInvalidateRequest:
+      required:
+      - accessToken
+      - refreshToken
+      type: object
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+    LoginRequest:
+      required:
+      - email
+      - password
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    CreateAirportRequest:
+      required:
+      - cityName
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+        cityName:
+          type: string
+    AirportPagingRequest:
+      type: object
+      properties:
+        pagination:
+          "$ref": "#/components/schemas/CustomPaging"
+    CustomPagingResponseAirportResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            "$ref": "#/components/schemas/AirportResponse"
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        totalElementCount:
+          type: integer
+          format: int64
+        totalPageCount:
+          type: integer
+          format: int32
+    CustomResponseCustomPagingResponseAirportResponse:
+      type: object
+      properties:
+        time:
+          type: string
+          format: date-time
+        httpStatus:
+          type: string
+          enum:
+          - 100 CONTINUE
+          - 101 SWITCHING_PROTOCOLS
+          - 102 PROCESSING
+          - 103 EARLY_HINTS
+          - 103 CHECKPOINT
+          - 200 OK
+          - 201 CREATED
+          - 202 ACCEPTED
+          - 203 NON_AUTHORITATIVE_INFORMATION
+          - 204 NO_CONTENT
+          - 205 RESET_CONTENT
+          - 206 PARTIAL_CONTENT
+          - 207 MULTI_STATUS
+          - 208 ALREADY_REPORTED
+          - 226 IM_USED
+          - 300 MULTIPLE_CHOICES
+          - 301 MOVED_PERMANENTLY
+          - 302 FOUND
+          - 302 MOVED_TEMPORARILY
+          - 303 SEE_OTHER
+          - 304 NOT_MODIFIED
+          - 305 USE_PROXY
+          - 307 TEMPORARY_REDIRECT
+          - 308 PERMANENT_REDIRECT
+          - 400 BAD_REQUEST
+          - 401 UNAUTHORIZED
+          - 402 PAYMENT_REQUIRED
+          - 403 FORBIDDEN
+          - 404 NOT_FOUND
+          - 405 METHOD_NOT_ALLOWED
+          - 406 NOT_ACCEPTABLE
+          - 407 PROXY_AUTHENTICATION_REQUIRED
+          - 408 REQUEST_TIMEOUT
+          - 409 CONFLICT
+          - 410 GONE
+          - 411 LENGTH_REQUIRED
+          - 412 PRECONDITION_FAILED
+          - 413 PAYLOAD_TOO_LARGE
+          - 413 REQUEST_ENTITY_TOO_LARGE
+          - 414 URI_TOO_LONG
+          - 414 REQUEST_URI_TOO_LONG
+          - 415 UNSUPPORTED_MEDIA_TYPE
+          - 416 REQUESTED_RANGE_NOT_SATISFIABLE
+          - 417 EXPECTATION_FAILED
+          - 418 I_AM_A_TEAPOT
+          - 419 INSUFFICIENT_SPACE_ON_RESOURCE
+          - 420 METHOD_FAILURE
+          - 421 DESTINATION_LOCKED
+          - 422 UNPROCESSABLE_ENTITY
+          - 423 LOCKED
+          - 424 FAILED_DEPENDENCY
+          - 425 TOO_EARLY
+          - 426 UPGRADE_REQUIRED
+          - 428 PRECONDITION_REQUIRED
+          - 429 TOO_MANY_REQUESTS
+          - 431 REQUEST_HEADER_FIELDS_TOO_LARGE
+          - 451 UNAVAILABLE_FOR_LEGAL_REASONS
+          - 500 INTERNAL_SERVER_ERROR
+          - 501 NOT_IMPLEMENTED
+          - 502 BAD_GATEWAY
+          - 503 SERVICE_UNAVAILABLE
+          - 504 GATEWAY_TIMEOUT
+          - 505 HTTP_VERSION_NOT_SUPPORTED
+          - 506 VARIANT_ALSO_NEGOTIATES
+          - 507 INSUFFICIENT_STORAGE
+          - 508 LOOP_DETECTED
+          - 509 BANDWIDTH_LIMIT_EXCEEDED
+          - 510 NOT_EXTENDED
+          - 511 NETWORK_AUTHENTICATION_REQUIRED
+        isSuccess:
+          type: boolean
+        response:
+          "$ref": "#/components/schemas/CustomPagingResponseAirportResponse"
+    Link:
+      type: object
+      properties:
+        href:
+          type: string
+        templated:
+          type: boolean
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: JWT Token
+      scheme: bearer
+      bearerFormat: JWT

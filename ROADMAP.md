@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-45 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
+44 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
 Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
@@ -21,14 +21,34 @@ Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 |---|---|---|
 | 1.1a | Specification model: `ApiModel`, `Operation`, `Parameter`, `CanonicalSchema` and `JsonValue` as records and sealed types; named and recursive schemas; unreadable constructs recorded rather than lost | A representation of an API that is ours, not a library's |
 | 1.1b | Execution model: `TestCase`, value provenance, exact request and response payloads, `Interaction` and its outcome | A representation of what we did to the API, and what came back |
-| 1.2 | `SpecificationParser` interface + swagger-parser backend; OAS 2.0/3.0.x/3.1.x; lazy `$ref`; malformed operations skipped and reported. A 3.2 document degrades and reports rather than failing | Point the tool at any real specification without it crashing |
-| 1.2b | Second `SpecificationParser` backend for OAS 3.2, chosen from the document's declared version and confirmed against the golden corpus | The current version of the specification format is supported, not the previous two |
+| 1.2 | `SpecificationParser` interface + a single swagger-parser backend; OAS 2.0 (by conversion), 3.0.x and 3.1.x; lazy `$ref`; malformed operations, and any OAS 3.2 (or later) document, skipped and reported rather than failing the run | Point the tool at any real specification without it crashing |
 | 1.3 | `HttpEngine` interface + OkHttp backend; virtual threads; exact wire capture; adaptive concurrency; idle-time accounting | Requests get sent, fast, and we can see where the time went |
 | 1.4 | Interaction store (SQLite + NDJSON) and its query API | Every run is inspectable afterwards |
 | 1.5 | Value provider chain and random providers; random test-case generator | The tool invents its own inputs |
 | 1.6 | Oracles: server error, response schema conformance. WFC fault codes, event stream, console and JSON reports | Real failures are reported, each with a `curl` command to reproduce it |
 | 1.7 | `restest run <spec> --url <base> --budget <duration>`; smoke integration test against two containerised APIs | The whole thing works from one command; regressions caught on every PR |
 | 1.8 | 🛑 `evaluation/` harness: Dockerfile, entry script, pinned RESTGym commit, `run-evaluation.sh` | First campaign-comparable numbers: v2 vs RESTest 1.x vs the published 2026 field |
+
+The golden corpus of specifications used throughout M1 and M2 lives at
+`restest-spec/src/test/resources/specifications/`, in three directories: `restleague-2027/`,
+`community/` and `fixtures/`. `restleague-2027/` — the five APIs named in the
+[2027 REST League benchmark](https://seunivr.github.io/RestLeague/2027/) — is the priority corpus:
+these are the APIs the tool is actually evaluated against, so exercise them first in every
+increment's tests, before the wider `community/` corpus. Exact provenance, so the five files can be
+re-fetched or checked for drift:
+
+| Directory | Upstream project | `openapi.yaml` pinned at |
+|---|---|---|
+| `flight-search/` | github.com/Rapter1990/flightsearchapi | github.com/restgym/flight-search-api@2838238, `specifications/flight-search.yaml`, fetched 2026-09-12 |
+| `gestao-hospital/` | github.com/ValchanOficial/GestaoHospital | github.com/restgym/gestao-hospital-api@d4cb6c7, `specifications/gestao-hospital.yaml`, fetched 2026-09-12 |
+| `kafka-rest-proxy/` | github.com/confluentinc/kafka-rest | github.com/restgym/kafka-rest-proxy-api@26d839b, `specifications/kafka-rest-proxy.yaml`, fetched 2026-09-12 |
+| `notebook-manager/` | github.com/birddevelper/NoteBookManager | github.com/restgym/notebook-manager-api@d4f29e4, `specifications/notebook-manager.yaml`, fetched 2026-09-12 |
+| `pet-clinic/` | github.com/spring-petclinic/spring-petclinic-rest | github.com/restgym/pet-clinic-api@e8250db, `specifications/pet-clinic.yaml`, fetched 2026-09-12 |
+
+Each of those upstream projects packages its own specification inconsistently or not at all; the
+pinned fork is simply where a ready, single specification file per API could be fetched from — no
+other coupling to that infrastructure is implied or intended (ADR-0011 still holds: nothing under
+`src/` depends on it, builds against it, or assumes its layout).
 
 ## M2 — Specification fidelity and input generation
 
