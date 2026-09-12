@@ -218,7 +218,7 @@ class ApiModelTest {
                 "paths./pets/{id}.delete", deletePet, "the schema does not resolve");
         SpecificationIssue degraded = SpecificationIssue.degraded(
                 "paths./pets.get.responses.200", OperationId.of("listPets"),
-                "an OpenAPI 3.2 construct we do not read yet; the body shape is unknown");
+                "a schema construct we do not read yet; the body shape is unknown");
         SpecificationIssue document = SpecificationIssue.document("info", "no version declared");
 
         assertThat(skipped.skipsAnOperation()).isTrue();

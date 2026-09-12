@@ -88,8 +88,9 @@ was edited.
 - No preview features in any published API — in particular no Structured Concurrency and no Lazy
   Constants.
 - Maven with the wrapper (`./mvnw`). Every production module has a `module-info.java`.
-- OpenAPI scope: 2.0 and every 3.x, 3.2 included, tracking new 3.x minors as they appear. Not 4.x,
-  which has no specification text (ADR-0007, amended at M0.2).
+- OpenAPI scope: 2.0 (by conversion), 3.0.x and 3.1.x, via a single swagger-parser backend. Not 3.2
+  (too recent, adopted by almost nothing yet) and not 4.x, which has no specification text
+  (ADR-0007, reversed at M1.2).
 - Stack: swagger-parser (behind our own interface), networknt json-schema-validator, picocli,
   OkHttp, virtual threads, ANTLR4, Choco, SQLite, JUnit 6, AssertJ, Testcontainers, WireMock,
   ArchUnit, PIT, JaCoCo.

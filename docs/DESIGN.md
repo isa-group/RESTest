@@ -26,7 +26,7 @@ grammar and the test corpus do.
 
 | | |
 |---|---|
-| Specification formats | OpenAPI 2.0 and every 3.x, 3.2 included. New 3.x minors are tracked as they are published. Not 4.x, which has no specification text |
+| Specification formats | OpenAPI 2.0 (by conversion), 3.0.x and 3.1.x, through a single parser backend. Not 3.2, which is too recent to justify a second backend, and not 4.x, which has no specification text |
 | Testing style | Black-box only: the specification and the API's responses, never its source |
 | Test kinds | Stateless single requests, and stateful sequences across several operations |
 | Distribution | Command-line tool, library dependency, container image, and native binary |
@@ -278,7 +278,7 @@ target for RESTest 2.0.
 | [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | — | Fuzzing patterns, boundary values | Status codes, schema validation |
 | [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
 | [RESTest 1.x](https://github.com/isa-group/RESTest/tree/master) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
-| **RESTest 2.0** (this tool) | Java | 2.0, 3.x | B | CBT (IDL), random, ART, feedback-guided | ODG-based sequence construction | Random, IDL-constrained, external providers | Status code classification, schema validation, corpus oracles, WFC codes |
+| **RESTest 2.0** (this tool) | Java | 2.0, 3.0.x, 3.1.x | B | CBT (IDL), random, ART, feedback-guided | ODG-based sequence construction | Random, IDL-constrained, external providers | Status code classification, schema validation, corpus oracles, WFC codes |
 
 ## Out of scope for v2.0
 

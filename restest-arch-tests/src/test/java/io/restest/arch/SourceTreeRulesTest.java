@@ -44,7 +44,7 @@ class SourceTreeRulesTest {
     /**
      * The benchmark platform used to evaluate RESTest lives entirely under {@code evaluation/},
      * outside the tool's own build, and the tool itself must know nothing about it. This test runs a
-     * search over {@code src/} that must return zero hits for its name.
+     * search over every module's {@code src/} that must return zero hits for its name.
      *
      * <p>Checked as text rather than as a compiled dependency, because the danger is not only a
      * compiled reference. A path, a property name or a comment that assumes the benchmark's layout
@@ -170,8 +170,7 @@ class SourceTreeRulesTest {
     private static final Pattern VERSION_COMMENT = Pattern.compile("#\\s*v?\\d");
 
     /**
-     * Everything that makes up the tool: the source trees of the declared modules, the repository's
-     * own {@code src/} (which still carries the 1.x test corpus), and every POM.
+     * Everything that makes up the tool: the source trees of the declared modules, and every POM.
      *
      * <p>Deliberately not a walk of the whole repository. That would descend into {@code .git} and
      * {@code target}, making the cost scale with history rather than with source, and it would
@@ -180,7 +179,6 @@ class SourceTreeRulesTest {
     private static List<Path> toolFiles() {
         Path root = RepositoryRoot.locate();
         List<Path> roots = new ArrayList<>();
-        roots.add(root.resolve("src"));
         for (String module : RepositoryRoot.declaredModules()) {
             roots.add(root.resolve(module).resolve("src"));
         }
@@ -224,7 +222,7 @@ class SourceTreeRulesTest {
         }
     }
 
-    /** The file's content, or {@code null} if it is not valid UTF-8 text (the corpus holds images). */
+    /** The file's content, or {@code null} if it is not valid UTF-8 text (a module may hold a binary fixture). */
     private static String readIfText(Path file) {
         try {
             byte[] bytes = Files.readAllBytes(file);

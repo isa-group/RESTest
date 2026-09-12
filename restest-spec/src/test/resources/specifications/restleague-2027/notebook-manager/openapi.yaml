@@ -1,0 +1,190 @@
+---
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8090
+  description: Generated server url
+paths:
+  "/api/notebooks":
+    get:
+      tags:
+      - note-book-controller
+      summary: Get list of notebooks (Ordered by Id in ascending order), you must
+        specify page number and page size
+      operationId: getnotebooks
+      parameters:
+      - name: page
+        in: query
+        description: Page index (start from 0)
+        required: true
+        schema:
+          type: integer
+          format: int32
+      - name: pageSize
+        in: query
+        description: Number of records per page
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: Successful Operation
+          content:
+            application/json: {}
+        '400':
+          description: Invalid parameters supplied
+        '500':
+          description: Internal Error
+    post:
+      tags:
+      - note-book-controller
+      summary: Create a new notebook
+      operationId: createnotebook
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NoteBook"
+        required: true
+      responses:
+        '201':
+          description: notebook created
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/NoteBook"
+        '400':
+          description: Invalid id supplied
+        '404':
+          description: notebook not found
+        '409':
+          description: Duplicate notebook name
+        '500':
+          description: Internal Error
+  "/api/notebooks/{notebookId}":
+    get:
+      tags:
+      - note-book-controller
+      summary: Get a notebook by its id
+      operationId: getnotebookById
+      parameters:
+      - name: notebookId
+        in: path
+        description: id of notebook to be retrieved
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: Found the notebook
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/NoteBook"
+        '400':
+          description: Invalid id supplied
+        '404':
+          description: notebook not found
+        '500':
+          description: Internal Error
+    delete:
+      tags:
+      - note-book-controller
+      summary: Delete a notebook by its id
+      operationId: deletenotebook
+      parameters:
+      - name: notebookId
+        in: path
+        description: id of notebook to be deleted
+        required: true
+        schema:
+          type: integer
+          format: int32
+      responses:
+        '202':
+          description: notebook deleted
+        '400':
+          description: Invalid id supplied
+        '404':
+          description: notebook not found
+        '500':
+          description: Internal Error
+    patch:
+      tags:
+      - note-book-controller
+      summary: Update a notebook by its id
+      operationId: updatenotebook
+      parameters:
+      - name: notebookId
+        in: path
+        description: id of notebook to be updated
+        required: true
+        schema:
+          type: integer
+          format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/NoteBook"
+        required: true
+      responses:
+        '202':
+          description: notebook updated
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/NoteBook"
+        '400':
+          description: Invalid id supplied
+        '404':
+          description: notebook not found
+        '409':
+          description: Duplicate notebook name
+        '500':
+          description: Internal Error
+components:
+  schemas:
+    Link:
+      type: object
+      properties:
+        rel:
+          type: string
+        href:
+          type: string
+        hreflang:
+          type: string
+        media:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+        deprecation:
+          type: string
+        profile:
+          type: string
+        name:
+          type: string
+    NoteBook:
+      type: object
+      properties:
+        name:
+          type: string
+        currentPrice:
+          type: number
+          format: double
+        lastUpdate:
+          type: string
+          format: date-time
+        id:
+          type: integer
+          format: int32
+        links:
+          type: array
+          items:
+            "$ref": "#/components/schemas/Link"
