@@ -155,7 +155,7 @@ instead.
 Not represented, deliberately: a `TestCase` the engine planned but never attempted - shed by adaptive
 concurrency, cut off by the budget. No request went out, so no `Interaction` exists for it; inventing
 one would mean fabricating `sentAt`. Counting "planned versus attempted" stays the engine's and the
-report's job (M1.3, M3.6).
+report's job (M1.3, M3.5).
 
 **`Payload` gained `wireLength`**, replacing an earlier `truncated` boolean, after review. ADR-0006
 names "configurable response-body truncation" as the store's answer to storage cost, so a stored
@@ -208,7 +208,7 @@ is exactly where an `Authorization` bearer token or an API key (M2.6) travels, a
 generated `toString` would print it verbatim into any log line or report. Both override `toString` to
 show header *names* only, plus the body's own already-safe summary. This does not solve secret
 redaction in general - a credential in a query string or inside a body is not caught by it - which is
-left to the reporting work in M3.6; it closes the one leak this increment could close cheaply.
+left to the reporting work in M3.5; it closes the one leak this increment could close cheaply.
 
 `HttpResponseRecord` also gained the reason phrase and protocol version, both optional, as part of
 its `StatusLine` (see above) rather than as fields of its own: M3.2's HTTP-semantics oracles want

@@ -96,7 +96,7 @@ class ArchitectureRulesSelfTest {
                 "ExecTerminatingByProcessHandle");
 
         // Identical bytecode to the line above, but on a child process, which is legitimate and
-        // which M6.2's out-of-process transport will need. Flagging it would fail correct code.
+        // which M2.8's out-of-process transport will need. Flagging it would fail correct code.
         assertThatThrownBy(() -> ArchitectureRules
                 .onlyOneModuleMayTerminateTheProcess(MIRROR, "cli").check(mirrorClasses))
                 .describedAs("reaping a child process must not be reported; only a handle on this "
