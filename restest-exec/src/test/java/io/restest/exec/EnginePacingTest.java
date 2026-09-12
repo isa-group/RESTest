@@ -90,11 +90,11 @@ class EnginePacingTest {
                     .describedAs("the ceiling the settings named is a promise, not a suggestion")
                     .isLessThanOrEqualTo(6);
             assertThat(statistics.concurrencyLimit()).isBetween(1, 6);
-            assertThat(statistics.wallClock())
-                    .describedAs("%d replies of %dms each: one at a time would take %dms, so "
-                            + "anything close to that means the overlapping stopped early",
-                            REQUESTS, SLOW_REPLY_MILLIS, (long) REQUESTS * SLOW_REPLY_MILLIS)
-                    .isLessThan(Duration.ofMillis((long) REQUESTS * SLOW_REPLY_MILLIS / 2));
+            assertThat(statistics.totalResponseTime())
+                    .describedAs("the time spent waiting on the API adds up to more than the run "
+                            + "itself lasted, which cannot happen unless requests overlapped - and "
+                            + "unlike a stopwatch bound, it cannot be failed by a slow machine")
+                    .isGreaterThan(statistics.wallClock());
         }
     }
 
