@@ -37,6 +37,12 @@ import java.util.random.RandomGenerator;
  * than always the first, so a run exercises the whole list rather than one member of it. Asked about
  * anything the specification says nothing concrete about, it says nothing and lets the next source
  * answer.
+ *
+ * <p>A stated default is different, and worth knowing about: it is one value, so every request that
+ * includes that parameter carries the same one, and the run never varies it. That is the right
+ * behaviour for a value the API's author chose, and it does mean a parameter like {@code page} or
+ * {@code limit} is exercised at its default and nowhere near its limits - which is a job for a source
+ * that deliberately walks the edges of what a parameter allows, not for this one.
  */
 public final class DeclaredValueProvider implements ValueProvider {
 

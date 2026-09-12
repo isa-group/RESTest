@@ -68,12 +68,28 @@ public final class ValueProviderChain implements ValueProvider {
     public Optional<GeneratedValue> offer(ValueRequest request) {
         Objects.requireNonNull(request, "request");
         for (ValueProvider provider : providers) {
-            Optional<GeneratedValue> offered = provider.offer(request);
+            Optional<GeneratedValue> offered = ask(provider, request);
             if (offered.isPresent()) {
                 return offered;
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * One source's answer, treating a source that breaks as one that had nothing to say.
+     *
+     * <p>Sources are the one part of RESTest that somebody else is invited to write, and they run in
+     * the middle of a run. A source that throws is a bug in that source, and the right response is to
+     * carry on asking the others: the alternative is that a dictionary with one bad entry, or a
+     * helper program that crashed, ends a test run that was otherwise going fine.
+     */
+    private static Optional<GeneratedValue> ask(ValueProvider provider, ValueRequest request) {
+        try {
+            return provider.offer(request);
+        } catch (RuntimeException broken) {
+            return Optional.empty();
+        }
     }
 
     /** The sources this chain asks, in the order it asks them. */

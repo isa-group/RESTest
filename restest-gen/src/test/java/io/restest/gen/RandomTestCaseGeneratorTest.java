@@ -200,6 +200,35 @@ class RandomTestCaseGeneratorTest {
         assertThat(one.seed()).isEqualTo(99L);
     }
 
+    @Test
+    @DisplayName("an operation already reported as untestable is not quietly attempted anyway")
+    void an_untestable_operation_is_not_attempted() {
+        Operation createPet = Operation.of(HttpMethod.POST, "/pets")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), true));
+        RandomTestCaseGenerator generator = generatorFor(createPet);
+
+        assertThat(generator.generate(createPet))
+                .describedAs("a body-less POST to an operation that requires one is a request "
+                        + "nobody could send, not a test")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("an operation whose required parameter nothing can fill is reported, not attempted "
+            + "on every draw and silently failing")
+    void an_operation_nobody_can_fill_is_reported() {
+        Operation huge = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("token", ParameterLocation.QUERY, true, new io.restest.core.schema
+                        .StringSchema(SchemaMetadata.none(), Optional.of(50_000), Optional.empty(),
+                        Optional.empty(), Optional.empty()))));
+        RandomTestCaseGenerator generator = generatorFor(huge);
+
+        assertThat(generator.testableOperations()).isEmpty();
+        assertThat(generator.untestableOperations())
+                .extractingByKey(huge.id(), org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .contains("no value could be found");
+    }
+
     private List<String> run(long seed) {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model(LIST_PETS), seed);
         return IntStream.range(0, 10)

@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -55,6 +56,45 @@ class SourceTreeRulesTest {
      * <p>{@code evaluation/} itself is excluded, and must be: that is exactly where the benchmark
      * platform is meant to live, so naming it inside that directory is expected, not a violation.
      */
+    /**
+     * Modules allowed to use another module's code in their own tests, and why.
+     *
+     * <p>The rule that dependencies point inwards is checked on compiled production code, which
+     * leaves test code free. That freedom is useful - a test proving that generation works against
+     * real specifications has to read real specifications, and reading them is the specification
+     * module's job - and it is also how a boundary quietly stops existing, one reasonable exception
+     * at a time. Naming the exceptions here keeps each one a decision somebody made rather than a
+     * habit nobody noticed.
+     */
+    private static final Map<String, String> MAY_USE_THE_PARSER_IN_TESTS = Map.of(
+            "restest-gen", "its generation tests run against the five real specifications the tool "
+                    + "is measured on, and hand-written models would only ever test the shapes the "
+                    + "same person thought of");
+
+    @Test
+    @DisplayName("only the modules named here use the specification parser in their tests")
+    void the_parser_is_used_in_tests_only_where_it_was_agreed() {
+        List<String> unexpected = new ArrayList<>();
+        for (String module : RepositoryRoot.declaredModules()) {
+            if (module.equals("restest-spec") || module.equals("restest-cli")
+                    || RepositoryRoot.VERIFICATION_ONLY_MODULES.contains(module)
+                    || MAY_USE_THE_PARSER_IN_TESTS.containsKey(module)) {
+                continue;
+            }
+            Path pom = RepositoryRoot.locate().resolve(module).resolve("pom.xml");
+            String content = readIfText(pom);
+            if (content != null && content.contains("restest-spec")) {
+                unexpected.add(module);
+            }
+        }
+
+        assertThat(unexpected)
+                .describedAs("a module depending on the specification parser, even only for its "
+                        + "tests, is an exception to the module boundaries and belongs in the list "
+                        + "in this test with the reason for it")
+                .isEmpty();
+    }
+
     @Test
     @DisplayName("no benchmark platform is referenced anywhere under src (ADR-0011)")
     void no_benchmark_platform_under_src() {

@@ -71,7 +71,7 @@ public final class RequestBuilder {
 
         String path = fillIn(operation, testCase);
         String query = queryString(operation, testCase);
-        String url = trimTrailingSlash(baseUrl) + path + (query.isEmpty() ? "" : "?" + query);
+        String url = base(baseUrl) + path + (query.isEmpty() ? "" : "?" + query);
         return new HttpRequestRecord(operation.method(), url, headers(operation, testCase),
                 Optional.empty());
     }
@@ -110,6 +110,14 @@ public final class RequestBuilder {
                             + " needs '" + parameter.name() + "' and the test case has no value "
                             + "for it, so no request could be assembled"));
             String written = joined(value.value(), parameter, ",");
+            if (written.isEmpty()) {
+                // An empty value would close the gap in the path rather than fill it, and
+                // /pets/{petId} would quietly become /pets - a request against the collection,
+                // judged afterwards against the contract of the single-item operation.
+                throw new IllegalArgumentException("the value chosen for '" + parameter.name()
+                        + "' in the path of " + operation.id() + " is empty, which would address a "
+                        + "different resource instead of filling the gap");
+            }
             path = path.replace("{" + parameter.name() + "}", encode(written));
         }
         return path;
@@ -149,13 +157,16 @@ public final class RequestBuilder {
         List<Header> headers = new ArrayList<>();
         for (Parameter parameter : operation.parameters(ParameterLocation.HEADER)) {
             testCase.parameterValue(parameter.name(), ParameterLocation.HEADER).ifPresent(value ->
-                    headers.add(Header.of(parameter.name(), joined(value.value(), parameter, ","))));
+                    headers.add(Header.of(parameter.name(), headerValue(parameter.name(),
+                            joined(value.value(), parameter, ",")))));
         }
 
         Map<String, String> cookies = new LinkedHashMap<>();
         for (Parameter parameter : operation.parameters(ParameterLocation.COOKIE)) {
             testCase.parameterValue(parameter.name(), ParameterLocation.COOKIE).ifPresent(value ->
-                    cookies.put(parameter.name(), joined(value.value(), parameter, ",")));
+                    // Encoded, because a semicolon or a comma inside one cookie's value would
+                    // otherwise read as the start of another cookie.
+                    cookies.put(parameter.name(), encode(joined(value.value(), parameter, ","))));
         }
         if (!cookies.isEmpty()) {
             StringJoiner jar = new StringJoiner("; ");
@@ -207,8 +218,45 @@ public final class RequestBuilder {
         return number.stripTrailingZeros().toPlainString();
     }
 
-    private static String trimTrailingSlash(String baseUrl) {
-        return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+    /**
+     * The address the API lives at, checked and tidied.
+     *
+     * <p>A base address carrying a query string of its own - an API key, most often - cannot simply
+     * have a path stuck on the end of it: the result would put the path inside the query and address
+     * nothing. Refused here, where it can be explained, rather than producing requests that all fail
+     * for a reason nobody can see.
+     */
+    private static String base(String baseUrl) {
+        String trimmed = baseUrl.trim();
+        if (trimmed.isEmpty()) {
+            throw new IllegalArgumentException("a request needs the address the API lives at");
+        }
+        if (trimmed.indexOf('?') >= 0 || trimmed.indexOf('#') >= 0) {
+            throw new IllegalArgumentException("the address '" + baseUrl + "' carries a query "
+                    + "string or a fragment of its own, and a path cannot be added to the end of "
+                    + "it; give the address up to the path only");
+        }
+        int end = trimmed.length();
+        while (end > 0 && trimmed.charAt(end - 1) == '/') {
+            end--;
+        }
+        return trimmed.substring(0, end);
+    }
+
+    /**
+     * Refuses a header value that would break the request in two.
+     *
+     * <p>A line break inside a header value ends that header as far as HTTP is concerned and starts
+     * whatever follows as another one. A specification stating such a value as a default is the one
+     * way that can happen here, and sending it would mean the request that goes out is not the
+     * request that was recorded.
+     */
+    private static String headerValue(String name, String value) {
+        if (value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\0') >= 0) {
+            throw new IllegalArgumentException("the value for the header '" + name + "' contains a "
+                    + "line break, which would split the request into two");
+        }
+        return value;
     }
 
     /**

@@ -68,18 +68,32 @@ class GoldenCorpusGenerationTest {
                 .hasSize(testable);
 
         for (Operation operation : generator.testableOperations()) {
-            TestCase testCase = generator.generate(operation)
-                    .orElseThrow(() -> new AssertionError("no test case for " + operation.id()));
-            assertEveryRequiredParameterIsFilled(operation, testCase);
-
-            HttpRequestRecord request =
-                    RequestBuilder.build(operation, testCase, "http://localhost:8080");
-            URI address = URI.create(request.url());
-            assertThat(address.getHost())
-                    .describedAs("%s produced the address %s", operation.id(), request.url())
-                    .isEqualTo("localhost");
-            assertThat(request.url()).doesNotContain("{").doesNotContain("}");
+            // Ten draws each: a value that only breaks its schema on some draws - a list that is
+            // occasionally too short, a number occasionally off its step - would slip past one.
+            for (int draw = 0; draw < 10; draw++) {
+                checkOneDraw(model, generator, operation);
+            }
         }
+    }
+
+    private static void checkOneDraw(ApiModel model, RandomTestCaseGenerator generator,
+            Operation operation) {
+        TestCase testCase = generator.generate(operation)
+                .orElseThrow(() -> new AssertionError("no test case for " + operation.id()));
+        assertEveryRequiredParameterIsFilled(operation, testCase);
+        assertEveryValueSatisfiesItsSchema(model, operation, testCase);
+
+        HttpRequestRecord request =
+                RequestBuilder.build(operation, testCase, "http://localhost:8080");
+        URI address = URI.create(request.url());
+        assertThat(address.getHost())
+                .describedAs("%s produced the address %s", operation.id(), request.url())
+                .isEqualTo("localhost");
+        assertThat(request.url()).doesNotContain("{").doesNotContain("}");
+        assertThat(address.getPath())
+                .describedAs("%s produced the address %s, which addresses something else",
+                        operation.id(), request.url())
+                .doesNotContain("//");
     }
 
     @ParameterizedTest(name = "{0} is generated the same way twice")
@@ -100,6 +114,21 @@ class GoldenCorpusGenerationTest {
                         model.operation(testCase.operation()).orElseThrow(), testCase,
                         "http://localhost:8080").url())
                 .toList();
+    }
+
+    /**
+     * The assertion that matters most: not that a value was produced, but that the value is one the
+     * specification actually permits. A generator that sent an empty string for everything would
+     * satisfy every other check in this file.
+     */
+    private static void assertEveryValueSatisfiesItsSchema(ApiModel model, Operation operation,
+            TestCase testCase) {
+        for (ParameterValue value : testCase.parameterValues()) {
+            Parameter parameter = operation.parameter(value.name(), value.location()).orElseThrow();
+            assertThat(SchemaSatisfaction.violations(value.value(), parameter.schema(), model))
+                    .describedAs("%s sent '%s' as %s", operation.id(), value.value(), value.name())
+                    .isEmpty();
+        }
     }
 
     private static void assertEveryRequiredParameterIsFilled(Operation operation,

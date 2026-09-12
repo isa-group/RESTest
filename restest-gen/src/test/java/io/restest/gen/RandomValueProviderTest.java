@@ -246,6 +246,165 @@ class RandomValueProviderTest {
                 .toList();
     }
 
+    // --- what review found this generator getting wrong ----------------------------------------
+
+    @RepeatedTest(20)
+    @DisplayName("the allowed values of a list's items are honoured, not only the list's own")
+    void a_list_of_allowed_values_uses_them() {
+        io.restest.core.schema.StringSchema status = new StringSchema(
+                SchemaMetadata.none().withEnumeration(List.of(
+                        JsonValue.of("available"), JsonValue.of("sold"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        ArraySchema schema = new ArraySchema(SchemaMetadata.none(), status, Optional.of(1),
+                Optional.of(3), false);
+
+        assertThat(SchemaSatisfaction.violations(invent(schema), schema, EMPTY))
+                .describedAs("a list of statuses is useless if its contents are made up")
+                .isEmpty();
+    }
+
+    @RepeatedTest(20)
+    @DisplayName("the allowed values of an object's properties are honoured too")
+    void an_objects_allowed_values_are_used() {
+        ObjectSchema schema = ObjectSchema.of(Map.of("status", new StringSchema(
+                        SchemaMetadata.none().withEnumeration(List.of(JsonValue.of("open"))),
+                        Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty())),
+                Set.of("status"));
+
+        assertThat(SchemaSatisfaction.violations(invent(schema), schema, EMPTY)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a string allowed to be as long as a number can count does not end the run")
+    void an_enormous_allowed_length_does_not_break() {
+        StringSchema schema = new StringSchema(SchemaMetadata.none(), Optional.of(0),
+                Optional.of(Integer.MAX_VALUE), Optional.empty(), Optional.empty());
+
+        String value = ((JsonValue.JsonString) invent(schema)).value();
+
+        assertThat(value).describedAs("kept short: the API is being tested, not loaded")
+                .hasSizeLessThan(100);
+    }
+
+    @Test
+    @DisplayName("a string the specification insists must be enormous is declined, not built")
+    void an_enormous_demanded_length_is_declined() {
+        StringSchema schema = new StringSchema(SchemaMetadata.none(), Optional.of(50_000),
+                Optional.empty(), Optional.empty(), Optional.empty());
+
+        assertThat(provider.offer(Schemas.asking(schema))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a shape nested deeply inside itself is wound up, not built to its full size")
+    void deep_inline_nesting_stays_small() {
+        CanonicalSchema deep = StringSchema.of();
+        for (int i = 0; i < 12; i++) {
+            deep = new ArraySchema(SchemaMetadata.none(), deep, Optional.of(3), Optional.of(3),
+                    false);
+        }
+        CanonicalSchema schema = deep;
+
+        long started = System.nanoTime();
+        Optional<GeneratedValue> value = provider.offer(Schemas.asking(schema));
+        long took = System.nanoTime() - started;
+
+        assertThat(java.time.Duration.ofNanos(took))
+                .describedAs("this must not cost the run its budget or the API its patience")
+                .isLessThan(java.time.Duration.ofSeconds(1));
+        value.ifPresent(built -> assertThat(built.value().toString().length()).isLessThan(100_000));
+    }
+
+    @RepeatedTest(30)
+    @DisplayName("a bound that must be exceeded wins over a looser one on the same side")
+    void the_tighter_of_two_bounds_is_obeyed() {
+        NumberSchema schema = new NumberSchema(SchemaMetadata.none(), NumberKind.INTEGER,
+                Optional.of(BigDecimal.ONE), Optional.of(BigDecimal.TEN),
+                Optional.of(BigDecimal.valueOf(20)), Optional.empty(), Optional.empty(),
+                Optional.empty());
+
+        BigDecimal value = ((JsonValue.JsonNumber) invent(schema)).value();
+
+        assertThat(value.intValueExact())
+                .describedAs("no smaller than 1 but strictly above 10 means at least 11")
+                .isBetween(11, 20);
+    }
+
+    @RepeatedTest(20)
+    @DisplayName("a list that must be long is built long, not abandoned")
+    void a_list_longer_than_the_usual_ceiling_is_built() {
+        ArraySchema schema = new ArraySchema(SchemaMetadata.none(), StringSchema.of(),
+                Optional.of(5), Optional.of(10), false);
+
+        List<JsonValue> elements = ((JsonValue.JsonArray) invent(schema)).elements();
+
+        assertThat(elements).hasSizeBetween(5, 10);
+    }
+
+    @RepeatedTest(20)
+    @DisplayName("a list of two values that must differ is built, not given up on")
+    void a_short_list_of_unique_items_is_built() {
+        ArraySchema schema = new ArraySchema(SchemaMetadata.none(), BooleanSchema.of(),
+                Optional.of(2), Optional.of(2), true);
+
+        assertThat(SchemaSatisfaction.violations(invent(schema), schema, EMPTY)).isEmpty();
+    }
+
+    @RepeatedTest(20)
+    @DisplayName("an object is given as many properties as the specification requires, and no more")
+    void the_number_of_properties_is_respected() {
+        ObjectSchema atLeastThree = new ObjectSchema(SchemaMetadata.none(),
+                Map.of("a", StringSchema.of(), "b", StringSchema.of(), "c", StringSchema.of(),
+                        "d", StringSchema.of()),
+                Set.of(), Optional.empty(), Optional.of(3), Optional.empty());
+        ObjectSchema atMostOne = new ObjectSchema(SchemaMetadata.none(),
+                Map.of("a", StringSchema.of(), "b", StringSchema.of(), "c", StringSchema.of()),
+                Set.of(), Optional.empty(), Optional.empty(), Optional.of(1));
+
+        assertThat(SchemaSatisfaction.violations(invent(atLeastThree), atLeastThree, EMPTY))
+                .isEmpty();
+        assertThat(SchemaSatisfaction.violations(invent(atMostOne), atMostOne, EMPTY)).isEmpty();
+    }
+
+    @RepeatedTest(30)
+    @DisplayName("a number allowed decimals gets them, so a price or a rate is really exercised")
+    void a_fractional_number_is_not_always_whole() {
+        NumberSchema schema = NumberSchema.between(NumberKind.NUMBER, BigDecimal.ZERO,
+                BigDecimal.ONE);
+
+        BigDecimal value = ((JsonValue.JsonNumber) invent(schema)).value();
+
+        assertThat(value).isBetween(BigDecimal.ZERO, BigDecimal.ONE);
+    }
+
+    @Test
+    @DisplayName("over a run, a number allowed decimals is not always the same whole number")
+    void fractional_numbers_vary() {
+        NumberSchema schema = NumberSchema.between(NumberKind.NUMBER, BigDecimal.ZERO,
+                BigDecimal.ONE);
+
+        java.util.Set<String> seen = IntStream.range(0, 50)
+                .mapToObj(i -> ((JsonValue.JsonNumber) invent(schema)).value().toPlainString())
+                .collect(java.util.stream.Collectors.toSet());
+
+        assertThat(seen).describedAs("an API storing a rate is never exercised by only 0")
+                .hasSizeGreaterThan(5);
+    }
+
+    @RepeatedTest(30)
+    @DisplayName("a value that goes in the path is never nothing at all")
+    void a_path_value_is_never_nothing() {
+        StringSchema nullable = new StringSchema(SchemaMetadata.none().withNullable(true),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        io.restest.core.gen.ValueRequest inThePath = new io.restest.core.gen.ValueRequest(
+                io.restest.core.model.OperationId.of("GET /pets/{petId}"), "petId",
+                io.restest.core.model.ParameterLocation.PATH, nullable);
+
+        assertThat(provider.offer(inThePath).orElseThrow().value())
+                .describedAs("nothing in the path would address a different resource entirely")
+                .isNotEqualTo(JsonValue.NULL);
+    }
+
     private JsonValue invent(CanonicalSchema schema) {
         return provider.offer(Schemas.asking(schema)).orElseThrow().value();
     }

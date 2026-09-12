@@ -63,6 +63,15 @@ public final class RandomTestCaseGenerator {
     /** How often a parameter the API does not require is included anyway. */
     private static final double OPTIONAL_PARAMETER_CHANCE = 0.5;
 
+    /**
+     * The algorithm the run's randomness comes from, named rather than left to the platform.
+     *
+     * <p>"The same number produces the same run" is a promise made to somebody reporting a problem,
+     * and it has to hold on their machine and on ours. Asking for whatever the platform considers
+     * default would make it hold only between two runs on the same version of Java.
+     */
+    private static final String ALGORITHM = "L64X128MixRandom";
+
     private final ApiModel model;
     private final long seed;
     private final RandomGenerator random;
@@ -76,7 +85,7 @@ public final class RandomTestCaseGenerator {
      * @param model the API to test
      */
     public RandomTestCaseGenerator(ApiModel model) {
-        this(model, RandomGeneratorFactory.getDefault().create().nextLong());
+        this(model, RandomGeneratorFactory.of(ALGORITHM).create().nextLong());
     }
 
     /**
@@ -89,7 +98,7 @@ public final class RandomTestCaseGenerator {
     public RandomTestCaseGenerator(ApiModel model, long seed) {
         this.model = Objects.requireNonNull(model, "model");
         this.seed = seed;
-        this.random = RandomGeneratorFactory.getDefault().create(seed);
+        this.random = RandomGeneratorFactory.of(ALGORITHM).create(seed);
         this.values = ValueProviderChain.of(
                 new DeclaredValueProvider(random),
                 new RandomValueProvider(model, random));
@@ -131,7 +140,8 @@ public final class RandomTestCaseGenerator {
     /**
      * A test case for one of the operations that can be attempted, chosen at random.
      *
-     * @return the test case, or empty if this API has no operation that can be attempted at all
+     * @return the test case, or empty if this API has no operation that can be attempted at all, or
+     *     if the one chosen this time could not be filled in
      */
     public Optional<TestCase> generate() {
         if (testable.isEmpty()) {
@@ -149,6 +159,16 @@ public final class RandomTestCaseGenerator {
      */
     public Optional<TestCase> generate(Operation operation) {
         Objects.requireNonNull(operation, "operation");
+        if (untestable.containsKey(operation.id())) {
+            // Asked for one of the operations this generator has already said it cannot attempt.
+            // Building a test case anyway would produce a request nobody could send - a write with
+            // no body, or a parameter written in a way the request cannot carry.
+            return Optional.empty();
+        }
+        return fill(operation);
+    }
+
+    private Optional<TestCase> fill(Operation operation) {
         List<ParameterValue> chosen = new ArrayList<>();
         for (Parameter parameter : operation.parameters()) {
             if (!parameter.required() && random.nextDouble() >= OPTIONAL_PARAMETER_CHANCE) {
@@ -171,8 +191,14 @@ public final class RandomTestCaseGenerator {
      *
      * <p>Three things stand in the way today, and each is a limit of what has been built rather than
      * a fault in the specification: a body that must be sent, since bodies are not invented yet; a
-     * parameter written down in a way requests cannot be assembled for; and a required parameter whose
-     * shape allows no value or that the specification described in a way the parser could not read.
+     * parameter written down in a way requests cannot be assembled for; and a required parameter no
+     * value can be found for - because its description allows none, because the parser could not
+     * read it, or because nothing available knows how to satisfy it.
+     *
+     * <p>That last one is decided by trying, once, rather than by reasoning about the shape. Shapes
+     * that defeat the sources of values are not a list anybody can write down in advance, and an
+     * operation quietly failing to produce a test case on every attempt - while being reported as
+     * testable - is the outcome this check exists to prevent.
      */
     private Optional<String> whatStandsInTheWay(Operation operation) {
         if (operation.requiresBody()) {
@@ -194,6 +220,11 @@ public final class RandomTestCaseGenerator {
             if (schema instanceof UnsupportedSchema unsupported) {
                 return Optional.of("the parameter '" + parameter.name() + "' is required and its "
                         + "description could not be read: " + unsupported.reason());
+            }
+            if (values.offer(new ValueRequest(operation.id(), parameter.name(),
+                    parameter.location(), schema)).isEmpty()) {
+                return Optional.of("no value could be found for the required parameter '"
+                        + parameter.name() + "'");
             }
         }
         return Optional.empty();

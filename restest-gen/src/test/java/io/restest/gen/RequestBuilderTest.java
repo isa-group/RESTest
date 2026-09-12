@@ -203,6 +203,73 @@ class RequestBuilderTest {
                 .isEmpty();
     }
 
+    // --- what review found this builder getting wrong ------------------------------------------
+
+    @Test
+    @DisplayName("an empty value in the path is refused, because it would address something else")
+    void an_empty_path_value_is_refused() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets/{petId}/tags",
+                List.of(Parameter.of("petId", ParameterLocation.PATH, true, StringSchema.of())));
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> build(operation,
+                        value("petId", ParameterLocation.PATH, JsonValue.of(""))))
+                .withMessageContaining("would address a different resource");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> build(operation,
+                        value("petId", ParameterLocation.PATH, JsonValue.NULL)))
+                .withMessageContaining("empty");
+    }
+
+    @Test
+    @DisplayName("an address that already carries a query string of its own is refused")
+    void a_base_address_with_a_query_string_is_refused() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets");
+        TestCase testCase = TestCase.of(operation.id(), List.of());
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> RequestBuilder.build(operation, testCase,
+                        "https://example.com/api?key=secret"))
+                .withMessageContaining("query string");
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> RequestBuilder.build(operation, testCase, "  "))
+                .withMessageContaining("address");
+    }
+
+    @Test
+    @DisplayName("several trailing slashes on the address do not become part of the path")
+    void repeated_trailing_slashes_are_trimmed() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets");
+
+        assertThat(RequestBuilder.build(operation, TestCase.of(operation.id(), List.of()),
+                "https://example.com/api//").url())
+                .isEqualTo("https://example.com/api/pets");
+    }
+
+    @Test
+    @DisplayName("a header value that would split the request in two is refused")
+    void a_header_value_containing_a_line_break_is_refused() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("X-Trace", ParameterLocation.HEADER, false, StringSchema.of())));
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> build(operation, value("X-Trace", ParameterLocation.HEADER,
+                        JsonValue.of("a\r\nX-Injected: 1"))))
+                .withMessageContaining("line break");
+    }
+
+    @Test
+    @DisplayName("a cookie value containing a separator does not become two cookies")
+    void a_cookie_value_is_encoded() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("session", ParameterLocation.COOKIE, false, StringSchema.of())));
+
+        HttpRequestRecord request = build(operation,
+                value("session", ParameterLocation.COOKIE, JsonValue.of("a; theme=dark")));
+
+        assertThat(request.headerValues("Cookie")).containsExactly("session=a%3B%20theme%3Ddark");
+    }
+
     private static HttpRequestRecord build(Operation operation, ParameterValue... values) {
         return RequestBuilder.build(operation, TestCase.of(operation.id(), List.of(values)), BASE);
     }

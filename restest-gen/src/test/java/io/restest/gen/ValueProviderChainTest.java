@@ -104,6 +104,30 @@ class ValueProviderChainTest {
         assertThat(value.origin()).isEqualTo(io.restest.core.execution.ValueOrigin.DECLARED);
     }
 
+    @Test
+    @DisplayName("a source that breaks does not end the run; the next one is asked")
+    void a_source_that_throws_is_treated_as_having_nothing_to_say() {
+        ValueProvider broken = new ValueProvider() {
+            @Override
+            public Optional<GeneratedValue> offer(io.restest.core.gen.ValueRequest request) {
+                asked.add("broken");
+                throw new IllegalStateException("the dictionary file is corrupt");
+            }
+
+            @Override
+            public String name() {
+                return "broken";
+            }
+        };
+        ValueProviderChain chain = ValueProviderChain.of(broken, saying("working", "a value"));
+
+        assertThat(chain.offer(Schemas.asking(StringSchema.of())))
+                .describedAs("sources are written by other people and one of them failing must "
+                        + "not end a run that is otherwise going fine")
+                .isPresent();
+        assertThat(asked).containsExactly("broken", "working");
+    }
+
     private ValueProvider saying(String who, String what) {
         return named(who, request -> Optional.of(GeneratedValue.declared(JsonValue.of(what))));
     }
