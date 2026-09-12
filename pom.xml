@@ -70,6 +70,12 @@
         <assertj.version>3.27.7</assertj.version>
         <archunit.version>1.5.0</archunit.version>
         <jacoco.version>0.8.15</jacoco.version>
+        <swagger-parser.version>2.1.47</swagger-parser.version>
+        <!-- Arrives transitively through swagger-parser; pinned in its own right so a future
+             swagger-parser upgrade that changes it is a visible, reviewed version bump rather than
+             whatever Maven's dependency mediation happens to resolve (ADR-0007's own complaint about
+             RESTest 1.x's undeclared swagger-parser dependency, repeated one level down). -->
+        <snakeyaml.version>2.6</snakeyaml.version>
     </properties>
 
     <dependencyManagement>
@@ -90,6 +96,16 @@
                 <groupId>com.tngtech.archunit</groupId>
                 <artifactId>archunit-junit5</artifactId>
                 <version>${archunit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.swagger.parser.v3</groupId>
+                <artifactId>swagger-parser</artifactId>
+                <version>${swagger-parser.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>${snakeyaml.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

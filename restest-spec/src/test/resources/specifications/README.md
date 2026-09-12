@@ -47,11 +47,14 @@ that no single real-world document in `community/` was found to exercise cleanly
 - `oas31-traps/openapi.yaml` — the 3.0-to-3.1 differences ADR-0007 names as silent traps: `nullable`
   as a JSON Schema type-array member instead of a sibling keyword, and a numeric `exclusiveMinimum`
   instead of a boolean flag.
+- `unparseable/openapi.yaml` — not valid YAML at all (an unclosed flow mapping). For the loader-level
+  failure that happens *before* per-operation skipping is even reachable: a document that never
+  becomes an `OpenAPI` object at all, as distinct from one that parses fine but has a malformed
+  operation in it.
 
-Each file says so in its own `info.description`. `CorpusSanityTest`, alongside this directory, pins
-the properties this README and ADR-0007 claim about the corpus as a whole (every file declares a
-version; exactly one declares 3.2; the malformed fixture's reference stays dangling) — as plain-text
-checks, since no `SpecificationParser` exists yet to check them any other way. It deliberately does
-not cover documents that are not even valid YAML/JSON, or that omit `openapi`/`info` entirely: those
-are a loader-level concern for whoever builds `SpecificationParser`, and belong with that increment's
-own tests, once that increment has decided how the loader should fail.
+Each file says so in its own `info.description` (`unparseable/` cannot, since it never parses far
+enough to have one — its own comment says so instead). `CorpusSanityTest`, alongside this directory,
+pins the properties this README claims about the corpus as a whole (every file declares a version;
+exactly one declares 3.2; the malformed fixture's reference stays dangling) — as plain-text checks,
+independent of `SpecificationParser` itself, which has its own, much more thorough test suite in
+`restest-spec/src/test/java/io/restest/spec/` covering exactly these fixtures end to end.

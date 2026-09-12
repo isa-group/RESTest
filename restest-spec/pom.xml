@@ -21,5 +21,16 @@
             <artifactId>restest-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser</artifactId>
+        </dependency>
+        <!-- Used directly by VersionGate. Arrives transitively through swagger-parser too, but a
+             dependency this module's own source imports from is declared here in its own right, not
+             left to whatever version swagger-parser happens to pull in. -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
     </dependencies>
 </project>
