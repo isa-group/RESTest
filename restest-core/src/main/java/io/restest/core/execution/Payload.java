@@ -21,54 +21,42 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Exact bytes, with their declared media type.
+ * The exact bytes of a request or response body, together with the media type (such as
+ * {@code application/json}) they were sent or received under.
  *
- * <p>This is what "exact wire capture" (M1.3) and "exact request and response payloads" (this
- * increment's own entry in {@code ROADMAP.md}) mean as a type: a request or response body kept
- * byte-for-byte, not re-derived from a parsed model of it. A schema-conformance oracle (M1.6) needs
- * the bytes actually received, not a JSON tree that normalises away whatever made the response
- * malformed in the first place.
+ * <p>When RESTest sends a request to an API or reads its response, it keeps the body exactly as it
+ * was on the wire, byte for byte - it does not reinterpret it into some parsed form first. This
+ * matters because checking whether a response matches what the API's specification promises needs
+ * the bytes actually received, not a version that has already been cleaned up and might hide the
+ * very problem being looked for.
  *
- * <p>{@code content} and {@code wireLength}, when the latter is present, refer to the same
- * representation of the body - whichever one the engine actually read. An HTTP client ordinarily
- * hands back content already decoded from {@code Content-Encoding} and dechunked, and that is the
- * ordinary case here too; what matters is that the engine never mixes a decoded {@code content} with
- * an encoded {@code wireLength} or the reverse; a {@code Content-Length} header counts encoded
- * octets, and comparing it against a decoded length is meaningless.
+ * <p>{@code content} and {@code wireLength} always describe the same version of the body - typically
+ * already decoded and reassembled by the underlying HTTP client. What matters is that the two are
+ * never mixed: a header stating the encoded size cannot be meaningfully compared against a decoded
+ * body's length.
  *
- * <p>{@code wireLength} exists because ADR-0006 names "configurable response-body truncation" as the
- * store's (M1.4) answer to storage cost - so a stored payload is not always the whole body, and a
- * record silent about that would have an oracle read a cut-off document, fail to parse it, and
- * report a fault the API never committed. It says only that: how much of what was genuinely
- * delivered got kept. A previous version of this field also doubled as "how much the response
- * claimed it would send" - the fact a body cut short by a declared {@code Content-Length} needs -
- * and that conflated two different events under one number: our own storage policy, and a fault of
- * the API's. They are kept apart. What the API declared is read from the {@code Content-Length}
- * header, already present wherever this type is used alongside headers
- * ({@link InteractionOutcome.MalformedResponse}); {@code wireLength} here answers only "did our own
- * retention cut this short", which is a boolean question with one number behind it rather than two
- * that could disagree - {@link #truncated()} is derived from it, not stored beside it. Bytes that
- * simply stopped arriving with nothing to compare them against - a chunked stream with no final
- * chunk - are {@code content} with no {@code wireLength} at all: everything retained, nothing said
- * about whether more was coming.
+ * <p>{@code wireLength} exists because RESTest is meant to be able to keep only part of a very
+ * large body, to save space, rather than being forced to keep everything or nothing. When that
+ * happens, {@code content} holds less than the API actually sent, and this field records how much
+ * was truly delivered - so that a stored body being shorter than expected is never mistaken for the
+ * API itself having sent a broken response. That is a separate
+ * concern from whether the API's own {@code Content-Length} header matches what it actually sent;
+ * that comparison is made using the headers kept alongside this payload, not through this field.
+ * {@link #truncated()} answers only "did our own storage cut this short". Bytes that simply stopped
+ * arriving, with nothing to compare them against, are recorded as {@code content} with no
+ * {@code wireLength} at all: everything that was kept, with no claim about whether more was coming.
  *
- * <p>An oracle comparing what the API declared against what it delivered must use
- * {@link #deliveredLength()}, never {@link #size()}. {@code size()} is how much *this payload holds*,
- * which is smaller than what was delivered whenever our own storage truncated it - comparing that
- * number against a {@code Content-Length} would blame the API for our retention policy.
- * {@code deliveredLength()} corrects for exactly that, and reduces to {@code size()} when nothing was
- * further truncated. Neither number is meaningful against a {@code Content-Length} that counts
- * encoded octets while {@code content} holds a decoded body - the same content-coding warning above
- * applies to this comparison too, and is the engine's to get right, not this record's to enforce.
+ * <p>Code comparing what an API declared against what it delivered should use
+ * {@link #deliveredLength()}, not {@link #size()}. {@code size()} is only how many bytes this record
+ * itself is holding, which can be smaller than what was truly delivered when storage has trimmed it;
+ * comparing that number against a declared length would unfairly blame the API for our own storage
+ * choice. {@code deliveredLength()} accounts for that, and is identical to {@code size()} when
+ * nothing was trimmed.
  *
- * <p>This is the first record in {@code restest-core} holding a mutable component - not the case the
- * {@code TODO} on {@code ArchitectureRules.noStaticMutableState} was left for, since that gap is
- * about {@code static final} fields and this is an instance field, but the same discipline applies:
- * no static analysis of a compact constructor can tell "copies the array" from "keeps the reference",
- * so it is enforced by convention and by the test below, not mechanically. The convention: clone on
- * the way in, clone on the way out, and override {@code equals}/{@code hashCode} by hand - the ones a
- * record generates for an array component compare references, which is silently wrong for two
- * payloads with identical content built from two different arrays.
+ * <p>This is the first place in this module where a value, once built, still contains an array
+ * (the raw bytes) that could in principle be changed after the fact from outside. That is guarded
+ * against by convention: the bytes are copied on the way in and on the way out, and equality is
+ * checked by comparing the bytes themselves rather than by reference - see the overrides below.
  *
  * @param content the exact bytes actually retained, defensively copied on construction and on every
  *     read - not necessarily the whole body; see {@link #wireLength()} and {@link #truncated()}

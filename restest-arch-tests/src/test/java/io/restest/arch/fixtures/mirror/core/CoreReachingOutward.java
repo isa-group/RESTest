@@ -19,7 +19,7 @@ import io.restest.arch.fixtures.mirror.spec.SpecType;
 
 /**
  * Violates {@code dependenciesPointInwards}: the core layer reaches out to the spec layer, which
- * ADR-0004 says may only be accessed by the command-line module.
+ * only the command-line module is allowed to depend on.
  */
 public final class CoreReachingOutward {
 

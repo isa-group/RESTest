@@ -17,6 +17,16 @@ Work breakdown: `ROADMAP.md`.
 English only — code, comments, tests, commits, branches, issues, pull requests, documentation.
 No exceptions.
 
+## Javadoc comments
+
+- Never reference `ADR-*`, `docs/DESIGN.md`, `docs/adr/`, `ROADMAP.md` or a milestone code
+  (`M1.3`, `M4.2`...) from a Javadoc comment (`/** ... */`). Javadoc must be self-contained; the
+  only references it may carry are `{@link}`s to other code. This does not apply to plain `//` or
+  `/* */` comments, or to string literals such as `@DisplayName` or `.as(...)` rule descriptions.
+- Keep Javadoc simple and avoid unnecessary technical jargon.
+- At least the class-level comment must explain, in plain language a non-programmer could follow,
+  what the class is used for when testing a REST API and how it relates to other classes.
+
 ## Branching and increments
 
 - `master` is untouched until v2.0 is complete. All work targets the long-lived `v2` branch.

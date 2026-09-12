@@ -48,8 +48,8 @@ public record SchemaMetadata(
      * Which direction a value may travel.
      *
      * <p>One enum rather than the two booleans OpenAPI uses, because {@code readOnly} and
-     * {@code writeOnly} being true at once is a contradiction the type should not be able to
-     * express. It matters from M2.5: a property the API only ever returns must not be sent in a
+     * {@code writeOnly} being true at once is a contradiction this type should not be able to
+     * express. It matters because a property the API only ever returns must not be sent in a
      * request body, and one it only ever accepts must not be expected in a response.
      */
     public enum Access {

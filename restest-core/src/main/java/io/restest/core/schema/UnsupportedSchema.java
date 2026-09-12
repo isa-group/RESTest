@@ -18,21 +18,23 @@ package io.restest.core.schema;
 import java.util.Objects;
 
 /**
- * A shape the tool could not represent, carrying why.
+ * A shape that RESTest could not represent, together with why.
  *
- * <p>This is design principle 2 - never crash on a bad specification - expressed in the data.
- * Something will always be unreadable: a composition we do not fold in until M2.1, a reference that
- * does not resolve, a keyword from a version of the format newer than our parser. The three ways of
- * dealing with that are to throw, to pretend the schema said nothing, or to record the gap. Only the
- * third lets the run continue and still tells the truth afterwards.
+ * <p>RESTest's rule is to never crash on a badly written or unusual specification, and this is that
+ * rule applied to data. Something will always be unreadable: a combination of shapes not yet
+ * understood, a reference that does not resolve, a keyword from a newer version of the format than
+ * RESTest supports. The alternatives to recording the gap here would be to stop the run entirely, or
+ * to silently pretend the schema said nothing - and only recording the gap lets the run continue
+ * while still telling the truth about what happened.
  *
- * <p>So a generator meeting one knows it is working blind and can weight its guesses accordingly, an
- * oracle knows not to report a mismatch it cannot judge, and {@code restest explain} can name the
- * construct that defeated us instead of showing a blank.
+ * <p>That way, whatever generates values knows it is working blind here and can be more cautious,
+ * whatever checks a response knows not to report a mismatch it cannot actually judge, and a later
+ * explanation of the run can name the exact construct that defeated it instead of showing a blank.
  *
  * @param metadata whatever type-independent facts survived - often a description and nothing else
- * @param reason what could not be represented, in a form fit to print in a report: "oneOf with 3
- *     alternatives is not folded in until M2.1", not "unsupported"
+ * @param reason what could not be represented, in a form fit to print in a report, such as
+ *     "a value declared as one of several alternative shapes is not supported yet" - not merely
+ *     "unsupported"
  */
 public record UnsupportedSchema(SchemaMetadata metadata, String reason) implements CanonicalSchema {
 

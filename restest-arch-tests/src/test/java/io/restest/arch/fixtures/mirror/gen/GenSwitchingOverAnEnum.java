@@ -23,8 +23,8 @@ package io.restest.arch.fixtures.mirror.gen;
  * {@code javac} emits {@code static final int[] $SwitchMap$…} on a synthetic nested class - final,
  * and reported by nothing. The Eclipse compiler emits {@code private static volatile int[]
  * $SWITCH_TABLE$…} on the enclosing class itself, which is not final; that is what an IDE writes
- * into {@code target/classes} when it builds alongside Maven, and it is what made the rule fire on
- * {@code io.restest.core.model.ParameterStyle} at M1.1a.
+ * into {@code target/classes} when it builds alongside Maven, and it is what once made this rule
+ * fire on an ordinary switch over {@code io.restest.core.model.ParameterStyle}.
  *
  * <p>So this fixture is the one that fails if the synthetic exclusion is removed - under a compiler
  * that emits the non-final form. Under {@code javac} the generated field is final and the

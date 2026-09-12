@@ -113,10 +113,9 @@ public record Operation(
      * charitably rather than costing the operation - the same judgement as a path parameter the
      * document forgot to mark required.
      *
-     * <p>Path-level parameters, which OpenAPI lets a document declare once for every operation
-     * under a path, have to be merged into the operation before it is constructed. That is the
-     * parser's job from M1.2, and getting it wrong fails loudly here rather than producing requests
-     * with braces in them.
+     * <p>Path-level parameters, which OpenAPI lets a document declare once for every operation under
+     * a path, have to be merged into the operation before it is constructed. Getting that merge
+     * wrong fails loudly here rather than producing requests with unfilled braces in them.
      */
     private static void rejectUnfillableTemplate(String path, List<Parameter> parameters) {
         Set<String> declared = parameters.stream()
@@ -190,8 +189,8 @@ public record Operation(
      * oracle validate a 404 body against the shape declared for every other error, so the precedence
      * lives here rather than being left to each caller to remember.
      *
-     * <p>Empty when the document declares nothing that covers the code - itself a finding, and one
-     * the status-conformance oracle reports from M3.1.
+     * <p>Empty when the document declares nothing that covers the code - itself worth reporting,
+     * since it means the API answered in a way its own specification never described.
      */
     public Optional<ResponseModel> responseFor(int statusCode) {
         return firstDeclaring(String.valueOf(statusCode))

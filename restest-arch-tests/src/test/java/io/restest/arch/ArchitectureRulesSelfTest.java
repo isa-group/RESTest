@@ -26,16 +26,17 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Proves that the rules in {@link ArchitectureRules} report violations, rather than merely passing.
+ * Proves that the rules in {@link ArchitectureRules} actually report violations, rather than merely
+ * passing.
  *
- * <p>This is the test that earns the harness its keep at M0.2. The production modules are empty, so
- * {@link ProductionArchitectureTest} currently checks nothing - a rule that matches no classes
- * passes whether it is correct or broken. Here each rule is pointed at
- * {@code io.restest.arch.fixtures.mirror}, a miniature of the nine-module layout whose classes
- * break the rules on purpose, and the test asserts the rule fails and names the offender.
+ * <p>A rule that matches no classes at all passes whether it is correctly written or broken, so
+ * trusting {@link ProductionArchitectureTest} alone would not be enough. Here each rule is instead
+ * pointed at {@code io.restest.arch.fixtures.mirror}, a miniature copy of the project's module
+ * layout whose classes break the rules on purpose, and the test asserts that the rule fails and
+ * names the offending class.
  *
- * <p>Without these assertions a typo in a package pattern would leave a permanently green build
- * guarding nothing, which is the exact failure mode ADR-0004 was written to prevent.
+ * <p>Without these assertions, a typo in a package pattern would leave a permanently green build
+ * that was silently guarding nothing.
  */
 class ArchitectureRulesSelfTest {
 

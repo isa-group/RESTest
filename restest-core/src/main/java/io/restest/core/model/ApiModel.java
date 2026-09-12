@@ -25,17 +25,18 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A whole API as the tool understands it: its operations, the shapes they share, and what could not
- * be read.
+ * One whole API, translated from its OpenAPI document into something the rest of RESTest can work
+ * with directly: every operation it offers, the data shapes those operations share, and a note of
+ * anything in the document that could not be understood.
  *
- * <p>This is the output of {@code restest-spec} and the input to everything else. Once it exists,
- * no part of the tool needs the document again, which is what ADR-0007 means by keeping the parser
- * behind a boundary: swapping the parser, or adding support for a new version of the format, changes
- * how this value is produced and nothing about how it is used.
+ * <p>This is what the module that reads OpenAPI documents produces, and everything else in RESTest -
+ * test generation, execution, reporting - builds on this instead of reading the original document
+ * again. That way, changing how documents are read, or adding support for a newer OpenAPI version,
+ * never affects how the rest of the tool uses the result.
  *
- * <p>It is immutable and holds no reference to anything global, so two models - two runs, two APIs,
- * two versions of one API - coexist in one JVM without interfering. That is design principle 6 at
- * the level of the data.
+ * <p>It never changes once built, and it does not depend on any shared or global state, so several
+ * of these can exist side by side - for two different runs, two different APIs, or two versions of
+ * the same API - without one interfering with another.
  *
  * @param title the API's name, as the document gives it
  * @param version the API's version, as the document gives it
@@ -131,13 +132,14 @@ public record ApiModel(
      * Two operations under one identifier is a contradiction, not a degradation, so it is refused
      * here rather than carried.
      *
-     * <p>The model is what the rest of the tool keys on: per-operation settings, stored
-     * interactions, failure reports and {@code restest recheck} all look an operation up by
-     * identifier, and every one of them would silently get the first of the two. Design principle 2
-     * is not in tension with this - it says skip the offending operation and report it, and that is
-     * exactly what the parser does from M1.2: it makes the identifier unique, records a
-     * {@link SpecificationIssue} saying so, and keeps both operations testable. What it may not do
-     * is hand over a model that cannot answer its own lookups.
+     * <p>Everything downstream looks an operation up by its identifier - per-operation settings,
+     * stored results, failure reports - and every one of them would silently get the wrong operation
+     * if two shared an identifier. RESTest's rule is to never let a bad specification crash the
+     * tool, so instead of rejecting the whole document outright, whatever builds this model from it
+     * is meant to make the identifier unique, record a {@link SpecificationIssue} saying so, and keep
+     * both operations testable. What it may not do is hand over a model that cannot answer its own
+     * lookups, which is why this constructor still rejects the duplicate rather than silently
+     * accepting it.
      */
     private static void rejectDuplicateIds(List<Operation> operations) {
         Map<OperationId, Operation> seen = new LinkedHashMap<>();

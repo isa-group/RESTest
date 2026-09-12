@@ -23,21 +23,21 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A JSON value: the six things a JSON document can hold, and nothing else.
+ * A piece of JSON data: a value that is a JSON null, a boolean, a number, a string, an array, or an
+ * object - the six things any JSON document is built from, and nothing else.
  *
- * <p>The model needs somewhere to put values that come from a specification - a schema's
- * {@code default}, the members of an {@code enum}, and from M2.2 the declared examples - and later
- * somewhere to build request bodies. Those values are JSON, so they are represented as JSON rather
- * than as {@code Object} with a comment explaining which classes are really allowed.
+ * <p>RESTest uses this to hold values that come from an API's specification - a field's default
+ * value, the fixed set of choices in an {@code enum}, a documented example - and later to build the
+ * bodies it sends in requests. Since these values are JSON, they are represented as JSON here
+ * instead of as a generic, loosely-typed value.
  *
- * <p>This is deliberately our own rather than a library's. ADR-0004 keeps heavy dependencies out of
- * {@code restest-core}, and a JSON library in the core would become part of the published surface
- * of every consumer, to be kept in step with whatever version they already use. Six records are
- * cheaper than that, and the parser module - which does have a JSON library - converts at the
- * boundary.
+ * <p>This is a small representation written for this project rather than borrowed from an external
+ * library, so that using RESTest never forces a consumer to also depend on some particular JSON
+ * library and keep it in sync with their own. The module that reads OpenAPI documents does use such
+ * a library, and converts into this type at the boundary.
  *
- * <p>Every variant is immutable, and the two that hold collections copy what they are given, so a
- * caller cannot change a value after handing it over.
+ * <p>Every variant is immutable, and the two that hold collections (arrays and objects) copy what
+ * they are given, so a caller cannot change a value after handing it over.
  *
  * <p>Reading a value means pattern matching, and the interface is sealed so the compiler can tell
  * you when you have missed a case:

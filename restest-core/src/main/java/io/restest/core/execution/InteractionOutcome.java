@@ -20,25 +20,26 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * What happened when a {@link TestCase} was sent.
+ * What happened when RESTest actually sent a {@link TestCase} to the API: a proper answer, a
+ * broken one, or no answer at all.
  *
- * <p>Three outcomes, not two, because they are different facts for an oracle and conflating any
- * pair of them hides one. A well-formed response the wrong shape is the API's fault, and most
- * oracles (M1.6's schema-conformance oracle among them) need {@link Answered} to have anything to
- * judge. A response that is not well-formed HTTP at all - broken chunked encoding, a truncated
- * status line, a body shorter than its own declared {@code Content-Length} - is also the API's
- * fault, and a different one: the HTTP-semantics oracles WFC reserves codes 900-909 for (M3.2) exist
- * specifically to report it, and they cannot fire on an outcome that looks identical to a dropped
- * connection. No response at all - refused, timed out, a broken TLS handshake - is a fact about the
- * attempt, not about the API, and is the one case with nothing to show an oracle.
+ * <p>These are three different situations, and treating any two of them as the same would hide real
+ * information. A well-formed response with the wrong content is the API misbehaving in the ordinary
+ * sense, and is what most checks need in order to judge anything at all - see {@link Answered}. A
+ * response that is not even valid HTTP - broken chunked encoding, a cut-off status line, a body
+ * shorter than the length it declared - is also the API's fault, but a different and more serious
+ * one, deserving its own report rather than being confused with a connection that simply dropped -
+ * see {@link MalformedResponse}. Getting no response at all - refused, timed out, a broken
+ * connection - is a fact about the attempt itself, not about the API, and is the one case with
+ * nothing to actually check - see {@link TransportFailure}.
  *
- * <p>Sealed over exactly these three, so an oracle or a report that means to handle one case gets a
- * compiler error if a fourth is ever added, rather than quietly doing nothing useful with it.
+ * <p>These are the only three possibilities, which the compiler enforces: code meant to handle one
+ * outcome must handle all three, rather than silently doing nothing useful if a fourth is ever
+ * added.
  *
- * <p>Not represented here: a {@link TestCase} the engine planned but never attempted at all - shed by
- * adaptive concurrency, cut off by the budget running out. That is not an outcome of sending a
- * request; nothing was sent, so no {@link Interaction} exists for it. A run's accounting of "planned
- * versus attempted" is the engine's and the report's to keep (M1.3, M3.6), not a fourth case here.
+ * <p>Not represented here: a {@link TestCase} that was planned but never actually attempted, for
+ * example because time ran out first. That is not an outcome of sending a request at all - nothing
+ * was sent, so no {@link Interaction} exists for it either.
  */
 public sealed interface InteractionOutcome {
 
@@ -54,36 +55,33 @@ public sealed interface InteractionOutcome {
     }
 
     /**
-     * Bytes came back, but they were not a well-formed HTTP response.
+     * Bytes came back, but they did not form a well-formed HTTP response.
      *
-     * <p>The status line and the headers are kept separately from {@code partial}, not folded into
-     * it, because the common shape of this outcome parses both cleanly and only the body breaks - a
-     * declared {@code Content-Length} the actual bytes fall short of, a chunked stream that never
-     * sends its final chunk. An oracle judging that (M3.2, WFC 900-909) needs what the response
-     * claimed about itself, not only the reason text - the protocol version and reason phrase
-     * included, since whether a given framing failure is even possible (chunked encoding exists only
-     * under HTTP/1.1) depends on which protocol was in use. {@code statusLine} is one optional
-     * component, not three: a reason phrase or a protocol version parsing while the status code did
-     * not is not a shape HTTP itself can produce, and {@link StatusLine} makes that shape
-     * unconstructable instead of merely undocumented.
+     * <p>The status line and the headers are kept separately from {@code partial}, because in the
+     * usual shape of this failure both parse cleanly and only the body is broken - for example, it
+     * is shorter than its declared length, or a chunked transfer never sends its final chunk. Judging
+     * that properly needs everything the response claimed about itself: the protocol version and
+     * reason phrase as well as the reason text, since which failures are even possible depends on the
+     * protocol in use - chunked encoding, for instance, only exists under HTTP/1.1. {@code statusLine}
+     * is a single optional value rather than three separate ones for the same reason: a reason phrase
+     * or protocol version parsing while the status code itself did not is not a shape HTTP can
+     * actually produce, and {@link StatusLine} keeps that impossible shape from being built at all.
      *
-     * <p>{@code partial}'s {@link Payload#wireLength()}, if set, means only "our own storage kept
-     * fewer bytes than were actually delivered" - never "the response claimed more than it
-     * delivered". That second fact, a declared length the API failed to honour, is already visible
-     * by comparing {@link Payload#deliveredLength()} - not {@link Payload#size()}, which understates
-     * delivery whenever this payload was also cut short by our own storage - against a
-     * {@code Content-Length} in {@code headers}; it is not this field's job to restate it. Bytes that
-     * simply stopped arriving, with no declared length to compare against - a chunked stream with no
-     * final chunk - are exactly what {@code partial} with no {@code wireLength} represents: everything
-     * we have, with nothing said about whether more was coming.
+     * <p>{@code partial}'s stored length, if set, means only "our own storage kept fewer bytes than
+     * were actually delivered" - never "the response claimed more than it delivered". That second,
+     * separate fact - a declared length the API failed to honour - is checked by comparing what was
+     * actually delivered against the {@code Content-Length} already present in {@code headers}; it is
+     * not this field's job to restate it. Bytes that simply stopped arriving, with no declared length
+     * to compare against, are exactly what {@code partial} with no stored length represents:
+     * everything we have, with no claim about whether more was coming.
      *
      * @param reason what was wrong, in a form fit to print in a report - "chunked encoding ended
      *     without a final zero-length chunk", not a stack trace
      * @param statusLine the status code and whatever else parsed, when the status line parsed at all
      * @param headers the headers, when they parsed, in wire order, repeats kept
      * @param partial whatever body bytes were received before the exchange broke, when any were.
-     *     Declared under {@link Payload#UNKNOWN_MEDIA_TYPE} when nothing said what they were meant
-     *     to be, rather than repeating a {@code Content-Type} the response may never have sent
+     *     Declared under {@link Payload#UNKNOWN_MEDIA_TYPE} when nothing said what they were meant to
+     *     be, rather than guessing at a {@code Content-Type} the response may never have sent
      */
     record MalformedResponse(String reason, Optional<StatusLine> statusLine, List<Header> headers,
             Optional<Payload> partial) implements InteractionOutcome {

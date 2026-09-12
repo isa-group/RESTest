@@ -16,8 +16,8 @@
 package io.restest.arch.fixtures.mirror.gen;
 
 /**
- * Violates {@code noStaticMutableState}: a static field one run can write is a channel through which
- * it can corrupt another, which design principle 6 forbids.
+ * Violates {@code noStaticMutableState}: a static field one run can write to is a channel through
+ * which it can corrupt another run happening at the same time.
  */
 public final class GenWithStaticMutableState {
 

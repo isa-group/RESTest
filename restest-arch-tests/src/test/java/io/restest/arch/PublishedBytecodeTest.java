@@ -34,20 +34,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Checks that the bytecode the build actually produces is Java 21, which is the whole of ADR-0003's
- * promise to library consumers.
+ * Checks that the compiled code the build actually produces is Java 21 bytecode, which is RESTest's
+ * promise to anyone using it as a library: it must run on a plain Java 21 installation, without
+ * requiring a newer version.
  *
- * <p>The promise is not abstract. A project on Java 21 cannot load a class compiled for 25 no matter
- * what that class does, so {@code maven.compiler.release=21} is the single setting standing between
- * RESTest and a large share of its potential users. A setting is easy to lose in a POM edit; the
- * class file header is the evidence.
+ * <p>The promise is not abstract. A project running Java 21 cannot load a class compiled for Java
+ * 25, no matter what that class does, so the build setting that targets Java 21 is the one thing
+ * standing between RESTest and a large share of its potential users. That setting is easy to lose by
+ * accident in a build-file edit; reading the actual class file header is the only real evidence it
+ * held.
  *
- * <p>Module descriptors are excluded for the reason given on {@link #MODULE_DESCRIPTOR}, so until
- * M1.1a - when the domain model became the first compiled code in the reactor - there was nothing
- * to measure and the scan reported as skipped rather than passing over an empty set. It now reads
- * real classes. The instrument it reads them with is itself calibrated by
- * {@link #reads_the_major_version_from_a_class_file_header()}, which checks the header reader
- * against bytes whose version is known.
+ * <p>Module descriptors are excluded for the reason given on {@link #MODULE_DESCRIPTOR}. The
+ * instrument this test reads class files with is itself checked by
+ * {@link #reads_the_major_version_from_a_class_file_header()}, which verifies the header reader
+ * against bytes whose version is already known.
  */
 class PublishedBytecodeTest {
 
@@ -64,8 +64,8 @@ class PublishedBytecodeTest {
      * module, compiles against it and runs code from it, because the module system reads descriptors
      * leniently. Asserting 65 here would therefore fail the build over something correct.
      *
-     * <p>Verified rather than assumed: a module compiled on JDK 25 with {@code --release 21} was run
-     * on JDK 21 as a named module during M0.2.
+     * <p>Verified rather than assumed: a module compiled on JDK 25 with {@code --release 21} was
+     * actually run on JDK 21 as a named module.
      */
     private static final String MODULE_DESCRIPTOR = "module-info.class";
 
@@ -97,8 +97,8 @@ class PublishedBytecodeTest {
     }
 
     /**
-     * Calibrates the header reader, so that the scan above is not the only thing standing behind
-     * ADR-0003's claim while the modules are still empty.
+     * Checks the header reader itself, so the scan above is not the only thing standing behind the
+     * claim that the published bytecode is Java 21.
      *
      * <p>A class file header is the magic number, then the minor version, then the major version -
      * six bytes, which is little enough to write out and know the answer in advance.

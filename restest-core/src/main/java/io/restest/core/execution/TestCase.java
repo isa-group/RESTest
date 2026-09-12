@@ -24,32 +24,30 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * One concrete attempt to invoke an operation: which one, and what value for each of its inputs.
+ * One concrete test to run against the API: which operation to call, and what value to send for
+ * each of its inputs.
  *
- * <p>ADR-0005's whole decision is that this is data, executed directly by an HTTP client - never
- * generated source, never compiled. A {@code TestCase} is planned by the generator (M1.5), sent
- * unchanged by the engine (M1.3), and persisted unchanged by the store (M1.4); nothing about it is
- * regenerated between those steps.
+ * <p>A {@code TestCase} is plain data, not generated program code: it is built once by the part of
+ * RESTest that decides what to test, sent to the API unchanged, and saved unchanged afterwards.
+ * Nothing about it is regenerated or reinterpreted along the way, which is what lets a saved test
+ * case be re-examined, or re-sent, long after the run that created it has ended.
  *
- * <p>It names its operation by {@link OperationId} rather than holding the
- * {@link io.restest.core.model.Operation} itself, so that a test case read back by
- * {@code restest recheck} (M3.3) does not require the {@link io.restest.core.model.ApiModel} that
- * produced it still being in memory - the two are decoupled the same way a stored interaction is
- * decoupled from the run that created it.
+ * <p>It refers to its operation by {@link OperationId} rather than by holding the operation itself,
+ * so that a test case can be read back later without needing the whole API description that
+ * produced it still in memory - the two are kept independent, the same way a saved interaction stays
+ * usable independently of the run that created it.
  *
- * <p>{@link #id()} is built with everything else already decided, and there is deliberately no
- * {@code withX} method that would let a caller change the parameter values or the body of an
- * existing instance: {@link TestCaseId}'s own contract is an identity stable across generation,
- * execution and storage, and an identity that could be attached to two different sets of values
- * would not be stable at all - it is exactly the "answers its own lookup with whichever content was
- * built first" failure {@link #rejectDuplicateParameterValues} refuses one level down.
+ * <p>Once built, a test case cannot be changed: there is no method to replace its parameter values or
+ * body on an existing instance. Its identifier is meant to stay stable and always point at the same
+ * set of values, and allowing it to be attached to different values afterwards would break that
+ * guarantee.
  *
- * <p>A stateful step is not a different kind of test case. It is one whose {@link ParameterValue}s
- * or {@link #body()} carry a {@link ValueOrigin.Derived} instead of a {@link ValueOrigin.Generated}
- * or {@link ValueOrigin.Declared} - see {@link ValueOrigin}. A whole stateful test, in the sense
- * {@code docs/DESIGN.md}'s glossary uses the word - a sequence where each step depends on the last - is
- * the chain of {@code Derived} edges across several test cases and interactions, not a container
- * this type introduces.
+ * <p>A "stateful" step - one that depends on an earlier request, such as reading back something just
+ * created - is not a different kind of test case. It is simply one whose parameter values or body
+ * carry a {@link ValueOrigin.Derived} origin instead of a {@link ValueOrigin.Generated} or
+ * {@link ValueOrigin.Declared} one - see {@link ValueOrigin}. A whole sequence of dependent steps is
+ * just a chain of such derived values across several test cases and interactions, not something this
+ * type needs to represent as a group.
  *
  * @param id this test case's identity, stable across generation, execution and storage
  * @param operation which operation this attempts to invoke
