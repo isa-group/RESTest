@@ -1,0 +1,12 @@
+# Hand-written for this corpus, not carried over from any real API. Deliberately not valid YAML: the
+# flow mapping opened on the last line is never closed. For the loader-level failure that happens
+# before per-operation skipping is even reachable - see the sibling fixtures/malformed/ for that case.
+openapi: 3.0.0
+info:
+  title: Fixture - not valid YAML
+  version: "1.0"
+paths:
+  /widgets:
+    get:
+      responses:
+        "200": {description: "the flow mapping on this line is never closed

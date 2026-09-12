@@ -20,8 +20,8 @@
  * shapes ({@code schema}) that data must follow. Every other part of RESTest is built on top of
  * these definitions.
  *
- * <p>Four packages are exported and one is not. {@code io.restest.core.internal} holds small
- * helpers shared between the other four and is deliberately kept internal, so it can change freely
+ * <p>Five packages are exported and one is not. {@code io.restest.core.internal} holds small
+ * helpers shared between the other five and is deliberately kept internal, so it can change freely
  * without affecting anything built on top of this module.
  *
  * <p>The module requires nothing: no parser, no HTTP client, no constraint solver, no database
@@ -34,4 +34,5 @@ module io.restest.core {
     exports io.restest.core.json;
     exports io.restest.core.model;
     exports io.restest.core.schema;
+    exports io.restest.core.spec;
 }
