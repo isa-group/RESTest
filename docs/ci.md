@@ -43,49 +43,40 @@ amendment explains why that beats the alternatives.
 | The rules themselves | `ArchitectureRulesSelfTest` | a rule that no longer reports the violation it exists to report, or that reports something it should permit |
 | The harness's reach | `HarnessCoverageTest` | a module whose compiled classes the rules cannot see, so no rule constrains them |
 | Source-tree invariants | `SourceTreeRulesTest` | a module without `module-info.java`; a benchmark-platform reference under `src/` or in a POM; an action pinned to a tag, a SHA with no version comment, or no pins found at all |
-| Coverage | JaCoCo | nothing yet — see below |
+| Coverage | JaCoCo | nothing yet — measured from M1.1a, blocking from M1.6; see below |
 
 ### Coverage
 
 JaCoCo's agent is attached to every module's test run, and `report` runs at `verify`. A module only
 produces `target/site/jacoco/` once it has tests: with no tests there is no execution data, so the
-report goal skips and says so. At M0.2 that means only `restest-arch-tests` runs any tests, and it
-has no main classes to attribute them to — so **no coverage report is produced yet at all**. The
-wiring is in place; the output arrives with the first tested production code at M1.1.
+report goal skips and says so. Since M1.1a `restest-core` has both, so an HTML report is written
+under its `target/site/jacoco/` on every build — the first coverage output the project has had.
 
 The ubuntu / 25 row uploads whatever exists as the `jacoco-report` artifact, with
 `if-no-files-found: warn`. Warn rather than ignore on purpose: a silent green upload of nothing
-would hide both today's emptiness and a real break later.
+would hide both an empty build and a real break later.
 
-There is deliberately **no** blocking threshold yet. At M0.2 no module contains production code, so
-any minimum would be an assertion about zero classes. The `check` goal arrives in M1.6 on
-`restest-core` and `restest-oracles`, the two modules `docs/DESIGN.md` names under "Quality
-gates". The commitment
-is recorded as `TODO(M1.6)` beside the JaCoCo block in the root POM.
+There is deliberately **no** blocking threshold yet. The `check` goal arrives at M1.6 on
+`restest-core` and `restest-oracles`, the two modules `docs/DESIGN.md` names under "Quality gates",
+by which point there is enough code for a minimum to mean something. The commitment is recorded as
+`TODO(M1.6)` beside the JaCoCo block in the root POM.
 
 ### Why the rules are tested
 
-The production modules hold nothing but `module-info.java` until M1.1, so there is nothing for the
-rules to match. A rule with no subjects passes whether it is correct or broken, which is the failure
-mode ADR-0004 was written to prevent, so three things guard against it.
+A rule with no subjects passes whether it is correct or broken, which is the failure mode ADR-0004
+was written to prevent. Until M1.1a the production modules held nothing but `module-info.java`, so
+that was the state of every rule here, and three things guard against it.
 
 First, no check reports a pass over an empty set. `ProductionArchitectureTest`, the bytecode scan
-and the harness-coverage comparison each **skip, with the reason recorded against the skipped
-test** in the surefire XML — not merely in a source comment, so it survives into any report that
-reads the build. Today `./mvnw verify` says:
+and the harness-coverage comparison each skipped, **with the reason recorded against the skipped
+test** in the surefire XML rather than only in a source comment, so the emptiness was on the face of
+the build rather than hidden behind it. Since the domain model arrived those three read real
+classes, the skips are gone, and what stood in their place is now an assertion: an empty scan means
+the reactor was not built, and says so. `./mvnw verify` says:
 
 ```
-[WARNING] Tests run: 17, Failures: 0, Errors: 0, Skipped: 7
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
 ```
-
-Seven skips, and the emptiness is on the face of the build rather than hidden behind it. Each skip
-carries a `TODO(M1.1)` and removes itself the moment the first production class exists.
-
-The skip is inside each test rather than in `@BeforeAll` — deliberately, and the difference is not
-cosmetic. An assumption that fails during setup aborts the container, and surefire then records
-`tests="0" skipped="0"` with the reason nowhere in the XML: five architecture checks would simply
-cease to appear in any report, unexplained. Per-test skipping keeps all five visible and attaches
-the reason to each.
 
 Second, `ArchitectureRulesSelfTest` proves the rules independently of whether production code
 exists. Every rule is pointed at `io.restest.arch.fixtures.mirror`, a miniature of the nine-module
@@ -102,9 +93,35 @@ rules actually imported. Counts, not presence — "at least one class arrived" w
 that compiled five hundred and shipped one.
 
 `allowEmptyShould(true)` remains on the individual production checks, for a reason that outlasts
-M0.2: the modules fill in across different milestones, so a rule scoped to one of them legitimately
-has an empty subject set for a while. What it must not excuse is every rule being empty at once, and
-the skips above are what rule that out.
+M0.2: the modules fill in across different milestones, so a rule scoped to one of them — the parser
+confinement rule, now that `restest-core` holds classes and `restest-spec` does not yet —
+legitimately has an empty subject set for a while. What it must not excuse is every rule being empty
+at once, and since M1.1a that cannot happen quietly: the inward-dependency and no-network rules both
+have subjects, and `HarnessCoverageTest` fails if a module ever leaves the import.
+
+### One rule narrowed, on evidence
+
+`noStaticMutableState` ignores *synthetic* fields since M1.1a. A `switch` over an enum declared in
+another class file makes the compiler generate a lookup table nobody wrote, and the two compilers
+this repository meets disagree about it. Both were checked on the same source:
+
+| Compiler | What it emits | Final? |
+|---|---|---|
+| `javac 25 --release 21` | `static final int[] $SwitchMap$…` on a synthetic nested class | yes |
+| Eclipse (JDT) | `private static volatile int[] $SWITCH_TABLE$…` on the enclosing class | **no** |
+
+The build of record is Maven with `javac`, and it is green either way. The Eclipse compiler is not
+hypothetical here: an IDE with the Java extension open on this repository writes its own class files
+into the same `target/classes` the rules read, and that is exactly how the rule came to fire on
+`io.restest.core.model.ParameterStyle` — naming a field that is in no source file and that no run
+can reach.
+
+Nothing is given up by the exclusion: `synthetic` is a modifier only a compiler can set, so every
+static field written in Java source is still subject to the rule, and `GenWithStaticMutableState`
+proves it still catches one. Be precise about what guards it, though: `GenSwitchingOverAnEnum` fails
+without the exclusion **under a compiler that emits the non-final form**. On CI, which is `javac`
+throughout, that assertion is trivially satisfied and guards nothing — the self-test says so in its
+own failure message rather than implying a protection the nine CI rows do not provide.
 
 ## Reproducing a row locally
 
@@ -127,7 +144,7 @@ builds the whole reactor anyway. On this project the full build takes a few seco
 
 Worth knowing where the rules are actually looking. Under `verify` the reactor has reached
 `package`, so what the rules read is each module's **jar**, not its `target/classes` — only
-`mvn test` leaves them reading the directories. It matters from M1.1 on: anything excluded from a
+`mvn test` leaves them reading the directories. It matters now that the modules hold code: anything excluded from a
 jar leaves the architecture rules' field of view entirely. `HarnessCoverageTest` exists for that
 reason — it compares what each module compiled on disk against what the rules actually imported,
 and fails naming any module whose classes the rules cannot see.

@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package io.restest.arch.fixtures.mirror.gen;
 
 /**
- * The domain model: what an API is, in types we own.
+ * A phase of a run, for {@link GenSwitchingOverAnEnum} to switch over.
  *
- * <p>Three packages are exported and one is not. {@code io.restest.core.internal} holds plumbing
- * shared between the other three and is deliberately kept internal, so that it can change without
- * changing anything a consumer compiled against.
- *
- * <p>The module requires nothing. That is the point of ADR-0004: a consumer depending on
- * {@code restest-core} takes on the model and no parser, no HTTP client, no solver and no database
- * driver.
+ * <p>A separate file on purpose. Switching over an enum declared in the same compilation unit lets
+ * {@code javac} compile straight to {@code ordinal()}, and no lookup table is generated at all -
+ * which would make the fixture next door exercise nothing. An enum that can be recompiled
+ * independently is the case that forces the indirection, and it is also the case every switch in
+ * the production modules is.
  */
-module io.restest.core {
-    exports io.restest.core.json;
-    exports io.restest.core.model;
-    exports io.restest.core.schema;
+public enum GenPhase {
+    PLANNING,
+    SENDING,
+    JUDGING
 }

@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package io.restest.core.schema;
 
 /**
- * The domain model: what an API is, in types we own.
+ * Whether a number must be whole.
  *
- * <p>Three packages are exported and one is not. {@code io.restest.core.internal} holds plumbing
- * shared between the other three and is deliberately kept internal, so that it can change without
- * changing anything a consumer compiled against.
- *
- * <p>The module requires nothing. That is the point of ADR-0004: a consumer depending on
- * {@code restest-core} takes on the model and no parser, no HTTP client, no solver and no database
- * driver.
+ * <p>OpenAPI spells these as two types, {@code integer} and {@code number}, but they carry exactly
+ * the same constraints - minimum, maximum, multiple-of - so they are one record here with this as a
+ * component. Two records would mean every generator, every oracle and every report handling both
+ * and keeping them in step.
  */
-module io.restest.core {
-    exports io.restest.core.json;
-    exports io.restest.core.model;
-    exports io.restest.core.schema;
+public enum NumberKind {
+    /** A whole number: {@code type: integer}. */
+    INTEGER,
+    /** Any number: {@code type: number}. */
+    NUMBER
 }

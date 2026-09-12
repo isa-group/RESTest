@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-41 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
+45 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
 Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
@@ -19,7 +19,8 @@ Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 | # | Increment | What it enables |
 |---|---|---|
-| 1.1 | Canonical API and schema model: `ApiModel`, `Operation`, `Parameter`, `CanonicalSchema`, `TestCase`, `Interaction` as records and sealed types | A representation of an API that is ours, not a library's |
+| 1.1a | Specification model: `ApiModel`, `Operation`, `Parameter`, `CanonicalSchema` and `JsonValue` as records and sealed types; named and recursive schemas; unreadable constructs recorded rather than lost | A representation of an API that is ours, not a library's |
+| 1.1b | Execution model: `TestCase`, value provenance, exact request and response payloads, `Interaction` and its outcome | A representation of what we did to the API, and what came back |
 | 1.2 | `SpecificationParser` interface + swagger-parser backend; OAS 2.0/3.0.x/3.1.x; lazy `$ref`; malformed operations skipped and reported. A 3.2 document degrades and reports rather than failing | Point the tool at any real specification without it crashing |
 | 1.2b | Second `SpecificationParser` backend for OAS 3.2, chosen from the document's declared version and confirmed against the golden corpus | The current version of the specification format is supported, not the previous two |
 | 1.3 | `HttpEngine` interface + OkHttp backend; virtual threads; exact wire capture; adaptive concurrency; idle-time accounting | Requests get sent, fast, and we can see where the time went |
