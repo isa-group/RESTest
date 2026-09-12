@@ -191,6 +191,95 @@ and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reason
 Fault reports use the WFC codes rather than a taxonomy of our own, for the same reason: a fault
 count is only meaningful next to somebody else's fault count.
 
+## Related tools
+
+This section maps the REST API testing landscape for readers new to the field. The tools listed
+here are those most frequently compared with RESTest in academic evaluations and benchmarks. Brief
+descriptions are followed by a comparison table that uses the same dimensions as the table in the
+[Evaluation](#evaluation) section above.
+
+**Glossary for this section.** *Stateless testing* — techniques applied at the level of a single
+HTTP operation in isolation. *Stateful testing* — techniques that chain multiple operations to model
+resource creation, retrieval, update and deletion flows. *Black-box (B)* — the tool uses only the
+API specification and the API's HTTP responses; no access to the application source code is needed.
+*White-box (W)* — the tool additionally instruments the application's source code or bytecode to
+obtain coverage feedback and steer the search.
+
+### EvoMaster
+
+[EvoMaster](https://github.com/EMResearch/EvoMaster) applies evolutionary search to REST API
+testing. Its MIO (Many-Independent-Objective) algorithm treats each coverage target as an independent
+optimisation objective, which avoids the stalling that affects single-objective search. A white-box
+mode instruments the application at the bytecode level and feeds coverage feedback directly into the
+search; a black-box mode operates on the specification alone. Stateful testing works by inferring
+which operations produce resources that others consume and constructing call sequences from that
+dependency graph. EvoMaster adopts the WFC fault catalogue and participates in the SBFT REST League.
+
+### RESTler
+
+[RESTler](https://github.com/microsoft/restler-fuzzer), from Microsoft Research, introduced
+coverage-guided stateful REST fuzzing. It infers *producer-consumer* relationships from the
+specification — observing that `POST /orders` produces an order identifier that `DELETE /orders/{id}`
+later consumes — and uses those relationships to chain operations automatically. The fuzzer maintains
+a dictionary of type-appropriate values, extends it with values extracted from live API responses,
+and replays sequences to surface 500 errors and resource-state inconsistencies.
+
+### Schemathesis
+
+[Schemathesis](https://github.com/schemathesis/schemathesis) is a Python library and CLI built on
+[Hypothesis](https://hypothesis.readthedocs.io/), a property-based testing framework. It generates
+inputs from the OpenAPI schema and automatically shrinks failing cases to their minimal form. It
+supports OAS 2.0, 3.0.x and 3.1.x, integrates as a pytest plugin, classifies findings using WFC
+fault codes, and follows OAS 3.x `links` for stateful testing.
+
+### RestTestGen
+
+[RestTestGen](https://github.com/SeUniVr/RestTestGen), from the University of Verona, focuses on
+*nominal* and *error* flow testing. It constructs CRUD sequences (create a resource, retrieve it,
+update it, delete it) and systematically mutates valid inputs to trigger error responses. It supports
+IDL-based inter-parameter constraints and emits results as JUnit 5 tests.
+
+### CATS
+
+[CATS](https://github.com/Endava/cats) (Contract Assured Testing Suite, from Endava) offers a large
+catalogue of *fuzzers*, each targeting a specific class of input anomaly: boundary values, special
+characters, Unicode edge cases, oversized payloads, missing required fields, and extra unexpected
+fields. It is designed for repeatable contract testing in CI pipelines rather than for finding deep
+behavioural bugs.
+
+### Dredd
+
+[Dredd](https://github.com/apiaryio/dredd) is a JavaScript contract-testing tool. It executes the
+examples embedded in an OAS document against the running API and checks that the responses match.
+Stateful sequences require hand-written hook scripts (JavaScript or Python). Dredd is well suited to
+regression-testing documented behaviour but is not designed to discover undocumented bugs.
+
+### RESTest 1.x
+
+[RESTest 1.x](https://github.com/isa-group/RESTest/tree/master), also from the ISA Research Group,
+implements constraint-based testing (CBT) driven by IDL, random testing, and ART in a single
+configurable pipeline. Limited stateful support is available via hand-written test flow
+configurations. RESTest 2.0 is a ground-up rewrite; the reasoning is in
+[ADR-0002](adr/0002-rewrite-not-refactor.md).
+
+### Comparison
+
+The columns *stateless techniques* and *stateful techniques* name the core algorithmic strategy, not
+every configuration option. **OAS** — specification versions the tool accepts. **BB/WB** — B =
+black-box only; B+W = black-box and white-box modes both available. The last row shows the design
+target for RESTest 2.0.
+
+| Tool | Language | OAS | BB/WB | Stateless techniques | Stateful techniques | Test data types | Oracle types |
+|---|---|---|---|---|---|---|---|
+| [EvoMaster](https://github.com/EMResearch/EvoMaster) | Kotlin/Java | 2.0, 3.0.x | B+W | Evolutionary (MIO), random | Resource-dependency sequence construction | Evolutionary, random, adaptive | 5xx detection, schema validation |
+| [RESTler](https://github.com/microsoft/restler-fuzzer) | Python | 2.0, 3.0 | B | Coverage-guided fuzzing, random | Producer-consumer chains (spec-inferred) | Random + response-extracted dictionary | 5xx detection, resource-state inconsistency |
+| [Schemathesis](https://github.com/schemathesis/schemathesis) | Python | 2.0, 3.0.x, 3.1.x | B | Property-based (Hypothesis), shrinking | OAS link following | Schema-driven, property-based | 5xx detection, schema validation, WFC codes |
+| [RestTestGen](https://github.com/SeUniVr/RestTestGen) | Java | 2.0, 3.0 | B | Random, IDL-constrained | CRUD nominal flows, error flows | Random, example-based, IDL-constrained | Status code classification, schema validation |
+| [CATS](https://github.com/Endava/cats) | Java | 2.0, 3.0.x | B | Fuzzing catalogue (BVA, special chars, Unicode, oversized, field mutation) | — | Fuzzing patterns, boundary values | Status codes, schema validation |
+| [Dredd](https://github.com/apiaryio/dredd) | JavaScript | 2.0, 3.0 | B | Example-based contract testing | Scripted hooks (manual) | Spec examples | Status codes, response schema |
+| [RESTest 1.x](https://github.com/isa-group/RESTest/tree/master) | Java | 2.0, 3.0 | B | CBT (IDL), random, ART | Hand-written test flows | Random, IDL-constrained, example-based | Status code classification, schema validation |
+| **RESTest 2.0** (this tool) | Java | 2.0, 3.x | B | CBT (IDL), random, ART, feedback-guided | ODG-based sequence construction | Random, IDL-constrained, external providers | Status code classification, schema validation, corpus oracles, WFC codes |
+
 ## Out of scope for v2.0
 
 Deferred until v2.0 is functional and measured. Nothing here is started without explicit approval,
