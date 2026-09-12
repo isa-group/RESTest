@@ -84,12 +84,10 @@ public record Interaction(
 
     /** A fresh interaction whose response broke HTTP framing before it could be read as one. */
     public static Interaction malformedResponse(TestCase testCase, HttpRequestRecord request,
-            String reason, Optional<Integer> statusCode, Optional<String> reasonPhrase,
-            Optional<String> protocolVersion, List<Header> headers, Optional<Payload> partial,
-            Instant sentAt, Duration elapsed) {
+            String reason, Optional<StatusLine> statusLine, List<Header> headers,
+            Optional<Payload> partial, Instant sentAt, Duration elapsed) {
         return new Interaction(InteractionId.generate(), testCase, request,
-                new InteractionOutcome.MalformedResponse(reason, statusCode, reasonPhrase,
-                        protocolVersion, headers, partial),
+                new InteractionOutcome.MalformedResponse(reason, statusLine, headers, partial),
                 sentAt, elapsed);
     }
 

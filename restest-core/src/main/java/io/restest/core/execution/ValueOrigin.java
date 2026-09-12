@@ -86,17 +86,18 @@ public sealed interface ValueOrigin {
      * Read out of an earlier interaction's response - the mechanism that makes a stateful step
      * representable at all.
      *
-     * <p>{@code from} names an {@link InteractionId}, not a {@link TestCaseId}, and this is not a
-     * limitation: by the time a stateful generator can construct this value at all, the interaction
-     * it depends on already exists and has already been read. {@link TestCase} holds concrete,
-     * already-resolved values - never a placeholder to fill in later, per ADR-0005 - so a
-     * {@code ParameterValue} carrying {@code Derived} can only be built once its {@code value()} is
-     * known, which means the earlier interaction's response has already been inspected to produce
-     * it. There is no earlier moment at which this edge would need to be committed to, and therefore
-     * nothing gained by pointing at an identifier, such as {@link TestCaseId}, that exists sooner: an
-     * {@link InteractionId} names exactly the interaction whose data was actually used, which is
-     * unaffected by whatever the engine does afterwards with the test case that produced it - a
-     * retry, a replay, or nothing at all.
+     * <p>{@code from} names an {@link InteractionId}, not a {@link TestCaseId}. {@link TestCase}
+     * holds concrete, already-resolved values - never a placeholder to fill in later, per ADR-0005 -
+     * so a correct generator has no reason to build a {@code ParameterValue} carrying {@code Derived}
+     * before it has already read the response {@code value()} comes from: the value itself cannot be
+     * known any other way. That is a rule for the generator (M4.2) to keep, not a property this type
+     * enforces - nothing here stops a caller from minting an {@link InteractionId} early and naming
+     * it before the interaction exists, which would simply be a mistake with no data behind it, the
+     * same way naming an operation that does not exist would be. Given that a correct generator
+     * always has the interaction in hand already, {@link InteractionId} is the more useful pointer of
+     * the two: unlike a {@link TestCaseId}, it survives whatever the engine does afterwards with the
+     * test case that produced it - a retry, a replay, or nothing at all - because it names one
+     * specific interaction rather than "whichever interaction this test case eventually produces".
      *
      * @param from the interaction this value was read from
      * @param description what was taken from it, for a human to read - "response body field 'id'" -

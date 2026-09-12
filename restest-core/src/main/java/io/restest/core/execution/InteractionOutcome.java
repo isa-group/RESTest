@@ -62,26 +62,33 @@ public sealed interface InteractionOutcome {
      * sends its final chunk. An oracle judging that (M3.2, WFC 900-909) needs what the response
      * claimed about itself, not only the reason text - the protocol version and reason phrase
      * included, since whether a given framing failure is even possible (chunked encoding exists only
-     * under HTTP/1.1) depends on which protocol was in use.
+     * under HTTP/1.1) depends on which protocol was in use. {@code statusLine} is one optional
+     * component, not three: a reason phrase or a protocol version parsing while the status code did
+     * not is not a shape HTTP itself can produce, and {@link StatusLine} makes that shape
+     * unconstructable instead of merely undocumented.
+     *
+     * <p>{@code partial}'s {@link Payload#wireLength()}, if set, means only "our own storage kept
+     * fewer bytes than were actually delivered" - never "the response claimed more than it
+     * delivered". That second fact, a declared length the API failed to honour, is already visible
+     * by comparing {@code partial}'s size against a {@code Content-Length} in {@code headers}; it is
+     * not this field's job to restate it. Bytes that simply stopped arriving, with no declared
+     * length to compare against - a chunked stream with no final chunk - are exactly what
+     * {@code partial} with no {@code wireLength} represents: everything we have, with nothing said
+     * about whether more was coming.
      *
      * @param reason what was wrong, in a form fit to print in a report - "chunked encoding ended
      *     without a final zero-length chunk", not a stack trace
-     * @param statusCode the status code, when the status line itself parsed
-     * @param reasonPhrase the reason phrase, when the protocol carries one and it parsed
-     * @param protocolVersion the protocol version, when it is known
+     * @param statusLine the status code and whatever else parsed, when the status line parsed at all
      * @param headers the headers, when they parsed, in wire order, repeats kept
      * @param partial whatever body bytes were received before the exchange broke, when any were.
      *     Declared under {@link Payload#UNKNOWN_MEDIA_TYPE} when nothing said what they were meant
      *     to be, rather than repeating a {@code Content-Type} the response may never have sent
      */
-    record MalformedResponse(String reason, Optional<Integer> statusCode,
-            Optional<String> reasonPhrase, Optional<String> protocolVersion, List<Header> headers,
+    record MalformedResponse(String reason, Optional<StatusLine> statusLine, List<Header> headers,
             Optional<Payload> partial) implements InteractionOutcome {
         public MalformedResponse {
             Objects.requireNonNull(reason, "reason");
-            Objects.requireNonNull(statusCode, "statusCode");
-            Objects.requireNonNull(reasonPhrase, "reasonPhrase");
-            Objects.requireNonNull(protocolVersion, "protocolVersion");
+            Objects.requireNonNull(statusLine, "statusLine");
             Objects.requireNonNull(headers, "headers");
             Objects.requireNonNull(partial, "partial");
             if (reason.isBlank()) {

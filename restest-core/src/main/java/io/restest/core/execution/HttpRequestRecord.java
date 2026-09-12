@@ -24,12 +24,13 @@ import java.util.Optional;
  * The request as it actually went out: the method, the resolved URL and the exact headers and body -
  * not the operation's template, the values already substituted in.
  *
- * <p>This is the request as {@link TestCase} asked for it, not necessarily the last one on the wire.
- * {@link Interaction} requires one test case to produce at most one interaction (see its Javadoc for
- * why), so where the engine follows a redirect, that is internal to producing this interaction's
- * single outcome: the response recorded is the final one, the way an ordinary HTTP client already
- * reports it, and this record stays the request that was actually asked for - which is also the one
- * a {@code curl} reproduction (M3.6) needs to show.
+ * <p>This is the request for whichever attempt the {@link Interaction} it belongs to represents.
+ * Nothing here decides, on its own, what "one attempt" means when the engine follows a redirect:
+ * {@link Interaction}'s Javadoc says plainly that the engine is free to record each hop as its own
+ * interaction, in which case this is that hop's own request, or to fold a whole redirect chain into
+ * one interaction, in which case this is the first request of the chain and the outcome is the
+ * chain's final result. Either way, this record is one HTTP request, exactly as it was sent - which
+ * is also what a {@code curl} reproduction (M3.6) needs to show for whichever request it names.
  *
  * @param method the HTTP method used
  * @param url the exact URL requested, path parameters substituted and the query string appended

@@ -39,10 +39,18 @@ import java.util.Optional;
  * <p>{@code wireLength} exists because ADR-0006 names "configurable response-body truncation" as the
  * store's (M1.4) answer to storage cost - so a stored payload is not always the whole body, and a
  * record silent about that would have an oracle read a cut-off document, fail to parse it, and
- * report a fault the API never committed. {@link #truncated()} alone would only say "do not trust
- * this"; a {@code Content-Length} conformance oracle (M3.2) needs the actual wire length to compare
- * the retained bytes against, so the two travel as one component rather than two that could disagree:
- * {@code truncated} is derived from {@code wireLength}, not stored beside it.
+ * report a fault the API never committed. It says only that: how much of what was genuinely
+ * delivered got kept. A previous version of this field also doubled as "how much the response
+ * claimed it would send" - the fact a body cut short by a declared {@code Content-Length} needs -
+ * and that conflated two different events under one number: our own storage policy, and a fault of
+ * the API's. They are kept apart. What the API declared is read from the {@code Content-Length}
+ * header, already present wherever this type is used alongside headers
+ * ({@link InteractionOutcome.MalformedResponse}); {@code wireLength} here answers only "did our own
+ * retention cut this short", which is a boolean question with one number behind it rather than two
+ * that could disagree - {@link #truncated()} is derived from it, not stored beside it. Bytes that
+ * simply stopped arriving with nothing to compare them against - a chunked stream with no final
+ * chunk - are {@code content} with no {@code wireLength} at all: everything retained, nothing said
+ * about whether more was coming.
  *
  * <p>This is the first record in {@code restest-core} holding a mutable component - not the case the
  * {@code TODO} on {@code ArchitectureRules.noStaticMutableState} was left for, since that gap is

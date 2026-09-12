@@ -30,8 +30,8 @@ class HttpResponseRecordTest {
         HttpResponseRecord response = HttpResponseRecord.of(204);
 
         assertThat(response.statusCode()).isEqualTo(204);
-        assertThat(response.reasonPhrase()).isEmpty();
-        assertThat(response.protocolVersion()).isEmpty();
+        assertThat(response.statusLine().reasonPhrase()).isEmpty();
+        assertThat(response.statusLine().protocolVersion()).isEmpty();
         assertThat(response.headers()).isEmpty();
         assertThat(response.body()).isEmpty();
     }
@@ -39,8 +39,8 @@ class HttpResponseRecordTest {
     @Test
     @DisplayName("a header is found however either side capitalises its name")
     void headers_are_found_case_insensitively() {
-        HttpResponseRecord response = new HttpResponseRecord(200, Optional.empty(),
-                Optional.empty(), List.of(Header.of("X-Rate-Limit", "10")), Optional.empty());
+        HttpResponseRecord response = new HttpResponseRecord(StatusLine.of(200),
+                List.of(Header.of("X-Rate-Limit", "10")), Optional.empty());
 
         assertThat(response.headerValues("x-rate-limit")).containsExactly("10");
     }
@@ -58,8 +58,8 @@ class HttpResponseRecordTest {
     void a_body_is_kept() {
         Payload body = Payload.text("{}", "application/json");
 
-        HttpResponseRecord response = new HttpResponseRecord(200, Optional.empty(),
-                Optional.empty(), List.of(), Optional.of(body));
+        HttpResponseRecord response = new HttpResponseRecord(StatusLine.of(200), List.of(),
+                Optional.of(body));
 
         assertThat(response.body()).contains(body);
     }
@@ -67,19 +67,23 @@ class HttpResponseRecordTest {
     @Test
     @DisplayName("the reason phrase and protocol version are kept when the engine reports them")
     void the_status_line_s_other_facts_are_kept() {
-        HttpResponseRecord response = new HttpResponseRecord(404, Optional.of("Not Found"),
-                Optional.of("HTTP/1.1"), List.of(), Optional.empty());
+        StatusLine statusLine = new StatusLine(404, Optional.of("Not Found"),
+                Optional.of("HTTP/1.1"));
 
-        assertThat(response.reasonPhrase()).contains("Not Found");
-        assertThat(response.protocolVersion()).contains("HTTP/1.1");
+        HttpResponseRecord response = new HttpResponseRecord(statusLine, List.of(),
+                Optional.empty());
+
+        assertThat(response.statusLine().reasonPhrase()).contains("Not Found");
+        assertThat(response.statusLine().protocolVersion()).contains("HTTP/1.1");
     }
 
     @Test
     @DisplayName("toString shows the status and header names, never a header's value")
     void to_string_does_not_leak_header_values() {
-        HttpResponseRecord response = new HttpResponseRecord(200, Optional.of("OK"),
-                Optional.empty(), List.of(Header.of("Set-Cookie", "session=secret")),
-                Optional.empty());
+        StatusLine statusLine = new StatusLine(200, Optional.of("OK"), Optional.empty());
+
+        HttpResponseRecord response = new HttpResponseRecord(statusLine,
+                List.of(Header.of("Set-Cookie", "session=secret")), Optional.empty());
 
         assertThat(response).hasToString(
                 "HttpResponseRecord[200 OK, headers=[Set-Cookie], body=none]");

@@ -52,8 +52,7 @@ class InteractionTest {
     void a_malformed_response_is_a_third_outcome() {
         Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
                 "chunked encoding ended without a final zero-length chunk", Optional.empty(),
-                Optional.empty(), Optional.empty(), List.of(), Optional.empty(), Instant.now(),
-                Duration.ofMillis(50));
+                List.of(), Optional.empty(), Instant.now(), Duration.ofMillis(50));
 
         assertThat(interaction.isAnswered()).isFalse();
         assertThat(interaction.response()).isEmpty();
@@ -61,42 +60,52 @@ class InteractionTest {
     }
 
     @Test
-    @DisplayName("a malformed response keeps whatever status and headers parsed before it broke")
+    @DisplayName("a malformed response keeps the whole status line when it parsed, not only the code")
     void a_malformed_response_keeps_what_did_parse() {
+        StatusLine statusLine = new StatusLine(200, Optional.of("OK"), Optional.of("HTTP/1.1"));
+
         Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
-                "declared Content-Length exceeds the bytes actually sent", Optional.of(200),
-                Optional.of("OK"), Optional.of("HTTP/1.1"),
+                "declared Content-Length exceeds the bytes actually sent",
+                Optional.of(statusLine),
                 List.of(Header.of("Content-Type", "application/json")), Optional.empty(),
                 Instant.now(), Duration.ZERO);
 
         InteractionOutcome.MalformedResponse outcome =
                 (InteractionOutcome.MalformedResponse) interaction.outcome();
-        assertThat(outcome.statusCode()).contains(200);
-        assertThat(outcome.reasonPhrase()).contains("OK");
-        assertThat(outcome.protocolVersion()).contains("HTTP/1.1");
+        assertThat(outcome.statusLine()).contains(statusLine);
         assertThat(outcome.headers()).extracting(Header::name).containsExactly("Content-Type");
     }
 
     @Test
-    @DisplayName("a malformed response can carry whatever bytes were received before it broke")
-    void a_malformed_response_can_carry_partial_bytes() {
-        Payload partial = Payload.partial(new byte[] {1, 2, 3}, Payload.UNKNOWN_MEDIA_TYPE, 10L);
+    @DisplayName("a malformed response's declared-but-undelivered length is read from its headers, "
+            + "not from the partial payload's own wireLength")
+    void a_declared_length_the_response_failed_to_honour_is_visible_via_headers() {
+        // Only 3 bytes actually arrived over the wire before the connection broke - nothing was
+        // dropped by our own storage, so the partial payload carries no wireLength of its own. The
+        // gap between what the API promised and what it delivered is visible by comparing this
+        // payload's size against the Content-Length header, which is what an oracle judging this
+        // outcome is expected to do.
+        Payload partial = Payload.of(new byte[] {1, 2, 3}, Payload.UNKNOWN_MEDIA_TYPE);
 
         Interaction interaction = Interaction.malformedResponse(TEST_CASE, REQUEST,
-                "truncated body", Optional.empty(), Optional.empty(), Optional.empty(), List.of(),
-                Optional.of(partial), Instant.now(), Duration.ZERO);
+                "declared Content-Length (10) exceeds the bytes actually sent (3)",
+                Optional.of(new StatusLine(200, Optional.empty(), Optional.empty())),
+                List.of(Header.of("Content-Length", "10")), Optional.of(partial), Instant.now(),
+                Duration.ZERO);
 
         InteractionOutcome.MalformedResponse outcome =
                 (InteractionOutcome.MalformedResponse) interaction.outcome();
         assertThat(outcome.partial()).contains(partial);
+        assertThat(outcome.partial().orElseThrow().wireLength()).isEmpty();
+        assertThat(outcome.headers()).extracting(Header::value).containsExactly("10");
     }
 
     @Test
     @DisplayName("a malformed response must say what was wrong with it")
     void a_malformed_response_requires_a_reason() {
         assertThatIllegalArgumentException().isThrownBy(() -> Interaction.malformedResponse(
-                TEST_CASE, REQUEST, " ", Optional.empty(), Optional.empty(), Optional.empty(),
-                List.of(), Optional.empty(), Instant.now(), Duration.ZERO));
+                TEST_CASE, REQUEST, " ", Optional.empty(), List.of(), Optional.empty(),
+                Instant.now(), Duration.ZERO));
     }
 
     @Test
@@ -145,8 +154,7 @@ class InteractionTest {
     void the_hierarchy_is_exhaustive() {
         InteractionOutcome answered = new InteractionOutcome.Answered(HttpResponseRecord.of(200));
         InteractionOutcome malformed = new InteractionOutcome.MalformedResponse(
-                "bad framing", Optional.empty(), Optional.empty(), Optional.empty(), List.of(),
-                Optional.empty());
+                "bad framing", Optional.empty(), List.of(), Optional.empty());
         InteractionOutcome failed = new InteractionOutcome.TransportFailure("timed out");
 
         assertThat(describe(answered)).isEqualTo("answered: 200");
@@ -158,16 +166,11 @@ class InteractionTest {
     @DisplayName("a malformed response's optional components cannot be null")
     void malformed_response_components_cannot_be_null() {
         assertThatNullPointerException().isThrownBy(() -> new InteractionOutcome.MalformedResponse(
-                "reason", null, Optional.empty(), Optional.empty(), List.of(), Optional.empty()));
+                "reason", null, List.of(), Optional.empty()));
         assertThatNullPointerException().isThrownBy(() -> new InteractionOutcome.MalformedResponse(
-                "reason", Optional.empty(), null, Optional.empty(), List.of(), Optional.empty()));
+                "reason", Optional.empty(), null, Optional.empty()));
         assertThatNullPointerException().isThrownBy(() -> new InteractionOutcome.MalformedResponse(
-                "reason", Optional.empty(), Optional.empty(), null, List.of(), Optional.empty()));
-        assertThatNullPointerException().isThrownBy(() -> new InteractionOutcome.MalformedResponse(
-                "reason", Optional.empty(), Optional.empty(), Optional.empty(), null,
-                Optional.empty()));
-        assertThatNullPointerException().isThrownBy(() -> new InteractionOutcome.MalformedResponse(
-                "reason", Optional.empty(), Optional.empty(), Optional.empty(), List.of(), null));
+                "reason", Optional.empty(), List.of(), null));
     }
 
     private static String describe(InteractionOutcome outcome) {

@@ -31,26 +31,15 @@ import java.util.Optional;
  * outside 100-599 is itself a fault - HTTP-semantics oracles report it from M3.2 - and a model that
  * refused to hold the observation could not report the very thing it was sent to catch.
  *
- * @param statusCode the status code received
- * @param reasonPhrase the reason phrase on the status line, when the protocol carries one - HTTP/2
- *     and HTTP/3 do not
- * @param protocolVersion the protocol version the response was received over, as reported by the
- *     engine - {@code "HTTP/1.1"}, {@code "HTTP/2"} - kept as a string for the same reason as
- *     {@link io.restest.core.schema.StringSchema#format()}: the engine (M1.3) reports whatever its
- *     own HTTP client calls the protocol, and the exact spelling is not this record's to standardise
+ * @param statusLine the status code and whatever else of the status line the engine reports
  * @param headers the headers received, in wire order, repeats kept
  * @param body the body received, absent when the response carried none
  */
-public record HttpResponseRecord(
-        int statusCode,
-        Optional<String> reasonPhrase,
-        Optional<String> protocolVersion,
-        List<Header> headers,
+public record HttpResponseRecord(StatusLine statusLine, List<Header> headers,
         Optional<Payload> body) {
 
     public HttpResponseRecord {
-        Objects.requireNonNull(reasonPhrase, "reasonPhrase");
-        Objects.requireNonNull(protocolVersion, "protocolVersion");
+        Objects.requireNonNull(statusLine, "statusLine");
         Objects.requireNonNull(headers, "headers");
         Objects.requireNonNull(body, "body");
         headers = List.copyOf(headers);
@@ -58,8 +47,12 @@ public record HttpResponseRecord(
 
     /** A response with the given status, nothing else recorded. */
     public static HttpResponseRecord of(int statusCode) {
-        return new HttpResponseRecord(statusCode, Optional.empty(), Optional.empty(), List.of(),
-                Optional.empty());
+        return new HttpResponseRecord(StatusLine.of(statusCode), List.of(), Optional.empty());
+    }
+
+    /** The status code received - a shortcut for {@code statusLine().statusCode()}. */
+    public int statusCode() {
+        return statusLine.statusCode();
     }
 
     /** Every value received under the given header name, compared case-insensitively, in wire order. */
@@ -74,8 +67,8 @@ public record HttpResponseRecord(
     @Override
     public String toString() {
         List<String> names = headers.stream().map(Header::name).toList();
-        return "HttpResponseRecord[" + statusCode + reasonPhrase.map(r -> " " + r).orElse("")
-                + ", headers=" + names + ", body=" + body.map(Object::toString).orElse("none")
-                + "]";
+        return "HttpResponseRecord[" + statusLine.statusCode()
+                + statusLine.reasonPhrase().map(r -> " " + r).orElse("") + ", headers=" + names
+                + ", body=" + body.map(Object::toString).orElse("none") + "]";
     }
 }

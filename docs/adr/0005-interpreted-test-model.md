@@ -132,9 +132,25 @@ one opaque "reason" string. The common shape of this outcome is that the status 
 parse cleanly and only the body breaks against its own declared length or encoding; an oracle judging
 that needs what the response claimed about itself, including the protocol version, since whether a
 given framing failure is even possible - chunked encoding exists only under HTTP/1.1 - depends on it.
+
+The status line is one component, `Optional<StatusLine>`, not three separate optional fields. Two
+reasons, both found in review. First, a reason phrase or a protocol version parsing while the status
+code did not is not a shape HTTP parsing can ever produce, and three independent optionals would
+leave that impossible combination constructable; bundling them makes it unconstructable instead of
+merely undocumented. Second, `reasonPhrase` and `protocolVersion` are both `Optional<String>` -
+adjacent parameters of the same type - which on a ten-parameter factory
+(`Interaction.malformedResponse`) is exactly the transposition a caller can make silently and no
+compiler catches; naming them as components of one small type turns that mistake into a type error
+at the call site instead of a swapped value nobody notices. `HttpResponseRecord` adopts the same
+`StatusLine` for `Answered`, so the two outcomes describe a status line identically rather than each
+inventing its own shape for the same three facts.
+
 Whatever body bytes were retained before the exchange broke are declared under
 `Payload.UNKNOWN_MEDIA_TYPE` when nothing said what they were meant to be, a named constant rather
-than a string literal the engine has to remember and repeat correctly.
+than a string literal the engine has to remember and repeat correctly. `MalformedResponse.partial`'s
+`Payload` does **not** carry the length the response declared but failed to honour - see the
+`Payload.wireLength` entry below for why that is deliberately a different fact, read from `headers`
+instead.
 
 Not represented, deliberately: a `TestCase` the engine planned but never attempted - shed by adaptive
 concurrency, cut off by the budget. No request went out, so no `Interaction` exists for it; inventing
@@ -151,6 +167,19 @@ than the bytes actually retained, which the first version of this field accepted
 factory and the canonical constructor. `truncated()` is now derived from `wireLength` and `content`,
 so there is exactly one fact to get right, and the canonical constructor refuses a `wireLength`
 shorter than what was retained regardless of which factory - or none - constructed the payload.
+
+`wireLength` means one specific thing, and review found the first version of this field's Javadoc did
+not say which: how much *our own storage* retained, out of a body that genuinely arrived in full -
+never how much the response *declared* it would send but failed to deliver. Those are different
+events with different culprits: the first is our retention policy; the second is the API's, and it is
+exactly the fact `MalformedResponse` exists to report. Conflating them under one field would make a
+row written by our own store truncation indistinguishable from a row reporting an API fault, which
+`restest recheck` (M3.3) cannot tell apart after the fact. The declared-but-undelivered case does not
+need a place on `Payload` at all: `MalformedResponse` already carries `headers`, so the gap between a
+`Content-Length` header and the partial body's actual size is visible by comparing the two, without
+this field restating it. A body that simply stops arriving with no declared length to compare against
+- a chunked stream with no final chunk - is `content` with no `wireLength`: everything retained,
+nothing said about whether more was coming, which is the honest answer when nothing else is known.
 
 `Payload` is the first record in `restest-core` holding a mutable component, and the `TODO` on
 `ArchitectureRules.noStaticMutableState` — extending the rule to a static final field of a mutable
