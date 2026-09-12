@@ -22,7 +22,7 @@ import java.util.Optional;
  * An array of values that all share one shape.
  *
  * <p>Arrays whose elements each have their own, different declared shape (JSON Schema's tuple form,
- * {@code prefixItems}) are not represented here. A document using that is read as an
+ * {@code prefixItems}) are not represented here. A document using that is meant to be read as an
  * {@link UnsupportedSchema}, which says so, rather than being silently misread as an array of just
  * the first element's shape.
  *

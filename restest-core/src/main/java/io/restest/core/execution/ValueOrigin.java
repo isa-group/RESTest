@@ -85,10 +85,13 @@ public sealed interface ValueOrigin {
      * step (one that depends on an earlier request) possible at all.
      *
      * <p>{@code from} names the specific {@link InteractionId} the value was read from, not the
-     * {@link TestCase} that produced that interaction. By the time this value exists, the response it
-     * was read from already happened, so pointing at the exact interaction is both accurate and more
-     * durable: it keeps meaning the same thing regardless of whatever RESTest later does with the
-     * test case that produced that interaction, such as retrying or repeating it.
+     * {@link TestCase} that produced that interaction. Whatever builds this value correctly only ever
+     * does so after that interaction's response has actually been read, since the value itself cannot
+     * be known any other way - but nothing here enforces that: this type does not stop code from
+     * naming an interaction that has not happened yet, which would simply be a mistake with no real
+     * data behind it. Naming the interaction rather than the test case is still the better choice for
+     * a value built correctly, because it keeps meaning the same thing regardless of whatever RESTest
+     * later does with the test case that produced that interaction, such as retrying or repeating it.
      *
      * @param from the interaction this value was read from
      * @param description what was taken from it, for a human to read - "response body field 'id'" -

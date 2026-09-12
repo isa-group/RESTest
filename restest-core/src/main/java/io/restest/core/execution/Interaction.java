@@ -27,9 +27,9 @@ import java.util.Optional;
  *
  * <p>Every time RESTest actually sends a request to the API being tested, it keeps one of these:
  * the exact bytes sent and received, how long it took, which test case produced the request, and
- * where every value in that request came from. This is the record that gets saved, that a later
- * check (a "did the API answer correctly?" judgement) is made against, and that can be re-examined
- * later without sending the request again.
+ * where every value in that request came from. This is meant to be the record that gets saved, that
+ * a later check (a "did the API answer correctly?" judgement) is made against, and that can be
+ * re-examined afterwards without sending the request again.
  *
  * <p>An {@code Interaction} exists only for a request that was genuinely sent. A {@link TestCase}
  * that was planned but never actually attempted - for example because time ran out first - produces

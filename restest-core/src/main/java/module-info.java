@@ -24,9 +24,10 @@
  * helpers shared between the other four and is deliberately kept internal, so it can change freely
  * without affecting anything built on top of this module.
  *
- * <p>This module depends on nothing else in RESTest: it defines the vocabulary that the parser, the
- * test generator, the HTTP engine and the reporting code all share, without needing any of them
- * itself.
+ * <p>The module requires nothing: no parser, no HTTP client, no constraint solver, no database
+ * driver. It defines the vocabulary that the parser, the test generator, the HTTP engine and the
+ * reporting code all share, without needing any of them itself - so depending on this module never
+ * pulls in anything heavier than this module itself.
  */
 module io.restest.core {
     exports io.restest.core.execution;

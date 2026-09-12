@@ -33,9 +33,10 @@ import java.util.Optional;
  * actually satisfies either; working that out needs a more thorough check elsewhere. The promise
  * here is only that the bounds a simple comparison can catch do not contradict each other.
  *
- * <p>Rejecting a contradiction here does not make the whole specification unusable. RESTest never
- * crashes on a bad specification: the part of RESTest that reads the document catches this rejection,
- * records it as an issue, skips just the affected operation, and reads the next one.
+ * <p>Rejecting a contradiction here does not make the whole specification unusable. RESTest's rule
+ * is to never crash on a bad specification: whatever reads the document is meant to catch this
+ * rejection, record it as an issue, skip just the affected operation, and read the next one - not to
+ * let one bad operation bring the whole run down.
  */
 final class SchemaChecks {
 

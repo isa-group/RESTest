@@ -62,7 +62,10 @@ public sealed interface InteractionOutcome {
      * is shorter than its declared length, or a chunked transfer never sends its final chunk. Judging
      * that properly needs everything the response claimed about itself: the protocol version and
      * reason phrase as well as the reason text, since which failures are even possible depends on the
-     * protocol in use.
+     * protocol in use - chunked encoding, for instance, only exists under HTTP/1.1. {@code statusLine}
+     * is a single optional value rather than three separate ones for the same reason: a reason phrase
+     * or protocol version parsing while the status code itself did not is not a shape HTTP can
+     * actually produce, and {@link StatusLine} keeps that impossible shape from being built at all.
      *
      * <p>{@code partial}'s stored length, if set, means only "our own storage kept fewer bytes than
      * were actually delivered" - never "the response claimed more than it delivered". That second,
@@ -76,7 +79,9 @@ public sealed interface InteractionOutcome {
      *     without a final zero-length chunk", not a stack trace
      * @param statusLine the status code and whatever else parsed, when the status line parsed at all
      * @param headers the headers, when they parsed, in wire order, repeats kept
-     * @param partial whatever body bytes were received before the exchange broke, when any were
+     * @param partial whatever body bytes were received before the exchange broke, when any were.
+     *     Declared under {@link Payload#UNKNOWN_MEDIA_TYPE} when nothing said what they were meant to
+     *     be, rather than guessing at a {@code Content-Type} the response may never have sent
      */
     record MalformedResponse(String reason, Optional<StatusLine> statusLine, List<Header> headers,
             Optional<Payload> partial) implements InteractionOutcome {

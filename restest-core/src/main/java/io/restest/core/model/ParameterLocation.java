@@ -24,8 +24,9 @@ package io.restest.core.model;
  *
  * <p>The older OpenAPI 2.0 format has two more locations, {@code body} and {@code formData}, and
  * they are deliberately absent here: a body is not treated as a parameter in this model, it is
- * {@link Operation#requestBody()}. Documents written in that older format are converted when they
- * are read, and it is worth writing down how, because only one of the two conversions is obvious:
+ * {@link Operation#requestBody()}. A document written in that older format must be converted into
+ * this shape when it is read, and it is worth writing down how, because only one of the two
+ * conversions is obvious:
  *
  * <ul>
  *   <li>{@code in: body} becomes a {@link RequestBodyModel} whose schema is the parameter's. The

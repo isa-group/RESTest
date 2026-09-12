@@ -35,10 +35,11 @@ import java.util.Optional;
  * never mixed: a header stating the encoded size cannot be meaningfully compared against a decoded
  * body's length.
  *
- * <p>{@code wireLength} exists because RESTest can be configured to store only part of a very large
- * body, to save space. When that happens, {@code content} holds less than the API actually sent, and
- * this field records how much was truly delivered - so that a stored body being shorter than
- * expected is never mistaken for the API itself having sent a broken response. That is a separate
+ * <p>{@code wireLength} exists because RESTest is meant to be able to keep only part of a very
+ * large body, to save space, rather than being forced to keep everything or nothing. When that
+ * happens, {@code content} holds less than the API actually sent, and this field records how much
+ * was truly delivered - so that a stored body being shorter than expected is never mistaken for the
+ * API itself having sent a broken response. That is a separate
  * concern from whether the API's own {@code Content-Length} header matches what it actually sent;
  * that comparison is made using the headers kept alongside this payload, not through this field.
  * {@link #truncated()} answers only "did our own storage cut this short". Bytes that simply stopped

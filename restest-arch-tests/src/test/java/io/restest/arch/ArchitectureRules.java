@@ -62,14 +62,17 @@ final class ArchitectureRules {
      *
      * <p>{@code ensureAllClassesAreContainedInArchitecture} closes a gap that would otherwise exist.
      * {@code consideringOnlyDependenciesInLayers} ignores dependencies of any class that matches no
-     * layer, so a package outside the nine module packages this project uses - a misspelling, for
-     * example - would have every one of its dependencies unchecked while the build stayed green.
-     * Requiring every class to belong to a layer turns that silent gap into a failure that names the
-     * package.
+     * layer, so a package outside the nine module packages this project uses - {@code io.restest.model}
+     * or {@code io.restest.oracle}, written in the singular by mistake, for example - would have
+     * every one of its dependencies unchecked while the build stayed green. Requiring every class to
+     * belong to a layer turns that silent gap into a failure that names the package.
      *
      * <p>A consequence worth knowing before meeting it: this also rejects a class placed directly
      * outside all nine module packages, a root package-level file included. That is the intended
-     * reading of the rule - every class belongs to a module - and not an oversight.
+     * reading of the rule - every class belongs to a module - and not an oversight. If a genuine
+     * root-level class is ever wanted, it should be added by deliberately exempting it (ArchUnit's
+     * {@code ensureAllClassesAreContainedInArchitectureIgnoring}), not by widening one of the layers
+     * below to make room for it.
      */
     static ArchRule dependenciesPointInwards(String root) {
         LayeredArchitecture architecture = Architectures.layeredArchitecture()

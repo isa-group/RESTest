@@ -135,9 +135,11 @@ public record ApiModel(
      * <p>Everything downstream looks an operation up by its identifier - per-operation settings,
      * stored results, failure reports - and every one of them would silently get the wrong operation
      * if two shared an identifier. RESTest's rule is to never let a bad specification crash the
-     * tool, so instead of rejecting the whole document, the parser makes the identifier unique,
-     * records a {@link SpecificationIssue} saying so, and keeps both operations testable. What it may
-     * not do is hand over a model that cannot answer its own lookups.
+     * tool, so instead of rejecting the whole document outright, whatever builds this model from it
+     * is meant to make the identifier unique, record a {@link SpecificationIssue} saying so, and keep
+     * both operations testable. What it may not do is hand over a model that cannot answer its own
+     * lookups, which is why this constructor still rejects the duplicate rather than silently
+     * accepting it.
      */
     private static void rejectDuplicateIds(List<Operation> operations) {
         Map<OperationId, Operation> seen = new LinkedHashMap<>();
