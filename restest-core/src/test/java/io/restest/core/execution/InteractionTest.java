@@ -103,19 +103,6 @@ class InteractionTest {
     }
 
     @Test
-    @DisplayName("deliveredLength(), not size(), stays correct when the store also truncated the body")
-    void delivered_length_accounts_for_our_own_storage_truncation_too() {
-        // The API genuinely delivered all 900 bytes it declared via Content-Length - nothing is
-        // wrong with this response - but our own store (M1.4) only retained the first 100. size()
-        // would understate delivery and make an oracle blame the API for our retention policy;
-        // deliveredLength() reports the confirmed original length instead.
-        Payload storeTruncated = Payload.partial(new byte[100], Payload.UNKNOWN_MEDIA_TYPE, 900L);
-
-        assertThat(storeTruncated.size()).isEqualTo(100);
-        assertThat(storeTruncated.deliveredLength()).isEqualTo(900L);
-    }
-
-    @Test
     @DisplayName("a malformed response must say what was wrong with it")
     void a_malformed_response_requires_a_reason() {
         assertThatIllegalArgumentException().isThrownBy(() -> Interaction.malformedResponse(

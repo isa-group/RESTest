@@ -166,4 +166,25 @@ class PayloadTest {
     void unknown_media_type_is_a_named_constant() {
         assertThat(Payload.UNKNOWN_MEDIA_TYPE).isEqualTo("application/octet-stream");
     }
+
+    @Test
+    @DisplayName("deliveredLength() is the retained size when nothing else was truncated")
+    void delivered_length_defaults_to_the_retained_size() {
+        Payload payload = Payload.of(new byte[] {1, 2, 3}, "application/json");
+
+        assertThat(payload.deliveredLength()).isEqualTo(3L);
+    }
+
+    @Test
+    @DisplayName("deliveredLength(), not size(), stays correct when the store truncated the body")
+    void delivered_length_accounts_for_store_truncation() {
+        // The API genuinely delivered all 900 bytes it declared via Content-Length - nothing is
+        // wrong with this response - but our own store (M1.4) only retained the first 100. size()
+        // would understate delivery and make an oracle blame the API for our retention policy;
+        // deliveredLength() reports the confirmed original length instead.
+        Payload storeTruncated = Payload.partial(new byte[100], Payload.UNKNOWN_MEDIA_TYPE, 900L);
+
+        assertThat(storeTruncated.size()).isEqualTo(100);
+        assertThat(storeTruncated.deliveredLength()).isEqualTo(900L);
+    }
 }

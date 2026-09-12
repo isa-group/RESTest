@@ -160,8 +160,9 @@ report's job (M1.3, M3.6).
 **`Payload` gained `wireLength`**, replacing an earlier `truncated` boolean, after review. ADR-0006
 names "configurable response-body truncation" as the store's answer to storage cost, so a stored
 payload is not always the whole body; a boolean alone would say "do not trust this," but a
-`Content-Length` conformance oracle (M3.2) needs the actual wire length to compare the retained bytes
-against. Keeping `truncated` as a second, independently-settable component would let the two disagree
+`Content-Length` conformance oracle (M3.2) needs the confirmed delivered length to compare a declared
+length against, not merely a warning that the retained bytes might understate it. Keeping `truncated`
+as a second, independently-settable component would let the two disagree
 - a payload claiming to be truncated with no length to check it against, or a wire length shorter
 than the bytes actually retained, which the first version of this field accepted through both the
 factory and the canonical constructor. `truncated()` is now derived from `wireLength` and `content`,
@@ -176,8 +177,11 @@ exactly the fact `MalformedResponse` exists to report. Conflating them under one
 row written by our own store truncation indistinguishable from a row reporting an API fault, which
 `restest recheck` (M3.3) cannot tell apart after the fact. The declared-but-undelivered case does not
 need a place on `Payload` at all: `MalformedResponse` already carries `headers`, so the gap between a
-`Content-Length` header and the partial body's actual size is visible by comparing the two, without
-this field restating it. A body that simply stops arriving with no declared length to compare against
+`Content-Length` header and what was actually delivered is visible by comparing the two - through
+`Payload.deliveredLength()`, never `size()`, since `size()` is only the *retained* length and
+understates delivery whenever the store has also truncated the body; `deliveredLength()` is
+`wireLength` when known, the retained length otherwise, and is always the confirmed original amount.
+A body that simply stops arriving with no declared length to compare against
 - a chunked stream with no final chunk - is `content` with no `wireLength`: everything retained,
 nothing said about whether more was coming, which is the honest answer when nothing else is known.
 
