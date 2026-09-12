@@ -26,5 +26,28 @@
             <artifactId>restest-idl</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!--
+          Test scope only, and deliberately so. Nothing this module publishes depends on the parser -
+          the architecture rules read production bytecode and would fail if it did. But the question
+          "does generation work against real specifications?" can only be answered by reading real
+          specifications, and reading them is the parser's job. The alternative, hand-written models,
+          would test the generator against shapes chosen by the same person who wrote the generator,
+          which is exactly the test that never fails when it should.
+
+          The corpus documents themselves are read out of the checkout rather than from a test-jar
+          published by restest-spec, deliberately: several of them carry no licence at all, and the
+          corpus README is explicit that they are used as internal test fixtures and never
+          redistributed. Publishing them inside an artifact would be redistributing them.
+
+          The exception is recorded in SourceTreeRulesTest, which fails if any other module takes
+          the same dependency without being named there.
+        -->
+        <dependency>
+            <groupId>io.restest</groupId>
+            <artifactId>restest-spec</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
