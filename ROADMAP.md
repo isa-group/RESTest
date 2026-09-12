@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-44 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
+43 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
 Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
@@ -60,6 +60,12 @@ other coupling to that infrastructure is implied or intended (ADR-0011 still hol
 | 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
 | 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
+| 2.7 | Value dictionary format, reader, writer, disk cache | Good values computed once, reused for ever, committed next to the specification |
+| 2.8 | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
+
+2.8's own "never blocking" guarantee is proved at that increment, by its own test (a slow provider
+must not stall the run) — not by waiting for M6.2's overhead regression test, which lands much later
+and checks the tool's overall per-request overhead, not any one extension point.
 
 ## M3 — Oracles, faults and reporting
 
@@ -69,8 +75,11 @@ other coupling to that infrastructure is implied or intended (ADR-0011 still hol
 | 3.2 | HTTP-semantics and REST-design oracles (WFC 900–909 and 950–965) | Protocol-level bugs nobody else on our side detects |
 | 3.3 | `CorpusOracle` interface and `restest recheck <run>` | Re-examine a finished run with new oracles, offline, no API calls |
 | 3.4 | Per-operation oracle configuration + published JSON Schema for the config file | False positives silenced per operation instead of the tool being switched off |
-| 3.5 | Failure deduplication and clustering | 4,000 failures become 12 distinct problems |
-| 3.6 | Reports: HTML, JUnit XML, HAR, NDJSON; JUnit 5 + REST-Assured code export; `restest explain`; `restest replay`. Plus the "how to add an oracle, a provider, a report" guide | Results usable in CI, in an IDE, and by a human |
+| 3.5 | Reports: HTML, JUnit XML, HAR, NDJSON; JUnit 5 + REST-Assured code export; `restest explain`; `restest replay`. Plus the "how to add an oracle, a provider, a report" guide | Results usable in CI, in an IDE, and by a human |
+
+v2.0's own reports are raw: one finding per operation, not grouped. Deduplication and clustering is
+deferred (see below), not a gap in 3.5 — a milestone campaign's cross-tool comparison is RESTGym's
+job, not this report's.
 
 ## M4 — Stateful testing
 
@@ -93,14 +102,12 @@ other coupling to that infrastructure is implied or intended (ADR-0011 still hol
 | 5.4 | Constraint-based generator: valid requests and deliberate dependency violations | RESTest's differentiator, back and usable |
 | 5.5 | 🛑 Constraint-aware oracles (`2XX_P`, `2XX_D`, `4XX`) + the ICSOC'20 experiment re-run | The two novel oracles work, and we can compare against the published 1.x numbers |
 
-## M6 — External data and live model updates
+## M6 — Live updates and performance
 
 | # | Increment | What it enables |
 |---|---|---|
-| 6.1 | Value dictionary format, reader, writer, disk cache | Good values computed once, reused for ever, committed next to the specification |
-| 6.2 | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
-| 6.3 | `ConstraintSource` and `FlowSource` with a watched-directory implementation | Drop an IDL snippet in mid-run and watch the generated requests change |
-| 6.4 | 🛑 Idle-time reporting and the per-request overhead regression test wired into CI | We can prove the 2026 failure mode cannot recur |
+| 6.1 | `ConstraintSource` and `FlowSource` with a watched-directory implementation | Drop an IDL snippet in mid-run and watch the generated requests change |
+| 6.2 | 🛑 Idle-time reporting and the per-request overhead regression test wired into CI | We can prove the 2026 failure mode cannot recur |
 
 ## M7 — Packaging and distribution
 
@@ -132,6 +139,7 @@ so none of them requires re-architecting. Full table under "Out of scope for v2.
 - Semantic oracles inferred from request/response corpora → corpus oracles + store + `recheck`
 - Semantic oracles inferred from the specification → corpus oracles
 - Metamorphic relations → corpus oracles
+- Failure deduplication and clustering → interaction store + an event-stream listener
 - Predicting whether a request will be accepted before sending it → feedback
 - Search-based or reinforcement-learning scheduling → feedback
 - Surrogate coverage goals for black-box search → feedback

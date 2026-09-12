@@ -294,6 +294,7 @@ re-architecting — which is the point of listing them at all.
 | **Semantic oracles inferred from request/response corpora** | `CorpusOracle` + store + offline re-check |
 | Semantic oracles inferred from the specification | `CorpusOracle` |
 | Metamorphic relations | `CorpusOracle` |
+| Failure deduplication and clustering | Interaction store + an event-stream listener |
 | Predicting whether a request will be accepted before sending it | `FeedbackListener` |
 | Search-based or reinforcement-learning scheduling | `FeedbackListener` |
 | Surrogate coverage goals for black-box search | `FeedbackListener` |

@@ -62,7 +62,7 @@ into every report.
 `ApiModel.schemas()` holds. This is what makes a *recursive* shape representable at all — held by
 value, a comment with replies or a category with sub-categories would have to contain itself — and it
 is what keeps the name, which inlining destroys and which the operation dependency graph at M4.1, the
-value dictionary at M6.1 and `restest explain` all want back. Resolution is explicit and one step
+value dictionary at M2.7 and `restest explain` all want back. Resolution is explicit and one step
 deep: a document may point one name at another, and a model that followed chains silently would loop
 for ever on one that points at itself.
 
