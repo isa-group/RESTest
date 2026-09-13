@@ -48,6 +48,19 @@ class ResponseModelTest {
     }
 
     @Test
+    @DisplayName("which declared media type covers a reply is answered, not only what shape it has")
+    void the_declared_media_type_that_applies_is_named() {
+        ResponseModel response = new ResponseModel("200",
+                Map.of("application/json", StringSchema.of(), "text/*", StringSchema.of()),
+                Map.of(), Optional.empty());
+
+        assertThat(response.declaredContentTypeFor("application/json; charset=utf-8"))
+                .contains("application/json");
+        assertThat(response.declaredContentTypeFor("TEXT/HTML")).contains("text/*");
+        assertThat(response.declaredContentTypeFor("image/png")).isEmpty();
+    }
+
+    @Test
     @DisplayName("a declared header is found however either side capitalises it")
     void a_header_is_found_case_insensitively() {
         ResponseModel response = new ResponseModel("200", Map.of(),

@@ -1,7 +1,7 @@
 # ADR-0006: One event stream, and every interaction persisted
 
-**Status:** Accepted, amended at M1.4
-**Date:** 2026-09-11 (amended 2026-09-12)
+**Status:** Accepted, amended at M1.4 and M1.6
+**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-13)
 
 ## Context
 
@@ -111,3 +111,50 @@ the golden corpus, and simpler for a reader to reason about."*
 - The tool now depends on a database driver that carries native libraries. The GraalVM native binary
   at M7.3 will need configuration for it. This is routine, and it is the price of not having a
   pure-Java container; it is recorded here so M7.3 does not meet it as a surprise.
+
+## Amendment (M1.6)
+
+**Date:** 2026-09-13
+
+**One way of turning a value into JSON text, and it lives in `restest-core`.** The M1.4 amendment
+above left this open in as many words; M1.6 is where it came due, and it came due a milestone earlier
+than expected.
+
+### Why
+
+`io.restest.store.Json` was a thin adapter over `jackson-core`, kept at the store's edge because the
+store was the only thing that needed it. At M1.6 two more parts of the tool need it and neither can
+see `restest-store`: the JSON report has to write a document, and the schema oracle has to write the
+location of a schema it hands to the validator. The layer rules are right and were not going to be
+relaxed for this.
+
+That leaves the choice the M1.4 amendment already framed — take the dependency deliberately, or move
+the shape into `restest-core` — with a third thing now settled by the same move. `InteractionDocument`
+goes with it. The amendment's own requirement was that *"no second mapping from an interaction to JSON
+is written"*, and M1.6 is the first increment with a reason to write one: a fault in a report quotes
+the request that caused it. It quotes it through the same class the stored run uses, so a fault in a
+report and the same fault in a stored file are the same text.
+
+### How
+
+- `io.restest.store.Json` becomes `io.restest.core.json.JsonText`, and
+  `io.restest.store.InteractionDocument` becomes `io.restest.core.json.InteractionDocument`. Neither
+  changes otherwise; they gained a test of their own, which the second of them had never had.
+- `io.restest.core.json.JsonException` replaces the store's exception in both.
+  `SqliteInteractionStore` catches it and says which stored interaction was damaged, exactly as
+  before.
+- `restest-core` gains `jackson-core` and `restest-store` loses it. The architecture rule confining
+  the JSON library to one module is not dropped; it names a different module.
+
+### Consequences
+
+- `restest-core` is no longer literally dependency-free, which was a stated property of it. What it
+  gains is a streaming reader and writer with no transitive dependencies of its own, and no object
+  mapper; `CLAUDE.md`'s description of the module says so rather than leaving the line to be found
+  false. "No parser" there was always about the OpenAPI parser, and that is still true.
+- One answer in the project to "what does this value look like written down", instead of one per
+  module that happens to need it. M3.5's NDJSON report writes the same shape rather than a second
+  one, which is what the M1.4 amendment asked for.
+- Coverage moved with the code: `InteractionDocument` had been covered only through the store's
+  tests, and counted against `restest-core` the moment it arrived there. It now has its own test,
+  which is where a shape two separate features depend on should have been tested all along.

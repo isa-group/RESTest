@@ -13,5 +13,66 @@
 
     <artifactId>restest-core</artifactId>
     <name>RESTest :: Core</name>
-    <description>Domain model and interfaces. No network, no parser, no heavy dependencies.</description>
+    <description>Domain model and interfaces. No network, no OpenAPI parser, no heavy dependencies.</description>
+
+    <dependencies>
+        <!--
+          The one third-party library this module carries, and only its streaming reader and writer,
+          not the object mapper: RESTest's own JSON values are turned into text and back here, and
+          there is no use for a library that maps Java objects to JSON. It lives in this module
+          because three others need it and none of them may see the other two - the stored run, the
+          report written at the end of a run, and the schema location an oracle hands to the
+          validator. See ADR-0006, Amendment (M1.6).
+        -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              The blocking coverage gate, promised as TODO(M1.6) in the root POM and in docs/ci.md.
+              It is here, on this module, rather than at the root, because only two modules carry a
+              minimum: this one and the other named under "Quality gates" in docs/DESIGN.md.
+
+              The figures are floors, set below what the module actually measures so that they fail
+              on a real loss of testing rather than on rounding. They are never to be lowered to make
+              a build pass; a rule that gets relaxed whenever it fires is not a rule.
+            -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.90</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.85</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

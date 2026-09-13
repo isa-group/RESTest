@@ -22,6 +22,8 @@ import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
 import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.execution.Payload;
+import io.restest.core.json.InteractionDocument;
+import io.restest.core.json.JsonText;
 import io.restest.core.model.OperationId;
 import io.restest.core.store.InteractionQuery;
 import io.restest.core.store.InteractionStoreException;
@@ -260,8 +262,8 @@ class SqliteInteractionStoreTest {
     void the_stored_shape_does_not_change_between_runs() {
         Interaction stored = Interactions.elaborate();
 
-        String once = Json.write(InteractionDocument.of(stored));
-        String again = Json.write(InteractionDocument.of(stored));
+        String once = JsonText.write(InteractionDocument.of(stored));
+        String again = JsonText.write(InteractionDocument.of(stored));
 
         assertThat(once)
                 .describedAs("field order comes from the code, not from how a particular run of "
@@ -276,7 +278,7 @@ class SqliteInteractionStoreTest {
     void numbers_are_stored_readably() {
         Interaction stored = Interactions.answered("GET /widgets", 500);
 
-        String document = Json.write(InteractionDocument.of(stored));
+        String document = JsonText.write(InteractionDocument.of(stored));
 
         assertThat(document)
                 .describedAs("a stored run is meant to be readable by anything that reads JSON, "

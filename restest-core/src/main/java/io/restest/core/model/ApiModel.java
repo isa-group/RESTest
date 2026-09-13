@@ -34,6 +34,10 @@ import java.util.Optional;
  * again. That way, changing how documents are read, or adding support for a newer OpenAPI version,
  * never affects how the rest of the tool uses the result.
  *
+ * <p>The document itself is kept alongside, in {@link #document()}, for the one job that must not go
+ * through anybody's reading of it: checking whether a reply matches what the API promised. A
+ * promise is the document's to make, so it is the document a reply is held to.
+ *
  * <p>It never changes once built, and it does not depend on any shared or global state, so several
  * of these can exist side by side - for two different runs, two different APIs, or two versions of
  * the same API - without one interfering with another.
@@ -46,6 +50,9 @@ import java.util.Optional;
  *     {@link SchemaReference} resolves and therefore how a recursive shape is held
  * @param issues everything that could not be read, each saying where it was and why. An empty list
  *     means the document was read in full
+ * @param document the specification itself, written as one OpenAPI 3 JSON document, or nothing if
+ *     it could not be kept. Held so that a reply can be checked against what the document actually
+ *     says rather than against anybody's reading of it
  */
 public record ApiModel(
         String title,
@@ -53,11 +60,13 @@ public record ApiModel(
         List<Server> servers,
         List<Operation> operations,
         Map<String, CanonicalSchema> schemas,
-        List<SpecificationIssue> issues) {
+        List<SpecificationIssue> issues,
+        Optional<String> document) {
 
     public ApiModel {
         Objects.requireNonNull(title, "title");
         Objects.requireNonNull(version, "version");
+        Objects.requireNonNull(document, "document");
         servers = List.copyOf(servers);
         operations = List.copyOf(operations);
         schemas = Copies.orderedMap(schemas, "schemas");
@@ -67,17 +76,29 @@ public record ApiModel(
 
     /** An API of the given name and version with the given operations, read in full. */
     public static ApiModel of(String title, String version, List<Operation> operations) {
-        return new ApiModel(title, version, List.of(), operations, Map.of(), List.of());
+        return new ApiModel(title, version, List.of(), operations, Map.of(), List.of(),
+                Optional.empty());
     }
 
     /** The same API, with the named shapes its references resolve against. */
     public ApiModel withSchemas(Map<String, CanonicalSchema> value) {
-        return new ApiModel(title, version, servers, operations, value, issues);
+        return new ApiModel(title, version, servers, operations, value, issues, document);
     }
 
     /** The same API, carrying what could not be read. */
     public ApiModel withIssues(List<SpecificationIssue> value) {
-        return new ApiModel(title, version, servers, operations, schemas, value);
+        return new ApiModel(title, version, servers, operations, schemas, value, document);
+    }
+
+    /**
+     * The same API, carrying the specification document it was read from.
+     *
+     * <p>Written as one OpenAPI 3 JSON document whatever the original was, so that whoever reads it
+     * has one shape to expect. A Swagger 2.0 document is therefore the converted form of itself.
+     */
+    public ApiModel withDocument(String value) {
+        return new ApiModel(title, version, servers, operations, schemas, issues,
+                Optional.of(Objects.requireNonNull(value, "value")));
     }
 
     /** The operation under the given identifier, if this API has one. */

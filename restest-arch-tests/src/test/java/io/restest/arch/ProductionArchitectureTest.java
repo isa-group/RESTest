@@ -68,10 +68,29 @@ class ProductionArchitectureTest {
     }
 
     @Test
-    @DisplayName("only restest-store references the database driver and the JSON library (ADR-0004)")
-    void only_restest_store_references_the_database_and_json_libraries() {
+    @DisplayName("only restest-store references the database driver (ADR-0004)")
+    void only_restest_store_references_the_database_driver() {
         check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "store", "org.sqlite.."));
-        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "store", "com.fasterxml.."));
+    }
+
+    // The library that turns JSON into text and back moved to restest-core when a third part of the
+    // tool came to need it, and the rule moved with it rather than being dropped. It is still one
+    // module's business; it is simply a different module now. See ADR-0006, Amendment (M1.6).
+    @Test
+    @DisplayName("only restest-core references the JSON library (ADR-0004)")
+    void only_restest_core_references_the_json_library() {
+        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "core", "com.fasterxml.."));
+    }
+
+    // The schema validator, and the JSON library it brings with it, stay inside the module that
+    // decides whether a reply matched its declared shape. tools.jackson is named as well as the
+    // validator's own package because it arrives with the validator, and letting it leak would put
+    // a second JSON library into modules that already have one. See ADR-0014.
+    @Test
+    @DisplayName("only restest-oracles references the schema validator (ADR-0014)")
+    void only_restest_oracles_references_the_schema_validator() {
+        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "oracles", "com.networknt.."));
+        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "oracles", "tools.jackson.."));
     }
 
     @Test

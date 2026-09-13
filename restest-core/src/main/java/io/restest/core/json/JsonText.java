@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.restest.store;
+package io.restest.core.json;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.StreamReadConstraints;
-import io.restest.core.json.JsonValue;
-import io.restest.core.store.InteractionStoreException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
@@ -35,11 +33,15 @@ import java.util.Objects;
  * Turns RESTest's own idea of a JSON value into text, and text back into it.
  *
  * <p>RESTest keeps JSON in types of its own rather than a library's, so that everything built on top
- * of it - a generator, an oracle, a report - depends on nothing but RESTest. That choice stops at the
- * edge of the disk: writing it out and reading it back needs a real JSON reader and writer, and the
- * escaping and number rules are exactly the sort of thing that looks easy and is not. So this is a
- * thin adapter over a library that does it properly, and it lives here, next to the disk, rather than
- * anywhere a user of RESTest would meet it.
+ * of it - a generator, an oracle, a report - works in one vocabulary. That choice stops wherever the
+ * text itself is needed: writing it out and reading it back needs a real JSON reader and writer, and
+ * the escaping and number rules are exactly the sort of thing that looks easy and is not. So this is
+ * a thin adapter over a library that does it properly.
+ *
+ * <p>Three parts of RESTest need it and none of them can see the other two: the file a run is stored
+ * in, the report written at the end of a run, and the schema location an oracle hands to the
+ * validator. It therefore sits in the one module all three share, so that this project has exactly
+ * one answer to "what does this value look like written down".
  *
  * <p>Numbers keep their exact written form, so an identifier with twenty digits comes back as itself
  * rather than as the nearest number a computer could hold - and they are written the way people
@@ -47,14 +49,15 @@ import java.util.Objects;
  * produces {@code 2E+2}, which is the same number and is not what anybody reading a stored run
  * expects to see.
  */
-public final class Json {
+public final class JsonText {
 
     /**
      * The reader refuses very long pieces of text by default, as a defence against hostile input.
-     * That defence is aimed at data arriving from strangers; here the text is a run this tool wrote
-     * itself moments earlier, and the size of a reply body is the user's own setting to make. Left at
-     * the default, a run that kept a twenty-megabyte reply would be written happily and then be
-     * unreadable for ever.
+     * That defence is aimed at data arriving from strangers. Nothing an API under test sends back
+     * is read here - a reply body is judged by the schema validator, which applies its own limits to
+     * it - so what this reads is a run RESTest wrote itself, and the size of a reply body it kept is
+     * the user's own setting to make. Left at the default, a run that kept a twenty-megabyte reply
+     * would be written happily and then be unreadable for ever.
      */
     private static final JsonFactory FACTORY = JsonFactory.builder()
             .streamReadConstraints(StreamReadConstraints.builder()
@@ -64,7 +67,7 @@ public final class Json {
                     .build())
             .build();
 
-    private Json() {
+    private JsonText() {
     }
 
     /**
@@ -80,7 +83,7 @@ public final class Json {
             out.enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);
             writeValue(out, value);
         } catch (IOException e) {
-            throw new InteractionStoreException("This value could not be written as JSON", e);
+            throw new JsonException("This value could not be written as JSON", e);
         }
         return text.toString();
     }
@@ -95,11 +98,11 @@ public final class Json {
         Objects.requireNonNull(text, "text");
         try (JsonParser in = FACTORY.createParser(text)) {
             if (in.nextToken() == null) {
-                throw new InteractionStoreException("Empty text where a JSON value was expected");
+                throw new JsonException("Empty text where a JSON value was expected");
             }
             return readValue(in);
         } catch (IOException e) {
-            throw new InteractionStoreException(
+            throw new JsonException(
                     "Stored JSON could not be read back: " + e.getMessage(), e);
         }
     }
@@ -139,7 +142,7 @@ public final class Json {
             case VALUE_STRING -> JsonValue.of(in.getText());
             case START_ARRAY -> readArray(in);
             case START_OBJECT -> readObject(in);
-            case null, default -> throw new InteractionStoreException(
+            case null, default -> throw new JsonException(
                     "A JSON value cannot start with " + token);
         };
     }

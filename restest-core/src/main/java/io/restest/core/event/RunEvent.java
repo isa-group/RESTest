@@ -1,0 +1,103 @@
+/*
+ * Copyright 2026 ISA Research Group, Universidad de Sevilla.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.restest.core.event;
+
+import io.restest.core.exec.EngineStatistics;
+import io.restest.core.execution.Interaction;
+import io.restest.core.execution.TestCase;
+import io.restest.core.oracle.Finding;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Objects;
+
+/**
+ * Something that happened during a run, announced so that anyone interested can react.
+ *
+ * <p>A run does not call the report, the statistics or the stored file directly. It says what it is
+ * doing - "this test was planned", "this attempt finished", "this is a fault" - and whoever is
+ * listening does something about it. Adding another kind of report therefore means writing a
+ * listener, not changing how a run works.
+ *
+ * <p>The list is closed, which is what lets a listener handle every kind of event and be told by
+ * the compiler if a new one is ever added, rather than silently ignoring it.
+ */
+public sealed interface RunEvent {
+
+    /** When it happened. */
+    Instant at();
+
+    /**
+     * A run has begun against a particular API.
+     *
+     * @param at      when it began
+     * @param api     the title the specification gives the API
+     * @param baseUrl where the requests are being sent
+     */
+    record RunStarted(Instant at, String api, String baseUrl) implements RunEvent {
+        public RunStarted {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(api, "api");
+            Objects.requireNonNull(baseUrl, "baseUrl");
+        }
+    }
+
+    /** A request has been decided on, but not yet sent. */
+    record TestCasePlanned(Instant at, TestCase testCase) implements RunEvent {
+        public TestCasePlanned {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(testCase, "testCase");
+        }
+    }
+
+    /**
+     * An attempt is over: the request went out and either a reply came back, or something went
+     * wrong on the way. This is the event oracles judge and the stored file records.
+     *
+     * <p>The request going out and the reply coming back are one event rather than two, because an
+     * attempt is only describable once it has finished - and an attempt that was sent and never
+     * answered is already one of the things an interaction can be.
+     */
+    record InteractionCompleted(Instant at, Interaction interaction) implements RunEvent {
+        public InteractionCompleted {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(interaction, "interaction");
+        }
+    }
+
+    /** An oracle has decided something was wrong, and said what. */
+    record FaultFound(Instant at, Finding finding) implements RunEvent {
+        public FaultFound {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(finding, "finding");
+        }
+    }
+
+    /**
+     * The run is over. Carries how long it took and what the engine saw, so that a report can say
+     * how much of the time was spent waiting for the API rather than working.
+     */
+    record RunFinished(Instant at, Duration elapsed, EngineStatistics engine) implements RunEvent {
+        public RunFinished {
+            Objects.requireNonNull(at, "at");
+            Objects.requireNonNull(elapsed, "elapsed");
+            Objects.requireNonNull(engine, "engine");
+            if (elapsed.isNegative()) {
+                throw new IllegalArgumentException("a run cannot take less time than none: "
+                        + elapsed);
+            }
+        }
+    }
+}

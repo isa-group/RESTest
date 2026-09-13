@@ -1,0 +1,74 @@
+/*
+ * Copyright 2026 ISA Research Group, Universidad de Sevilla.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.restest.oracles;
+
+import io.restest.core.event.EventStream;
+import io.restest.core.event.RunEvent;
+import io.restest.core.event.RunListener;
+import io.restest.core.model.ApiModel;
+import io.restest.core.oracle.Finding;
+import io.restest.core.oracle.Oracle;
+import java.time.Clock;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Listens to a run and asks every rule about each attempt, announcing whatever they object to.
+ *
+ * <p>This is what joins the two halves of testing together. Requests go out and replies come back;
+ * each finished attempt is announced; this hears the announcement, puts the attempt to every rule
+ * in turn, and announces each fault they find so that the reports can print it.
+ *
+ * <p>Judging happens away from the sending of requests - it is a listener like any other - which is
+ * what keeps a slow rule from becoming a slow run. A rule that throws is not allowed to stop the
+ * others or the run; the failure is counted where every listener failure is counted.
+ */
+public final class OracleListener implements RunListener {
+
+    private final ApiModel api;
+    private final List<Oracle> oracles;
+    private final EventStream events;
+    private final Clock clock;
+
+    /** Judges with the rules RESTest ships with. */
+    public static OracleListener standard(ApiModel api, EventStream events) {
+        return new OracleListener(api, Oracles.standard(), events, Clock.systemUTC());
+    }
+
+    public OracleListener(ApiModel api, List<Oracle> oracles, EventStream events, Clock clock) {
+        this.api = Objects.requireNonNull(api, "api");
+        this.oracles = List.copyOf(oracles);
+        this.events = Objects.requireNonNull(events, "events");
+        this.clock = Objects.requireNonNull(clock, "clock");
+    }
+
+    /** The rules this is judging with, in the order it asks them. */
+    public List<Oracle> oracles() {
+        return oracles;
+    }
+
+    @Override
+    public void on(RunEvent event) {
+        if (!(event instanceof RunEvent.InteractionCompleted completed)) {
+            return;
+        }
+        for (Oracle oracle : oracles) {
+            for (Finding finding : oracle.judge(completed.interaction(), api)) {
+                events.publish(new RunEvent.FaultFound(clock.instant(), finding));
+            }
+        }
+    }
+}

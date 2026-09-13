@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.restest.store;
+package io.restest.core.json;
 
 import io.restest.core.execution.BodyValue;
 import io.restest.core.execution.Header;
@@ -28,11 +28,9 @@ import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.execution.TestCaseId;
 import io.restest.core.execution.ValueOrigin;
-import io.restest.core.json.JsonValue;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.ParameterLocation;
-import io.restest.core.store.InteractionStoreException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -48,7 +46,12 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * The shape one interaction takes on disk, and how it gets back out again.
+ * The shape one interaction takes when it is written down, and how it gets back out again.
+ *
+ * <p>There is deliberately only one of these in the project. A run's stored file and the report
+ * written at the end of a run both describe the same attempt, and if each wrote its own version the
+ * two would drift, so both come through here. The evidence quoted in a report is therefore the same
+ * evidence, byte for byte, as the evidence kept on disk.
  *
  * <p>Everything a run did is stored as a JSON object of this shape - the request as it was sent, the
  * reply as it came back, which test it belonged to and where every value in it came from. Keeping it
@@ -108,10 +111,10 @@ public final class InteractionDocument {
                     toOutcome(member(document, "outcome")),
                     Instant.parse(string(document, "sentAt")),
                     Duration.parse(string(document, "elapsed")));
-        } catch (InteractionStoreException alreadyExplained) {
+        } catch (JsonException alreadyExplained) {
             throw alreadyExplained;
         } catch (RuntimeException e) {
-            throw new InteractionStoreException("A stored interaction could not be read back: "
+            throw new JsonException("A stored interaction could not be read back: "
                     + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
         }
     }
@@ -202,7 +205,7 @@ public final class InteractionDocument {
             case "generated" -> new ValueOrigin.Generated(string(document, "source"));
             case "derived" -> new ValueOrigin.Derived(
                     InteractionId.of(string(document, "from")), string(document, "description"));
-            default -> throw new InteractionStoreException(
+            default -> throw new JsonException(
                     "A value came from '" + kind + "', which is not something this version knows");
         };
     }
@@ -221,7 +224,7 @@ public final class InteractionDocument {
     private static HttpRequestRecord toRequest(JsonValue value) {
         JsonValue.JsonObject document = object(value, "the request");
         HttpMethod method = HttpMethod.named(string(document, "method"))
-                .orElseThrow(() -> new InteractionStoreException("A request was recorded with the "
+                .orElseThrow(() -> new JsonException("A request was recorded with the "
                         + "method '" + string(document, "method") + "', which is not one this "
                         + "version knows"));
         return new HttpRequestRecord(method, string(document, "url"),
@@ -259,13 +262,13 @@ public final class InteractionDocument {
         Optional<Payload> body = document.member("body").map(InteractionDocument::toPayload);
         return switch (kind) {
             case "answered" -> new InteractionOutcome.Answered(new HttpResponseRecord(
-                    toStatusLine(document).orElseThrow(() -> new InteractionStoreException(
+                    toStatusLine(document).orElseThrow(() -> new JsonException(
                             "An answered interaction was recorded without a status code")),
                     toHeaders(document), body));
             case "malformed" -> new InteractionOutcome.MalformedResponse(
                     string(document, "reason"), toStatusLine(document), toHeaders(document), body);
             case "failed" -> new InteractionOutcome.TransportFailure(string(document, "reason"));
-            default -> throw new InteractionStoreException(
+            default -> throw new JsonException(
                     "An attempt ended as '" + kind + "', which is not something this version knows");
         };
     }
@@ -362,12 +365,12 @@ public final class InteractionDocument {
         if (value instanceof JsonValue.JsonObject object) {
             return object;
         }
-        throw new InteractionStoreException(
+        throw new JsonException(
                 "A stored interaction is not shaped as it should be: " + what + " is not an object");
     }
 
     private static JsonValue member(JsonValue.JsonObject document, String name) {
-        return document.member(name).orElseThrow(() -> new InteractionStoreException(
+        return document.member(name).orElseThrow(() -> new JsonException(
                 "A stored interaction is missing its '" + name + "'"));
     }
 
@@ -379,14 +382,14 @@ public final class InteractionDocument {
         if (value instanceof JsonValue.JsonString string) {
             return string.value();
         }
-        throw new InteractionStoreException("A stored interaction's '" + name + "' is not text");
+        throw new JsonException("A stored interaction's '" + name + "' is not text");
     }
 
     private static java.math.BigDecimal number(JsonValue value, String name) {
         if (value instanceof JsonValue.JsonNumber number) {
             return number.value();
         }
-        throw new InteractionStoreException("A stored interaction's '" + name + "' is not a number");
+        throw new JsonException("A stored interaction's '" + name + "' is not a number");
     }
 
     private static List<JsonValue> array(JsonValue.JsonObject document, String name) {
@@ -394,6 +397,6 @@ public final class InteractionDocument {
         if (value instanceof JsonValue.JsonArray array) {
             return array.elements();
         }
-        throw new InteractionStoreException("A stored interaction's '" + name + "' is not a list");
+        throw new JsonException("A stored interaction's '" + name + "' is not a list");
     }
 }

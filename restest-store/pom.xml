@@ -25,16 +25,6 @@
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
         </dependency>
-
-        <!--
-          Only the streaming reader and writer, not the object mapper: this module turns RESTest's
-          own JSON values into text and back, and has no use for a library that maps Java objects to
-          JSON. Keeping to jackson-core also keeps the dependency small and its surface tiny.
-        -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

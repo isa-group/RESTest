@@ -61,3 +61,8 @@ GUIA-CLAUDE-CODE.md
 docs/PROPOSAL.md
 # Bootstrap archive from the initial import
 .restest2-bootstrap.zip
+
+# A run's stored evidence. One of these is written wherever a demonstration is run from;
+# it belongs to whoever ran it, not to the repository.
+*.sqlite
+*.sqlite-journal

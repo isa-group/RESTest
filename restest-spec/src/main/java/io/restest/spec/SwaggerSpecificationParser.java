@@ -22,7 +22,10 @@ import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.UnsupportedSchema;
 import io.restest.core.spec.SpecificationParser;
 import io.swagger.parser.OpenAPIParser;
+import io.swagger.v3.core.util.Json;
+import io.swagger.v3.core.util.Json31;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.SpecVersion;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
@@ -149,11 +152,49 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
         List<SpecificationIssue> issues = new ArrayList<>(documentIssues);
         issues.addAll(operations.issues());
 
-        return new ApiModel(title, version, servers, operations.operations(), schemas, issues);
+        Optional<String> document = asOneJsonDocument(api, issues);
+
+        return new ApiModel(title, version, servers, operations.operations(), schemas, issues,
+                document);
+    }
+
+    /**
+     * The document itself, written back out as a single OpenAPI 3 JSON document.
+     *
+     * <p>RESTest keeps this so that a reply from an API can be checked against what its document
+     * actually says, rather than against RESTest's reading of it. Two things follow from writing the
+     * document out here rather than keeping the text that was read in. A Swagger 2.0 document is kept
+     * in its converted form, because that is the form every later stage expects and because 2.0
+     * spells its responses differently. And a YAML document is kept as JSON, which is the same
+     * document written another way.
+     *
+     * <p>References are left as they are, not followed and pasted in. A document that refers to
+     * itself has no finite pasted-in form, and whoever reads this follows references perfectly well.
+     *
+     * <p>If it cannot be written out, that is recorded as an issue and the run carries on with one
+     * fewer thing it can check. Fewer checks is worse than all of them; it is far better than
+     * refusing to test the API at all.
+     */
+    private static Optional<String> asOneJsonDocument(OpenAPI api, List<SpecificationIssue> issues) {
+        String written;
+        try {
+            written = api.getSpecVersion() == SpecVersion.V31
+                    ? Json31.pretty(api)
+                    : Json.pretty(api);
+        } catch (RuntimeException e) {
+            written = null;
+        }
+        if (written == null || written.isBlank()) {
+            issues.add(SpecificationIssue.document("info", "this document could not be written back "
+                    + "out as JSON, so replies cannot be checked against the shapes it declares"));
+            return Optional.empty();
+        }
+        return Optional.of(written);
     }
 
     private static ApiModel incomplete(SpecificationIssue issue) {
-        return new ApiModel("", "", List.of(), List.of(), Map.of(), List.of(issue));
+        return new ApiModel("", "", List.of(), List.of(), Map.of(), List.of(issue),
+                Optional.empty());
     }
 
     /**

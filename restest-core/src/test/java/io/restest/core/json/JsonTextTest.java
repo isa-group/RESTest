@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.restest.store;
+package io.restest.core.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import io.restest.core.json.JsonValue;
-import io.restest.core.store.InteractionStoreException;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,7 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
  * Whatever RESTest can hold as a JSON value has to survive being written to a file and read back,
  * because a stored run is only useful if it is the run that happened.
  */
-class JsonTest {
+class JsonTextTest {
 
     static List<JsonValue> values() {
         return List.of(
@@ -70,7 +68,7 @@ class JsonTest {
     @MethodSource("values")
     @DisplayName("every kind of value comes back as itself")
     void a_value_survives_being_written_and_read(JsonValue value) {
-        assertThat(Json.read(Json.write(value))).isEqualTo(value);
+        assertThat(JsonText.read(JsonText.write(value))).isEqualTo(value);
     }
 
     @Test
@@ -78,7 +76,7 @@ class JsonTest {
     void a_large_number_is_not_rounded() {
         JsonValue identifier = JsonValue.of(new BigDecimal("90071992547409911"));
 
-        JsonValue.JsonNumber read = (JsonValue.JsonNumber) Json.read(Json.write(identifier));
+        JsonValue.JsonNumber read = (JsonValue.JsonNumber) JsonText.read(JsonText.write(identifier));
 
         assertThat(read.value().toPlainString())
                 .describedAs("an identifier read back as a slightly different number would make a "
@@ -89,17 +87,17 @@ class JsonTest {
     @Test
     @DisplayName("the order an object's members were written in is the order they come back")
     void member_order_is_kept() {
-        assertThat(((JsonValue.JsonObject) Json.read(Json.write(nested()))).members().keySet())
+        assertThat(((JsonValue.JsonObject) JsonText.read(JsonText.write(nested()))).members().keySet())
                 .containsExactly("widget", "count", "missing");
     }
 
     @Test
     @DisplayName("text that is not JSON at all is reported, not guessed at")
     void broken_text_is_reported() {
-        assertThatExceptionOfType(InteractionStoreException.class)
-                .isThrownBy(() -> Json.read("{\"unfinished\": "));
-        assertThatExceptionOfType(InteractionStoreException.class)
-                .isThrownBy(() -> Json.read(""))
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> JsonText.read("{\"unfinished\": "));
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> JsonText.read(""))
                 .withMessageContaining("Empty");
     }
 }

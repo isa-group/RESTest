@@ -76,10 +76,26 @@
              whatever Maven's dependency mediation happens to resolve (ADR-0007's own complaint about
              RESTest 1.x's undeclared swagger-parser dependency, repeated one level down). -->
         <snakeyaml.version>2.6</snakeyaml.version>
+        <!-- Same reasoning as snakeyaml below: restest-spec's own source writes the parsed document
+             back out with io.swagger.v3.core.util.Json, so the library that provides it is pinned
+             here rather than left to whatever swagger-parser happens to resolve. Must move with
+             swagger-parser: the two share the model classes they serialise. -->
+        <swagger-core.version>2.2.52</swagger-core.version>
         <okhttp.version>5.5.0</okhttp.version>
         <wiremock.version>3.13.2</wiremock.version>
         <sqlite.version>3.50.3.0</sqlite.version>
         <jackson.version>2.22.1</jackson.version>
+        <!-- Versioned separately from the rest of Jackson, and pinned here for a reason found the
+             hard way: the schema validator's own JSON library needs 2.22, while another path
+             through the tree asks for 2.20, and Maven's mediation picks the nearer one. The result
+             was a class missing at runtime in the one module that has every other module on its
+             class path. Same reasoning as snakeyaml below; a worse failure, because it only shows
+             up when everything is assembled. -->
+        <jackson-annotations.version>2.22</jackson-annotations.version>
+        <json-schema-validator.version>3.0.7</json-schema-validator.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <pitest.version>1.30.0</pitest.version>
+        <pitest-junit5.version>1.2.3</pitest-junit5.version>
 
         <!--
           Default for the JVM arguments surefire passes on. JaCoCo's prepare-agent goal replaces
@@ -115,6 +131,11 @@
                 <version>${swagger-parser.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.swagger.core.v3</groupId>
+                <artifactId>swagger-core</artifactId>
+                <version>${swagger-core.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml.version}</version>
@@ -140,6 +161,26 @@
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson-annotations.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.networknt</groupId>
+                <artifactId>json-schema-validator</artifactId>
+                <version>${json-schema-validator.version}</version>
+            </dependency>
+            <!-- Arrives through the schema validator, which logs through the SLF4J facade. Without a
+                 binding, SLF4J prints three warning lines to standard error on first use, which is
+                 not an acceptable first impression of a command-line tool. Choosing the binding is
+                 the application's business, so restest-cli takes the do-nothing one at runtime; no
+                 library here picks one. -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-nop</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -211,6 +252,18 @@
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.pitest</groupId>
+                    <artifactId>pitest-maven</artifactId>
+                    <version>${pitest.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.pitest</groupId>
+                            <artifactId>pitest-junit5-plugin</artifactId>
+                            <version>${pitest-junit5.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -233,20 +286,51 @@
                         </goals>
                     </execution>
                     <!--
-                      TODO(M1.6): add a `check` execution enforcing line and branch minima on
-                      restest-core and restest-oracles, the two modules docs/DESIGN.md names under
-                      "Quality gates".
-                      Deferred deliberately: at M0.2 no module contains production code, so any
-                      threshold would be an assertion about zero classes.
+                      Measured everywhere, blocking on two modules. `check` executions live in
+                      restest-core/pom.xml and restest-oracles/pom.xml - the two modules
+                      docs/DESIGN.md names under "Quality gates" - rather than here, because a
+                      minimum imposed on every module would be a different promise from the one
+                      that was made, and would have to be set low enough to be worthless.
 
-                      Note what this does and does not do today. The agent is attached and `report`
-                      runs, but a module with no tests produces no execution data, so the report
-                      goal skips - which at M0.2 means no coverage report is produced at all. The
-                      wiring is here so that M1.1 gets measurement for free; the output arrives with
-                      the first tested code. See docs/ci.md.
+                      Everywhere else the agent is attached and `report` runs, so a module's
+                      coverage is visible without being enforced. A module with no tests produces
+                      no execution data and the report goal skips, saying so. See docs/ci.md.
                     -->
                 </executions>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+          Asking for no tests asks for no coverage check. The two modules with a blocking minimum
+          would otherwise fail a `-DskipTests` build for having covered nothing - which is true, and
+          is not news: nothing was run. Continuous integration never skips tests, so the gate is
+          never skipped where it matters. Both spellings are covered because both are in common use.
+        -->
+        <profile>
+            <id>tests-skipped</id>
+            <activation>
+                <property>
+                    <name>skipTests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <jacoco.skip>true</jacoco.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>tests-not-even-built</id>
+            <activation>
+                <property>
+                    <name>maven.test.skip</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <jacoco.skip>true</jacoco.skip>
+            </properties>
+        </profile>
+    </profiles>
 </project>

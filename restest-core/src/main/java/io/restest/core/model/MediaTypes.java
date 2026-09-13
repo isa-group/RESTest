@@ -57,19 +57,30 @@ final class MediaTypes {
 
     /** What the document declares for the given media type: exact, then {@code type/*}, then <code>*&#47;*</code>. */
     static <T> Optional<T> lookup(Map<String, T> declared, String mediaType) {
+        return lookupKey(declared, mediaType).map(declared::get);
+    }
+
+    /**
+     * Which of the declared media types covers the given one, by the same order of preference:
+     * exact, then {@code type/*}, then <code>*&#47;*</code>.
+     *
+     * <p>Separate from {@link #lookup} because the answer to "which of these applies" is sometimes
+     * wanted in its own right, not only the value filed under it - an oracle looking the same shape
+     * up in the original document needs to know which key it is looking for.
+     */
+    static <T> Optional<String> lookupKey(Map<String, T> declared, String mediaType) {
         String wanted = normalise(mediaType);
-        T exact = declared.get(wanted);
-        if (exact != null) {
-            return Optional.of(exact);
+        if (declared.containsKey(wanted)) {
+            return Optional.of(wanted);
         }
         int slash = wanted.indexOf('/');
         if (slash > 0) {
-            T subtypeRange = declared.get(wanted.substring(0, slash) + "/*");
-            if (subtypeRange != null) {
+            String subtypeRange = wanted.substring(0, slash) + "/*";
+            if (declared.containsKey(subtypeRange)) {
                 return Optional.of(subtypeRange);
             }
         }
-        return Optional.ofNullable(declared.get("*/*"));
+        return declared.containsKey("*/*") ? Optional.of("*/*") : Optional.empty();
     }
 
     /**

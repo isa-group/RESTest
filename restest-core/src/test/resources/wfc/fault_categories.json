@@ -1,0 +1,97 @@
+[ {
+  "code" : 100,
+  "testCaseLabel" : "causes500_internalServerError",
+  "fullDescription" : "The HTTP status code 500 represents a 'Server Error'. Typically, when there is crash in the business logic of the tested backend, like for example due to a null-pointer exception, the server would not crash, but rather return a response with status code 500. Therefore, the presence of such a response 'might' indicate the presence of a fault in the backend. However, such code might also be used for other cases that have nothing to do with software faults. For example, if a request cannot be handled due to issue with the environment, e.g., databases and  communications with other APIs, a status code 500 could be sent. As such, although there is high chances that a 500 status code might point to the presence of a software fault in the tested application, they still need to be manually checked due to possible 'false-positive'.",
+  "descriptiveName" : "HTTP Status 500",
+  "label" : "F100:HTTP Status 500"
+}, {
+  "code" : 101,
+  "testCaseLabel" : "returnsMismatchResponseWithSchema",
+  "fullDescription" : "A schema, like for example OpenAPI for REST, defines the structures not only of the inputs but also the outputs of the API. If what returned by an API is not conforming to its schema, then it is a clear fault. However, whether the fault is in the API (i.e., it does not conform to the schema) or in the schema itself (i.e., it is underspecified, or having mistakes) is something that cannot be known for sure without debugging the issue.",
+  "descriptiveName" : "Received A Response From API With A Structure/Data That Is Not Matching Its Schema",
+  "label" : "F101:Received A Response From API With A Structure/Data That Is Not Matching Its Schema"
+}, {
+  "code" : 102,
+  "testCaseLabel" : "successOnInvalidInputs",
+  "fullDescription" : "API inputs might have constraints (e.g., integers in a specific range, and strings matching a given regular expression). Also, they need be to of specific types (e.g., integers, booleans, strings, dates, arrays and objects). If some input data does not satisfy the type on constraints defined in the schema, then the API should mark the request as 'user error'. However, if for any reason the request is processed successfully, then it is a fault. Either the schema is incorrect, or the API is not properly discarding invalid data.",
+  "descriptiveName" : "Received Success Response When Sending Wrong Data",
+  "label" : "F102:Received Success Response When Sending Wrong Data"
+}, {
+  "code" : 103,
+  "testCaseLabel" : "deleteNotWorking",
+  "fullDescription" : "If a resource is deleted, and the API responds that such request was successful, then such resource should no longer being available. New requests to access it should fail. Otherwise, if it is still possible to access the resource, then it was not really deleted. Then, as such, it means that the delete operation is faulty.",
+  "descriptiveName" : "Resource Still Accessible After Being Deleted",
+  "label" : "F103:Resource Still Accessible After Being Deleted"
+}, {
+  "code" : 104,
+  "testCaseLabel" : "sideEffectsOnFailedCreation",
+  "fullDescription" : "The API might expose endpoints to create new resources. The creation of a new resource might fail due to non-satisfied input constraints, or based on constraints in the state of the backend. If the API reports that the creation operation failed, then such action should have no side-effects The resource (e.g., with partial data) should not be accessible.",
+  "descriptiveName" : "Failed Creation of Resource Has Side Effects on Backend",
+  "label" : "F104:Failed Creation of Resource Has Side Effects on Backend"
+}, {
+  "code" : 200,
+  "testCaseLabel" : "vulnerableToSQLInjection",
+  "fullDescription" : "Input data was not properly sanitized. Its use in SQL commands led to execute arbitrary commands on the database. See OWASP Top 10 for more information.",
+  "descriptiveName" : "SQL Injection (SQLi)",
+  "label" : "F200:SQL Injection (SQLi)"
+}, {
+  "code" : 201,
+  "testCaseLabel" : "vulnerableToXSS",
+  "fullDescription" : "XSS is an attack in which it is possible to inject malicious scripts into web pages viewed users. This works as well in APIs, if the malicious payload is stored as it is, and then read afterwards by a frontend web application. See OWASP Top 10 for more information.",
+  "descriptiveName" : "Cross-Site Scripting (XSS)",
+  "label" : "F201:Cross-Site Scripting (XSS)"
+}, {
+  "code" : 202,
+  "testCaseLabel" : "vulnerableToSSRF",
+  "fullDescription" : "Some inputs might be URLs, which are then used by the API to retrieve data from external services. However, if the hostnames of these URLs are not verified, the API could be tricked into making requests towards servers it should not to, like for example the 'localhost'. See OWASP Top 10 for more information.",
+  "descriptiveName" : "Server-Side Request Forgery (SSRF)",
+  "label" : "F202:Server-Side Request Forgery (SSRF)"
+}, {
+  "code" : 203,
+  "testCaseLabel" : "vulnerableToMassAssignment",
+  "fullDescription" : "This vulnerability exploits possible active record pattern misconfigurations to modify fields of  a record that should not be accessible via the API. See OWASP Top 10 for more information.",
+  "descriptiveName" : "Mass Assignment",
+  "label" : "F203:Mass Assignment"
+}, {
+  "code" : 204,
+  "testCaseLabel" : "allowsUnauthorizedAccessToProtectedResource",
+  "fullDescription" : "When accessing a protected resource, could get as a response a 403 not-authorized status code. If the resource does not exist, then returning a 404 would be a security leak, as now the client would know if resources, they have no access to, do exist or not. In these cases, to avoid unauthorized information leakage, a server should consistently either always return 403 or 404 for protected resources, regardless of whether they exist or not.",
+  "descriptiveName" : "Leakage Information Existence of Protected Resource",
+  "label" : "F204:Leakage Information Existence of Protected Resource"
+}, {
+  "code" : 205,
+  "testCaseLabel" : "authenticatedButWronglyToldNot",
+  "fullDescription" : "If the user is providing valid credentials, and if they try to access a protected resource, they should get a status code 403 (not authorized), and not 401 (not authenticated). With a 401, the user might wrongly think there is a problem with their credentials, and not that they have no right to access to that resource. However, to avoid false positives related to misconfigured credentials, these credentials should be first successfully validated on some other resources before flagging a returned 401 as a server fault.",
+  "descriptiveName" : "Wrongly Not Recognized as Authenticated",
+  "label" : "F205:Wrongly Not Recognized as Authenticated"
+}, {
+  "code" : 206,
+  "testCaseLabel" : "missedAuthorizationCheck",
+  "fullDescription" : "BOLA and BFLA are major security vulnerabilities. To avoid users accessing protected resources, authorization mechanisms are usually put in place. However, it can happen that, on some endpoints, these authorization mechanisms are missing or misconfigured by mistake. This can have disastrous consequences, e.g., a regular user deleting all data from all other users. However, access policies could be arbitrarily complex, where some users might validly interact with some resources of other users. A common example is 'administrator' users. Without a formal specification describing in details the access policies in place, it is hard to say automatically if we are in the case of a BOLA/BFLA vulnerability. Still, some heuristics could be used to flag highly suspicious cases. For example, if a user is blocked with a 403 to do a PUT and a PATCH on a resource, it would be quite suspicious if a DELETE would work just fine on that resource.",
+  "descriptiveName" : "Allowed To Modify Resource That Likely Should Had Been Protected",
+  "label" : "F206:Allowed To Modify Resource That Likely Should Had Been Protected"
+}, {
+  "code" : 207,
+  "testCaseLabel" : "ignoreAnonymous",
+  "fullDescription" : "Protected resources would return a 403 status code when a user that has no rights to them tries to access them. Without providing a formal specification, it might not be possible to know which users have rights or not on a resource. However, being able to access it with no authentication, while some authenticated users are blocked, would be a major security vulnerability. Blocked users could simply drop their authentication credentials to access those protected resources.",
+  "descriptiveName" : "A Protected Resource Is Accessible Without Providing Any Authentication",
+  "label" : "F207:A Protected Resource Is Accessible Without Providing Any Authentication"
+}, {
+  "code" : 208,
+  "testCaseLabel" : "anonymousModifications",
+  "fullDescription" : "Not all systems require authentication when reading data, or creating new ones. Without a formal specification, a fuzzer cannot know if a resource is expected to be public or not. However, 'modifying' data (e.g., with DELETE, PUT and PATCH) with no credentials is problematic.  A user could delete all existing data, or change any new data as soon as it is created by others.",
+  "descriptiveName" : "Anonymous Modifications",
+  "label" : "F208:Anonymous Modifications"
+}, {
+  "code" : 209,
+  "testCaseLabel" : "leakedStackTrace",
+  "fullDescription" : "In case of bugs, the internal business logic of the tested application could throw exceptions. For debugging reasons, the responses from the HTTP server could contain the stack-trace of those thrown exceptions. Albeit useful for debugging, those stack-traces could reveal internal details of the system. This would be a security leak if those debugging settings are left in production.",
+  "descriptiveName" : "Leaked Stack Trace",
+  "label" : "F209:Leaked Stack Trace"
+}, {
+  "code" : 210,
+  "testCaseLabel" : "hiddenAccessible",
+  "fullDescription" : "To test an API, there is the need of a schema that specifies what endpoints can be called. Being able to call endpoints that are not declared in the schema is a potential risk, as those might be either forgotten endpoints, work-in-progress, admin-only endpoints, etc., whose security protections might not be fully tested or in place. Either the call should fail for auth reasons (e.g., 401 and 403 in REST APIs), or the system should respond that the endpoint does not exist (e.g., 405 and 501).",
+  "descriptiveName" : "Hidden Accessible Endpoint",
+  "label" : "F210:Hidden Accessible Endpoint"
+} ]

@@ -86,7 +86,8 @@ Dependencies point inwards, towards `restest-core`, and [ADR-0004](adr/0004-modu
 explains why that is compiled rather than conventional.
 
 ```
-restest-core      domain model + interfaces. No network, no parser, no heavy dependencies.
+restest-core      domain model + interfaces. No network, no OpenAPI parser, no heavy
+                  dependencies beyond a streaming JSON reader and writer.
 restest-spec      the only module allowed to reference the third-party OAS parser.
 restest-idl       IDL language, constraints, solver interface.
 restest-gen       generation phases, value providers, scheduler.
@@ -313,14 +314,14 @@ Versions are pinned here and in the root POM; the two are expected to agree.
 | Build toolchain | JDK 25 (long-term support) | 25 |
 | Build | Maven with wrapper | 3.9.16 |
 | OAS parser | `io.swagger.parser.v3:swagger-parser`, behind our own interface | 2.1.47 |
-| JSON Schema validation | `com.networknt:json-schema-validator` | 3.0.7 |
+| JSON Schema validation | `com.networknt:json-schema-validator`, confined to `restest-oracles` ([ADR-0014](adr/0014-response-conformance.md)) | 3.0.7 |
 | Command-line framework | picocli, with its code generator for native binaries | 4.7.7 |
 | HTTP client | OkHttp — network interceptors give exact request and response capture | 5.5.0 |
 | Concurrency | Virtual threads | JDK 21+ |
 | IDL parser | ANTLR4 | 4.13.x |
 | Constraint solver | Choco, behind an interface | 4.10.x |
 | Interaction store | SQLite (`org.xerial:sqlite-jdbc`), one file per run ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4) | 3.50.3.0 |
-| JSON text, at the store's edge only | `com.fasterxml.jackson.core:jackson-core` | 2.22.1 |
+| JSON text, in `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | `com.fasterxml.jackson.core:jackson-core` | 2.22.1 |
 | Unit tests | JUnit Jupiter | 6.1.3 |
 | Assertions | AssertJ | 3.27.7 |
 | Container-based integration tests | Testcontainers | 2.0.5 |

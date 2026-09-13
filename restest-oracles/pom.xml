@@ -21,5 +21,92 @@
             <artifactId>restest-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!--
+          Decides whether a reply matches the shape its specification declares. Confined to this
+          module by an architecture test, as every third-party library in this project is. The
+          optional regular-expression engines it offers - joni, and a GraalVM JavaScript engine -
+          are deliberately not taken: they add tens of megabytes to match patterns exactly as
+          ECMAScript would, and a pattern mismatch is not something this reports on. See ADR-0014.
+        -->
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+              The blocking coverage gate, promised as TODO(M1.6) in the root POM and in docs/ci.md.
+              It is here, on this module, rather than at the root, because only two modules carry a
+              minimum: this one and the other named under "Quality gates" in docs/DESIGN.md.
+
+              The figures are floors, set below what the module actually measures so that they fail
+              on a real loss of testing rather than on rounding. They are never to be lowered to make
+              a build pass; a rule that gets relaxed whenever it fires is not a rule.
+            -->
+            <!--
+              Mutation testing, run on demand rather than on every build:
+
+                  ./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
+
+              It deliberately corrupts this module's own code - flips a comparison, removes a call -
+              and fails if the tests still pass. "Our tool finds bugs in your API" is a claim worth
+              far more when the code making it has been shown to notice bugs in itself.
+
+              Not bound to a build phase because it re-runs the tests once per mutation and so costs
+              minutes rather than seconds; the threshold below is what makes the number mean
+              something when it is run. Like the coverage floors, it is never to be lowered to make
+              a run pass.
+            -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <configuration>
+                    <targetClasses>
+                        <param>io.restest.oracles.*</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>io.restest.oracles.*</param>
+                    </targetTests>
+                    <timestampedReports>false</timestampedReports>
+                    <mutationThreshold>85</mutationThreshold>
+                    <coverageThreshold>90</coverageThreshold>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.90</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.85</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

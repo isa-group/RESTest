@@ -62,5 +62,24 @@
             <artifactId>restest-report</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <!--
+          The schema validator logs through the SLF4J facade. With no binding on the class path it
+          prints three warning lines to standard error the first time it is used, which is not what
+          a command-line tool should greet somebody with. Choosing the binding is the application's
+          business and not a library's, so it is chosen here, and the choice is to log nothing.
+        -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- A stand-in API for the end-to-end test: real HTTP, no network, answers we choose. -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
