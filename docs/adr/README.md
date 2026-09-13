@@ -50,3 +50,4 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0010](0010-idl-strategy.md) | IDL: relicensed assets, ANTLR4 parser, solver behind an interface | Accepted |
 | [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the build | Accepted |
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted |
+| [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted |
