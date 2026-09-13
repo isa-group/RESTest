@@ -56,6 +56,13 @@ import java.util.random.RandomGeneratorFactory;
  * cases in the same order. That is what makes a surprising result worth investigating: it can be
  * reproduced exactly rather than chased. Two generators in one program never affect each other.
  *
+ * <p>That promise holds for as long as nothing this generator uses remembers what the API has been
+ * answering. It is true of everything here today. It will stop being true of a source of values that
+ * learns from the responses - one that reuses an identifier it saw in an earlier reply, say - because
+ * then what gets chosen depends on when each answer arrived, which depends on the network. The way to
+ * reproduce a run like that is not to run it again from the same number, but to send the stored
+ * requests again, which is why every request is kept.
+ *
  * <p>One generator belongs to one sequence of decisions, so it is used from one thread at a time.
  */
 public final class RandomTestCaseGenerator {
@@ -66,9 +73,9 @@ public final class RandomTestCaseGenerator {
     /**
      * The algorithm the run's randomness comes from, named rather than left to the platform.
      *
-     * <p>"The same number produces the same run" is a promise made to somebody reporting a problem,
-     * and it has to hold on their machine and on ours. Asking for whatever the platform considers
-     * default would make it hold only between two runs on the same version of Java.
+     * <p>Wherever "the same number produces the same test cases" holds at all, it has to hold on
+     * somebody else's machine as well as on ours. Asking for whatever the platform considers default
+     * would make it hold only between two runs on the same version of Java.
      */
     private static final String ALGORITHM = "L64X128MixRandom";
 
@@ -117,7 +124,13 @@ public final class RandomTestCaseGenerator {
         this.untestable = Map.copyOf(cannot);
     }
 
-    /** The number this generator's decisions come from, so a run can be repeated exactly. */
+    /**
+     * The number this generator's decisions come from.
+     *
+     * <p>Worth recording with the results even when a run cannot be repeated from it: an odd result
+     * among ten repetitions is worth going back to, and going back to it means generating again
+     * rather than sending the same requests again.
+     */
     public long seed() {
         return seed;
     }
