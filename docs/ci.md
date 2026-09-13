@@ -38,7 +38,7 @@ amendment explains why that beats the alternatives.
 | Gate | Where it lives | What it fails on |
 |---|---|---|
 | Compilation and unit tests | every module | the obvious |
-| Java 21 bytecode | `PublishedBytecodeTest` | a class file compiled for a later release |
+| Java 21 bytecode | `PublishedBytecodeTest` | a class file compiled for a later release; a published jar that does not say which version of RESTest it is |
 | Module boundaries | `ProductionArchitectureTest` | a dependency pointing outwards; a class in no module; `io.swagger` outside `restest-spec`; the schema validator outside `restest-oracles`; the JSON library outside `restest-core`; the database driver outside `restest-store`; process termination outside `restest-cli` (`System.exit`, `Runtime.exit`/`halt`, this JVM's `ProcessHandle.destroy`, whether called or referenced); a reassignable static field; a network dependency in `restest-core` |
 | The rules themselves | `ArchitectureRulesSelfTest` | a rule that no longer reports the violation it exists to report, or that reports something it should permit |
 | The harness's reach | `HarnessCoverageTest` | a module whose compiled classes the rules cannot see, so no rule constrains them |
@@ -104,7 +104,7 @@ classes, the skips are gone, and what stood in their place is now an assertion: 
 the reactor was not built, and says so. `./mvnw verify` says:
 
 ```
-[INFO] Tests run: 23, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 24, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 Second, `ArchitectureRulesSelfTest` proves the rules independently of whether production code

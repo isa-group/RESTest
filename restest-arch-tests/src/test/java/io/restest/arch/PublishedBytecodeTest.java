@@ -25,6 +25,8 @@ import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -126,6 +128,72 @@ class PublishedBytecodeTest {
                 .putShort((short) major);
         Files.write(file, header.array());
         return file;
+    }
+
+    @Test
+    @DisplayName("every published jar says which RESTest it is")
+    void every_published_jar_names_its_own_version() {
+        List<Path> jars = publishedJars();
+
+        assertThat(jars)
+                .describedAs("Nothing was examined, so a pass here would read as evidence that the "
+                        + "published jars carry a version when nothing was measured. An empty scan "
+                        + "means the reactor was packaged nowhere rather than that there is nothing "
+                        + "to scan")
+                .isNotEmpty();
+
+        Map<String, String> unnamed = new LinkedHashMap<>();
+        for (Path jar : jars) {
+            String version = implementationVersionOf(jar);
+            if (version == null || version.isBlank()) {
+                unnamed.put(RepositoryRoot.locate().relativize(jar).toString(), "absent");
+            }
+        }
+
+        assertThat(unnamed)
+                .describedAs("A run's report says which RESTest produced it by reading this, and "
+                        + "with nothing to read it says 'unknown'. A result nobody can attribute to "
+                        + "a version is no use for comparing one campaign with another. Jars "
+                        + "examined: %d", jars.size())
+                .isEmpty();
+    }
+
+    /**
+     * The published jar of every production module that has been packaged.
+     *
+     * <p>Found by looking rather than by building its name, so that the version this project is at
+     * is not written down in a test that has no business knowing it.
+     */
+    private static List<Path> publishedJars() {
+        Path root = RepositoryRoot.locate();
+        List<Path> jars = new ArrayList<>();
+        for (String module : RepositoryRoot.declaredModules()) {
+            Path target = root.resolve(module).resolve("target");
+            if (!Files.isDirectory(target)) {
+                continue;
+            }
+            try (Stream<Path> files = Files.list(target)) {
+                files.filter(Files::isRegularFile)
+                        .filter(file -> file.getFileName().toString().startsWith(module + "-"))
+                        .filter(file -> file.getFileName().toString().endsWith(".jar"))
+                        .forEach(jars::add);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Could not list " + target, e);
+            }
+        }
+        return jars;
+    }
+
+    /** What a jar says it is, or {@code null} if it does not say. */
+    private static String implementationVersionOf(Path jar) {
+        try (JarFile opened = new JarFile(jar.toFile())) {
+            Manifest manifest = opened.getManifest();
+            return manifest == null
+                    ? null
+                    : manifest.getMainAttributes().getValue("Implementation-Version");
+        } catch (IOException e) {
+            throw new UncheckedIOException("Could not read " + jar, e);
+        }
     }
 
     /** Every compiled class in a production module, excluding module descriptors. */

@@ -236,6 +236,21 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.4.2</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <!--
+                                  Stamps Implementation-Title/Version/Vendor-Id into every jar. Not
+                                  the default, and its absence is not cosmetic: a run's JSON report
+                                  says which RESTest produced it by reading this, and with nothing
+                                  to read it says "unknown". A report that cannot name its own
+                                  version is no use for comparing one milestone's campaign with
+                                  another's, which is what M8 exists to do.
+                                -->
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
