@@ -199,11 +199,19 @@ becomes deterministic and the random arithmetic goes away.
   increments were going to test, and it is why this is settled before they are written.
 - Dictionaries replace arithmetic with lookups, in the component where the arithmetic produced ten of
   eighteen review findings.
-- **Provenance must name the source.** Today a value from an example, a default, an enumeration and a
-  dictionary all arrive in the store as `DECLARED`. With sampling among sources, the composition of a
-  run is probabilistic, and without knowing which source answered, *"did the dictionary I wrote by hand
+- **Provenance must name the source.** With sampling among sources, the composition of a run is
+  probabilistic, and without knowing which source answered, *"did the dictionary I wrote by hand
   help?"* cannot be answered at all — not in a report, and not by the feedback of M6, which would have
-  nothing to learn from.
+  nothing to learn from. Most of what is needed already exists: a value invented or looked up is
+  recorded as generated **by a named source**, and a value read out of an earlier reply names the
+  interaction it came from. The gap is narrower than it looks and sits in one place — a default and an
+  enumerated value are both recorded as *declared*, with nothing to tell them apart, and the declared
+  examples of M2.2 would be a third. ADR-0005's amendment considered separating them and left it,
+  reasoning that a consumer can compare the value against the schema's own default and enumeration.
+  That reasoning has a hole worth naming before M2.2 meets it: a schema whose default is also one of
+  its enumerated values — `default: available` among `[available, pending, sold]`, which is the common
+  shape — leaves the two indistinguishable by comparison. Whoever adds the third case decides whether
+  that is worth a sub-kind.
 - **A varied dictionary has an arithmetic problem worth stating.** With twenty entries and a parameter
   that wants an e-mail address, one draw in twenty fits; with three such parameters in one request, all
   three fit once in eight thousand. Two cheap mitigations, both in this decision: index on `format` when
