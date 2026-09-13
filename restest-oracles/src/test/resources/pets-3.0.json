@@ -1,0 +1,379 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Pets",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/pets": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "every pet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Pet"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pets/{petId}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "one pet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "anything else",
+            "content": {
+              "Application/JSON": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kinds": {
+      "get": {
+        "responses": {
+          "2xx": {
+            "description": "a kind, written either way",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/raw": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "plain text",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unsaid": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a reply whose shape the document does not give",
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/noreply": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a reply the document says nothing about the body of"
+          }
+        }
+      }
+    },
+    "/onlyxml": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "only ever XML, says the document",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dangling": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a shape the document names and then does not define",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Missing"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/charsetkey": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a document that writes a charset into the media type it declares",
+            "content": {
+              "application/json; charset=utf-8": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/byreference": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/OnePet"
+          }
+        }
+      }
+    },
+    "/bychain": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/SameOnePet"
+          }
+        }
+      }
+    },
+    "/elsewhere": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "other-document.yaml#/components/responses/OnePet"
+          }
+        }
+      }
+    },
+    "/seen": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "when it was seen",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/a%b": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a reply under a name with a stray per-cent sign",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/strayescape": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "#/paths/~1a%b/get/responses/200"
+          }
+        }
+      }
+    },
+    "/pets/{petId}/notes": {
+      "get": {
+        "parameters": [
+          {
+            "name": "petId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "one pet, pointed at through an encoded name",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/encodedref": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "#/paths/~1pets~1%7BpetId%7D~1notes/get/responses/200"
+          }
+        }
+      }
+    },
+    "/cycle": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RoundAndRound"
+          }
+        }
+      }
+    },
+    "/nowhere": {
+      "get": {
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/NotDeclared"
+          }
+        }
+      }
+    },
+    "/problem": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "a problem, said the way RFC 7807 says it",
+            "content": {
+              "application/problem+json; charset=utf-8": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "title"
+                  ],
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pet": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "tag": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "responses": {
+      "OnePet": {
+        "description": "one pet, said once and pointed at",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Pet"
+            }
+          }
+        }
+      },
+      "SameOnePet": {
+        "$ref": "#/components/responses/OnePet"
+      },
+      "RoundAndRound": {
+        "$ref": "#/components/responses/BackAgain"
+      },
+      "BackAgain": {
+        "$ref": "#/components/responses/RoundAndRound"
+      }
+    }
+  }
+}

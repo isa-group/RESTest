@@ -32,7 +32,6 @@ module io.restest.store {
     requires io.restest.core;
     requires java.sql;
     requires org.xerial.sqlitejdbc;
-    requires com.fasterxml.jackson.core;
 
     exports io.restest.store;
 }

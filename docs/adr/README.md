@@ -43,7 +43,7 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0003](0003-java-baseline.md) | Every module targets Java 21; toolchain on 25 | Accepted, amended at M0.2 |
 | [0004](0004-module-structure.md) | Multi-module structure and inward dependencies | Accepted, amended at M0.2 |
 | [0005](0005-interpreted-test-model.md) | Test cases are data, not generated source code | Accepted, amended at M1.1b |
-| [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted |
+| [0006](0006-event-stream-and-store.md) | One event stream; every interaction persisted | Accepted, amended at M1.4 and M1.6 |
 | [0007](0007-specification-parser-boundary.md) | The parser sits behind our own interface; OAS 2.0, 3.0.x and 3.1.x | Accepted, amended at M0.2, reversed at M1.2 |
 | [0008](0008-extension-points-no-ai-abstractions.md) | Extension points, and no AI-specific abstractions | Accepted |
 | [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted |
@@ -51,3 +51,4 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the build | Accepted |
 | [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted |
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted |
+| [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted |

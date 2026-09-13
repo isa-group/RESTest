@@ -25,6 +25,13 @@
             <groupId>io.swagger.parser.v3</groupId>
             <artifactId>swagger-parser</artifactId>
         </dependency>
+        <!-- Used directly to write the parsed document back out as one JSON document, which is what
+             an oracle later checks replies against. Arrives transitively through swagger-parser too,
+             but declared here in its own right for the same reason as snakeyaml below. -->
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-core</artifactId>
+        </dependency>
         <!-- Used directly by VersionGate. Arrives transitively through swagger-parser too, but a
              dependency this module's own source imports from is declared here in its own right, not
              left to whatever version swagger-parser happens to pull in. -->

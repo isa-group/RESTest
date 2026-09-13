@@ -18,6 +18,9 @@ package io.restest.store;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.InteractionId;
 import io.restest.core.execution.InteractionOutcome;
+import io.restest.core.json.InteractionDocument;
+import io.restest.core.json.JsonException;
+import io.restest.core.json.JsonText;
 import io.restest.core.store.InteractionQuery;
 import io.restest.core.store.InteractionStore;
 import io.restest.core.store.InteractionStoreException;
@@ -204,7 +207,7 @@ public final class SqliteInteractionStore implements InteractionStore {
     @Override
     public void record(Interaction interaction) {
         Objects.requireNonNull(interaction, "interaction");
-        String document = Json.write(InteractionDocument.of(interaction));
+        String document = JsonText.write(InteractionDocument.of(interaction));
         lock.lock();
         try (PreparedStatement insert = statement(INSERT)) {
             insert.setString(1, interaction.id().value());
@@ -264,8 +267,8 @@ public final class SqliteInteractionStore implements InteractionStore {
      */
     private static Interaction read(String id, String document) {
         try {
-            return InteractionDocument.toInteraction(Json.read(document));
-        } catch (InteractionStoreException e) {
+            return InteractionDocument.toInteraction(JsonText.read(document));
+        } catch (JsonException e) {
             throw new InteractionStoreException(
                     "The interaction recorded as " + id + " could not be read back: "
                             + e.getMessage(), e);

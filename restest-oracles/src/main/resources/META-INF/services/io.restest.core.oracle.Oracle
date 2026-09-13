@@ -1,0 +1,2 @@
+io.restest.oracles.ServerErrorOracle
+io.restest.oracles.ResponseSchemaOracle

@@ -83,6 +83,19 @@ public record ResponseModel(
     }
 
     /**
+     * Which of the media types this response declares covers the one that actually came back.
+     *
+     * <p>The same order of preference as {@link #schemaFor}, but answering with the declared media
+     * type rather than with the shape filed under it. A reply announcing {@code application/json;
+     * charset=utf-8} against a document declaring only <code>*&#47;*</code> is covered by
+     * <code>*&#47;*</code>, and something looking that shape up in the original document needs to
+     * know that is the entry to look for.
+     */
+    public Optional<String> declaredContentTypeFor(String mediaType) {
+        return MediaTypes.lookupKey(content, mediaType);
+    }
+
+    /**
      * The declared header of that name, compared case-insensitively.
      *
      * <p>HTTP header names are case-insensitive, so a document declaring {@code X-Rate-Limit}

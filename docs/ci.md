@@ -38,12 +38,13 @@ amendment explains why that beats the alternatives.
 | Gate | Where it lives | What it fails on |
 |---|---|---|
 | Compilation and unit tests | every module | the obvious |
-| Java 21 bytecode | `PublishedBytecodeTest` | a class file compiled for a later release |
-| Module boundaries | `ProductionArchitectureTest` | a dependency pointing outwards; a class in no module; `io.swagger` outside `restest-spec`; process termination outside `restest-cli` (`System.exit`, `Runtime.exit`/`halt`, this JVM's `ProcessHandle.destroy`, whether called or referenced); a reassignable static field; a network dependency in `restest-core` |
+| Java 21 bytecode | `PublishedBytecodeTest` | a class file compiled for a later release; a published jar that does not say which version of RESTest it is |
+| Module boundaries | `ProductionArchitectureTest` | a dependency pointing outwards; a class in no module; `io.swagger` outside `restest-spec`; the schema validator outside `restest-oracles`; the JSON library outside `restest-core`; the database driver outside `restest-store`; process termination outside `restest-cli` (`System.exit`, `Runtime.exit`/`halt`, this JVM's `ProcessHandle.destroy`, whether called or referenced); a reassignable static field; a network dependency in `restest-core` |
 | The rules themselves | `ArchitectureRulesSelfTest` | a rule that no longer reports the violation it exists to report, or that reports something it should permit |
 | The harness's reach | `HarnessCoverageTest` | a module whose compiled classes the rules cannot see, so no rule constrains them |
 | Source-tree invariants | `SourceTreeRulesTest` | a module without `module-info.java`; a benchmark-platform reference under `src/` or in a POM; an action pinned to a tag, a SHA with no version comment, or no pins found at all |
-| Coverage | JaCoCo | nothing yet — measured from M1.1a, blocking from M1.6; see below |
+| Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
+| Mutation score | PIT | run on demand, not in the build: `restest-oracles` scoring below 85% |
 
 ### Coverage
 
@@ -56,10 +57,38 @@ The ubuntu / 25 row uploads whatever exists as the `jacoco-report` artifact, wit
 `if-no-files-found: warn`. Warn rather than ignore on purpose: a silent green upload of nothing
 would hide both an empty build and a real break later.
 
-There is deliberately **no** blocking threshold yet. The `check` goal arrives at M1.6 on
-`restest-core` and `restest-oracles`, the two modules `docs/DESIGN.md` names under "Quality gates",
-by which point there is enough code for a minimum to mean something. The commitment is recorded as
-`TODO(M1.6)` beside the JaCoCo block in the root POM.
+Since M1.6 there is a blocking threshold, on the two modules `docs/DESIGN.md` names under "Quality
+gates" and on no others: **90% of lines and 85% of branches**, enforced by the `check` goal
+configured in `restest-core/pom.xml` and `restest-oracles/pom.xml`. Both clear it with
+room to spare — `restest-core` 96% of lines and 94% of branches, `restest-oracles` 97% and 95%, when
+the gate was set — so the figures are floors that fail on a real loss of testing rather than on
+rounding. They are never lowered to make a build pass.
+
+The gate is off when tests are: `-DskipTests` and `-Dmaven.test.skip` each activate a profile that
+turns coverage off, because "nothing was covered" is not news when nothing was run. Continuous
+integration never skips tests.
+
+### Mutation score
+
+`restest-oracles` is mutation-tested, which is a different question from coverage: it corrupts the
+module's own code - flips a comparison, removes a call - and fails if the tests still pass. Coverage
+says the tests executed a line; this says they would have noticed if the line were wrong. "Our tool
+finds bugs in your API" is a claim worth more when the code making it has been shown to notice bugs
+in itself.
+
+```
+./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
+```
+
+It is not bound to a build phase: it re-runs the tests once per mutation, so it costs minutes where
+the rest of the build costs seconds. The threshold is **85%**, against 98% measured when it was set.
+
+Three survive, and they are named here rather than called equivalent, which they are not quite. All
+three are a `<` moved to a `<=` inside the schema oracle: how many pointers it will follow before
+deciding a document points at itself, where a character stops being one it can write into a web
+address unchanged, and whether a media type carries a semicolon at all. Both sides of each behave
+the same way for every document anyone would write, and separating them would mean a test built
+around the exact number, which would assert the number rather than the behaviour.
 
 ### Why the rules are tested
 
@@ -75,7 +104,7 @@ classes, the skips are gone, and what stood in their place is now an assertion: 
 the reactor was not built, and says so. `./mvnw verify` says:
 
 ```
-[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 24, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 Second, `ArchitectureRulesSelfTest` proves the rules independently of whether production code

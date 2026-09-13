@@ -37,6 +37,27 @@ class ApiModelTest {
             .withRequestBody(RequestBodyModel.json(StringSchema.of(), true));
 
     @Test
+    @DisplayName("the specification document travels with the model, so replies can be held to it")
+    void the_document_is_carried() {
+        ApiModel api = ApiModel.of("Petstore", "1.0.0", List.of(LIST_PETS));
+
+        assertThat(api.document()).isEmpty();
+        assertThat(api.withDocument("{\"openapi\":\"3.0.3\"}").document())
+                .contains("{\"openapi\":\"3.0.3\"}");
+    }
+
+    @Test
+    @DisplayName("the document survives the model being added to")
+    void the_document_survives_the_other_builders() {
+        ApiModel api = ApiModel.of("Petstore", "1.0.0", List.of(LIST_PETS))
+                .withDocument("{}")
+                .withSchemas(Map.of())
+                .withIssues(List.of());
+
+        assertThat(api.document()).contains("{}");
+    }
+
+    @Test
     @DisplayName("an operation is found by the identifier everything else keys on")
     void an_operation_is_found_by_identifier() {
         ApiModel api = ApiModel.of("Petstore", "1.0.0", List.of(LIST_PETS, ADD_PET));
@@ -74,7 +95,8 @@ class ApiModelTest {
                 List.of(LIST_PETS), Map.of(),
                 List.of(SpecificationIssue.skipped("paths./pets.delete",
                         OperationId.of("DELETE /pets"),
-                        "the schema of parameter 'force' does not resolve; operation skipped")));
+                        "the schema of parameter 'force' does not resolve; operation skipped")),
+                Optional.empty());
 
         assertThat(api.isComplete()).isFalse();
         assertThat(api.issues()).singleElement()
@@ -176,7 +198,7 @@ class ApiModelTest {
         Server uploads = Server.at("https://uploads.example.com");
         Operation upload = Operation.of(HttpMethod.POST, "/uploads").withServers(List.of(uploads));
         ApiModel api = new ApiModel("Petstore", "1.0.0", List.of(apiServer),
-                List.of(LIST_PETS, upload), Map.of(), List.of());
+                List.of(LIST_PETS, upload), Map.of(), List.of(), Optional.empty());
 
         assertThat(api.serversFor(upload)).containsExactly(uploads);
         assertThat(api.serversFor(LIST_PETS)).containsExactly(apiServer);
