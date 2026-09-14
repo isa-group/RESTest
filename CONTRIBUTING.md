@@ -64,8 +64,9 @@ the same increment. Ordinary implementation choices belong in the pull request's
 ```bash
 ./mvnw verify                       # build and test everything
 ./mvnw -q verify -pl restest-core   # one module
-./mvnw verify -Pit                  # integration tests (needs Docker)
-./mvnw verify -Psmoke               # smoke run against two containerised APIs
+./mvnw verify -Pit                  # everything, container tests included (needs Docker)
+./mvnw verify -Psmoke               # just the smoke run against two containerised APIs (needs Docker)
+./restest run <spec> --url <base>   # the tool itself, from this checkout
 ./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
 ./evaluation/run-evaluation.sh --apis market,scs --budget 10 --repetitions 1
 ```

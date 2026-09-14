@@ -64,3 +64,35 @@ jobs:
           # a real break later.
           if-no-files-found: warn
           retention-days: 14
+
+  # The whole tool, from the command line, against two real open-source APIs in containers. Its own
+  # job rather than a tenth row of the matrix above, for two reasons. It needs a Linux container
+  # runtime, which only the ubuntu runners have - the macOS images ship no container runtime at all
+  # and the Windows ones run Windows containers - so nine rows would mean six permanent skips. And a
+  # separate job is a separate answer on the pull request: whether the tool still works end to end is
+  # a different question from whether it compiles on every operating system, and the two should not
+  # share a green tick.
+  #
+  # -Psmoke also says the containers are required. A machine without them fails this job rather than
+  # reporting success for a gate that never ran.
+  smoke:
+    name: Smoke run against two containerised APIs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Run the tool against two containerised APIs
+        run: ./mvnw --batch-mode --no-transfer-progress verify -Psmoke
+
+      # The one thing the smoke run above cannot check: that the command a person is told to type
+      # actually starts. It runs the built jars from the class path, and nothing else exercises that.
+      - name: Check the launcher starts
+        run: ./restest --version

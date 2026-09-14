@@ -1,0 +1,39 @@
+#!/bin/sh
+#
+# Runs RESTest from this checkout.
+#
+# This is the developer's and the reviewer's shortcut, not how RESTest is distributed: installing it
+# properly - a package, a container image, a standalone binary - is a later milestone's job, and this
+# script goes away when that lands.
+#
+# The class path rather than the module path, deliberately: two versions of the OpenAPI parser's
+# module end up on the runtime path and a module path refuses to start with both. The built jars
+# rather than the compiled-classes directories, also deliberately: a run's report says which version
+# of RESTest produced it by reading a jar's manifest, and a directory has no manifest to read.
+
+set -eu
+
+here=$(cd "$(dirname "$0")" && pwd)
+target="$here/restest-cli/target"
+
+jar=$(ls "$target"/restest-cli-*.jar 2>/dev/null | grep -v -e '-sources\.jar$' -e '-javadoc\.jar$' | head -1 || true)
+if [ -z "${jar:-}" ] || [ ! -d "$target/lib" ]; then
+  echo "RESTest has not been built in this checkout yet. Run:" >&2
+  echo "    ./mvnw -q install -DskipTests" >&2
+  # A number the program itself never answers with, so "you have not built this" can never be
+  # mistaken for "the tool found nothing" or "the tool broke".
+  exit 127
+fi
+
+# Git Bash on Windows runs this script but hands the path list to a Windows JVM, which separates
+# entries with a semicolon.
+case "$(uname -s)" in
+  MINGW* | MSYS* | CYGWIN*) separator=';' ;;
+  *) separator=':' ;;
+esac
+
+# The database driver loads a native library. Without this, Java 24 and later greet a first-time
+# user with four warnings before a single request has been sent.
+exec java --enable-native-access=ALL-UNNAMED \
+  -cp "$jar$separator$target/lib/*" \
+  io.restest.cli.Restest "$@"

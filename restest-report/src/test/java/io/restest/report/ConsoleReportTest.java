@@ -63,6 +63,28 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("a run finding the same fault over and over stops filling the screen with it")
+    void very_many_faults_stop_being_printed_but_are_still_counted() {
+        for (int found = 0; found < 120; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+        }
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        String printed = screen.toString();
+        assertThat(printed.split("HTTP Status 500", -1).length - 1)
+                .describedAs("the screen holds the first 50 faults and the summary line, not 120")
+                .isEqualTo(51);
+        assertThat(printed)
+                .describedAs("and it says why it stopped, rather than quietly losing them")
+                .contains("... more faults are being found");
+        assertThat(printed)
+                .describedAs("while the count at the end is of every one of them")
+                .contains("120 faults:")
+                .contains("120 x F100");
+        assertThat(report.faults()).isEqualTo(120);
+    }
+
+    @Test
     @DisplayName("the end of a run says how much was done, what was found, and how much was idle")
     void the_summary_says_what_happened() {
         report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));

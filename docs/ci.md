@@ -9,8 +9,9 @@ branch under active development would otherwise spend nine runners per commit.
 
 ## The matrix
 
-`.github/workflows/ci.yml` builds nine rows: `ubuntu-latest`, `macos-latest` and `windows-latest`
-× Java 21, 25 and 26. Every row runs the same command over the whole reactor:
+`.github/workflows/ci.yml` has two jobs. The first builds nine rows: `ubuntu-latest`,
+`macos-latest` and `windows-latest` × Java 21, 25 and 26. Every row runs the same command over the
+whole reactor:
 
 ```bash
 ./mvnw --batch-mode --no-transfer-progress verify
@@ -33,6 +34,38 @@ Every module targets Java 21, the CLI included, so every row builds and tests ev
 no toolchain configuration and no row that builds a different subset from the others. ADR-0003's
 amendment explains why that beats the alternatives.
 
+### The smoke job
+
+The second job, added at M1.7, runs the tool itself — `restest run` — against two open-source APIs
+in containers, and then checks that the launcher starts:
+
+```bash
+./mvnw --batch-mode --no-transfer-progress verify -Psmoke
+./restest --version
+```
+
+It is its own job rather than a tenth row of the matrix, for two reasons. It needs a Linux container
+runtime, which only the `ubuntu-latest` runners have — the macOS images ship no container runtime at
+all and the Windows ones run Windows containers — so nine rows would mean six permanent skips, and a
+build full of routine skips is a build nobody reads. And whether the tool still works end to end is a
+different question from whether it compiles everywhere, so the two get separate answers on the pull
+request rather than sharing one green tick.
+
+Asking for `-Psmoke` is asking for the containers: the profile sets `restest.smoke.required`, and
+with that property set a machine with no container runtime **fails** rather than skipping. A gate
+that reports success because it never ran is worse than no gate, because it looks like one.
+
+The two images are pinned by content rather than by name (`webfuzzing/wfd-swagger-petstore` and
+`webfuzzing/wfd-scout-api`, each by digest). Both are published for two kinds of processor, which
+matters because continuous integration is `linux/amd64` and the maintainer's laptop is
+`linux/arm64`; the other names those images are published under are built for one of the two only.
+Pinning by digest also means the API under test is the same one next month, so a change in the
+numbers is a change in RESTest.
+
+Neither API is asked about a description kept in this repository. Each is asked for its own, over
+HTTP, as it runs — so the description and the software can never drift apart, and the run exercises
+reading a document from a web address, which nothing else does.
+
 ## Gates
 
 | Gate | Where it lives | What it fails on |
@@ -45,6 +78,7 @@ amendment explains why that beats the alternatives.
 | Source-tree invariants | `SourceTreeRulesTest` | a module without `module-info.java`; a benchmark-platform reference under `src/` or in a POM; an action pinned to a tag, a SHA with no version comment, or no pins found at all |
 | Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
 | Mutation score | PIT | run on demand, not in the build: `restest-oracles` scoring below 85% |
+| End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
 
 ### Coverage
 
@@ -167,6 +201,16 @@ prints the path. Just the rules, without rebuilding everything:
 ./mvnw --batch-mode verify -pl restest-arch-tests -am
 ```
 
+The smoke job, given a running container runtime:
+
+```bash
+./mvnw verify -Psmoke
+```
+
+That runs **only** the container-backed tests. `-Pit` runs everything, those included. An ordinary
+`./mvnw verify` runs neither: the tests carrying the `smoke` tag are excluded by default, so nobody
+pays a container pull for a build they did not ask one for.
+
 There is no shortcut worth having here: `restest-arch-tests` depends on all nine modules, so `-am`
 builds the whole reactor anyway. On this project the full build takes a few seconds; just run
 `./mvnw verify`.
@@ -230,3 +274,7 @@ quietly stop matching. It scans every `.yml` under `.github`, so composite actio
 `restest-arch-tests` has no main sources, so Maven prints `JAR will be empty` on every build.
 Silencing it with `skipIfEmpty` would leave `mvn install` without an artifact to install, so the
 warning stays.
+
+The first `-Psmoke` run on a machine downloads about 160 MB of container images — less than the two
+add up to, because they share their base layers. Afterwards the job is dominated by the two
+ten-second runs rather than by the download.

@@ -54,6 +54,17 @@ public final class ConsoleReport implements RunListener {
     /** How many particular disagreements to print under one fault before saying how many remain. */
     private static final int DETAILS_SHOWN = 10;
 
+    /**
+     * How many faults to print in full before the screen stops being the right place for them.
+     *
+     * <p>A run that keeps testing for as long as it was given will ask an API the same question
+     * thousands of times, and an API that is broken is broken every time. Printing all of them
+     * scrolls everything worth reading off the top of the screen, so past this many the screen says
+     * so once and the rest are left to the run's own file, which has every one of them. The count
+     * at the end is of all of them, printed or not.
+     */
+    private static final int FAULTS_SHOWN = 50;
+
     private final Appendable out;
     private final Map<FaultCategory, Integer> counts = new LinkedHashMap<>();
     private final Set<OperationId> operations = new LinkedHashSet<>();
@@ -99,6 +110,14 @@ public final class ConsoleReport implements RunListener {
     private void print(Finding finding) {
         faults++;
         counts.merge(finding.category(), 1, Integer::sum);
+        if (faults > FAULTS_SHOWN) {
+            if (faults == FAULTS_SHOWN + 1) {
+                write("... more faults are being found; they are all in the run's report, and "
+                        + "counted below");
+                write("");
+            }
+            return;
+        }
         write(label(finding.category()) + "  " + finding.category().descriptiveName());
         write("      " + finding.operation() + " - " + finding.interaction().request().method()
                 + " " + finding.interaction().request().url());

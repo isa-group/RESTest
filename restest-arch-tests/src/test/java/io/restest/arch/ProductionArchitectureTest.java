@@ -93,6 +93,16 @@ class ProductionArchitectureTest {
         check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "oracles", "tools.jackson.."));
     }
 
+    // The command-line framework belongs to the command line, for the same reason every other
+    // confinement here exists: a library that reaches into a second module is a library the whole
+    // project then depends on. Nothing but restest-cli has a command line to describe, so nothing
+    // but restest-cli has a reason to name it. See ADR-0004.
+    @Test
+    @DisplayName("only restest-cli references the command-line framework (ADR-0004)")
+    void only_restest_cli_references_the_command_line_framework() {
+        check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "cli", "picocli.."));
+    }
+
     @Test
     @DisplayName("only restest-cli terminates the process (ADR-0004)")
     void only_restest_cli_terminates_the_process() {
