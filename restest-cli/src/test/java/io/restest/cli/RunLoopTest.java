@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.restest.core.event.EventStream;
 import io.restest.core.event.RunEvent;
+import io.restest.core.event.RunListener;
 import io.restest.core.exec.EngineStatistics;
 import io.restest.core.exec.HttpEngine;
 import io.restest.core.execution.Header;
@@ -30,7 +31,6 @@ import io.restest.core.execution.Payload;
 import io.restest.core.execution.StatusLine;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
-import io.restest.core.model.Operation;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.nio.charset.StandardCharsets;
@@ -39,29 +39,46 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * The loop on its own, with an API that answers instantly and a clock this test controls.
+ * The loop on its own, against an API this test decides the speed of.
  *
  * <p>Nothing here touches the network. What is being checked is how the loop spends the time it is
- * given: that it keeps going round rather than stopping after one pass, that it stops when there is
- * demonstrably nothing to be gained by carrying on, and that everything it sent is announced.
+ * given: that it keeps going round rather than stopping after one pass, that one slow operation does
+ * not bring the rest of the run to a halt, that it never has more requests outstanding than it was
+ * allowed, that it slows down rather than piling up work when the reports cannot keep up, and that
+ * it stops when there is demonstrably nothing to be gained by carrying on.
  */
 class RunLoopTest {
 
     private static final int WORK_AHEAD = 8;
 
+    /** Long enough for several passes even when one operation is slow, short enough to wait for. */
+    private static final Duration BUDGET = Duration.ofMillis(1500);
+
+    /** Long enough that a healthy run always drains, short enough that a stuck one does not hang. */
+    private static final Duration PATIENT = Duration.ofSeconds(5);
+
     private final ApiModel model = new SwaggerSpecificationParser().parse("pet-shelter.yaml");
+    private final ApiEngine engine = new ApiEngine();
+
+    @AfterEach
+    void stopTheEngine() {
+        engine.close();
+    }
 
     @Test
     @DisplayName("the operations are tested over and over until the time runs out")
     void the_whole_budget_is_spent() {
-        AnsweringEngine engine = new AnsweringEngine(true);
-
-        RunLoop.Outcome outcome = runFor(Duration.ofMillis(300), engine);
+        RunLoop.Outcome outcome = run(BUDGET, listening -> { });
 
         assertThat(outcome.passes())
                 .describedAs("an operation is not tried once and then forgotten")
@@ -69,43 +86,83 @@ class RunLoopTest {
         assertThat(outcome.sent())
                 .describedAs("more requests went out than there are operations")
                 .isGreaterThan(model.operations().size());
-        assertThat(outcome.answered()).isEqualTo(outcome.sent());
+        assertThat(outcome.stillOwed())
+                .describedAs("every answer arrived before the run gave up waiting: %s", outcome)
+                .isZero();
+        assertThat(outcome.answered())
+                .describedAs("and every one of them was an answer: %s", outcome)
+                .isEqualTo(outcome.sent());
+    }
+
+    @Test
+    @DisplayName("one slow operation does not stop the rest of the API being tested")
+    void a_slow_operation_does_not_hold_up_the_run() {
+        // One request takes far longer than the budget; everything after it is quick. A loop that
+        // insisted on answers in the order it sent them would fill its slots, reach the head of the
+        // queue, and sit there for the rest of the run - having sent exactly as many requests as it
+        // had slots. Worse, it would report almost no wasted time while doing it, because there
+        // would always be that one request in flight.
+        engine.takes(request -> engine.asked() <= 1 ? Duration.ofSeconds(30) : Duration.ofMillis(1));
+
+        RunLoop.Outcome outcome = run(BUDGET, listening -> { });
+
+        assertThat(outcome.sent())
+                .describedAs("one stuck request costs one slot, not the run: %s", outcome)
+                .isGreaterThan(WORK_AHEAD * 10L);
+        assertThat(outcome.stillOwed())
+                .describedAs("and the one that never came back is reported rather than waited out")
+                .isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("the engine is never asked for more at once than the loop was allowed")
+    void the_work_ahead_is_bounded() {
+        engine.takes(request -> Duration.ofMillis(5));
+
+        run(BUDGET, listening -> { });
+
+        assertThat(engine.mostAtOnce.get())
+                .describedAs("with every request taking real time, the bound is what stops the "
+                        + "loop running away")
+                .isBetween(2, WORK_AHEAD);
+    }
+
+    @Test
+    @DisplayName("the loop slows down when the reports cannot keep up, rather than piling work up")
+    void announcements_do_not_pile_up_without_limit() {
+        engine.takes(request -> Duration.ofMillis(1));
+
+        // A listener slow enough that, unchecked, the loop would leave it tens of thousands of
+        // events behind within the budget.
+        Undelivered watched = new Undelivered();
+        run(BUDGET, events -> {
+            events.subscribe(slowListener());
+            watched.stream = events;
+        });
+
+        assertThat(watched.highestSeen)
+                .describedAs("the backlog is held near its limit rather than growing all run")
+                .isLessThan(RunLoop.ANNOUNCEMENTS_ALLOWED_TO_PILE_UP * 2L);
     }
 
     @Test
     @DisplayName("every request that was sent is announced, and nothing else is")
     void everything_sent_is_announced() {
-        AnsweringEngine engine = new AnsweringEngine(true);
-        CountingListener heard = new CountingListener();
+        Counting heard = new Counting();
 
-        RunLoop.Outcome outcome;
-        try (EventStream events = new EventStream()) {
-            events.subscribe(heard);
-            outcome = RunLoop.run(model.operations(), generator(), "https://api.example",
-                    Instant.now().plus(Duration.ofMillis(200)), WORK_AHEAD, engine, events);
-        }
+        RunLoop.Outcome outcome = run(BUDGET, events -> events.subscribe(heard));
 
         assertThat(heard.completed.get()).isEqualTo((int) outcome.sent());
         assertThat(heard.planned.get()).isEqualTo((int) outcome.sent());
     }
 
     @Test
-    @DisplayName("the engine is never asked for more at once than it was told to keep in flight")
-    void the_work_ahead_is_bounded() {
-        AnsweringEngine engine = new AnsweringEngine(true);
-
-        runFor(Duration.ofMillis(200), engine);
-
-        assertThat(engine.mostAtOnce.get()).isLessThanOrEqualTo(WORK_AHEAD);
-    }
-
-    @Test
     @DisplayName("a run against an address where nothing is listening gives up rather than spinning")
     void an_address_with_nothing_behind_it_stops_the_run_early() {
-        AnsweringEngine refusing = new AnsweringEngine(false);
+        engine.answers = false;
 
         Instant before = Instant.now();
-        RunLoop.Outcome outcome = runFor(Duration.ofSeconds(30), refusing);
+        RunLoop.Outcome outcome = run(Duration.ofSeconds(30), listening -> { });
 
         assertThat(Duration.between(before, Instant.now()))
                 .describedAs("it does not sit there for the whole half minute it was given")
@@ -120,20 +177,21 @@ class RunLoopTest {
     @Test
     @DisplayName("a document nothing can be sent for stops after one pass instead of spinning")
     void a_document_that_yields_no_request_stops_after_one_pass() {
-        AnsweringEngine engine = new AnsweringEngine(true);
-
         // A base address carrying a query string is one no request can be built on, so every
-        // operation in the document fails to assemble - which is the shape of a run that could
-        // never send anything at all.
+        // operation fails to assemble - the shape of a run that could never send anything at all.
         RunLoop.Outcome outcome;
         try (EventStream events = new EventStream()) {
             outcome = RunLoop.run(model.operations(), generator(), "https://api.example?key=abc",
-                    Instant.now().plus(Duration.ofSeconds(30)), WORK_AHEAD, engine, events);
+                    Instant.now().plusSeconds(30), WORK_AHEAD, PATIENT, engine, events);
         }
 
         assertThat(outcome.sent()).isZero();
         assertThat(outcome.notAssembled()).isEqualTo(model.operations().size());
         assertThat(outcome.passes()).isEqualTo(1);
+        assertThat(outcome.nothingCouldBeBuilt())
+                .describedAs("and the run can say which of the several ways of testing nothing "
+                        + "this was")
+                .isTrue();
     }
 
     @Test
@@ -141,16 +199,17 @@ class RunLoopTest {
     void no_operations_is_not_a_run() {
         try (EventStream events = new EventStream()) {
             assertThatThrownBy(() -> RunLoop.run(List.of(), generator(), "https://api.example",
-                    Instant.now().plusSeconds(1), WORK_AHEAD, new AnsweringEngine(true), events))
+                    Instant.now().plusSeconds(1), WORK_AHEAD, PATIENT, engine, events))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("nothing to do");
         }
     }
 
-    private RunLoop.Outcome runFor(Duration budget, HttpEngine engine) {
+    private RunLoop.Outcome run(Duration budget, java.util.function.Consumer<EventStream> setUp) {
         try (EventStream events = new EventStream()) {
+            setUp.accept(events);
             return RunLoop.run(model.operations(), generator(), "https://api.example",
-                    Instant.now().plus(budget), WORK_AHEAD, engine, events);
+                    Instant.now().plus(budget), WORK_AHEAD, PATIENT, engine, events);
         }
     }
 
@@ -158,8 +217,34 @@ class RunLoopTest {
         return new RandomTestCaseGenerator(model, 20260914L);
     }
 
+    /** A listener slow enough that the loop has to wait for it. */
+    private RunListener slowListener() {
+        return event -> {
+            try {
+                Thread.sleep(2);
+            } catch (InterruptedException stopped) {
+                Thread.currentThread().interrupt();
+            }
+        };
+    }
+
+    /** Watches how far the announcements ever got ahead of the listeners. */
+    private static final class Undelivered implements RunListener {
+
+        private volatile EventStream stream;
+        private volatile long highestSeen;
+
+        @Override
+        public void on(RunEvent event) {
+            EventStream watching = stream;
+            if (watching != null) {
+                highestSeen = Math.max(highestSeen, watching.undelivered());
+            }
+        }
+    }
+
     /** Counts what reached the listeners, which is how "announced" is checked without a report. */
-    private static final class CountingListener implements io.restest.core.event.RunListener {
+    private static final class Counting implements RunListener {
 
         private final AtomicInteger planned = new AtomicInteger();
         private final AtomicInteger completed = new AtomicInteger();
@@ -174,16 +259,31 @@ class RunLoopTest {
         }
     }
 
-    /** An API that answers instantly, or refuses to answer at all, and counts what it was asked. */
-    private static final class AnsweringEngine implements HttpEngine {
+    /**
+     * An API whose speed this test decides, one operation at a time.
+     *
+     * <p>Answers arrive later than they were asked for, on another thread, which is the only way to
+     * put a loop that is supposed to overlap its requests under any real pressure. An engine that
+     * answered the instant it was called would leave every test here passing whatever the loop did.
+     */
+    private static final class ApiEngine implements HttpEngine {
 
-        private final boolean answers;
+        private final ScheduledExecutorService later = Executors.newScheduledThreadPool(16);
         private final AtomicInteger inFlight = new AtomicInteger();
         private final AtomicInteger mostAtOnce = new AtomicInteger();
         private final AtomicInteger sent = new AtomicInteger();
 
-        AnsweringEngine(boolean answers) {
-            this.answers = answers;
+        private volatile Function<HttpRequestRecord, Duration> howLong =
+                request -> Duration.ofMillis(1);
+        private volatile boolean answers = true;
+
+        void takes(Function<HttpRequestRecord, Duration> perRequest) {
+            this.howLong = perRequest;
+        }
+
+        /** How many requests have been asked for so far. */
+        int asked() {
+            return sent.get();
         }
 
         @Override
@@ -191,9 +291,11 @@ class RunLoopTest {
                 HttpRequestRecord request) {
             mostAtOnce.accumulateAndGet(inFlight.incrementAndGet(), Math::max);
             sent.incrementAndGet();
-            CompletableFuture<Interaction> answer =
-                    CompletableFuture.completedFuture(reply(testCase, request));
-            inFlight.decrementAndGet();
+            CompletableFuture<Interaction> answer = new CompletableFuture<>();
+            later.schedule(() -> {
+                inFlight.decrementAndGet();
+                answer.complete(reply(testCase, request));
+            }, howLong.apply(request).toMillis(), TimeUnit.MILLISECONDS);
             return answer;
         }
 
@@ -218,7 +320,7 @@ class RunLoopTest {
 
         @Override
         public void close() {
-            // Nothing to shut: this engine holds no threads and no connections.
+            later.shutdownNow();
         }
     }
 }

@@ -51,7 +51,7 @@ import picocli.CommandLine.Spec;
  * <p>This is the whole tool seen from outside. Given an API's description and an address, it reads
  * the description, invents requests from it, sends them for as long as it was given, judges every
  * reply against what the description promised, and prints each disagreement together with a command
- * anybody can paste into a terminal to see it happen again. What it found is also left behind as two
+ * anybody can paste into a terminal to see it happen again. What it found is also left behind as
  * files: one describing the faults, for a program to read, and one holding every request and reply,
  * so the run can be examined later without asking the API anything.
  *
@@ -69,6 +69,17 @@ final class RunCommand implements Callable<Integer> {
 
     /** How many unreadable parts of a document to name before saying how many are left. */
     private static final int ISSUES_SHOWN = 5;
+
+    /**
+     * How much longer than the engine's own patience to wait, after the deadline, for answers to
+     * requests that had already gone out. The engine gives up on a request by itself, so this only
+     * has to outlast that; it exists so a run cannot hang for ever on an API that never replies.
+     */
+    private static final Duration STRAGGLER_GRACE = Duration.ofSeconds(10);
+
+    /** What SQLite leaves beside a run's file, and what therefore has to be cleared out with it. */
+    private static final List<String> RUN_FILES =
+            List.of("run.sqlite", "run.sqlite-wal", "run.sqlite-shm", "report.json");
 
     @Parameters(
             index = "0",
@@ -90,7 +101,7 @@ final class RunCommand implements Callable<Integer> {
             defaultValue = "60s",
             converter = BudgetDuration.class,
             description = "How long to keep testing: 30s, 5m, 2h, or a plain number of seconds. "
-                    + "All of it is used. Default: ${DEFAULT-VALUE}.")
+                    + "All of it is used, reading the document included. Default: ${DEFAULT-VALUE}.")
     private Duration budget;
 
     @Option(
@@ -111,12 +122,11 @@ final class RunCommand implements Callable<Integer> {
     @Spec
     private CommandSpec spec;
 
-    /** What the run is built from. Replaced only by tests that need to control them. */
-    private SpecificationParser parser = new SwaggerSpecificationParser();
-    private EngineSettings engineSettings = EngineSettings.defaults();
+    private final SpecificationParser parser = new SwaggerSpecificationParser();
+    private final EngineSettings engineSettings = EngineSettings.defaults();
 
     @Override
-    public Integer call() throws IOException {
+    public Integer call() {
         PrintWriter out = spec.commandLine().getOut();
         PrintWriter err = spec.commandLine().getErr();
 
@@ -138,30 +148,33 @@ final class RunCommand implements Callable<Integer> {
                 return nothingToTest(err, model, generator);
             }
             String address;
+            Path directory;
             try {
                 address = BaseAddress.resolve(baseUrl, model);
-            } catch (IllegalArgumentException nowhereToSendThem) {
-                err.println("restest: " + nowhereToSendThem.getMessage());
+                directory = prepared(outputDirectory);
+            } catch (IllegalArgumentException | IOException cannotStart) {
+                err.println("restest: " + cannotStart.getMessage());
                 return ExitCode.NOTHING_TO_TEST;
             }
-            return testing(model, generator, testable, address, startedAt, engine, out, err);
+            return testing(model, generator, testable, address, directory, startedAt, engine,
+                    out, err);
         }
     }
 
     private int testing(ApiModel model, RandomTestCaseGenerator generator, List<Operation> testable,
-            String address, Instant startedAt, HttpEngine engine, PrintWriter out, PrintWriter err)
-            throws IOException {
-        Path directory = prepared(outputDirectory);
+            String address, Path directory, Instant startedAt, HttpEngine engine, PrintWriter out,
+            PrintWriter err) {
         Path reportFile = directory.resolve("report.json");
         Path runFile = directory.resolve("run.sqlite");
         ConsoleReport console = ConsoleReport.to(out);
 
         RunLoop.Outcome outcome = null;
-        EventStream events = new EventStream();
+        EventStream events = null;
         try (InteractionStore store = SqliteInteractionStore.at(runFile)) {
+            events = new EventStream();
             // Closed first, and separately, so that everything announced has reached the reports and
-            // the stored run before either of them is shut - and so that what the stream says about
-            // itself afterwards is a finished run's answer rather than a mid-flight one.
+            // the stored run before either is shut - and so that what the stream says about itself
+            // afterwards is a finished run's answer rather than a mid-flight one.
             try (EventStream drained = events) {
                 drained.subscribe(event -> {
                     if (event instanceof RunEvent.InteractionCompleted completed) {
@@ -178,7 +191,7 @@ final class RunCommand implements Callable<Integer> {
                 try {
                     outcome = RunLoop.run(testable, generator, address, startedAt.plus(budget),
                             RunLoop.WORK_AHEAD_FACTOR * engineSettings.maxConcurrency(),
-                            engine, drained);
+                            engineSettings.readTimeout().plus(STRAGGLER_GRACE), engine, drained);
                 } finally {
                     // Even if the loop fails, what already happened is worth reporting. Without
                     // this, the run's summary and its report file would both be missing, and the
@@ -190,32 +203,62 @@ final class RunCommand implements Callable<Integer> {
             }
         }
 
-        skipped(out, outcome);
+        long reportsThatFailed = events.listenerFailures();
+        long eventsNeverHeard = events.undelivered();
+        int answer = ExitCode.of(outcome, reportsThatFailed, eventsNeverHeard, console.faults());
+        explain(out, err, answer, outcome, address, reportFile, runFile, reportsThatFailed,
+                eventsNeverHeard);
+        return answer;
+    }
+
+    /**
+     * Says what happened, in the words that fit what actually happened.
+     *
+     * <p>The files are only announced when the run is sound. A message saying a report was written
+     * is a promise, and a run whose reporting broke may not have kept it.
+     */
+    private void explain(PrintWriter out, PrintWriter err, int answer, RunLoop.Outcome outcome,
+            String address, Path reportFile, Path runFile, long reportsThatFailed,
+            long eventsNeverHeard) {
+        if (outcome != null) {
+            long lost = outcome.notGenerated() + outcome.notAssembled();
+            if (lost > 0) {
+                out.println(lost + " test case(s) could not be built and were skipped");
+            }
+            if (outcome.stillOwed() > 0) {
+                err.println("restest: " + outcome.stillOwed() + " request(s) were never answered "
+                        + "and the run stopped waiting for them, so they are missing from what is "
+                        + "reported above");
+            }
+        }
+        if (answer == ExitCode.TOOL_FAILED) {
+            err.println("restest: " + reportsThatFailed + " report(s) failed and " + eventsNeverHeard
+                    + " event(s) never arrived, so what is printed above may be incomplete and the "
+                    + "files may not have been written");
+            return;
+        }
+
         out.println("report written to " + reportFile);
         out.println("run stored in " + runFile);
 
-        long reportsThatFailed = events.listenerFailures();
-        long eventsNeverHeard = events.undelivered();
-        if (reportsThatFailed > 0 || eventsNeverHeard > 0) {
-            err.println("restest: " + reportsThatFailed + " report(s) failed and " + eventsNeverHeard
-                    + " event(s) never arrived, so what is printed above may be incomplete");
-            return ExitCode.TOOL_FAILED;
+        if (answer != ExitCode.NOTHING_TO_TEST || outcome == null) {
+            return;
         }
-        // Two ways to end a run with no evidence about the API at all. Neither may answer "nothing
-        // wrong here", because that is the one thing such a run cannot know.
-        if (outcome != null && outcome.sent() == 0) {
+        // Three different ways to end up with no evidence about the API, and telling somebody the
+        // wrong one wastes their afternoon.
+        if (outcome.nothingCouldBeBuilt()) {
+            err.println("restest: none of the " + outcome.notGenerated() + " + "
+                    + outcome.notAssembled() + " test case(s) this document produced could be "
+                    + "turned into a request that could be sent, so nothing was tested");
+        } else if (outcome.sent() == 0) {
             err.println("restest: the budget of " + human(budget) + " ran out before a single "
                     + "request could be sent - reading the document and starting up takes a moment, "
                     + "and it is paid out of the budget. Give the run more time.");
-            return ExitCode.NOTHING_TO_TEST;
+        } else {
+            err.println("restest: nothing at " + address + " answered any of the " + outcome.sent()
+                    + " requests, so the API was never actually tested. Check the address, and that "
+                    + "it is running.");
         }
-        if (outcome != null && outcome.nothingAnswered()) {
-            err.println("restest: nothing at " + address + " answered any of the "
-                    + outcome.sent() + " requests, so the API was never actually tested. Check the "
-                    + "address, and that it is running.");
-            return ExitCode.NOTHING_TO_TEST;
-        }
-        return console.faults() > 0 ? ExitCode.FAULTS_FOUND : ExitCode.NO_FAULTS;
     }
 
     /**
@@ -255,36 +298,27 @@ final class RunCommand implements Callable<Integer> {
         }
     }
 
-    private static void skipped(PrintWriter out, RunLoop.Outcome outcome) {
-        if (outcome == null) {
-            return;
-        }
-        long lost = outcome.notGenerated() + outcome.notAssembled();
-        if (lost > 0) {
-            out.println(lost + " test case(s) could not be built and were skipped");
-        }
-    }
-
-    /** Makes the output directory, and clears out whatever an earlier run left in it. */
+    /**
+     * Makes the output directory, and clears out whatever an earlier run left in it.
+     *
+     * <p>Including the two files the database keeps beside its own: a run cut short leaves them
+     * behind, and a fresh database next to another run's leftovers is a database that may not open.
+     */
     private static Path prepared(Path directory) throws IOException {
-        Files.createDirectories(directory);
-        Files.deleteIfExists(directory.resolve("run.sqlite"));
-        Files.deleteIfExists(directory.resolve("report.json"));
+        try {
+            Files.createDirectories(directory);
+            for (String leftOver : RUN_FILES) {
+                Files.deleteIfExists(directory.resolve(leftOver));
+            }
+        } catch (IOException cannotBeUsed) {
+            throw new IOException("nothing can be written to " + directory + " ("
+                    + cannotBeUsed.getMessage() + "); choose somewhere else with --out");
+        }
         return directory;
     }
 
     /** The budget the way it was asked for, rather than the way a machine writes it. */
     private static String human(Duration budget) {
         return budget.toMillis() % 1000 == 0 ? budget.toSeconds() + "s" : budget.toMillis() + "ms";
-    }
-
-    /** Only so a test can hand the command a parser it controls. */
-    void useParser(SpecificationParser replacement) {
-        this.parser = replacement;
-    }
-
-    /** Only so a test can shrink the engine to something predictable. */
-    void useEngineSettings(EngineSettings replacement) {
-        this.engineSettings = replacement;
     }
 }

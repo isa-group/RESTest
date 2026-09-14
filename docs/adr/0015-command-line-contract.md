@@ -50,9 +50,14 @@ document with no `servers:` block is given `/` by the parser, which is not an ad
 sent to; that is refused with a message asking for `--url`, rather than assembled into a request the
 engine will reject much later.
 
-`--out` defaults to `restest-out/`, and a run writes exactly two files into it: `report.json` and
-`run.sqlite`. One directory rather than one flag per artefact, so later report formats need no new
-option. A previous run in the same directory is replaced.
+`--out` defaults to `restest-out/`, and a run writes two files into it: `report.json` and
+`run.sqlite` — the latter accompanied, while it is open, by the two working files SQLite keeps beside
+it. One directory rather than one flag per artefact, so later report formats need no new option. A
+previous run in the same directory is replaced, working files included, because a fresh database next
+to another run's leftovers is a database that may not open.
+
+A directory nothing can be written to is not a malfunction and does not answer 4: it is one of the
+ways a run cannot start, and it answers 3 with a sentence naming the directory.
 
 ### The budget is the whole invocation, reading the document included
 
@@ -97,8 +102,24 @@ Nothing in flight is cancelled. Those requests were paid for and their answers a
 forbids inventing an interaction for a test case that never went out, not discarding one that did.
 
 The consequence is stated rather than hidden: a run may exceed its budget while draining, by at most
-the engine's read timeout. A run whose budget is smaller than a single slow answer will overshoot, and
-that is the correct behaviour for a tool whose job is to report what the API did.
+the engine's read timeout and a little. A run whose budget is smaller than a single slow answer will
+overshoot, and that is the correct behaviour for a tool whose job is to report what the API did. Past
+that, it stops waiting and says how many answers it never got, rather than hanging.
+
+**Answers are dealt with as they arrive, not in the order the requests went out.** This is the part
+that is easy to get subtly wrong and was got wrong first. Waiting for the oldest outstanding answer
+before sending anything else means one slow operation stops the whole run — and, far worse, the run
+still looks efficient, because there is always exactly one request in flight and "nothing in flight"
+is how waste is measured. Measured on a four-operation stub where one operation slept: 46 requests in
+what should have been a thirty-second run, reported as 1% idle.
+
+**What the reports keep is bounded; what is counted is not.** A run that spends its whole budget
+against a broken API finds faults by the hundred thousand, each carrying the attempt that produced
+it. The screen stops printing them past fifty and says so; the JSON report writes the first thousand
+in full and records how many it wrote alongside the true total; the announcements waiting to reach
+either are capped, and the loop pauses rather than letting them pile up. Every one of those caps is
+stated in the output it applies to. The stored run keeps everything, which is its job — and how big
+that gets is a question this decision deliberately leaves open.
 
 ### Exit codes
 

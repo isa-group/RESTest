@@ -187,9 +187,16 @@ class SmokeRunTest {
         assertThat(totalIn(report, "operations"))
                 .describedAs("and it got round more than one corner of the API")
                 .isGreaterThan(3);
+        assertThat(totalIn(report, "faults"))
+                .describedAs("both of these APIs disagree with their own description in ways this "
+                        + "tool can see; finding none of them would mean the oracles stopped working")
+                .isGreaterThan(0);
         assertThat(idleFractionIn(report))
-                .describedAs("some of the time was spent waiting for the API rather than thinking")
-                .isLessThan(1.0);
+                .describedAs("most of the run was spent waiting for the API rather than thinking. "
+                        + "Loose enough for a busy machine, tight enough to notice generation "
+                        + "starting to dominate - which is the failure this whole project is a "
+                        + "reaction to")
+                .isLessThan(0.6);
         assertThat(stored(directory.resolve("run.sqlite")))
                 .describedAs("every attempt is kept, and the stored run agrees with the report")
                 .isEqualTo(totalIn(report, "requests"));

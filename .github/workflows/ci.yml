@@ -92,6 +92,16 @@ jobs:
       - name: Run the tool against two containerised APIs
         run: ./mvnw --batch-mode --no-transfer-progress verify -Psmoke
 
+      # The profile fails a machine with no container runtime, but only once the smoke class has
+      # actually been selected to run. Rename the class, or lose its tag, and the profile would
+      # select nothing and this job would go green with no gate behind it at all. So the job checks
+      # that the tests it exists to run were run.
+      - name: Check the smoke run was not quietly skipped
+        run: |
+          report=restest-cli/target/surefire-reports/TEST-io.restest.cli.SmokeRunTest.xml
+          test -f "$report" || { echo "the smoke run produced no report: it did not run" >&2; exit 1; }
+          grep -q 'tests="2"' "$report" || { echo "the smoke run did not run both APIs" >&2; exit 1; }
+
       # The one thing the smoke run above cannot check: that the command a person is told to type
       # actually starts. It runs the built jars from the class path, and nothing else exercises that.
       - name: Check the launcher starts

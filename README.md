@@ -40,26 +40,34 @@ One command, an OpenAPI document and an address:
 ```bash
 ./mvnw -q install -DskipTests
 ./restest run https://petstore3.swagger.io/api/v3/openapi.json \
-    --url https://petstore3.swagger.io/api/v3 --budget 30s
+    --url https://petstore3.swagger.io/api/v3 --budget 10s
 ```
+
+That last one is somebody else's public demonstration server, so it is worth being a guest there:
+keep the budget short, and point `--url` at your own copy for anything longer.
 
 RESTest reads the document, invents requests from it, sends them for as long as you gave it, judges
 every reply against what the document promised, and prints each disagreement with a `curl` command
 that does it again:
 
 ```
-RESTest testing Swagger Petstore - OpenAPI 3.0 at http://localhost:8080/api/v3
+RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
 17 of 19 operations can be tested, seed 20260914, budget 10s
 
 F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-      getInventory - GET http://localhost:8080/api/v3/store/inventory
+      findPetsByStatus - GET https://petstore3.swagger.io/api/v3/pet/findByStatus?status=sold
       the body does not match the shape the specification declares for it, answering 200 as application/json
-      curl -i -X GET 'http://localhost:8080/api/v3/store/inventory' -H 'User-Agent: RESTest/2.0'
+        /223: required property 'name' not found
+        /228/tags/0: string found, object expected
+      curl -i -X GET 'https://petstore3.swagger.io/api/v3/pet/findByStatus?status=sold' -H 'User-Agent: RESTest/2.0'
 
-64633 requests to 17 operations in 10.0s, 10% of it idle
-3805 faults:
-  3805 x F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+... more faults are being found; they are all in the run's report, and counted below
+
+895 requests to 17 operations in 10.3s, 14% of it idle
+423 faults:
+  106 x F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+  317 x F100  HTTP Status 500
 report written to restest-out/report.json
 run stored in restest-out/run.sqlite
 ```

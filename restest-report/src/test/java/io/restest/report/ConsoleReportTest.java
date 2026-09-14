@@ -65,6 +65,8 @@ class ConsoleReportTest {
     @Test
     @DisplayName("a run finding the same fault over and over stops filling the screen with it")
     void very_many_faults_stop_being_printed_but_are_still_counted() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 500)));
         for (int found = 0; found < 120; found++) {
             report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
         }
@@ -105,10 +107,24 @@ class ConsoleReportTest {
     @Test
     @DisplayName("a run that found nothing says so plainly")
     void a_clean_run_says_so() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 
         assertThat(screen.toString()).contains("no faults found");
         assertThat(report.faults()).isZero();
+    }
+
+    @Test
+    @DisplayName("a run that asked the API nothing does not claim to have found nothing wrong")
+    void a_run_that_tested_nothing_says_that_instead() {
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString())
+                .describedAs("'no faults found' would read as 'this API is fine', which a run that "
+                        + "sent nothing has no evidence for")
+                .contains("nothing was tested")
+                .doesNotContain("no faults found");
     }
 
     @Test

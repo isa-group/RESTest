@@ -137,6 +137,12 @@ public final class ConsoleReport implements RunListener {
         write(attempts + " requests to " + operations.size() + " operations in "
                 + readable(finished.elapsed()) + ", "
                 + Math.round(finished.engine().idleFraction() * 100) + "% of it idle");
+        if (attempts == 0) {
+            // Not the same sentence as "no faults found", and the difference matters: a run that
+            // asked the API nothing has no evidence that anything is right.
+            write("nothing was tested");
+            return;
+        }
         if (counts.isEmpty()) {
             write("no faults found");
             return;

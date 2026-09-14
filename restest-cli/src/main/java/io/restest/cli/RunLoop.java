@@ -26,12 +26,12 @@ import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.gen.RequestBuilder;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Spends the time a run was given, asking the API one question after another until it runs out.
@@ -42,26 +42,30 @@ import java.util.concurrent.CompletableFuture;
  * thoroughness - the headline number a run reports is how much of its time nothing was happening,
  * and a run that stopped after a fifth of a second would make that number meaningless.
  *
- * <p>Requests are sent without waiting for the previous answer, so that thinking about the next
- * request happens while the API is still answering the last one. That is the whole reason this is a
- * queue rather than a straight line: on a straight line, every millisecond spent inventing a request
- * is a millisecond in which the API is being asked nothing, and the run's own measurement could not
- * tell that apart from an API that is simply slow.
+ * <p>Requests are sent without waiting for the previous answer, and - this is the part that is easy
+ * to get subtly wrong - without waiting for them <em>in the order they were sent</em>. Almost every
+ * API has one operation slower than the rest, and a loop that insisted on the oldest answer before
+ * asking anything else would spend the run waiting on that one operation while every other request
+ * had long since come back. It would also look efficient while doing it, because "nothing in
+ * flight" is how wasted time is measured and there would always be that one request in flight. So
+ * each answer is dealt with the moment it arrives, whichever it is, and the loop waits only when
+ * every slot it is allowed is genuinely occupied.
  *
  * <p>Two things it deliberately is not. It is not a scheduler: it has no notion of which operations
- * deserve more of the time or of dividing the time into phases. And it is not clever about what to
+ * deserve more of the time, or of dividing the time into phases. And it is not clever about what to
  * send - deciding that belongs to the part of the tool that invents values, which is asked for the
  * next test case and never told what time it is.
  */
 final class RunLoop {
 
     /**
-     * How many requests may be waiting for an answer at the same time.
+     * How many requests may be waiting for an answer at once, as a multiple of what the engine will
+     * ever have in flight.
      *
-     * <p>Twice what the engine will ever have in flight. The engine decides the real number for
-     * itself, moving it up and down as the API turns out to be fast or slow; this is only a ceiling
-     * on how far ahead the loop is allowed to run, and it sits above the engine's own so that the
-     * engine is never left with a free slot while the next request is still being invented.
+     * <p>The engine decides the real number for itself, moving it up and down as the API turns out
+     * to be fast or slow. This is only a ceiling on how far ahead the loop may run, and it sits
+     * above the engine's own so the engine is never left with a free slot while the next request is
+     * still being invented.
      */
     static final int WORK_AHEAD_FACTOR = 2;
 
@@ -74,7 +78,7 @@ final class RunLoop {
      * by running out of memory rather than by running out of time.
      *
      * <p>Pausing is the honest response: the tool was not testing, and it was the tool's own work
-     * that stopped it, so it is counted as time the tool wasted and shows up in the run's summary.
+     * that stopped it, so the pause is counted as time the tool wasted and shows up in the summary.
      */
     static final int ANNOUNCEMENTS_ALLOWED_TO_PILE_UP = 1_000;
 
@@ -92,12 +96,21 @@ final class RunLoop {
      * @param notGenerated how many times no test case could be invented for an operation
      * @param notAssembled how many test cases could not be turned into a request that could be sent
      * @param passes how many times the loop went round the whole list of operations
+     * @param stillOwed how many answers had still not arrived when the run stopped waiting for them.
+     *     Normally zero, because the engine gives up on a request of its own accord long before this
+     *     does
      */
-    record Outcome(long sent, long answered, long notGenerated, long notAssembled, long passes) {
+    record Outcome(long sent, long answered, long notGenerated, long notAssembled, long passes,
+            long stillOwed) {
 
         /** Whether requests went out and not one of them was ever answered. */
         boolean nothingAnswered() {
             return sent > 0 && answered == 0;
+        }
+
+        /** Whether nothing was sent because nothing in the document could be turned into a request. */
+        boolean nothingCouldBeBuilt() {
+            return sent == 0 && notGenerated + notAssembled > 0;
         }
     }
 
@@ -110,50 +123,58 @@ final class RunLoop {
      * @param baseUrl where the API is
      * @param deadline when to stop inventing new requests
      * @param workAhead how many requests may be waiting for an answer at once
+     * @param howLongToWaitForStragglers how long to go on waiting, past the deadline, for answers to
+     *     requests that had already gone out
      * @param engine what sends them
      * @param events where everything that happens is announced
      * @return what the loop did with the time
      */
     static Outcome run(List<Operation> operations, RandomTestCaseGenerator generator,
-            String baseUrl, Instant deadline, int workAhead, HttpEngine engine, EventStream events) {
+            String baseUrl, Instant deadline, int workAhead, Duration howLongToWaitForStragglers,
+            HttpEngine engine, EventStream events) {
         Objects.requireNonNull(generator, "generator");
         Objects.requireNonNull(baseUrl, "baseUrl");
         Objects.requireNonNull(deadline, "deadline");
+        Objects.requireNonNull(howLongToWaitForStragglers, "howLongToWaitForStragglers");
         Objects.requireNonNull(engine, "engine");
         Objects.requireNonNull(events, "events");
         if (operations.isEmpty()) {
             throw new IllegalArgumentException("a run with no operations to test has nothing to do");
         }
 
-        Deque<CompletableFuture<Interaction>> waitingForAnAnswer = new ArrayDeque<>();
+        // One permit per request that may be outstanding. Taken before a request is invented and
+        // given back by whichever answer arrives, so a slow operation costs one slot rather than
+        // holding up the queue behind it.
+        Semaphore slots = new Semaphore(workAhead);
         Answers answers = new Answers();
         long sent = 0;
         long notGenerated = 0;
         long notAssembled = 0;
         long passes = 0;
         int next = 0;
-        boolean anythingSentThisPass = false;
 
         while (Instant.now().isBefore(deadline)) {
-            while (waitingForAnAnswer.size() >= workAhead) {
-                announce(waitingForAnAnswer.poll(), events, answers);
+            if (!waitForASlot(slots, deadline)) {
+                break;
             }
             pauseWhileTheReportsCatchUp(events, deadline);
 
             Operation operation = operations.get(next);
             Optional<TestCase> testCase = generator.generate(operation);
-            if (testCase.isEmpty()) {
-                notGenerated++;
-            } else {
-                HttpRequestRecord request = assemble(operation, testCase.get(), baseUrl);
-                if (request == null) {
-                    notAssembled++;
+            HttpRequestRecord request = testCase
+                    .map(planned -> assemble(operation, planned, baseUrl))
+                    .orElse(null);
+            if (request == null) {
+                slots.release();
+                if (testCase.isEmpty()) {
+                    notGenerated++;
                 } else {
-                    events.publish(new RunEvent.TestCasePlanned(Instant.now(), testCase.get()));
-                    waitingForAnAnswer.add(engine.sendAsync(testCase.get(), request));
-                    sent++;
-                    anythingSentThisPass = true;
+                    notAssembled++;
                 }
+            } else {
+                events.publish(new RunEvent.TestCasePlanned(Instant.now(), testCase.get()));
+                send(engine, testCase.get(), request, slots, answers, events);
+                sent++;
             }
 
             next++;
@@ -161,30 +182,64 @@ final class RunLoop {
                 next = 0;
                 passes++;
                 // Nothing in this document could be sent even once. Going round again would produce
-                // the same nothing until the deadline, so stop and let the run say so. Only a first
-                // pass that sent nothing at all counts: once anything has been sent, a later pass
-                // where every value happens to be unusable is bad luck, not a dead end.
-                if (!anythingSentThisPass && sent == 0) {
+                // the same nothing until the deadline, so stop and let the run say why.
+                if (sent == 0) {
                     break;
                 }
                 // Enough requests have come back to know that nothing is listening at this address.
                 // Carrying on would spend the whole budget collecting the same refusal - tens of
-                // thousands of times against an address that answers instantly because nothing is
-                // there - and bury the one useful sentence, which is that the address is wrong.
+                // thousands of times, because an address with nothing behind it refuses instantly -
+                // and bury the one useful sentence, which is that the address is wrong.
                 if (answers.nothingIsThere(workAhead)) {
                     break;
                 }
-                anythingSentThisPass = false;
             }
         }
 
         // The deadline stops us asking new questions, not listening to the answers we are owed.
         // Those requests were paid for and what came back is evidence; throwing it away would also
         // leave the run's stored file disagreeing with the number of requests it says it sent.
-        while (!waitingForAnAnswer.isEmpty()) {
-            announce(waitingForAnAnswer.poll(), events, answers);
+        long stillOwed = waitForTheAnswersStillOwed(slots, workAhead, howLongToWaitForStragglers);
+        return new Outcome(sent, answers.answered(), notGenerated, notAssembled, passes, stillOwed);
+    }
+
+    /**
+     * Sends one request, and arranges for its answer to be announced the moment it arrives.
+     *
+     * <p>Dealing with each answer where it lands, rather than collecting them in the order they went
+     * out, is what stops one slow operation from holding up every other request in the run.
+     */
+    private static void send(HttpEngine engine, TestCase testCase, HttpRequestRecord request,
+            Semaphore slots, Answers answers, EventStream events) {
+        try {
+            engine.sendAsync(testCase, request).whenComplete((interaction, wentWrong) -> {
+                try {
+                    announce(interaction, answers, events);
+                } finally {
+                    slots.release();
+                }
+            });
+        } catch (RuntimeException couldNotEvenBeStarted) {
+            slots.release();
+            throw couldNotEvenBeStarted;
         }
-        return new Outcome(sent, answers.answered(), notGenerated, notAssembled, passes);
+    }
+
+    /**
+     * Announces one answer.
+     *
+     * <p>A request that produced nothing at all is counted and not announced. The engine does not
+     * normally allow that - it turns even a refused connection into an answer of its own - but if it
+     * ever happens, making one up would mean inventing the moment the request was sent, and one
+     * request's misfortune must not throw away everything else that is still outstanding.
+     */
+    private static void announce(Interaction interaction, Answers answers, EventStream events) {
+        if (interaction == null) {
+            answers.recordNothingCameBack();
+            return;
+        }
+        answers.record(interaction);
+        events.publish(new RunEvent.InteractionCompleted(Instant.now(), interaction));
     }
 
     /**
@@ -208,11 +263,35 @@ final class RunLoop {
         }
     }
 
-    private static void announce(CompletableFuture<Interaction> owed, EventStream events,
-            Answers answers) {
-        Interaction interaction = owed.join();
-        answers.record(interaction);
-        events.publish(new RunEvent.InteractionCompleted(Instant.now(), interaction));
+    /** Waits for room to send another request, giving up at the deadline rather than after it. */
+    private static boolean waitForASlot(Semaphore slots, Instant deadline) {
+        Duration left = Duration.between(Instant.now(), deadline);
+        if (left.isNegative() || left.isZero()) {
+            return false;
+        }
+        try {
+            return slots.tryAcquire(left.toNanos(), TimeUnit.NANOSECONDS);
+        } catch (InterruptedException stopped) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    /**
+     * Waits for every request already sent to be answered.
+     *
+     * @return how many were still unanswered when it stopped waiting
+     */
+    private static long waitForTheAnswersStillOwed(Semaphore slots, int workAhead,
+            Duration howLong) {
+        try {
+            if (slots.tryAcquire(workAhead, howLong.toNanos(), TimeUnit.NANOSECONDS)) {
+                return 0;
+            }
+        } catch (InterruptedException stopped) {
+            Thread.currentThread().interrupt();
+        }
+        return workAhead - slots.availablePermits();
     }
 
     private static void pauseWhileTheReportsCatchUp(EventStream events, Instant deadline) {
@@ -230,35 +309,41 @@ final class RunLoop {
     /**
      * Keeps track of how many requests actually came back with something.
      *
-     * <p>A reply that says the API is broken is a result. A request that never reached anything at
-     * all is not: it says something about the address it was sent to, and nothing whatsoever about
-     * the API. Telling the two apart is what lets a run notice it is shouting into an empty room.
+     * <p>A reply saying the API is broken is a result. A request that never reached anything at all
+     * is not: it says something about the address it was sent to, and nothing whatsoever about the
+     * API. Telling the two apart is what lets a run notice it is shouting into an empty room.
+     *
+     * <p>Counted from whichever thread the answer arrives on, so the counts are atomic.
      */
     private static final class Answers {
 
-        private long answered;
-        private long unanswered;
+        private final AtomicLong answered = new AtomicLong();
+        private final AtomicLong unanswered = new AtomicLong();
 
         void record(Interaction interaction) {
             if (interaction.isAnswered()) {
-                answered++;
+                answered.incrementAndGet();
             } else {
-                unanswered++;
+                unanswered.incrementAndGet();
             }
         }
 
+        void recordNothingCameBack() {
+            unanswered.incrementAndGet();
+        }
+
         long answered() {
-            return answered;
+            return answered.get();
         }
 
         /**
          * Whether enough has come back, with nothing answered, to conclude the address is wrong.
          *
          * @param evidenceNeeded how many unanswered requests count as enough. As many as may be in
-         *     flight at once, so the judgement is never made on a single unlucky moment
+         *     flight at once, so the judgement is never made on one unlucky moment
          */
         boolean nothingIsThere(int evidenceNeeded) {
-            return answered == 0 && unanswered >= evidenceNeeded;
+            return answered.get() == 0 && unanswered.get() >= evidenceNeeded;
         }
     }
 }

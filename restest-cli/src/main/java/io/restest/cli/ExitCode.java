@@ -64,4 +64,31 @@ final class ExitCode {
 
     private ExitCode() {
     }
+
+    /**
+     * Which of the above a finished run deserves.
+     *
+     * <p>Kept as one decision in one place rather than spread through the command, because it is the
+     * part of RESTest other people's scripts depend on, and because the order the questions are
+     * asked in is the whole of the meaning. "Did anything break on our side" comes before "did we
+     * actually test anything", which comes before "was anything wrong with the API" - so a broken
+     * report can never be reported as a clean bill of health, and neither can a run that sent
+     * nothing.
+     *
+     * @param outcome what the loop did with the time
+     * @param reportsThatFailed how many listeners threw while being told something
+     * @param eventsNeverHeard how many announcements never reached the listeners
+     * @param faults how many faults were reported
+     * @return the number the command should answer with
+     */
+    static int of(RunLoop.Outcome outcome, long reportsThatFailed, long eventsNeverHeard,
+            int faults) {
+        if (reportsThatFailed > 0 || eventsNeverHeard > 0) {
+            return TOOL_FAILED;
+        }
+        if (outcome == null || outcome.sent() == 0 || outcome.nothingAnswered()) {
+            return NOTHING_TO_TEST;
+        }
+        return faults > 0 ? FAULTS_FOUND : NO_FAULTS;
+    }
 }
