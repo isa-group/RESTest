@@ -55,6 +55,9 @@ src/test/resources/auth/Sample/oauth_short_expiration.json
 # ---------------------------------------------------------------------------
 # Personal guide (Spanish; the repo is English-only)
 GUIA-CLAUDE-CODE.md
+# Personal user guide (Spanish) and everything used to build it: source, styles,
+# build scripts, runnable examples and the generated PDF. Not part of the product.
+/guia-usuario/
 
 # Internal planning notes, addressed to the maintainer and not written for publication.
 # The public design rationale is docs/DESIGN.md.

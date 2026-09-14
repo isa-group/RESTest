@@ -13,7 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * The command line: {@code restest run <specification> --url <base> --budget <duration>}.
+ *
+ * <p>This is the only module that ends the program, and the only one that sees every other module
+ * at once. The run loop lives here, so that the part of the tool that invents requests never gains
+ * a dependency on the part that sends them or on the part that stores what came back.
+ *
+ * <p>There is no {@code opens} for the command-line framework. The tool runs on the class path, not
+ * the module path, because two versions of the specification parser's module cannot sit on a module
+ * path together.
+ */
 module io.restest.cli {
+    requires info.picocli;
     requires io.restest.core;
     requires io.restest.spec;
     requires io.restest.idl;

@@ -70,6 +70,8 @@
         <assertj.version>3.27.7</assertj.version>
         <archunit.version>1.5.0</archunit.version>
         <jacoco.version>0.8.15</jacoco.version>
+        <picocli.version>4.7.7</picocli.version>
+        <testcontainers.version>2.0.5</testcontainers.version>
         <swagger-parser.version>2.1.47</swagger-parser.version>
         <!-- Arrives transitively through swagger-parser; pinned in its own right so a future
              swagger-parser upgrade that changes it is a visible, reviewed version bump rather than
@@ -124,6 +126,26 @@
                 <groupId>com.tngtech.archunit</groupId>
                 <artifactId>archunit-junit5</artifactId>
                 <version>${archunit.version}</version>
+            </dependency>
+            <!--
+              Containerised APIs for the smoke run. The JUnit integration is `testcontainers-junit-
+              jupiter` since the 2.x line; `org.testcontainers:junit-jupiter`, which every 1.x
+              example on the internet names, has no 2.x release at all and fails to resolve.
+            -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-junit-jupiter</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>info.picocli</groupId>
+                <artifactId>picocli</artifactId>
+                <version>${picocli.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.swagger.parser.v3</groupId>
@@ -182,6 +204,20 @@
                 <artifactId>slf4j-nop</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
+            <!--
+                 The facade itself, pinned for a reason that only shows up once two things want it.
+                 Testcontainers asks for 1.7.36; the do-nothing binding above is 2.0.x. Both sit the
+                 same distance from restest-cli, so Maven's nearest-wins rule does not decide between
+                 them and the order the dependencies happen to be written in does. A 1.7 facade with
+                 a 2.0 binding does not work, and it does not fail the build either: it prints the
+                 very warnings the binding was added to silence and then logs nothing. One managed
+                 version makes the answer the same whatever order anybody writes.
+            -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -230,7 +266,21 @@
                           module-info.java as a result.
                         -->
                         <useModulePath>false</useModulePath>
+                        <!--
+                          The smoke run starts two containers and pulls about 160 MB the first time.
+                          `./mvnw verify` is the command everybody runs all day and on all nine
+                          continuous-integration rows, so it does not do that: the tagged tests are
+                          left out here and selected back in by the `smoke` and `it` profiles. Six
+                          of the nine rows could not run them anyway - macOS runners have no
+                          container runtime and Windows runners only run Windows containers.
+                        -->
+                        <excludedGroups>smoke</excludedGroups>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.8.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -346,6 +396,62 @@
             <properties>
                 <jacoco.skip>true</jacoco.skip>
             </properties>
+        </profile>
+
+        <!--
+          Just the smoke run: the whole tool, from the command line, against two real APIs in
+          containers. Nothing else runs, so coverage is switched off for the same reason the two
+          profiles above switch it off - the two modules with a blocking minimum would be measured
+          at nothing, which is not news when nothing was run.
+
+          The property is what turns a missing container runtime from a skipped test into a failed
+          build. Asking for this profile is asking for the containers; a gate that quietly reports
+          success because it could not run is worse than no gate, because it looks like one.
+        -->
+        <profile>
+            <id>smoke</id>
+            <properties>
+                <jacoco.skip>true</jacoco.skip>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <groups>smoke</groups>
+                            <excludedGroups>none</excludedGroups>
+                            <failIfNoTests>false</failIfNoTests>
+                            <systemPropertyVariables>
+                                <restest.smoke.required>true</restest.smoke.required>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!--
+          Everything, containers included: the ordinary build plus the smoke run. `none` is a tag no
+          test carries, which is how "exclude nothing" is written without relying on what an empty
+          element means to the plugin.
+        -->
+        <profile>
+            <id>it</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <excludedGroups>none</excludedGroups>
+                            <systemPropertyVariables>
+                                <restest.smoke.required>true</restest.smoke.required>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

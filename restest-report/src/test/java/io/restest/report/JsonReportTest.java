@@ -180,4 +180,30 @@ class JsonReportTest {
     private static int number(JsonValue.JsonObject parent, String name) {
         return ((JsonValue.JsonNumber) parent.member(name).orElseThrow()).value().intValueExact();
     }
+
+    @Test
+    @DisplayName("a run finding faults by the thousand writes a bounded file, and says so")
+    void very_many_faults_are_counted_in_full_and_written_in_part() {
+        JsonReport report = JsonReport.inMemory();
+        for (int found = 0; found < JsonReport.FINDINGS_WRITTEN + 250; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+        }
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+        JsonValue.JsonObject totals = (JsonValue.JsonObject) written.member("totals").orElseThrow();
+        JsonValue.JsonArray findings =
+                (JsonValue.JsonArray) written.member("findings").orElseThrow();
+
+        assertThat(number(totals, "faults"))
+                .describedAs("every fault is counted")
+                .isEqualTo(JsonReport.FINDINGS_WRITTEN + 250);
+        assertThat(findings.elements())
+                .describedAs("but the file does not grow without limit")
+                .hasSize(JsonReport.FINDINGS_WRITTEN);
+        assertThat(number(totals, "faultsWrittenInFull"))
+                .describedAs("and it says how many of them it wrote out, so nothing is quietly "
+                        + "missing")
+                .isEqualTo(JsonReport.FINDINGS_WRITTEN);
+    }
 }

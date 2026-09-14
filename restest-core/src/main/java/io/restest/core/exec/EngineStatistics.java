@@ -33,7 +33,10 @@ import java.util.Objects;
  * describing two moments; neither one changes afterwards.
  *
  * @param requestsSent how many requests were sent and answered, or failed trying
- * @param wallClock how long the engine has been running, from the first request to this snapshot
+ * @param wallClock how long the engine has been running, from the moment it was built to this
+ *     snapshot. From when it was built, not from the first request: a tool that spends the start of
+ *     its time preparing rather than testing is the thing idle time exists to catch, and a clock
+ *     that only started at the first request would report such a run as flawless
  * @param idle how much of that time no request was in flight
  * @param totalResponseTime the sum of the time every request took. It can exceed the wall clock,
  *     because requests overlap; divided by {@link #requestsSent()} it gives the average

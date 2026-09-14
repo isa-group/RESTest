@@ -59,6 +59,22 @@ import java.util.Set;
  */
 public final class JsonReport implements RunListener {
 
+    /**
+     * How many faults are written out in full before the file stops growing.
+     *
+     * <p>A run keeps testing for as long as it was given, and an API that is broken is broken every
+     * time it is asked, so a minute against a badly behaved API produces faults by the hundred
+     * thousand. Each one carries the whole attempt with it - the request, and as much of the reply
+     * as was kept - so holding all of them until the run ends is how a report turns into a file
+     * nobody can open, or into a run that stops for want of memory before it has written anything
+     * at all.
+     *
+     * <p>The count is never capped, only what is written out in full: the totals and the tally by
+     * kind are of every fault found. How many were written is stated in the file, so nothing is
+     * quietly missing.
+     */
+    static final int FINDINGS_WRITTEN = 1_000;
+
     private final Optional<Path> file;
     private final Clock clock;
     private final List<Finding> findings = new ArrayList<>();
@@ -67,6 +83,7 @@ public final class JsonReport implements RunListener {
     private String api = "";
     private String baseUrl = "";
     private int attempts;
+    private int faults;
     private Duration elapsed = Duration.ZERO;
     private EngineStatistics engine = EngineStatistics.none();
     private JsonValue written;
@@ -113,7 +130,10 @@ public final class JsonReport implements RunListener {
                 operations.add(completed.interaction().testCase().operation());
             }
             case RunEvent.FaultFound found -> {
-                findings.add(found.finding());
+                faults++;
+                if (findings.size() < FINDINGS_WRITTEN) {
+                    findings.add(found.finding());
+                }
                 counts.merge(found.finding().category(), 1, Integer::sum);
             }
             case RunEvent.RunFinished finished -> {
@@ -166,7 +186,8 @@ public final class JsonReport implements RunListener {
         Map<String, JsonValue> totals = new LinkedHashMap<>();
         totals.put("requests", JsonValue.of(attempts));
         totals.put("operations", JsonValue.of(operations.size()));
-        totals.put("faults", JsonValue.of(findings.size()));
+        totals.put("faults", JsonValue.of(faults));
+        totals.put("faultsWrittenInFull", JsonValue.of(findings.size()));
         totals.put("elapsed", JsonValue.of(elapsed.toString()));
         return JsonValue.object(totals);
     }

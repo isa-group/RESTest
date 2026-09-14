@@ -9,6 +9,10 @@
 mvnw text eol=lf
 *.sh text eol=lf
 
+# The restest launcher has no extension, so the rule above does not match it, and it is run by
+# /bin/sh for the same reasons mvnw is.
+restest text eol=lf
+
 # Batch files are executed by cmd.exe, which wants CRLF.
 mvnw.cmd text eol=crlf
 *.bat text eol=crlf

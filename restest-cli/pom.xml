@@ -22,6 +22,15 @@
     -->
 
     <dependencies>
+        <!--
+          The command-line framework. Confined to this module by an architecture rule, the same way
+          the parser is confined to restest-spec and the HTTP client to restest-exec.
+        -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>io.restest</groupId>
             <artifactId>restest-core</artifactId>
@@ -81,5 +90,64 @@
             <artifactId>wiremock</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Two real APIs in containers, for the smoke run. Needs a container runtime; the tests
+             that use it carry the `smoke` tag and are left out of an ordinary build. -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!--
+                      This module's tests open a run's SQLite file, and the database driver loads a
+                      native library. Without this flag Java 24 and later print a warning for every
+                      such load. Same flag, same reason, as restest-store.
+                    -->
+                    <argLine>@{argLine} --enable-native-access=ALL-UNNAMED</argLine>
+                </configuration>
+            </plugin>
+
+            <!--
+              Puts everything the command needs at runtime in one directory, so the `restest` script
+              at the root of the checkout is a single `java -cp .../lib/*` line with no list of names
+              in it and no absolute paths written into a file. Copies rather than referencing the
+              local repository, so moving or copying the checkout cannot leave a stale path behind.
+
+              Jars rather than the compiled-classes directories, and this is not a detail: a report
+              says which version of RESTest produced it by reading a jar manifest, and a directory
+              has no manifest. Point the script at target/classes and every report says "unknown".
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>runtime-libraries</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

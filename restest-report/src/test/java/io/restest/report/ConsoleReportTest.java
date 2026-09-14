@@ -63,6 +63,30 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("a run finding the same fault over and over stops filling the screen with it")
+    void very_many_faults_stop_being_printed_but_are_still_counted() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 500)));
+        for (int found = 0; found < 120; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+        }
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        String printed = screen.toString();
+        assertThat(printed.split("HTTP Status 500", -1).length - 1)
+                .describedAs("the screen holds the first 50 faults and the summary line, not 120")
+                .isEqualTo(51);
+        assertThat(printed)
+                .describedAs("and it says why it stopped, rather than quietly losing them")
+                .contains("... more faults are being found");
+        assertThat(printed)
+                .describedAs("while the count at the end is of every one of them")
+                .contains("120 faults:")
+                .contains("120 x F100");
+        assertThat(report.faults()).isEqualTo(120);
+    }
+
+    @Test
     @DisplayName("the end of a run says how much was done, what was found, and how much was idle")
     void the_summary_says_what_happened() {
         report.on(new RunEvent.RunStarted(Instant.EPOCH, "Pets", Runs.BASE));
@@ -83,10 +107,24 @@ class ConsoleReportTest {
     @Test
     @DisplayName("a run that found nothing says so plainly")
     void a_clean_run_says_so() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
 
         assertThat(screen.toString()).contains("no faults found");
         assertThat(report.faults()).isZero();
+    }
+
+    @Test
+    @DisplayName("a run that asked the API nothing does not claim to have found nothing wrong")
+    void a_run_that_tested_nothing_says_that_instead() {
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofMillis(412), Runs.engine()));
+
+        assertThat(screen.toString())
+                .describedAs("'no faults found' would read as 'this API is fine', which a run that "
+                        + "sent nothing has no evidence for")
+                .contains("nothing was tested")
+                .doesNotContain("no faults found");
     }
 
     @Test

@@ -22,56 +22,39 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
-import io.restest.core.event.EventStream;
-import io.restest.core.event.RunEvent;
-import io.restest.core.exec.HttpEngine;
-import io.restest.core.execution.Interaction;
-import io.restest.core.execution.TestCase;
 import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
-import io.restest.core.model.ApiModel;
-import io.restest.core.model.Operation;
 import io.restest.core.store.InteractionQuery;
 import io.restest.core.store.InteractionStore;
-import io.restest.exec.OkHttpEngine;
-import io.restest.gen.RandomTestCaseGenerator;
-import io.restest.gen.RequestBuilder;
-import io.restest.oracles.OracleListener;
-import io.restest.report.ConsoleReport;
-import io.restest.report.JsonReport;
-import io.restest.spec.SwaggerSpecificationParser;
 import io.restest.store.SqliteInteractionStore;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * The whole tool, end to end, against an API that misbehaves on purpose.
+ * The whole tool, from the command line, against an API that misbehaves on purpose.
  *
- * <p>Every other test in this project checks one part on its own. This one puts all of them
- * together, which is the only way to find out whether they actually fit: a specification is read,
- * requests are invented from it, they are sent to a real HTTP server, what comes back is judged,
- * and what was judged wrong is reported, stored and turned into a command a person can run.
+ * <p>Every other test in this project checks one part on its own. This one runs the command a person
+ * would run and checks what they would see: a description is read, requests are invented from it,
+ * they are sent to a real HTTP server, what comes back is judged, and what was judged wrong is
+ * printed, stored, and turned into a command anybody can paste into a terminal.
  *
- * <p>The API is a stand-in that answers exactly as this test tells it to, so there is no network,
- * no waiting, and no chance of the test failing because somebody's real server had a bad day. It is
+ * <p>The API is a stand-in that answers exactly as this test tells it to, so there is no network, no
+ * waiting, and no chance of the test failing because somebody's real server had a bad day. It is
  * wrong in two different ways on purpose - one operation falls over, one lies about the shape of
- * what it returns - and a third operation is perfectly well behaved, so that "found two faults" is
- * not the same sentence as "complained about everything".
- *
- * <p>This is the shape the {@code restest run} command will take. The command itself is the next
- * increment; what it will do is what happens below.
+ * what it returns - and a third operation is perfectly well behaved, so that "found two kinds of
+ * fault" is not the same sentence as "complained about everything".
  */
 class WholeRunTest {
 
@@ -107,99 +90,59 @@ class WholeRunTest {
     }
 
     @Test
-    @DisplayName("a whole run reads a specification, tests an API, and reports what is wrong")
-    void a_whole_run_finds_and_reports_what_is_wrong(@TempDir Path directory) throws IOException {
-        String baseUrl = api.baseUrl();
-        ApiModel model = new SwaggerSpecificationParser().parse("pet-shelter.yaml");
-        assertThat(model.isComplete()).describedAs("the specification reads without complaint")
-                .isTrue();
+    @DisplayName("one command reads a document, tests an API, and reports what is wrong")
+    void one_command_finds_and_reports_what_is_wrong(@TempDir Path directory) throws IOException {
+        StringWriter screen = new StringWriter();
 
-        StringBuilder screen = new StringBuilder();
-        Path reportFile = directory.resolve("report.json");
-        JsonReport json = JsonReport.to(reportFile);
-        Path runFile = directory.resolve("run.sqlite");
+        int answer = run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
+                "--budget", "1s", "--seed", "20260913", "--out", directory.toString());
 
-        Instant startedAt = Instant.now();
-        // Closed in reverse: the announcements are drained first, so everything listening to them
-        // has finished with the store and the engine before either of those is shut.
-        try (InteractionStore store = SqliteInteractionStore.at(runFile);
-                HttpEngine engine = new OkHttpEngine();
-                EventStream events = new EventStream()) {
-
-            events.subscribe(event -> {
-                if (event instanceof RunEvent.InteractionCompleted completed) {
-                    store.record(completed.interaction());
-                }
-            });
-            events.subscribe(OracleListener.standard(model, events));
-            events.subscribe(ConsoleReport.to(screen));
-            events.subscribe(json);
-
-            events.publish(new RunEvent.RunStarted(startedAt, model.title(), baseUrl));
-
-            RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260913L);
-            for (Operation operation : generator.testableOperations()) {
-                TestCase testCase = generator.generate(operation).orElseThrow();
-                events.publish(new RunEvent.TestCasePlanned(Instant.now(), testCase));
-                Interaction attempt = engine.send(testCase,
-                        RequestBuilder.build(operation, testCase, baseUrl));
-                events.publish(new RunEvent.InteractionCompleted(Instant.now(), attempt));
-            }
-
-            events.publish(new RunEvent.RunFinished(Instant.now(),
-                    Duration.between(startedAt, Instant.now()), engine.statistics()));
-            assertThat(events.listenerFailures())
-                    .describedAs("nothing listening to the run broke").isZero();
-        }
+        assertThat(answer).describedAs("faults were found, so the answer is 1").isEqualTo(1);
 
         String printed = screen.toString();
         assertThat(printed)
                 .describedAs("the API that fell over is reported by its catalogue number")
                 .contains("F100")
                 .contains("HTTP Status 500")
-                .contains("listPets - GET " + baseUrl + "/pets");
+                .contains("listPets - GET " + api.baseUrl() + "/pets");
         assertThat(printed)
                 .describedAs("the API that lied about its own shape is reported too")
                 .contains("F101")
-                .contains("getPet - GET " + baseUrl + "/pets/")
+                .contains("getPet - GET " + api.baseUrl() + "/pets/")
                 .contains("/id: string found, integer expected");
         assertThat(printed)
                 .describedAs("the operation that behaved is not complained about")
                 .doesNotContain("listShelters");
-        assertThat(printed).contains("2 faults:");
 
-        JsonValue.JsonObject report =
-                (JsonValue.JsonObject) JsonText.read(Files.readString(reportFile));
-        assertThat(codesIn(report)).containsExactlyInAnyOrder(100, 101);
-
-        assertThat(store(runFile)).describedAs("every attempt is kept, faulty or not").isEqualTo(3);
+        JsonValue.JsonObject report = (JsonValue.JsonObject)
+                JsonText.read(Files.readString(directory.resolve("report.json")));
+        assertThat(codesIn(report))
+                .describedAs("two kinds of fault, and only the two that were planted")
+                .containsExactlyInAnyOrder(100, 101);
+        assertThat(totalIn(report, "operations"))
+                .describedAs("all three operations were exercised, including the healthy one")
+                .isEqualTo(3);
+        assertThat(stored(directory.resolve("run.sqlite")))
+                .describedAs("every attempt is kept, faulty or not")
+                .isEqualTo(totalIn(report, "requests"));
     }
 
     @Test
     @DisplayName("the curl command printed beside a fault really does reproduce it")
     void the_printed_command_reproduces_the_fault(@TempDir Path directory) throws Exception {
         Assumptions.assumeTrue(curlIsInstalled(), "curl is not installed on this machine");
+        StringWriter screen = new StringWriter();
 
-        String baseUrl = api.baseUrl();
-        ApiModel model = new SwaggerSpecificationParser().parse("pet-shelter.yaml");
-        StringBuilder screen = new StringBuilder();
-
-        try (HttpEngine engine = new OkHttpEngine(); EventStream events = new EventStream()) {
-            events.subscribe(OracleListener.standard(model, events));
-            events.subscribe(ConsoleReport.to(screen));
-
-            Operation listPets = model.operations().stream()
-                    .filter(operation -> operation.path().equals("/pets"))
-                    .findFirst().orElseThrow();
-            TestCase testCase = new RandomTestCaseGenerator(model, 1L).generate(listPets)
-                    .orElseThrow();
-            events.publish(new RunEvent.InteractionCompleted(Instant.now(),
-                    engine.send(testCase, RequestBuilder.build(listPets, testCase, baseUrl))));
-        }
+        // Two seconds rather than a fraction of one: reading the document and warming the parser
+        // up costs about half a second, and that comes out of the budget, so a budget of a few
+        // hundred milliseconds can run out before a single request has gone anywhere.
+        run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
+                "--budget", "2s", "--seed", "1", "--out", directory.toString());
 
         String command = screen.toString().lines()
                 .map(String::trim)
-                .filter(line -> line.startsWith("curl "))
+                .filter(line -> line.startsWith("curl ")
+                        && line.contains("'" + api.baseUrl() + "/pets'"))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("no command was printed beside the fault"));
 
@@ -209,26 +152,41 @@ class WholeRunTest {
                 .redirectErrorStream(true)
                 .start();
         String output = new String(shell.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(shell.waitFor(30, TimeUnit.SECONDS))
-                .describedAs("the command finished").isTrue();
+        assertThat(shell.waitFor(30, TimeUnit.SECONDS)).describedAs("the command finished").isTrue();
 
         assertThat(output)
                 .describedAs("running what was printed produces the same failure: %s", command)
                 .contains("500");
     }
 
+    private static int run(StringWriter screen, String... arguments) {
+        PrintWriter out = new PrintWriter(screen);
+        PrintWriter err = new PrintWriter(screen);
+        try {
+            return Restest.run(arguments, out, err);
+        } finally {
+            out.flush();
+            err.flush();
+        }
+    }
+
     private static List<Integer> codesIn(JsonValue.JsonObject report) {
-        JsonValue.JsonArray findings =
-                (JsonValue.JsonArray) report.member("findings").orElseThrow();
-        return findings.elements().stream()
+        JsonValue.JsonArray categories =
+                (JsonValue.JsonArray) report.member("faultsByCategory").orElseThrow();
+        return categories.elements().stream()
                 .map(JsonValue.JsonObject.class::cast)
-                .map(finding -> (JsonValue.JsonObject) finding.member("category").orElseThrow())
                 .map(category -> (JsonValue.JsonNumber) category.member("code").orElseThrow())
                 .map(code -> code.value().intValueExact())
+                .distinct()
                 .toList();
     }
 
-    private static long store(Path runFile) {
+    private static long totalIn(JsonValue.JsonObject report, String what) {
+        JsonValue.JsonObject totals = (JsonValue.JsonObject) report.member("totals").orElseThrow();
+        return ((JsonValue.JsonNumber) totals.member(what).orElseThrow()).value().longValueExact();
+    }
+
+    private static long stored(Path runFile) {
         try (InteractionStore store = SqliteInteractionStore.at(runFile)) {
             return store.count(InteractionQuery.all());
         }
