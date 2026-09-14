@@ -89,6 +89,14 @@ public final class Restest {
         CommandLine restest = new CommandLine(new Restest())
                 .setOut(out)
                 .setErr(err)
+                // Plain text, on every machine. The command-line framework would otherwise colour
+                // its own output wherever it believes the terminal can take it, which is a decision
+                // it makes differently on different operating systems - so the same command would
+                // print one thing here and another thing there, and a transcript pasted into a bug
+                // report or compared with last week's would carry invisible characters that are not
+                // in the other one. Everything else this tool prints is already written the same way
+                // everywhere, for the same reason.
+                .setColorScheme(CommandLine.Help.defaultColorScheme(CommandLine.Help.Ansi.OFF))
                 .setCaseInsensitiveEnumValuesAllowed(true)
                 .setExecutionExceptionHandler((failure, command, parsed) -> {
                     // Anything that reaches here is RESTest going wrong rather than the API under

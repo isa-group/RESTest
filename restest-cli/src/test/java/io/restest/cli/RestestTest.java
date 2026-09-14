@@ -112,6 +112,33 @@ class RestestTest {
     }
 
     @Test
+    @DisplayName("what the tool prints is the same text on every machine, colour codes included")
+    void nothing_printed_is_dressed_up_for_a_terminal() {
+        // The command-line framework decides for itself whether the terminal can take colour, and
+        // it decides differently on different operating systems - which is how this came up: on
+        // Windows the word "restest" in the usage text arrived wrapped in invisible characters, so
+        // the same run printed something else there than here. Asking for colour as loudly as
+        // possible and getting none back is what stops that coming back.
+        String asked = System.getProperty("picocli.ansi");
+        System.setProperty("picocli.ansi", "true");
+        try {
+            run();
+            run("run", "--help");
+        } finally {
+            if (asked == null) {
+                System.clearProperty("picocli.ansi");
+            } else {
+                System.setProperty("picocli.ansi", asked);
+            }
+        }
+
+        assertThat(screen.toString() + problems.toString())
+                .describedAs("a transcript pasted into a bug report, or compared with last week's, "
+                        + "must not depend on which machine produced it")
+                .doesNotContain("\u001B[");
+    }
+
+    @Test
     @DisplayName("a mistyped option answers 2 rather than pretending to have run")
     void a_bad_option_answers_two() {
         assertThat(run("run", "pet-shelter.yaml", "--nonsense")).isEqualTo(2);
