@@ -30,12 +30,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
-import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
 
 /**
@@ -55,12 +55,30 @@ import org.sqlite.SQLiteDataSource;
  * anything that reads JSON.
  *
  * <p>The file is written in a mode that lets somebody read a run while it is still going on, which is
- * what a live dashboard or an impatient person with {@code sqlite3} will want. While a run is in
- * progress that mode keeps two working files beside the main one, named after it and ending in
- * {@code -wal} and {@code -shm}; closing the store folds them back in and deletes them. A run that is
- * interrupted before the store is closed leaves all three, and all three together are the evidence -
- * copying only the main file out of an interrupted run would leave the most recent interactions
- * behind.
+ * what a live dashboard or an impatient person with {@code sqlite3} will want. Interactions reach the
+ * file in groups rather than one at a time, because one at a time cost a third of a run's time. A
+ * group is handed over when the next interaction arrives and either the group has grown to a few
+ * hundred or a quarter of a second has passed since the first of them.
+ *
+ * <p>What that means for somebody watching from outside, said exactly, because the obvious reading is
+ * wrong: they are always at most one interaction behind. Against a busy API that is a quarter of a
+ * second. Against an API answering once a minute it is a minute, because nothing is handed over
+ * until the next answer arrives - and when the run stops, the last few wait for the store to be
+ * closed. Anybody asking this store a question is never behind at all, because a question hands over
+ * whatever is waiting before it answers.
+ *
+ * <p>What that costs is worth saying plainly. Closing the store hands over everything still waiting.
+ * A program stopped where it stands - killed outright rather than closed - loses the group that had
+ * not been handed over, and nothing before it. If the file cannot be written to at all, say because
+ * the disk is full, the group being handed over is lost and this store says so loudly rather than
+ * carrying on quietly; what was handed over earlier is unharmed. No interaction is ever left
+ * half-written: the file either has it or it does not.
+ *
+ * <p>While a run is in progress the file is accompanied by two working files beside it, named after
+ * it and ending in {@code -wal} and {@code -shm}; closing the store folds them back in and deletes
+ * them. A run that is interrupted before the store is closed leaves all three, and all three together
+ * are the evidence - copying only the main file out of an interrupted run would leave the most recent
+ * interactions behind.
  */
 public final class SqliteInteractionStore implements InteractionStore {
 
@@ -70,6 +88,32 @@ public final class SqliteInteractionStore implements InteractionStore {
      * rather than failing later with a complaint about a missing column.
      */
     private static final int LAYOUT = 1;
+
+    /**
+     * How big a block the file is written in, chosen once when the file is created.
+     *
+     * <p>Four times the usual default. A run's interactions are around a kilobyte and a half each, so
+     * the usual block holds two of them and wastes the rest; bigger blocks waste proportionally less
+     * and made a measured run's file an eighth smaller.
+     */
+    private static final int PAGE_SIZE = 16_384;
+
+    /**
+     * How many interactions may be waiting to reach the file at once.
+     *
+     * <p>A bound on memory: whatever is waiting is held until it is handed over. Also the reason this
+     * is fast - handing interactions over one at a time is what cost a third of a run.
+     */
+    static final int MOST_INTERACTIONS_WAITING = 256;
+
+    /**
+     * And how long any of them may wait once another interaction arrives to notice.
+     *
+     * <p>This is what keeps somebody reading the run from outside close behind it. Without it, a run
+     * against a slow API would hold hundreds of interactions back for as long as it took to collect
+     * a full group, which against an API answering once a second is minutes.
+     */
+    static final Duration LONGEST_ANY_INTERACTION_WAITS = Duration.ofMillis(250);
 
     private static final List<String> SCHEMA = List.of(
             """
@@ -111,20 +155,32 @@ public final class SqliteInteractionStore implements InteractionStore {
     private final ReentrantLock lock = new ReentrantLock();
     private final String describedAs;
     private final Connection connection;
+
+    /** Made once and used for every interaction, rather than built again for each one. */
+    private final PreparedStatement insert;
+
+    /** How many interactions have been written but not yet handed over. Guarded by the lock. */
+    private int waiting;
+
+    /** When the oldest of them stops being allowed to wait. Guarded by the lock. */
+    private long saveDueAt;
+
     private boolean closed;
 
     private SqliteInteractionStore(String url, String describedAs) {
         this.describedAs = describedAs;
-        SQLiteConfig settings = new SQLiteConfig();
-        // Lets a reader look at the run while it is still being written.
-        settings.setJournalMode(SQLiteConfig.JournalMode.WAL);
-        settings.setSynchronous(SQLiteConfig.SynchronousMode.NORMAL);
-        SQLiteDataSource source = new SQLiteDataSource(settings);
+        SQLiteDataSource source = new SQLiteDataSource();
         source.setUrl(url);
         Connection opened = null;
         try {
             opened = source.getConnection();
+            configure(opened);
             prepare(opened, describedAs);
+            // From here on there is always a group of interactions collecting, and handing one over
+            // is what puts it in the file. Every setting above has to be in place before this: some
+            // of them are refused once a group is open.
+            opened.setAutoCommit(false);
+            this.insert = opened.prepareStatement(INSERT);
             this.connection = opened;
         } catch (SQLException | RuntimeException e) {
             // Without this the failed connection would be left open and unreachable, and a program
@@ -135,6 +191,29 @@ public final class SqliteInteractionStore implements InteractionStore {
             }
             throw new InteractionStoreException("The run's evidence could not be opened at "
                     + describedAs + ": " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * The settings the file is written with, issued one at a time and in this order on purpose.
+     *
+     * <p>How big a block the file is written in can only be decided while the file is still empty,
+     * and the mode that lets a run be read while it is being written is the first thing that puts
+     * anything in the file - so the block size has to be settled before it.
+     *
+     * <p>They are issued here rather than handed to the database driver because the driver applies
+     * what it is given in no particular order, so a block size given that way is accepted and then
+     * quietly thrown away. There is no complaint and no way to tell from the outside except by
+     * reading the finished file.
+     *
+     * <p>A file that already holds something keeps the block size it was made with, whatever is asked
+     * for here. That is how a run started by an older version of RESTest goes on being added to.
+     */
+    private static void configure(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("PRAGMA page_size = " + PAGE_SIZE);
+            statement.execute("PRAGMA journal_mode = WAL");
+            statement.execute("PRAGMA synchronous = NORMAL");
         }
     }
 
@@ -183,6 +262,10 @@ public final class SqliteInteractionStore implements InteractionStore {
     /**
      * A store kept in the given file, created if it is not there and added to if it is.
      *
+     * <p>How big a block the file is written in is decided when the file is created and never
+     * changes, so a run started by an older version of RESTest goes on using the blocks it was made
+     * with.
+     *
      * @param file where the run is kept. Its directory must exist
      * @return the store
      */
@@ -209,7 +292,10 @@ public final class SqliteInteractionStore implements InteractionStore {
         Objects.requireNonNull(interaction, "interaction");
         String document = JsonText.write(InteractionDocument.of(interaction));
         lock.lock();
-        try (PreparedStatement insert = statement(INSERT)) {
+        try {
+            ensureOpen();
+            // The same statement is used for every interaction, so every value is set every time.
+            // One left out would quietly keep whatever the interaction before it put there.
             insert.setString(1, interaction.id().value());
             insert.setString(2, interaction.testCase().id().value());
             insert.setString(3, interaction.testCase().operation().value());
@@ -227,10 +313,58 @@ public final class SqliteInteractionStore implements InteractionStore {
             insert.setLong(10, interaction.elapsed().toNanos());
             insert.setString(11, document);
             insert.executeUpdate();
+            waiting++;
+            if (waiting == 1) {
+                // The clock starts at the first of a group, not at the last hand-over, so no single
+                // interaction can wait longer than it is allowed to however slowly they arrive.
+                saveDueAt = System.nanoTime() + LONGEST_ANY_INTERACTION_WAITS.toNanos();
+            }
+            // Subtracted rather than compared, which is what makes it right when the clock's own
+            // count wraps round.
+            if (waiting >= MOST_INTERACTIONS_WAITING || System.nanoTime() - saveDueAt >= 0) {
+                save();
+            }
         } catch (SQLException e) {
             throw failure("write an interaction to", e);
         } finally {
             lock.unlock();
+        }
+    }
+
+    /**
+     * Hands over everything written since the last time, so that a second program looking at the run
+     * can see it and the next question is answered out of a file that agrees with the answer.
+     *
+     * <p>Called even when nothing is waiting: a question asked earlier leaves the file being held at
+     * the moment it was asked, and this is what lets go of it.
+     */
+    private void save() {
+        int lost = waiting;
+        // Zeroed before the attempt, so a failure cannot leave the count wrong or make every later
+        // interaction retry the same doomed hand-over.
+        waiting = 0;
+        try {
+            connection.commit();
+        } catch (SQLException cannotSave) {
+            rollbackQuietly();
+            throw new InteractionStoreException("Could not save " + lost + " interaction(s) to the "
+                    + "run's evidence at " + describedAs + ": " + cannotSave.getMessage(),
+                    cannotSave);
+        }
+    }
+
+    private void rollbackQuietly() {
+        try {
+            connection.rollback();
+        } catch (SQLException beyondHelp) {
+            // Already failing; the original failure is the one worth reporting.
+        }
+    }
+
+    private void ensureOpen() {
+        if (closed) {
+            throw new InteractionStoreException(
+                    "This store is closed, so " + describedAs + " can no longer be used");
         }
     }
 
@@ -327,10 +461,16 @@ public final class SqliteInteractionStore implements InteractionStore {
                 return;
             }
             closed = true;
+            // Letting go of the file would throw away whatever is still waiting, without a word.
+            // Every run would lose its last few interactions; this is the line that prevents it.
+            save();
             connection.close();
         } catch (SQLException e) {
             throw failure("close", e);
         } finally {
+            // Belt and braces: if saving threw, the file is still released rather than held by a
+            // program that has finished with it.
+            closeQuietly(connection);
             lock.unlock();
         }
     }
@@ -369,11 +509,14 @@ public final class SqliteInteractionStore implements InteractionStore {
         }
     }
 
+    /**
+     * A statement ready to ask the file something, with everything waiting handed over first. Every
+     * question in this class comes through here, so none of them can be answered out of a file that
+     * does not yet have what this store has been told.
+     */
     private PreparedStatement statement(String sql) throws SQLException {
-        if (closed) {
-            throw new InteractionStoreException(
-                    "This store is closed, so " + describedAs + " can no longer be used");
-        }
+        ensureOpen();
+        save();
         return connection.prepareStatement(sql);
     }
 

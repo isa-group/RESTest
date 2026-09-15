@@ -157,8 +157,10 @@ class SmokeRunTest {
 
         int answer;
         try {
-            answer = Restest.run(new String[] {"run", document, "--url", base,
-                "--budget", BUDGET, "--seed", "20260914", "--out", directory.toString()}, out, err);
+            // --store so the gate keeps covering the store end to end: it is the only place the
+            // whole tool runs against a real API, and keeping a run is off unless asked for.
+            answer = Restest.run(new String[] {"run", document, "--url", base, "--budget", BUDGET,
+                "--seed", "20260914", "--out", directory.toString(), "--store"}, out, err);
         } finally {
             out.flush();
             err.flush();

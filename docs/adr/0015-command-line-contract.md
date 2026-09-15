@@ -1,7 +1,7 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted
-**Date:** 2026-09-14
+**Status:** Accepted, amended at M1.7
+**Date:** 2026-09-14 (amended 2026-09-15)
 
 ## Context
 
@@ -50,9 +50,9 @@ document with no `servers:` block is given `/` by the parser, which is not an ad
 sent to; that is refused with a message asking for `--url`, rather than assembled into a request the
 engine will reject much later.
 
-`--out` defaults to `restest-out/`, and a run writes two files into it: `report.json` and
-`run.sqlite` — the latter accompanied, while it is open, by the two working files SQLite keeps beside
-it. One directory rather than one flag per artefact, so later report formats need no new option. A
+`--out` defaults to `restest-out/`, and a run writes ~~two files~~ its files into it: `report.json`
+and — **amended at M1.7: only when `--store` asks for it** — `run.sqlite`, the latter accompanied,
+while it is open, by the two working files SQLite keeps beside it. One directory rather than one flag per artefact, so later report formats need no new option. A
 previous run in the same directory is replaced, working files included, because a fresh database next
 to another run's leftovers is a database that may not open.
 
@@ -115,11 +115,15 @@ what should have been a thirty-second run, reported as 1% idle.
 
 **What the reports keep is bounded; what is counted is not.** A run that spends its whole budget
 against a broken API finds faults by the hundred thousand, each carrying the attempt that produced
-it. The screen stops printing them past fifty and says so; the JSON report writes the first thousand
-in full and records how many it wrote alongside the true total; the announcements waiting to reach
+it. The screen stops printing them past fifty and says so; ~~the JSON report writes the first thousand
+in full and records how many it wrote alongside the true total~~ **amended at M1.7: the first
+thousand turned out to be a thousand copies of the same two faults, so the report's allowance is per
+operation and kind instead — see ADR-0006's amendment**; the announcements waiting to reach
 either are capped, and the loop pauses rather than letting them pile up. Every one of those caps is
 stated in the output it applies to. The stored run keeps everything, which is its job — and how big
-that gets is a question this decision deliberately leaves open.
+that gets is a question this decision deliberately leaves open. **Answered at M1.7: 661 MiB at the
+default budget, which is why keeping it is now asked for rather than assumed. See the amendment
+below and ADR-0006's.**
 
 ### Exit codes
 
@@ -181,3 +185,123 @@ jar manifest, and a directory has none.
   the architecture rules read, which is a failure mode the rules' own harness exists to catch.
 - **Cancel what is in flight at the deadline.** Exact timing, thrown-away evidence, and interactions
   that end as "interrupted" for reasons that have nothing to do with the API.
+
+## Amendment (M1.7)
+
+**Date:** 2026-09-15
+
+**`--store` asks for the run to be kept, and is off by default. The output directory belongs to one
+run: every file RESTest itself writes there is deleted at the start of every run, whether or not that
+run keeps anything.**
+
+ADR-0006's own M1.7 amendment decides *whether* a run is kept and why, on the measurements. This one
+decides only what that looks like from the command line, which is this ADR's job.
+
+### Why
+
+The surface above says a run writes `report.json` and `run.sqlite` into `--out`. Measured, the second
+of those is 661 MiB at the default budget and 98.5% of everything a run writes, and no part of an
+ordinary run reads it back: `recheck`, `replay` and corpus oracles are all commands somebody runs
+afterwards, on purpose. Keeping it by default charges every run for a command nobody ran.
+
+Two questions follow, and the second is the one that is easy to get wrong.
+
+**What is it called and which way round is the default?** Off, asked for by name. This is a departure
+from the first design principle as it is usually read — zero configuration to start — so it is worth
+being exact about which reading. The principle is that the tool needs no configuration to *do its
+job*, and its job is to find faults and report them, which a default run still does, faster. Keeping
+the evidence is not the job; it is a second thing some people want afterwards, and that is what a
+flag is for. The tool's zero-configuration example still passes nothing.
+
+**What happens to what an earlier run left behind?** Every file RESTest writes is deleted at the
+start of every run that gets as far as testing something — the stored run included, and including
+when this run will not write one. A run that cannot start at all, because the document yields no
+testable operation or no usable address, never reaches the output directory and leaves it alone;
+destroying an earlier run's evidence on the way to answering "there was nothing to do" would be the
+worst of both. The
+alternative — delete only what *this* run is about to write — was considered and rejected. It sounds
+safer and is worse: it leaves a directory holding one run's database beside another run's report, so
+`restest recheck restest-out/run.sqlite` would re-examine a different run from the one the report
+beside it describes. Two runs' artefacts in one directory, telling a consistent-looking story that is
+not true, is a worse failure than a deleted file.
+
+Note the exact scope, because the looser reading is dangerous: what is deleted is **the set of files
+this tool writes**, by name, not the contents of the directory. `--out` accepts any path a person
+cares to type, and a run pointed at a directory full of someone's work must remove its own leftovers
+from it and nothing else.
+
+That makes the rule one sentence a person can hold in their head — **a directory is one run** — and
+puts the escape hatch where it already is: `--out` names the directory, so a run worth keeping is
+given its own, or copied somewhere else afterwards. The cost is stated rather than hidden: running
+`restest run` again in the same directory deletes the stored run you kept last time, and it does so
+whether or not the new run keeps anything.
+
+### How
+
+```
+restest run [--url=<base>] [--budget=<duration>] [--seed=<n>] [--out=<dir>] [--store] <spec>
+```
+
+- **`--store`** keeps the run's interactions in `run.sqlite`. Off by default. Without it no database
+  file is opened and none is written; the run is otherwise identical, and its report says the same
+  things.
+- **`--out`** is unchanged: one directory, `restest-out/` by default, holding everything a run
+  writes. **No per-artefact path options.** This is the point of the original decision — "so later
+  report formats need no new option" — and M3.5 adds four formats. Of the tools we are measured
+  against, CATS takes exactly this shape (`-o`, into `cats-report`), and Schemathesis's per-format
+  path flags sit on top of a `--report-dir` default rather than replacing it, so that door stays open
+  and is compatible to walk through later. EvoMaster is the counter-example worth not following: its
+  statistics files escaped `outputFolder` and are now five independent path options.
+- **Every file RESTest writes into that directory is deleted at the start of every run** —
+  `run.sqlite` and its two working files included — whatever this run intends to write. Files the
+  tool did not write are not touched.
+- **A run says what it wrote**, and how large it is. When nothing was kept, it says that too, and
+  names the flag — a person who wanted the evidence should find that out in the run that did not keep
+  it, not the next day.
+
+### Consequences
+
+- A default run is materially faster for having been asked to do less: measured, 51% more requests in
+  the same budget, with idle falling from 18.5% to 0.3%. The details and the method are in ADR-0006's
+  M1.7 amendment.
+- `--store` is a compatibility surface from now on, like the exit codes. Adding a flag later is
+  cheap; changing which way round this one defaults is not.
+- The evaluation entry point of M1.8 gets a simpler job than it looked: a loop that does not pass
+  `--store` writes nothing, goes faster, and cannot fill a disk during a campaign. One that wants
+  evidence passes the flag and gives each invocation its own `--out`.
+- Anyone who kept a run and then runs again in the same directory loses it. This is the deliberate
+  price of "a directory is one run", and the run says what it deleted.
+- **A coupling M3.5 must not miss.** The original decision's reason for one directory was "so later
+  report formats need no new option", and that still holds for the *option*. It does not hold for the
+  deletion: a format that writes `report.html` and is not in the set of files a run clears will leave
+  last run's HTML beside this run's JSON, which is the two-runs-in-one-directory failure arriving by
+  the back door. What ships at M1.7b is a list of names in one place, with a comment saying so — a
+  convention, not a guarantee, and nothing fails when the next format forgets. That is adequate for
+  two files and will not be adequate for six, so **M3.5 owns making the set impossible to drift**:
+  each format naming the file it writes, and the run clearing what the formats name. Recorded here
+  rather than left to be discovered by a reader of a stale `report.html`.
+- A surprising result in a run that kept nothing has to be reproduced by running again with `--store`
+  and the same seed. That works today. ADR-0013's seventh decision means it stops working at M2.7 for
+  strategies with a memory, which is recorded in ADR-0006's amendment as M2.7's problem to solve.
+
+### Alternatives considered
+
+- **`--store` on by default, `--no-store` to opt out.** Kinder to the person who wanted the evidence
+  and forgot; charges 850 MiB to everyone else, including every CI run and every evaluation
+  invocation. The failure mode of the chosen direction is a run you have to repeat; the failure mode
+  of this one is a full disk in the middle of a campaign.
+- **Delete only what this run writes.** Preserves a kept run across a later default run, at the price
+  of a directory that holds two runs and looks like one.
+- **A path per artefact (`--report-json-path`, `--store-path`).** What Dredd and EvoMaster do. Six
+  more options by the end of M3.5, and Dredd's variant pairs two repeatable flags by position, which
+  is easy to get wrong and hard to diagnose.
+- **A timestamped subdirectory per run by default**, as CATS offers opt-in with
+  `--timestampReports`, cleaning only when a directory is named. Weighed seriously, because it
+  removes the deletion problem completely and makes "a directory is one run" true without deleting
+  anything. It lost on arithmetic: with no retention policy it is not a policy but a leak. A default
+  run writes 1.8 MiB, so a hundred of them cost 180 MiB and nobody would notice; a run with `--store`
+  writes 850 MiB, so ten of them cost 8.5 GB and nothing prunes them. That turns the cost of
+  `--store` from "850 MiB, replaced each run" into "850 MiB for every run ever made", which is worse
+  than the problem the default was changed to solve. It becomes a good idea again the day it comes
+  with a bound — keep the last N, prune the rest, say so — and that bound is the decision to make
+  then, not the subdirectory.

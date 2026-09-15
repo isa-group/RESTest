@@ -94,8 +94,10 @@ class WholeRunTest {
     void one_command_finds_and_reports_what_is_wrong(@TempDir Path directory) throws IOException {
         StringWriter screen = new StringWriter();
 
+        // --store because this is the test that proves the stored run and the report agree, and a
+        // run is not asked to keep anything unless it is told to.
         int answer = run(screen, "run", "pet-shelter.yaml", "--url", api.baseUrl(),
-                "--budget", "1s", "--seed", "20260913", "--out", directory.toString());
+                "--budget", "1s", "--seed", "20260913", "--out", directory.toString(), "--store");
 
         assertThat(answer).describedAs("faults were found, so the answer is 1").isEqualTo(1);
 

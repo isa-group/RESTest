@@ -60,8 +60,8 @@ public final class ConsoleReport implements RunListener {
      * <p>A run that keeps testing for as long as it was given will ask an API the same question
      * thousands of times, and an API that is broken is broken every time. Printing all of them
      * scrolls everything worth reading off the top of the screen, so past this many the screen says
-     * so once and the rest are left to the run's own file, which has every one of them. The count
-     * at the end is of all of them, printed or not.
+     * so once and stops. The count at the end is of all of them, printed or not, and the run's own
+     * file counts every one of them too and describes the first few of each kind.
      */
     private static final int FAULTS_SHOWN = 50;
 
@@ -112,8 +112,8 @@ public final class ConsoleReport implements RunListener {
         counts.merge(finding.category(), 1, Integer::sum);
         if (faults > FAULTS_SHOWN) {
             if (faults == FAULTS_SHOWN + 1) {
-                write("... more faults are being found; they are all in the run's report, and "
-                        + "counted below");
+                write("... more faults are being found; every one of them is counted in the run's "
+                        + "report and in the total below");
                 write("");
             }
             return;

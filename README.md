@@ -40,7 +40,7 @@ One command, an OpenAPI document and an address:
 ```bash
 ./mvnw -q install -DskipTests
 ./restest run https://petstore3.swagger.io/api/v3/openapi.json \
-    --url https://petstore3.swagger.io/api/v3 --budget 10s
+    --url https://petstore3.swagger.io/api/v3 --budget 10s --seed 20260914
 ```
 
 That last one is somebody else's public demonstration server, so it is worth being a guest there:
@@ -55,26 +55,30 @@ RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/a
 
 17 of 19 operations can be tested, seed 20260914, budget 10s
 
-F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-      findPetsByStatus - GET https://petstore3.swagger.io/api/v3/pet/findByStatus?status=sold
-      the body does not match the shape the specification declares for it, answering 200 as application/json
-        /223: required property 'name' not found
-        /228/tags/0: string found, object expected
-      curl -i -X GET 'https://petstore3.swagger.io/api/v3/pet/findByStatus?status=sold' -H 'User-Agent: RESTest/2.0'
+F100  HTTP Status 500
+      getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory
+      the API answered 500, so it fell over while handling this request
+      curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'User-Agent: RESTest/2.0'
 
-... more faults are being found; they are all in the run's report, and counted below
+... more faults are being found; every one of them is counted in the run's report and in the total below
 
-895 requests to 17 operations in 10.3s, 14% of it idle
-423 faults:
-  106 x F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-  317 x F100  HTTP Status 500
-report written to restest-out/report.json
-run stored in restest-out/run.sqlite
+918 requests to 17 operations in 10.3s, 11% of it idle
+432 faults:
+  324 x F100  HTTP Status 500
+  108 x F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+report written to restest-out/report.json (788.5 KiB)
+the run itself was not kept; pass --store to keep every request and reply
 ```
 
-Two files are left behind: `report.json`, for anything that reads a run rather than looks at it, and
-`run.sqlite`, holding every request and reply so the run can be examined again later without asking
-the API anything.
+One file is left behind: `report.json`, for anything that reads a run rather than looks at it. It
+counts every fault exactly, lists every operation and kind of fault that went wrong, and writes the
+first few of each kind out whole — the request, the reply and a `curl` command that does it again.
+
+Add `--store` and a second file, `run.sqlite`, keeps every request and reply, so the run can be
+examined again later without asking the API anything. It is off by default because a minute against
+a fast API keeps hundreds of megabytes, and nothing in an ordinary run reads them back. A directory
+holds one run: starting another in the same place replaces what is there, so a run worth keeping is
+given a directory of its own with `--out`.
 
 Nothing else is required. `--url` is only needed when the document does not name an address you can
 reach, and `--budget` defaults to a minute. The whole of that budget is used, reading the document

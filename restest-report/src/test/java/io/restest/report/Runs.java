@@ -69,6 +69,42 @@ final class Runs {
                         .toList());
     }
 
+    /** The same kind of fault, on whichever operation is asked for. */
+    static Finding fellOver(String operation) {
+        return Finding.of(WfcFault.HTTP_STATUS_500, attempt(operation, "/x", 500),
+                "the API answered 500, so it fell over while handling this request");
+    }
+
+    /** The other kind, likewise. */
+    static Finding wrongShape(String operation) {
+        return Finding.of(WfcFault.SCHEMA_INVALID_RESPONSE, attempt(operation, "/x", 200),
+                "the body does not match the shape the specification declares for it");
+    }
+
+    /** A fault whose reply was big, which is how the report's limit in bytes is reached. */
+    static Finding fellOverWithBody(String operation, int bytes) {
+        String body = "x".repeat(bytes);
+        Interaction attempt = Interaction.answered(
+                TestCase.of(OperationId.of(operation), List.of()),
+                new HttpRequestRecord(HttpMethod.GET, BASE + "/x", List.of(), Optional.empty()),
+                new HttpResponseRecord(StatusLine.of(500), List.of(),
+                        Optional.of(Payload.of(body.getBytes(StandardCharsets.UTF_8), "text/plain"))),
+                Instant.parse("2026-09-13T10:00:00Z"), Duration.ofMillis(42));
+        return Finding.of(WfcFault.HTTP_STATUS_500, attempt, "the API answered 500");
+    }
+
+    /** A fault on an attempt that never got a reply at all, so there is no status code. */
+    static Finding neverAnswered(String operation) {
+        return Finding.of(WfcFault.HTTP_STATUS_500,
+                Interaction.transportFailure(
+                        TestCase.of(OperationId.of(operation), List.of()),
+                        new HttpRequestRecord(HttpMethod.GET, BASE + "/x", List.of(),
+                                Optional.empty()),
+                        "the connection was closed before anything came back",
+                        Instant.parse("2026-09-13T10:00:00Z"), Duration.ofMillis(42)),
+                "nothing came back");
+    }
+
     static EngineStatistics engine() {
         return new EngineStatistics(20, Duration.ofSeconds(10), Duration.ofSeconds(3),
                 Duration.ofSeconds(4), 4, 8);
