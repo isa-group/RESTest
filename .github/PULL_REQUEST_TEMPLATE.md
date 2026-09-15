@@ -75,7 +75,7 @@ you decided not to act on, and why. If a decision is expensive to reverse, it ne
 
 ---
 
-- [ ] Targets `v2`, not `main`
+- [ ] Targets `v2`, not `master`
 - [ ] English throughout, including comments and test names
 - [ ] Nothing from the deferred backlog ("Out of scope for v2.0" in `docs/DESIGN.md`)
 - [ ] No AI abstraction; no benchmark-platform reference under `src/`
