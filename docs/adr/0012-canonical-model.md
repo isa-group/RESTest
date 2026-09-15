@@ -204,21 +204,26 @@ cannot read.
 
 Measured across the whole fifty-document corpus, before and after:
 
-- **Four declared values are now right that were wrong.** One date, in the Amadeus document, read
+- **Four declared values are now right that were wrong**, out of seven differences in the whole
+  corpus. One is a query parameter's default, in the Amadeus document: `departure_date` read
   `Tue Apr 25 02:00:00 CEST 2017` and now reads `2017-04-25` — and read differently again on a
   machine set up in another country, which is the reproducibility promise broken in the smallest
-  possible way. Three arrays, in the Graphhopper document, were the *string* `[0]` and are now an
-  array of one number. These four are the whole of the user-visible gain today, and they are enough:
-  a declared value is the one input the document hands us outright.
-- **Two named schemas change shape**, both of them response schemas, and **no parameter anywhere in
-  the corpus changes at all.** The untyped-object rule therefore buys nothing yet on these fifty
-  documents. It is still right, and the reason to make the change now rather than at M2.5 is that
-  request bodies arrive then and will be generated from exactly these schemas; a body generator
-  built on top of "any value at all" would produce scalars where objects were described and the
-  cause would be two milestones away.
-- **One more operation is degraded and one more issue reported**, both in a hand-written fixture
-  whose reference has never resolved. On documents that were always this incomplete, the report
-  becoming longer is it becoming accurate.
+  possible way. It is also the only value in the corpus that the tool actually sends, so it is the
+  whole of the user-visible gain today. The other three are array defaults inside the Graphhopper
+  document's `Service`, `Shipment` and `VehicleType`, each the *string* `[0]` where the document
+  wrote an array of one number; those will be sent from M2.5, when bodies are generated.
+- **Two named schemas change shape, and no parameter anywhere changes shape.** The two are
+  `scim-user.groups[]` in the GitHub document and `GeocodingResponse` in the Graphhopper one, both
+  response schemas, both previously read as "any value at all" and now read as the objects they
+  describe. The untyped-object rule therefore changes nothing that is sent on these fifty documents
+  today. It is still right, and the reason to make the change now rather than at M2.5 is that request
+  bodies arrive then and will be generated from exactly these schemas; a body generator built on top
+  of "any value at all" would produce scalars where objects were described, and the cause would be
+  two milestones behind it.
+- **One more issue is reported**, in the hand-written fixture whose reference has never resolved: a
+  degraded issue naming the operation, where before the only word about it came from the parser's own
+  validation and was filed against the document as a whole. On documents that were always this
+  incomplete, the report becoming longer is it becoming accurate.
 - A document stating a default RESTest cannot represent loses that default rather than gaining a
   wrong one, and an enumeration it cannot read in full is reported as unreadable rather than
   silently shortened — because a shorter list is a different claim, not a smaller one.
