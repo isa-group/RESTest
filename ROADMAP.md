@@ -79,7 +79,7 @@ and checks the tool's overall per-request overhead, not any one extension point.
 | 3.2 | HTTP-semantics and REST-design oracles (WFC 900–909 and 950–965) | Protocol-level bugs nobody else on our side detects |
 | 3.3 | `CorpusOracle` interface and `restest recheck <run>` | Re-examine a finished run with new oracles, offline, no API calls |
 | 3.4 | Per-operation oracle configuration + published JSON Schema for the config file | False positives silenced per operation instead of the tool being switched off |
-| 3.5 | Reports: HTML, JUnit XML, HAR, NDJSON; JUnit 5 + REST-Assured code export; `restest explain`; `restest replay`. Plus the "how to add an oracle, a provider, a report" guide | Results usable in CI, in an IDE, and by a human |
+| 3.5 | Reports: HTML, JUnit XML, HAR, NDJSON; JUnit 5 + REST-Assured code export; `restest explain`; `restest replay`. Every format renders both classifications of a fault - by catalogue number and by the class of status code that carried it (ADR-0016). Plus the "how to add an oracle, a provider, a report" guide | Results usable in CI, in an IDE, and by a human |
 
 v2.0's own reports are raw: every fault is counted on its own and none is ever declared to be the
 same problem as another. What the JSON report bounds (M1.7b) is how many faults of one kind, on one

@@ -42,6 +42,45 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("a fault says what the API answered, which is the first thing anybody asks")
+    void a_fault_says_what_came_back() {
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+
+        assertThat(screen.toString())
+                .describedAs("a developer reads a status code before anything else, and until now "
+                        + "this line named the request and never what came back to it")
+                .contains("GET /pets - GET https://api.example/pets  ->  500");
+    }
+
+    @Test
+    @DisplayName("an attempt that got no reply says so rather than showing a code it never got")
+    void an_attempt_with_no_reply_says_so() {
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.neverAnswered("GET /gone")));
+
+        assertThat(screen.toString())
+                .describedAs("getting nothing back is probably the worst thing an API can do, and "
+                        + "it has no status code; inventing a zero would state something false")
+                .contains("->  no reply");
+    }
+
+    @Test
+    @DisplayName("the run says how the API answered overall, not only where it went wrong")
+    void the_run_says_how_the_api_answered_overall() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 400)));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 400)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(screen.toString())
+                .describedAs("two answers in three refused means the requests were the problem, not "
+                        + "the API - and a screen that only ever mentions faults cannot say so")
+                .contains("1 2xx, 2 4xx");
+    }
+
+    @Test
     @DisplayName("the particular disagreements are listed under the fault")
     void the_details_are_listed() {
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape(2)));

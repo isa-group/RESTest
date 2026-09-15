@@ -56,23 +56,30 @@ RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/a
 17 of 19 operations can be tested, seed 20260914, budget 10s
 
 F100  HTTP Status 500
-      getInventory - GET https://petstore3.swagger.io/api/v3/store/inventory
+      deleteOrder - DELETE https://petstore3.swagger.io/api/v3/store/order/207  ->  500
       the API answered 500, so it fell over while handling this request
-      curl -i -X GET 'https://petstore3.swagger.io/api/v3/store/inventory' -H 'User-Agent: RESTest/2.0'
+      curl -i -X DELETE 'https://petstore3.swagger.io/api/v3/store/order/207' -H 'User-Agent: RESTest/2.0'
 
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-918 requests to 17 operations in 10.3s, 11% of it idle
-432 faults:
-  324 x F100  HTTP Status 500
-  108 x F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-report written to restest-out/report.json (788.5 KiB)
+863 requests to 17 operations in 10.3s, 11% of it idle
+  207 2xx, 352 4xx, 304 5xx
+406 faults:
+  304 x F100  HTTP Status 500
+  102 x F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+report written to restest-out/report.json (123.0 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
+The line under the totals — `207 2xx, 352 4xx, 304 5xx` — is worth a glance even when nothing is
+wrong. If almost everything comes back refused, the requests were the problem rather than the API.
+
 One file is left behind: `report.json`, for anything that reads a run rather than looks at it. It
-counts every fault exactly, lists every operation and kind of fault that went wrong, and writes the
-first few of each kind out whole — the request, the reply and a `curl` command that does it again.
+counts every fault exactly, lists every operation and kind of fault that went wrong, says how the API
+answered across every attempt, and writes the first few faults of each kind out whole — the request,
+the reply and a `curl` command that does it again. Faults are counted twice over: by their catalogue
+number, which is what makes a run comparable with another tool's, and by the class of status code
+that carried them, which is what a developer looks for first.
 
 Add `--store` and a second file, `run.sqlite`, keeps every request and reply, so the run can be
 examined again later without asking the API anything. It is off by default because a minute against

@@ -195,18 +195,10 @@ class JsonReportTest {
                 .isEqualTo(1250);
         assertThat(array(written, "findings").elements())
                 .describedAs("but the file does not grow without limit")
-                .hasSize(JsonReport.FULL_EVIDENCE_PER_OPERATION_AND_KIND);
-        assertThat(number(totals, "faultsWrittenInFull"))
-                .describedAs("and it says how many of them it wrote out, so nothing is quietly "
-                        + "missing")
-                .isEqualTo(JsonReport.FULL_EVIDENCE_PER_OPERATION_AND_KIND);
-        assertThat(array(written, "otherFaults").elements())
-                .describedAs("the rest are named rather than vanishing, up to their own limit")
-                .hasSize(JsonReport.NAMES_PER_OPERATION_AND_KIND);
-        assertThat(number(totals, "faultsWrittenInFull") + number(totals, "faultsNamed")
-                + number(totals, "faultsCountedOnly"))
-                .describedAs("written out, named, or only counted: every fault is exactly one of "
-                        + "the three, and the three add up to all of them")
+                .hasSize(JsonReport.WRITE_UPS_PER_OPERATION_AND_KIND);
+        assertThat(number(totals, "faultsWrittenInFull") + number(totals, "faultsCountedOnly"))
+                .describedAs("written out or only counted: every fault is one of the two, and the "
+                        + "two add up to all of them")
                 .isEqualTo(1250);
     }
 
@@ -272,47 +264,11 @@ class JsonReportTest {
                         + "this list is as long as the API, not as long as the run")
                 .containsExactlyInAnyOrder("GET /pets 300", "GET /shelters 7");
         JsonValue.JsonObject busiest = (JsonValue.JsonObject) rows.get(0);
-        assertThat(number(busiest, "writtenInFull") + number(busiest, "named")
-                + number(busiest, "countedOnly"))
-                .describedAs("and each row's own three numbers account for all of its faults")
+        assertThat(number(busiest, "writtenInFull") + number(busiest, "countedOnly"))
+                .describedAs("and each row's own numbers account for all of its faults")
                 .isEqualTo(300);
         assertThat(number(object(written, "totals"), "faultKinds")).isEqualTo(2);
         assertThat(number(object(written, "totals"), "operationsWithFaults")).isEqualTo(2);
-    }
-
-    @Test
-    @DisplayName("a fault past its allowance is named by the request that caused it")
-    void named_faults_carry_the_request() {
-        JsonValue.JsonObject written = afterFinding(50, Runs::fellOver);
-
-        JsonValue.JsonObject named =
-                (JsonValue.JsonObject) array(written, "otherFaults").elements().get(0);
-        assertThat(text(named, "url"))
-                .describedAs("a run that kept no database has nothing to look an identifier up in, "
-                        + "so the line has to carry the request itself to be worth anything")
-                .startsWith(Runs.BASE);
-        assertThat(text(named, "method")).isEqualTo("GET");
-        assertThat(number(named, "status")).isEqualTo(500);
-        assertThat(named.member("interactionId")).isPresent();
-    }
-
-    @Test
-    @DisplayName("a fault whose reply never arrived is named without a status code being invented")
-    void a_fault_with_no_reply_is_named_without_a_status() {
-        JsonReport report = JsonReport.inMemory();
-        for (int found = 0; found < 20; found++) {
-            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.neverAnswered("GET /pets")));
-        }
-        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
-        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
-
-        JsonValue.JsonObject named =
-                (JsonValue.JsonObject) array(written, "otherFaults").elements().get(0);
-        assertThat(named.member("status"))
-                .describedAs("nothing came back, so there is no status code; writing a zero would "
-                        + "be stating something about the API that never happened")
-                .isEmpty();
-        assertThat(text(named, "url")).startsWith(Runs.BASE);
     }
 
     @Test
@@ -337,82 +293,101 @@ class JsonReportTest {
         JsonValue.JsonObject written = afterFinding(200, Runs::fellOver);
 
         JsonValue.JsonObject limits = object(written, "limits");
-        assertThat(number(limits, "fullEvidencePerOperationAndKind"))
-                .isEqualTo(JsonReport.FULL_EVIDENCE_PER_OPERATION_AND_KIND);
-        assertThat(number(limits, "namesPerOperationAndKind"))
-                .isEqualTo(JsonReport.NAMES_PER_OPERATION_AND_KIND);
-        assertThat(limits.member("fullEvidenceStoppedEarly"))
-                .describedAs("a kind having had its share and the file having run out are different "
-                        + "things, and a reader should be able to tell which happened")
-                .contains(JsonValue.of(false));
+        assertThat(number(limits, "writeUpsPerOperationAndKind"))
+                .isEqualTo(JsonReport.WRITE_UPS_PER_OPERATION_AND_KIND);
+        assertThat(number(limits, "writeUpsInTotal")).isEqualTo(JsonReport.WRITE_UPS_IN_TOTAL);
+        assertThat(number(limits, "mostBodyBytesKept"))
+                .describedAs("a reader who finds a reply cut short should be able to tell it was us "
+                        + "who cut it, and at what length, without knowing which version wrote this")
+                .isEqualTo((int) JsonReport.MOST_BODY_BYTES_KEPT);
     }
 
     @Test
-    @DisplayName("an API answering with large bodies produces a bounded file, not bounded faults")
-    void the_file_is_bounded_in_bytes_rather_than_in_faults() {
+    @DisplayName("a huge reply is quoted in part, and says how much of it there really was")
+    void a_huge_reply_is_quoted_in_part() {
+        int sent = 600 * 1024;
         JsonReport report = JsonReport.inMemory();
-        // Six hundred kilobytes a reply: three fit inside the file's allowance and the fourth does
-        // not, so the limit that binds here is the one counted in bytes, not the one counted in
-        // faults. An allowance of five would let this file past three megabytes.
-        for (int found = 0; found < 20; found++) {
-            report.on(new RunEvent.FaultFound(Instant.EPOCH,
-                    Runs.fellOverWithBody("GET /pets", 600 * 1024)));
-        }
+        report.on(new RunEvent.FaultFound(Instant.EPOCH,
+                Runs.fellOverWithBody("GET /pets", sent)));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
         JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
 
-        assertThat(array(written, "findings").elements())
-                .describedAs("a limit on how many unbounded things are kept is not a limit at all: "
-                        + "one reply can be a megabyte, so the bytes have to be counted")
-                .hasSizeLessThan(JsonReport.FULL_EVIDENCE_PER_OPERATION_AND_KIND);
-        assertThat(report.asText().orElseThrow().getBytes(java.nio.charset.StandardCharsets.UTF_8))
-                .hasSizeLessThan((int) (JsonReport.FULL_EVIDENCE_BYTES + JsonReport.NAMES_BYTES));
-        assertThat(object(written, "limits").member("fullEvidenceStoppedEarly"))
-                .describedAs("and the file says the limit was what stopped it, rather than leaving "
-                        + "a reader to think that was all there was")
-                .contains(JsonValue.of(true));
-        assertThat(number(object(written, "totals"), "faults")).isEqualTo(20);
+        JsonValue.JsonObject body = object(object(object((JsonValue.JsonObject)
+                array(written, "findings").elements().get(0), "interaction"), "outcome"), "body");
+        assertThat(text(body, "text").length())
+                .describedAs("without this a single write-up is as big as the API felt like being, "
+                        + "and counting write-ups would bound nothing at all")
+                .isLessThanOrEqualTo((int) JsonReport.MOST_BODY_BYTES_KEPT);
+        assertThat(number(body, "wireLength"))
+                .describedAs("and it says how much really arrived, so our trimming is never "
+                        + "mistaken for the API having sent less than it did")
+                .isEqualTo(sent);
+        assertThat(report.asText().orElseThrow().length())
+                .describedAs("one enormous reply no longer decides the size of the file")
+                .isLessThan(sent);
     }
 
     @Test
-    @DisplayName("a full file stops building faults rather than building and discarding each one")
-    void a_full_file_stops_doing_the_work() {
+    @DisplayName("every attempt is accounted for, not only the ones something was wrong with")
+    void every_attempt_is_accounted_for() {
         JsonReport report = JsonReport.inMemory();
-        for (int found = 0; found < 5000; found++) {
-            report.on(new RunEvent.FaultFound(Instant.EPOCH,
-                    Runs.fellOverWithBody("GET /pets", 600 * 1024)));
-        }
-        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
-
-        assertThat(report.converted())
-                .describedAs("turning a fault into JSON means copying its whole request and reply. "
-                        + "Doing that for every fault after the file is full, only to throw each one "
-                        + "away, costs more than writing it would have - and it happens on the one "
-                        + "thread the oracles and the reports share, so it stops the run sending "
-                        + "requests. The work is bounded by how many kinds of fault there are, not "
-                        + "by how many faults")
-                .isLessThanOrEqualTo(JsonReport.FULL_EVIDENCE_PER_OPERATION_AND_KIND + 1);
-        assertThat(number(object((JsonValue.JsonObject) report.document().orElseThrow(), "totals"),
-                "faults"))
-                .describedAs("and every one of them is still counted")
-                .isEqualTo(5000);
-    }
-
-    @Test
-    @DisplayName("a fault too large to write out is named instead of vanishing from the file")
-    void a_fault_too_large_to_write_is_still_named() {
-        JsonReport report = JsonReport.inMemory();
-        for (int found = 0; found < 20; found++) {
-            report.on(new RunEvent.FaultFound(Instant.EPOCH,
-                    Runs.fellOverWithBody("GET /pets", 600 * 1024)));
-        }
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.attempt("GET /pets", "/pets", 400)));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, Runs.attempt("GET /pets", "/pets", 400)));
+        Finding fault = Runs.fellOver("GET /pets");
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH, fault.interaction()));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, fault));
         report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
         JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
 
-        assertThat(array(written, "otherFaults").elements())
-                .describedAs("no room to quote it in full is not a reason to leave no trace of it: "
-                        + "the request that caused it costs a line")
-                .isNotEmpty();
+        JsonValue.JsonObject replies = object(written, "replies");
+        assertThat(number(replies, "total")).isEqualTo(4);
+        JsonValue.JsonObject byClass = object(replies, "byClass");
+        assertThat(number(byClass, "2xx")).isEqualTo(1);
+        assertThat(number(byClass, "4xx"))
+                .describedAs("a run where almost everything comes back refused is a run whose "
+                        + "requests are the problem, not the API - and no list of faults can say so")
+                .isEqualTo(2);
+        assertThat(number(byClass, "5xx")).isEqualTo(1);
+        assertThat(number(replies, "withNothingWrong"))
+                .describedAs("three attempts had nothing found wrong with them. This cannot be got "
+                        + "by subtracting faults from attempts: one attempt can be wrong in several "
+                        + "ways at once, so the two counts are of different things")
+                .isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("faults are also counted by the kind of answer that carried them")
+    void faults_are_counted_by_the_answer_that_carried_them() {
+        JsonReport report = JsonReport.inMemory();
+        for (int found = 0; found < 3; found++) {
+            report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver("GET /pets")));
+        }
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape("GET /pets")));
+        report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.neverAnswered("GET /gone")));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+        JsonValue.JsonObject written = (JsonValue.JsonObject) report.document().orElseThrow();
+
+        assertThat(array(written, "faultsByStatus").elements().stream()
+                .map(row -> (JsonValue.JsonObject) row)
+                .map(row -> "F" + number(row, "code") + " " + text(row, "statusClass") + " = "
+                        + number(row, "count")))
+                .describedAs("a developer who only watches their logs for 500s is not seeing the "
+                        + "fault that came back as a perfectly ordinary 200, and this is the table "
+                        + "that shows it. An attempt that got no reply has no code, so it has a "
+                        + "name of its own rather than being lost")
+                .containsExactlyInAnyOrder("F100 5xx = 3", "F101 2xx = 1", "F100 noReply = 1");
+    }
+
+    @Test
+    @DisplayName("a fault says what the API answered, which is the first thing anybody asks")
+    void a_fault_says_what_came_back() {
+        JsonValue.JsonObject written = afterFinding(1, Runs::fellOver);
+
+        JsonValue.JsonObject finding =
+                (JsonValue.JsonObject) array(written, "findings").elements().get(0);
+        assertThat(number(finding, "status")).isEqualTo(500);
+        assertThat(text(finding, "statusClass")).isEqualTo("5xx");
     }
 
     /** One run in which the same maker is asked for a fault as many times as given. */

@@ -17,6 +17,8 @@ package io.restest.report;
 
 import io.restest.core.event.RunEvent;
 import io.restest.core.event.RunListener;
+import io.restest.core.execution.Interaction;
+import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.model.OperationId;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
@@ -29,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -36,15 +39,17 @@ import java.util.Set;
  *
  * <p>Each fault appears the moment it is found, rather than everything appearing at the end, so
  * that a long run against a slow API is something a person can watch rather than wait out. Each one
- * is printed as four things: which kind of fault it is, which operation it happened on, what is
- * wrong in one line, and the {@code curl} command that does it again.
+ * is printed as five things: which kind of fault it is, which operation it happened on, what the API
+ * answered, what is wrong in one line, and the {@code curl} command that does it again.
  *
  * <p>That last line is the point of the whole report. The first question anybody asks of a testing
  * tool is "is that actually true?", and the answer should cost one paste into a terminal.
  *
- * <p>At the end it prints how much was done, what was found, and how much of the time was spent
- * waiting for the API rather than working - a run that spends its time idle is a run doing less
- * testing than it looks like it is.
+ * <p>At the end it prints how much was done, how the API answered across the whole run, what was
+ * found, and how much of the time was spent waiting for the API rather than working - a run that
+ * spends its time idle is a run doing less testing than it looks like it is. The line of status
+ * codes is worth a glance even when nothing was found wrong: a run where almost everything came back
+ * refused is a run whose requests were the problem, not the API.
  *
  * <p>It writes wherever it is told to write, rather than to the screen directly, so a test can read
  * back exactly what a person would have seen.
@@ -67,6 +72,9 @@ public final class ConsoleReport implements RunListener {
 
     private final Appendable out;
     private final Map<FaultCategory, Integer> counts = new LinkedHashMap<>();
+
+    /** How every attempt ended, faulty or not, by family of status code. */
+    private final Map<String, Integer> repliesByClass = new LinkedHashMap<>();
     private final Set<OperationId> operations = new LinkedHashSet<>();
     private int attempts;
     private int faults;
@@ -92,6 +100,7 @@ public final class ConsoleReport implements RunListener {
             case RunEvent.InteractionCompleted completed -> {
                 attempts++;
                 operations.add(completed.interaction().testCase().operation());
+                repliesByClass.merge(classOf(completed.interaction()), 1, Integer::sum);
             }
             case RunEvent.FaultFound found -> print(found.finding());
             case RunEvent.RunFinished finished -> summarise(finished);
@@ -120,7 +129,8 @@ public final class ConsoleReport implements RunListener {
         }
         write(label(finding.category()) + "  " + finding.category().descriptiveName());
         write("      " + finding.operation() + " - " + finding.interaction().request().method()
-                + " " + finding.interaction().request().url());
+                + " " + finding.interaction().request().url()
+                + "  ->  " + answerTo(finding.interaction()));
         write("      " + finding.summary());
         List<String> details = finding.details();
         for (String detail : details.subList(0, Math.min(details.size(), DETAILS_SHOWN))) {
@@ -133,6 +143,36 @@ public final class ConsoleReport implements RunListener {
         write("");
     }
 
+    /**
+     * What the API answered, in the words a developer already works in.
+     *
+     * <p>The first thing anybody asks of a reported fault is "what did it return", and until now
+     * this line did not say. An attempt that got nothing back says so rather than showing a code it
+     * never received.
+     */
+    private static String answerTo(Interaction interaction) {
+        return switch (interaction.outcome()) {
+            case InteractionOutcome.Answered answered ->
+                    String.valueOf(answered.response().statusCode());
+            case InteractionOutcome.MalformedResponse malformed -> malformed.statusLine()
+                    .map(line -> line.statusCode() + ", and the reply could not be read")
+                    .orElse("a reply that could not be read");
+            case InteractionOutcome.TransportFailure ignored -> "no reply";
+        };
+    }
+
+    /** Which family that answer belongs to, or that there was none. */
+    private static String classOf(Interaction interaction) {
+        Optional<Integer> status = switch (interaction.outcome()) {
+            case InteractionOutcome.Answered answered ->
+                    Optional.of(answered.response().statusCode());
+            case InteractionOutcome.MalformedResponse malformed ->
+                    malformed.statusLine().map(line -> line.statusCode());
+            case InteractionOutcome.TransportFailure ignored -> Optional.empty();
+        };
+        return status.map(code -> (code / 100) + "xx").orElse("no reply");
+    }
+
     private void summarise(RunEvent.RunFinished finished) {
         write(attempts + " requests to " + operations.size() + " operations in "
                 + readable(finished.elapsed()) + ", "
@@ -143,6 +183,10 @@ public final class ConsoleReport implements RunListener {
             write("nothing was tested");
             return;
         }
+        write("  " + repliesByClass.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> entry.getValue() + " " + entry.getKey())
+                .collect(java.util.stream.Collectors.joining(", ")));
         if (counts.isEmpty()) {
             write("no faults found");
             return;

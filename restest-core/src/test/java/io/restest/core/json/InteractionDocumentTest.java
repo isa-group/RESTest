@@ -170,6 +170,60 @@ class InteractionDocumentTest {
     }
 
     @Test
+    @DisplayName("asked for only the start of a body, it keeps that and says how long the whole was")
+    void a_body_can_be_written_down_in_part() {
+        String reply = "x".repeat(5000);
+        Interaction original = Interaction.answered(testCase(), request(),
+                new HttpResponseRecord(StatusLine.of(200), List.of(),
+                        Optional.of(Payload.text(reply, "text/plain"))),
+                Instant.EPOCH, Duration.ofMillis(5));
+
+        Interaction read = InteractionDocument.toInteraction(InteractionDocument.of(original, 100));
+
+        Payload body = read.response().orElseThrow().body().orElseThrow();
+        assertThat(body.size())
+                .describedAs("somewhere that has to stay small enough to open keeps only the start")
+                .isEqualTo(100);
+        assertThat(body.deliveredLength())
+                .describedAs("and says how much really arrived, so our trimming is never mistaken "
+                        + "for the API having sent less than it did")
+                .isEqualTo(5000);
+        assertThat(body.truncated()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a body kept in part is cut between characters, not through one")
+    void a_trimmed_body_is_still_readable_text() {
+        // Three bytes per character, so a limit of ten falls in the middle of the fourth one.
+        String reply = "€".repeat(100);
+        Interaction original = Interaction.answered(testCase(), request(),
+                new HttpResponseRecord(StatusLine.of(200), List.of(),
+                        Optional.of(Payload.text(reply, "text/plain"))),
+                Instant.EPOCH, Duration.ofMillis(5));
+
+        Interaction read = InteractionDocument.toInteraction(InteractionDocument.of(original, 10));
+
+        Payload body = read.response().orElseThrow().body().orElseThrow();
+        assertThat(new String(body.content(), StandardCharsets.UTF_8))
+                .describedAs("cut through a character, what is kept stops being text at all and is "
+                        + "written out as letters and digits nobody can read")
+                .isEqualTo("€€€");
+    }
+
+    @Test
+    @DisplayName("a body shorter than the limit is kept whole, and does not claim to be cut short")
+    void a_small_body_is_untouched_by_a_limit() {
+        // The same attempt throughout: each call to answered() mints a fresh identifier.
+        Interaction original = answered();
+
+        Interaction read = InteractionDocument.toInteraction(
+                InteractionDocument.of(original, 10_000));
+
+        assertThat(read.response().orElseThrow().body().orElseThrow().truncated()).isFalse();
+        assertThat(read).isEqualTo(original);
+    }
+
+    @Test
     @DisplayName("times are written the way the rest of the world writes them")
     void times_are_written_in_the_usual_notation() {
         JsonValue.JsonObject written = (JsonValue.JsonObject) InteractionDocument.of(answered());

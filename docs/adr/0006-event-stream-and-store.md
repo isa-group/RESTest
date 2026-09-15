@@ -306,34 +306,46 @@ its evidence should not pay a third of its budget for it:
   also given up is that a run killed outright — not closed, `kill -9` — loses the interactions since
   the last flush instead of none.
 
-**The report keeps a quota per operation and per fault kind, not the first thousand of anything.**
-This is now a change about usefulness rather than size: the file is 1.8 MiB either way.
+**The report keeps an allowance per operation and per fault kind, not the first thousand of
+anything, and it trims the bodies it quotes.**
 
 - **Exact counts for every (operation, fault kind) pair, all of them written.** This is the part that
   must be complete, and it can be: the table has at most one row per pair the specification allows,
   so it does not grow with the budget. Nothing is counted approximately and no fault disappears from
   the totals.
-- **Full evidence for the first few of each pair** — the request, the reply, the provenance and the
-  `curl` command, exactly as today.
-- **Beyond that, faults are named one by one, and that naming is bounded too.** Two corrections to an
-  earlier draft of this amendment, both found while designing the change and both worth recording
-  because the draft was self-contradictory:
-  - *Naming every fault is not a bound.* At 27,181 faults in the default run, one line each is about
-    5.7 MiB — three times the whole file today — and it grows with the budget, which is the property
-    this amendment exists to remove. It also sat two sentences from "the bound is on bytes as well as
-    on count". Names get a quota and a byte budget of their own, and the file says when it stopped
-    naming.
-  - *An interaction id does not identify anything in a default run.* The draft said a named fault
-    carries "the id of the interaction that produced it, which is one lookup away in `run.sqlite`" —
-    but this same amendment makes `run.sqlite` optional and off by default, so by default there is
-    nothing to look it up in. `InteractionId` is a random UUID and is not derived from the seed, so
-    it is not stable across a rerun either: a report from one run cannot be joined to the store of
-    the next. The id stays, because it is the right join key in the case it was written for, but what
-    makes a named fault worth reading is the request that caused it — method, URL and the status that
-    came back, all already recorded, none of them inferred.
+- **The first few of each pair written out whole** — the request, the reply, the provenance and the
+  `curl` command.
+- **Only the first few kilobytes of any one body are quoted**, with how long the whole body was
+  recorded beside it. This is the decision everything else rests on, and it came from asking why the
+  mechanism had grown so complicated. Measured on one real run, a write-up of the same kind of fault
+  ranged from 1.7 KB to 158 KB — a factor of 96, all of it the reply body. While that is true,
+  counting write-ups bounds nothing, which is why an earlier draft of this amendment needed budgets
+  counted in bytes, a second "naming" layer with two limits of its own, and a guard against
+  re-serialising a fault the budget had already refused. **Trim the body and all of that goes away:**
+  write-ups become roughly equal in size, so counting them is a real limit and the file needs no
+  other. Three integers replaced two integers, two byte budgets, a size-measuring pass and the
+  bookkeeping that went with it — including the one place a defect had hidden.
+- **What was rejected for the store is right for the report**, and the asymmetry is the point. The
+  store may not trim a body because `recheck` re-judges the stored bytes and half a JSON object is
+  not a smaller fact but a false one. A report is read, never re-judged. `--store` still keeps every
+  body whole.
 
-The bound is on bytes as well as on count, because a bound on the number of unbounded things is not a
-bound — and a URL is an unbounded thing just as a response body is.
+**Every attempt is accounted for, not only the faulty ones.** The report says how many attempts came
+back in each family of status code, how many had nothing found wrong with them, and which exact codes
+were commonest. This is not a refinement: a run where nine replies in ten are refusals is a run whose
+*requests* were the problem, and a report that only ever mentions faults cannot say so. It is also
+the number that catches our own generator breaking, which is the failure that put RESTest 1.x
+mid-field in 2026. Note that it counts attempts where everything else counts faults, and the two
+never add up — one attempt can be found wrong in several ways, and most in none.
+
+**Faults are also counted by the family of status code that carried them**, crossed with the fault
+kind. A status code is what a developer already works in, and the cross-tabulation makes one thing
+visible that a list of fault kinds cannot: how many faults came back as a perfectly ordinary `200`,
+invisible to anybody watching their own logs for 500s. By family rather than exact code, because as
+more kinds of fault are looked for an exact-code list becomes a long tail that summarises nothing;
+the exact codes are counted too, and listed beside it. An attempt that got no reply at all has no
+code and gets a name of its own rather than being lost. How this is *presented* in every report
+format is ADR-0016's; what is counted is here.
 
 **This is not deduplication or clustering, and the distinction is the whole point.** That work,
 deferred out of v2.0 in `docs/DESIGN.md`, means *deciding that two failures are the same underlying
@@ -377,6 +389,14 @@ built later it reads the stored run, as the deferred list says; it is not starte
 - Interning the repeated headers is now measured rather than guessed: 26% of the file, at the price
   of a row that no longer stands alone. If a later milestone wants it, the number and the objection
   are both here.
+- **The report is a run report now, not only a fault report.** It says how the API answered across
+  every attempt, which is a question nobody could put to it before. It also grows with the number of
+  *operations and kinds* that went wrong rather than with the number of faults: measured against a
+  public demonstration server, eight pairs went wrong and the file is hundreds of kilobytes; against
+  a containerised pet shop where one pair went wrong, tens of kilobytes, against 1.8 MiB before.
+- **The report's mechanism is smaller than it was, despite doing more.** Trimming bodies removed the
+  byte budgets, the second layer of detail, the size-measuring pass and the guard that went with
+  them. Every limit in the report is now an integer compared with `<`.
 
 ### Alternatives considered
 
@@ -396,3 +416,13 @@ built later it reads the stored run, as the deferred list says; it is not starte
   default to spare the minority who want it a flag. The reverse is cheaper for both.
 - **Write every finding to the report.** What M1.6 did. At 27,181 faults in the default run, each
   carrying its whole attempt, the report becomes the reason the run ends.
+- **Bound the report in bytes instead of trimming bodies.** Built, measured and then removed inside
+  this same increment, which is the honest way to record it. It works, and it costs a size-measuring
+  pass on the event-delivery thread, a second layer of detail with two limits of its own, and a guard
+  against re-serialising a fault the budget has already refused — a guard whose absence was a real
+  defect found in review. Trimming the body attacks the cause rather than the symptom: the variance
+  was never in how many faults there were, it was in one field of one of them.
+- **Name every fault beyond the allowance.** The second layer of detail, also built and then removed.
+  It showed the spread of what was tried, which is worth something, and it cost two more limits and
+  a tenth of the file for something a kept run answers completely. The allowance and the exact counts
+  carry the rest.
