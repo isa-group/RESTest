@@ -296,19 +296,20 @@ final class RunCommand implements Callable<Integer> {
                         + "reported above");
             }
         }
+        // Said first, and said whatever else went wrong. A run can break in both ways at once,
+        // and an earlier version of this reported only the listeners - so a run where one report
+        // threw once and one rule threw four thousand times mentioned the once and never the four
+        // thousand, which is the larger of the two problems by three orders of magnitude.
+        if (ours.rules() > 0) {
+            err.println("restest: " + ours.rules() + " rule(s) failed, " + ours.judgements()
+                    + " time(s) in all, so some replies were judged by fewer rules than the rest "
+                    + "and finding nothing wrong with them means less than it should");
+        }
         if (answer == ExitCode.TOOL_FAILED && !ours.theFilesAreSound()) {
             err.println("restest: " + ours.reports() + " listener(s) failed and "
                     + ours.eventsNeverHeard() + " event(s) never arrived, so what is printed above "
                     + "may be incomplete and the files may not have been written");
             return;
-        }
-        if (answer == ExitCode.TOOL_FAILED) {
-            // Only the judging broke. The files were written by listeners that did their job, so
-            // they are announced below as usual; what is owed here is which rule stopped working
-            // and how much went unjudged because of it.
-            err.println("restest: " + ours.rules() + " rule(s) failed, " + ours.judgements()
-                    + " time(s) in all, so some replies were judged by fewer rules than the rest "
-                    + "and finding nothing wrong with them means less than it should");
         }
 
         out.println("report written to " + reportFile + sizeOf(reportFile));

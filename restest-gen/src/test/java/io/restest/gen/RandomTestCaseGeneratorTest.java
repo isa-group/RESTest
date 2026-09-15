@@ -16,6 +16,7 @@
 package io.restest.gen;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
@@ -264,6 +265,33 @@ class RandomTestCaseGeneratorTest {
         assertThat(generatorFor(refused).untestableOperations().keySet())
                 .containsExactly(refused[0].id(), refused[1].id(), refused[2].id(),
                         refused[3].id(), refused[4].id(), refused[5].id());
+    }
+
+    @Test
+    @DisplayName("an object with nothing declared in it can never fill a gap in a path")
+    void an_empty_object_in_a_path_never_assembles() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets/{petId}", List.of(
+                Parameter.of("petId", ParameterLocation.PATH, true, ObjectSchema.of(Map.of()))));
+        RandomTestCaseGenerator generator = generatorFor(operation);
+
+        // A value is found, so the operation is offered as testable, and that is the whole of the
+        // problem: the value is always the empty object, which writes as nothing, and a gap in a
+        // path filled with nothing addresses the collection instead of the item. Every draw, not
+        // most of them - an object with no declared properties has nothing to put inside it - so
+        // this operation is counted among the ones that can be tested and is then never tested.
+        //
+        // Pinned rather than fixed. Deciding a value exists and deciding it can be written into a
+        // web address are two different questions, and the second one belongs with the work that
+        // makes values fit their place. Written down here so that it is a known gap rather than a
+        // surprise, and so that closing it has a test waiting.
+        assertThat(generator.testableOperations()).containsExactly(operation);
+        for (int draw = 0; draw < 20; draw++) {
+            TestCase testCase = generator.generate(operation).orElseThrow();
+            assertThatExceptionOfType(IllegalArgumentException.class)
+                    .isThrownBy(() -> RequestBuilder.build(operation, testCase,
+                            "https://api.example"))
+                    .withMessageContaining("empty");
+        }
     }
 
     private static RandomTestCaseGenerator generatorFor(Operation... operations) {

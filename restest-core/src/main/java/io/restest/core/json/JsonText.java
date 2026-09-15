@@ -121,6 +121,37 @@ public final class JsonText {
         }
     }
 
+    /**
+     * Checks that the text is one JSON value and nothing else, without building the value.
+     *
+     * <p>The same question {@link #read} answers, for whoever only wants the answer. Judging a
+     * reply against its declared shape starts by asking whether the reply is JSON at all, and doing
+     * that with {@code read} built a whole value that was thrown away an instant later - on the one
+     * thread that has to keep up with every reply the engine produces, and twice over for every
+     * large body, since whatever judges it parses the text again anyway.
+     *
+     * @param text the text to check
+     * @throws JsonException if it is not one JSON value, or carries anything after it
+     */
+    public static void checkOneValue(String text) {
+        Objects.requireNonNull(text, "text");
+        try (JsonParser in = FACTORY.createParser(text)) {
+            if (in.nextToken() == null) {
+                throw new JsonException("Empty text where a JSON value was expected");
+            }
+            // Walks to the end of this value without keeping any of it: past a whole object or
+            // array, and nowhere at all for a plain number or word.
+            in.skipChildren();
+            if (in.nextToken() != null) {
+                throw new JsonException("A JSON value ended and the text carried on, at character "
+                        + in.currentLocation().getCharOffset());
+            }
+        } catch (IOException e) {
+            throw new JsonException(
+                    "Stored JSON could not be read back: " + e.getMessage(), e);
+        }
+    }
+
     private static void writeValue(JsonGenerator out, JsonValue value) throws IOException {
         switch (value) {
             case JsonValue.JsonNull ignored -> out.writeNull();

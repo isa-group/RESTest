@@ -123,4 +123,31 @@ class JsonTextTest {
         // Whitespace around a value is still part of writing it down, not text carrying on.
         assertThat(JsonText.read("  {\"a\": 1}  ")).isEqualTo(JsonText.read("{\"a\":1}"));
     }
+
+    @Test
+    @DisplayName("checking without building answers the same question as reading")
+    void checking_agrees_with_reading() {
+        // Whoever only wants to know whether a reply is JSON should not pay for a whole value that
+        // is thrown away an instant later, so there are two ways in. They have to agree, or the
+        // cheap one becomes a second opinion nobody asked for.
+        List<String> texts = List.of("{\"a\": 1}", "[1, 2, 3]", "\"just a string\"", "17", "null",
+                "  {\"a\": 1}  ", "{\"a\": 1}{\"a\": 2}", "{\"a\": 1} then junk", "12 Monkeys",
+                "1 2", "", "{\"unfinished\": ", "<html>no</html>");
+
+        for (String text : texts) {
+            boolean readable = true;
+            try {
+                JsonText.read(text);
+            } catch (JsonException notOneValue) {
+                readable = false;
+            }
+            boolean checkable = true;
+            try {
+                JsonText.checkOneValue(text);
+            } catch (JsonException notOneValue) {
+                checkable = false;
+            }
+            assertThat(checkable).describedAs("checking '%s'", text).isEqualTo(readable);
+        }
+    }
 }

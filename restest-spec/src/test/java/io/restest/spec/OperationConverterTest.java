@@ -206,6 +206,48 @@ class OperationConverterTest {
                 .isEqualTo(io.restest.core.model.ParameterStyle.defaultFor(ParameterLocation.QUERY));
     }
 
+    @Test
+    @DisplayName("an operation that fails in a way nobody foresaw costs itself, and says whose fault it is")
+    void an_unforeseen_failure_skips_one_operation_and_blames_the_tool() {
+        Paths paths = new Paths();
+        paths.addPathItem("/fine", new PathItem().get(new io.swagger.v3.oas.models.Operation()
+                .operationId("fine")));
+        paths.addPathItem("/broken", new PathItem().get(new io.swagger.v3.oas.models.Operation()
+                .operationId("broken")
+                .addParametersItem(new io.swagger.v3.oas.models.parameters.Parameter()
+                        .name("q").in("query").schema(new ExplodesWhenRead()))));
+        paths.addPathItem("/alsoFine", new PathItem().get(new io.swagger.v3.oas.models.Operation()
+                .operationId("alsoFine")));
+
+        OperationConverter.Result result = OperationConverter.convert(
+                new OpenAPI().paths(paths), java.util.Map.of());
+
+        // The two either side are the point. Before the catch was widened, one operation failing in
+        // a way this code did not expect escaped to the parser's last-resort handler, which answers
+        // with a model holding no operations at all - so a single accident cost every other
+        // operation in the document.
+        assertThat(result.operations()).extracting(operation -> operation.id().value())
+                .containsExactly("fine", "alsoFine");
+        assertThat(result.issues()).anySatisfy(issue -> {
+            assertThat(issue.effect()).isEqualTo(SpecificationIssue.Effect.OPERATION_SKIPPED);
+            assertThat(issue.operation()).isPresent();
+            // Worded so that nobody goes looking in the document for a fault that is ours.
+            assertThat(issue.message()).contains("fault of the tool");
+        });
+    }
+
+    /**
+     * A schema that throws something other than the kinds this converter expects, standing in for
+     * whatever a real document one day does that nothing here thought to guard against.
+     */
+    private static final class ExplodesWhenRead extends Schema<Object> {
+
+        @Override
+        public String getType() {
+            throw new IllegalStateException("nobody saw this coming");
+        }
+    }
+
     private static OpenAPI apiWithPath(String path, PathItem pathItem) {
         Paths paths = new Paths();
         paths.addPathItem(path, pathItem);

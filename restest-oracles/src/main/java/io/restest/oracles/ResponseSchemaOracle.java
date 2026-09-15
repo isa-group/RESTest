@@ -208,7 +208,7 @@ public final class ResponseSchemaOracle implements Oracle {
         // one is the single thing a testing tool must not do, and it is what this rule exists to
         // avoid rather than cause.
         try {
-            JsonText.read(body);
+            JsonText.checkOneValue(body);
         } catch (JsonException notJson) {
             return List.of(mismatch(interaction, statusCode, contentType,
                     "the body is not JSON at all", List.of(firstLineOf(notJson))));

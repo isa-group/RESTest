@@ -451,9 +451,9 @@ class MalformedDocumentTest {
                 """);
 
         // Reading it as an object is right: those keywords say object and nothing else does. What
-        // follows from it is a separate matter - an object with no properties declared produces an
-        // empty value, which cannot fill a gap in a path, so the request is one of the ones the run
-        // counts as impossible to build. That gap belongs to inventing values, not to reading.
+        // follows from it belongs to inventing values rather than to reading them, and is checked
+        // where that happens - an object with nothing declared in it produces an empty value, which
+        // cannot fill a gap in a path.
         assertThat(api.operations()).hasSize(1);
         assertThat(api.operations().get(0).parameters().get(0).schema())
                 .isInstanceOf(ObjectSchema.class);

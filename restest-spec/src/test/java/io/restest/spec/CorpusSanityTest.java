@@ -41,8 +41,8 @@ import org.junit.jupiter.api.Test;
  * says what its directory name promises, so that a later edit cannot quietly turn the
  * dangling-reference fixture into one whose reference resolves. The reading one points the parser at
  * every document in the corpus and requires it to come back with an answer rather than an exception:
- * never crashing on a bad specification, stated as a test, over forty-odd documents nobody here
- * wrote.
+ * never crashing on a bad specification, stated as a test, over all fifty documents in the corpus -
+ * forty-six of which nobody here wrote.
  */
 class CorpusSanityTest {
 

@@ -132,7 +132,7 @@ below and ADR-0006's.**
 | `0` | The run finished. No fault was found. |
 | `1` | The run finished. At least one fault was found. |
 | `2` | The command line was wrong. |
-| `3` | Nothing could be tested: the document yielded no testable operation, no usable base address, or **amended at M1.7c: nowhere to write the results**. |
+| `3` | Nothing could be tested: the document yielded no testable operation, no usable base address, or nowhere to write the results. |
 | `4` | RESTest itself malfunctioned — an unexpected failure, a listener that threw, or announcements that never reached one. |
 
 `127` is never returned by the program. It is reserved by the launcher script for "this checkout has
@@ -324,10 +324,17 @@ discovered only when the report came to be written, which surfaced as a listener
 answered `4` and printed a stack trace. Whoever read that went looking for a bug in RESTest, and the
 answer was that they had pointed it at a read-only directory.
 
-The check now happens before anything is tested, and the table says what the prose already said.
+The check now happens before anything is tested, and the table row says what the prose already said.
 This is recorded rather than left to be inferred because the exit code is a compatibility surface:
 other people's scripts branch on it, and widening the meaning of a number without writing it down is
 how a contract stops being one.
+
+The check asks the file system whether the directory is writable, which is an answer that can be
+wrong in the permissive direction: a Windows directory carrying the read-only attribute, or mode 555
+under a user who may write anywhere regardless, both report themselves as writable. Those runs still
+fail later and still answer 4. What this buys is the ordinary case - somebody pointing the tool at a
+directory they cannot write to - answered properly, not a guarantee that answer 4 is now
+unreachable.
 
 ### What is deliberately still open
 
