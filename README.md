@@ -62,16 +62,16 @@ F100  HTTP Status 500
 
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-863 requests to 17 operations in 10.3s, 11% of it idle
-  207 2xx, 352 4xx, 304 5xx
-406 faults:
-  304 x F100  HTTP Status 500
-  102 x F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
-report written to restest-out/report.json (123.0 KiB)
+816 requests to 17 operations in 10.3s, 12% of it idle
+  196 2xx, 332 4xx, 288 5xx
+384 faults:
+  288 x F100  HTTP Status 500
+  96 x F101  Received A Response From API With A Structure/Data That Is Not Matching Its Schema
+report written to restest-out/report.json (217.9 KiB)
 the run itself was not kept; pass --store to keep every request and reply
 ```
 
-The line under the totals — `207 2xx, 352 4xx, 304 5xx` — is worth a glance even when nothing is
+The line under the totals — `196 2xx, 332 4xx, 288 5xx` — is worth a glance even when nothing is
 wrong. If almost everything comes back refused, the requests were the problem rather than the API.
 
 One file is left behind: `report.json`, for anything that reads a run rather than looks at it. It

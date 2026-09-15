@@ -110,7 +110,7 @@ public final class JsonReport implements RunListener {
      * API having sent less than it did. A run kept in its own file keeps every body whole, because
      * that one is re-judged later and half a reply is a false fact rather than a smaller one.
      */
-    static final long MOST_BODY_BYTES_KEPT = 8L * 1024;
+    static final long MOST_BODY_BYTES_KEPT = 24L * 1024;
 
     /** How many exact status codes are listed beside the families, commonest first. */
     private static final int STATUS_CODES_LISTED = 10;
