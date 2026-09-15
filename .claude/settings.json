@@ -17,7 +17,7 @@
       "Bash(gh run view:*)"
     ],
     "deny": [
-      "Bash(git push origin main:*)",
+      "Bash(git push origin master:*)",
       "Bash(git push --force:*)",
       "Bash(./mvnw deploy:*)",
       "Read(./**/*.env)",
