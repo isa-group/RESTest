@@ -24,6 +24,8 @@ import io.restest.core.oracle.Oracle;
 import java.time.Clock;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -46,6 +48,7 @@ public final class OracleListener implements RunListener {
     private final EventStream events;
     private final Clock clock;
     private final AtomicLong failures = new AtomicLong();
+    private final Set<String> broken = ConcurrentHashMap.newKeySet();
 
     /** Judges with the rules RESTest ships with. */
     public static OracleListener standard(ApiModel api, EventStream events) {
@@ -70,9 +73,20 @@ public final class OracleListener implements RunListener {
      * <p>Read at the end of the run, because it changes what the run is allowed to say. Some of what
      * should have been judged was not, so "nothing was found wrong" would be a stronger claim than
      * the evidence supports.
+     *
+     * <p>This counts judgements, not rules: one rule that fails on everything fails once per reply,
+     * which against a fast API is thousands of times in a minute. Whoever reports it wants
+     * {@link #rulesThatFailed()} for how bad it is and this for how often, because "four thousand
+     * failures" and "one rule, four thousand times" describe the same run and only the second sends
+     * anybody to the right place.
      */
     public long failures() {
         return failures.get();
+    }
+
+    /** How many distinct rules failed at least once. */
+    public int rulesThatFailed() {
+        return broken.size();
     }
 
     @Override
@@ -85,7 +99,7 @@ public final class OracleListener implements RunListener {
                 for (Finding finding : oracle.judge(completed.interaction(), api)) {
                     events.publish(new RunEvent.FaultFound(clock.instant(), finding));
                 }
-            } catch (RuntimeException | LinkageError broken) {
+            } catch (RuntimeException | LinkageError itFailed) {
                 // Caught around one rule rather than around all of them. Letting it out of here
                 // ended the whole loop, so every rule after the one that failed never saw this
                 // attempt at all - and a reply that went unchecked by most of the rules was
@@ -96,6 +110,9 @@ public final class OracleListener implements RunListener {
                 // broken rule however it says so. Errors that mean the machine itself is in
                 // trouble are still left alone.
                 failures.incrementAndGet();
+                // By class rather than by the name the rule gives itself: a rule broken enough to
+                // throw may be broken enough to throw again when asked what it is called.
+                broken.add(oracle.getClass().getName());
             }
         }
     }

@@ -162,6 +162,32 @@ class OraclesTest {
                 .isEqualTo(1);
     }
 
+    @Test
+    @DisplayName("one broken rule is counted as one rule, however many replies it fails on")
+    void a_broken_rule_is_counted_once_however_often_it_fails() {
+        ApiModel api = Specifications.pets();
+        OracleListener listener;
+
+        try (EventStream events = new EventStream()) {
+            listener = new OracleListener(api, List.of(new AlwaysThrows()), events,
+                    Clock.fixed(Instant.EPOCH, ZoneOffset.UTC));
+            events.subscribe(listener);
+
+            for (int reply = 0; reply < 3; reply++) {
+                events.publish(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                        Attempts.answered(OperationId.of("GET /pets"), "/pets", 200,
+                                "application/json", "[]")));
+            }
+        }
+
+        // Both numbers, because they say different things and only one of them is the size of the
+        // problem. Against a fast API a rule that fails on everything fails thousands of times in a
+        // minute; reporting that as thousands of broken listeners would describe a catastrophe
+        // where there is one rule to fix.
+        assertThat(listener.failures()).isEqualTo(3);
+        assertThat(listener.rulesThatFailed()).isEqualTo(1);
+    }
+
     /** A rule that does the one thing a rule is not supposed to do. */
     private static final class AlwaysThrows implements Oracle {
 

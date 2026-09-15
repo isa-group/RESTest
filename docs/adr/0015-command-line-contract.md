@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7
+**Status:** Accepted, amended at M1.7 and M1.7c
 **Date:** 2026-09-14 (amended 2026-09-15)
 
 ## Context
@@ -132,7 +132,7 @@ below and ADR-0006's.**
 | `0` | The run finished. No fault was found. |
 | `1` | The run finished. At least one fault was found. |
 | `2` | The command line was wrong. |
-| `3` | Nothing could be tested: the document yielded no testable operation, or no usable base address. |
+| `3` | Nothing could be tested: the document yielded no testable operation, no usable base address, or **amended at M1.7c: nowhere to write the results**. |
 | `4` | RESTest itself malfunctioned — an unexpected failure, a listener that threw, or announcements that never reached one. |
 
 `127` is never returned by the program. It is reserved by the launcher script for "this checkout has
@@ -305,3 +305,48 @@ restest run [--url=<base>] [--budget=<duration>] [--seed=<n>] [--out=<dir>] [--s
   than the problem the default was changed to solve. It becomes a good idea again the day it comes
   with a bound — keep the last N, prune the rest, say so — and that bound is the decision to make
   then, not the subdirectory.
+
+---
+
+## Amendment (M1.7c)
+
+**Date:** 2026-09-15
+
+**`3` also means there is nowhere to write the results. What Ctrl-C should do is left open,
+deliberately.**
+
+### Why
+
+The table above gives `3` two meanings: no testable operation, or no usable base address. The prose
+under "The surface" already gave it a third — "A directory nothing can be written to is not a
+malfunction and does not answer 4" — and the code did not implement it. An unwritable `--out` was
+discovered only when the report came to be written, which surfaced as a listener that threw, which
+answered `4` and printed a stack trace. Whoever read that went looking for a bug in RESTest, and the
+answer was that they had pointed it at a read-only directory.
+
+The check now happens before anything is tested, and the table says what the prose already said.
+This is recorded rather than left to be inferred because the exit code is a compatibility surface:
+other people's scripts branch on it, and widening the meaning of a number without writing it down is
+how a contract stops being one.
+
+### What is deliberately still open
+
+**Interrupting a run.** Ctrl-C today kills the process: no summary, no `report.json`, and with
+`--store` a database left with its two working files beside it. That is not a decision anybody took;
+it is the absence of one, and it is written here so that it stays visible rather than being
+rediscovered.
+
+It is not settled in this amendment because it has more than one defensible answer, and picking one
+silently in the code is exactly what this repository's ADRs exist to prevent:
+
+- Write what was found so far and answer as usual, which makes a partial report look like a finished
+  one unless it says otherwise.
+- Write nothing and answer with the conventional code for an interrupted program, which throws away
+  evidence that was already paid for — the thing the drain at the deadline exists to avoid.
+- Close the store cleanly and write nothing else, which keeps a run inspectable but leaves whoever
+  interrupted it with no summary.
+
+Whichever is chosen also has to work when the interrupt arrives during the drain, and has to not
+promise files it did not finish writing. That is an increment with an ADR of its own, not a hook
+added in passing.
+

@@ -24,6 +24,7 @@ import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.ObjectSchema;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -401,7 +402,6 @@ class MalformedDocumentTest {
         assertThat(api.servers()).isEmpty();
     }
 
-
     @Test
     @DisplayName("declared defaults survive being read, in the spellings the document used")
     void declared_defaults_are_read_back_as_the_document_wrote_them(@TempDir Path dir)
@@ -432,10 +432,66 @@ class MalformedDocumentTest {
                 .isInstanceOf(JsonValue.JsonObject.class);
     }
 
-    private static java.util.Optional<JsonValue> defaultOf(ObjectSchema object, String property) {
-        CanonicalSchema property1 = object.properties().get(property);
-        assertThat(property1).describedAs("property '%s'", property).isNotNull();
-        return property1.metadata().defaultValue();
+
+    @Test
+    @DisplayName("a parameter described only by object keywords is read as an object, wherever it sits")
+    void an_untyped_object_parameter_is_read_as_an_object(@TempDir Path dir) throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /a/{id}:
+                    get:
+                      parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema: {required: [part]}
+                      responses: {'200': {description: ok}}
+                """);
+
+        // Reading it as an object is right: those keywords say object and nothing else does. What
+        // follows from it is a separate matter - an object with no properties declared produces an
+        // empty value, which cannot fill a gap in a path, so the request is one of the ones the run
+        // counts as impossible to build. That gap belongs to inventing values, not to reading.
+        assertThat(api.operations()).hasSize(1);
+        assertThat(api.operations().get(0).parameters().get(0).schema())
+                .isInstanceOf(ObjectSchema.class);
+    }
+
+    @Test
+    @DisplayName("an untyped schema whose own limits contradict each other skips its operation")
+    void an_untyped_object_with_impossible_limits_skips_its_operation(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /fine:
+                    get:
+                      responses: {'200': {description: ok}}
+                  /impossible:
+                    get:
+                      parameters:
+                        - name: q
+                          in: query
+                          schema: {minProperties: 5, maxProperties: 2}
+                      responses: {'200': {description: ok}}
+                """);
+
+        assertThat(api.operations())
+                .describedAs("the operation either side of it still has to survive")
+                .extracting(operation -> operation.id().value())
+                .containsExactly("GET /fine");
+        assertThat(api.issues())
+                .anySatisfy(issue -> assertThat(issue.effect())
+                        .isEqualTo(SpecificationIssue.Effect.OPERATION_SKIPPED));
+    }
+
+    private static Optional<JsonValue> defaultOf(ObjectSchema object, String name) {
+        CanonicalSchema property = object.properties().get(name);
+        assertThat(property).describedAs("property '%s'", name).isNotNull();
+        return property.metadata().defaultValue();
     }
 
     private ApiModel parse(Path dir, String document) throws Exception {

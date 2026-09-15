@@ -374,11 +374,28 @@ class SchemaConverterTest {
     }
 
     @Test
-    @DisplayName("an enumeration drops only the members that cannot be written down")
-    void an_enumeration_keeps_what_it_can_represent() {
+    @DisplayName("an enumeration that cannot be read in full is not read at all")
+    void a_partly_unreadable_enumeration_is_unsupported() {
         Schema<Object> schema = new Schema<>();
         schema.setType("string");
         schema.setEnum(List.of("a", printsAs("not json at all"), "b"));
+
+        CanonicalSchema converted = SchemaConverter.convert(schema);
+
+        // Not the same answer as for a default, and the difference is the point. A default that
+        // cannot be read is dropped, and the schema then honestly says it has no default. Keeping
+        // two of three allowed values would instead state something the document never said: that
+        // the API accepts two things. Better to admit the list could not be read.
+        assertThat(converted).isInstanceOf(UnsupportedSchema.class);
+        assertThat(((UnsupportedSchema) converted).reason()).contains("allowed to take");
+    }
+
+    @Test
+    @DisplayName("an enumeration every member of which can be read is kept whole")
+    void a_readable_enumeration_is_kept() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setEnum(List.of("a", "b"));
 
         assertThat(SchemaConverter.convert(schema).metadata().enumeration())
                 .containsExactly(JsonValue.of("a"), JsonValue.of("b"));

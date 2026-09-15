@@ -137,9 +137,12 @@ final class OperationConverter {
                 }
                 converted.add(new Server(server.getUrl(), variables,
                         Optional.ofNullable(server.getDescription())));
-            } catch (RuntimeException e) {
+            } catch (IllegalArgumentException e) {
                 // A server this malformed describes nothing a request could be sent to either;
                 // dropped the same way one naming no address at all is, and reported the same way.
+                // Narrow on purpose: the one call inside this block refuses a bad variable by
+                // throwing exactly this, and a wider catch here would turn a defect of ours into a
+                // sentence blaming the document for it.
                 issues.add(SpecificationIssue.document(where,
                         "this server could not be used: " + message(e)));
             }

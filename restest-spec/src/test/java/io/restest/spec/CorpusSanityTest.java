@@ -40,8 +40,9 @@ import org.junit.jupiter.api.Test;
  * <p>Two kinds of check, and they answer different questions. The text ones confirm a fixture still
  * says what its directory name promises, so that a later edit cannot quietly turn the
  * dangling-reference fixture into one whose reference resolves. The reading one points the parser at
- * every document in the corpus and requires it to come back with an answer rather than an exception -
- * which is the second design principle stated as a test, over forty-odd documents nobody here wrote.
+ * every document in the corpus and requires it to come back with an answer rather than an exception:
+ * never crashing on a bad specification, stated as a test, over forty-odd documents nobody here
+ * wrote.
  */
 class CorpusSanityTest {
 
@@ -90,7 +91,6 @@ class CorpusSanityTest {
                 .describedAs("Gadget must stay undefined, or this is no longer a dangling reference")
                 .doesNotContain("Gadget:");
     }
-
 
     @Test
     @DisplayName("every specification in the corpus is read without throwing, and every real one yields operations")

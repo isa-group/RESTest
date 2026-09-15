@@ -242,24 +242,49 @@ final class RunCommand implements Callable<Integer> {
             }
         }
 
-        long reportsThatFailed =
-                events.listenerFailures() + (rules == null ? 0 : rules.failures());
-        long eventsNeverHeard = events.undelivered();
-        int answer = ExitCode.of(outcome, reportsThatFailed, eventsNeverHeard, console.faults());
-        explain(out, err, answer, outcome, address, reportFile, runFile, reportsThatFailed,
-                eventsNeverHeard);
+        OurOwnFailures ours = new OurOwnFailures(events.listenerFailures(),
+                rules == null ? 0 : rules.failures(),
+                rules == null ? 0 : rules.rulesThatFailed(),
+                events.undelivered());
+        int answer = ExitCode.of(outcome, ours.reports() + ours.judgements(),
+                ours.eventsNeverHeard(), console.faults());
+        explain(out, err, answer, outcome, address, reportFile, runFile, ours);
         return answer;
+    }
+
+    /**
+     * What went wrong on RESTest's own side, as opposed to in the API being tested.
+     *
+     * <p>Kept apart rather than added up, because the two mean different things to whoever reads the
+     * run. A report that failed may have written nothing, so nothing can be promised about the
+     * files. A rule that failed leaves the files exactly as complete as they always were; what is
+     * missing is some of the judging. Added together they produced a sentence that was wrong twice
+     * over: it called a single broken rule thousands of failed listeners, and it withheld the line
+     * saying where the perfectly good report had been written.
+     *
+     * @param reports          how many listeners threw while being told something
+     * @param judgements       how many times a rule failed, which is once per reply it failed on
+     * @param rules            how many distinct rules that was
+     * @param eventsNeverHeard how many announcements never reached the listeners
+     */
+    private record OurOwnFailures(long reports, long judgements, long rules,
+            long eventsNeverHeard) {
+
+        /** Whether what was written down can still be promised to be complete. */
+        boolean theFilesAreSound() {
+            return reports == 0 && eventsNeverHeard == 0;
+        }
     }
 
     /**
      * Says what happened, in the words that fit what actually happened.
      *
-     * <p>The files are only announced when the run is sound. A message saying a report was written
-     * is a promise, and a run whose reporting broke may not have kept it.
+     * <p>The files are only announced when what wrote them was working. A message saying a report
+     * was written is a promise, and a run whose reporting broke may not have kept it. A run whose
+     * <em>judging</em> broke kept it in full, so that one is still announced.
      */
     private void explain(PrintWriter out, PrintWriter err, int answer, RunLoop.Outcome outcome,
-            String address, Path reportFile, Path runFile, long reportsThatFailed,
-            long eventsNeverHeard) {
+            String address, Path reportFile, Path runFile, OurOwnFailures ours) {
         if (outcome != null) {
             long lost = outcome.notGenerated() + outcome.notAssembled();
             if (lost > 0) {
@@ -271,11 +296,19 @@ final class RunCommand implements Callable<Integer> {
                         + "reported above");
             }
         }
-        if (answer == ExitCode.TOOL_FAILED) {
-            err.println("restest: " + reportsThatFailed + " listener(s) failed and " + eventsNeverHeard
-                    + " event(s) never arrived, so what is printed above may be incomplete and the "
-                    + "files may not have been written");
+        if (answer == ExitCode.TOOL_FAILED && !ours.theFilesAreSound()) {
+            err.println("restest: " + ours.reports() + " listener(s) failed and "
+                    + ours.eventsNeverHeard() + " event(s) never arrived, so what is printed above "
+                    + "may be incomplete and the files may not have been written");
             return;
+        }
+        if (answer == ExitCode.TOOL_FAILED) {
+            // Only the judging broke. The files were written by listeners that did their job, so
+            // they are announced below as usual; what is owed here is which rule stopped working
+            // and how much went unjudged because of it.
+            err.println("restest: " + ours.rules() + " rule(s) failed, " + ours.judgements()
+                    + " time(s) in all, so some replies were judged by fewer rules than the rest "
+                    + "and finding nothing wrong with them means less than it should");
         }
 
         out.println("report written to " + reportFile + sizeOf(reportFile));

@@ -202,11 +202,27 @@ cannot read.
 
 ### Consequences
 
-- More operations are reported as degraded than before, on documents that were always this
-  incomplete. That is the report becoming accurate, not the tool getting worse.
-- Object-typed parameters are now generated where scalars were generated before, which is a wider
-  and more honest attempt at those operations.
+Measured across the whole fifty-document corpus, before and after:
+
+- **Four declared values are now right that were wrong.** One date, in the Amadeus document, read
+  `Tue Apr 25 02:00:00 CEST 2017` and now reads `2017-04-25` — and read differently again on a
+  machine set up in another country, which is the reproducibility promise broken in the smallest
+  possible way. Three arrays, in the Graphhopper document, were the *string* `[0]` and are now an
+  array of one number. These four are the whole of the user-visible gain today, and they are enough:
+  a declared value is the one input the document hands us outright.
+- **Two named schemas change shape**, both of them response schemas, and **no parameter anywhere in
+  the corpus changes at all.** The untyped-object rule therefore buys nothing yet on these fifty
+  documents. It is still right, and the reason to make the change now rather than at M2.5 is that
+  request bodies arrive then and will be generated from exactly these schemas; a body generator
+  built on top of "any value at all" would produce scalars where objects were described and the
+  cause would be two milestones away.
+- **One more operation is degraded and one more issue reported**, both in a hand-written fixture
+  whose reference has never resolved. On documents that were always this incomplete, the report
+  becoming longer is it becoming accurate.
 - A document stating a default RESTest cannot represent loses that default rather than gaining a
-  wrong one. Nothing today is known to hit that case; the object and array shapes that used to hit
-  it are now converted properly.
+  wrong one, and an enumeration it cannot read in full is reported as unreadable rather than
+  silently shortened — because a shorter list is a different claim, not a smaller one.
+- An untyped schema whose own limits contradict each other (`minProperties` above `maxProperties`)
+  now skips its operation, where before it was read as "any value" and tested. That is the model
+  refusing what it already refuses everywhere else, reached by one more route.
 

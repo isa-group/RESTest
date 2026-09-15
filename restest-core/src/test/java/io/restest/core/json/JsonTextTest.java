@@ -100,4 +100,27 @@ class JsonTextTest {
                 .isThrownBy(() -> JsonText.read(""))
                 .withMessageContaining("Empty");
     }
+
+    @Test
+    @DisplayName("text carrying on after the value ends is refused, not quietly ignored")
+    void anything_after_the_value_is_refused() {
+        // Every one of these is something a broken API really sends: the handler wrote its payload
+        // twice, an error page was appended to a reply that had already begun, a warning was
+        // printed into the middle of an answer. Reading as far as the first value and stopping
+        // would call all three well formed, and whatever judges the reply would then find nothing
+        // wrong with it.
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> JsonText.read("{\"a\": 1}{\"a\": 2}"))
+                .withMessageContaining("carried on");
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> JsonText.read("{\"a\": 1}\n<html>Fatal error</html>"));
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> JsonText.read("1 2"));
+        // And the same rule stops a value being read out of the front of something that is not one.
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> JsonText.read("12 Monkeys"));
+
+        // Whitespace around a value is still part of writing it down, not text carrying on.
+        assertThat(JsonText.read("  {\"a\": 1}  ")).isEqualTo(JsonText.read("{\"a\":1}"));
+    }
 }

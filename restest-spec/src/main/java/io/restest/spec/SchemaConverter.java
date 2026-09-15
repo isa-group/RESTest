@@ -93,6 +93,15 @@ final class SchemaConverter {
             return new SchemaReference(metadataOf(schema), refName(schema.get$ref()));
         }
         SchemaMetadata metadata = metadataOf(schema);
+        if (schema.getEnum() != null && schema.getEnum().size() != metadata.enumeration().size()) {
+            // Some value this is allowed to take could not be written down exactly. A default in
+            // that state is simply dropped, which is honest because the schema then says it has no
+            // default. An enumeration cannot be dropped the same way: a shorter list is not "no
+            // list", it is a different and narrower claim about what the API accepts, made by us
+            // and not by the document. Saying we could not read it is the only true answer.
+            return new UnsupportedSchema(metadata, "one of the values this is allowed to take could "
+                    + "not be read, so the list of them would be shorter than the document's");
+        }
         if (isComposed(schema)) {
             return new UnsupportedSchema(metadata, "a value declared as one of several alternative "
                     + "shapes (oneOf/anyOf/allOf/not) is not supported yet");
@@ -357,7 +366,12 @@ final class SchemaConverter {
             case Double d -> Optional.of(JsonValue.of(BigDecimal.valueOf(d)));
             case Float f -> Optional.of(JsonValue.of(BigDecimal.valueOf(f)));
             case String s -> Optional.of(JsonValue.of(s));
-            // What the document wrote was base-64 text; the parser decoded it on the way in.
+            // What the document wrote was base-64 text; the parser decoded it on the way in, so
+            // encoding it again returns the document's own spelling. This is what a `byte` format
+            // means. The parser also hands raw bytes over for a `binary` format, where the document
+            // wrote something that JSON cannot carry in the first place; that one is written as
+            // base-64 too, for want of any better answer, and a default on such a field is not a
+            // thing real documents state.
             case byte[] bytes -> Optional.of(JsonValue.of(Base64.getEncoder().encodeToString(bytes)));
             // An identifier, which the parser recognises and turns into an object of its own. Named
             // here rather than left to the last resort below, because that one reads a value back
