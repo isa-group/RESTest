@@ -264,11 +264,21 @@ restest run [--url=<base>] [--budget=<duration>] [--seed=<n>] [--out=<dir>] [--s
 - A default run is materially faster for having been asked to do less: measured, 51% more requests in
   the same budget, with idle falling from 18.5% to 0.3%. The details and the method are in ADR-0006's
   M1.7 amendment.
-- `--store` is a compatibility surface from now on, like the exit codes. Adding a flag later is
-  cheap; changing which way round this one defaults is not.
-- The evaluation entry point of M1.8 gets a simpler job than it looked: a loop that does not pass
-  `--store` writes nothing, goes faster, and cannot fill a disk during a campaign. One that wants
-  evidence passes the flag and gives each invocation its own `--out`.
+- **`--store` is a compatibility surface from now on, like the exit codes, and the asymmetry is what
+  matters.** Adding another flag later breaks nobody. Turning this one round does, and silently: were
+  it ever switched on by default, every pipeline that runs `restest run` would start writing hundreds
+  of megabytes nobody asked for; were it switched off again, every script reading `run.sqlite` would
+  find nothing, and would find out late — when somebody tried to `recheck` — rather than at the
+  moment of the change. Until v2.0 is published at M7 nobody outside depends on it and it can still
+  be reconsidered freely; after that tag it cannot be, cheaply.
+- **The pressure to turn it round will come from M1.8 and M8, and should be refused there.** If a
+  campaign's metrics turn out to need stored runs, the tempting fix is to make `--store` the default
+  "so campaigns work". That would charge every other user of the tool for one harness's convenience.
+  The right fix is one word in `entrypoint.sh`: the harness passes the flag. Written down here
+  because the temptation arrives in an increment that will not be reading this ADR for this reason.
+- The evaluation entry point of M1.8 otherwise gets a simpler job than it looked: a loop that does
+  not pass `--store` writes nothing, goes faster, and cannot fill a disk during a campaign. One that
+  wants evidence passes the flag and gives each invocation its own `--out`.
 - Anyone who kept a run and then runs again in the same directory loses it. This is the deliberate
   price of "a directory is one run", and the run says what it deleted.
 - **A coupling M3.5 must not miss.** The original decision's reason for one directory was "so later
