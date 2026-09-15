@@ -17,6 +17,8 @@ package io.restest.spec;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.model.ApiModel;
+import io.restest.core.model.SpecificationIssue;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
@@ -32,11 +34,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
- * Checks the claims this module's Javadoc-free test fixtures make about themselves, without parsing
- * OpenAPI at all: no {@code SpecificationParser} exists yet (that is the next increment), so this
- * only reads the corpus as plain text. It exists so a later edit to a fixture — accidental or
- * otherwise — cannot quietly stop that fixture from being what its directory name and the corpus
- * README say it is.
+ * Checks that the corpus of real specifications is what it claims to be, and that RESTest can read
+ * all of it.
+ *
+ * <p>Two kinds of check, and they answer different questions. The text ones confirm a fixture still
+ * says what its directory name promises, so that a later edit cannot quietly turn the
+ * dangling-reference fixture into one whose reference resolves. The reading one points the parser at
+ * every document in the corpus and requires it to come back with an answer rather than an exception:
+ * never crashing on a bad specification, stated as a test, over all fifty documents in the corpus -
+ * forty-six of which nobody here wrote.
  */
 class CorpusSanityTest {
 
@@ -84,6 +90,43 @@ class CorpusSanityTest {
         assertThat(content)
                 .describedAs("Gadget must stay undefined, or this is no longer a dangling reference")
                 .doesNotContain("Gadget:");
+    }
+
+    @Test
+    @DisplayName("every specification in the corpus is read without throwing, and every real one yields operations")
+    void the_whole_corpus_can_be_read() throws IOException {
+        SwaggerSpecificationParser parser = new SwaggerSpecificationParser();
+
+        for (Path file : specificationFiles()) {
+            ApiModel api = parser.parse(file.toString());
+
+            // Whatever a document turns out to contain, what could not be used has to be sayable:
+            // an issue nobody can locate is the same as no issue at all to whoever reads the report.
+            assertThat(api.issues())
+                    .describedAs("issues reported for %s", file)
+                    .allSatisfy(issue -> {
+                        assertThat(issue.location()).isNotBlank();
+                        assertThat(issue.message()).isNotBlank();
+                        assertThat(issue.effect()).isNotNull();
+                        if (issue.effect() != SpecificationIssue.Effect.DOCUMENT) {
+                            assertThat(issue.operation()).isPresent();
+                        }
+                    });
+
+            if (isAFixture(file)) {
+                // The fixtures are deliberately broken, and two of them yield nothing on purpose.
+                continue;
+            }
+            assertThat(api.operations())
+                    .describedAs("%s is a real published specification, so it must yield something "
+                            + "to test; yielding nothing means the whole document was lost", file)
+                    .isNotEmpty();
+        }
+    }
+
+    /** Whether this document is one of the hand-written broken ones, rather than a real API's. */
+    private static boolean isAFixture(Path file) {
+        return file.startsWith(specificationsRoot().resolve("fixtures"));
     }
 
     /** Every file under {@code specifications/} except the human-facing READMEs. */

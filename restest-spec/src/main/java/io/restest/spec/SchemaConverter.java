@@ -15,6 +15,8 @@
  */
 package io.restest.spec;
 
+import io.restest.core.json.JsonException;
+import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
@@ -31,15 +33,24 @@ import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -54,6 +65,22 @@ import java.util.stream.Collectors;
  */
 final class SchemaConverter {
 
+    /**
+     * A moment in time written the way the standard for dates on the web requires it: always with
+     * seconds, which the shorthand {@code OffsetDateTime} prints leaves out when they are zero.
+     */
+    private static final DateTimeFormatter WEB_DATE_TIME = new DateTimeFormatterBuilder()
+            .append(DateTimeFormatter.ISO_LOCAL_DATE)
+            .appendLiteral('T')
+            .appendValue(ChronoField.HOUR_OF_DAY, 2)
+            .appendLiteral(':')
+            .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
+            .appendLiteral(':')
+            .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
+            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+            .appendOffsetId()
+            .toFormatter(Locale.ROOT);
+
     private SchemaConverter() {
     }
 
@@ -66,6 +93,15 @@ final class SchemaConverter {
             return new SchemaReference(metadataOf(schema), refName(schema.get$ref()));
         }
         SchemaMetadata metadata = metadataOf(schema);
+        if (schema.getEnum() != null && schema.getEnum().size() != metadata.enumeration().size()) {
+            // Some value this is allowed to take could not be written down exactly. A default in
+            // that state is simply dropped, which is honest because the schema then says it has no
+            // default. An enumeration cannot be dropped the same way: a shorter list is not "no
+            // list", it is a different and narrower claim about what the API accepts, made by us
+            // and not by the document. Saying we could not read it is the only true answer.
+            return new UnsupportedSchema(metadata, "one of the values this is allowed to take could "
+                    + "not be read, so the list of them would be shorter than the document's");
+        }
         if (isComposed(schema)) {
             return new UnsupportedSchema(metadata, "a value declared as one of several alternative "
                     + "shapes (oneOf/anyOf/allOf/not) is not supported yet");
@@ -99,15 +135,12 @@ final class SchemaConverter {
      * only a {@code $ref} to a composed schema is not reported as perfectly fine just because the
      * reference itself is a plain, resolvable name. A name already visited on this walk is treated as
      * not (newly) unsupported rather than resolved again, so a schema that refers to itself, directly
-     * or through others, cannot recurse for ever.
+     * or through others, cannot recurse for ever. A name the given schemas do not declare at all is
+     * unsupported: there is nothing to read, whether the document forgot to define it or keeps it in
+     * another file.
      */
     static boolean hasUnsupportedConstruct(CanonicalSchema schema, Map<String, CanonicalSchema> schemas) {
         return hasUnsupportedConstruct(schema, schemas, new HashSet<>());
-    }
-
-    /** {@link #hasUnsupportedConstruct(CanonicalSchema, Map)}, without following any reference. */
-    static boolean hasUnsupportedConstruct(CanonicalSchema schema) {
-        return hasUnsupportedConstruct(schema, Map.of());
     }
 
     private static boolean hasUnsupportedConstruct(CanonicalSchema schema,
@@ -124,7 +157,14 @@ final class SchemaConverter {
                     yield false;
                 }
                 CanonicalSchema target = schemas.get(r.name());
-                yield target != null && hasUnsupportedConstruct(target, schemas, visited);
+                // A name nothing declares counts as not understood, which is the honest answer and
+                // was not the answer before. A document may point at a shape it never defines, or
+                // at one in a second file this tool deliberately does not open; either way there is
+                // nothing here to generate from and nothing to hold a reply to. Answering "fine"
+                // because the reference itself was well-formed let those operations be tested as
+                // though they were fully understood, and said nothing to anybody about the shape
+                // that went missing.
+                yield target == null || hasUnsupportedConstruct(target, schemas, visited);
             }
             case AnySchema ignored -> false;
             case BooleanSchema ignored -> false;
@@ -155,7 +195,31 @@ final class SchemaConverter {
         if (schema.getType() != null) {
             return schema.getType();
         }
-        return nonNullTypes(schema).stream().findFirst().orElse(null);
+        return nonNullTypes(schema).stream().findFirst()
+                .orElseGet(() -> describesAnObject(schema) ? "object" : null);
+    }
+
+    /**
+     * Whether a schema that names no type is nevertheless describing an object, because it carries
+     * something only an object could obey: named properties, a list of which of those are required,
+     * a rule for the ones not named, or a limit on how many there may be.
+     *
+     * <p>Leaving the type out is extremely common in real documents, and reading such a schema as
+     * "any value at all" threw the properties away: what came back was a schema that says nothing,
+     * so the tool would offer a number or a word where the document had carefully described an
+     * object with named fields. The parser already fills in the type this way for the other half of
+     * the rule - a schema with {@code items} and no type is read as an array - so the two now agree.
+     *
+     * <p>Strictly, JSON Schema says these keywords only constrain values that happen to be objects
+     * and let everything else past, so a document could mean "anything, but if an object, this
+     * shape". No document written by a person means that, and reading it that way costs the shape.
+     */
+    private static boolean describesAnObject(Schema<?> schema) {
+        return (schema.getProperties() != null && !schema.getProperties().isEmpty())
+                || isNonEmpty(schema.getRequired())
+                || schema.getAdditionalProperties() != null
+                || schema.getMinProperties() != null
+                || schema.getMaxProperties() != null;
     }
 
     /**
@@ -243,9 +307,12 @@ final class SchemaConverter {
                 || (schema.getTypes() != null && schema.getTypes().contains("null"));
         List<JsonValue> enumeration = schema.getEnum() == null
                 ? List.of()
-                : schema.getEnum().stream().map(SchemaConverter::toJsonValue).toList();
+                : schema.getEnum().stream()
+                        .map(SchemaConverter::toJsonValue)
+                        .flatMap(Optional::stream)
+                        .toList();
         Optional<JsonValue> defaultValue = schema.getDefault() == null
-                ? Optional.empty() : Optional.of(toJsonValue(schema.getDefault()));
+                ? Optional.empty() : toJsonValue(schema.getDefault());
         boolean deprecated = Boolean.TRUE.equals(schema.getDeprecated());
         SchemaMetadata.Access access = Boolean.TRUE.equals(schema.getReadOnly())
                 ? SchemaMetadata.Access.READ_ONLY
@@ -271,28 +338,99 @@ final class SchemaConverter {
         return lastSlash < 0 ? ref : ref.substring(lastSlash + 1);
     }
 
-    /** A raw value from the parsed document (Jackson's own types) as a {@link JsonValue}. */
-    private static JsonValue toJsonValue(Object value) {
+    /**
+     * One value the document stated - a {@code default}, or a member of an {@code enum} - as a
+     * {@link JsonValue}, or nothing when it cannot be written down exactly as the document meant it.
+     *
+     * <p>Nothing, rather than something approximate, and that is the whole point. The parser does
+     * not hand these back as the text the document wrote: a date arrives as a {@link Date}, a
+     * base-64 string as an array of bytes, an object as the parser's own node. Printed the ordinary
+     * way, the first becomes {@code Fri Jan 31 00:00:00 CET 2020} - not a date any API accepts, and
+     * spelled differently on a machine set up in another country - and the second becomes something
+     * like {@code [B@77eca502}, which is a memory address and is different on every single run.
+     * Neither is a value any API would take, and the second quietly breaks the promise that one seed
+     * and one document make the same requests twice.
+     *
+     * <p>So each kind is turned back into what the document actually said, and a kind that cannot be
+     * is left out. A schema with no default is a schema the tool invents a value for, exactly as it
+     * would have anyway; a schema with a made-up default is one that sends rubbish and blames the
+     * API for refusing it.
+     */
+    private static Optional<JsonValue> toJsonValue(Object value) {
         return switch (value) {
-            case null -> JsonValue.NULL;
-            case Boolean b -> JsonValue.of(b);
-            case BigDecimal d -> JsonValue.of(d);
-            case Integer i -> JsonValue.of(i.longValue());
-            case Long l -> JsonValue.of(l);
-            case Double d -> JsonValue.of(BigDecimal.valueOf(d));
-            case Float f -> JsonValue.of(BigDecimal.valueOf(f));
-            case String s -> JsonValue.of(s);
+            case null -> Optional.of(JsonValue.NULL);
+            case Boolean b -> Optional.of(JsonValue.of(b));
+            case BigDecimal d -> Optional.of(JsonValue.of(d));
+            case Integer i -> Optional.of(JsonValue.of(i.longValue()));
+            case Long l -> Optional.of(JsonValue.of(l));
+            case Double d -> Optional.of(JsonValue.of(BigDecimal.valueOf(d)));
+            case Float f -> Optional.of(JsonValue.of(BigDecimal.valueOf(f)));
+            case String s -> Optional.of(JsonValue.of(s));
+            // What the document wrote was base-64 text; the parser decoded it on the way in, so
+            // encoding it again returns the document's own spelling. This is what a `byte` format
+            // means. The parser also hands raw bytes over for a `binary` format, where the document
+            // wrote something that JSON cannot carry in the first place; that one is written as
+            // base-64 too, for want of any better answer, and a default on such a field is not a
+            // thing real documents state.
+            case byte[] bytes -> Optional.of(JsonValue.of(Base64.getEncoder().encodeToString(bytes)));
+            // An identifier, which the parser recognises and turns into an object of its own. Named
+            // here rather than left to the last resort below, because that one reads a value back
+            // as JSON and an identifier is not JSON - so without this line a perfectly good default
+            // would be dropped.
+            case UUID identifier -> Optional.of(JsonValue.of(identifier.toString()));
+            // A plain date, which the parser keeps as a moment in time - midnight on that day
+            // where this machine is. Read back the same way, which returns the day the document
+            // wrote no matter where the machine is. Reading it back at UTC instead looks like the
+            // more careful choice and is the wrong one: anywhere east of Greenwich that midnight
+            // belongs to the previous day, and the default would quietly shift by one.
+            case Date date -> Optional.of(JsonValue.of(
+                    date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate().toString()));
+            case OffsetDateTime moment -> Optional.of(JsonValue.of(WEB_DATE_TIME.format(moment)));
             case List<?> list -> {
                 List<JsonValue> elements = new ArrayList<>();
-                list.forEach(element -> elements.add(toJsonValue(element)));
-                yield JsonValue.array(elements);
+                for (Object element : list) {
+                    Optional<JsonValue> converted = toJsonValue(element);
+                    if (converted.isEmpty()) {
+                        yield Optional.empty();
+                    }
+                    elements.add(converted.get());
+                }
+                yield Optional.of(JsonValue.array(elements));
             }
             case Map<?, ?> map -> {
                 Map<String, JsonValue> members = new LinkedHashMap<>();
-                map.forEach((key, value2) -> members.put(String.valueOf(key), toJsonValue(value2)));
-                yield JsonValue.object(members);
+                for (Map.Entry<?, ?> entry : map.entrySet()) {
+                    Optional<JsonValue> converted = toJsonValue(entry.getValue());
+                    if (converted.isEmpty()) {
+                        yield Optional.empty();
+                    }
+                    members.put(String.valueOf(entry.getKey()), converted.get());
+                }
+                yield Optional.of(JsonValue.object(members));
             }
-            default -> JsonValue.of(String.valueOf(value));
+            default -> asTheDocumentWroteIt(value);
         };
+    }
+
+    /**
+     * A value of a kind this converter does not otherwise know, recovered from the way it prints
+     * itself.
+     *
+     * <p>This is how an object or an array stated as a default reaches us. The parser keeps those
+     * as its own document nodes, and such a node prints exactly the JSON the document wrote, so
+     * reading that text back gives the value itself instead of a description of it. Recovered
+     * through the text rather than by asking the node, because the library that made it belongs to
+     * the parser and does not cross out of this module.
+     *
+     * <p>Anything whose printed form is not JSON is a kind we cannot represent, and produces
+     * nothing - which is the same answer this method would give if it were left out altogether, and
+     * a better one than a sentence describing a value pretending to be the value.
+     */
+    private static Optional<JsonValue> asTheDocumentWroteIt(Object value) {
+        try {
+            return Optional.of(JsonText.read(String.valueOf(value)));
+        } catch (JsonException notJson) {
+            return Optional.empty();
+        }
     }
 }

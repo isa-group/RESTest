@@ -18,13 +18,14 @@ package io.restest.oracles;
 import com.networknt.schema.Error;
 import com.networknt.schema.InputFormat;
 import com.networknt.schema.Schema;
-import com.networknt.schema.SchemaException;
 import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SchemaRegistry;
 import com.networknt.schema.SchemaRegistryConfig;
 import com.networknt.schema.dialect.Dialect;
 import com.networknt.schema.dialect.OpenApi30;
 import com.networknt.schema.dialect.OpenApi31;
+import io.restest.core.json.JsonException;
+import io.restest.core.json.JsonText;
 import io.restest.core.execution.HttpResponseRecord;
 import io.restest.core.execution.Interaction;
 import io.restest.core.execution.Payload;
@@ -198,21 +199,28 @@ public final class ResponseSchemaOracle implements Oracle {
 
     private List<Finding> judgeBody(Interaction interaction, Schema checker, String body,
             int statusCode, String contentType) {
+        // Whether the body is JSON at all is decided here, with our own reader, before the checker
+        // is asked anything. It used to be decided by the checker throwing, and that was a way of
+        // reporting faults that were not faults: every exception out of the checker was read as
+        // "this is not JSON", so a shape the checker could not handle - a reference it resolves
+        // only when it gets there, a pattern its regular-expression engine rejects - was announced
+        // as a broken reply from an API that had answered perfectly. Reporting a fault that is not
+        // one is the single thing a testing tool must not do, and it is what this rule exists to
+        // avoid rather than cause.
+        try {
+            JsonText.checkOneValue(body);
+        } catch (JsonException notJson) {
+            return List.of(mismatch(interaction, statusCode, contentType,
+                    "the body is not JSON at all", List.of(firstLineOf(notJson))));
+        }
         List<Error> errors;
         try {
             errors = checker.validate(body, InputFormat.JSON);
-        } catch (SchemaException unusableShape) {
-            // Something about the declared shape itself defeated the checker. That is a problem
-            // with the document, already reported when the document was read; it is not evidence
-            // about the API, so nothing is claimed here.
+        } catch (RuntimeException cannotBeJudged) {
+            // The body is JSON and the checker still could not finish. Whatever the reason, it is
+            // something about the declared shape rather than about the reply, so nothing is claimed.
+            // A reply RESTest was unable to check is not evidence that the API did anything wrong.
             return List.of();
-        } catch (RuntimeException notJson) {
-            // The only other thing that can go wrong here is the body not being JSON at all, which
-            // the checker complains about by throwing. Caught by its general kind rather than by
-            // name on purpose: naming it would mean naming the checker's own JSON library, and the
-            // point of confining a library to one module is that its types stay inside it.
-            return List.of(mismatch(interaction, statusCode, contentType,
-                    "the body is not JSON at all", List.of(firstLineOf(notJson))));
         }
         if (errors.isEmpty()) {
             return List.of();

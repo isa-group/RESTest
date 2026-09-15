@@ -89,10 +89,19 @@ public final class JsonText {
     }
 
     /**
-     * The value the text describes.
+     * The value the text describes, and nothing but that value.
+     *
+     * <p>Text left over after the value ends is refused rather than ignored, and the difference
+     * matters more than it looks. One value followed by anything else is not JSON, and the things
+     * that produce it are exactly the breakages worth finding: a handler that writes its payload
+     * twice, an error page appended after a reply that had already begun, a warning printed into
+     * the middle of an answer. Reading only as far as the first value and declaring success would
+     * call every one of those a well-formed reply. It would also let a stored run that had been
+     * damaged read back as intact, which is the one thing this reader exists to notice.
      *
      * @param text JSON text, as {@link #write} produces
      * @return the value it describes
+     * @throws JsonException if the text is not one JSON value, or carries anything after it
      */
     public static JsonValue read(String text) {
         Objects.requireNonNull(text, "text");
@@ -100,7 +109,43 @@ public final class JsonText {
             if (in.nextToken() == null) {
                 throw new JsonException("Empty text where a JSON value was expected");
             }
-            return readValue(in);
+            JsonValue value = readValue(in);
+            if (in.nextToken() != null) {
+                throw new JsonException("A JSON value ended and the text carried on, at character "
+                        + in.currentLocation().getCharOffset());
+            }
+            return value;
+        } catch (IOException e) {
+            throw new JsonException(
+                    "Stored JSON could not be read back: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Checks that the text is one JSON value and nothing else, without building the value.
+     *
+     * <p>The same question {@link #read} answers, for whoever only wants the answer. Judging a
+     * reply against its declared shape starts by asking whether the reply is JSON at all, and doing
+     * that with {@code read} built a whole value that was thrown away an instant later - on the one
+     * thread that has to keep up with every reply the engine produces, and twice over for every
+     * large body, since whatever judges it parses the text again anyway.
+     *
+     * @param text the text to check
+     * @throws JsonException if it is not one JSON value, or carries anything after it
+     */
+    public static void checkOneValue(String text) {
+        Objects.requireNonNull(text, "text");
+        try (JsonParser in = FACTORY.createParser(text)) {
+            if (in.nextToken() == null) {
+                throw new JsonException("Empty text where a JSON value was expected");
+            }
+            // Walks to the end of this value without keeping any of it: past a whole object or
+            // array, and nowhere at all for a plain number or word.
+            in.skipChildren();
+            if (in.nextToken() != null) {
+                throw new JsonException("A JSON value ended and the text carried on, at character "
+                        + in.currentLocation().getCharOffset());
+            }
         } catch (IOException e) {
             throw new JsonException(
                     "Stored JSON could not be read back: " + e.getMessage(), e);

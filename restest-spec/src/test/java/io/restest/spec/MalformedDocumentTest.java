@@ -17,10 +17,14 @@ package io.restest.spec;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.SpecificationIssue;
+import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ObjectSchema;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -81,6 +85,15 @@ class MalformedDocumentTest {
 
         assertThat(withNoUrlAtAll.servers()).isEmpty();
         assertThat(withBlankUrl.servers()).isEmpty();
+        // Dropping it quietly would leave the run saying there is nowhere to send requests, with
+        // nothing to explain why the address the document does declare went unused.
+        assertThat(withNoUrlAtAll.issues())
+                .anySatisfy(issue -> {
+                    assertThat(issue.location()).isEqualTo("servers[0]");
+                    assertThat(issue.message()).contains("names no address");
+                });
+        assertThat(withBlankUrl.issues())
+                .anySatisfy(issue -> assertThat(issue.location()).isEqualTo("servers[0]"));
     }
 
     @Test
@@ -387,6 +400,98 @@ class MalformedDocumentTest {
 
         assertThat(api.operations()).hasSize(1);
         assertThat(api.servers()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("declared defaults survive being read, in the spellings the document used")
+    void declared_defaults_are_read_back_as_the_document_wrote_them(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.3
+                info: {title: t, version: '1'}
+                paths: {}
+                components:
+                  schemas:
+                    Defaults:
+                      type: object
+                      properties:
+                        day: {type: string, format: date, default: '2020-01-31'}
+                        moment: {type: string, format: date-time, default: '2020-01-31T10:00:00Z'}
+                        blob: {type: string, format: byte, default: 'aGk='}
+                        settings: {type: object, default: {a: 1}}
+                """);
+
+        assertThat(api.schemas()).containsKey("Defaults");
+        ObjectSchema defaults = (ObjectSchema) api.schemas().get("Defaults");
+
+        assertThat(defaultOf(defaults, "day")).contains(JsonValue.of("2020-01-31"));
+        assertThat(defaultOf(defaults, "moment")).contains(JsonValue.of("2020-01-31T10:00:00Z"));
+        assertThat(defaultOf(defaults, "blob")).contains(JsonValue.of("aGk="));
+        assertThat(defaultOf(defaults, "settings")).get()
+                .describedAs("an object default is a value, not a sentence describing one")
+                .isInstanceOf(JsonValue.JsonObject.class);
+    }
+
+
+    @Test
+    @DisplayName("a parameter described only by object keywords is read as an object, wherever it sits")
+    void an_untyped_object_parameter_is_read_as_an_object(@TempDir Path dir) throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /a/{id}:
+                    get:
+                      parameters:
+                        - name: id
+                          in: path
+                          required: true
+                          schema: {required: [part]}
+                      responses: {'200': {description: ok}}
+                """);
+
+        // Reading it as an object is right: those keywords say object and nothing else does. What
+        // follows from it belongs to inventing values rather than to reading them, and is checked
+        // where that happens - an object with nothing declared in it produces an empty value, which
+        // cannot fill a gap in a path.
+        assertThat(api.operations()).hasSize(1);
+        assertThat(api.operations().get(0).parameters().get(0).schema())
+                .isInstanceOf(ObjectSchema.class);
+    }
+
+    @Test
+    @DisplayName("an untyped schema whose own limits contradict each other skips its operation")
+    void an_untyped_object_with_impossible_limits_skips_its_operation(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /fine:
+                    get:
+                      responses: {'200': {description: ok}}
+                  /impossible:
+                    get:
+                      parameters:
+                        - name: q
+                          in: query
+                          schema: {minProperties: 5, maxProperties: 2}
+                      responses: {'200': {description: ok}}
+                """);
+
+        assertThat(api.operations())
+                .describedAs("the operation either side of it still has to survive")
+                .extracting(operation -> operation.id().value())
+                .containsExactly("GET /fine");
+        assertThat(api.issues())
+                .anySatisfy(issue -> assertThat(issue.effect())
+                        .isEqualTo(SpecificationIssue.Effect.OPERATION_SKIPPED));
+    }
+
+    private static Optional<JsonValue> defaultOf(ObjectSchema object, String name) {
+        CanonicalSchema property = object.properties().get(name);
+        assertThat(property).describedAs("property '%s'", name).isNotNull();
+        return property.metadata().defaultValue();
     }
 
     private ApiModel parse(Path dir, String document) throws Exception {

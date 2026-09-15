@@ -29,6 +29,7 @@ import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.UnsupportedSchema;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,12 @@ public final class RandomTestCaseGenerator {
             }
         }
         this.testable = List.copyOf(canBeTried);
-        this.untestable = Map.copyOf(cannot);
+        // Not Map.copyOf. That one's iteration order is randomised per process, so the same
+        // document would list the operations it cannot test in a different order every run - and
+        // the command line quotes the first of them as the example of what went wrong, meaning the
+        // same command would explain itself differently each time it was run. The map is built here
+        // and never handed anywhere else, so wrapping it keeps document order without a second copy.
+        this.untestable = Collections.unmodifiableMap(cannot);
     }
 
     /**
@@ -140,7 +146,11 @@ public final class RandomTestCaseGenerator {
         return testable;
     }
 
-    /** The operations that cannot be attempted yet, and why, for the run to report. */
+    /**
+     * The operations that cannot be attempted yet, and why, for the run to report - in the order the
+     * document declares them, so that whoever runs the same command twice is told the same thing
+     * twice.
+     */
     public Map<OperationId, String> untestableOperations() {
         return untestable;
     }

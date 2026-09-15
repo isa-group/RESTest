@@ -341,16 +341,31 @@ public final class JsonReport implements RunListener {
         });
     }
 
+    /**
+     * An object of exactly two members, in the order they are written here.
+     *
+     * <p>Worth a method of its own only because the short way of writing this is wrong.
+     * {@code Map.of} decides its order afresh in every process, so the same run written twice
+     * produced the same report with its lines rearranged - and comparing this run against last
+     * week's, which is much of what a report a machine can read is for, would have shown differences
+     * that were not differences.
+     */
+    private static JsonValue pair(String firstName, JsonValue first, String secondName,
+            JsonValue second) {
+        Map<String, JsonValue> members = new LinkedHashMap<>();
+        members.put(firstName, first);
+        members.put(secondName, second);
+        return JsonValue.object(members);
+    }
+
     private JsonValue build() {
         Map<String, JsonValue> report = new LinkedHashMap<>();
-        report.put("tool", JsonValue.object(Map.of("name", JsonValue.of("RESTest"),
-                "version", JsonValue.of(toolVersion()))));
-        report.put("faultCatalogue", JsonValue.object(Map.of(
-                "name", JsonValue.of(WfcFault.CATALOGUE_NAME),
-                "version", JsonValue.of(WfcFault.CATALOGUE_VERSION))));
+        report.put("tool", pair("name", JsonValue.of("RESTest"),
+                "version", JsonValue.of(toolVersion())));
+        report.put("faultCatalogue", pair("name", JsonValue.of(WfcFault.CATALOGUE_NAME),
+                "version", JsonValue.of(WfcFault.CATALOGUE_VERSION)));
         report.put("createdAt", JsonValue.of(clock.instant().toString()));
-        report.put("api", JsonValue.object(Map.of("title", JsonValue.of(api),
-                "baseUrl", JsonValue.of(baseUrl))));
+        report.put("api", pair("title", JsonValue.of(api), "baseUrl", JsonValue.of(baseUrl)));
         report.put("totals", totals());
         report.put("limits", limits());
         report.put("engine", engineStatistics());

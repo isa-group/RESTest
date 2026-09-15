@@ -76,14 +76,18 @@ final class ExitCode {
      * nothing.
      *
      * @param outcome what the loop did with the time
-     * @param reportsThatFailed how many listeners threw while being told something
+     * @param whatFailedOnOurSide how many things RESTest itself got wrong: listeners that threw
+     *     while being told something, and judgements a rule failed to make. Added together on
+     *     purpose - both mean some of this run was not done, and the answer to "did anything break
+     *     on our side" is the same either way. Which of the two it was belongs in the words printed
+     *     alongside, not in the number a script reads
      * @param eventsNeverHeard how many announcements never reached the listeners
      * @param faults how many faults were reported
      * @return the number the command should answer with
      */
-    static int of(RunLoop.Outcome outcome, long reportsThatFailed, long eventsNeverHeard,
+    static int of(RunLoop.Outcome outcome, long whatFailedOnOurSide, long eventsNeverHeard,
             int faults) {
-        if (reportsThatFailed > 0 || eventsNeverHeard > 0) {
+        if (whatFailedOnOurSide > 0 || eventsNeverHeard > 0) {
             return TOOL_FAILED;
         }
         if (outcome == null || outcome.sent() == 0 || outcome.nothingAnswered()) {

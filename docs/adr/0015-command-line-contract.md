@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7
+**Status:** Accepted, amended at M1.7 and M1.8
 **Date:** 2026-09-14 (amended 2026-09-15)
 
 ## Context
@@ -13,7 +13,7 @@ them. The only place the whole pipeline is assembled is a *test*,
 
 M1.7 turns that shape into the product. Writing the command means answering questions the repository
 has never answered, and three of them are expensive to get wrong because other things will be built
-on top of them: the CI job added in this same increment, the evaluation entry point of M1.8, and any
+on top of them: the CI job added in this same increment, the evaluation entry point of M1.9, and any
 pipeline a user wires RESTest into.
 
 **What is already settled elsewhere.** ADR-0013's consequences place the loop in the command-line
@@ -132,7 +132,7 @@ below and ADR-0006's.**
 | `0` | The run finished. No fault was found. |
 | `1` | The run finished. At least one fault was found. |
 | `2` | The command line was wrong. |
-| `3` | Nothing could be tested: the document yielded no testable operation, or no usable base address. |
+| `3` | Nothing could be tested: the document yielded no testable operation, no usable base address, or nowhere to write the results. |
 | `4` | RESTest itself malfunctioned — an unexpected failure, a listener that threw, or announcements that never reached one. |
 
 `127` is never returned by the program. It is reserved by the launcher script for "this checkout has
@@ -161,7 +161,7 @@ jar manifest, and a directory has none.
 
 - One command does the whole thing, which is what the walking skeleton was for. Everything after this
   is an improvement to something a person can already run.
-- The evaluation harness of M1.8 has the interface it was promised: point at a document, point at a
+- The evaluation harness of M1.9 has the interface it was promised: point at a document, point at a
   deployment, stop after a time, exit.
 - Idle time becomes a number about a real run rather than about a test. It will read higher than a
   measurement that excluded parsing would, and that is the intended trade.
@@ -266,7 +266,7 @@ restest run [--url=<base>] [--budget=<duration>] [--seed=<n>] [--out=<dir>] [--s
   M1.7 amendment.
 - `--store` is a compatibility surface from now on, like the exit codes. Adding a flag later is
   cheap; changing which way round this one defaults is not.
-- The evaluation entry point of M1.8 gets a simpler job than it looked: a loop that does not pass
+- The evaluation entry point of M1.9 gets a simpler job than it looked: a loop that does not pass
   `--store` writes nothing, goes faster, and cannot fill a disk during a campaign. One that wants
   evidence passes the flag and gives each invocation its own `--out`.
 - Anyone who kept a run and then runs again in the same directory loses it. This is the deliberate
@@ -305,3 +305,56 @@ restest run [--url=<base>] [--budget=<duration>] [--seed=<n>] [--out=<dir>] [--s
   than the problem the default was changed to solve. It becomes a good idea again the day it comes
   with a bound — keep the last N, prune the rest, say so — and that bound is the decision to make
   then, not the subdirectory.
+
+---
+
+## Amendment (M1.8)
+
+**Date:** 2026-09-15
+
+**`3` also means there is nowhere to write the results. What Ctrl-C should do is left open,
+deliberately.**
+
+### Why
+
+The table above gives `3` two meanings: no testable operation, or no usable base address. The prose
+under "The surface" already gave it a third — "A directory nothing can be written to is not a
+malfunction and does not answer 4" — and the code did not implement it. An unwritable `--out` was
+discovered only when the report came to be written, which surfaced as a listener that threw, which
+answered `4` and printed a stack trace. Whoever read that went looking for a bug in RESTest, and the
+answer was that they had pointed it at a read-only directory.
+
+The check now happens before anything is tested, and the table row says what the prose already said.
+This is recorded rather than left to be inferred because the exit code is a compatibility surface:
+other people's scripts branch on it, and widening the meaning of a number without writing it down is
+how a contract stops being one.
+
+The check asks the file system whether the directory is writable, which is an answer that can be
+wrong in the permissive direction: a Windows directory carrying the read-only attribute, or mode 555
+under a user who may write anywhere regardless, both report themselves as writable. Those runs still
+fail later and still answer 4. What this buys is the ordinary case - somebody pointing the tool at a
+directory they cannot write to - answered properly, not a guarantee that answer 4 is now
+unreachable.
+
+### What is deliberately still open
+
+**Interrupting a run.** Ctrl-C today kills the process: no summary, no `report.json`, and with
+`--store` a database left with its two working files beside it. That is not a decision anybody took;
+it is the absence of one, and it is written here so that it stays visible rather than being
+rediscovered.
+
+It is not settled in this amendment because it has more than one defensible answer, and picking one
+silently in the code is exactly what this repository's ADRs exist to prevent:
+
+- Write what was found so far and answer as usual, which makes a partial report look like a finished
+  one unless it says otherwise.
+- Write nothing and answer with the conventional code for an interrupted program, which throws away
+  evidence that was already paid for — the thing the drain at the deadline exists to avoid.
+- Close the store cleanly and write nothing else, which keeps a run inspectable but leaves whoever
+  interrupted it with no summary.
+
+Whichever is chosen also has to work when the interrupt arrives during the drain, and has to not
+promise files it did not finish writing. That is an increment with an ADR of its own, not a hook
+added in passing, and it is **M3.7** in the roadmap - after the reports increment, because what a
+run cut short should leave behind is a question about what a run writes.
+

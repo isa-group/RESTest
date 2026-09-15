@@ -53,6 +53,24 @@ class JsonReportTest {
     }
 
     @Test
+    @DisplayName("the report writes its members in one fixed order, so two runs can be compared")
+    void the_members_are_written_in_a_fixed_order() {
+        JsonValue.JsonObject report = run(JsonReport.inMemory(fixedClock()));
+
+        // Pinned by naming the order rather than by running twice, because the short way of writing
+        // these objects shuffles them once per process, not once per call: two runs inside one test
+        // would agree with each other and disagree with tomorrow's. Much of what a report a machine
+        // can read is for is comparing one run against the next, and a key order that moved would
+        // show differences where nothing had differed.
+        assertThat(object(report, "tool").members().keySet())
+                .containsExactly("name", "version");
+        assertThat(object(report, "faultCatalogue").members().keySet())
+                .containsExactly("name", "version");
+        assertThat(object(report, "api").members().keySet())
+                .containsExactly("title", "baseUrl");
+    }
+
+    @Test
     @DisplayName("the totals say how much was attempted and how much was found")
     void the_totals_are_counted() {
         JsonValue.JsonObject totals = object(run(JsonReport.inMemory(fixedClock())), "totals");

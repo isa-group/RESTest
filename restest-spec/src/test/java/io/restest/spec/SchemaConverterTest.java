@@ -17,6 +17,7 @@ package io.restest.spec;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.json.JsonValue;
 import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
@@ -31,9 +32,14 @@ import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -267,8 +273,155 @@ class SchemaConverterTest {
         Schema<Object> clean = new Schema<>();
         clean.setType("string");
 
-        assertThat(SchemaConverter.hasUnsupportedConstruct(SchemaConverter.convert(nestedInObject))).isTrue();
-        assertThat(SchemaConverter.hasUnsupportedConstruct(SchemaConverter.convert(nestedInArray))).isTrue();
-        assertThat(SchemaConverter.hasUnsupportedConstruct(SchemaConverter.convert(clean))).isFalse();
+        assertThat(SchemaConverter.hasUnsupportedConstruct(
+                SchemaConverter.convert(nestedInObject), Map.of())).isTrue();
+        assertThat(SchemaConverter.hasUnsupportedConstruct(
+                SchemaConverter.convert(nestedInArray), Map.of())).isTrue();
+        assertThat(SchemaConverter.hasUnsupportedConstruct(
+                SchemaConverter.convert(clean), Map.of())).isFalse();
+    }
+
+    @Test
+    @DisplayName("a schema that names no type but describes an object is read as one")
+    void properties_without_a_type_become_an_object_schema() {
+        Schema<Object> name = new Schema<>();
+        name.setType("string");
+        Schema<Object> untyped = new Schema<>();
+        untyped.setProperties(Map.of("name", name));
+        untyped.setRequired(List.of("name"));
+
+        CanonicalSchema converted = SchemaConverter.convert(untyped);
+
+        assertThat(converted).isInstanceOf(ObjectSchema.class);
+        ObjectSchema object = (ObjectSchema) converted;
+        assertThat(object.properties()).containsOnlyKeys("name");
+        assertThat(object.properties().get("name")).isInstanceOf(StringSchema.class);
+        assertThat(object.required()).containsExactly("name");
+    }
+
+    @Test
+    @DisplayName("a date default is the day the document wrote, wherever the machine is")
+    void a_date_default_survives_the_machines_time_zone() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setFormat("date");
+        // Built the way the parser builds one: midnight on that day, where this machine is.
+        schema.setDefault(Date.from(
+                LocalDate.of(2020, 1, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+
+        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+                .contains(JsonValue.of("2020-01-31"));
+    }
+
+    @Test
+    @DisplayName("a moment in time keeps its seconds, which the shorthand spelling drops")
+    void a_date_time_default_is_written_the_way_the_web_requires() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setFormat("date-time");
+        schema.setDefault(OffsetDateTime.parse("2020-01-31T10:00:00Z"));
+
+        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+                .contains(JsonValue.of("2020-01-31T10:00:00Z"));
+    }
+
+    @Test
+    @DisplayName("a base-64 default is read back as its text, not as an address in memory")
+    void a_byte_default_is_read_back_as_base_64() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setFormat("byte");
+        schema.setDefault("hi".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+                .contains(JsonValue.of("aGk="));
+    }
+
+    @Test
+    @DisplayName("an identifier default keeps the text the document wrote")
+    void a_uuid_default_is_read_back_as_its_text() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setFormat("uuid");
+        schema.setDefault(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
+
+        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+                .describedAs("the parser turns this one into an object of its own, whose text is "
+                        + "not JSON, so leaving it to the last resort would drop a good value")
+                .contains(JsonValue.of("550e8400-e29b-41d4-a716-446655440000"));
+    }
+
+    @Test
+    @DisplayName("a default the parser hands over as a document node is read back as the value itself")
+    void a_node_shaped_default_is_read_back_as_a_value() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("object");
+        schema.setDefault(printsAs("{\"a\":1}"));
+
+        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+                .get()
+                .isInstanceOf(JsonValue.JsonObject.class);
+    }
+
+    @Test
+    @DisplayName("a default that cannot be written down exactly is left out rather than invented")
+    void an_unrepresentable_default_is_left_out() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setDefault(printsAs("Fri Jan 31 00:00:00 CET 2020"));
+
+        assertThat(SchemaConverter.convert(schema).metadata().defaultValue()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("an enumeration that cannot be read in full is not read at all")
+    void a_partly_unreadable_enumeration_is_unsupported() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setEnum(List.of("a", printsAs("not json at all"), "b"));
+
+        CanonicalSchema converted = SchemaConverter.convert(schema);
+
+        // Not the same answer as for a default, and the difference is the point. A default that
+        // cannot be read is dropped, and the schema then honestly says it has no default. Keeping
+        // two of three allowed values would instead state something the document never said: that
+        // the API accepts two things. Better to admit the list could not be read.
+        assertThat(converted).isInstanceOf(UnsupportedSchema.class);
+        assertThat(((UnsupportedSchema) converted).reason()).contains("allowed to take");
+    }
+
+    @Test
+    @DisplayName("an enumeration every member of which can be read is kept whole")
+    void a_readable_enumeration_is_kept() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setEnum(List.of("a", "b"));
+
+        assertThat(SchemaConverter.convert(schema).metadata().enumeration())
+                .containsExactly(JsonValue.of("a"), JsonValue.of("b"));
+    }
+
+    @Test
+    @DisplayName("a reference to a name nothing declares counts as not understood")
+    void a_dangling_reference_is_unsupported() {
+        Schema<Object> reference = new Schema<>();
+        reference.set$ref("#/components/schemas/Missing");
+
+        CanonicalSchema converted = SchemaConverter.convert(reference);
+
+        assertThat(converted).isInstanceOf(SchemaReference.class);
+        assertThat(SchemaConverter.hasUnsupportedConstruct(converted, Map.of())).isTrue();
+        assertThat(SchemaConverter.hasUnsupportedConstruct(converted,
+                Map.of("Missing", AnySchema.of()))).isFalse();
+    }
+
+    /** A value that is nothing but the way it prints, standing in for one of the parser's own nodes. */
+    private static Object printsAs(String text) {
+        return new Object() {
+            @Override
+            public String toString() {
+                return text;
+            }
+        };
     }
 }

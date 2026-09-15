@@ -1,6 +1,6 @@
 # ADR-0014: A reply is judged against the specification document itself, by an off-the-shelf validator
 
-**Status:** Accepted
+**Status:** Accepted, amended at M1.8
 **Date:** 2026-09-13
 
 ## Context
@@ -127,3 +127,42 @@ is the difference between a usable tool and one that reports two dozen faults th
   One shape downstream was worth more than a byte-exact copy of an input we have already converted.
 - **Assert `format`.** More faults found, and false ones. Reconsidered when M2.4 makes RESTest able
   to *produce* values in declared formats, at which point the tool has an opinion worth having.
+
+---
+
+## Amendment (M1.8)
+
+**Date:** 2026-09-15
+
+**Whether a reply is JSON is decided by our own reader, not by the checker throwing. How often the
+check ends quietly is still not reported anywhere, and that is a known gap rather than a decision.**
+
+### Why
+
+The decision above says nothing uncertain is reported, and lists the cases where the check ends
+quietly. The code implemented one of them by accident: whether a body was JSON at all was decided by
+the checker throwing, and *every* exception out of the checker was read as "the body is not JSON".
+A shape the checker could not use therefore became a fault reported against an API that had answered
+perfectly, which is the failure this decision exists to prevent.
+
+The body is now read with RESTest's own reader first. If it is not one JSON value, that is a fact
+about the reply and is reported. If it is, and the checker still cannot finish, that is a fact about
+the declared shape and nothing is claimed.
+
+### The gap this leaves, stated rather than hidden
+
+A run reports how many replies it judged and how many faults it found. It does not report how many
+replies it could not judge at all. An API whose declared shape the checker cannot use - a pattern its
+regular-expression engine rejects, a shape that names something absent - has every one of its replies
+skipped, and the run ends "no faults found" with nothing anywhere saying that the check never ran.
+
+This is not new: the same silence already applied whenever the shape could not be loaded, which is
+the commoner of the two paths. What is new is that this increment made the *other* kind of failure -
+a rule that throws - visible, counted, and worth a different exit code, which makes the contrast
+sharp enough to write down.
+
+Closing it needs somewhere to put the number: a count carried out of the rules and into the run's
+summary and its report, in the way a rule's own failures now are. That is an increment, not a line,
+and it is **M3.6** in the roadmap - placed after per-operation oracle configuration, which already
+has to answer the neighbouring question of which checks were deliberately switched off.
+

@@ -99,6 +99,27 @@ class ResponseSchemaOracleTest {
         }
 
         @Test
+        @DisplayName("a body that is JSON and then carries on being something else is reported")
+        void a_body_with_anything_after_the_json_is_reported() {
+            // Three real ways a reply goes wrong after it has started well: the handler wrote the
+            // payload twice, an error page was appended, a warning was printed after the answer.
+            // Each of them is a body no client can read, and each has to be said out loud - a
+            // reader that stopped at the end of the first value would call all three correct.
+            for (String body : List.of(
+                    "{\"id\": 7, \"name\": \"Rex\"}{\"id\": 8, \"name\": \"Bo\"}",
+                    "{\"id\": 7, \"name\": \"Rex\"}\n<html>Fatal error</html>",
+                    "{\"id\": 7, \"name\": \"Rex\"}\nWarning: connection reused")) {
+                List<Finding> found = oracle.judge(
+                        Attempts.answered(ONE_PET, "/pets/7", 200, JSON, body), pets);
+
+                assertThat(found)
+                        .describedAs("a reply that carries on after its JSON ends: %s", body)
+                        .hasSize(1);
+                assertThat(found.get(0).summary()).contains("not JSON");
+            }
+        }
+
+        @Test
         @DisplayName("the fault carries the request that caused it, so a report can repeat it")
         void the_finding_carries_its_own_evidence() {
             Finding finding = oracle.judge(Attempts.answered(ONE_PET, "/pets/7", 200, JSON,
