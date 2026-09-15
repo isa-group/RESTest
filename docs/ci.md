@@ -251,7 +251,7 @@ belong in `SourceTreeRulesTest` instead. ArchUnit cannot see a string that never
 
 Note the scope of the benchmark-platform rule if you extend it: it reads the module source trees and
 the POMs, and deliberately not `.github` or `evaluation/`. Both exclusions are load-bearing —
-ADR-0011 puts the harness in `evaluation/`, and the nightly benchmark workflow at M1.8 will have to
+ADR-0011 puts the harness in `evaluation/`, and the nightly benchmark workflow at M1.9 will have to
 invoke it by name, so scanning either would fail on sanctioned work.
 
 ## Dependency updates

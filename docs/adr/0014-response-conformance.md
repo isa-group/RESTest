@@ -1,6 +1,6 @@
 # ADR-0014: A reply is judged against the specification document itself, by an off-the-shelf validator
 
-**Status:** Accepted, amended at M1.7c
+**Status:** Accepted, amended at M1.8
 **Date:** 2026-09-13
 
 ## Context
@@ -130,7 +130,7 @@ is the difference between a usable tool and one that reports two dozen faults th
 
 ---
 
-## Amendment (M1.7c)
+## Amendment (M1.8)
 
 **Date:** 2026-09-15
 

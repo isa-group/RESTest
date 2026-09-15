@@ -359,7 +359,7 @@ built later it reads the stored run, as the deferred list says; it is not starte
 ### Consequences
 
 - **A default run is 51% more productive**: 114,951 requests against 75,750 in the same ten seconds,
-  with idle falling from 18.5% to 0.3%. That is the headline number M1.8 and M8 are compared on, and
+  with idle falling from 18.5% to 0.3%. That is the headline number M1.9 and M8 are compared on, and
   it arrives from deleting work rather than adding any.
 - **A run that asks to keep its evidence now pays nothing measurable for it** — 111,850 against
   114,060 without a store — and writes 12% less per interaction than before.

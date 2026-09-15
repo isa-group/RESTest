@@ -1,6 +1,6 @@
 # ADR-0012: The canonical model is immutable records and sealed types, and says so when it cannot represent something
 
-**Status:** Accepted, amended at M1.7c
+**Status:** Accepted, amended at M1.8
 **Date:** 2026-09-12
 
 ## Context
@@ -145,7 +145,7 @@ shape, and it is lossless in both directions: a 3.0 document's `minimum: 5` plus
 
 ---
 
-## Amendment (M1.7c)
+## Amendment (M1.8)
 
 **Date:** 2026-09-15
 

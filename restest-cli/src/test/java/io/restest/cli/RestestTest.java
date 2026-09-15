@@ -257,12 +257,15 @@ class RestestTest {
     @DisplayName("a directory nothing can be written to answers 3, not 4, and says which directory")
     void an_unwritable_output_directory_answers_three(@TempDir Path parent) throws Exception {
         Path directory = Files.createDirectory(parent.resolve("read-only"));
-        assertThat(directory.toFile().setWritable(false, false)).isTrue();
-        // Some machines cannot make a directory unwritable to the user running the tests - a build
-        // running as root, or a file system that does not carry the permission. There is nothing to
-        // check on those, and pretending otherwise would be a test that passes without looking.
+        // Asked for, not insisted upon. Whether this can be done at all depends on the machine:
+        // Windows keeps a read-only flag that means nothing for a directory and refuses the request
+        // outright, and a build running as root may write anywhere whatever the permissions say.
+        // What matters is the state that follows, not whether the request was granted, so the
+        // answer is thrown away and the state is asked about instead. Insisting here was this
+        // test's own bug: it failed on Windows before reaching the line that would have skipped it.
+        directory.toFile().setWritable(false, false);
         Assumptions.assumeFalse(Files.isWritable(directory),
-                "this machine lets the current user write to a read-only directory");
+                "this machine lets the current user write into a directory marked unwritable");
 
         try {
             int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
@@ -277,7 +280,8 @@ class RestestTest {
                     .contains(directory.toString())
                     .contains("--out");
         } finally {
-            assertThat(directory.toFile().setWritable(true, true)).isTrue();
+            // Best effort, for the same reason, so that the temporary directory can be removed.
+            directory.toFile().setWritable(true, true);
         }
     }
 

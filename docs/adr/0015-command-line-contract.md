@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7 and M1.7c
+**Status:** Accepted, amended at M1.7 and M1.8
 **Date:** 2026-09-14 (amended 2026-09-15)
 
 ## Context
@@ -13,7 +13,7 @@ them. The only place the whole pipeline is assembled is a *test*,
 
 M1.7 turns that shape into the product. Writing the command means answering questions the repository
 has never answered, and three of them are expensive to get wrong because other things will be built
-on top of them: the CI job added in this same increment, the evaluation entry point of M1.8, and any
+on top of them: the CI job added in this same increment, the evaluation entry point of M1.9, and any
 pipeline a user wires RESTest into.
 
 **What is already settled elsewhere.** ADR-0013's consequences place the loop in the command-line
@@ -161,7 +161,7 @@ jar manifest, and a directory has none.
 
 - One command does the whole thing, which is what the walking skeleton was for. Everything after this
   is an improvement to something a person can already run.
-- The evaluation harness of M1.8 has the interface it was promised: point at a document, point at a
+- The evaluation harness of M1.9 has the interface it was promised: point at a document, point at a
   deployment, stop after a time, exit.
 - Idle time becomes a number about a real run rather than about a test. It will read higher than a
   measurement that excluded parsing would, and that is the intended trade.
@@ -266,7 +266,7 @@ restest run [--url=<base>] [--budget=<duration>] [--seed=<n>] [--out=<dir>] [--s
   M1.7 amendment.
 - `--store` is a compatibility surface from now on, like the exit codes. Adding a flag later is
   cheap; changing which way round this one defaults is not.
-- The evaluation entry point of M1.8 gets a simpler job than it looked: a loop that does not pass
+- The evaluation entry point of M1.9 gets a simpler job than it looked: a loop that does not pass
   `--store` writes nothing, goes faster, and cannot fill a disk during a campaign. One that wants
   evidence passes the flag and gives each invocation its own `--out`.
 - Anyone who kept a run and then runs again in the same directory loses it. This is the deliberate
@@ -308,7 +308,7 @@ restest run [--url=<base>] [--budget=<duration>] [--seed=<n>] [--out=<dir>] [--s
 
 ---
 
-## Amendment (M1.7c)
+## Amendment (M1.8)
 
 **Date:** 2026-09-15
 
