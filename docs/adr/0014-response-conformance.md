@@ -163,6 +163,6 @@ sharp enough to write down.
 
 Closing it needs somewhere to put the number: a count carried out of the rules and into the run's
 summary and its report, in the way a rule's own failures now are. That is an increment, not a line,
-and it belongs with the oracle work of M3 - where per-operation oracle configuration already has to
-answer the neighbouring question of which checks were deliberately switched off.
+and it is **M3.6** in the roadmap - placed after per-operation oracle configuration, which already
+has to answer the neighbouring question of which checks were deliberately switched off.
 

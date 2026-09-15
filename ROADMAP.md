@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-45 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
+47 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
 Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
@@ -81,6 +81,8 @@ and checks the tool's overall per-request overhead, not any one extension point.
 | 3.3 | `CorpusOracle` interface and `restest recheck <run>` | Re-examine a finished run with new oracles, offline, no API calls |
 | 3.4 | Per-operation oracle configuration + published JSON Schema for the config file | False positives silenced per operation instead of the tool being switched off |
 | 3.5 | Reports: HTML, JUnit XML, HAR, NDJSON; JUnit 5 + REST-Assured code export; `restest explain`; `restest replay`. Every format renders both classifications of a fault - by catalogue number and by the class of status code that carried it (ADR-0016). Plus the "how to add an oracle, a provider, a report" guide | Results usable in CI, in an IDE, and by a human |
+| 3.6 | Replies that no rule could judge counted, and said out loud in the summary, the JSON report and the exit code | A clean bill of health stops being ambiguous: a run that could not check something says so, instead of saying nothing was wrong |
+| 3.7 | What a run writes when it is cut short: Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not (ADR-0015 lists the three candidate answers) | Stopping a long run early stops costing you everything it had already found |
 
 v2.0's own reports are raw: every fault is counted on its own and none is ever declared to be the
 same problem as another. What the JSON report bounds (M1.7b) is how many faults of one kind, on one

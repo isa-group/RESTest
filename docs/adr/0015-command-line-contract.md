@@ -355,5 +355,6 @@ silently in the code is exactly what this repository's ADRs exist to prevent:
 
 Whichever is chosen also has to work when the interrupt arrives during the drain, and has to not
 promise files it did not finish writing. That is an increment with an ADR of its own, not a hook
-added in passing.
+added in passing, and it is **M3.7** in the roadmap - after the reports increment, because what a
+run cut short should leave behind is a question about what a run writes.
 
