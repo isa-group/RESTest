@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -250,6 +251,34 @@ class RestestTest {
                         + "fine', which is the one thing this run has no evidence for")
                 .isEqualTo(3);
         assertThat(problems.toString()).contains("answered any of the").contains("Check the address");
+    }
+
+    @Test
+    @DisplayName("a directory nothing can be written to answers 3, not 4, and says which directory")
+    void an_unwritable_output_directory_answers_three(@TempDir Path parent) throws Exception {
+        Path directory = Files.createDirectory(parent.resolve("read-only"));
+        assertThat(directory.toFile().setWritable(false, false)).isTrue();
+        // Some machines cannot make a directory unwritable to the user running the tests - a build
+        // running as root, or a file system that does not carry the permission. There is nothing to
+        // check on those, and pretending otherwise would be a test that passes without looking.
+        Assumptions.assumeFalse(Files.isWritable(directory),
+                "this machine lets the current user write to a read-only directory");
+
+        try {
+            int answer = run("run", "pet-shelter.yaml", "--url", api.baseUrl(),
+                    "--budget", "1s", "--out", directory.toString());
+
+            assertThat(answer)
+                    .describedAs("nowhere to write the results is one of the ways a run cannot "
+                            + "start, not RESTest breaking; answering 4 would send whoever reads it "
+                            + "looking for a bug in the tool")
+                    .isEqualTo(3);
+            assertThat(problems.toString())
+                    .contains(directory.toString())
+                    .contains("--out");
+        } finally {
+            assertThat(directory.toFile().setWritable(true, true)).isTrue();
+        }
     }
 
     @Test

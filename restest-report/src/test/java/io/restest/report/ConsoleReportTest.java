@@ -18,6 +18,7 @@ package io.restest.report;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.restest.core.event.RunEvent;
+import java.io.Flushable;
 import java.time.Duration;
 import java.time.Instant;
 import org.junit.jupiter.api.DisplayName;
@@ -181,5 +182,55 @@ class ConsoleReportTest {
         assertThat(ConsoleReport.readable(Duration.ofMillis(412))).isEqualTo("412ms");
         assertThat(ConsoleReport.readable(Duration.ofMillis(6400))).isEqualTo("6.4s");
         assertThat(ConsoleReport.readable(Duration.ofSeconds(124))).isEqualTo("2m 4s");
+    }
+
+    @Test
+    @DisplayName("a fault reaches the screen the moment it is found, not when the run ends")
+    void a_fault_is_sent_on_its_way_as_soon_as_it_is_printed() {
+        BufferedScreen terminal = new BufferedScreen();
+        ConsoleReport live = ConsoleReport.to(terminal);
+
+        live.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.fellOver()));
+
+        assertThat(terminal.shown())
+                .describedAs("the terminal only shows what has actually been sent to it; a fault "
+                        + "left sitting in the buffer is a fault nobody watching the run can see, "
+                        + "which is what printing them one at a time was for")
+                .contains("F100");
+    }
+
+    /** A screen that shows only what has been sent on its way, the way a real terminal does. */
+    private static final class BufferedScreen implements Appendable, Flushable {
+
+        private final StringBuilder waiting = new StringBuilder();
+        private final StringBuilder shown = new StringBuilder();
+
+        @Override
+        public Appendable append(CharSequence text) {
+            waiting.append(text);
+            return this;
+        }
+
+        @Override
+        public Appendable append(CharSequence text, int start, int end) {
+            waiting.append(text, start, end);
+            return this;
+        }
+
+        @Override
+        public Appendable append(char character) {
+            waiting.append(character);
+            return this;
+        }
+
+        @Override
+        public void flush() {
+            shown.append(waiting);
+            waiting.setLength(0);
+        }
+
+        String shown() {
+            return shown.toString();
+        }
     }
 }

@@ -114,13 +114,13 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
         Info info = api.getInfo();
         String title = info != null && info.getTitle() != null ? info.getTitle() : "";
         String version = info != null && info.getVersion() != null ? info.getVersion() : "";
-        List<Server> servers = OperationConverter.convertServers(api.getServers());
-
         List<SpecificationIssue> documentIssues = new ArrayList<>();
         if (backendMessages != null) {
             backendMessages.forEach(message ->
                     documentIssues.add(SpecificationIssue.document("info", message)));
         }
+        List<Server> servers =
+                OperationConverter.convertServers(api.getServers(), "servers", documentIssues);
 
         Map<String, CanonicalSchema> schemas = new LinkedHashMap<>();
         if (api.getComponents() != null && api.getComponents().getSchemas() != null) {

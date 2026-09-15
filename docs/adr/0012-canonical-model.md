@@ -1,6 +1,6 @@
 # ADR-0012: The canonical model is immutable records and sealed types, and says so when it cannot represent something
 
-**Status:** Accepted
+**Status:** Accepted, amended at M1.7c
 **Date:** 2026-09-12
 
 ## Context
@@ -142,3 +142,71 @@ shape, and it is lossless in both directions: a 3.0 document's `minimum: 5` plus
   contradiction downstream, where each generator and oracle rediscovers it with less context to
   report it from. Design principle 2 asks for the failure to be *reported*, which needs it to be
   detected somewhere first.
+
+---
+
+## Amendment (M1.7c)
+
+**Date:** 2026-09-15
+
+**A schema that names no type but describes an object is read as an object, and a stated value that
+cannot be written down exactly is not written down at all.**
+
+### Why
+
+Two things this ADR settled turned out to be settled only halfway, and an audit of the branch found
+both. Neither is a new capability; both are this decision meaning what it already said.
+
+**`AnySchema` was swallowing objects.** The decision names `AnySchema` as "the legitimate case of a
+schema that declares no type", which is right, and the converter applied it to every schema without a
+`type` — including the very common one that leaves `type: object` out while declaring `properties`,
+`required`, `additionalProperties` or a property count. Those schemas came out as "any value at all",
+and the properties, which are the whole content of such a schema, were gone. The tool then offered a
+number or a word where the document had described an object with named fields.
+
+A schema carrying any of those four keywords and no type is now read as an object. The converter
+already did exactly this for the other half of the rule — a schema with `items` and no type is an
+array, filled in by the parser before we see it — so the two halves now agree.
+
+Strictly, JSON Schema says those keywords constrain only values that happen to be objects and let
+everything else through, so a document *could* mean "anything, but if it is an object, this shape".
+No document written by a person means that, and reading it that way costs the shape. The strict
+reading is recorded here rather than in the code, so that whoever revisits it knows it was considered
+and not overlooked.
+
+**Stated values were being invented.** `default` and `enum` do not arrive as the text the document
+wrote. A date arrives as a `java.util.Date`, a base-64 string as a `byte[]`, an object as the
+parser's own document node. Written out the ordinary way, those became `Fri Jan 31 00:00:00 CET
+2020`, `[B@77eca502` and a *string* containing `{"a":1}` — none of them a value any API would accept,
+and the second one different on every run, which quietly broke the promise that one seed and one
+document make the same requests twice.
+
+Each kind is now turned back into what the document said: base-64 text, the day as `2020-01-31`, a
+moment with its seconds, an object as an object. A kind that cannot be converted exactly produces
+**nothing** rather than an approximation, and the schema simply has no default — which is the state
+it would have been in had the document not stated one, and leaves the generator inventing a value as
+it would have anyway.
+
+The date deserves a footnote, because the obvious fix is the wrong one. The parser reads `2020-01-31`
+as midnight *where the machine is*, so reading it back in the machine's own zone returns the day the
+document wrote, in every zone. Reading it back at UTC looks more careful and is wrong: anywhere east
+of Greenwich that midnight belongs to the previous day, and the default silently shifts by one. This
+was measured in four zones, not reasoned about.
+
+**A name nothing declares is not understood.** A `$ref` to a schema the document never defines, or
+to one in a second file we deliberately do not open, used to count as perfectly fine as long as the
+reference itself was well formed. Those operations were tested as though fully understood and nobody
+was told the shape was missing. Such a reference now counts as not understood, which degrades the
+operation and says so — the same answer this decision already gives for every other construct it
+cannot read.
+
+### Consequences
+
+- More operations are reported as degraded than before, on documents that were always this
+  incomplete. That is the report becoming accurate, not the tool getting worse.
+- Object-typed parameters are now generated where scalars were generated before, which is a wider
+  and more honest attempt at those operations.
+- A document stating a default RESTest cannot represent loses that default rather than gaining a
+  wrong one. Nothing today is known to hit that case; the object and array shapes that used to hit
+  it are now converted properly.
+

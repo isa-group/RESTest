@@ -49,7 +49,7 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0009](0009-non-blocking-engine.md) | The engine never blocks; idle time replaces a throughput floor | Accepted |
 | [0010](0010-idl-strategy.md) | IDL: relicensed assets, ANTLR4 parser, solver behind an interface | Accepted |
 | [0011](0011-evaluation-harness.md) | Evaluation harness in `evaluation/`, outside the build | Accepted |
-| [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted |
+| [0012](0012-canonical-model.md) | The canonical model: immutable records, sealed types, recorded gaps | Accepted, amended at M1.7c |
 | [0013](0013-input-generation.md) | Where input values come from, and how a campaign is put together | Accepted |
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted |
 | [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7 |

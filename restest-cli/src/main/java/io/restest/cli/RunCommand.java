@@ -195,6 +195,9 @@ final class RunCommand implements Callable<Integer> {
 
         RunLoop.Outcome outcome = null;
         EventStream events = null;
+        // Held on to because what the rules failed to do is part of what the run is allowed to
+        // claim at the end, and that is only readable once everything has been judged.
+        OracleListener rules = null;
         // Opened only when this run was asked to keep itself. Written as a plain variable closed in
         // a finally, rather than as a resource that might not be there, because "there may be no
         // store" is the thing a reader has to notice here.
@@ -212,7 +215,8 @@ final class RunCommand implements Callable<Integer> {
                         }
                     });
                 }
-                drained.subscribe(OracleListener.standard(model, drained));
+                rules = OracleListener.standard(model, drained);
+                drained.subscribe(rules);
                 drained.subscribe(console);
                 drained.subscribe(JsonReport.to(reportFile));
 
@@ -238,7 +242,8 @@ final class RunCommand implements Callable<Integer> {
             }
         }
 
-        long reportsThatFailed = events.listenerFailures();
+        long reportsThatFailed =
+                events.listenerFailures() + (rules == null ? 0 : rules.failures());
         long eventsNeverHeard = events.undelivered();
         int answer = ExitCode.of(outcome, reportsThatFailed, eventsNeverHeard, console.faults());
         explain(out, err, answer, outcome, address, reportFile, runFile, reportsThatFailed,
@@ -351,6 +356,15 @@ final class RunCommand implements Callable<Integer> {
     private Path prepared(Path directory) throws IOException {
         try {
             Files.createDirectories(directory);
+            if (!Files.isWritable(directory)) {
+                // Asked now rather than discovered later, and the difference is which answer the
+                // command gives. Left to be found out when the report is written, this surfaces as
+                // a listener that failed or a database that would not open - which is RESTest
+                // malfunctioning, answer 4, printed with a stack trace. It is not a malfunction. It
+                // is one of the ordinary ways a run cannot start, it is answer 3, and it deserves a
+                // sentence naming the directory and nothing more.
+                throw new IOException("the directory is there but cannot be written to");
+            }
             for (String leftOver : FILES_A_RUN_WRITES) {
                 if (Files.deleteIfExists(directory.resolve(leftOver))
                         && leftOver.equals("run.sqlite")) {

@@ -248,6 +248,24 @@ class RandomTestCaseGeneratorTest {
                 .map(ParameterValue::value).map(Object::toString).orElse("");
     }
 
+    @Test
+    @DisplayName("the operations that cannot be tested are listed in the order the document declares them")
+    void untestable_operations_keep_document_order() {
+        Operation[] refused = new Operation[6];
+        for (int i = 0; i < refused.length; i++) {
+            refused[i] = Operation.of(HttpMethod.GET, "/path" + i, List.of(
+                    Parameter.of("filter", ParameterLocation.QUERY, true,
+                            UnsupportedSchema.of("oneOf is not folded in yet"))));
+        }
+
+        // The command line quotes the first of these as its example of what is wrong with the
+        // document, so the order is not cosmetic: a map whose order is decided per process would
+        // make the same command explain itself differently from one run to the next.
+        assertThat(generatorFor(refused).untestableOperations().keySet())
+                .containsExactly(refused[0].id(), refused[1].id(), refused[2].id(),
+                        refused[3].id(), refused[4].id(), refused[5].id());
+    }
+
     private static RandomTestCaseGenerator generatorFor(Operation... operations) {
         return new RandomTestCaseGenerator(model(operations), 20260912L);
     }

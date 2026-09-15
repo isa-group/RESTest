@@ -17,8 +17,11 @@ package io.restest.spec;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.SpecificationIssue;
+import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ObjectSchema;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.DisplayName;
@@ -81,6 +84,15 @@ class MalformedDocumentTest {
 
         assertThat(withNoUrlAtAll.servers()).isEmpty();
         assertThat(withBlankUrl.servers()).isEmpty();
+        // Dropping it quietly would leave the run saying there is nowhere to send requests, with
+        // nothing to explain why the address the document does declare went unused.
+        assertThat(withNoUrlAtAll.issues())
+                .anySatisfy(issue -> {
+                    assertThat(issue.location()).isEqualTo("servers[0]");
+                    assertThat(issue.message()).contains("names no address");
+                });
+        assertThat(withBlankUrl.issues())
+                .anySatisfy(issue -> assertThat(issue.location()).isEqualTo("servers[0]"));
     }
 
     @Test
@@ -387,6 +399,43 @@ class MalformedDocumentTest {
 
         assertThat(api.operations()).hasSize(1);
         assertThat(api.servers()).isEmpty();
+    }
+
+
+    @Test
+    @DisplayName("declared defaults survive being read, in the spellings the document used")
+    void declared_defaults_are_read_back_as_the_document_wrote_them(@TempDir Path dir)
+            throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.3
+                info: {title: t, version: '1'}
+                paths: {}
+                components:
+                  schemas:
+                    Defaults:
+                      type: object
+                      properties:
+                        day: {type: string, format: date, default: '2020-01-31'}
+                        moment: {type: string, format: date-time, default: '2020-01-31T10:00:00Z'}
+                        blob: {type: string, format: byte, default: 'aGk='}
+                        settings: {type: object, default: {a: 1}}
+                """);
+
+        assertThat(api.schemas()).containsKey("Defaults");
+        ObjectSchema defaults = (ObjectSchema) api.schemas().get("Defaults");
+
+        assertThat(defaultOf(defaults, "day")).contains(JsonValue.of("2020-01-31"));
+        assertThat(defaultOf(defaults, "moment")).contains(JsonValue.of("2020-01-31T10:00:00Z"));
+        assertThat(defaultOf(defaults, "blob")).contains(JsonValue.of("aGk="));
+        assertThat(defaultOf(defaults, "settings")).get()
+                .describedAs("an object default is a value, not a sentence describing one")
+                .isInstanceOf(JsonValue.JsonObject.class);
+    }
+
+    private static java.util.Optional<JsonValue> defaultOf(ObjectSchema object, String property) {
+        CanonicalSchema property1 = object.properties().get(property);
+        assertThat(property1).describedAs("property '%s'", property).isNotNull();
+        return property1.metadata().defaultValue();
     }
 
     private ApiModel parse(Path dir, String document) throws Exception {

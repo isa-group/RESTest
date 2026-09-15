@@ -22,6 +22,7 @@ import io.restest.core.execution.InteractionOutcome;
 import io.restest.core.model.OperationId;
 import io.restest.core.oracle.FaultCategory;
 import io.restest.core.oracle.Finding;
+import java.io.Flushable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.time.Duration;
@@ -88,7 +89,11 @@ public final class ConsoleReport implements RunListener {
         return new ConsoleReport(out);
     }
 
-    /** How many faults have been printed so far. */
+    /**
+     * How many faults this run found - all of them, including the ones past the limit that were
+     * counted rather than printed. The command's answer to whoever ran it is decided from this, and
+     * a run that found two thousand faults and showed fifty still found two thousand.
+     */
     public int faults() {
         return faults;
     }
@@ -96,14 +101,23 @@ public final class ConsoleReport implements RunListener {
     @Override
     public void on(RunEvent event) {
         switch (event) {
-            case RunEvent.RunStarted started -> began(started);
+            case RunEvent.RunStarted started -> {
+                began(started);
+                sendOnItsWay();
+            }
             case RunEvent.InteractionCompleted completed -> {
                 attempts++;
                 operations.add(completed.interaction().testCase().operation());
                 repliesByClass.merge(classOf(completed.interaction()), 1, Integer::sum);
             }
-            case RunEvent.FaultFound found -> print(found.finding());
-            case RunEvent.RunFinished finished -> summarise(finished);
+            case RunEvent.FaultFound found -> {
+                print(found.finding());
+                sendOnItsWay();
+            }
+            case RunEvent.RunFinished finished -> {
+                summarise(finished);
+                sendOnItsWay();
+            }
             case RunEvent.TestCasePlanned ignored -> {
                 // A planned test is not news until it has been sent; printing one line per plan
                 // would bury the faults, which are what this report exists to show.
@@ -216,6 +230,30 @@ public final class ConsoleReport implements RunListener {
             return String.format(Locale.ROOT, "%.1fs", millis / 1000.0);
         }
         return elapsed.toMinutes() + "m " + (elapsed.toSecondsPart()) + "s";
+    }
+
+    /**
+     * Pushes what has been written to wherever it is really going, when that can be asked.
+     *
+     * <p>Without this the report is not the live one the top of this class promises. The terminal is
+     * written to through a buffer that empties itself only when a whole line arrives by one
+     * particular route, and this class does not write lines that way - so a fault written here sat
+     * in the buffer, unseen, until several thousand characters of later faults pushed it out, or
+     * until the run ended and the summary emptied everything at once. Watching a run showed nothing
+     * happening for a minute and then all of it at the end, which is exactly what printing faults as
+     * they are found was supposed to avoid.
+     *
+     * <p>Done once per thing worth reading rather than once per line: a fault is six lines and they
+     * belong on the screen together.
+     */
+    private void sendOnItsWay() {
+        if (out instanceof Flushable flushable) {
+            try {
+                flushable.flush();
+            } catch (IOException e) {
+                throw new UncheckedIOException("the report could not be written", e);
+            }
+        }
     }
 
     /**

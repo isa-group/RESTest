@@ -102,14 +102,28 @@ final class OperationConverter {
      * variable that is itself malformed (no default value, or a default outside its own enumerated
      * values) is one {@link io.restest.core.model.ServerVariable} refuses to construct; either drops
      * only that one server entry, never the rest of the list or whatever operation was reading it.
+     *
+     * <p>Each drop is written down. Skipping quietly here is worse than it looks: when the entry
+     * dropped was the document's only one, the run ends by saying there is nowhere to send requests
+     * and asking for an address on the command line, which reads as though the document had never
+     * declared one. It did, and RESTest is the reason it went unused - so it says which entry, and
+     * what was wrong with it.
+     *
+     * @param location where in the document this list of servers is, for the report
+     * @param issues   where a dropped entry is recorded
      */
-    static List<Server> convertServers(List<io.swagger.v3.oas.models.servers.Server> servers) {
+    static List<Server> convertServers(List<io.swagger.v3.oas.models.servers.Server> servers,
+            String location, List<SpecificationIssue> issues) {
         if (servers == null) {
             return List.of();
         }
         List<Server> converted = new ArrayList<>();
-        for (io.swagger.v3.oas.models.servers.Server server : servers) {
+        for (int position = 0; position < servers.size(); position++) {
+            io.swagger.v3.oas.models.servers.Server server = servers.get(position);
+            String where = location + "[" + position + "]";
             if (server == null || server.getUrl() == null || server.getUrl().isBlank()) {
+                issues.add(SpecificationIssue.document(where,
+                        "this server entry names no address, so nothing can be sent to it"));
                 continue;
             }
             try {
@@ -123,9 +137,11 @@ final class OperationConverter {
                 }
                 converted.add(new Server(server.getUrl(), variables,
                         Optional.ofNullable(server.getDescription())));
-            } catch (IllegalArgumentException ignored) {
+            } catch (RuntimeException e) {
                 // A server this malformed describes nothing a request could be sent to either;
-                // dropped the same way one declaring no URL at all already is.
+                // dropped the same way one naming no address at all is, and reported the same way.
+                issues.add(SpecificationIssue.document(where,
+                        "this server could not be used: " + message(e)));
             }
         }
         return converted;
@@ -143,7 +159,8 @@ final class OperationConverter {
             return;
         }
         List<io.swagger.v3.oas.models.parameters.Parameter> pathParameters = pathItem.getParameters();
-        List<Server> pathServers = convertServers(pathItem.getServers());
+        List<Server> pathServers = convertServers(pathItem.getServers(),
+                "paths." + path + ".servers", issues);
         pathItem.readOperationsMap().forEach((method, swaggerOperation) -> {
             String location = "paths." + path + "." + method.name().toLowerCase(Locale.ROOT);
             Optional<HttpMethod> httpMethod = HttpMethod.named(method.name());
@@ -162,9 +179,28 @@ final class OperationConverter {
                     issues.add(SpecificationIssue.degraded(location, id, "this operation's data "
                             + "includes a shape RESTest does not fully understand yet"));
                 }
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException cannotBeRepresented) {
                 issues.add(SpecificationIssue.skipped(location, id,
-                        "the operation could not be represented: " + message(e)));
+                        "the operation could not be represented: "
+                                + message(cannotBeRepresented)));
+            } catch (RuntimeException wentWrongUnexpectedly) {
+                // Everything above this line is a shape the model deliberately refuses. This is the
+                // other case: something went wrong that nobody here foresaw. It is caught at all
+                // because of what happens otherwise - the exception reaches the parser's
+                // last-resort handler, which answers with a model holding no operations, so one
+                // operation's accident costs every other operation in the document as well. Losing
+                // the offending operation is what design principle 2 asks for; losing the rest of
+                // them with it is what it forbids.
+                //
+                // It is worded differently on purpose. A broad catch earns its keep only if it
+                // cannot be mistaken for the ordinary case, because the likeliest thing it will
+                // ever catch is a defect of ours rather than a fault of the document's - and a
+                // report that blamed the document for our bug would send somebody looking in the
+                // wrong file. Nothing in the corpus, and none of eight hand-built malformed
+                // documents, reaches this line today.
+                issues.add(SpecificationIssue.skipped(location, id,
+                        "RESTest failed to read this operation, which is a fault of the tool "
+                                + "rather than of the document: " + message(wentWrongUnexpectedly)));
             }
         });
     }
@@ -177,7 +213,8 @@ final class OperationConverter {
                 components).stream()
                 .flatMap(resolved -> convertParameter(resolved, id, location, issues).stream())
                 .toList();
-        List<Server> operationServers = convertServers(swaggerOperation.getServers());
+        List<Server> operationServers = convertServers(swaggerOperation.getServers(),
+                location + ".servers", issues);
         List<Server> servers = operationServers.isEmpty() ? pathServers : operationServers;
         Optional<RequestBodyModel> requestBody = convertRequestBody(swaggerOperation.getRequestBody(),
                 components, id, location, issues);
