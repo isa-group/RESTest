@@ -23,10 +23,9 @@
  * opened by any tool that reads SQLite. Everything else in RESTest asks this module through the
  * small interface in {@code io.restest.core.store} and never learns that a database is involved.
  *
- * <p>Two third-party libraries are needed and both are confined here. One is the SQLite driver. The
- * other reads and writes JSON text: RESTest keeps JSON in types of its own so that nothing built on
- * it depends on a JSON library, and this module is the one place that has to turn those types into
- * text on a disk and back again.
+ * <p>One third-party library is needed and it is confined here: the SQLite driver. Turning a value
+ * into JSON text, which this module also has to do, is done through types RESTest owns, so nothing
+ * built on this module depends on a JSON library either.
  */
 module io.restest.store {
     requires io.restest.core;

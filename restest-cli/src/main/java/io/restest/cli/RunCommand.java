@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -51,9 +52,10 @@ import picocli.CommandLine.Spec;
  * <p>This is the whole tool seen from outside. Given an API's description and an address, it reads
  * the description, invents requests from it, sends them for as long as it was given, judges every
  * reply against what the description promised, and prints each disagreement together with a command
- * anybody can paste into a terminal to see it happen again. What it found is also left behind as
- * files: one describing the faults, for a program to read, and one holding every request and reply,
- * so the run can be examined later without asking the API anything.
+ * anybody can paste into a terminal to see it happen again. What it found is left behind as a file
+ * describing the faults, for a program to read. Asked to, it also keeps every request and reply, so
+ * the run can be examined afterwards without asking the API anything - but only when asked, because
+ * a minute against a fast API is hundreds of megabytes that almost nothing reads back.
  *
  * <p>It holds no cleverness of its own. Reading, inventing, sending, judging and reporting each
  * belong to a different part of the tool; what is decided here is the order they happen in, how long
@@ -77,8 +79,21 @@ final class RunCommand implements Callable<Integer> {
      */
     private static final Duration STRAGGLER_GRACE = Duration.ofSeconds(10);
 
-    /** What SQLite leaves beside a run's file, and what therefore has to be cleared out with it. */
-    private static final List<String> RUN_FILES =
+    /**
+     * Everything RESTest writes into an output directory.
+     *
+     * <p>A directory holds one run, so every run begins by removing what an earlier one left there -
+     * the kept run included, and including when this run will not write one. A directory holding one
+     * run's database beside another run's report is worse than an empty one, because it reads as a
+     * single run whose two halves disagree.
+     *
+     * <p>Only these names are removed, never the directory's other contents: the directory is
+     * whatever somebody typed after {@code --out}, and may be full of work that is not ours.
+     *
+     * <p>Whoever adds a new kind of report has to name its file here too. Left out, it would survive
+     * into the next run and be read as part of it.
+     */
+    private static final List<String> FILES_A_RUN_WRITES =
             List.of("run.sqlite", "run.sqlite-wal", "run.sqlite-shm", "report.json");
 
     @Parameters(
@@ -115,9 +130,19 @@ final class RunCommand implements Callable<Integer> {
             names = "--out",
             paramLabel = "<directory>",
             defaultValue = "restest-out",
-            description = "Where to write report.json and run.sqlite. An earlier run in the same "
-                    + "directory is replaced. Default: ${DEFAULT-VALUE}.")
+            description = "Where to write this run's files. An earlier run in the same directory is "
+                    + "replaced. Default: ${DEFAULT-VALUE}.")
     private Path outputDirectory;
+
+    @Option(
+            names = "--store",
+            description = "Keep every request and reply in run.sqlite, so the run can be examined "
+                    + "again later without asking the API anything. Off unless asked for: a minute "
+                    + "against a fast API keeps hundreds of megabytes that almost nothing reads.")
+    private boolean keepTheRun;
+
+    /** Whether starting this run destroyed a kept run somebody may have wanted. */
+    private boolean replacedAKeptRun;
 
     @Spec
     private CommandSpec spec;
@@ -170,17 +195,23 @@ final class RunCommand implements Callable<Integer> {
 
         RunLoop.Outcome outcome = null;
         EventStream events = null;
-        try (InteractionStore store = SqliteInteractionStore.at(runFile)) {
+        // Opened only when this run was asked to keep itself. Written as a plain variable closed in
+        // a finally, rather than as a resource that might not be there, because "there may be no
+        // store" is the thing a reader has to notice here.
+        InteractionStore store = keepTheRun ? SqliteInteractionStore.at(runFile) : null;
+        try {
             events = new EventStream();
             // Closed first, and separately, so that everything announced has reached the reports and
             // the stored run before either is shut - and so that what the stream says about itself
             // afterwards is a finished run's answer rather than a mid-flight one.
             try (EventStream drained = events) {
-                drained.subscribe(event -> {
-                    if (event instanceof RunEvent.InteractionCompleted completed) {
-                        store.record(completed.interaction());
-                    }
-                });
+                if (store != null) {
+                    drained.subscribe(event -> {
+                        if (event instanceof RunEvent.InteractionCompleted completed) {
+                            store.record(completed.interaction());
+                        }
+                    });
+                }
                 drained.subscribe(OracleListener.standard(model, drained));
                 drained.subscribe(console);
                 drained.subscribe(JsonReport.to(reportFile));
@@ -200,6 +231,10 @@ final class RunCommand implements Callable<Integer> {
                     drained.publish(new RunEvent.RunFinished(finishedAt,
                             Duration.between(startedAt, finishedAt), engine.statistics()));
                 }
+            }
+        } finally {
+            if (store != null) {
+                store.close();
             }
         }
 
@@ -232,14 +267,23 @@ final class RunCommand implements Callable<Integer> {
             }
         }
         if (answer == ExitCode.TOOL_FAILED) {
-            err.println("restest: " + reportsThatFailed + " report(s) failed and " + eventsNeverHeard
+            err.println("restest: " + reportsThatFailed + " listener(s) failed and " + eventsNeverHeard
                     + " event(s) never arrived, so what is printed above may be incomplete and the "
                     + "files may not have been written");
             return;
         }
 
-        out.println("report written to " + reportFile);
-        out.println("run stored in " + runFile);
+        out.println("report written to " + reportFile + sizeOf(reportFile));
+        if (keepTheRun) {
+            out.println("run stored in " + runFile + sizeOf(runFile));
+        } else {
+            out.println("the run itself was not kept; pass --store to keep every request and reply");
+        }
+        if (replacedAKeptRun) {
+            // Whoever kept a run and then ran again in the same place has just lost it. Saying so
+            // here is the difference between a rule and a nasty surprise.
+            out.println("a run kept in " + outputDirectory + " by an earlier command was replaced");
+        }
 
         if (answer != ExitCode.NOTHING_TO_TEST || outcome == null) {
             return;
@@ -304,17 +348,47 @@ final class RunCommand implements Callable<Integer> {
      * <p>Including the two files the database keeps beside its own: a run cut short leaves them
      * behind, and a fresh database next to another run's leftovers is a database that may not open.
      */
-    private static Path prepared(Path directory) throws IOException {
+    private Path prepared(Path directory) throws IOException {
         try {
             Files.createDirectories(directory);
-            for (String leftOver : RUN_FILES) {
-                Files.deleteIfExists(directory.resolve(leftOver));
+            for (String leftOver : FILES_A_RUN_WRITES) {
+                if (Files.deleteIfExists(directory.resolve(leftOver))
+                        && leftOver.equals("run.sqlite")) {
+                    replacedAKeptRun = true;
+                }
             }
         } catch (IOException cannotBeUsed) {
             throw new IOException("nothing can be written to " + directory + " ("
                     + cannotBeUsed.getMessage() + "); choose somewhere else with --out");
         }
         return directory;
+    }
+
+    /**
+     * How big a file this run wrote, in the units a person reads.
+     *
+     * <p>Beside the name rather than left to be discovered later: a tool that writes hundreds of
+     * megabytes owes whoever ran it that number at the moment it writes them.
+     */
+    private static String sizeOf(Path file) {
+        long bytes;
+        try {
+            bytes = Files.size(file);
+        } catch (IOException cannotTell) {
+            // The file was written; not being able to measure it is no reason to say nothing at all.
+            return "";
+        }
+        if (bytes < 1024) {
+            return " (" + bytes + " bytes)";
+        }
+        String[] units = {"KiB", "MiB", "GiB", "TiB"};
+        double size = bytes / 1024.0;
+        int unit = 0;
+        while (size >= 1024 && unit < units.length - 1) {
+            size /= 1024;
+            unit++;
+        }
+        return String.format(Locale.ROOT, " (%.1f %s)", size, units[unit]);
     }
 
     /** The budget the way it was asked for, rather than the way a machine writes it. */

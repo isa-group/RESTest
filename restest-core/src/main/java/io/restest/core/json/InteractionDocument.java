@@ -71,6 +71,9 @@ import java.util.Optional;
  */
 public final class InteractionDocument {
 
+    /** Keep the whole of every body, however long. */
+    private static final long EVERYTHING = Long.MAX_VALUE;
+
     private InteractionDocument() {
     }
 
@@ -81,13 +84,32 @@ public final class InteractionDocument {
      * @return the document
      */
     public static JsonValue of(Interaction interaction) {
+        return of(interaction, EVERYTHING);
+    }
+
+    /**
+     * The same, keeping only the beginning of any body longer than the given number of bytes.
+     *
+     * <p>For somewhere that has to stay small enough to open. A body kept in part says how long the
+     * whole thing was, so nobody mistakes our trimming for the API having sent less than it did.
+     *
+     * <p>Whatever keeps a run for looking at again later should use the other one and keep bodies
+     * whole. Judging a reply against what the specification promised needs the bytes that actually
+     * arrived: half a JSON object is not a smaller fact, it is a false one, and anything re-judging a
+     * trimmed body would report faults that never happened.
+     *
+     * @param interaction what was tried, sent and came back
+     * @param mostBodyBytes how much of any one body to keep
+     * @return the document
+     */
+    public static JsonValue of(Interaction interaction, long mostBodyBytes) {
         Map<String, JsonValue> document = new LinkedHashMap<>();
         document.put("id", JsonValue.of(interaction.id().value()));
         document.put("sentAt", JsonValue.of(interaction.sentAt().toString()));
         document.put("elapsed", JsonValue.of(interaction.elapsed().toString()));
         document.put("testCase", of(interaction.testCase()));
-        document.put("request", of(interaction.request()));
-        document.put("outcome", of(interaction.outcome()));
+        document.put("request", of(interaction.request(), mostBodyBytes));
+        document.put("outcome", of(interaction.outcome(), mostBodyBytes));
         return JsonValue.object(document);
     }
 
@@ -212,12 +234,12 @@ public final class InteractionDocument {
 
     // --- the request and the reply -------------------------------------------------------------
 
-    private static JsonValue of(HttpRequestRecord request) {
+    private static JsonValue of(HttpRequestRecord request, long mostBodyBytes) {
         Map<String, JsonValue> document = new LinkedHashMap<>();
         document.put("method", JsonValue.of(request.method().name()));
         document.put("url", JsonValue.of(request.url()));
         document.put("headers", of(request.headers()));
-        request.body().ifPresent(body -> document.put("body", of(body)));
+        request.body().ifPresent(body -> document.put("body", of(body, mostBodyBytes)));
         return JsonValue.object(document);
     }
 
@@ -231,7 +253,7 @@ public final class InteractionDocument {
                 toHeaders(document), document.member("body").map(InteractionDocument::toPayload));
     }
 
-    private static JsonValue of(InteractionOutcome outcome) {
+    private static JsonValue of(InteractionOutcome outcome, long mostBodyBytes) {
         Map<String, JsonValue> document = new LinkedHashMap<>();
         switch (outcome) {
             case InteractionOutcome.Answered answered -> {
@@ -239,14 +261,16 @@ public final class InteractionDocument {
                 HttpResponseRecord response = answered.response();
                 document.putAll(of(response.statusLine()));
                 document.put("headers", of(response.headers()));
-                response.body().ifPresent(body -> document.put("body", of(body)));
+                response.body().ifPresent(body ->
+                        document.put("body", of(body, mostBodyBytes)));
             }
             case InteractionOutcome.MalformedResponse malformed -> {
                 document.put("kind", JsonValue.of("malformed"));
                 document.put("reason", JsonValue.of(malformed.reason()));
                 malformed.statusLine().ifPresent(line -> document.putAll(of(line)));
                 document.put("headers", of(malformed.headers()));
-                malformed.partial().ifPresent(body -> document.put("body", of(body)));
+                malformed.partial().ifPresent(body ->
+                        document.put("body", of(body, mostBodyBytes)));
             }
             case InteractionOutcome.TransportFailure failure -> {
                 document.put("kind", JsonValue.of("failed"));
@@ -317,9 +341,10 @@ public final class InteractionDocument {
 
     // --- bodies --------------------------------------------------------------------------------
 
-    private static JsonValue of(Payload payload) {
+    private static JsonValue of(Payload payload, long mostBodyBytes) {
         Map<String, JsonValue> document = new LinkedHashMap<>();
         document.put("mediaType", JsonValue.of(payload.mediaType()));
+        payload = trimmed(payload, mostBodyBytes);
         byte[] content = payload.content();
         asText(content).ifPresentOrElse(
                 text -> document.put("text", JsonValue.of(text)),
@@ -338,6 +363,28 @@ public final class InteractionDocument {
                 .orElseGet(() -> Base64.getDecoder().decode(string(document, "base64")));
         return new Payload(content, mediaType, document.member("wireLength")
                 .map(length -> number(length, "wireLength").longValueExact()));
+    }
+
+    /**
+     * The body, kept only as far as allowed.
+     *
+     * <p>Cut on a whole character rather than in the middle of one, so that what is kept is still
+     * text and can be read. A body already shorter than the limit is handed back untouched, so
+     * nothing is copied for nothing in the ordinary case.
+     */
+    private static Payload trimmed(Payload payload, long mostBodyBytes) {
+        if (payload.size() <= mostBodyBytes) {
+            return payload;
+        }
+        byte[] content = payload.content();
+        int keep = (int) mostBodyBytes;
+        // Back off to the start of the character that was cut through: UTF-8 continuation bytes all
+        // begin 10, so walking back off them lands on the first byte of that character.
+        while (keep > 0 && (content[keep] & 0xC0) == 0x80) {
+            keep--;
+        }
+        return Payload.partial(java.util.Arrays.copyOf(content, keep), payload.mediaType(),
+                payload.deliveredLength());
     }
 
     /**

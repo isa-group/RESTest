@@ -15,6 +15,8 @@
  */
 package io.restest.store;
 
+import static io.restest.store.SqliteInteractionStore.LONGEST_ANY_INTERACTION_WAITS;
+import static io.restest.store.SqliteInteractionStore.MOST_INTERACTIONS_WAITING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
@@ -445,12 +447,164 @@ class SqliteInteractionStoreTest {
                 .containsExactly("POST /widgets");
     }
 
-    private static void execute(Path file, String sql) throws Exception {
+    @Test
+    @DisplayName("a new run is written in large blocks rather than the small default")
+    void a_new_run_uses_large_pages() throws Exception {
+        Path file = directory.resolve("run.sqlite");
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(Interactions.answered("GET /pets", 200));
+        }
+
+        assertThat(readColumn(file, "PRAGMA page_size"))
+                .describedAs("read back from the finished file rather than from what we asked for: "
+                        + "a block size can be accepted and then thrown away without a word, and "
+                        + "the file is the only place that says what really happened")
+                .containsExactly("16384");
+    }
+
+    @Test
+    @DisplayName("a run started by an older version is added to as it is, rather than refused")
+    void an_older_file_keeps_the_blocks_it_was_made_with() throws Exception {
+        Path file = directory.resolve("run.sqlite");
+        execute(file, "PRAGMA page_size = 4096", "CREATE TABLE made_earlier (a)");
+
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(Interactions.answered("GET /pets", 200));
+        }
+
+        assertThat(readColumn(file, "PRAGMA page_size"))
+                .describedAs("how big a block a file is written in is settled when it is created, so "
+                        + "a run somebody started last month goes on being added to rather than "
+                        + "failing because this version would have chosen differently")
+                .containsExactly("4096");
+        assertThat(readColumn(file, "SELECT operation FROM interaction"))
+                .containsExactly("GET /pets");
+    }
+
+    @Test
+    @DisplayName("a stored run is left in the mode a second program can read while it is written")
+    void a_stored_run_can_be_read_while_it_is_written() throws Exception {
+        Path file = directory.resolve("run.sqlite");
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(Interactions.answered("GET /pets", 200));
+        }
+
+        assertThat(readColumn(file, "PRAGMA journal_mode"))
+                .describedAs("this is what lets a live dashboard, or an impatient person with "
+                        + "sqlite3, look at a run that has not finished")
+                .containsExactly("wal");
+    }
+
+    @Test
+    @DisplayName("a run going on right now can be read from outside rather than only at the end")
+    void a_run_in_progress_reaches_the_file_within_the_time_allowed() throws Exception {
+        Path file = directory.resolve("run.sqlite");
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(Interactions.answered("GET /pets", 200));
+            Thread.sleep(LONGEST_ANY_INTERACTION_WAITS.plusMillis(100).toMillis());
+            // The second one is what notices the first has waited long enough. Nothing is closed.
+            writing.record(Interactions.answered("GET /shelters", 200));
+
+            assertThat(readColumn(file, "SELECT operation FROM interaction"))
+                    .describedAs("a handful of interactions must not sit invisible for minutes "
+                            + "because the API under test went quiet")
+                    .contains("GET /pets");
+        }
+    }
+
+    @Test
+    @DisplayName("a busy run reaches the file as it goes rather than all at the end")
+    void a_busy_run_does_not_hold_everything_until_the_end() throws Exception {
+        Path file = directory.resolve("run.sqlite");
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            for (int i = 0; i < 2 * MOST_INTERACTIONS_WAITING; i++) {
+                writing.record(Interactions.answered("GET /pets", 200));
+            }
+
+            assertThat(rowsIn(file))
+                    .describedAs("what is waiting is held in memory, so a run of a hundred thousand "
+                            + "requests must not be one group of a hundred thousand")
+                    .isGreaterThanOrEqualTo(MOST_INTERACTIONS_WAITING);
+        }
+    }
+
+    @Test
+    @DisplayName("a question asked halfway through leaves the file agreeing with the answer")
+    void asking_a_question_hands_over_what_is_waiting() throws Exception {
+        Path file = directory.resolve("run.sqlite");
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(Interactions.answered("GET /pets", 200));
+
+            assertThat(writing.count(InteractionQuery.all())).isEqualTo(1);
+            assertThat(rowsIn(file))
+                    .describedAs("a run whose own report says one thing while the file beside it "
+                            + "says another is worse than either answer on its own")
+                    .isEqualTo(1);
+        }
+    }
+
+    @Test
+    @DisplayName("a run asked a question halfway through is still written to afterwards")
+    void a_question_does_not_stop_the_run_being_recorded() {
+        Path file = directory.resolve("run.sqlite");
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(Interactions.answered("GET /pets", 200));
+            writing.count(InteractionQuery.all());
+            writing.record(Interactions.answered("GET /shelters", 200));
+        }
+
+        try (SqliteInteractionStore reading = SqliteInteractionStore.at(file)) {
+            assertThat(reading.count(InteractionQuery.all()))
+                    .describedAs("asking a run a question in the middle of it must not cost the "
+                            + "interactions that come after the question")
+                    .isEqualTo(2);
+        }
+    }
+
+    @Test
+    @DisplayName("an attempt that got no answer has no status code, not the one before it")
+    void a_reused_statement_does_not_carry_a_value_over() {
+        store.record(Interactions.answered("GET /pets", 200));
+        store.record(Interactions.failed("GET /gone"));
+
+        assertThat(store.count(InteractionQuery.withStatus(200)))
+                .describedAs("the same statement writes every interaction, so a value not set for "
+                        + "one of them would silently keep what the one before it left there")
+                .isEqualTo(1);
+        assertThat(store.count(InteractionQuery.neverAnswered())).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("closing a run writes down the last few interactions rather than dropping them")
+    void closing_writes_down_what_is_still_waiting() {
+        Path file = directory.resolve("run.sqlite");
+        try (SqliteInteractionStore writing = SqliteInteractionStore.at(file)) {
+            writing.record(Interactions.answered("GET /pets", 200));
+            writing.record(Interactions.answered("GET /shelters", 200));
+            writing.record(Interactions.answered("GET /vets", 200));
+        }
+
+        try (SqliteInteractionStore reading = SqliteInteractionStore.at(file)) {
+            assertThat(reading.count(InteractionQuery.all()))
+                    .describedAs("far fewer than a whole group, so these three are only in the file "
+                            + "if closing the store put them there")
+                    .isEqualTo(3);
+        }
+    }
+
+    private static void execute(Path file, String... sql) throws Exception {
         org.sqlite.SQLiteDataSource source = new org.sqlite.SQLiteDataSource();
         source.setUrl("jdbc:sqlite:" + file.toAbsolutePath());
         try (var connection = source.getConnection(); var statement = connection.createStatement()) {
-            statement.execute(sql);
+            for (String one : sql) {
+                statement.execute(one);
+            }
         }
+    }
+
+    /** How many interactions the file itself holds, read from outside, without closing the store. */
+    private static long rowsIn(Path file) throws Exception {
+        return Long.parseLong(readColumn(file, "SELECT COUNT(*) FROM interaction").get(0));
     }
 
     private static List<String> readColumn(Path file, String sql) throws Exception {

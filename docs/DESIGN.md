@@ -104,8 +104,8 @@ restest-arch-tests   architecture rules. No main sources, never published.
 
 A run is a loop, not a batch. The specification is parsed into a canonical model of our own — not
 the parser library's types — operations are scheduled, requests are generated and sent, responses
-are captured verbatim, oracles judge them, and every step is announced on the event stream. Everything
-observed is persisted, which is what makes offline re-analysis possible.
+are captured verbatim, oracles judge them, and every step is announced on the event stream. Asked to, a run
+also persists everything observed, which is what makes offline re-analysis possible.
 
 ### Key decisions
 
@@ -114,10 +114,13 @@ observed is persisted, which is what makes offline re-analysis possible.
    [ADR-0005](adr/0005-interpreted-test-model.md)
 2. **One event stream, many listeners.** Reports, metrics, feedback and oracles all subscribe.
    [ADR-0006](adr/0006-event-stream-and-store.md)
-3. **Persist everything.** The interaction store is what makes offline re-checking, corpus oracles
-   and honest post-hoc analysis possible, and it costs almost nothing. One run is one SQLite file,
-   readable by anything that reads SQLite; NDJSON is one of the report formats at M3.5, not a second
-   store. [ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4
+3. **Persist everything, when asked to.** The interaction store is what makes offline re-checking,
+   corpus oracles and honest post-hoc analysis possible. One run is one SQLite file, readable by
+   anything that reads SQLite; NDJSON is one of the report formats at M3.5, not a second store.
+   Measured at M1.7, keeping a run costs 661 MiB at the default budget and nothing in an ordinary
+   run reads it back, so it is kept only when `--store` asks — and generation never reads it either
+   way ([ADR-0013](adr/0013-input-generation.md)).
+   [ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4 and M1.7
 4. **No global mutable state.** Two runs coexist in one JVM. Enforced by an architecture test.
 5. **The loop is never blocked; idle time is reported.** [ADR-0009](adr/0009-non-blocking-engine.md)
 6. **Narrow SPIs, service discovery, module boundaries.** A new oracle or provider is one class.

@@ -85,10 +85,76 @@ class RestestTest {
                 .contains("listPets - GET " + api.baseUrl() + "/pets")
                 .containsPattern("\\d+ requests to \\d+ operations in .+, \\d+% of it idle");
         assertThat(directory.resolve("report.json")).exists();
+        assertThat(screen.toString())
+                .contains("report written to " + directory.resolve("report.json"));
+    }
+
+    @Test
+    @DisplayName("a run keeps nothing unless asked to, and says so rather than leaving you to look")
+    void a_run_keeps_nothing_unless_asked(@TempDir Path directory) {
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.toString());
+
+        assertThat(directory.resolve("run.sqlite"))
+                .describedAs("a minute against a fast API keeps hundreds of megabytes, and almost "
+                        + "nothing ever reads them back, so it is not the default")
+                .doesNotExist();
+        assertThat(screen.toString())
+                .describedAs("whoever wanted the evidence should find out in the run that did not "
+                        + "keep it, not the next day")
+                .contains("the run itself was not kept")
+                .contains("--store");
+    }
+
+    @Test
+    @DisplayName("a run asked to keep itself does, and says where and how big")
+    void a_run_asked_to_keep_itself_does(@TempDir Path directory) {
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.toString(), "--store");
+
         assertThat(directory.resolve("run.sqlite")).exists();
         assertThat(screen.toString())
-                .contains("report written to " + directory.resolve("report.json"))
-                .contains("run stored in " + directory.resolve("run.sqlite"));
+                .contains("run stored in " + directory.resolve("run.sqlite"))
+                .describedAs("the size is beside the name: a tool that writes hundreds of megabytes "
+                        + "owes that number to whoever ran it, when it writes them")
+                .containsPattern("run stored in .+ \\(\\d+(\\.\\d+)? (bytes|KiB|MiB|GiB)\\)");
+    }
+
+    @Test
+    @DisplayName("a second run replaces a kept run rather than leaving two runs in one directory")
+    void a_second_run_replaces_a_kept_run(@TempDir Path directory) {
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "1", "--out", directory.toString(), "--store");
+        assertThat(directory.resolve("run.sqlite")).exists();
+
+        StringWriter second = new StringWriter();
+        PrintWriter out = new PrintWriter(second);
+        Restest.run(new String[] {"run", "pet-shelter.yaml", "--url", api.baseUrl(),
+            "--budget", "1s", "--seed", "2", "--out", directory.toString()},
+                out, new PrintWriter(problems));
+        out.flush();
+
+        assertThat(directory.resolve("run.sqlite"))
+                .describedAs("a directory holds one run. Keeping one means giving it a directory "
+                        + "of its own, and the run that removes it says so")
+                .doesNotExist();
+        assertThat(second.toString()).contains("was replaced");
+    }
+
+    @Test
+    @DisplayName("a run clears up after itself rather than after whoever owns the directory")
+    void a_run_leaves_other_files_alone(@TempDir Path directory) throws Exception {
+        Path somebodysWork = directory.resolve("notes.txt");
+        Files.writeString(somebodysWork, "not ours");
+
+        run("run", "pet-shelter.yaml", "--url", api.baseUrl(), "--budget", "1s",
+                "--seed", "20260914", "--out", directory.toString());
+
+        assertThat(somebodysWork)
+                .describedAs("--out is whatever somebody typed, and may be a directory full of "
+                        + "their own work: only the files this tool writes are ever removed")
+                .exists();
+        assertThat(Files.readString(somebodysWork)).isEqualTo("not ours");
     }
 
     @Test
