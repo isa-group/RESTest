@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -358,6 +359,11 @@ final class SchemaConverter {
             case String s -> Optional.of(JsonValue.of(s));
             // What the document wrote was base-64 text; the parser decoded it on the way in.
             case byte[] bytes -> Optional.of(JsonValue.of(Base64.getEncoder().encodeToString(bytes)));
+            // An identifier, which the parser recognises and turns into an object of its own. Named
+            // here rather than left to the last resort below, because that one reads a value back
+            // as JSON and an identifier is not JSON - so without this line a perfectly good default
+            // would be dropped.
+            case UUID identifier -> Optional.of(JsonValue.of(identifier.toString()));
             // A plain date, which the parser keeps as a moment in time - midnight on that day
             // where this machine is. Read back the same way, which returns the day the document
             // wrote no matter where the machine is. Reading it back at UTC instead looks like the

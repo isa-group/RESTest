@@ -39,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -334,6 +335,20 @@ class SchemaConverterTest {
 
         assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
                 .contains(JsonValue.of("aGk="));
+    }
+
+    @Test
+    @DisplayName("an identifier default keeps the text the document wrote")
+    void a_uuid_default_is_read_back_as_its_text() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        schema.setFormat("uuid");
+        schema.setDefault(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
+
+        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+                .describedAs("the parser turns this one into an object of its own, whose text is "
+                        + "not JSON, so leaving it to the last resort would drop a good value")
+                .contains(JsonValue.of("550e8400-e29b-41d4-a716-446655440000"));
     }
 
     @Test
