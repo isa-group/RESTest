@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-48 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
+49 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
 Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
@@ -34,6 +34,7 @@ its own pull request, so the table and the branch history never drift apart.
 | 1.8 ✅ [#298](https://github.com/isa-group/RESTest/pull/298) | Audit of the branch acted on: faults printed as they are found rather than in batches; a reply RESTest cannot check is never reported as a fault; untyped object schemas, declared defaults and dangling references read correctly; the same command explains itself the same way twice; an unwritable `--out` answers 3 | What the tool says about a document, and about a reply, is true - and the whole 50-document corpus is parsed by a test for the first time |
 | 1.9 ✅ [#304](https://github.com/isa-group/RESTest/pull/304) | 🛑 The evaluation harness built in a repository of its own rather than in `evaluation/` here, which is therefore never created. **In this repository:** the amendment to ADR-0011 recording that, the documentation that follows from it, and the rule against naming the benchmark widened from `src/` to every file and file name here. **In [`isa-group/restgym-restest2`](https://github.com/isa-group/restgym-restest2)** (private for now): benchmark adapter, campaign script, both commits pinned, and the first campaign — v2 alone, two APIs, ten minutes. Comparison against RESTest 1.x and the published field stays in 8.1 | The tool is measured the way the field measures tools, by a harness this repository does not carry, does not build and does not name |
 | 1.10 ✅ [#301](https://github.com/isa-group/RESTest/pull/301) | The shared fault catalogue brought up to date, and server errors counted the way benchmarks count them: over replies rather than faults, distinct by operation, beside the fault list rather than inside it. Delivered before 1.9 | Our numbers can be put beside another tool's without a footnote explaining why they are not comparable |
+| 1.11 ✅ | The run's randomness taken from the part of Java every runtime carries, so the tool starts on a plain JRE instead of dying before its first request; an architecture rule and a containerised gate keep it that way | RESTest runs anywhere Java runs - official JRE container images included - and one seed means one run on every runtime |
 
 The golden corpus of specifications used throughout M1 and M2 lives at
 `restest-spec/src/test/resources/specifications/`, in three directories: `restleague-2027/`,

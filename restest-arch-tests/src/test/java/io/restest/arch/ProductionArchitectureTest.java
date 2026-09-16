@@ -122,6 +122,12 @@ class ProductionArchitectureTest {
                 ROOT, "core", "java.net..", "okhttp3..", "javax.net.."));
     }
 
+    @Test
+    @DisplayName("no module asks for a random generator by name (ADR-0013)")
+    void no_module_asks_for_a_random_generator_by_name() {
+        check(ArchitectureRules.noRandomGeneratorAskedForByName(ROOT));
+    }
+
     /**
      * Runs a rule against the production modules.
      *

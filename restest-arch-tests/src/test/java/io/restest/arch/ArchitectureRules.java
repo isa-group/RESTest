@@ -30,6 +30,7 @@ import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.Architectures;
 import com.tngtech.archunit.library.Architectures.LayeredArchitecture;
 import java.util.List;
+import java.util.random.RandomGenerator;
 import java.util.stream.Stream;
 
 /**
@@ -249,6 +250,68 @@ final class ArchitectureRules {
      * reference" by reading a compact constructor. This TODO remains open, waiting for the first
      * `static final` field of a mutable type to actually appear.
      */
+
+    /**
+     * Nothing asks for its source of randomness by name.
+     *
+     * <p>Java's better-sounding random number generators - {@code L64X128MixRandom} and the rest of
+     * that family - are only compulsory from Java 23 on. On 21 and 22 they live in a separate,
+     * optional module, {@code jdk.random}, which cut-down runtimes leave out: the official
+     * {@code eclipse-temurin} JRE container images for those two releases have no such thing, and
+     * neither does anything {@code jlink} or a distroless image produces unless asked. Asking such
+     * a runtime for a name it does not have throws before a single request has been sent, which is
+     * how an ordinary JRE once stopped the whole tool from starting - on 21, the oldest release
+     * this project supports. This is not only about containers, and not only about old releases: a
+     * standalone binary compiled ahead of time carries a trimmed runtime as well.
+     *
+     * <p>RESTest therefore builds the generator {@code java.base} is required to carry, directly.
+     * What is reported is every {@code of} and {@code getDefault} in {@code java.util.random}: on
+     * the factory, on {@code RandomGenerator} itself, and on each of its nested kinds, all of which
+     * offer the same two ways of naming a generator. Naming one is the whole problem, so the rule
+     * keys on that rather than on a class: the shortest way to write this mistake is
+     * {@code RandomGenerator.of(name)}, which an earlier version of this rule did not see.
+     *
+     * <p>Two things are deliberately left alone. Holding a {@code RandomGenerator} is untouched -
+     * that is the interface every source of values is handed. So is asking which generators a
+     * runtime actually has, through {@code RandomGeneratorFactory.all()}, and building one of
+     * those: that is the careful thing to do, it works everywhere, and a rule that reported it
+     * would be reporting the remedy along with the mistake.
+     *
+     * <p>Calls and method references both, for the reason spelled out on
+     * {@link #TERMINATE_THE_PROCESS}: ArchUnit models the two separately, and a rule written with
+     * {@code callMethod} alone would guard only the obvious half.
+     */
+    static ArchRule noRandomGeneratorAskedForByName(String root) {
+        return noClasses()
+                .that().resideInAPackage(root + "..")
+                .should(ASK_FOR_A_RANDOM_GENERATOR_BY_NAME)
+                .as("no class in " + root + " asks for a random generator by name, because the "
+                        + "named ones are absent from runtimes carrying only java.base (ADR-0013)");
+    }
+
+    private static final ArchCondition<JavaClass> ASK_FOR_A_RANDOM_GENERATOR_BY_NAME =
+            new ArchCondition<>("ask for a random generator by name") {
+                @Override
+                public void check(JavaClass item, ConditionEvents events) {
+                    Stream.<JavaAccess<?>>concat(
+                                    item.getMethodCallsFromSelf().stream(),
+                                    item.getMethodReferencesFromSelf().stream())
+                            .filter(ArchitectureRules::asksForAGeneratorByName)
+                            .forEach(access -> events.add(SimpleConditionEvent.satisfied(
+                                    access, access.getDescription())));
+                }
+            };
+
+    private static boolean asksForAGeneratorByName(JavaAccess<?> access) {
+        // By package rather than by class, because the two naming methods are repeated on the
+        // factory, on RandomGenerator and on each of its five nested kinds, and a list of classes
+        // would have to be revisited every time the platform adds another one.
+        return access.getTargetOwner().getName().startsWith(RANDOM_PACKAGE)
+                && ("of".equals(access.getName()) || "getDefault".equals(access.getName()));
+    }
+
+    /** Where Java keeps the generators, the factory, and both ways of naming one. */
+    private static final String RANDOM_PACKAGE = RandomGenerator.class.getPackageName() + ".";
 
     /**
      * The domain-model module holds no network, parser or other heavy dependency. This checks the

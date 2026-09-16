@@ -101,6 +101,9 @@ jobs:
           report=restest-cli/target/surefire-reports/TEST-io.restest.cli.SmokeRunTest.xml
           test -f "$report" || { echo "the smoke run produced no report: it did not run" >&2; exit 1; }
           grep -q 'tests="2"' "$report" || { echo "the smoke run did not run both APIs" >&2; exit 1; }
+          plain=restest-cli/target/surefire-reports/TEST-io.restest.cli.StockJreRunTest.xml
+          test -f "$plain" || { echo "the plain-runtime gate produced no report: it did not run" >&2; exit 1; }
+          grep -q 'tests="3"' "$plain" || { echo "the plain-runtime gate did not run in full" >&2; exit 1; }
 
       # The one thing the smoke run above cannot check: that the command a person is told to type
       # actually starts. It runs the built jars from the class path, and nothing else exercises that.

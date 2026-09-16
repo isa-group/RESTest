@@ -305,3 +305,144 @@ the tool's own waste and a sequential loop waiting on the API is never idle.
 mutation and fuzzing is the one number here that cannot be argued into place: it is measured. When the
 pieces exist, one afternoon of campaigns against the five specifications in the corpus, with three
 different splits, answers it.
+
+## Amendment (M1.11)
+
+**Date:** 2026-09-16
+
+**The run's randomness comes from a generator `java.base` is required to carry, built directly rather
+than asked for by name. A seed therefore means the same run on every Java runtime, and RESTest starts
+on runtimes that ship only the compulsory part of Java.**
+
+Section 7 above says the seed is recorded and can be set. It did not say where the randomness itself
+comes from, and the code that implemented it chose by name.
+
+### Why
+
+M1.5 asked for `L64X128MixRandom`, on reasoning written into the class: *wherever "the same number
+produces the same test cases" holds at all, it has to hold on somebody else's machine as well as on
+ours, and asking for whatever the platform considers default would make it hold only between two runs
+on the same version of Java.*
+
+The reasoning was right. The name was wrong. On Java 21 that family of generators is not part of the
+compulsory Java; it is in `jdk.random`, a separate optional module. The official
+`eclipse-temurin:21-jre` image carries 49 modules and that is not one of them, and neither `jlink`
+nor a distroless base produces it unless asked. On such a runtime every run died in the generator's
+constructor, before a single request:
+
+```
+restest: the run could not be completed: java.lang.IllegalArgumentException:
+No implementation of the random number generator algorithm "L64X128MixRandom" is available
+```
+
+and answered `4`, *RESTest itself malfunctioned*. That code was right about what had happened and
+wrong about whose fault it was: somebody had pointed the tool at an ordinary JRE.
+
+The release boundary is the part worth recording, because it explains how this survived nine
+increments and nine rows of continuous integration. **Java 23 folded those generators into
+`java.base`; on 21 and 22 they are a separate module.** Checked against the official images:
+
+| Runtime | `L64X128MixRandom` |
+|---|---|
+| `eclipse-temurin:21-jre` | absent — the failure above |
+| `eclipse-temurin:22-jre` | absent |
+| `eclipse-temurin:23-jre` | present, in `java.base` |
+| `eclipse-temurin:24-jre` and `25-jre` | present, in `java.base` |
+
+So the only runtimes where RESTest could not start were the two oldest it supports — 21 being the
+baseline every module compiles for and the version the whole project promises — while the machines
+it is written on run 25, where the mistake is invisible. Continuous integration tests 21, 25 and 26,
+but on full installations, which carry the generators on every release.
+
+`java.base` is compulsory on every release, and on 21 it carries three generators - from 23 it
+carries the whole family as well, which is what makes this repairable at all. `SecureRandom` cannot be reproduced from
+a seed, which is the one property needed here. `Random` is the 48-bit linear congruential generator
+Java's own documentation calls legacy. `SplittableRandom` is the third, and it is the one now used.
+
+### What changed
+
+`new SplittableRandom(seed)` in place of `RandomGeneratorFactory.of(name).create(seed)`. Asking the
+factory for `SplittableRandom` and constructing it directly give the same sequence — checked, and the
+same values on Java 21 and 25 — so this removes a lookup rather than introducing a mechanism. That
+the lookup is gone matters twice over: it is what failed, and it is a service lookup on the startup
+path, which is the kind of thing that also needs arranging for wherever a runtime is assembled rather
+than installed.
+
+### What it costs
+
+`SplittableRandom` is not the most modern generator Java offers. It is a good one for the two jobs it
+has here — choosing among a list, and filling in a number — and it can be split, which is what a
+future generator running on several threads would want. The trade is a generator that is merely good
+everywhere, instead of the best one on machines that happen to have it.
+
+One thing this decision buys less of than it first appears. `SplittableRandom`'s documentation
+promises identical sequences from identical seeds *in the same program*; the only generator in
+`java.base` whose algorithm the specification pins across implementations, "for the sake of absolute
+portability of Java code", is `java.util.Random`. So the cross-runtime half of the promise rests on
+what the implementations actually do rather than on what the specification requires. Measured, the
+same seed gives the same sequence on 21, 22, 23, 24 and 25; and a test now runs a seeded generation
+inside the container and the same one outside it and requires the requests to match, so if a release
+ever did change it, a build would say so rather than a user discovering it.
+
+The algorithm is now a compatibility surface, like the exit codes in ADR-0015. A seed only means
+anything against the generator that consumed it, so changing the generator changes what every seed
+recorded anywhere means. That is a deliberate, breaking change to be made in another amendment here,
+not by editing a line — and "not by editing a line" is now enforced rather than asked for: a test
+holds the exact order a fixed seed produces from three operations that carry no parameters, so
+nothing but the source of randomness can move it. Swapping in `java.util.Random` fails it, which was
+checked.
+
+The accidental version of the original mistake is ruled out separately, by an architecture rule: no
+production class may name a generator. It reports every `of` and `getDefault` in `java.util.random`,
+on the factory, on `RandomGenerator` itself and on each of its nested kinds — `RandomGenerator.of(name)`
+is the shortest way to write this bug and the first version of the rule did not see it. Holding a
+`RandomGenerator` is untouched, and so is `RandomGeneratorFactory.all()`: asking a runtime what it
+actually has is the careful thing to do and works everywhere, so reporting it would be reporting the
+remedy.
+
+The rule is a static one, and static rules only see what is written down. A library RESTest depends
+on could reach for an optional part of Java without anybody here writing a line, so the rule is
+backed by a gate that runs the whole command inside the very image this was reported on, on every
+build that asks for containers. It establishes first that the image genuinely cannot provide the
+generator - by asking it for one, rather than by looking for the module's name, which is equally
+absent from Java 23 and later where everything works - so that it cannot pass by having nothing to
+prove.
+
+A number printed by a run before this change names a different run now. Nothing keeps a seed beyond
+the line a finished run prints, so that is the whole of the cost; had the report file carried one,
+this would have been a change to a published format as well.
+
+Nothing in section 7 changes. Which strategies a seed reproduces, and which need the stored run
+replayed instead, is unaffected by where the randomness comes from.
+
+### Alternatives considered
+
+- **Keep the preferred name, fall back to a `java.base` generator when it is missing, and record
+  which one the run used.** The obvious repair, and it re-creates in a milder form the very problem
+  that naming an algorithm was meant to solve: `--seed 12345` would mean one run on a full
+  installation and a different run on a JRE. Recording the generator beside the seed makes that
+  visible, not absent — whoever reproduces a container's run on their laptop still gets a different
+  run, and now has to read a second field to find out why. A promise with a footnote about the
+  reader's runtime is worth less than a smaller promise that holds everywhere, and the footnote
+  would have been a moving one: the same command on the same image reads differently on 22 and 23.
+- **`java.util.Random`.** The one generator whose algorithm the specification pins across every
+  implementation, which is a stronger guarantee than the one chosen carries. Rejected on quality: it
+  is a 48-bit linear congruential generator that Java's own documentation marks as legacy, and this
+  is the component that decides what an API gets tested with. The guarantee it offers is bought back
+  cheaply — by measuring across the five releases, and by the cross-runtime test named above —
+  whereas its shortcomings could not be bought back at all.
+- **Raise the baseline to Java 23, where the problem does not exist.** It removes this failure and
+  nothing else, at the cost of everybody still on 21 — the long-term-support release most of the
+  world runs. ADR-0003 chose 21 deliberately; a random number generator is not a reason to revisit
+  it.
+- **Declare `requires jdk.random` in `restest-gen`'s module descriptor.** It changes nothing where
+  the problem happens. RESTest runs on the class path, deliberately (ADR-0015), and module
+  declarations are not read there. On a module path it would turn our own message into a resolution
+  error from the JVM, which is worse to read and is not where anybody meets this.
+- **Fail with a message naming the runtime and saying what to install, and answer `3` rather than
+  `4`.** A good answer to the question as it was asked, and unnecessary once the generator is one
+  every runtime has: there is no such runtime left to report. Explaining how to install a missing
+  piece of Java is a worse outcome than not needing it.
+- **Take whatever the platform prefers**, which is what `RandomGenerator.getDefault()` does.
+  Rejected in M1.5 and rejected again: it also names one of the optional generators, so it fails in
+  the same place, and where it works it makes a seed mean whatever that runtime preferred.
