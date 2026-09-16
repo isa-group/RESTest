@@ -135,6 +135,15 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
+                        <!-- The editor's Maven integration runs this execution as part of its own
+                             build and fails on it: inside the workspace the other modules resolve to
+                             their target/classes directories rather than to jars, so there is no jar
+                             for it to copy. Nothing needs it to try - filling target/lib is a
+                             packaging step for the launcher script, and an editor packages nothing.
+                             The instruction below tells that integration to leave the execution
+                             alone. Maven never sees it: an XML processing instruction is not
+                             configuration, and ./mvnw package fills target/lib exactly as before. -->
+                        <?m2e ignore?>
                         <id>runtime-libraries</id>
                         <phase>package</phase>
                         <goals>
