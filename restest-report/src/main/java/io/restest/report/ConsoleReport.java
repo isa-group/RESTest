@@ -32,7 +32,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -77,6 +76,9 @@ public final class ConsoleReport implements RunListener {
     /** How every attempt ended, faulty or not, by family of status code. */
     private final Map<String, Integer> repliesByClass = new LinkedHashMap<>();
     private final Set<OperationId> operations = new LinkedHashSet<>();
+
+    /** How many operations made the API fall over, worked out in one place for every report. */
+    private final ServerErrors serverErrors = new ServerErrors();
     private int attempts;
     private int faults;
 
@@ -109,6 +111,7 @@ public final class ConsoleReport implements RunListener {
                 attempts++;
                 operations.add(completed.interaction().testCase().operation());
                 repliesByClass.merge(classOf(completed.interaction()), 1, Integer::sum);
+                serverErrors.note(completed.interaction());
             }
             case RunEvent.FaultFound found -> {
                 print(found.finding());
@@ -177,15 +180,9 @@ public final class ConsoleReport implements RunListener {
 
     /** Which family that answer belongs to, or that there was none. */
     private static String classOf(Interaction interaction) {
-        Optional<Integer> status = switch (interaction.outcome()) {
-            case InteractionOutcome.Answered answered ->
-                    Optional.of(answered.response().statusCode());
-            case InteractionOutcome.MalformedResponse malformed ->
-                    malformed.statusLine().map(line -> line.statusCode());
-            case InteractionOutcome.TransportFailure ignored -> Optional.empty();
-        };
-        return status.map(code -> (code / 100) + "xx").orElse("no reply");
+        return interaction.statusCode().map(code -> (code / 100) + "xx").orElse("no reply");
     }
+
 
     private void summarise(RunEvent.RunFinished finished) {
         write(attempts + " requests to " + operations.size() + " operations in "
@@ -201,6 +198,10 @@ public final class ConsoleReport implements RunListener {
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> entry.getValue() + " " + entry.getKey())
                 .collect(java.util.stream.Collectors.joining(", ")));
+        if (!serverErrors.none()) {
+            write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "
+                    + serverErrors.operationsAnsweringAny5xx() + " answered some 5xx");
+        }
         if (counts.isEmpty()) {
             write("no faults found");
             return;

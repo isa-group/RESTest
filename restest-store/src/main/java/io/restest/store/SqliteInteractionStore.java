@@ -301,7 +301,7 @@ public final class SqliteInteractionStore implements InteractionStore {
             insert.setString(3, interaction.testCase().operation().value());
             insert.setString(4, interaction.request().method().name());
             insert.setString(5, interaction.request().url());
-            Optional<Integer> status = statusOf(interaction);
+            Optional<Integer> status = interaction.statusCode();
             if (status.isPresent()) {
                 insert.setInt(6, status.get());
             } else {
@@ -518,16 +518,6 @@ public final class SqliteInteractionStore implements InteractionStore {
         ensureOpen();
         save();
         return connection.prepareStatement(sql);
-    }
-
-    private static Optional<Integer> statusOf(Interaction interaction) {
-        return switch (interaction.outcome()) {
-            case InteractionOutcome.Answered answered ->
-                    Optional.of(answered.response().statusCode());
-            case InteractionOutcome.MalformedResponse malformed ->
-                    malformed.statusLine().map(line -> line.statusCode());
-            case InteractionOutcome.TransportFailure ignored -> Optional.empty();
-        };
     }
 
     private static String outcomeOf(Interaction interaction) {

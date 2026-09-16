@@ -109,4 +109,26 @@ public record Interaction(
     public boolean isAnswered() {
         return outcome instanceof InteractionOutcome.Answered;
     }
+
+    /**
+     * What the API answered with, if it answered with anything at all.
+     *
+     * <p>A reply the tool could not finish reading still has a status code, and it counts. The
+     * status line arrives first and is complete long before the body it precedes, so "the reply
+     * broke off halfway" and "we do not know what it said" are different facts. Anything asking how
+     * an API behaved wants the first one included.
+     *
+     * <p>Here rather than worked out again by each report and the stored run, which is how three
+     * copies of this came to exist and how two of them came to disagree about what a reply with no
+     * status at all should be called.
+     */
+    public Optional<Integer> statusCode() {
+        return switch (outcome) {
+            case InteractionOutcome.Answered answered ->
+                    Optional.of(answered.response().statusCode());
+            case InteractionOutcome.MalformedResponse malformed ->
+                    malformed.statusLine().map(StatusLine::statusCode);
+            case InteractionOutcome.TransportFailure ignored -> Optional.empty();
+        };
+    }
 }

@@ -82,6 +82,36 @@ class ConsoleReportTest {
     }
 
     @Test
+    @DisplayName("the run says on how many operations the API fell over, counting operations not replies")
+    void the_run_counts_the_operations_that_fell_over() {
+        // Three operations. One answers 500 many times over, one answers 503, one behaves. The
+        // number a benchmark compares tools on is how many operations broke, not how many replies
+        // were broken, so asking the same broken operation a hundred times must not count a hundred.
+        for (int again = 0; again < 100; again++) {
+            report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                    Runs.attempt("GET /pets", "/pets", 500)));
+        }
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /shelters", "/shelters", 503)));
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /vets", "/vets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(screen.toString())
+                .contains("1 operation(s) answered 500, 2 answered some 5xx");
+    }
+
+    @Test
+    @DisplayName("a run where nothing fell over says nothing about server errors")
+    void a_clean_run_says_nothing_about_server_errors() {
+        report.on(new RunEvent.InteractionCompleted(Instant.EPOCH,
+                Runs.attempt("GET /pets", "/pets", 200)));
+        report.on(new RunEvent.RunFinished(Instant.EPOCH, Duration.ofSeconds(10), Runs.engine()));
+
+        assertThat(screen.toString()).doesNotContain("answered some 5xx");
+    }
+
+    @Test
     @DisplayName("the particular disagreements are listed under the fault")
     void the_details_are_listed() {
         report.on(new RunEvent.FaultFound(Instant.EPOCH, Runs.wrongShape(2)));

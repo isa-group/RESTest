@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,10 +39,16 @@ import org.junit.jupiter.api.Test;
  * what RESTest ships, entry by entry.
  *
  * <p>The copy comes from {@code WebFuzzing/Commons}, file
- * {@code src/main/resources/wfc/faults/fault_categories.json}, at commit
- * {@code 0e45ffefd307efcedd6c6ae944326051993eaca3}, faults version {@code 0.7.0}, fetched on
- * 2026-09-13. Refreshing it is a deliberate act: this test failing means the catalogue has
+ * {@code src/main/resources/wfc/faults/fault_categories.json}, at tag {@code v0.9.0}, commit
+ * {@code 2e44a5a34dc2f3c2e1feadc4dc631c1d4c3e7c56}, faults version {@code 0.8.0}, fetched on
+ * 2026-09-16. The file the four version numbers are declared in is pinned beside it, because the
+ * release tag and the fault catalogue's own version are two different numbers. Refreshing it is a deliberate act: this test failing means the catalogue has
  * moved on, which is news rather than a nuisance.
+ *
+ * <p>It moved once already. Between the two versions the numbers were rearranged, not merely added
+ * to: a schema mismatch went from 101 to 200 and every security weakness from the 200s to the 300s.
+ * A count of "F101" published before the move and one published after name different faults, which
+ * is exactly why a report states the version it counted under.
  */
 class WfcFaultTest {
 
@@ -69,7 +77,7 @@ class WfcFaultTest {
     @DisplayName("a fault can be found by its number, and an unknown number finds nothing")
     void a_fault_is_found_by_its_number() {
         assertThat(WfcFault.byCode(100)).contains(WfcFault.HTTP_STATUS_500);
-        assertThat(WfcFault.byCode(101)).contains(WfcFault.SCHEMA_INVALID_RESPONSE);
+        assertThat(WfcFault.byCode(200)).contains(WfcFault.SCHEMA_INVALID_RESPONSE);
         assertThat(WfcFault.byCode(999)).isEmpty();
     }
 
@@ -77,7 +85,7 @@ class WfcFaultTest {
     @DisplayName("the two faults this release reports are named as the catalogue names them")
     void the_two_implemented_faults_are_named_as_the_catalogue_names_them() {
         assertThat(WfcFault.HTTP_STATUS_500.label()).isEqualTo("F100:HTTP Status 500");
-        assertThat(WfcFault.SCHEMA_INVALID_RESPONSE.code()).isEqualTo(101);
+        assertThat(WfcFault.SCHEMA_INVALID_RESPONSE.code()).isEqualTo(200);
         assertThat(WfcFault.SCHEMA_INVALID_RESPONSE.testCaseLabel())
                 .isEqualTo("returnsMismatchResponseWithSchema");
     }
@@ -85,8 +93,52 @@ class WfcFaultTest {
     @Test
     @DisplayName("the catalogue's version travels with the copy, so a report can say which it used")
     void the_catalogue_version_is_recorded() {
-        assertThat(WfcFault.CATALOGUE_VERSION).isEqualTo("0.7.0");
+        // Read from the file the catalogue's authors state it in, not written out here. Asserting a
+        // number against the constant that holds it proves only that somebody typed it twice, and
+        // the version is the one fact every published count of ours depends on.
+        assertThat(WfcFault.CATALOGUE_VERSION).isEqualTo(publishedFaultsVersion());
         assertThat(WfcFault.CATALOGUE_NAME).isEqualTo("Web Fuzzing Commons");
+    }
+
+    @Test
+    @DisplayName("the catalogue publishes exactly the fields RESTest expects it to")
+    void the_catalogue_has_the_shape_this_test_assumes() {
+        // Two of these are deliberately not copied into the enum. 'fullDescription' is a paragraph
+        // for a person to read and belongs in the catalogue rather than in our source; 'group' is
+        // the catalogue's own filing, which our code ranges already carry. A field appearing or
+        // disappearing changes what "copied faithfully" means, so it is checked rather than
+        // assumed.
+        assertThat(published()).allSatisfy(entry ->
+                assertThat(entry.members().keySet()).containsExactlyInAnyOrder(
+                        "code", "descriptiveName", "testCaseLabel", "label", "fullDescription",
+                        "group"));
+    }
+
+    /**
+     * The version the catalogue's own authors give the fault list, read from the file they state it
+     * in.
+     *
+     * <p>Not the version of the release it ships in, which is a different number. Web Fuzzing
+     * Commons publishes four things together, they began on one version and have drifted apart, and
+     * the release tagged 0.9.0 carries faults 0.8.0. That is exactly the sort of thing a person
+     * copies wrongly once and nobody notices for a year, so it is read from the pinned file rather
+     * than typed here.
+     */
+    private static String publishedFaultsVersion() {
+        try (InputStream file = WfcFaultTest.class
+                .getResourceAsStream("/wfc/VersionNumbers.java.txt")) {
+            assertThat(file).describedAs("the file the versions are declared in is kept beside "
+                    + "this test").isNotNull();
+            String source = new String(file.readAllBytes(), StandardCharsets.UTF_8);
+            Matcher declared = Pattern
+                    .compile("String\\s+FAULTS\\s*=\\s*\"([^\"]+)\"")
+                    .matcher(source);
+            assertThat(declared.find())
+                    .describedAs("the faults version is declared in the pinned file").isTrue();
+            return declared.group(1);
+        } catch (IOException e) {
+            throw new AssertionError("the pinned version file could not be read", e);
+        }
     }
 
     private static List<JsonValue.JsonObject> published() {
