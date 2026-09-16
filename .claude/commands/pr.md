@@ -51,4 +51,17 @@ The title says what became possible, not what was edited: "Generate values that 
 formats", not "Add FormatAwareValueProvider".
 
 Then: commit anything outstanding, push the branch, and open the pull request with `gh pr create
---base v2`. Report the URL. Do not merge it.
+--base v2`.
+
+**Then mark the increment delivered.** Once the pull request exists and its number is known, put `✅`
+and a link to it beside the increment's number in `ROADMAP.md`, and push that as one more commit on
+the same branch:
+
+    | 1.7b ✅ [#297](https://github.com/isa-group/RESTest/pull/297) | ... |
+
+This is the step the roadmap's own header asks for — "an increment is marked in its own pull request,
+so the table and the branch history never drift apart" — and it is the easy one to forget, because the
+number it needs does not exist until the pull request has been opened. Forgotten, the roadmap quietly
+understates what has been built, and the next person reads it as a plan rather than a record.
+
+Report the URL. Do not merge it.
