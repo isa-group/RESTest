@@ -112,6 +112,12 @@ public final class JsonReport implements RunListener {
      */
     static final long MOST_BODY_BYTES_KEPT = 24L * 1024;
 
+    /**
+     * The one status code the shared fault catalogue names as a fault of its own. The rest of the
+     * 5xx family is counted beside it and is not the same claim.
+     */
+    private static final int SERVER_ERROR = 500;
+
     /** How many exact status codes are listed beside the families, commonest first. */
     private static final int STATUS_CODES_LISTED = 10;
 
@@ -179,6 +185,17 @@ public final class JsonReport implements RunListener {
 
     /** How every attempt ended, whether or not anything turned out to be wrong with it. */
     private final Map<String, Integer> repliesByClass = new LinkedHashMap<>();
+
+    /**
+     * Which operations made the API fall over, kept as sets rather than counted.
+     *
+     * <p>Benchmarks compare tools on this number, and they count operations rather than replies: one
+     * operation asked ten thousand times and broken every time is one broken operation. Sets of
+     * names, so what this costs is bounded by the size of the document rather than by the length of
+     * the run.
+     */
+    private final Set<OperationId> answered500 = new LinkedHashSet<>();
+    private final Set<OperationId> answeredAny5xx = new LinkedHashSet<>();
     private final Map<Integer, Integer> repliesByStatus = new LinkedHashMap<>();
     private int attemptsWithNothingWrong;
 
@@ -270,7 +287,15 @@ public final class JsonReport implements RunListener {
         beingJudged = interaction.id();
         somethingWrongWithIt = false;
         repliesByClass.merge(classOf(interaction), 1, Integer::sum);
-        statusOf(interaction).ifPresent(status -> repliesByStatus.merge(status, 1, Integer::sum));
+        interaction.statusCode().ifPresent(status -> {
+            repliesByStatus.merge(status, 1, Integer::sum);
+            if (status >= 500 && status <= 599) {
+                answeredAny5xx.add(interaction.testCase().operation());
+                if (status == SERVER_ERROR) {
+                    answered500.add(interaction.testCase().operation());
+                }
+            }
+        });
     }
 
     /** Counts the attempt just finished with as clean, if nothing was found wrong with it. */
@@ -314,7 +339,7 @@ public final class JsonReport implements RunListener {
      * knew about codes would lose it, so it has a name of its own here.
      */
     private static String classOf(Interaction interaction) {
-        return statusOf(interaction).map(status -> (status / 100) + "xx").orElse("noReply");
+        return interaction.statusCode().map(status -> (status / 100) + "xx").orElse("noReply");
     }
 
     /** Writes the whole attempt out, if this kind of fault on this operation still has room. */
@@ -370,6 +395,7 @@ public final class JsonReport implements RunListener {
         report.put("limits", limits());
         report.put("engine", engineStatistics());
         report.put("replies", replies());
+        report.put("serverErrors", serverErrors());
         report.put("faultsByCategory", faultsByCategory());
         report.put("faultsByStatus", faultsByStatus());
         report.put("faultsByOperation", faultsByOperation());
@@ -443,6 +469,26 @@ public final class JsonReport implements RunListener {
      * refused, the requests were the problem rather than the API, and knowing that is the difference
      * between fixing the tool and filing bugs against somebody else's service.
      */
+    /**
+     * How many operations the API fell over on, and how that was counted.
+     *
+     * <p>Separate from the list of faults, and counted differently on purpose. A fault is a
+     * judgement some rule made, and which rules run changes between releases and between tools. A
+     * 5xx is something the API did, and it counts whether or not any rule had an opinion about it.
+     *
+     * <p>How it was counted is written beside the number, because a fault count means nothing next
+     * to somebody else's unless both say what they counted. These two are counted the way the
+     * benchmarks count them: over replies rather than over faults, and distinct by operation.
+     */
+    private JsonValue serverErrors() {
+        Map<String, JsonValue> counted = new LinkedHashMap<>();
+        counted.put("operationsAnswering500", JsonValue.of(answered500.size()));
+        counted.put("operationsAnsweringAny5xx", JsonValue.of(answeredAny5xx.size()));
+        counted.put("countedOver", JsonValue.of("replies"));
+        counted.put("distinctBy", JsonValue.of("operation"));
+        return JsonValue.object(counted);
+    }
+
     private JsonValue replies() {
         Map<String, JsonValue> replies = new LinkedHashMap<>();
         replies.put("total", JsonValue.of(attempts));
@@ -536,7 +582,7 @@ public final class JsonReport implements RunListener {
         entry.put("details", JsonValue.array(
                 finding.details().stream().map(JsonValue::of).map(JsonValue.class::cast).toList()));
         entry.put("curl", JsonValue.of(CurlCommand.of(finding.interaction().request())));
-        statusOf(finding.interaction())
+        finding.interaction().statusCode()
                 .ifPresent(status -> entry.put("status", JsonValue.of(status)));
         entry.put("statusClass", JsonValue.of(classOf(finding.interaction())));
         entry.put("interaction",
@@ -545,16 +591,6 @@ public final class JsonReport implements RunListener {
     }
 
     /** The status code the API answered with, when it answered at all. */
-    private static Optional<Integer> statusOf(Interaction interaction) {
-        return switch (interaction.outcome()) {
-            case InteractionOutcome.Answered answered ->
-                    Optional.of(answered.response().statusCode());
-            case InteractionOutcome.MalformedResponse malformed ->
-                    malformed.statusLine().map(line -> line.statusCode());
-            case InteractionOutcome.TransportFailure ignored -> Optional.empty();
-        };
-    }
-
     private static JsonValue categoryOf(FaultCategory category) {
         Map<String, JsonValue> written = new LinkedHashMap<>();
         written.put("code", JsonValue.of(category.code()));

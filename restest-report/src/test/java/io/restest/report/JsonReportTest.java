@@ -46,7 +46,7 @@ class JsonReportTest {
         assertThat(text(object(report, "tool"), "name")).isEqualTo("RESTest");
         assertThat(text(object(report, "faultCatalogue"), "name"))
                 .isEqualTo("Web Fuzzing Commons");
-        assertThat(text(object(report, "faultCatalogue"), "version")).isEqualTo("0.7.0");
+        assertThat(text(object(report, "faultCatalogue"), "version")).isEqualTo("0.9.0");
         assertThat(text(report, "createdAt")).isEqualTo("2026-09-13T10:30:00Z");
         assertThat(text(object(report, "api"), "title")).isEqualTo("Pets");
         assertThat(text(object(report, "api"), "baseUrl")).isEqualTo(Runs.BASE);
@@ -68,6 +68,31 @@ class JsonReportTest {
                 .containsExactly("name", "version");
         assertThat(object(report, "api").members().keySet())
                 .containsExactly("title", "baseUrl");
+    }
+
+    @Test
+    @DisplayName("server errors are counted over replies and by operation, and say so")
+    void server_errors_are_counted_and_the_counting_is_stated() {
+        JsonReport report = JsonReport.inMemory(fixedClock());
+        for (int again = 0; again < 50; again++) {
+            report.on(new RunEvent.InteractionCompleted(WHEN,
+                    Runs.attempt("GET /pets", "/pets", 500)));
+        }
+        report.on(new RunEvent.InteractionCompleted(WHEN,
+                Runs.attempt("GET /shelters", "/shelters", 503)));
+        report.on(new RunEvent.InteractionCompleted(WHEN, Runs.attempt("GET /vets", "/vets", 200)));
+        report.on(new RunEvent.RunFinished(WHEN, Duration.ofSeconds(10), Runs.engine()));
+
+        JsonValue.JsonObject errors =
+                object((JsonValue.JsonObject) report.document().orElseThrow(), "serverErrors");
+
+        assertThat(number(errors, "operationsAnswering500")).isEqualTo(1);
+        assertThat(number(errors, "operationsAnsweringAny5xx")).isEqualTo(2);
+        // The criterion travels with the number. A fault count that does not say what it counted
+        // cannot be put beside anybody else's, which is the whole reason for using a shared
+        // catalogue in the first place.
+        assertThat(text(errors, "countedOver")).isEqualTo("replies");
+        assertThat(text(errors, "distinctBy")).isEqualTo("operation");
     }
 
     @Test
@@ -257,7 +282,7 @@ class JsonReportTest {
                 .distinct())
                 .describedAs("a second kind of fault appearing late in a run is a discovery, and "
                         + "the report it never reaches is the report that hid it")
-                .containsExactlyInAnyOrder(100, 101);
+                .containsExactlyInAnyOrder(100, 200);
     }
 
     @Test
@@ -394,7 +419,7 @@ class JsonReportTest {
                         + "fault that came back as a perfectly ordinary 200, and this is the table "
                         + "that shows it. An attempt that got no reply has no code, so it has a "
                         + "name of its own rather than being lost")
-                .containsExactlyInAnyOrder("F100 5xx = 3", "F101 2xx = 1", "F100 noReply = 1");
+                .containsExactlyInAnyOrder("F100 5xx = 3", "F200 2xx = 1", "F100 noReply = 1");
     }
 
     @Test

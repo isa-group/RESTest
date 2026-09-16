@@ -37,10 +37,15 @@ import org.junit.jupiter.api.Test;
  * what RESTest ships, entry by entry.
  *
  * <p>The copy comes from {@code WebFuzzing/Commons}, file
- * {@code src/main/resources/wfc/faults/fault_categories.json}, at commit
- * {@code 0e45ffefd307efcedd6c6ae944326051993eaca3}, faults version {@code 0.7.0}, fetched on
- * 2026-09-13. Refreshing it is a deliberate act: this test failing means the catalogue has
+ * {@code src/main/resources/wfc/faults/fault_categories.json}, at tag {@code v0.9.0}, commit
+ * {@code 2e44a5a34dc2f3c2e1feadc4dc631c1d4c3e7c56}, faults version {@code 0.9.0}, fetched on
+ * 2026-09-16. Refreshing it is a deliberate act: this test failing means the catalogue has
  * moved on, which is news rather than a nuisance.
+ *
+ * <p>It moved once already. Between the two versions the numbers were rearranged, not merely added
+ * to: a schema mismatch went from 101 to 200 and every security weakness from the 200s to the 300s.
+ * A count of "F101" published before the move and one published after name different faults, which
+ * is exactly why a report states the version it counted under.
  */
 class WfcFaultTest {
 
@@ -69,7 +74,7 @@ class WfcFaultTest {
     @DisplayName("a fault can be found by its number, and an unknown number finds nothing")
     void a_fault_is_found_by_its_number() {
         assertThat(WfcFault.byCode(100)).contains(WfcFault.HTTP_STATUS_500);
-        assertThat(WfcFault.byCode(101)).contains(WfcFault.SCHEMA_INVALID_RESPONSE);
+        assertThat(WfcFault.byCode(200)).contains(WfcFault.SCHEMA_INVALID_RESPONSE);
         assertThat(WfcFault.byCode(999)).isEmpty();
     }
 
@@ -77,7 +82,7 @@ class WfcFaultTest {
     @DisplayName("the two faults this release reports are named as the catalogue names them")
     void the_two_implemented_faults_are_named_as_the_catalogue_names_them() {
         assertThat(WfcFault.HTTP_STATUS_500.label()).isEqualTo("F100:HTTP Status 500");
-        assertThat(WfcFault.SCHEMA_INVALID_RESPONSE.code()).isEqualTo(101);
+        assertThat(WfcFault.SCHEMA_INVALID_RESPONSE.code()).isEqualTo(200);
         assertThat(WfcFault.SCHEMA_INVALID_RESPONSE.testCaseLabel())
                 .isEqualTo("returnsMismatchResponseWithSchema");
     }
@@ -85,7 +90,7 @@ class WfcFaultTest {
     @Test
     @DisplayName("the catalogue's version travels with the copy, so a report can say which it used")
     void the_catalogue_version_is_recorded() {
-        assertThat(WfcFault.CATALOGUE_VERSION).isEqualTo("0.7.0");
+        assertThat(WfcFault.CATALOGUE_VERSION).isEqualTo("0.9.0");
         assertThat(WfcFault.CATALOGUE_NAME).isEqualTo("Web Fuzzing Commons");
     }
 

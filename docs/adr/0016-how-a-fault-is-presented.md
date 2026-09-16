@@ -1,6 +1,6 @@
 # ADR-0016: A fault is identified by its catalogue number, described in our own words, and classified twice
 
-**Status:** Accepted
+**Status:** Accepted, amended at M1.10
 **Date:** 2026-09-15
 
 ## Context
@@ -107,3 +107,68 @@ written down:
 - **Deciding all this at M3.5, where the formats are.** The formats are where it is *rendered*; the
   categories are written before then, and a category written without knowing it will be crossed by
   status is a category that may not record what the crossing needs.
+
+---
+
+## Amendment (M1.10)
+
+**Date:** 2026-09-16
+
+**The catalogue moves, so the version travels with every number. And how many times an API fell over
+is a statistic about the run, not an entry in the fault list.**
+
+### Why the version matters more than it looked
+
+This decision adopted somebody else's fault numbers so that our counts could be put beside theirs.
+That works only while both sides mean the same thing by a number, and between the two published
+versions of the catalogue the numbers were **rearranged rather than added to**:
+
+| Fault | Catalogue 0.7.0 | Catalogue 0.9.0 |
+|---|---|---|
+| A reply whose shape does not match the specification | F101 | **F200** |
+| Every security weakness | F2xx | **F3xx** |
+| An API answering 500 | F100 | F100 |
+| Non-standard status code | did not exist | **F101** |
+
+So a report that said `F101` under the old catalogue and one that says `F101` under the new one name
+different faults. RESTest now ships 0.9.0, which is what the tools it is measured against use, and
+the test that compares our copy against the published file was refreshed with it.
+
+The decision to have every report state the catalogue's name and version is what made this safe to
+find and safe to fix. Reports already written are not wrong; they say which list they counted under.
+That was worth the line it cost.
+
+### Where a count of server errors belongs
+
+Benchmarks rank tools on how many server errors they provoke, and that number is **not** a count of
+faults from this catalogue. Two reasons, and both matter.
+
+A fault is a judgement some rule made. Which rules run changes between releases and between tools,
+and a rule can be switched off. A 5xx is something the API did, and it counts whether or not any rule
+had an opinion about it. Counting faults would therefore measure our oracle set as much as the API.
+
+And the catalogue has exactly one code for this, F100, whose description is about the status 500
+specifically. There is no code for the 5xx family. Reporting a 503 under F100 would make our reports
+incomparable with everybody else's under the same catalogue, which is the one thing this decision
+exists to prevent.
+
+So the count lives beside the fault list rather than inside it, and the fault catalogue is untouched:
+
+- **Operations that answered 500**, and **operations that answered any 5xx**, as two numbers.
+- Counted **over replies**, not over faults.
+- Distinct **by operation**, not by reply and not by error message.
+- Both spellings of that criterion are written into the report next to the numbers.
+
+The criterion is the one the field uses, checked rather than assumed. EvoMaster publishes two
+statistics of exactly this shape, one counting endpoints with any 5xx and one counting 500s per
+endpoint, and its fault identity deliberately excludes the response message. In black-box testing,
+where the last executed line inside the service is unavailable, its count collapses to one per
+operation, which is what is implemented here.
+
+One caveat is recorded rather than resolved. The REST League 2027 rules describe uniqueness as
+"sufficiently distinct error messages", and no reference implementation found does that: the tool its
+footnote cites groups by operation, path and the set of parameter names, and compares no message at
+all. The organisers should be asked which they compute. If the answer turns out to be message-based,
+this amendment needs a second criterion beside the first, not a replacement: the two answer different
+questions and a report can carry both.
+

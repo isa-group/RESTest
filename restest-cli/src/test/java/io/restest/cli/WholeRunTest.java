@@ -109,7 +109,7 @@ class WholeRunTest {
                 .contains("listPets - GET " + api.baseUrl() + "/pets");
         assertThat(printed)
                 .describedAs("the API that lied about its own shape is reported too")
-                .contains("F101")
+                .contains("F200")
                 .contains("getPet - GET " + api.baseUrl() + "/pets/")
                 .contains("/id: string found, integer expected");
         assertThat(printed)
@@ -120,7 +120,7 @@ class WholeRunTest {
                 JsonText.read(Files.readString(directory.resolve("report.json")));
         assertThat(codesIn(report))
                 .describedAs("two kinds of fault, and only the two that were planted")
-                .containsExactlyInAnyOrder(100, 101);
+                .containsExactlyInAnyOrder(100, 200);
         assertThat(totalIn(report, "operations"))
                 .describedAs("all three operations were exercised, including the healthy one")
                 .isEqualTo(3);

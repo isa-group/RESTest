@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-47 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
+48 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
 Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
@@ -33,6 +33,7 @@ its own pull request, so the table and the branch history never drift apart.
 | 1.7b ✅ [#297](https://github.com/isa-group/RESTest/pull/297) | `--store` (off by default); batched SQLite write path; the JSON report bounded per operation and fault kind; one directory per run | A default run tests far more in the same budget and writes kilobytes instead of hundreds of megabytes; keeping a run costs disk but no longer costs time |
 | 1.8 | Audit of the branch acted on: faults printed as they are found rather than in batches; a reply RESTest cannot check is never reported as a fault; untyped object schemas, declared defaults and dangling references read correctly; the same command explains itself the same way twice; an unwritable `--out` answers 3 | What the tool says about a document, and about a reply, is true - and the whole 50-document corpus is parsed by a test for the first time |
 | 1.9 | 🛑 `evaluation/` harness: Dockerfile, entry script, pinned RESTGym commit, `run-evaluation.sh` | First campaign-comparable numbers: v2 vs RESTest 1.x vs the published 2026 field |
+| 1.10 | The shared fault catalogue brought up to date, and server errors counted the way benchmarks count them: over replies rather than faults, distinct by operation, beside the fault list rather than inside it. Delivered before 1.9 | Our numbers can be put beside another tool's without a footnote explaining why they are not comparable |
 
 The golden corpus of specifications used throughout M1 and M2 lives at
 `restest-spec/src/test/resources/specifications/`, in three directories: `restleague-2027/`,

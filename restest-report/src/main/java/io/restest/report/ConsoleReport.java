@@ -57,6 +57,13 @@ import java.util.Set;
  */
 public final class ConsoleReport implements RunListener {
 
+    /**
+     * The one status code the shared fault catalogue names as a fault of its own. The rest of the
+     * 5xx family is counted beside it but is not the same claim: a 503 is an API saying it cannot
+     * serve you right now, which is not the same as an API falling over while trying.
+     */
+    private static final int SERVER_ERROR = 500;
+
     /** How many particular disagreements to print under one fault before saying how many remain. */
     private static final int DETAILS_SHOWN = 10;
 
@@ -77,6 +84,17 @@ public final class ConsoleReport implements RunListener {
     /** How every attempt ended, faulty or not, by family of status code. */
     private final Map<String, Integer> repliesByClass = new LinkedHashMap<>();
     private final Set<OperationId> operations = new LinkedHashSet<>();
+
+    /**
+     * Which operations made the API fall over, kept as sets rather than counted.
+     *
+     * <p>This is the number benchmarks compare tools on, and they count operations rather than
+     * replies: one operation asked ten thousand times and broken every time is one broken operation,
+     * not ten thousand. Sets of operation names, so the memory this costs is bounded by the size of
+     * the document and not by the length of the run.
+     */
+    private final Set<OperationId> answered500 = new LinkedHashSet<>();
+    private final Set<OperationId> answeredAny5xx = new LinkedHashSet<>();
     private int attempts;
     private int faults;
 
@@ -109,6 +127,7 @@ public final class ConsoleReport implements RunListener {
                 attempts++;
                 operations.add(completed.interaction().testCase().operation());
                 repliesByClass.merge(classOf(completed.interaction()), 1, Integer::sum);
+                noteServerErrors(completed.interaction());
             }
             case RunEvent.FaultFound found -> {
                 print(found.finding());
@@ -177,14 +196,25 @@ public final class ConsoleReport implements RunListener {
 
     /** Which family that answer belongs to, or that there was none. */
     private static String classOf(Interaction interaction) {
-        Optional<Integer> status = switch (interaction.outcome()) {
-            case InteractionOutcome.Answered answered ->
-                    Optional.of(answered.response().statusCode());
-            case InteractionOutcome.MalformedResponse malformed ->
-                    malformed.statusLine().map(line -> line.statusCode());
-            case InteractionOutcome.TransportFailure ignored -> Optional.empty();
-        };
-        return status.map(code -> (code / 100) + "xx").orElse("no reply");
+        return interaction.statusCode().map(code -> (code / 100) + "xx").orElse("no reply");
+    }
+
+    /**
+     * Remembers that this operation made the API fall over.
+     *
+     * <p>Counted from the reply rather than from what the rules made of it. A fault is a judgement
+     * and the rules that make them come and go; a 5xx is something the API did, and it counts
+     * whether or not any rule had an opinion about it.
+     */
+    private void noteServerErrors(Interaction interaction) {
+        interaction.statusCode()
+                .filter(status -> status >= 500 && status <= 599)
+                .ifPresent(status -> {
+                    answeredAny5xx.add(interaction.testCase().operation());
+                    if (status == SERVER_ERROR) {
+                        answered500.add(interaction.testCase().operation());
+                    }
+                });
     }
 
     private void summarise(RunEvent.RunFinished finished) {
@@ -201,6 +231,10 @@ public final class ConsoleReport implements RunListener {
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> entry.getValue() + " " + entry.getKey())
                 .collect(java.util.stream.Collectors.joining(", ")));
+        if (!answeredAny5xx.isEmpty()) {
+            write("  " + answered500.size() + " operation(s) answered 500, "
+                    + answeredAny5xx.size() + " answered some 5xx");
+        }
         if (counts.isEmpty()) {
             write("no faults found");
             return;
