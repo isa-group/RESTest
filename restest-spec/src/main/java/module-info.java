@@ -23,27 +23,23 @@
  * module is already ready to be found rather than needing a second change alongside the first
  * consumer, at no cost while nothing looks for it.
  *
- * <p>Two of the required modules are not named by an import anywhere in this module's own code:
- * {@code swagger.parser} and {@code swagger.parser.core} are automatic modules (their jars carry no
- * {@code Automatic-Module-Name}, so the name is derived from the jar's filename - the build's own
- * warning about this is expected, not a defect to fix), and the parser library's own internal
- * delegation between its jars happens without this module's {@code requires} needing to mention
- * every one of them: an automatic module can read every other module on the path regardless of what
- * named this one. What is required here is exactly what this module's own source imports from -
- * confirmed by removing each clause in turn and recompiling.
+ * <p>Two of the required modules carry names nobody chose: {@code swagger.parser.core} and
+ * {@code swagger.parser.v3} come out of jars that never say what they are called, so the name is
+ * taken from the jar's filename instead. The build warns about that on every compile, and the
+ * warning is expected rather than a defect to fix - it is a warning about somebody else's jars.
  *
- * <p>One more filename-derived name is at stake here that this module does not control: a transitive
- * dependency of {@code swagger-parser} (the 1.x-era library it uses internally to convert an OAS 2.0
- * document) derives the identical automatic module name, {@code swagger.parser}, from its own jar's
- * filename, and is silently dropped from the module graph as a result - confirmed harmless for OAS
- * 2.0 conversion specifically (a real Swagger 2.0 corpus document converts and parses correctly end
- * to end), but a genuine, filename-derived collision nonetheless, and a real ceiling on how cleanly
- * this module can ever be published as its own, strict JPMS artifact.
+ * <p>Asking for those two is also a deliberate choice over a third jar in the same library, which
+ * offers a single convenient entry point covering both. That jar shares a package with two much
+ * older jars the library still carries for reading documents written in the previous format, and a
+ * package that arrives from several jars at once is ambiguous: some compilers quietly pick one and
+ * carry on, others refuse the import outright and fill an editor with errors. Naming the two
+ * readers keeps this module clear of that package, which is why the parser class here offers a
+ * document to each reader in turn instead of calling the one entry point.
  */
 module io.restest.spec {
     requires io.restest.core;
-    requires swagger.parser;
     requires swagger.parser.core;
+    requires swagger.parser.v3;
     requires io.swagger.v3.core;
     requires io.swagger.v3.oas.models;
     requires org.yaml.snakeyaml;
