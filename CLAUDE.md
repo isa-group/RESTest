@@ -60,7 +60,7 @@ was edited.
 6. No global mutable state. Two runs must coexist in one JVM.
 7. The request loop is never blocked by computation; idle time is measured and reported.
 8. Open formats in, open formats out.
-9. The tool runs standalone. Evaluation harnesses live in `evaluation/`, outside the build.
+9. The tool runs standalone. Evaluation harnesses live in a repository of their own, not in this one.
 10. Apache-2.0, semantic versioning, published on every tag.
 
 ## Hard rules
@@ -68,8 +68,12 @@ was edited.
 - **No AI abstractions.** No `LlmProvider`, no `restest-ai` module, no dependency on any model
   library. "Ready for AI" means open formats, the generic `ExternalDataProvider` interface, and
   constraint and flow sources that can fire mid-run. See ADR-0008.
-- **No benchmark platform inside `src/`.** Searching `src/` for "restgym" must return zero hits.
-  All of it lives in `evaluation/`, which is not a Maven module. See ADR-0011.
+- **No benchmark platform in this repository.** Searching it for "restgym" — in file contents and
+  in file names — must return hits only in the documents that explain the relationship: this file,
+  `ROADMAP.md`, `docs/DESIGN.md`, `docs/adr/0011-evaluation-harness.md` and
+  `.claude/agents/reviewer.md`. `SourceTreeRulesTest` holds the list and enforces it; that list is
+  the authority, and this sentence follows it. The adapter and the campaign scripts live in
+  `isa-group/restgym-restest2`, which is private for now. See ADR-0011, amended at M1.9.
 - **Nothing from the deferred backlog** ("Out of scope for v2.0" in `docs/DESIGN.md`) without
   explicit approval, even
   if it looks easy. That list includes dependency inference, semantic-oracle inference, metamorphic
@@ -126,7 +130,6 @@ that sees every module at once. See ADR-0004, Amendment (M0.2), and `docs/ci.md`
 ./mvnw verify -Psmoke              # just the smoke run against two containerised APIs (needs Docker)
 ./restest run <spec> --url <base> --budget 30s   # the tool itself, from this checkout
 ./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
-./evaluation/run-evaluation.sh --apis market,scs --budget 10 --repetitions 1
 ```
 
 ## Working style

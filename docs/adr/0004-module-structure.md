@@ -33,11 +33,9 @@ restest-cli       command line. The only module permitted to terminate the proce
 
 Dependencies point inwards, towards `restest-core`. `restest-core` depends on nothing of ours.
 
-The repository also contains `evaluation/`, which is **not** a Maven module (ADR-0011).
-
 ArchUnit tests enforce: the dependency direction; that `io.swagger` appears only in `restest-spec`;
 that no module has static mutable state; that `System.exit` appears only in `restest-cli`; and that
-nothing in `src/` references a benchmark platform.
+nothing in the repository references a benchmark platform (ADR-0011, amended at M1.9).
 
 ## Consequences
 
