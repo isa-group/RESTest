@@ -60,6 +60,32 @@ class InteractionTest {
     }
 
     @Test
+    @DisplayName("the status code is readable from every kind of outcome, including a reply cut short")
+    void the_status_code_is_readable_from_every_outcome() {
+        Interaction answered = Interaction.answered(TEST_CASE, REQUEST,
+                new HttpResponseRecord(StatusLine.of(503), List.of(), Optional.empty()),
+                Instant.now(), Duration.ZERO);
+        Interaction cutShort = Interaction.malformedResponse(TEST_CASE, REQUEST,
+                "declared Content-Length exceeds the bytes actually sent",
+                Optional.of(StatusLine.of(500)), List.of(), Optional.empty(),
+                Instant.now(), Duration.ZERO);
+        Interaction unreadable = Interaction.malformedResponse(TEST_CASE, REQUEST,
+                "nothing that could be read as a status line arrived", Optional.empty(),
+                List.of(), Optional.empty(), Instant.now(), Duration.ZERO);
+        Interaction nothing = Interaction.transportFailure(TEST_CASE, REQUEST,
+                "connection refused", Instant.now(), Duration.ZERO);
+
+        assertThat(answered.statusCode()).contains(503);
+        // The one worth spelling out. A status line arrives first and is complete long before the
+        // body it precedes, so an API that answered 500 and then dropped the connection did answer
+        // 500. Anything counting how an API behaved wants that included; whoever judges the body
+        // against its declared shape does not, and asks a different question.
+        assertThat(cutShort.statusCode()).contains(500);
+        assertThat(unreadable.statusCode()).isEmpty();
+        assertThat(nothing.statusCode()).isEmpty();
+    }
+
+    @Test
     @DisplayName("a malformed response keeps the whole status line when it parsed, not only the code")
     void a_malformed_response_keeps_what_did_parse() {
         StatusLine statusLine = new StatusLine(200, Optional.of("OK"), Optional.of("HTTP/1.1"));

@@ -123,7 +123,7 @@ This decision adopted somebody else's fault numbers so that our counts could be 
 That works only while both sides mean the same thing by a number, and between the two published
 versions of the catalogue the numbers were **rearranged rather than added to**:
 
-| Fault | Catalogue 0.7.0 | Catalogue 0.9.0 |
+| Fault | Faults 0.7.0 | Faults 0.8.0 |
 |---|---|---|
 | A reply whose shape does not match the specification | F101 | **F200** |
 | Every security weakness | F2xx | **F3xx** |
@@ -131,8 +131,17 @@ versions of the catalogue the numbers were **rearranged rather than added to**:
 | Non-standard status code | did not exist | **F101** |
 
 So a report that said `F101` under the old catalogue and one that says `F101` under the new one name
-different faults. RESTest now ships 0.9.0, which is what the tools it is measured against use, and
-the test that compares our copy against the published file was refreshed with it.
+different faults. RESTest now ships faults 0.8.0, which is what the tools it is measured against use,
+and the test that compares our copy against the published file was refreshed with it.
+
+**The version of the catalogue is not the version of the release it ships in**, and getting that
+wrong was the first thing this amendment did. Web Fuzzing Commons publishes four things together -
+authentication, faults, a report format and a web report - and they began on one version number and
+have since drifted apart. The release tagged `v0.9.0` carries faults **0.8.0**. Naming the tag would
+have stated a version the catalogue never had, and anybody putting our count beside somebody else's
+would have concluded the two counted under different lists when they did not. The file upstream
+declares the four numbers in is now pinned beside our copy, and the test reads the version from it
+instead of from a literal repeated in two places.
 
 The decision to have every report state the catalogue's name and version is what made this safe to
 find and safe to fix. Reports already written are not wrong; they say which list they counted under.
@@ -158,6 +167,14 @@ So the count lives beside the fault list rather than inside it, and the fault ca
 - Counted **over replies**, not over faults.
 - Distinct **by operation**, not by reply and not by error message.
 - Both spellings of that criterion are written into the report next to the numbers.
+
+**One consequence is deliberate and worth stating.** The count of operations that answered 500 and
+the number of F100 faults can disagree, and they are not measuring the same thing. An API that
+answers 500 and then drops the connection mid-body counts here, because the status line arrived and
+is complete; it produces no F100, because a reply RESTest could not finish reading is not evidence
+about the API and the rule that judges replies says nothing about it. One number is about what the
+API did, the other about what our rules could establish. A run can show a server error on an
+operation with no fault reported for it, and that is the honest answer rather than a discrepancy.
 
 The criterion is the one the field uses, checked rather than assumed. EvoMaster publishes two
 statistics of exactly this shape, one counting endpoints with any 5xx and one counting 500s per

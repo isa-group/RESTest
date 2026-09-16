@@ -104,8 +104,15 @@ public enum WfcFault implements FaultCategory {
     /**
      * Which published version of the catalogue this list was copied from. Reports say so, because a
      * fault code only means something next to the version of the list it was taken from.
+     *
+     * <p>This is the version of the fault catalogue itself, which is not the version of the
+     * collection it is published in. Web Fuzzing Commons ships four things together and they started
+     * on one version number and have since drifted apart: the release tagged 0.9.0 carries faults
+     * 0.8.0. Taking the tag would state a version the catalogue never had, and anybody comparing our
+     * count with somebody else's would conclude the two counted under different lists when they did
+     * not.
      */
-    public static final String CATALOGUE_VERSION = "0.9.0";
+    public static final String CATALOGUE_VERSION = "0.8.0";
 
     /** What the catalogue is called, as its own authors write it. */
     public static final String CATALOGUE_NAME = "Web Fuzzing Commons";

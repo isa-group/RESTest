@@ -46,7 +46,7 @@ class JsonReportTest {
         assertThat(text(object(report, "tool"), "name")).isEqualTo("RESTest");
         assertThat(text(object(report, "faultCatalogue"), "name"))
                 .isEqualTo("Web Fuzzing Commons");
-        assertThat(text(object(report, "faultCatalogue"), "version")).isEqualTo("0.9.0");
+        assertThat(text(object(report, "faultCatalogue"), "version")).isEqualTo("0.8.0");
         assertThat(text(report, "createdAt")).isEqualTo("2026-09-13T10:30:00Z");
         assertThat(text(object(report, "api"), "title")).isEqualTo("Pets");
         assertThat(text(object(report, "api"), "baseUrl")).isEqualTo(Runs.BASE);
