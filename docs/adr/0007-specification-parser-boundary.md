@@ -1,7 +1,7 @@
 # ADR-0007: The parser sits behind our own interface; OAS scope is 2.0, 3.0.x and 3.1.x
 
-**Status:** Accepted, amended at M0.2, reversed at M1.2
-**Date:** 2026-09-11 (amended 2026-09-11, reversed 2026-09-12)
+**Status:** Accepted, amended at M0.2 and in #303, reversed at M1.2
+**Date:** 2026-09-11 (amended 2026-09-11, reversed 2026-09-12, amended 2026-09-16)
 
 > The Context and Decision below are as originally accepted, with the superseded scope marked. The
 > M0.2 amendment put OAS 3.2 in scope; the M1.2 amendment reverses that and is the current state:
@@ -171,3 +171,70 @@ as the original ADR promised.
 - `openapi-processor/openapi-parser`, evaluated for M0.2, is not adopted. Nothing else in this ADR
   changes: the interface remains the boundary, and adding a second backend later is still a
   module-sized change, not a rearchitecture.
+
+## Amendment (#303)
+
+**Date:** 2026-09-16
+
+Not tied to a milestone: a correction made when the symptom surfaced, recorded here because it is a
+standing constraint on how this module may use the parser library, not a one-off fix.
+
+**`restest-spec` does not name the package `io.swagger.parser`.** It uses the readers behind that
+package's front door instead, and its module declaration requires `swagger.parser.v3` and
+`swagger.parser.core` rather than `swagger.parser`. Everything else in this ADR stands: the scope,
+the boundary, the canonical model, the skip-and-report rule.
+
+### Why
+
+This ADR's Context opens by describing what happens when a project lets `swagger-parser` arrive on
+its own terms: it "arrives transitively at 2.0.25 or 2.0.27 depending on Maven's resolution order".
+The same shape of problem exists one level further down, and it is worth writing where the first one
+is written.
+
+`swagger-parser` is not one jar. Three of the jars it brings put classes into a single package,
+`io.swagger.parser`: the current parser, which contributes `OpenAPIParser`, and two 1.x-era jars kept
+for reading documents written in the older format. A package supplied by more than one automatic
+module is ambiguous, and the two Java compilers in common use disagree about what to do with that.
+The one Maven runs picks a jar and carries on. The one the Eclipse-based editors run refuses the
+import:
+
+```
+The package io.swagger.parser is accessible from more than one module:
+swagger.compat.spec.parser, swagger.parser, swagger.parser.safe.url.resolver
+```
+
+So `./mvnw verify` was green while an editor showed errors on the same file, and the editor was
+right — about the library, not about this project. Two attempts to settle it in the build failed
+before the cause was understood, and both failures are instructive. Holding the older jar at
+`runtime` scope changes nothing: the module path the compiler receives is identical with and without
+it. Excluding that jar changes nothing either: the package comes from three jars, not two, and
+removing one of them leaves the ambiguity intact. No arrangement of scopes or exclusions can fix a
+package that several jars insist on sharing.
+
+### How
+
+`OpenAPIParser` is a façade with no logic of its own: it asks `OpenAPIV3Parser` for the readers the
+library has registered and gives the document to each until one returns something. `restest-spec`
+does that itself, over classes in packages that only one jar contributes to, so the ambiguous package
+is never mentioned. Which reader handles which document is unchanged, because it is the same list in
+the same order.
+
+The constraint this leaves behind, for whoever next upgrades the library: **check whether
+`io.swagger.parser` is still split before importing anything from it.** A package can stop being
+split, and this restriction would then be pointless; it can also spread to another package, and the
+same symptom would come back somewhere new. Compiling `restest-spec` with the Eclipse compiler is
+what answers the question — the Maven build will not, by design, because it resolves the ambiguity
+silently.
+
+### Consequences
+
+- The boundary this ADR exists for did its job. A library shipping a package from three jars at once
+  is exactly the kind of thing that, in 1.x, would have spread; here it reached one class in one
+  module and stopped.
+- One rule to remember at the boundary that the build does not enforce. It is written in a comment
+  beside the code and here; an architecture test forbidding any reference to `io.swagger.parser`
+  would enforce it, and has not been written.
+- A green build is not evidence that the module graph is sound. It was green throughout.
+- The remaining untidiness is the library's, not ours: `swagger-parser-core` and `swagger-parser-v3`
+  still have module names derived from their filenames, which the build warns about, and which
+  remains a ceiling on ever publishing `restest-spec` as a strict JPMS artifact.
