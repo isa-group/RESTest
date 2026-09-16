@@ -21,12 +21,13 @@ import io.restest.core.model.SpecificationIssue;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.UnsupportedSchema;
 import io.restest.core.spec.SpecificationParser;
-import io.swagger.parser.OpenAPIParser;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Json31;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.SpecVersion;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.parser.OpenAPIV3Parser;
+import io.swagger.v3.parser.core.extensions.SwaggerParserExtension;
 import io.swagger.v3.parser.core.models.ParseOptions;
 import io.swagger.v3.parser.core.models.SwaggerParseResult;
 import java.io.IOException;
@@ -89,7 +90,7 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
 
         ParseOptions options = new ParseOptions();
         options.setResolve(false);
-        SwaggerParseResult result = new OpenAPIParser().readContents(content.get(), null, options);
+        SwaggerParseResult result = readWithWhicheverParserUnderstands(content.get(), options);
         OpenAPI api = result.getOpenAPI();
         List<String> messages = result.getMessages();
         if (api == null) {
@@ -252,4 +253,32 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
     private static String decode(byte[] bytes) {
         return new String(bytes, StandardCharsets.UTF_8);
     }
+
+    // io.swagger.parser.OpenAPIParser does exactly this and is the obvious thing to call. It cannot
+    // be used here: its package, io.swagger.parser, also arrives from two 1.x-era jars the parser
+    // library still pulls in - swagger-parser-1.0.76 and swagger-compat-spec-parser-1.0.76 - and a
+    // package supplied by several automatic modules at once is ambiguous. javac settles it by
+    // dropping a jar and compiles; ECJ, the compiler behind the Eclipse-based editors, refuses the
+    // import outright, whatever order the jars are in:
+    //     The package io.swagger.parser is accessible from more than one module:
+    //     swagger.compat.spec.parser, swagger.parser
+    // Calling the readers directly keeps this module out of that package altogether.
+    /**
+     * Offers the document to each reader the parser library provides, in turn, and keeps the first
+     * answer that actually produced a description of the API. One reader understands the current
+     * format, another converts documents written in the older one, and which is needed cannot be
+     * known until the document has been tried.
+     */
+    private static SwaggerParseResult readWithWhicheverParserUnderstands(
+            String content, ParseOptions options) {
+        SwaggerParseResult result = null;
+        for (SwaggerParserExtension parser : OpenAPIV3Parser.getExtensions()) {
+            result = parser.readContents(content, null, options);
+            if (result != null && result.getOpenAPI() != null) {
+                return result;
+            }
+        }
+        return result;
+    }
+
 }
