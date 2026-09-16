@@ -46,7 +46,8 @@ These fail the build, and they are not negotiable in a pull request:
 
 - English everywhere: code, comments, tests, commits, branches, issues, documentation.
 - No AI-specific abstraction anywhere (ADR-0008).
-- No reference to any evaluation platform under `src/` (ADR-0011).
+- No reference to any evaluation platform anywhere in this repository — in a file's contents or in
+  its name — outside the documents the rule's own exemption list names (ADR-0011).
 - Nothing from "Out of scope for v2.0" in `docs/DESIGN.md` without explicit approval.
 - No architecture test, coverage threshold or mutation threshold is ever weakened to make a build
   pass. If a rule is wrong, change it deliberately, in its own pull request, with the reasoning.
@@ -68,8 +69,8 @@ the same increment. Ordinary implementation choices belong in the pull request's
 ./mvnw verify -Psmoke               # just the smoke run against two containerised APIs (needs Docker)
 ./restest run <spec> --url <base>   # the tool itself, from this checkout
 ./mvnw org.pitest:pitest-maven:mutationCoverage -pl restest-oracles
-./evaluation/run-evaluation.sh --apis market,scs --budget 10 --repetitions 1
 ```
 
-The last one is the milestone campaign harness. It is optional, it is not part of the build, and the
-tool never needs it (ADR-0011).
+Milestone campaigns against the published benchmark are run from a repository of their own, which
+has its own instructions; [ADR-0011](docs/adr/0011-evaluation-harness.md) says which repository and
+why it is not this one. Nothing here builds against it, and the tool never needs it.

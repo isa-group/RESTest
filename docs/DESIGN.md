@@ -57,7 +57,7 @@ Terms used throughout the repository, in commit messages and in pull requests.
 | **Idle time** | The fraction of the test budget during which the tool had no request in flight — time spent computing instead of testing. Reported on every run. |
 | **Fuzzing** | Sending deliberately malformed or extreme inputs to see whether the API handles them correctly. |
 | **WFC** (Web Fuzzing Commons) | A shared, numbered catalogue of API fault types, already adopted by EvoMaster and Schemathesis. Using the same codes makes our fault reports directly comparable with theirs, instead of each tool inventing its own taxonomy. |
-| **RESTGym** | The Docker-based infrastructure behind the SBFT REST League: it runs testing tools against a fixed set of instrumented APIs and computes comparable metrics. We drive it for milestone campaigns; the tool itself never references it. |
+| **RESTGym** | The Docker-based infrastructure behind the SBFT REST League: it runs testing tools against a fixed set of instrumented APIs and computes comparable metrics. We drive it for milestone campaigns from a separate repository; nothing in this one references it. |
 | **ANTLR4** | A library for turning a grammar — the formal definition of a language such as IDL — into a parser. |
 | **ArchUnit** | A library for writing *tests about the structure of the code itself*, for example "no class in the core may depend on the network layer", so architectural rules fail the build instead of eroding silently. |
 | **Native image** | Compiling the tool into a standalone executable that starts in well under a second, with no Java installation required. |
@@ -76,7 +76,7 @@ enforcement is listed under [Quality gates](#quality-gates).
 6. No global mutable state. Two runs must coexist in one JVM.
 7. The request loop is never blocked by computation; idle time is measured and reported.
 8. Open formats in, open formats out.
-9. The tool runs standalone; evaluation harnesses live outside the build and are optional.
+9. The tool runs standalone; evaluation harnesses live in a repository of their own, not in this one.
 10. English everywhere; Apache-2.0; semantic versioning; published on every tag.
 
 ## Architecture
@@ -125,8 +125,8 @@ also persists everything observed, which is what makes offline re-analysis possi
 5. **The loop is never blocked; idle time is reported.** [ADR-0009](adr/0009-non-blocking-engine.md)
 6. **Narrow SPIs, service discovery, module boundaries.** A new oracle or provider is one class.
 7. **The tool is standalone.** A specification and a base URL are all it ever requires. Evaluation
-   harnesses live in `evaluation/`, outside the build, optional, and invisible to the Java code.
-   [ADR-0011](adr/0011-evaluation-harness.md)
+   harnesses live in a repository of their own, outside this one, and no file here builds against,
+   depends on or names one. [ADR-0011](adr/0011-evaluation-harness.md), amended at M1.9
 
 ## Extension points
 
@@ -179,17 +179,20 @@ needs a comparison against other tools on the same APIs with the same budget.
 That comparison runs on **RESTGym**, the Docker-based infrastructure behind the SBFT REST League: it
 executes testing tools against a fixed set of instrumented APIs and computes comparable metrics.
 Comparability with published results is exactly what it provides, which is why we use it rather than
-inventing a private benchmark. Milestone campaigns are driven from this repository, against a pinned
-RESTGym commit, so a campaign can be re-run and get the same numbers.
+inventing a private benchmark. A campaign pins the exact version of both the benchmark and the tool,
+so it can be re-run months later and get the same numbers.
 
 Two boundaries make that a measurement rather than a dependency, and both are enforced rather than
 intended:
 
-- **The harness is not part of the build.** It lives in a top-level `evaluation/` directory that is
-  not a Maven module. The tool builds, ships and runs without it.
-- **Nothing under `src/` references it.** No dictionaries shipped by the benchmark, no thresholds
-  derived from its verification rules, no assumptions about its layout. A test fails the build if
-  the platform's name appears anywhere in the source tree.
+- **The harness is not in this repository at all.** It lives in
+  [`isa-group/restgym-restest2`](https://github.com/isa-group/restgym-restest2) — private until the
+  replication package is published — which packages the tool for the benchmark and drives the
+  campaigns. Deleting it changes nothing here.
+- **Nothing here references the benchmark.** No dictionaries shipped by it, no thresholds derived
+  from its verification rules, no assumptions about its layout. A test fails the build if the
+  platform's name appears in any file of this repository other than the handful of documents — this
+  one among them — that explain the relationship.
 
 A tool that has absorbed assumptions from the benchmark it is measured on is both worse engineering
 and worse science. [ADR-0011](adr/0011-evaluation-harness.md) records the reasoning and the layout.
@@ -346,6 +349,8 @@ Standards:
 Evaluation:
 
 - RESTGym, the benchmark infrastructure used for milestone campaigns — https://github.com/restgym/restgym
+- The RESTest adapter and campaign scripts for it, private until the replication package is
+  published — https://github.com/isa-group/restgym-restest2
 
 ## Contributing
 

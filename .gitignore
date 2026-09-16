@@ -32,13 +32,6 @@ restest-out/
 /tmp/
 
 # ---------------------------------------------------------------------------
-# Evaluation harness
-# Scoreboards are committed; raw run output is not.
-# ---------------------------------------------------------------------------
-evaluation/results/raw/
-evaluation/.scratch/
-
-# ---------------------------------------------------------------------------
 # Credentials and local overrides
 # ---------------------------------------------------------------------------
 src/test/resources/auth/*

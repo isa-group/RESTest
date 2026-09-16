@@ -73,9 +73,9 @@ reading a document from a web address, which nothing else does.
 | Compilation and unit tests | every module | the obvious |
 | Java 21 bytecode | `PublishedBytecodeTest` | a class file compiled for a later release; a published jar that does not say which version of RESTest it is |
 | Module boundaries | `ProductionArchitectureTest` | a dependency pointing outwards; a class in no module; `io.swagger` outside `restest-spec`; the schema validator outside `restest-oracles`; the JSON library outside `restest-core`; the database driver outside `restest-store`; process termination outside `restest-cli` (`System.exit`, `Runtime.exit`/`halt`, this JVM's `ProcessHandle.destroy`, whether called or referenced); a reassignable static field; a network dependency in `restest-core` |
-| The rules themselves | `ArchitectureRulesSelfTest` | a rule that no longer reports the violation it exists to report, or that reports something it should permit |
+| The rules themselves | `ArchitectureRulesSelfTest`, and for the source-tree rules the self-tests in `SourceTreeRulesTest` | a rule that no longer reports the violation it exists to report, or that reports something it should permit |
 | The harness's reach | `HarnessCoverageTest` | a module whose compiled classes the rules cannot see, so no rule constrains them |
-| Source-tree invariants | `SourceTreeRulesTest` | a module without `module-info.java`; a benchmark-platform reference under `src/` or in a POM; an action pinned to a tag, a SHA with no version comment, or no pins found at all |
+| Source-tree invariants | `SourceTreeRulesTest` | a module without `module-info.java`; a benchmark-platform reference in any file of this repository, or in the name of one, outside the five documents the rule names; one of those five no longer needing to be named there; an action pinned to a tag, a SHA with no version comment, or no pins found at all |
 | Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
 | Mutation score | PIT | run on demand, not in the build: `restest-oracles` scoring below 85% |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
@@ -249,10 +249,15 @@ Then, in the same commit:
 Invariants about text rather than bytecode — a file that must exist, a name that must not appear —
 belong in `SourceTreeRulesTest` instead. ArchUnit cannot see a string that never became a class.
 
-Note the scope of the benchmark-platform rule if you extend it: it reads the module source trees and
-the POMs, and deliberately not `.github` or `evaluation/`. Both exclusions are load-bearing —
-ADR-0011 puts the harness in `evaluation/`, and the nightly benchmark workflow at M1.9 will have to
-invoke it by name, so scanning either would fail on sanctioned work.
+Note the scope of the benchmark-platform rule if you extend it. It reads every file git tracks, the
+build files, and every module's `src/` from disk whether git tracks it or not — so a file written and
+not yet committed fails its author's own build rather than waiting for CI. A checkout with no history
+at all, an unpacked source release, is walked instead; a checkout whose git cannot answer is not,
+because its working directory holds things that are not part of the repository. The rule matches a
+file's name as well as its contents, and permits the platform's name only in the documents its own
+exemption list names. Adding a workflow, a script or a note that names the platform means adding it
+to that list, in the same commit, with a reason. Both of its gates have a test of their own in the
+same class, which is where to add one if you widen it again.
 
 ## Dependency updates
 
