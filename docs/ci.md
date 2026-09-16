@@ -37,7 +37,8 @@ amendment explains why that beats the alternatives.
 ### The smoke job
 
 The second job, added at M1.7, runs the tool itself — `restest run` — against two open-source APIs
-in containers, and then checks that the launcher starts:
+in containers, runs it once more inside a plain Java 21 runtime (M1.11), and then checks that the
+launcher starts:
 
 ```bash
 ./mvnw --batch-mode --no-transfer-progress verify -Psmoke
@@ -79,6 +80,7 @@ reading a document from a web address, which nothing else does.
 | Coverage | JaCoCo | `restest-core` or `restest-oracles` falling below 90% of lines or 85% of branches; measured everywhere else without blocking |
 | Mutation score | PIT | run on demand, not in the build: `restest-oracles` scoring below 85% |
 | End-to-end smoke run | `SmokeRunTest`, in the `smoke` job | the command failing against two real containerised APIs, or answering 2, 3 or 4 rather than "ran, and here is what I found". Runs only where a container runtime exists, and fails rather than skips when it was asked for |
+| Runs on a plain runtime | `StockJreRunTest`, in the `smoke` job | the tool reaching for a part of Java that a runtime carrying only the compulsory modules does not have, which stops it before its first request; and a seed meaning a different run there than it does here. Pinned to Java 21, the oldest release supported and one of the two where the generators RESTest once named are optional; the gate refuses to run on an image where they are not |
 
 ### Coverage
 
@@ -280,6 +282,8 @@ quietly stop matching. It scans every `.yml` under `.github`, so composite actio
 Silencing it with `skipIfEmpty` would leave `mvn install` without an artifact to install, so the
 warning stays.
 
-The first `-Psmoke` run on a machine downloads about 160 MB of container images — less than the two
-add up to, because they share their base layers. Afterwards the job is dominated by the two
-ten-second runs rather than by the download.
+The first `-Psmoke` run on a machine downloads about 280 MB of container images: about 160 MB for
+the two APIs — less than they add up to, because they share their base layers — and about 120 MB
+more for the Java 21 runtime the plain-runtime gate uses. Afterwards the job is dominated by the two
+ten-second runs rather than by the download; the plain-runtime gate adds about six seconds, most of
+it spent copying the compiled class path into the container.

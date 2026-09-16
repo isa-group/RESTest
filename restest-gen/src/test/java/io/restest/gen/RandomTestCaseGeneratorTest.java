@@ -44,6 +44,15 @@ import org.junit.jupiter.api.Test;
 /** Deciding what to try against an API, without anybody having configured anything. */
 class RandomTestCaseGeneratorTest {
 
+    /**
+     * The operations seed 20260912 picks, in order, from three that carry no parameters.
+     *
+     * <p>Recorded from a run, not derived from anything. It is the seed's meaning written down.
+     */
+    private static final String PINNED_ORDER =
+            "stores stores vets stores stores vets pets vets vets stores "
+            + "stores vets stores pets pets stores stores vets stores stores";
+
     private static final Operation LIST_PETS = Operation.of(HttpMethod.GET, "/pets", List.of(
             Parameter.of("status", ParameterLocation.QUERY, true, StringSchema.of()),
             Parameter.of("limit", ParameterLocation.QUERY, false, StringSchema.of())));
@@ -105,6 +114,39 @@ class RandomTestCaseGeneratorTest {
 
         assertThat(first).isEqualTo(second);
         assertThat(first).isNotEqualTo(other);
+    }
+
+    @Test
+    @DisplayName("a number is tied to one source of randomness, so changing that source is a "
+            + "decision somebody has to take on purpose")
+    void the_run_a_seed_produces_is_pinned_to_one_source_of_randomness() {
+        Operation pets = Operation.of(HttpMethod.GET, "/pets");
+        Operation stores = Operation.of(HttpMethod.GET, "/stores");
+        Operation vets = Operation.of(HttpMethod.GET, "/vets");
+
+        String chosen = order(generatorFor(pets, stores, vets));
+
+        // Written out rather than computed, which is the whole point: a computed expectation would
+        // agree with whatever the code does. These three operations carry no parameters, so nothing
+        // but the choice of operation draws on the run's randomness - which keeps this sentence
+        // about the source of randomness alone, and leaves it untouched by every later change to
+        // how values are invented.
+        assertThat(chosen)
+                .describedAs("A number printed by a run means the run it produced, and it means "
+                        + "that on somebody else's machine too. Swap the source of randomness, or "
+                        + "disturb how the number reaches it, and every seed ever written down - in "
+                        + "a bug report, in a paper, in a build log - quietly names a different "
+                        + "run. That is a decision to take deliberately and write down, so this "
+                        + "test exists to make it impossible to take by accident.")
+                .isEqualTo(PINNED_ORDER);
+    }
+
+    /** Which operation each attempt picked, as one line. */
+    private static String order(RandomTestCaseGenerator generator) {
+        return IntStream.range(0, 20)
+                .mapToObj(attempt -> generator.generate().orElseThrow().operation().toString())
+                .map(operation -> operation.substring(operation.lastIndexOf('/') + 1))
+                .collect(java.util.stream.Collectors.joining(" "));
     }
 
     @Test

@@ -46,6 +46,11 @@ One command, an OpenAPI document and an address:
 That last one is somebody else's public demonstration server, so it is worth being a guest there:
 keep the budget short, and point `--url` at your own copy for anything longer.
 
+Building needs a JDK; running what was built does not: RESTest runs on a plain Java 21 runtime, an
+`eclipse-temurin:21-jre` image included. A build that asks for containers — `./mvnw verify -Pit`, and
+the smoke job on every pull request — compiles the tool and runs it inside one of those images to
+check that this stays true.
+
 RESTest reads the document, invents requests from it, sends them for as long as you gave it, judges
 every reply against what the document promised, and prints each disagreement with a `curl` command
 that does it again:

@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
-import java.util.random.RandomGeneratorFactory;
 
 /**
  * Decides what to try against an API: which operation, and what to put in every parameter of it.
@@ -53,9 +53,19 @@ import java.util.random.RandomGeneratorFactory;
  * cannot yet be assembled for, and one that requires a value nothing can invent are each reported
  * with the reason. A run that tests eleven of an API's twenty operations should say so.
  *
- * <p>Every generator is given a number to start from, and the same number produces the same test
- * cases in the same order. That is what makes a surprising result worth investigating: it can be
- * reproduced exactly rather than chased. Two generators in one program never affect each other.
+ * <p>Every generator is given a number to start from, and the same number produces the same
+ * requests, carrying the same values, in the same order, on any machine and on any Java runtime.
+ * That is what makes a surprising result worth investigating: it can be reproduced exactly rather
+ * than chased. What is not repeated is the label each test case is filed under, which is drawn
+ * fresh every time so that two runs happening at once cannot both claim the same one. Two
+ * generators in one program never affect each other.
+ *
+ * <p>The randomness comes from a source every Java runtime is required to carry, on every release,
+ * rather than from the best one a particular runtime happens to offer. Choosing by name would make
+ * both halves of that promise conditional: the same number would mean one thing where the named
+ * source is installed and something else where it is not, and on a runtime carrying only the
+ * compulsory parts of an older Java - a small container image, say - the tool would refuse to start
+ * at all.
  *
  * <p>That promise holds for as long as nothing this generator uses remembers what the API has been
  * answering. It is true of everything here today. It will stop being true of a source of values that
@@ -71,15 +81,6 @@ public final class RandomTestCaseGenerator {
     /** How often a parameter the API does not require is included anyway. */
     private static final double OPTIONAL_PARAMETER_CHANCE = 0.5;
 
-    /**
-     * The algorithm the run's randomness comes from, named rather than left to the platform.
-     *
-     * <p>Wherever "the same number produces the same test cases" holds at all, it has to hold on
-     * somebody else's machine as well as on ours. Asking for whatever the platform considers default
-     * would make it hold only between two runs on the same version of Java.
-     */
-    private static final String ALGORITHM = "L64X128MixRandom";
-
     private final ApiModel model;
     private final long seed;
     private final RandomGenerator random;
@@ -93,7 +94,7 @@ public final class RandomTestCaseGenerator {
      * @param model the API to test
      */
     public RandomTestCaseGenerator(ApiModel model) {
-        this(model, RandomGeneratorFactory.of(ALGORITHM).create().nextLong());
+        this(model, new SplittableRandom().nextLong());
     }
 
     /**
@@ -106,7 +107,14 @@ public final class RandomTestCaseGenerator {
     public RandomTestCaseGenerator(ApiModel model, long seed) {
         this.model = Objects.requireNonNull(model, "model");
         this.seed = seed;
-        this.random = RandomGeneratorFactory.of(ALGORITHM).create(seed);
+        // Built directly rather than asked for by the name of an algorithm. The better-sounding
+        // names - L64X128MixRandom and the rest of that family - are only compulsory from Java 23
+        // on. On 21 and 22 they live in a separate, optional module, jdk.random, which the official
+        // eclipse-temurin JRE images for those two releases do not carry, and neither does anything
+        // jlink produces unless it is asked. Since 21 is the oldest release this tool supports,
+        // asking by name means the tool cannot start on the oldest runtime it promises to run on.
+        // This one is in java.base on every release, which every runtime has by definition.
+        this.random = new SplittableRandom(seed);
         this.values = ValueProviderChain.of(
                 new DeclaredValueProvider(random),
                 new RandomValueProvider(model, random));

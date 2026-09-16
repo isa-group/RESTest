@@ -19,8 +19,8 @@ import io.restest.core.gen.ValueRequest;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.CanonicalSchema;
+import java.util.SplittableRandom;
 import java.util.random.RandomGenerator;
-import java.util.random.RandomGeneratorFactory;
 
 /** Small helpers shared by the generation tests. */
 final class Schemas {
@@ -34,8 +34,15 @@ final class Schemas {
                 ParameterLocation.QUERY, schema);
     }
 
-    /** A source of randomness that makes the same choices every time the tests run. */
+    /**
+     * A source of randomness that makes the same choices every time the tests run.
+     *
+     * <p>The same one the tool itself uses, so that what these tests exercise is what a real run
+     * does. Asking for the platform's preferred source instead would exercise something else, and
+     * would not even work everywhere: the preferred one is in an optional part of Java that small
+     * runtime images leave out.
+     */
     static RandomGenerator fixedRandom() {
-        return RandomGeneratorFactory.getDefault().create(20260912L);
+        return new SplittableRandom(20260912L);
     }
 }

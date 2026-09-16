@@ -143,6 +143,60 @@ class ArchitectureRulesSelfTest {
                 "CoreUsingAForbiddenPackage");
     }
 
+    @Test
+    @DisplayName("the randomness rule catches a generator asked for by name, however it is asked")
+    void randomness_rule_reports_a_generator_chosen_by_name() {
+        expectViolation(
+                ArchitectureRules.noRandomGeneratorAskedForByName(MIRROR),
+                "GenAskingForARandomGeneratorByName");
+
+        // Each of these names the method the mistake was written in, not the method it called.
+        // Matching the called name would let one fixture satisfy every assertion at once: three of
+        // these four shapes end in the same two words, so `hasMessageContaining("getDefault")`
+        // holds even for a rule that has stopped reporting three of them.
+        assertThatThrownBy(() -> ArchitectureRules.noRandomGeneratorAskedForByName(MIRROR)
+                .check(mirrorClasses))
+                .describedAs("asking for the platform's preferred generator is asking by name too")
+                .hasMessageContaining("theDefaultOne");
+
+        // The shortest way to write it, and the one the first version of this rule did not see:
+        // no factory is named, so a rule keyed on the factory class reports nothing.
+        assertThatThrownBy(() -> ArchitectureRules.noRandomGeneratorAskedForByName(MIRROR)
+                .check(mirrorClasses))
+                .describedAs("RandomGenerator.of(name) fails on exactly the same runtimes and is "
+                        + "quicker to type than anything else here")
+                .hasMessageContaining("theShortWay");
+
+        // The nested kinds repeat both naming methods, which is why the rule keys on the package
+        // rather than on a list of classes somebody has to keep up to date.
+        assertThatThrownBy(() -> ArchitectureRules.noRandomGeneratorAskedForByName(MIRROR)
+                .check(mirrorClasses))
+                .describedAs("the nested kinds offer the same two ways of naming a generator")
+                .hasMessageContaining("aNestedKind");
+
+        // A method reference compiles to something ArchUnit models separately from a call, so a
+        // rule written with callMethod alone would pass this one while reporting the others.
+        assertThatThrownBy(() -> ArchitectureRules.noRandomGeneratorAskedForByName(MIRROR)
+                .check(mirrorClasses))
+                .describedAs("the same question deferred behind a method reference must be "
+                        + "reported, or the rule guards only the obvious half")
+                .hasMessageContaining("deferred");
+    }
+
+    @Test
+    @DisplayName("the randomness rule leaves a generator built directly alone")
+    void randomness_rule_allows_a_generator_built_without_naming_one() {
+        assertThatThrownBy(() -> ArchitectureRules.noRandomGeneratorAskedForByName(MIRROR)
+                .check(mirrorClasses))
+                .describedAs("building the source java.base is required to carry, passing it round "
+                        + "as the interface, and asking a runtime what it actually has instead of "
+                        + "naming something and hoping, are all correct and portable. A rule that "
+                        + "reported any of them would be reporting the remedy, and would be "
+                        + "switched off")
+                .hasMessageNotContaining("GenBuildingItsOwnRandom")
+                .hasMessageNotContaining("theBestOneThisRuntimeActuallyHas");
+    }
+
     private static void expectViolation(ArchRule rule, String expectedInMessage) {
         assertThatThrownBy(() -> rule.check(mirrorClasses))
                 .isInstanceOf(AssertionError.class)
