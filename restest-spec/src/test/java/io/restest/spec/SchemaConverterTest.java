@@ -16,6 +16,9 @@
 package io.restest.spec;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import io.restest.core.json.JsonValue;
 import io.restest.core.schema.AnySchema;
@@ -30,14 +33,19 @@ import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.media.Discriminator;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -51,6 +59,11 @@ import org.junit.jupiter.api.Test;
  */
 class SchemaConverterTest {
 
+    /** The converter, asked about a schema from a document that declares nothing reusable. */
+    private static CanonicalSchema convert(Schema<?> schema) {
+        return SchemaConverter.convert(schema, null);
+    }
+
     @Test
     @DisplayName("a string schema carries its length, pattern and format constraints")
     void a_string_type_becomes_a_string_schema() {
@@ -61,7 +74,7 @@ class SchemaConverterTest {
         schema.setPattern("^[a-z]+$");
         schema.setFormat("email");
 
-        CanonicalSchema converted = SchemaConverter.convert(schema);
+        CanonicalSchema converted = convert(schema);
 
         assertThat(converted).isInstanceOf(StringSchema.class);
         StringSchema string = (StringSchema) converted;
@@ -79,8 +92,8 @@ class SchemaConverterTest {
         Schema<Object> number = new Schema<>();
         number.setType("number");
 
-        assertThat(((NumberSchema) SchemaConverter.convert(integer)).kind()).isEqualTo(NumberKind.INTEGER);
-        assertThat(((NumberSchema) SchemaConverter.convert(number)).kind()).isEqualTo(NumberKind.NUMBER);
+        assertThat(((NumberSchema) convert(integer)).kind()).isEqualTo(NumberKind.INTEGER);
+        assertThat(((NumberSchema) convert(number)).kind()).isEqualTo(NumberKind.NUMBER);
     }
 
     @Test
@@ -89,7 +102,7 @@ class SchemaConverterTest {
         Schema<Object> schema = new Schema<>();
         schema.setType("boolean");
 
-        assertThat(SchemaConverter.convert(schema)).isInstanceOf(BooleanSchema.class);
+        assertThat(convert(schema)).isInstanceOf(BooleanSchema.class);
     }
 
     @Test
@@ -102,7 +115,7 @@ class SchemaConverterTest {
         schema.setProperties(Map.of("name", name));
         schema.setRequired(List.of("name"));
 
-        CanonicalSchema converted = SchemaConverter.convert(schema);
+        CanonicalSchema converted = convert(schema);
 
         assertThat(converted).isInstanceOf(ObjectSchema.class);
         ObjectSchema object = (ObjectSchema) converted;
@@ -117,7 +130,7 @@ class SchemaConverterTest {
         schema.setType("object");
         schema.setAdditionalProperties(Boolean.FALSE);
 
-        ObjectSchema object = (ObjectSchema) SchemaConverter.convert(schema);
+        ObjectSchema object = (ObjectSchema) convert(schema);
 
         assertThat(object.isClosed()).isTrue();
         assertThat(object.additionalProperties()).contains(NothingSchema.of());
@@ -134,7 +147,7 @@ class SchemaConverterTest {
         schema.setMinItems(1);
         schema.setUniqueItems(true);
 
-        CanonicalSchema converted = SchemaConverter.convert(schema);
+        CanonicalSchema converted = convert(schema);
 
         assertThat(converted).isInstanceOf(ArraySchema.class);
         ArraySchema array = (ArraySchema) converted;
@@ -148,7 +161,7 @@ class SchemaConverterTest {
     void no_type_becomes_any_schema() {
         Schema<Object> schema = new Schema<>();
 
-        assertThat(SchemaConverter.convert(schema)).isEqualTo(AnySchema.of());
+        assertThat(convert(schema)).isEqualTo(AnySchema.of());
     }
 
     @Test
@@ -157,14 +170,14 @@ class SchemaConverterTest {
         Schema<Object> schema = new Schema<>();
         schema.set$ref("#/components/schemas/Pet");
 
-        CanonicalSchema converted = SchemaConverter.convert(schema);
+        CanonicalSchema converted = convert(schema);
 
         assertThat(converted).isEqualTo(SchemaReference.to("Pet"));
     }
 
     @Test
-    @DisplayName("oneOf/anyOf/allOf composition is not yet folded, deliberately, until increment 2.1")
-    void composition_becomes_unsupported() {
+    @DisplayName("a choice between shapes is still not folded, and the reason names which kind it was")
+    void a_choice_between_shapes_is_not_folded() {
         Schema<Object> option = new Schema<>();
         option.setType("string");
 
@@ -172,12 +185,188 @@ class SchemaConverterTest {
         oneOf.setOneOf(List.of(option));
         Schema<Object> anyOf = new Schema<>();
         anyOf.setAnyOf(List.of(option));
-        Schema<Object> allOf = new Schema<>();
-        allOf.setAllOf(List.of(option));
+        Schema<Object> not = new Schema<>();
+        not.setNot(option);
+        Schema<Object> discriminated = new Schema<>();
+        discriminated.setType("object");
+        discriminated.setDiscriminator(new Discriminator().propertyName("kind"));
 
-        assertThat(SchemaConverter.convert(oneOf)).isInstanceOf(UnsupportedSchema.class);
-        assertThat(SchemaConverter.convert(anyOf)).isInstanceOf(UnsupportedSchema.class);
-        assertThat(SchemaConverter.convert(allOf)).isInstanceOf(UnsupportedSchema.class);
+        assertThat(convert(oneOf)).asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("oneOf");
+        assertThat(convert(anyOf)).asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("anyOf");
+        assertThat(convert(not)).asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("not");
+        assertThat(convert(discriminated)).asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("discriminator");
+    }
+
+    @Test
+    @DisplayName("a value that has to be several shapes at once becomes one ordinary shape")
+    void a_combination_becomes_one_shape() {
+        Schema<Object> half = new Schema<>();
+        half.setType("string");
+        half.setMaxLength(20);
+        Schema<Object> combined = new Schema<>();
+        combined.setAllOf(List.of(half));
+
+        assertThat(convert(combined)).asInstanceOf(type(StringSchema.class))
+                .extracting(StringSchema::maxLength).isEqualTo(Optional.of(20));
+    }
+
+    @Test
+    @DisplayName("a half that names a shape declared elsewhere is written out in place")
+    void a_named_half_is_written_out_in_place() {
+        Schema<Object> ownerFields = new Schema<>();
+        ownerFields.setType("object");
+        ownerFields.setProperties(Map.of("telephone", stringSchema()));
+
+        Schema<Object> withIdentifier = new Schema<>();
+        withIdentifier.setType("object");
+        withIdentifier.setProperties(Map.of("id", stringSchema()));
+
+        Schema<Object> reference = new Schema<>();
+        reference.set$ref("#/components/schemas/OwnerFields");
+        Schema<Object> owner = new Schema<>();
+        owner.setAllOf(List.of(reference, withIdentifier));
+
+        CanonicalSchema converted = SchemaConverter.convert(owner,
+                componentsDeclaring("OwnerFields", ownerFields));
+
+        assertThat(converted).asInstanceOf(type(ObjectSchema.class))
+                .extracting(ObjectSchema::properties).asInstanceOf(MAP)
+                .containsOnlyKeys("telephone", "id");
+    }
+
+    @Test
+    @DisplayName("a half naming a shape the document never declares is reported, not guessed at")
+    void a_half_naming_nothing_is_reported() {
+        Schema<Object> reference = new Schema<>();
+        reference.set$ref("#/components/schemas/Missing");
+        Schema<Object> combined = new Schema<>();
+        combined.setAllOf(List.of(reference));
+
+        assertThat(SchemaConverter.convert(combined, new Components()))
+                .asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("Missing");
+    }
+
+    @Test
+    @DisplayName("a shape built from itself is reported rather than followed for ever")
+    void a_shape_built_from_itself_is_reported() {
+        Schema<Object> toB = new Schema<>();
+        toB.set$ref("#/components/schemas/B");
+        Schema<Object> a = new Schema<>();
+        a.setAllOf(List.of(toB));
+
+        Schema<Object> toA = new Schema<>();
+        toA.set$ref("#/components/schemas/A");
+        Schema<Object> b = new Schema<>();
+        b.setAllOf(List.of(toA));
+
+        Components components = new Components();
+        components.setSchemas(new LinkedHashMap<>(Map.of("A", a, "B", b)));
+
+        assertThat(SchemaConverter.convert(a, components))
+                .asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("built from itself");
+    }
+
+    @Test
+    @DisplayName("a half naming a shape that is itself only another name is followed to the shape")
+    void a_half_naming_only_another_name_is_followed() {
+        Schema<Object> real = new Schema<>();
+        real.setType("object");
+        real.setProperties(Map.of("telephone", stringSchema()));
+        Schema<Object> alias = new Schema<>();
+        alias.set$ref("#/components/schemas/Real");
+
+        Schema<Object> toAlias = new Schema<>();
+        toAlias.set$ref("#/components/schemas/Alias");
+        Schema<Object> combined = new Schema<>();
+        combined.setAllOf(List.of(toAlias));
+
+        Components components = new Components();
+        components.setSchemas(new LinkedHashMap<>(Map.of("Real", real, "Alias", alias)));
+
+        assertThat(SchemaConverter.convert(combined, components))
+                .asInstanceOf(type(ObjectSchema.class))
+                .extracting(ObjectSchema::properties).asInstanceOf(MAP)
+                .containsOnlyKeys("telephone");
+    }
+
+    @Test
+    @DisplayName("a half declared in another document is not read as the local shape of the same name")
+    void a_half_in_another_document_is_not_mistaken_for_a_local_one() {
+        Schema<Object> localPet = new Schema<>();
+        localPet.setType("object");
+        localPet.setProperties(Map.of("localOnly", stringSchema()));
+
+        Schema<Object> elsewhere = new Schema<>();
+        elsewhere.set$ref("./other.yaml#/components/schemas/Pet");
+        Schema<Object> combined = new Schema<>();
+        combined.setAllOf(List.of(elsewhere));
+
+        assertThat(SchemaConverter.convert(combined, componentsDeclaring("Pet", localPet)))
+                .asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("another document");
+    }
+
+    @Test
+    @DisplayName("a combination nested far deeper than any real document is reported, not followed until the stack gives out")
+    void a_combination_nested_too_deep_is_reported() {
+        int depth = 5_000;
+        Map<String, Schema> schemas = new LinkedHashMap<>();
+        for (int level = 0; level < depth; level++) {
+            Schema<Object> toNext = new Schema<>();
+            toNext.set$ref("#/components/schemas/S" + (level + 1));
+            Schema<Object> link = new Schema<>();
+            link.setAllOf(List.of(toNext));
+            schemas.put("S" + level, link);
+        }
+        schemas.put("S" + depth, stringSchema());
+        Components components = new Components();
+        components.setSchemas(schemas);
+
+        // Never mind the answer: the point is that there is one. Followed all the way down, this
+        // ends the whole run with an error no catch block here can hold, so one unusual document
+        // would cost every operation in it and the run itself.
+        assertThat(SchemaConverter.convert(schemas.get("S0"), components))
+                .isInstanceOf(UnsupportedSchema.class);
+    }
+
+    @Test
+    @DisplayName("a combination that branches faster than it can be worked through says so rather than stalling")
+    void a_combination_that_branches_beyond_the_budget_is_reported() {
+        int depth = 40;
+        Map<String, Schema> schemas = new LinkedHashMap<>();
+        for (int level = 0; level < depth; level++) {
+            Schema<Object> toNext = new Schema<>();
+            toNext.set$ref("#/components/schemas/S" + (level + 1));
+            Schema<Object> twoWays = new Schema<>();
+            // The same shape reached along both halves: the work doubles at every level, so forty
+            // levels is about a million million lookups if nothing stops it.
+            twoWays.setAllOf(List.of(toNext, toNext));
+            schemas.put("S" + level, twoWays);
+        }
+        schemas.put("S" + depth, stringSchema());
+        Components components = new Components();
+        components.setSchemas(schemas);
+
+        assertTimeoutPreemptively(Duration.ofSeconds(10),
+                () -> assertThat(SchemaConverter.convert(schemas.get("S0"), components)).isNotNull());
+    }
+
+    private static Schema<Object> stringSchema() {
+        Schema<Object> schema = new Schema<>();
+        schema.setType("string");
+        return schema;
+    }
+
+    private static Components componentsDeclaring(String name, Schema<?> schema) {
+        Components components = new Components();
+        components.setSchemas(new LinkedHashMap<>(Map.of(name, schema)));
+        return components;
     }
 
     @Test
@@ -191,7 +380,7 @@ class SchemaConverterTest {
         schema.setType("array");
         schema.setPrefixItems(List.of(first, second));
 
-        assertThat(SchemaConverter.convert(schema)).isInstanceOf(UnsupportedSchema.class);
+        assertThat(convert(schema)).isInstanceOf(UnsupportedSchema.class);
     }
 
     @Test
@@ -201,7 +390,7 @@ class SchemaConverterTest {
         schema.setType("string");
         schema.setNullable(true);
 
-        assertThat(SchemaConverter.convert(schema).metadata().nullable()).isTrue();
+        assertThat(convert(schema).metadata().nullable()).isTrue();
     }
 
     @Test
@@ -210,7 +399,7 @@ class SchemaConverterTest {
         Schema<Object> schema = new Schema<>();
         schema.setTypes(Set.of("string", "null"));
 
-        CanonicalSchema converted = SchemaConverter.convert(schema);
+        CanonicalSchema converted = convert(schema);
 
         assertThat(converted).isInstanceOf(StringSchema.class);
         assertThat(converted.metadata().nullable()).isTrue();
@@ -224,7 +413,7 @@ class SchemaConverterTest {
         schema.setMinimum(BigDecimal.valueOf(5));
         schema.setExclusiveMinimum(true);
 
-        NumberSchema number = (NumberSchema) SchemaConverter.convert(schema);
+        NumberSchema number = (NumberSchema) convert(schema);
 
         assertThat(number.minimum()).isEmpty();
         assertThat(number.exclusiveMinimum()).contains(BigDecimal.valueOf(5));
@@ -237,7 +426,7 @@ class SchemaConverterTest {
         schema.setType("number");
         schema.setExclusiveMinimumValue(BigDecimal.ZERO);
 
-        NumberSchema number = (NumberSchema) SchemaConverter.convert(schema);
+        NumberSchema number = (NumberSchema) convert(schema);
 
         assertThat(number.minimum()).isEmpty();
         assertThat(number.exclusiveMinimum()).contains(BigDecimal.ZERO);
@@ -253,9 +442,9 @@ class SchemaConverterTest {
         writeOnly.setType("string");
         writeOnly.setWriteOnly(true);
 
-        assertThat(SchemaConverter.convert(readOnly).metadata().access())
+        assertThat(convert(readOnly).metadata().access())
                 .isEqualTo(SchemaMetadata.Access.READ_ONLY);
-        assertThat(SchemaConverter.convert(writeOnly).metadata().access())
+        assertThat(convert(writeOnly).metadata().access())
                 .isEqualTo(SchemaMetadata.Access.WRITE_ONLY);
     }
 
@@ -274,11 +463,11 @@ class SchemaConverterTest {
         clean.setType("string");
 
         assertThat(SchemaConverter.hasUnsupportedConstruct(
-                SchemaConverter.convert(nestedInObject), Map.of())).isTrue();
+                convert(nestedInObject), Map.of())).isTrue();
         assertThat(SchemaConverter.hasUnsupportedConstruct(
-                SchemaConverter.convert(nestedInArray), Map.of())).isTrue();
+                convert(nestedInArray), Map.of())).isTrue();
         assertThat(SchemaConverter.hasUnsupportedConstruct(
-                SchemaConverter.convert(clean), Map.of())).isFalse();
+                convert(clean), Map.of())).isFalse();
     }
 
     @Test
@@ -290,7 +479,7 @@ class SchemaConverterTest {
         untyped.setProperties(Map.of("name", name));
         untyped.setRequired(List.of("name"));
 
-        CanonicalSchema converted = SchemaConverter.convert(untyped);
+        CanonicalSchema converted = convert(untyped);
 
         assertThat(converted).isInstanceOf(ObjectSchema.class);
         ObjectSchema object = (ObjectSchema) converted;
@@ -309,7 +498,7 @@ class SchemaConverterTest {
         schema.setDefault(Date.from(
                 LocalDate.of(2020, 1, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()));
 
-        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+        assertThat(convert(schema).metadata().defaultValue())
                 .contains(JsonValue.of("2020-01-31"));
     }
 
@@ -321,7 +510,7 @@ class SchemaConverterTest {
         schema.setFormat("date-time");
         schema.setDefault(OffsetDateTime.parse("2020-01-31T10:00:00Z"));
 
-        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+        assertThat(convert(schema).metadata().defaultValue())
                 .contains(JsonValue.of("2020-01-31T10:00:00Z"));
     }
 
@@ -333,7 +522,7 @@ class SchemaConverterTest {
         schema.setFormat("byte");
         schema.setDefault("hi".getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
-        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+        assertThat(convert(schema).metadata().defaultValue())
                 .contains(JsonValue.of("aGk="));
     }
 
@@ -345,7 +534,7 @@ class SchemaConverterTest {
         schema.setFormat("uuid");
         schema.setDefault(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"));
 
-        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+        assertThat(convert(schema).metadata().defaultValue())
                 .describedAs("the parser turns this one into an object of its own, whose text is "
                         + "not JSON, so leaving it to the last resort would drop a good value")
                 .contains(JsonValue.of("550e8400-e29b-41d4-a716-446655440000"));
@@ -358,7 +547,7 @@ class SchemaConverterTest {
         schema.setType("object");
         schema.setDefault(printsAs("{\"a\":1}"));
 
-        assertThat(SchemaConverter.convert(schema).metadata().defaultValue())
+        assertThat(convert(schema).metadata().defaultValue())
                 .get()
                 .isInstanceOf(JsonValue.JsonObject.class);
     }
@@ -370,7 +559,7 @@ class SchemaConverterTest {
         schema.setType("string");
         schema.setDefault(printsAs("Fri Jan 31 00:00:00 CET 2020"));
 
-        assertThat(SchemaConverter.convert(schema).metadata().defaultValue()).isEmpty();
+        assertThat(convert(schema).metadata().defaultValue()).isEmpty();
     }
 
     @Test
@@ -380,7 +569,7 @@ class SchemaConverterTest {
         schema.setType("string");
         schema.setEnum(List.of("a", printsAs("not json at all"), "b"));
 
-        CanonicalSchema converted = SchemaConverter.convert(schema);
+        CanonicalSchema converted = convert(schema);
 
         // Not the same answer as for a default, and the difference is the point. A default that
         // cannot be read is dropped, and the schema then honestly says it has no default. Keeping
@@ -397,7 +586,7 @@ class SchemaConverterTest {
         schema.setType("string");
         schema.setEnum(List.of("a", "b"));
 
-        assertThat(SchemaConverter.convert(schema).metadata().enumeration())
+        assertThat(convert(schema).metadata().enumeration())
                 .containsExactly(JsonValue.of("a"), JsonValue.of("b"));
     }
 
@@ -407,7 +596,7 @@ class SchemaConverterTest {
         Schema<Object> reference = new Schema<>();
         reference.set$ref("#/components/schemas/Missing");
 
-        CanonicalSchema converted = SchemaConverter.convert(reference);
+        CanonicalSchema converted = convert(reference);
 
         assertThat(converted).isInstanceOf(SchemaReference.class);
         assertThat(SchemaConverter.hasUnsupportedConstruct(converted, Map.of())).isTrue();

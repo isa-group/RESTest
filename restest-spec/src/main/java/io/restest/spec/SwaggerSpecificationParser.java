@@ -128,7 +128,7 @@ public final class SwaggerSpecificationParser implements SpecificationParser {
             api.getComponents().getSchemas().forEach((name, schema) -> {
                 CanonicalSchema converted;
                 try {
-                    converted = SchemaConverter.convert(schema);
+                    converted = SchemaConverter.convert(schema, api.getComponents());
                 } catch (IllegalArgumentException e) {
                     // A named schema this malformed is still named: keeping the entry, as something
                     // unsupported, means an operation that references it is degraded, correctly,

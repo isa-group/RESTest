@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-49 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
+50 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
 Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
@@ -62,7 +62,8 @@ layout).
 
 | # | Increment | What it enables |
 |---|---|---|
-| 2.1 | `oneOf` / `anyOf` / `allOf` / discriminators folded into the canonical schema | Specifications that use composition stop being ignored |
+| 2.1a | `allOf` folded into the canonical schema: halves combined, the stricter bound kept, a combination nothing satisfies and one we cannot work out each said plainly | The inheritance idiom real APIs describe their resources with stops being ignored |
+| 2.1b | `oneOf` / `anyOf` / discriminators, as a shape of their own | Specifications that offer a choice between shapes stop being ignored |
 | 2.2 | Declared examples harvested, in both the 3.0 and the 3.1 shapes | The specification's own sample values get used |
 | 2.3 | Deterministic boundary walk: every documented limit probed exactly | Reproducible edge-case tests, not luck |
 | 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |

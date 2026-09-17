@@ -145,6 +145,54 @@ shape, and it is lossless in both directions: a 3.0 document's `minimum: 5` plus
 
 ---
 
+## Amendment (M2.1a)
+
+**Date:** 2026-09-17
+
+**A `$ref` that is one half of a combination is written out in place; every other `$ref` stays a
+name.**
+
+### Why
+
+"Inlining every `$ref` instead of a `SchemaReference` variant" is listed below as an alternative this
+ADR rejected, and rightly: it cannot express recursion, it throws away a name that M4.1's dependency
+graph and M2.7's value dictionary both want back, and it multiplies the size of a model whose shapes
+are shared by dozens of operations.
+
+Combining `allOf` cannot honour that. The whole content of "this shape is that one and also has an
+identifier" is the other shape, so there is nothing to combine until it has been looked up. A model
+that kept the name here would be a model that had not combined anything.
+
+So the reversal is narrow and its edges are stated rather than left to be discovered:
+
+- **Only a half of a combination is written out.** A property, a parameter, a body and a response
+  that name a shape all still hold a `SchemaReference`, unresolved and one step deep.
+- **The name that survives is the combined shape's own.** `Owner` is still `Owner` in
+  `ApiModel.schemas()`; what is lost is that it was built from `OwnerFields`. Nothing downstream asks
+  that question, and matching on property names — which is what M4.1 does — sees more after combining
+  than before, not less.
+- **A half naming a shape in another document is not written out at all.** `refName` deliberately
+  discards the file part, so inlining one would silently substitute whichever local shape happened to
+  share the name. That half is reported as unread instead.
+- **Following is bounded twice.** A combination may be nested 64 deep and may look up 2,000 named
+  halves; beyond either, what is left is reported as unread. Depth, because following a chain of
+  several thousand exhausts the stack, and an `Error` is not something the parser's last-resort
+  handler can hold: one unusual document would cost the whole run rather than one operation, which is
+  exactly what design principle 2 forbids. Breadth, because halves that share a base are reached
+  along every path that leads to them, so the work doubles at every level and a document of a few
+  kilobytes could spend a whole testing budget before the first request is sent.
+
+### What it costs
+
+A combined shape is bigger than the two halves it came from, and an `ApiModel` that holds a hundred
+of them holds that many copies. Measured over the fifty-document corpus the difference is not visible
+against everything else a parse allocates, and the alternative is not reading the documents at all.
+
+The two limits are arbitrary numbers, which this project usually refuses. They are defensible here
+because neither is a tuning knob: both are far outside anything a document written by a person
+reaches, and being wrong about them costs a report saying a shape was left unread — never a wrong
+value, and never a lost run.
+
 ## Amendment (M1.8)
 
 **Date:** 2026-09-15

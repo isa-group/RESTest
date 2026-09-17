@@ -124,6 +124,28 @@ class CorpusSanityTest {
         }
     }
 
+    @Test
+    @DisplayName("the two priority-corpus APIs that describe resources by combining shapes read completely")
+    void the_documents_that_combine_shapes_are_read_completely() {
+        SwaggerSpecificationParser parser = new SwaggerSpecificationParser();
+
+        // These two are the reason combining exists at all: between them they describe their
+        // resources with 37 combinations, and 65 of their 85 operations - 37 of one document's 50
+        // and 28 of the other's 35 - used to be reported as carrying a shape RESTest could not
+        // fully read. Pinned at nothing left over rather than at a smaller number, because anything
+        // left over here is a shape we stopped being able to read and would want to hear about.
+        assertThat(parser.parse("specifications/restleague-2027/kafka-rest-proxy/openapi.yaml"))
+                .satisfies(api -> {
+                    assertThat(api.operations()).hasSize(50);
+                    assertThat(api.issues()).isEmpty();
+                });
+        assertThat(parser.parse("specifications/restleague-2027/pet-clinic/openapi.yaml"))
+                .satisfies(api -> {
+                    assertThat(api.operations()).hasSize(35);
+                    assertThat(api.issues()).isEmpty();
+                });
+    }
+
     /** Whether this document is one of the hand-written broken ones, rather than a real API's. */
     private static boolean isAFixture(Path file) {
         return file.startsWith(specificationsRoot().resolve("fixtures"));
