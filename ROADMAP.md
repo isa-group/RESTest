@@ -75,6 +75,15 @@ layout).
 must not stall the run) — not by waiting for M6.2's overhead regression test, which lands much later
 and checks the tool's overall per-request overhead, not any one extension point.
 
+ADR-0017 studies the tool that won the 2026 competition and says what we take from it. Two things
+follow for M2. **2.5** also sends an `Accept` header built from the media types the operation's own
+2XX responses declare; we send none today, and one of the five specifications in the golden corpus
+serves a versioned media type. And **one item has no row here yet**: replacing the coin flip that
+decides whether an optional parameter is included, so that the required-only request — sent close to
+never today, at least once in 2ⁿ attempts — stops being a lottery ticket. It is nominal generation, so
+it is not 2.3's subject, and whether it becomes a row of its own is the maintainer's call. Whoever
+takes it measures the effect rather than assuming it.
+
 ## M3 — Oracles, faults and reporting
 
 | # | Increment | What it enables |
@@ -86,6 +95,13 @@ and checks the tool's overall per-request overhead, not any one extension point.
 | 3.5 | Reports: HTML, JUnit XML, HAR, NDJSON; JUnit 5 + REST-Assured code export; `restest explain`; `restest replay`. Every format renders both classifications of a fault - by catalogue number and by the class of status code that carried it (ADR-0016). Plus the "how to add an oracle, a provider, a report" guide | Results usable in CI, in an IDE, and by a human |
 | 3.6 | Replies that no rule could judge counted, and said out loud in the summary, the JSON report and the exit code | A clean bill of health stops being ambiguous: a run that could not check something says so, instead of saying nothing was wrong |
 | 3.7 | What a run writes when it is cut short: Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not (ADR-0015 lists the three candidate answers) | Stopping a long run early stops costing you everything it had already found |
+
+ADR-0017 adds one mutation operator, under ADR-0013 §4: send a *required* parameter in a location it
+was not declared in — query, header, cookie. The API is then missing something it said it needs, so a
+refusal is correct and a 2XX is attributable to that one change. The operator is generator-side; 3.1
+supplies the oracle that judges it. Restricting it to required parameters is what keeps it inside
+§4's contract, and it is why ADR-0017 refuses the companion operator that sends parameters the
+document never declared: there, both answers are defensible and no oracle can call it.
 
 v2.0's own reports are raw: every fault is counted on its own and none is ever declared to be the
 same problem as another. What the JSON report bounds (M1.7b) is how many faults of one kind, on one
@@ -103,6 +119,20 @@ milestone campaign's cross-tool comparison is RESTGym's job, not this report's.
 | 4.4 | CRUD lifecycle model and sequence generation | Create-read-update-delete flows are exercised end to end |
 | 4.5 | Stateful oracles: use-after-free, resource availability, failed update must not change, update idempotency | Bugs that only appear across several requests |
 | 4.6 | 🛑 Arazzo import/export *(droppable — decide at the end of M4)* | Discovered flows become a standard, shareable document |
+
+ADR-0017 gives **4.1** and **4.2** their shape before either is written. 4.1 matches *properties*
+rather than operations — a parameter against the parameters, the body properties and the response
+properties of every other operation — keeps the best few candidates even when none is convincing so
+that no operation is left with nothing to try, and lets the graph grow during a run from properties
+that appear in real replies and that the document never declared. Similarity is computed with no
+model: names split on case and separators, a gate on schema and format compatibility, and a
+hand-written table of synonyms carried as versioned data. 4.1 owes one measurement and one ADR of its
+own: annotate the correct matches across the golden corpus by hand, compare this mechanism against a
+table of word vectors, and record the threshold and the outcome. 4.2 receives those candidates and
+chooses among them; whether that choice may be scored by what the API answered is one of ADR-0017's
+open questions, below, because it is an online estimate of whether a request will be accepted. 4.2
+also has to reconcile the candidates with ADR-0013's rule that a sequence creates what it needs
+rather than borrowing an identifier — and narrowing that rule would be an amendment to ADR-0013.
 
 ## M5 — IDL and constraint-based generation
 
@@ -157,3 +187,14 @@ so none of them requires re-architecting. Full table under "Out of scope for v2.
 - Surrogate coverage goals for black-box search → feedback
 - Security oracles (injection, SSRF, authorisation bypass) → oracle interface
 - Flow discovery from execution traces → flow source
+
+Three rows here have an open question against them, all raised by ADR-0017 and all of the same kind —
+each would have a run learn from what it has already seen. 🛑 None is started without explicit
+approval. **Scheduling**: the winner of the 2026 competition rewards its choice of *operation* for
+errors while rewarding its choice of parameters and values for success — go where it breaks, send
+requests that work — and weighted sampling over per-operation counters would do the same job with no
+learning and no hyper-parameters. At its narrowest it is hygiene: stop spending budget on operations
+that answer nothing but 405 or 401. **Predicting acceptance**: whether M4.2 may score dependency
+candidates by what the API answered, which also costs the seed-reproducibility ADR-0013 §7 promises.
+**Error messages**: whether a warm-up may read the text of an error to learn which parameter was
+wrong, as opposed to reading its status code, which is ordinary scheduling.

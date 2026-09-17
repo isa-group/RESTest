@@ -54,3 +54,4 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0014](0014-response-conformance.md) | A reply is judged against the specification document itself | Accepted, amended at M1.8 |
 | [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7 and M1.8 |
 | [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 |
+| [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed |

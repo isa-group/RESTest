@@ -214,6 +214,21 @@ API specification and the API's HTTP responses; no access to the application sou
 *White-box (W)* — the tool additionally instruments the application's source code or bytecode to
 obtain coverage feedback and steer the search.
 
+### AutoRestTest
+
+[AutoRestTest](https://github.com/selab-gatech/autoresttest), from Georgia Tech, won all three
+challenges of the REST League tool competition at SBFT 2026 — fault detection, efficiency and
+effectiveness. It works in two phases. Before testing begins it
+builds a dependency graph by comparing the *names* of parameters, body properties and response
+properties across operations — with a table of static word vectors, not a language model — and it
+asks a language model for a pool of candidate values for every parameter, refining them with the
+error replies of a couple of probe requests. The testing phase is then a sequential loop over six
+learned tables, one for each decision a request needs: which operation, which parameters, which
+values, which body properties, which dependency, which credentials. Its own ablation study removes one
+component at a time and reports that removing the learning costs it more than removing the language
+model. [ADR-0017](adr/0017-what-we-take-from-autoresttest.md) records what RESTest 2.0 takes from it,
+what it refuses, and what that ablation does and does not establish.
+
 ### EvoMaster
 
 [EvoMaster](https://github.com/EMResearch/EvoMaster) applies evolutionary search to REST API
@@ -280,6 +295,7 @@ target for RESTest 2.0.
 
 | Tool | Language | OAS | BB/WB | Stateless techniques | Stateful techniques | Test data types | Oracle types |
 |---|---|---|---|---|---|---|---|
+| [AutoRestTest](https://github.com/selab-gatech/autoresttest) | Python | 3.0.x | B | Tabular reinforcement learning over operation, parameter and value choices; mutation | Property-level dependency graph from name similarity, scored at run time | Language-model value pools, response-derived, random | 5xx detection |
 | [EvoMaster](https://github.com/EMResearch/EvoMaster) | Kotlin/Java | 2.0, 3.0.x | B+W | Evolutionary (MIO), random | Resource-dependency sequence construction | Evolutionary, random, adaptive | 5xx detection, schema validation |
 | [RESTler](https://github.com/microsoft/restler-fuzzer) | Python | 2.0, 3.0 | B | Coverage-guided fuzzing, random | Producer-consumer chains (spec-inferred) | Random + response-extracted dictionary | 5xx detection, resource-state inconsistency |
 | [Schemathesis](https://github.com/schemathesis/schemathesis) | Python | 2.0, 3.0.x, 3.1.x | B | Property-based (Hypothesis), shrinking | OAS link following | Schema-driven, property-based | 5xx detection, schema validation, WFC codes |
@@ -309,6 +325,14 @@ re-architecting — which is the point of listing them at all.
 | Surrogate coverage goals for black-box search | `FeedbackListener` |
 | Security oracles (injection, server-side request forgery, authorisation bypass) | `Oracle` + WFC codes |
 | Flow discovery from execution traces | `FlowSource` |
+
+Three of these rows have an open question against them, all raised by
+[ADR-0017](adr/0017-what-we-take-from-autoresttest.md) after studying the tool that won the 2026
+competition, and all of the same kind: each would have a run learn from what it has already seen.
+Whether the choice of which operation to call next may be steered by counters over what each
+operation has been answering; whether the choice among inferred dependency candidates may be scored
+by what the API answered; and whether a warm-up may read the *text* of an error reply rather than
+only its status code. None is taken here, and none is started without explicit approval.
 
 ## Stack
 
