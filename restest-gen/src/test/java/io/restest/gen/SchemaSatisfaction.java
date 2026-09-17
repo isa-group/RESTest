@@ -21,6 +21,7 @@ import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NullSchema;
 import io.restest.core.schema.NumberKind;
@@ -91,8 +92,22 @@ final class SchemaSatisfaction {
                     found.add(where + " is not nothing, and this shape allows nothing else");
             case AnySchema ignored -> { }
             case UnsupportedSchema ignored -> { }
+            case ChoiceSchema choice -> checkChoice(value, choice, model, where, found);
             case SchemaReference ignored -> { }
         }
+    }
+
+    /** A value satisfies a choice when it satisfies any one of the shapes on offer. */
+    private static void checkChoice(JsonValue value, ChoiceSchema choice, ApiModel model,
+            String where, List<String> found) {
+        for (CanonicalSchema alternative : choice.alternatives()) {
+            List<String> against = new ArrayList<>();
+            check(value, alternative, model, where, against);
+            if (against.isEmpty()) {
+                return;
+            }
+        }
+        found.add(where + " is " + value + ", which fits none of the shapes this value may have");
     }
 
     private static void checkString(JsonValue value, StringSchema schema, String where,

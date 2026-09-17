@@ -20,6 +20,7 @@ import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NullSchema;
 import io.restest.core.schema.NumberKind;
@@ -138,6 +139,16 @@ final class AllOfMerger {
             return withMetadata(first, metadata);
         }
 
+        // Said explicitly rather than left to the arms below. This is a chain of instanceof
+        // tests, not a switch over the sealed interface, so a shape added later does not break it:
+        // a choice would fall past every arm to the last one, which answers "no value satisfies
+        // this" - a claim the document never made. Combining a choice is possible in principle, by
+        // distributing the combination over the shapes on offer, and is not supported yet.
+        if (first instanceof ChoiceSchema || second instanceof ChoiceSchema) {
+            return new UnsupportedSchema(metadata, "this has to be a choice between shapes and "
+                    + "something else at once, and working out what satisfies both is not "
+                    + "supported yet");
+        }
         if (first instanceof ObjectSchema left && second instanceof ObjectSchema right) {
             return mergeObjects(left, right, metadata);
         }
@@ -377,6 +388,7 @@ final class AllOfMerger {
             case NullSchema ignored -> new NullSchema(metadata);
             case AnySchema ignored -> new AnySchema(metadata);
             case NothingSchema ignored -> NothingSchema.of();
+            case ChoiceSchema c -> new ChoiceSchema(metadata, c.alternatives());
             case SchemaReference r -> new SchemaReference(metadata, r.name());
             case UnsupportedSchema u -> new UnsupportedSchema(metadata, u.reason());
         };
@@ -489,6 +501,8 @@ final class AllOfMerger {
             case ArraySchema ignored -> value instanceof JsonValue.JsonArray;
             case ObjectSchema ignored -> value instanceof JsonValue.JsonObject;
             // A shape named elsewhere, one that accepts anything, one we could not read: not checked.
+            case ChoiceSchema choice -> choice.alternatives().stream()
+                    .anyMatch(alternative -> accepts(alternative, value));
             case AnySchema ignored -> true;
             case SchemaReference ignored -> true;
             case UnsupportedSchema ignored -> true;

@@ -24,6 +24,7 @@ import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NullSchema;
 import io.restest.core.schema.NumberKind;
@@ -402,6 +403,48 @@ class RandomValueProviderTest {
 
         assertThat(provider.offer(inThePath).orElseThrow().value())
                 .describedAs("nothing in the path would address a different resource entirely")
+                .isNotEqualTo(JsonValue.NULL);
+    }
+
+    @Test
+    @DisplayName("every shape a choice offers gets used, not only the one the document listed first")
+    void a_choice_spreads_across_the_shapes_it_offers() {
+        ChoiceSchema aWordOrANumber = ChoiceSchema.of(List.of(
+                StringSchema.of(), NumberSchema.of(NumberKind.INTEGER)));
+
+        Set<String> kinds = IntStream.range(0, 60)
+                .mapToObj(attempt -> invent(aWordOrANumber).getClass().getSimpleName())
+                .collect(java.util.stream.Collectors.toSet());
+
+        assertThat(kinds)
+                .describedAs("taking the first shape would make what gets tested depend on the "
+                        + "order the document happened to list them in")
+                .hasSize(2);
+    }
+
+    @RepeatedTest(20)
+    @DisplayName("a shape that can offer nothing sends the choice to the next one, not to nothing")
+    void a_choice_tries_another_shape_when_one_declines() {
+        // Nothing satisfies the first shape, and the document plainly allows the second. Giving up
+        // on the shape that was drawn would abandon a value the API accepts - and for a required
+        // parameter, abandoning a value costs the whole operation.
+        ChoiceSchema impossibleOrANumber = ChoiceSchema.of(List.of(
+                NothingSchema.of(), NumberSchema.of(NumberKind.INTEGER)));
+
+        assertThat(invent(impossibleOrANumber)).isInstanceOf(JsonValue.JsonNumber.class);
+    }
+
+    @RepeatedTest(30)
+    @DisplayName("a choice in the path never chooses the shape whose only value is nothing at all")
+    void a_choice_in_the_path_never_chooses_nothing() {
+        // How OpenAPI 3.1 says "or null", there being no `nullable` keyword any more.
+        ChoiceSchema aWordOrNothing = ChoiceSchema.of(List.of(
+                StringSchema.of(), new NullSchema(SchemaMetadata.none())));
+        io.restest.core.gen.ValueRequest inThePath = new io.restest.core.gen.ValueRequest(
+                io.restest.core.model.OperationId.of("GET /pets/{petId}"), "petId",
+                io.restest.core.model.ParameterLocation.PATH, aWordOrNothing);
+
+        assertThat(provider.offer(inThePath).orElseThrow().value())
                 .isNotEqualTo(JsonValue.NULL);
     }
 

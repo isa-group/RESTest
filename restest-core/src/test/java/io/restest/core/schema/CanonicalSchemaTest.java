@@ -148,6 +148,7 @@ class CanonicalSchemaTest {
             case NothingSchema ignored -> "nothing";
             case ArraySchema ignored -> "array";
             case ObjectSchema ignored -> "object";
+            case ChoiceSchema ignored -> "choice";
             case SchemaReference ignored -> "reference";
             case UnsupportedSchema ignored -> "unsupported";
         };

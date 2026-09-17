@@ -23,6 +23,7 @@ import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
@@ -413,6 +414,32 @@ class AllOfMergerTest {
                 Optional.empty(), Optional.empty(), Optional.empty());
 
         assertThat(AllOfMerger.merge(aboveFive, atMostFive)).isInstanceOf(NothingSchema.class);
+    }
+
+    @Test
+    @DisplayName("a choice as one half of a combination is reported unread, never called impossible")
+    void a_choice_as_a_half_of_a_combination_is_reported() {
+        ChoiceSchema aNumberOrAWord = ChoiceSchema.of(List.of(
+                NumberSchema.of(NumberKind.INTEGER), string()));
+
+        // The merge is a chain of instanceof tests rather than a switch over the sealed interface,
+        // so nothing made the compiler ask about this shape. Without its own arm a choice falls
+        // through to the last one, which answers "no value satisfies this" about a document that
+        // said nothing of the kind - and no document in the corpus would have caught it.
+        assertThat(AllOfMerger.merge(aNumberOrAWord, string()))
+                .asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("choice between shapes");
+        assertThat(AllOfMerger.merge(string(), aNumberOrAWord))
+                .isInstanceOf(UnsupportedSchema.class);
+    }
+
+    @Test
+    @DisplayName("a half that states nothing leaves a choice as it found it")
+    void a_choice_survives_being_combined_with_nothing() {
+        ChoiceSchema aNumberOrAWord = ChoiceSchema.of(List.of(
+                NumberSchema.of(NumberKind.INTEGER), string()));
+
+        assertThat(AllOfMerger.merge(AnySchema.of(), aNumberOrAWord)).isEqualTo(aNumberOrAWord);
     }
 
     private static StringSchema string() {

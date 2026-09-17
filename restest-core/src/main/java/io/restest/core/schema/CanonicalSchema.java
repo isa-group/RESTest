@@ -26,9 +26,9 @@ package io.restest.core.schema;
  * against this simpler set of ten shapes instead, so those version differences only ever have to be
  * dealt with once, in the part of RESTest that reads the specification, and nowhere else.
  *
- * <p>There are exactly ten kinds of shape, which the compiler enforces: code that is meant to handle
- * every kind must actually handle all ten, rather than falling through to a default and quietly
- * doing nothing useful for the one it missed:
+ * <p>There are exactly eleven kinds of shape, which the compiler enforces: code that is meant to
+ * handle every kind must actually handle all eleven, rather than falling through to a default and
+ * quietly doing nothing useful for the one it missed:
  *
  * {@snippet :
  * Object value = switch (schema) {
@@ -40,6 +40,7 @@ package io.restest.core.schema;
  *     case ObjectSchema o -> Map.of();
  *     case AnySchema a -> "anything";
  *     case NothingSchema n -> null;       // nothing satisfies it: additionalProperties: false
+ *     case ChoiceSchema c -> c.alternatives();  // any one of several shapes will do
  *     case SchemaReference r -> api.schema(r.name());  // named elsewhere, possibly recursively
  *     case UnsupportedSchema u -> null;   // u.reason() says why nothing better is possible
  * };
@@ -58,7 +59,8 @@ package io.restest.core.schema;
  * - the facts JSON Schema attaches to a value regardless of its type.
  */
 public sealed interface CanonicalSchema
-        permits AnySchema, ArraySchema, BooleanSchema, NothingSchema, NullSchema, NumberSchema,
+        permits AnySchema, ArraySchema, BooleanSchema, ChoiceSchema, NothingSchema, NullSchema,
+                NumberSchema,
                 ObjectSchema, SchemaReference, StringSchema, UnsupportedSchema {
 
     /** The type-independent facts: description, nullability, enumeration, default, access. */
