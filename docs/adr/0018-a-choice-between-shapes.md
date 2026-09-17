@@ -1,6 +1,6 @@
 # ADR-0018: A choice between shapes is one more shape
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-09-17
 
 ## Context
@@ -72,6 +72,20 @@ branches that survive: dropping one is a narrower claim about what the API accep
 not by the document. `SchemaConverter` already refuses an enumeration for exactly that reason — "a
 shorter list is not no list" — and this is the same rule.
 
+That applies to what reading can see. A branch that is a name resolves later, by design, so a choice
+between a readable shape and a name that turns out to be unreadable is still built. Two things catch
+it instead: the operation is reported as carrying a shape we could not fully read, because the walk
+that decides that follows names; and a provider that draws the unreadable branch tries the others
+rather than giving up, so the choice still yields a value. Neither is the same as refusing the choice
+outright, and pretending otherwise would be claiming a guarantee the model cannot make.
+
+**What the schema states outside the choice narrows every branch.** A document may list the
+properties a body must always carry and, beside them, a choice between the shapes the rest may take.
+The value has to satisfy both, so each branch is combined with what was stated outside it, using the
+same merge M2.1a wrote. Reading only the branches would leave a shape accepting values the document
+does not — which is exactly the trade this record refuses for the discriminator, and it would be no
+better here.
+
 **A choice that is one half of a combination is reported as unread, and `AllOfMerger` must say so
 explicitly.** Its shape-merging is a chain of `instanceof` tests rather than a switch over the sealed
 interface, so an eleventh shape does not break it: a choice would fall through every arm to the last
@@ -119,8 +133,9 @@ model does not have, and every consumer would be left asking what to send for *n
   in the pull request rather than predicted here.
 - **A named shape can now be a choice**, so anything walking `ApiModel.schemas()` has one more case —
   the dependency graph at M4.1 will want to match property names through one.
-- **A one-alternative choice is possible for any caller to construct** even though the converter never
-  builds one, so every arm has to handle it rather than assume it away.
+- **A choice between a single shape is allowed**, because nothing stops a document writing one and
+  refusing it would cost the shape. Only a choice between *no* shapes is refused, by the constructor:
+  it describes nothing.
 - **Nothing here needs the deferred backlog opened.** A choice is read from the document, not
   inferred; a branch is picked at random, not learned.
 

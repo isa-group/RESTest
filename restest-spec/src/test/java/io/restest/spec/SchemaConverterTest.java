@@ -16,6 +16,7 @@
 package io.restest.spec;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LIST;
 import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
@@ -25,6 +26,7 @@ import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
@@ -176,29 +178,71 @@ class SchemaConverterTest {
     }
 
     @Test
-    @DisplayName("a choice between shapes is still not folded, and the reason names which kind it was")
-    void a_choice_between_shapes_is_not_folded() {
+    @DisplayName("oneOf and anyOf both become a choice between shapes, which is one shape")
+    void a_choice_between_shapes_becomes_one_shape() {
+        Schema<Object> number = new Schema<>();
+        number.setType("integer");
+        Schema<Object> text = new Schema<>();
+        text.setType("string");
+
+        Schema<Object> oneOf = new Schema<>();
+        oneOf.setOneOf(List.of(number, text));
+        Schema<Object> anyOf = new Schema<>();
+        anyOf.setAnyOf(List.of(number, text));
+
+        // The document's word for the choice is not kept: nothing RESTest does acts on whether it
+        // had to be exactly one of the shapes or any of them, and the one thing that does - judging
+        // a reply - reads the document rather than this model.
+        for (CanonicalSchema converted : List.of(convert(oneOf), convert(anyOf))) {
+            assertThat(converted).asInstanceOf(type(ChoiceSchema.class))
+                    .extracting(ChoiceSchema::alternatives).asInstanceOf(LIST)
+                    .hasSize(2)
+                    .satisfies(shapes -> {
+                        assertThat(shapes.get(0)).isInstanceOf(NumberSchema.class);
+                        assertThat(shapes.get(1)).isInstanceOf(StringSchema.class);
+                    });
+        }
+    }
+
+    @Test
+    @DisplayName("a choice one of whose shapes cannot be read cannot be read either")
+    void a_choice_with_an_unreadable_shape_is_unreadable() {
+        Schema<Object> text = new Schema<>();
+        text.setType("string");
+        Schema<Object> unreadable = new Schema<>();
+        unreadable.setNot(text);
+
+        Schema<Object> choice = new Schema<>();
+        choice.setOneOf(List.of(text, unreadable));
+
+        // Not a choice over the shape that survived: offering fewer shapes than the document is a
+        // narrower claim about what the API accepts, and it would be ours rather than the document's.
+        assertThat(convert(choice)).asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString()
+                .contains("fewer shapes than the document");
+    }
+
+    @Test
+    @DisplayName("what this increment leaves out still says so, naming which construct it was")
+    void the_constructs_left_out_still_say_so() {
         Schema<Object> option = new Schema<>();
         option.setType("string");
 
-        Schema<Object> oneOf = new Schema<>();
-        oneOf.setOneOf(List.of(option));
-        Schema<Object> anyOf = new Schema<>();
-        anyOf.setAnyOf(List.of(option));
         Schema<Object> not = new Schema<>();
         not.setNot(option);
         Schema<Object> discriminated = new Schema<>();
         discriminated.setType("object");
         discriminated.setDiscriminator(new Discriminator().propertyName("kind"));
+        Schema<Object> choiceInsideACombination = new Schema<>();
+        choiceInsideACombination.setAllOf(List.of(option));
+        choiceInsideACombination.setOneOf(List.of(option));
 
-        assertThat(convert(oneOf)).asInstanceOf(type(UnsupportedSchema.class))
-                .extracting(UnsupportedSchema::reason).asString().contains("oneOf");
-        assertThat(convert(anyOf)).asInstanceOf(type(UnsupportedSchema.class))
-                .extracting(UnsupportedSchema::reason).asString().contains("anyOf");
         assertThat(convert(not)).asInstanceOf(type(UnsupportedSchema.class))
                 .extracting(UnsupportedSchema::reason).asString().contains("not");
         assertThat(convert(discriminated)).asInstanceOf(type(UnsupportedSchema.class))
                 .extracting(UnsupportedSchema::reason).asString().contains("discriminator");
+        assertThat(convert(choiceInsideACombination)).asInstanceOf(type(UnsupportedSchema.class))
+                .extracting(UnsupportedSchema::reason).asString().contains("allOf beside oneOf");
     }
 
     @Test
@@ -357,6 +401,63 @@ class SchemaConverterTest {
                 () -> assertThat(SchemaConverter.convert(schemas.get("S0"), components)).isNotNull());
     }
 
+    @Test
+    @DisplayName("what the document states beside a choice still holds for every shape it offers")
+    void what_is_stated_beside_a_choice_narrows_every_shape() {
+        Schema<Object> completed = new Schema<>();
+        completed.setType("object");
+        completed.setRequired(List.of("conclusion"));
+        Schema<Object> running = new Schema<>();
+        running.setType("object");
+
+        Schema<Object> body = new Schema<>();
+        body.setType("object");
+        body.setProperties(Map.of("name", stringSchema(), "head_sha", stringSchema()));
+        body.setRequired(List.of("name", "head_sha"));
+        body.setOneOf(List.of(completed, running));
+
+        // The value has to satisfy what was stated outside the choice *and* one of the shapes on
+        // offer. Reading only the shapes would leave a body accepting requests without the two
+        // properties the document says it always needs.
+        assertThat(convert(body)).asInstanceOf(type(ChoiceSchema.class))
+                .extracting(ChoiceSchema::alternatives).asInstanceOf(LIST)
+                .allSatisfy(shape -> assertThat(shape).asInstanceOf(type(ObjectSchema.class))
+                        .satisfies(object -> {
+                            assertThat(object.properties()).containsOnlyKeys("name", "head_sha");
+                            assertThat(object.required()).contains("name", "head_sha");
+                        }));
+    }
+
+    @Test
+    @DisplayName("a shape a choice offers by name stays a name, so a choice may describe itself")
+    void a_shape_offered_by_name_stays_a_name() {
+        Schema<Object> toItself = new Schema<>();
+        toItself.set$ref("#/components/schemas/Comment");
+        Schema<Object> text = new Schema<>();
+        text.setType("string");
+        Schema<Object> comment = new Schema<>();
+        comment.setOneOf(List.of(text, toItself));
+
+        assertThat(SchemaConverter.convert(comment, componentsDeclaring("Comment", comment)))
+                .asInstanceOf(type(ChoiceSchema.class))
+                .extracting(ChoiceSchema::alternatives).asInstanceOf(LIST)
+                .satisfies(shapes -> {
+                    assertThat(shapes.get(0)).isInstanceOf(StringSchema.class);
+                    assertThat(shapes.get(1)).asInstanceOf(type(SchemaReference.class))
+                            .extracting(SchemaReference::name).isEqualTo("Comment");
+                });
+    }
+
+    @Test
+    @DisplayName("a choice between no shapes at all does not bring the parser down")
+    void a_choice_between_nothing_is_read_without_crashing() {
+        Schema<Object> empty = new Schema<>();
+        empty.setOneOf(List.of());
+        empty.setType("string");
+
+        assertThat(convert(empty)).isInstanceOf(StringSchema.class);
+    }
+
     private static Schema<Object> stringSchema() {
         Schema<Object> schema = new Schema<>();
         schema.setType("string");
@@ -452,7 +553,7 @@ class SchemaConverterTest {
     @DisplayName("hasUnsupportedConstruct finds an unsupported shape nested inside an object or array")
     void unsupported_constructs_are_found_when_nested() {
         Schema<Object> composed = new Schema<>();
-        composed.setOneOf(List.of(new Schema<>()));
+        composed.setNot(new Schema<>());
         Schema<Object> nestedInObject = new Schema<>();
         nestedInObject.setType("object");
         nestedInObject.setProperties(Map.of("bad", composed));

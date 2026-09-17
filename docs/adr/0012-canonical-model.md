@@ -145,6 +145,23 @@ shape, and it is lossless in both directions: a 3.0 document's `minimum: 5` plus
 
 ---
 
+## Amendment (M2.1b)
+
+**Date:** 2026-09-17
+
+**There are eleven schema variants, not ten.**
+
+`ChoiceSchema` carries the shapes a value is allowed to have when a document offers a choice between
+them. The reasoning, the alternatives weighed and what is deliberately left out are in
+[ADR-0018](0018-a-choice-between-shapes.md); recorded here because this is the record that says how
+many variants there are, and a count that is wrong is worse than no count.
+
+It is also the first time the mechanism this ADR claimed for a new variant has been exercised. Six
+places stopped compiling until they handled the new shape, which is what was wanted. One did not: a
+chain of `instanceof` tests inside the specification module, which a sealed `switch` would have
+caught and which instead needed a guard written on purpose. Worth knowing before the twelfth variant:
+the guarantee is a property of `switch`, not of the sealed interface.
+
 ## Amendment (M2.1a)
 
 **Date:** 2026-09-17

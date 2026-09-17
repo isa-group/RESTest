@@ -22,6 +22,7 @@ import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NullSchema;
 import io.restest.core.schema.NumberKind;
@@ -58,14 +59,17 @@ import java.util.stream.Collectors;
  * Turns one {@code swagger-parser} schema into the ten-shape {@link CanonicalSchema} the rest of
  * RESTest works with.
  *
- * <p>A value the document describes as being several shapes at once ({@code allOf}) is combined into
- * one shape here, by {@link AllOfMerger}, so that nothing downstream has to know the document
- * described it in halves. A value declared as a <em>choice</em> between shapes ({@code oneOf},
- * {@code anyOf}), one declared by what it is not ({@code not}), one whose shape is picked by a
- * discriminator property, and a tuple-form array ({@code prefixItems}, where every element has its
- * own declared shape) are all still read as {@link UnsupportedSchema}: a choice cannot be collapsed
- * into one shape the way a combination can, and a tuple is not the "every element looks the same"
- * shape {@link ArraySchema} represents. None of them crashes the parser; each says why in the report.
+ * <p>Two of the ways a document builds a shape out of others are read here. A value that has to be
+ * several shapes <em>at once</em> ({@code allOf}) is combined into one, by {@link AllOfMerger}, so
+ * that nothing downstream has to know the document described it in halves. A value that may have any
+ * one of several shapes ({@code oneOf}, {@code anyOf}) becomes a {@link ChoiceSchema} carrying them,
+ * each narrowed by whatever the schema states outside the choice.
+ *
+ * <p>The rest are read as {@link UnsupportedSchema}, each saying which construct defeated it: a value
+ * described by what it is <em>not</em>, one whose shape is picked by a discriminator property, a
+ * choice standing beside a combination, and a tuple-form array ({@code prefixItems}, where every
+ * element has its own declared shape, which is not the "every element looks the same" shape
+ * {@link ArraySchema} represents). None of them crashes the parser; each says why in the report.
  */
 final class SchemaConverter {
 
@@ -127,6 +131,12 @@ final class SchemaConverter {
         if (unreadableComposition.isPresent()) {
             return new UnsupportedSchema(metadata, unreadableComposition.get());
         }
+        if (isNonEmpty(schema.getOneOf())) {
+            return choice(schema.getOneOf(), schema, metadata, components, beingCombined);
+        }
+        if (isNonEmpty(schema.getAnyOf())) {
+            return choice(schema.getAnyOf(), schema, metadata, components, beingCombined);
+        }
         if (isNonEmpty(schema.getAllOf())) {
             return combine(schema, components, beingCombined);
         }
@@ -182,6 +192,8 @@ final class SchemaConverter {
                     || o.additionalProperties().map(v -> hasUnsupportedConstruct(v, schemas, visited))
                             .orElse(false);
             case ArraySchema a -> hasUnsupportedConstruct(a.items(), schemas, visited);
+            case ChoiceSchema c -> c.alternatives().stream()
+                    .anyMatch(shape -> hasUnsupportedConstruct(shape, schemas, visited));
             case SchemaReference r -> {
                 if (!visited.add(r.name())) {
                     yield false;
@@ -215,13 +227,17 @@ final class SchemaConverter {
      * defeated us is worth naming in the report.
      */
     private static Optional<String> whatMakesTheCompositionUnreadable(Schema<?> schema) {
-        if (isNonEmpty(schema.getOneOf())) {
-            return Optional.of("a value declared as exactly one of several alternative shapes "
-                    + "(oneOf) is not supported yet");
+        if (isNonEmpty(schema.getOneOf()) && isNonEmpty(schema.getAnyOf())) {
+            return Optional.of("a value offering two separate choices of shape (oneOf and anyOf at "
+                    + "once) is not supported yet");
         }
-        if (isNonEmpty(schema.getAnyOf())) {
-            return Optional.of("a value declared as at least one of several alternative shapes "
-                    + "(anyOf) is not supported yet");
+        if ((isNonEmpty(schema.getOneOf()) || isNonEmpty(schema.getAnyOf()))
+                && isNonEmpty(schema.getAllOf())) {
+            // Distributing the combination over the choice - A and (B or C) being (A and B) or
+            // (A and C) - is correct and no document in the corpus needs it. Until one does, saying
+            // it was not read is better than reading it wrongly.
+            return Optional.of("a value that has to be several shapes at once and also offers a "
+                    + "choice between shapes (allOf beside oneOf or anyOf) is not supported yet");
         }
         if (schema.getNot() != null) {
             return Optional.of("a value declared by the shape it must not have (not) is not "
@@ -232,6 +248,38 @@ final class SchemaConverter {
                     + "supported yet");
         }
         return Optional.empty();
+    }
+
+    /**
+     * The shapes a value is allowed to have, as one shape of its own.
+     *
+     * <p>What the schema states in its own right constrains every one of them. A document may write
+     * the properties a body must always have, and beside them a choice between the shapes the rest
+     * of it may take; the value has to satisfy both, so each shape on offer is combined with what
+     * was stated outside the choice. Dropping those statements would leave a shape that accepts
+     * values the document does not, which is worse than saying we could not read it.
+     *
+     * <p>A shape on offer that could not be read costs the whole choice, rather than being dropped
+     * from it. A choice with one of its shapes missing is a narrower claim about what the API accepts
+     * than the document made - the same reason a list of allowed values is refused when one of them
+     * could not be read, rather than being quietly shortened.
+     */
+    private static CanonicalSchema choice(List<Schema> alternatives, Schema<?> schema,
+            SchemaMetadata metadata, Components components, Combination beingCombined) {
+        CanonicalSchema statedOutsideTheChoice =
+                convertPlain(schema, metadata, components, beingCombined);
+        List<CanonicalSchema> shapes = new ArrayList<>();
+        for (Schema<?> alternative : alternatives) {
+            CanonicalSchema shape = AllOfMerger.merge(statedOutsideTheChoice,
+                    convert(alternative, components, beingCombined));
+            if (shape instanceof UnsupportedSchema unreadable) {
+                return new UnsupportedSchema(metadata, "one of the shapes this value is allowed to "
+                        + "have could not be read (" + unreadable.reason() + "), so the choice would "
+                        + "offer fewer shapes than the document does");
+            }
+            shapes.add(shape);
+        }
+        return new ChoiceSchema(metadata, shapes);
     }
 
     /**

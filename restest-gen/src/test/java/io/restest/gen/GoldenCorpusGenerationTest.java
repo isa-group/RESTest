@@ -22,6 +22,7 @@ import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
 import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
+import io.restest.core.model.OperationId;
 import io.restest.core.model.Parameter;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.net.URI;
@@ -29,6 +30,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -141,6 +143,34 @@ class GoldenCorpusGenerationTest {
                         .get()
                         .extracting(ParameterValue::origin).isNotNull();
             }
+        }
+    }
+
+    @Test
+    @DisplayName("an operation whose parameter may be a number or a text is attempted, not skipped")
+    void a_parameter_offering_a_choice_of_shapes_no_longer_costs_its_operation() {
+        // GitHub's workflow_id is declared `oneOf: [integer, string]` in a path, which is the only
+        // place in fifty documents where a choice decides whether a request is sent at all: six
+        // operations share that parameter, and a required parameter RESTest cannot read costs the
+        // whole operation. Everything else a choice touches in the corpus is a response body.
+        Path document = repositoryRoot()
+                .resolve("restest-spec/src/test/resources/specifications/community/GitHub")
+                .resolve("openapi.yaml");
+        assertThat(document).exists();
+        ApiModel model = new SwaggerSpecificationParser().parse(document.toString());
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260917L);
+
+        assertThat(generator.untestableOperations()).isEmpty();
+        for (String id : List.of("actions/get-workflow", "actions/disable-workflow",
+                "actions/enable-workflow", "actions/create-workflow-dispatch",
+                "actions/list-workflow-runs", "actions/get-workflow-usage")) {
+            Operation operation = model.operation(OperationId.of(id)).orElseThrow();
+            TestCase testCase = generator.generate(operation)
+                    .orElseThrow(() -> new AssertionError("no test case for " + id));
+            assertThat(testCase.parameterValues())
+                    .describedAs("%s should carry a value for workflow_id", id)
+                    .anySatisfy(value -> assertThat(value.name()).isEqualTo("workflow_id"));
+            assertEveryValueSatisfiesItsSchema(model, operation, testCase);
         }
     }
 

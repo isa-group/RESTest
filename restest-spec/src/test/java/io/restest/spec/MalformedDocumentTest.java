@@ -126,8 +126,8 @@ class MalformedDocumentTest {
     }
 
     @Test
-    @DisplayName("a $ref to a schema offering a choice of shapes is degraded, not reported complete")
-    void a_reference_to_a_choice_of_shapes_is_degraded(@TempDir Path dir) throws Exception {
+    @DisplayName("a $ref to a schema RESTest cannot read is degraded, not reported complete")
+    void a_reference_to_an_unreadable_schema_is_degraded(@TempDir Path dir) throws Exception {
         ApiModel api = parse(dir, """
                 openapi: 3.0.0
                 info: {title: t, version: '1'}
@@ -142,8 +142,8 @@ class MalformedDocumentTest {
                 components:
                   schemas:
                     Pet:
-                      oneOf:
-                        - type: object
+                      not:
+                        type: object
                 """);
 
         // The operation that uses the schema is degraded, not skipped, and the named schema itself

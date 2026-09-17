@@ -25,6 +25,7 @@ import io.restest.core.schema.AnySchema;
 import io.restest.core.schema.ArraySchema;
 import io.restest.core.schema.BooleanSchema;
 import io.restest.core.schema.CanonicalSchema;
+import io.restest.core.schema.ChoiceSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.NullSchema;
 import io.restest.core.schema.NumberKind;
@@ -181,6 +182,7 @@ public final class RandomValueProvider implements ValueProvider {
             case ArraySchema array -> list(request, array, depth);
             case ObjectSchema object -> object(request, object, depth);
             case AnySchema ignored -> Optional.of(anything());
+            case ChoiceSchema choice -> oneOfTheShapes(request, choice, depth);
             case SchemaReference reference -> named(request, reference, depth);
             // Nothing can be sent that satisfies a schema saying no value is acceptable, and a shape
             // nobody could read is not one to guess at: both decline, and the caller reports it.
@@ -401,6 +403,41 @@ public final class RandomValueProvider implements ValueProvider {
             case 1 -> JsonValue.of(random.nextInt(1000));
             default -> text(StringSchema.of()).orElse(JsonValue.of("value"));
         };
+    }
+
+    /**
+     * A value of one of the shapes the specification allows.
+     *
+     * <p>Which one is chosen at random rather than taken in order, because taking the first would
+     * make what gets tested depend on the order the document happened to list the shapes in, and the
+     * later ones would never be sent at all.
+     *
+     * <p>The rest are tried when the chosen one yields nothing. A value satisfies a choice if it
+     * satisfies any one of the shapes, so giving up on the first that declines would abandon values
+     * the document plainly allows - and for a required parameter, abandoning a value costs the whole
+     * operation.
+     */
+    private Optional<JsonValue> oneOfTheShapes(ValueRequest request, ChoiceSchema choice,
+            int depth) {
+        List<CanonicalSchema> shapes = new ArrayList<>(choice.alternatives());
+        // Nothing at all in the path would silently address a different resource, which is the same
+        // rule the value of any other shape obeys - and here it is a whole shape to avoid, not a
+        // chance to decline.
+        if (request.location() == ParameterLocation.PATH) {
+            shapes.removeIf(shape -> shape instanceof NullSchema);
+        }
+        if (shapes.isEmpty()) {
+            return Optional.empty();
+        }
+        int chosen = random.nextInt(shapes.size());
+        for (int tried = 0; tried < shapes.size(); tried++) {
+            Optional<JsonValue> value =
+                    value(request, shapes.get((chosen + tried) % shapes.size()), depth + 1);
+            if (value.isPresent()) {
+                return value;
+            }
+        }
+        return Optional.empty();
     }
 
     private Optional<JsonValue> named(ValueRequest request, SchemaReference reference, int depth) {
