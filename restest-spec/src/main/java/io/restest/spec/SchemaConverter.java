@@ -31,6 +31,7 @@ import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -57,11 +58,14 @@ import java.util.stream.Collectors;
  * Turns one {@code swagger-parser} schema into the ten-shape {@link CanonicalSchema} the rest of
  * RESTest works with.
  *
- * <p>Composition (a value declared as one of several alternative shapes, {@code oneOf}/{@code anyOf}/
- * {@code allOf}/{@code not}/a discriminator) and tuple-form arrays ({@code prefixItems}, where every
- * element has its own declared shape) are read as {@link UnsupportedSchema}: folding composition into
- * the canonical model is a later increment, and a tuple is not the "every element looks the same"
- * shape {@link ArraySchema} represents. Neither crashes the parser; both say why in the report.
+ * <p>A value the document describes as being several shapes at once ({@code allOf}) is combined into
+ * one shape here, by {@link AllOfMerger}, so that nothing downstream has to know the document
+ * described it in halves. A value declared as a <em>choice</em> between shapes ({@code oneOf},
+ * {@code anyOf}), one declared by what it is not ({@code not}), one whose shape is picked by a
+ * discriminator property, and a tuple-form array ({@code prefixItems}, where every element has its
+ * own declared shape) are all still read as {@link UnsupportedSchema}: a choice cannot be collapsed
+ * into one shape the way a combination can, and a tuple is not the "every element looks the same"
+ * shape {@link ArraySchema} represents. None of them crashes the parser; each says why in the report.
  */
 final class SchemaConverter {
 
@@ -84,8 +88,25 @@ final class SchemaConverter {
     private SchemaConverter() {
     }
 
-    /** The canonical shape for the given schema, or {@link AnySchema} for {@code null}. */
-    static CanonicalSchema convert(Schema<?> schema) {
+    /**
+     * The canonical shape for the given schema, or {@link AnySchema} for {@code null}.
+     *
+     * @param schema the shape as the parser read it
+     * @param components the document's reusable pieces, whose named schemas a combination may refer
+     *     to; {@code null} when there are none, in which case a combination that refers to one by
+     *     name has nothing to resolve it against and says so
+     */
+    static CanonicalSchema convert(Schema<?> schema, Components components) {
+        return convert(schema, components, new Combination());
+    }
+
+    /**
+     * @param beingCombined how far this combination has been followed already, so that a shape built
+     *     from itself, one nested deeper than anything real, and a document that would take longer to
+     *     work through than to test are each reported rather than followed
+     */
+    private static CanonicalSchema convert(Schema<?> schema, Components components,
+            Combination beingCombined) {
         if (schema == null) {
             return AnySchema.of();
         }
@@ -102,10 +123,19 @@ final class SchemaConverter {
             return new UnsupportedSchema(metadata, "one of the values this is allowed to take could "
                     + "not be read, so the list of them would be shorter than the document's");
         }
-        if (isComposed(schema)) {
-            return new UnsupportedSchema(metadata, "a value declared as one of several alternative "
-                    + "shapes (oneOf/anyOf/allOf/not) is not supported yet");
+        Optional<String> unreadableComposition = whatMakesTheCompositionUnreadable(schema);
+        if (unreadableComposition.isPresent()) {
+            return new UnsupportedSchema(metadata, unreadableComposition.get());
         }
+        if (isNonEmpty(schema.getAllOf())) {
+            return combine(schema, components, beingCombined);
+        }
+        return convertPlain(schema, metadata, components, beingCombined);
+    }
+
+    /** The canonical shape for a schema that is not built out of others. */
+    private static CanonicalSchema convertPlain(Schema<?> schema, SchemaMetadata metadata,
+            Components components, Combination beingCombined) {
         if (schema.getPrefixItems() != null && !schema.getPrefixItems().isEmpty()) {
             return new UnsupportedSchema(metadata, "a tuple-form array, where each element has its "
                     + "own declared shape (prefixItems), is not supported yet");
@@ -117,8 +147,8 @@ final class SchemaConverter {
         }
         String type = effectiveType(schema);
         return switch (type) {
-            case "object" -> convertObject(schema, metadata);
-            case "array" -> convertArray(schema, metadata);
+            case "object" -> convertObject(schema, metadata, components, beingCombined);
+            case "array" -> convertArray(schema, metadata, components, beingCombined);
             case "string" -> convertString(schema, metadata);
             case "integer" -> convertNumber(schema, metadata, NumberKind.INTEGER);
             case "number" -> convertNumber(schema, metadata, NumberKind.NUMBER);
@@ -175,10 +205,134 @@ final class SchemaConverter {
         };
     }
 
-    private static boolean isComposed(Schema<?> schema) {
-        return isNonEmpty(schema.getOneOf()) || isNonEmpty(schema.getAnyOf())
-                || isNonEmpty(schema.getAllOf()) || schema.getNot() != null
-                || schema.getDiscriminator() != null;
+    /**
+     * Why this schema's way of being built out of others cannot be read, or nothing when it can.
+     *
+     * <p>Only one of these is a combination: {@code allOf} says a value has to be every one of
+     * several shapes at once, which is a single shape once worked out. The rest describe a value by
+     * offering a <em>choice</em> of shapes, or by saying what it must not be, and neither collapses
+     * into one shape - so the honest answer is still that we cannot read it, and which of them
+     * defeated us is worth naming in the report.
+     */
+    private static Optional<String> whatMakesTheCompositionUnreadable(Schema<?> schema) {
+        if (isNonEmpty(schema.getOneOf())) {
+            return Optional.of("a value declared as exactly one of several alternative shapes "
+                    + "(oneOf) is not supported yet");
+        }
+        if (isNonEmpty(schema.getAnyOf())) {
+            return Optional.of("a value declared as at least one of several alternative shapes "
+                    + "(anyOf) is not supported yet");
+        }
+        if (schema.getNot() != null) {
+            return Optional.of("a value declared by the shape it must not have (not) is not "
+                    + "supported yet");
+        }
+        if (schema.getDiscriminator() != null) {
+            return Optional.of("a value whose shape is chosen by a discriminator property is not "
+                    + "supported yet");
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * The one shape a value must have to be every one of this schema's halves at once.
+     *
+     * <p>What the schema says in its own right counts as one more half: {@code allOf} is allowed to
+     * sit beside a type, properties or an enumeration, and those constrain the value exactly as the
+     * listed halves do. Taking it first is also what gives the schema's own description and default
+     * priority over any it inherits.
+     */
+    private static CanonicalSchema combine(Schema<?> schema, Components components,
+            Combination beingCombined) {
+        List<CanonicalSchema> halves = new ArrayList<>();
+        halves.add(convertPlain(schema, metadataOf(schema), components, beingCombined));
+        for (Schema<?> half : schema.getAllOf()) {
+            halves.add(combineBranch(half, components, beingCombined));
+        }
+        return AllOfMerger.fold(halves);
+    }
+
+    /**
+     * One half of a combination. A half that names a shape declared elsewhere has to be looked up
+     * and written out in place, because a combination cannot be worked out without knowing what it
+     * is combining - which is the one situation where a name is not kept.
+     */
+    private static CanonicalSchema combineBranch(Schema<?> half, Components components,
+            Combination beingCombined) {
+        if (half == null || half.get$ref() == null) {
+            return convert(half, components, beingCombined);
+        }
+        String reference = half.get$ref();
+        if (!reference.startsWith("#")) {
+            // Writing a half out in place means finding it by name, and a name in another document
+            // is not this document's name: a local shape that happened to share it would be put in
+            // silently. Left unread rather than read as the wrong shape.
+            return UnsupportedSchema.of("this is built from a shape in another document ('"
+                    + reference + "'), which RESTest does not open");
+        }
+        if (beingCombined.open.size() >= Combination.DEEPEST) {
+            return UnsupportedSchema.of("this is built from shapes nested more than "
+                    + Combination.DEEPEST + " deep, which is further than RESTest follows");
+        }
+        if (beingCombined.remaining-- <= 0) {
+            return UnsupportedSchema.of("this document builds shapes out of one another in more "
+                    + "combinations than RESTest works through; the rest are left unread");
+        }
+
+        String name = refName(reference);
+        Schema<?> named = namedSchema(name, components);
+        // A half may name a shape that is itself only another name, which code-generated documents
+        // produce routinely. Following those costs nothing and reaches the shape that was meant.
+        Set<String> alreadyFollowed = new LinkedHashSet<>();
+        while (named != null && named.get$ref() != null && named.get$ref().startsWith("#")
+                && alreadyFollowed.add(name)) {
+            name = refName(named.get$ref());
+            named = namedSchema(name, components);
+        }
+        if (named == null) {
+            return UnsupportedSchema.of("this is built from a shape named '" + name + "' that the "
+                    + "document does not declare");
+        }
+        if (named.get$ref() != null) {
+            return UnsupportedSchema.of("the shape '" + name + "' is named through a circle of "
+                    + "names that never reaches a shape");
+        }
+        if (!beingCombined.open.add(name)) {
+            return UnsupportedSchema.of("the shape '" + name + "' is built from itself, directly or "
+                    + "through others, so what a value must look like cannot be worked out");
+        }
+        try {
+            return convert(named, components, beingCombined);
+        } finally {
+            beingCombined.open.remove(name);
+        }
+    }
+
+    private static Schema<?> namedSchema(String name, Components components) {
+        return components == null || components.getSchemas() == null
+                ? null : components.getSchemas().get(name);
+    }
+
+    /**
+     * How far one combination has been followed, and how much further it may go.
+     *
+     * <p>Two limits rather than one, because a combination can defeat a reader in two ways. It can
+     * nest so deeply that following it exhausts the stack, which would end the whole run rather than
+     * cost one operation. And it can branch, so the same shapes are reached along many paths and the
+     * work doubles at every level - a document of a few kilobytes able to spend an entire testing
+     * budget before the first request is sent. Both answer the same way: say what was not read, and
+     * carry on.
+     */
+    private static final class Combination {
+
+        /** Deeper than any document written by a person, and shallow enough to be safe. */
+        private static final int DEEPEST = 64;
+
+        /** The names opened on the way here, so a shape built from itself is caught. */
+        private final Set<String> open = new LinkedHashSet<>();
+
+        /** How many more named halves may be looked up before the rest are left unread. */
+        private int remaining = 2_000;
     }
 
     private static boolean isNonEmpty(List<?> list) {
@@ -236,22 +390,25 @@ final class SchemaConverter {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private static ObjectSchema convertObject(Schema<?> schema, SchemaMetadata metadata) {
+    private static ObjectSchema convertObject(Schema<?> schema, SchemaMetadata metadata,
+            Components components, Combination beingCombined) {
         Map<String, CanonicalSchema> properties = new LinkedHashMap<>();
         if (schema.getProperties() != null) {
-            schema.getProperties().forEach((name, value) -> properties.put(name, convert(value)));
+            schema.getProperties().forEach((name, value) ->
+                    properties.put(name, convert(value, components, beingCombined)));
         }
         Set<String> required = schema.getRequired() == null
                 ? Set.of() : new LinkedHashSet<>(schema.getRequired());
         Optional<CanonicalSchema> additionalProperties = convertAdditionalProperties(
-                schema.getAdditionalProperties());
+                schema.getAdditionalProperties(), components, beingCombined);
         Optional<Integer> minProperties = Optional.ofNullable(schema.getMinProperties());
         Optional<Integer> maxProperties = Optional.ofNullable(schema.getMaxProperties());
         return new ObjectSchema(metadata, properties, required, additionalProperties, minProperties,
                 maxProperties);
     }
 
-    private static Optional<CanonicalSchema> convertAdditionalProperties(Object additionalProperties) {
+    private static Optional<CanonicalSchema> convertAdditionalProperties(Object additionalProperties,
+            Components components, Combination beingCombined) {
         if (additionalProperties == null) {
             return Optional.empty();
         }
@@ -259,13 +416,14 @@ final class SchemaConverter {
             return allowed ? Optional.empty() : Optional.of(NothingSchema.of());
         }
         if (additionalProperties instanceof Schema<?> nested) {
-            return Optional.of(convert(nested));
+            return Optional.of(convert(nested, components, beingCombined));
         }
         return Optional.empty();
     }
 
-    private static ArraySchema convertArray(Schema<?> schema, SchemaMetadata metadata) {
-        CanonicalSchema items = convert(schema.getItems());
+    private static ArraySchema convertArray(Schema<?> schema, SchemaMetadata metadata,
+            Components components, Combination beingCombined) {
+        CanonicalSchema items = convert(schema.getItems(), components, beingCombined);
         Optional<Integer> minItems = Optional.ofNullable(schema.getMinItems());
         Optional<Integer> maxItems = Optional.ofNullable(schema.getMaxItems());
         boolean uniqueItems = Boolean.TRUE.equals(schema.getUniqueItems());

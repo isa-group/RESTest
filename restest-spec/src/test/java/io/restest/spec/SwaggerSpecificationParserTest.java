@@ -45,17 +45,11 @@ class SwaggerSpecificationParserTest {
 
         assertThat(api.operations()).isNotEmpty();
         assertThat(api.title()).isNotBlank();
-        // Every operation stays present and testable; the schema composition this increment does not
-        // fold (see SchemaConverter) is reported, never skipped - once against the named schema that
-        // actually uses it, and again, DEGRADED rather than DOCUMENT, against every operation whose
-        // data reaches that schema.
-        assertThat(api.issues()).isNotEmpty();
-        assertThat(api.issues())
-                .noneSatisfy(issue -> assertThat(issue.effect())
-                        .isEqualTo(SpecificationIssue.Effect.OPERATION_SKIPPED));
-        assertThat(api.issues())
-                .anySatisfy(issue -> assertThat(issue.effect())
-                        .isEqualTo(SpecificationIssue.Effect.DEGRADED));
+        // The whole document reads now. Every resource it describes is built by combining shapes,
+        // which used to be reported twice over - once against the named schema and again against
+        // every operation whose data reached it. Nothing is left unread, so there is nothing to
+        // report at all: no operation skipped, and none tested with less than the document states.
+        assertThat(api.issues()).isEmpty();
     }
 
     @Test

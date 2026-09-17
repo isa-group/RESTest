@@ -126,8 +126,8 @@ class MalformedDocumentTest {
     }
 
     @Test
-    @DisplayName("a $ref to a composed schema is degraded, not silently reported complete")
-    void a_reference_to_a_composed_schema_is_degraded(@TempDir Path dir) throws Exception {
+    @DisplayName("a $ref to a schema offering a choice of shapes is degraded, not reported complete")
+    void a_reference_to_a_choice_of_shapes_is_degraded(@TempDir Path dir) throws Exception {
         ApiModel api = parse(dir, """
                 openapi: 3.0.0
                 info: {title: t, version: '1'}
@@ -142,7 +142,7 @@ class MalformedDocumentTest {
                 components:
                   schemas:
                     Pet:
-                      allOf:
+                      oneOf:
                         - type: object
                 """);
 
@@ -155,6 +155,44 @@ class MalformedDocumentTest {
                         .isEqualTo(SpecificationIssue.Effect.DEGRADED));
         assertThat(api.issues())
                 .anySatisfy(issue -> assertThat(issue.location()).contains("Pet"));
+    }
+
+    @Test
+    @DisplayName("a $ref to a schema built by combining others is read, and reports nothing")
+    void a_reference_to_a_combined_schema_is_read(@TempDir Path dir) throws Exception {
+        ApiModel api = parse(dir, """
+                openapi: 3.0.0
+                info: {title: t, version: '1'}
+                paths:
+                  /widgets:
+                    post:
+                      requestBody:
+                        content:
+                          application/json:
+                            schema: {$ref: '#/components/schemas/Pet'}
+                      responses: {'200': {description: ok}}
+                components:
+                  schemas:
+                    Named:
+                      type: object
+                      properties: {name: {type: string}}
+                    Pet:
+                      allOf:
+                        - $ref: '#/components/schemas/Named'
+                        - type: object
+                          properties: {id: {type: integer}}
+                """);
+
+        // The half named elsewhere is written out in place, so the operation is not merely testable
+        // but testable against the whole shape: both halves' properties, from one lookup.
+        assertThat(api.operations()).hasSize(1);
+        assertThat(api.issues()).isEmpty();
+        assertThat(api.schemas().get("Pet")).asInstanceOf(
+                        org.assertj.core.api.InstanceOfAssertFactories.type(
+                                io.restest.core.schema.ObjectSchema.class))
+                .extracting(io.restest.core.schema.ObjectSchema::properties)
+                .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.MAP)
+                .containsOnlyKeys("name", "id");
     }
 
     @Test

@@ -214,7 +214,8 @@ final class OperationConverter {
             Components components, String location, List<SpecificationIssue> issues) {
         List<Parameter> parameters = mergeParameters(pathParameters, swaggerOperation.getParameters(),
                 components).stream()
-                .flatMap(resolved -> convertParameter(resolved, id, location, issues).stream())
+                .flatMap(resolved -> convertParameter(resolved, components, id, location, issues)
+                        .stream())
                 .toList();
         List<Server> operationServers = convertServers(swaggerOperation.getServers(),
                 location + ".servers", issues);
@@ -300,8 +301,8 @@ final class OperationConverter {
      * or {@link Parameter}'s own constructor, further down.
      */
     private static Optional<Parameter> convertParameter(
-            io.swagger.v3.oas.models.parameters.Parameter parameter, OperationId operationId,
-            String location, List<SpecificationIssue> issues) {
+            io.swagger.v3.oas.models.parameters.Parameter parameter, Components components,
+            OperationId operationId, String location, List<SpecificationIssue> issues) {
         if (parameter == null) {
             issues.add(SpecificationIssue.degraded(location, operationId,
                     "a parameter reference does not resolve to anything the document declares"));
@@ -318,12 +319,13 @@ final class OperationConverter {
         if (parameter.getContent() != null && !parameter.getContent().isEmpty()) {
             Map.Entry<String, io.swagger.v3.oas.models.media.MediaType> entry =
                     parameter.getContent().entrySet().iterator().next();
-            CanonicalSchema schema = SchemaConverter.convert(entry.getValue().getSchema());
+            CanonicalSchema schema = SchemaConverter.convert(entry.getValue().getSchema(),
+                    components);
             return Optional.of(new Parameter(parameter.getName(), parameterLocation, required, schema,
                     ParameterStyle.defaultFor(parameterLocation), false, Optional.of(entry.getKey()),
                     description));
         }
-        CanonicalSchema schema = SchemaConverter.convert(parameter.getSchema());
+        CanonicalSchema schema = SchemaConverter.convert(parameter.getSchema(), components);
         ParameterStyle style = parameterStyle(parameter.getStyle(), parameterLocation);
         boolean explode = parameter.getExplode() != null
                 ? parameter.getExplode() : style.explodesByDefault();
@@ -381,7 +383,7 @@ final class OperationConverter {
             return Optional.empty();
         }
         boolean required = Boolean.TRUE.equals(resolved.getRequired());
-        Map<String, CanonicalSchema> content = convertContent(resolved.getContent());
+        Map<String, CanonicalSchema> content = convertContent(resolved.getContent(), components);
         return Optional.of(new RequestBodyModel(required, content,
                 Optional.ofNullable(resolved.getDescription())));
     }
@@ -412,7 +414,7 @@ final class OperationConverter {
                 }
                 return;
             }
-            Map<String, CanonicalSchema> content = convertContent(resolved.getContent());
+            Map<String, CanonicalSchema> content = convertContent(resolved.getContent(), components);
             Map<String, HeaderModel> headers = convertHeaders(resolved.getHeaders(), components,
                     operationId, location, issues);
             try {
@@ -456,7 +458,7 @@ final class OperationConverter {
                 return;
             }
             converted.put(name, new HeaderModel(Boolean.TRUE.equals(resolved.getRequired()),
-                    SchemaConverter.convert(resolved.getSchema()),
+                    SchemaConverter.convert(resolved.getSchema(), components),
                     Optional.ofNullable(resolved.getDescription())));
         });
         return converted;
@@ -493,13 +495,14 @@ final class OperationConverter {
         return null;
     }
 
-    private static Map<String, CanonicalSchema> convertContent(Content content) {
+    private static Map<String, CanonicalSchema> convertContent(Content content,
+            Components components) {
         if (content == null) {
             return Map.of();
         }
         Map<String, CanonicalSchema> converted = new LinkedHashMap<>();
         content.forEach((mediaType, value) -> converted.put(mediaType,
-                SchemaConverter.convert(value.getSchema())));
+                SchemaConverter.convert(value.getSchema(), components)));
         return converted;
     }
 
