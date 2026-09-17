@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-50 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
+51 increments in 9 milestones. One increment = one branch = one pull request into `v2`.
 Take them in order unless told otherwise. Design rationale in `docs/DESIGN.md`.
 
 **Supervision points** are marked 🛑. At those, stop and wait for review rather than continuing.
@@ -71,6 +71,7 @@ layout).
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
 | 2.7 | Value dictionary format, reader, writer, disk cache | Good values computed once, reused for ever, committed next to the specification |
 | 2.8 | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
+| 2.9 | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts |
 
 2.8's own "never blocking" guarantee is proved at that increment, by its own test (a slow provider
 must not stall the run) — not by waiting for M6.2's overhead regression test, which lands much later
@@ -79,11 +80,16 @@ and checks the tool's overall per-request overhead, not any one extension point.
 ADR-0017 studies the tool that won the 2026 competition and says what we take from it. Two things
 follow for M2. **2.5** also sends an `Accept` header built from the media types the operation's own
 2XX responses declare; we send none today, and one of the five specifications in the golden corpus
-serves a versioned media type. And **one item has no row here yet**: replacing the coin flip that
-decides whether an optional parameter is included, so that the required-only request — sent close to
-never today, at least once in 2ⁿ attempts — stops being a lottery ticket. It is nominal generation, so
-it is not 2.3's subject, and whether it becomes a row of its own is the maintainer's call. Whoever
-takes it measures the effect rather than assuming it.
+serves a versioned media type. And **2.9** exists because of it.
+
+2.9 is last in the table and depends on nothing in it, so it can be taken whenever. What makes it
+worth taking early is this: `RandomTestCaseGenerator` decides each optional parameter with its own
+coin at one half, so for an operation with *n* of them the request carrying only what the API
+requires — the one most likely to be accepted — is drawn about once in 2ⁿ attempts. Eight optional
+parameters is once in 256. It is nominal generation rather than a deliberate violation, so it is not
+2.3's subject. Whoever takes it measures the effect on how quickly operations are covered rather than
+assuming it: ADR-0017 is explicit that the assumption is untested, and being wrong about it is the
+cheapest thing in M2 to find out.
 
 ## M3 — Oracles, faults and reporting
 
