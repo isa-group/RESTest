@@ -55,3 +55,4 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0015](0015-command-line-contract.md) | One command, a budget spent in full, and what an exit code means | Accepted, amended at M1.7 and M1.8 |
 | [0016](0016-how-a-fault-is-presented.md) | A fault: catalogue number as identity, our words as description, classified twice | Accepted, amended at M1.10 |
 | [0017](0017-what-we-take-from-autoresttest.md) | What we take from the tool that won the 2026 competition, and what we refuse | Proposed |
+| [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Proposed |
