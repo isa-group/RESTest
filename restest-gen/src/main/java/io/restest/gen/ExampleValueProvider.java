@@ -38,8 +38,8 @@ import java.util.random.RandomGenerator;
  *
  * <p>A sample may be attached to the parameter itself or to the shape of its value, and a document
  * may give several. This prefers the parameter's own, which is what OpenAPI says takes precedence,
- * and picks among however many are left at random rather than always the first, so a run exercises
- * all of them.
+ * falling back on the shape's when the parameter has none that can be used; among however many are
+ * left it picks at random rather than always the first, so a run exercises all of them.
  *
  * <p>A sample is offered as the author wrote it, even where the document's own rules about the
  * value would refuse it. When a concrete sample and an abstract rule disagree, there is no telling
@@ -80,12 +80,13 @@ public final class ExampleValueProvider implements ValueProvider {
                 || request.schema() instanceof NothingSchema) {
             return Optional.empty();
         }
-        List<JsonValue> stated = request.examples().isEmpty()
-                ? request.schema().metadata().examples()
-                : request.examples();
-        List<JsonValue> usable = request.location() == ParameterLocation.PATH
-                ? stated.stream().filter(ExampleValueProvider::fillsAGapInThePath).toList()
-                : stated;
+        // The parameter's own samples take precedence, but only where it has one that can be used:
+        // a parameter whose only sample cannot fill a gap in the path should fall back on the one
+        // its shape offers rather than throw away an identifier the document wrote down.
+        List<JsonValue> usable = usable(request.examples(), request.location());
+        if (usable.isEmpty()) {
+            usable = usable(request.schema().metadata().examples(), request.location());
+        }
         if (usable.isEmpty()) {
             return Optional.empty();
         }
@@ -94,21 +95,26 @@ public final class ExampleValueProvider implements ValueProvider {
     }
 
     /**
-     * Whether this value, written into a path, would leave something between the slashes.
+     * The samples that could actually be sent from where this value goes.
      *
-     * <p>Judged from the value's shape rather than by writing it out, because what writes out as
-     * nothing is the same short list either way: no value at all, a word of no letters, and a list
-     * or an object with nothing in it.
+     * <p>Everywhere but the path, all of them. In the path, the ones that write out as something:
+     * the question is asked of the very code that will write the value later, rather than guessed
+     * at from the value's shape, because the two disagree. A list holding one empty word is a list
+     * with something in it and writes out as nothing; a list holding two writes out as the
+     * separator between them, and so writes out as something.
+     *
+     * <p>Asked of a value nested inside one that goes in the path, this is stricter than it needs
+     * to be - a property whose value is empty is still written with its own name beside it. Nothing
+     * is lost by that beyond one sample, and a rule that has to know how deep it is would be worse
+     * than a rule that is occasionally shy.
      */
-    private static boolean fillsAGapInThePath(JsonValue value) {
-        return switch (value) {
-            case JsonValue.JsonNull ignored -> false;
-            case JsonValue.JsonString text -> !text.value().isEmpty();
-            case JsonValue.JsonArray list -> !list.elements().isEmpty();
-            case JsonValue.JsonObject object -> !object.members().isEmpty();
-            case JsonValue.JsonBoolean ignored -> true;
-            case JsonValue.JsonNumber ignored -> true;
-        };
+    private static List<JsonValue> usable(List<JsonValue> samples, ParameterLocation location) {
+        if (location != ParameterLocation.PATH) {
+            return samples;
+        }
+        return samples.stream()
+                .filter(sample -> !RequestBuilder.writesAsNothingInAPath(sample))
+                .toList();
     }
 
     @Override

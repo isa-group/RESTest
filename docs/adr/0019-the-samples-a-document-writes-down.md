@@ -133,10 +133,22 @@ was right:
   outright, and every other source already believes the half that says nothing fits.
 - **A sample that writes out as nothing, where it belongs in the path.** An empty piece of a path
   closes the gap instead of filling it: `/owners/{ownerId}` becomes `/owners`, a request for every
-  owner judged afterwards against the promise made about one. The generator already refuses to
-  invent nothing there for exactly this reason, and a sample has to obey the same rule — the 3.1
-  spelling makes `examples: [Jane Doe, null]` an ordinary thing to write, and this repository's own
-  3.1 fixture writes one. Elsewhere an empty value is perfectly ordinary and is sent.
+  owner judged afterwards against the promise made about one, and every request for that operation
+  thrown away for the whole budget while the operation is still advertised as testable. The
+  generator already refuses to invent nothing there for exactly this reason, and a sample has to
+  obey the same rule — the 3.1 spelling makes `examples: [Jane Doe, null]` an ordinary thing to
+  write, and this repository's own 3.1 fixture writes one. Elsewhere an empty value is perfectly
+  ordinary and is sent.
+
+  The question is put to the very code that writes the value into the path, not answered from the
+  value's shape, because the two disagree: a list holding one empty word is a list with something
+  in it and writes out as nothing, while a list holding two writes out as the separator between
+  them. A first attempt judged by shape and let that case through.
+
+Precedence and this rule interact, and the order matters: a parameter's own samples win only where
+it has one that can be used. A parameter writing an unusable sample over a shape that writes a good
+one would otherwise throw away the identifier the document gave us and invent one instead, which is
+the outcome this whole record exists to prevent.
 
 The narrow exception already in the code stays and is extended to samples: when *we* combine two
 halves of an `allOf`, a contradiction we manufactured is removed, exactly as a default in the same
@@ -174,8 +186,12 @@ existed. M2.5 reads them, beside the `Accept` header it already owes.
   neither of those two APIs is one the smoke run starts.
 - 212 parameters across the corpus change what they are sent. No operation becomes testable or
   untestable: every one of them already had *some* value.
-- Adding this source cost one class and one line in the chain, which is the property ADR-0013
-  claimed and had not yet been tested.
+- **ADR-0013's claim that "adding a source of values is one class and one line in a plan" is
+  half-true, and this is the first test of it.** The source itself is one class and one line. What
+  it also cost: a component on `ValueRequest` and a second form of `about` to carry the parameter's
+  own samples without letting them reach a piece of the value, and a rule that depends on where the
+  value is going. The interface did not move and no existing source changed, which is the part of
+  the claim that held.
 - **A stored run's layout changed**, compatibly: a declared value may carry `stated`. The store's
   own version did not have to move, because a document without the field still reads.
 - `SchemaMetadata.examples()` and `Parameter.examples()` are what the document offered, not what is

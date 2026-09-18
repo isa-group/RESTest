@@ -176,8 +176,29 @@ public final class RequestBuilder {
         return headers;
     }
 
+    /**
+     * Whether this value, written into a path, would leave nothing between the slashes.
+     *
+     * <p>Answered by writing it out rather than by looking at its shape, because the two do not
+     * agree: a list of one empty word is a list with something in it and writes out as nothing,
+     * while a list of two writes out as the separator between them and so writes out as something.
+     * Whether the value is spread out or written as one piece makes no difference to this question,
+     * so it is asked as though it were written as one piece.
+     *
+     * <p>It matters because an empty piece of a path closes the gap rather than filling it, and
+     * whoever is choosing a value can avoid that only if it can ask the same question this class
+     * will ask later.
+     */
+    static boolean writesAsNothingInAPath(JsonValue value) {
+        return joined(value, false, ",").isEmpty();
+    }
+
     /** One value written as a single string, which is what a path, a header and a cookie need. */
     private static String joined(JsonValue value, Parameter parameter, String separator) {
+        return joined(value, parameter.explode(), separator);
+    }
+
+    private static String joined(JsonValue value, boolean explode, String separator) {
         return switch (value) {
             case JsonValue.JsonArray array -> array.elements().stream()
                     .map(RequestBuilder::scalar)
@@ -185,7 +206,7 @@ public final class RequestBuilder {
                     .orElse("");
             case JsonValue.JsonObject object -> {
                 StringJoiner written = new StringJoiner(separator);
-                String pairing = parameter.explode() ? "=" : separator;
+                String pairing = explode ? "=" : separator;
                 object.members().forEach((member, held) ->
                         written.add(member + pairing + scalar(held)));
                 yield written.toString();

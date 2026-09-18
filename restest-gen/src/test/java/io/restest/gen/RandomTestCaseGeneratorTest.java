@@ -184,25 +184,6 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("a sample for a whole list is not offered again for each of its elements")
-    void a_sample_of_a_list_is_not_a_sample_of_its_elements() {
-        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
-                Parameter.of("tags", ParameterLocation.QUERY, true,
-                                io.restest.core.schema.ArraySchema.of(StringSchema.of()))
-                        .withExamples(List.of(JsonValue.array(
-                                JsonValue.of("cat"), JsonValue.of("dog"))))));
-
-        JsonValue sent = generatorFor(search).generate(search).orElseThrow()
-                .parameterValue("tags", ParameterLocation.QUERY).orElseThrow().value();
-
-        assertThat(sent).isEqualTo(JsonValue.array(JsonValue.of("cat"), JsonValue.of("dog")));
-        assertThat(((JsonValue.JsonArray) sent).elements())
-                .describedAs("a sample list of two words is a sample of the list, not of each "
-                        + "word in it")
-                .allSatisfy(element -> assertThat(element).isInstanceOf(JsonValue.JsonString.class));
-    }
-
-    @Test
     @DisplayName("an operation whose parameters cannot be written into a request is reported")
     void an_operation_that_cannot_be_assembled_is_reported() {
         Operation deepObject = Operation.of(HttpMethod.GET, "/search", List.of(

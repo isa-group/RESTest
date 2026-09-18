@@ -146,6 +146,23 @@ class ExampleValueProviderTest {
     }
 
     @Test
+    @DisplayName("a list that writes out as nothing is never put in the path either")
+    void a_list_that_writes_out_as_nothing_never_fills_a_gap_in_the_path() {
+        // A list of one empty word is a list with something in it and writes out as nothing, so
+        // looking at the shape of the value rather than at what it writes would let this through.
+        JsonValue oneEmptyWord = JsonValue.array(JsonValue.of(""));
+        JsonValue oneNothing = JsonValue.array(JsonValue.NULL);
+        JsonValue twoEmptyWords = JsonValue.array(JsonValue.of(""), JsonValue.of(""));
+
+        assertThat(provider.offer(inThePath(oneEmptyWord))).isEmpty();
+        assertThat(provider.offer(inThePath(oneNothing))).isEmpty();
+        assertThat(provider.offer(inThePath(twoEmptyWords)))
+                .describedAs("two of them write out as the separator between them, which is "
+                        + "something - odd, but not a gap closed")
+                .isPresent();
+    }
+
+    @Test
     @DisplayName("a usable sample is still found when another of them could not fill the path")
     void the_usable_samples_are_the_ones_chosen_among() {
         ValueRequest inThePath = new ValueRequest(OperationId.of("GET /owners/{ownerId}"),
@@ -156,6 +173,23 @@ class ExampleValueProviderTest {
             assertThat(provider.offer(inThePath).orElseThrow().value())
                     .isEqualTo(JsonValue.of("1"));
         }
+    }
+
+    @Test
+    @DisplayName("a parameter whose only sample cannot be used falls back on its shape's")
+    void an_unusable_sample_does_not_shadow_a_usable_one() {
+        ValueRequest request = new ValueRequest(OperationId.of("GET /owners/{ownerId}"), "ownerId",
+                ParameterLocation.PATH, sampled("1"), List.of(JsonValue.of("")));
+
+        assertThat(provider.offer(request).orElseThrow().value())
+                .describedAs("throwing away the identifier the document wrote down, and inventing "
+                        + "one instead, is the outcome reading samples exists to prevent")
+                .isEqualTo(JsonValue.of("1"));
+    }
+
+    private static ValueRequest inThePath(JsonValue sample) {
+        return new ValueRequest(OperationId.of("GET /pets/{ids}"), "ids", ParameterLocation.PATH,
+                io.restest.core.schema.ArraySchema.of(StringSchema.of()), List.of(sample));
     }
 
     @Test
