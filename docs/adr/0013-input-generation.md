@@ -507,3 +507,40 @@ already has it.
 
 Nothing yet, because no file of strategies exists to be rewritten. Recorded now because it is cheaper
 to amend a sentence than a format.
+
+## Amendment (M2.4a)
+
+### Why
+
+§7 divides strategies in two and says what reproduces each: a strategy without a memory is
+reproduced by "the seed", a strategy with one by replaying the stored run. M2.4a put a source into
+the nominal chain that the seed alone does not pin — the values it builds for a date, a time and a
+timestamp are worked out from the clock, so that a document asking for a departure time gets one
+that is still plausible next year rather than a literal somebody typed into a file this year.
+[ADR-0021](0021-a-value-that-matches-a-declared-format.md) §1 sets out why a file was the wrong
+answer and §5 what this costs.
+
+### What changed
+
+The first row of §7's table. A strategy without a memory is reproduced by **the seed and the
+calendar day**, not by the seed alone. Two runs started from one number on one day send the same
+requests; two runs a week apart send the same requests with the dates moved on by a week.
+
+The moment is truncated to the day before any value is worked out from it, rather than read afresh
+for each one. That is what keeps the weakening to a day: without it, two runs seconds apart would
+differ, which is not a reproducibility promise at all. Everything else about a date — which day
+either side of today, and the time of day on it — comes from the seeded generator, so it is pinned
+exactly as the rest of the run is.
+
+### What it costs
+
+A failure that turns on one particular generated date cannot be reproduced from its seed the
+following day. `--store` is off by default (ADR-0006, amended at M1.7), so replay is not
+automatically available either, and anyone chasing such a failure has to turn the store on. The
+three other jobs §7 gives the seed are untouched: deterministic tests, reproducing a failure that
+happens before any request exists, and the fixed workload M6.2's overhead test compares commits
+against.
+
+Deriving dates from the seed alone, ignoring the clock, was the alternative. It keeps §7 exactly as
+written and brings back the staleness the source exists to avoid, which is the worse trade: a tool
+whose every date is in the past tests less than one whose failures need `--store` to reproduce.

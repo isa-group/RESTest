@@ -182,8 +182,14 @@ public final class RandomTestCaseGenerator {
         ValueProvider fromTheDocument = ValueProviderChain.of(
                 new ExampleValueProvider(random),
                 new DeclaredValueProvider(random));
-        ValueProvider invention = new RandomValueProvider(model, random, fromTheDocument);
-        this.values = nominal(dictionaries, fromTheDocument, invention, random);
+        ValueProvider fromTheKindOfText = new FormatValueProvider(random);
+        // Anything nested inside an invented value is asked of the document first and of the kind
+        // of text the document names second, which is the order the whole request follows too. A
+        // date buried in an object is a date, and inventing an ordinary word for it would waste the
+        // request just as surely as inventing one for a date sent on its own.
+        ValueProvider invention = new RandomValueProvider(model, random,
+                ValueProviderChain.of(fromTheDocument, fromTheKindOfText));
+        this.values = nominal(dictionaries, fromTheDocument, fromTheKindOfText, invention, random);
         this.given = List.copyOf(dictionaries);
         this.strategies = strategiesFor(dictionaries, awkwardShare, this.values, invention, random);
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
@@ -430,6 +436,11 @@ public final class RandomTestCaseGenerator {
      * to a particular value come first, the document speaks next, and the lists keyed to a kind of
      * value come after it - with invention last, for anything nobody had an answer for.
      *
+     * <p>Between those lists and invention sits what the document says about the <em>kind of
+     * text</em> it wants: a date, an e-mail address, an identifier. That is knowledge about a kind
+     * of value rather than about this one, so it goes with the lists keyed that way and behind them
+     * - somebody who wrote a list of dates for their own API knows more about their API than we do.
+     *
      * <p>Ahead of all of it sits the closed list of values a document says it accepts, which is the
      * one statement nothing may override: where a document names the only values the API will take,
      * anything else is a value it has said is not allowed.
@@ -438,7 +449,8 @@ public final class RandomTestCaseGenerator {
      * be refused, all the way through, and mixing one into an ordinary request would spoil both.
      */
     private static ValueProvider nominal(List<Dictionary> dictionaries,
-            ValueProvider fromTheDocument, ValueProvider invention, RandomGenerator random) {
+            ValueProvider fromTheDocument, ValueProvider fromTheKindOfText, ValueProvider invention,
+            RandomGenerator random) {
         List<ValueProvider> asked = new ArrayList<>();
         // The closed list of values a document says it accepts is not advice and is not ranked
         // against anything: where one exists, it is the whole set of values the API will take, so
@@ -449,6 +461,7 @@ public final class RandomTestCaseGenerator {
         addAsking(asked, dictionaries, random, true);
         asked.add(fromTheDocument);
         addAsking(asked, dictionaries, random, false);
+        asked.add(fromTheKindOfText);
         asked.add(invention);
         return ValueProviderChain.of(asked);
     }

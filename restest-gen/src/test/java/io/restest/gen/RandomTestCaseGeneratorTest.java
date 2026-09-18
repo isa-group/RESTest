@@ -16,6 +16,7 @@
 package io.restest.gen;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import io.restest.core.execution.ParameterValue;
@@ -34,6 +35,8 @@ import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -595,6 +598,104 @@ class RandomTestCaseGeneratorTest {
                 return false;
             }
         };
+    }
+
+    @Test
+    @DisplayName("a parameter the document calls a date is sent a date, not an ordinary word")
+    void a_date_is_sent_where_the_document_asks_for_one() {
+        Operation booking = Operation.of(HttpMethod.GET, "/flights", List.of(
+                Parameter.of("departureTime", ParameterLocation.QUERY, true,
+                        StringSchema.ofFormat("date-time"))));
+        // Ordinary requests only: a quarter of a default run is built to push at the API, and
+        // those deliberately send what no timestamp reader would accept.
+        RandomTestCaseGenerator generator =
+                new RandomTestCaseGenerator(model(booking), 20260912L, List.of(), 0);
+
+        for (int draw = 0; draw < 20; draw++) {
+            ParameterValue sent = generator.generate(booking).orElseThrow()
+                    .parameterValue("departureTime", ParameterLocation.QUERY).orElseThrow();
+            String text = ((JsonValue.JsonString) sent.value()).value();
+            assertThatCode(() -> OffsetDateTime.parse(text))
+                    .describedAs("sent %s where the document asked for a timestamp", text)
+                    .doesNotThrowAnyException();
+            assertThat(sent.origin()).isEqualTo(new ValueOrigin.Generated("format"));
+        }
+    }
+
+    @Test
+    @DisplayName("a list somebody wrote for a kind of value is preferred to what we know about "
+            + "the kind of text the document names")
+    void a_list_somebody_wrote_beats_what_we_know_about_the_kind_of_text() {
+        Operation booking = Operation.of(HttpMethod.GET, "/flights", List.of(
+                Parameter.of("departureTime", ParameterLocation.QUERY, true,
+                        StringSchema.ofFormat("date-time"))));
+        Dictionary theirs = DictionaryDocument.read("""
+                {"version": 1, "name": "theirs", "keyedBy": "format",
+                 "values": {"date-time": ["2019-07-04T12:00:00Z"]}}""", "theirs");
+
+        RandomTestCaseGenerator generator =
+                new RandomTestCaseGenerator(model(booking), 20260912L, List.of(theirs), 0);
+
+        for (int draw = 0; draw < 10; draw++) {
+            ParameterValue sent = generator.generate(booking).orElseThrow()
+                    .parameterValue("departureTime", ParameterLocation.QUERY).orElseThrow();
+            assertThat(((JsonValue.JsonString) sent.value()).value())
+                    .isEqualTo("2019-07-04T12:00:00Z");
+        }
+    }
+
+    @Test
+    @DisplayName("the closed list of values a document accepts still overrides what we know about "
+            + "the kind of text it names")
+    void the_documents_own_list_still_overrides_the_kind_of_text() {
+        Operation booking = Operation.of(HttpMethod.GET, "/flights", List.of(
+                Parameter.of("when", ParameterLocation.QUERY, true,
+                        new StringSchema(SchemaMetadata.none().withEnumeration(
+                                List.of(JsonValue.of("2026-01-01T00:00:00Z"))),
+                                Optional.empty(), Optional.empty(), Optional.empty(),
+                                Optional.of("date-time")))));
+        RandomTestCaseGenerator generator =
+                new RandomTestCaseGenerator(model(booking), 20260912L, List.of(), 0);
+
+        for (int draw = 0; draw < 10; draw++) {
+            assertThat(generator.generate(booking).orElseThrow()
+                    .parameterValue("when", ParameterLocation.QUERY).orElseThrow().value())
+                    .isEqualTo(JsonValue.of("2026-01-01T00:00:00Z"));
+        }
+    }
+
+    @Test
+    @DisplayName("a request built to push at the API still pushes at a parameter the document "
+            + "calls a date, rather than being handed a well-formed one")
+    void what_we_know_about_a_kind_of_text_stays_out_of_the_requests_meant_to_push() {
+        Operation booking = Operation.of(HttpMethod.GET, "/flights", List.of(
+                Parameter.of("departureTime", ParameterLocation.QUERY, true,
+                        StringSchema.ofFormat("date-time"))));
+        RandomTestCaseGenerator pushing = new RandomTestCaseGenerator(model(booking), 20260912L,
+                List.of(Dictionaries.fuzzing().orElseThrow()), 100);
+
+        List<JsonValue> sent = IntStream.range(0, 30)
+                .mapToObj(draw -> pushing.generate(booking).orElseThrow()
+                        .parameterValue("departureTime", ParameterLocation.QUERY).orElseThrow()
+                        .value())
+                .toList();
+
+        assertThat(sent).describedAs("the awkward values a pushing request exists to send were "
+                        + "replaced by well-formed timestamps, which tests nothing it meant to")
+                .allSatisfy(value -> assertThat(isTimestamp(value)).isFalse());
+    }
+
+    /** Whether a value would be read as a timestamp by an API expecting one. */
+    private static boolean isTimestamp(JsonValue value) {
+        if (!(value instanceof JsonValue.JsonString text)) {
+            return false;
+        }
+        try {
+            OffsetDateTime.parse(text.value());
+            return true;
+        } catch (DateTimeParseException notOne) {
+            return false;
+        }
     }
 
     private static RandomTestCaseGenerator generatorFor(Operation... operations) {
