@@ -485,7 +485,7 @@ unchanged as concepts, and so is the renormalising of weights among the sources 
 One of them is now built and one is not. **The exclusive group is what the ordinary way of building a
 request is**, and §2's `exclusive: [enum]` is honoured exactly as written: the closed list of values a
 document says it accepts is asked first and nothing may override it, a dictionary somebody wrote
-included. **The weighted group is not built**, and ADR-0020 §4 records why, along with the competitor
+included. **The weighted group is not built**, and ADR-0020 §5 records why, along with the competitor
 this increment created and the advice that stands until 2.4 brings it.
 
 One thing §2 says needs reading carefully now that both numbers are percentages, because it is true

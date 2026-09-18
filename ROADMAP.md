@@ -92,7 +92,7 @@ between ordinary requests and requests built to be refused before it could send 
 numbers as constants in code, and 2.10 is where they become a file somebody can edit. It also left a
 footgun that 2.10 closes: with only exclusive groups, a list of values keyed to a kind of value
 *replaces* what the tool would otherwise have invented for that kind rather than being sent alongside
-it, which is what a weighted group is for (ADR-0020 §4).
+it, which is what a weighted group is for (ADR-0020 §5).
 
 2.8's own "never blocking" guarantee is proved at that increment, by its own test (a slow provider
 must not stall the run) — not by waiting for M6.2's overhead regression test, which lands much later

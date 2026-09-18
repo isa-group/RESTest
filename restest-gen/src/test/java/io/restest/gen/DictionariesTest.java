@@ -175,6 +175,23 @@ class DictionariesTest {
     }
 
     @Test
+    @DisplayName("a list of your own called what the built-in plan names is not a mistake, and is "
+            + "not reported as one")
+    void the_one_collision_the_format_blesses_is_silent(@TempDir Path directory) throws IOException {
+        write(directory.resolve("mine.yaml"), "fuzzing", "type");
+
+        Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
+
+        assertThat(found.dictionaries()).extracting(Dictionary::name)
+                .containsExactly("fuzzing", "fuzzing");
+        assertThat(found.problems())
+                .describedAs("the documented way to have a list of your own pushed at an API is to "
+                        + "call it this, so saying it is wrong would make the instructions "
+                        + "impossible to follow")
+                .isEmpty();
+    }
+
+    @Test
     @DisplayName("a list holding values YAML would have turned into something else keeps them")
     void a_list_of_ordinary_words_survives_being_read(@TempDir Path directory) throws IOException {
         Files.writeString(directory.resolve("codes.yaml"), """

@@ -190,6 +190,9 @@ final class DictionaryDocument {
         protected void addImplicitResolvers() {
             addImplicitResolver(Tag.BOOL, Pattern.compile("^(?:true|false)$"), "tf");
             addImplicitResolver(Tag.NULL, Pattern.compile("^(?:null)$"), "n");
+            // Registered under no first character on purpose: an empty scalar has none, and the
+            // reader consults this list for every scalar as a last resort, which is where it is
+            // wanted. Nothing else can match an expression anchored at both ends around nothing.
             addImplicitResolver(Tag.NULL, Pattern.compile("^$"), null);
             addImplicitResolver(Tag.INT, Pattern.compile("^-?(?:0|[1-9][0-9]*)$"), "-0123456789");
             addImplicitResolver(Tag.FLOAT,
@@ -236,8 +239,6 @@ final class DictionaryDocument {
             case Long whole -> JsonValue.of(whole);
             case java.math.BigInteger whole -> JsonValue.of(new BigDecimal(whole));
             case BigDecimal exact -> JsonValue.of(exact);
-            case Double fractional -> JsonValue.of(BigDecimal.valueOf(fractional));
-            case Float fractional -> JsonValue.of(BigDecimal.valueOf(fractional));
             case String text -> JsonValue.of(text);
             case List<?> list -> {
                 List<JsonValue> elements = new ArrayList<>();

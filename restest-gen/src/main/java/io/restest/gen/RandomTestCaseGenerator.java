@@ -105,6 +105,7 @@ public final class RandomTestCaseGenerator {
     private final long seed;
     private final RandomGenerator random;
     private final ValueProvider values;
+    private final List<Dictionary> given;
     private final List<Strategy> strategies;
     private final int sharesInTotal;
     private final List<Operation> testable;
@@ -183,6 +184,7 @@ public final class RandomTestCaseGenerator {
                 new DeclaredValueProvider(random));
         ValueProvider invention = new RandomValueProvider(model, random, fromTheDocument);
         this.values = nominal(dictionaries, fromTheDocument, invention, random);
+        this.given = List.copyOf(dictionaries);
         this.strategies = strategiesFor(dictionaries, awkwardShare, this.values, invention, random);
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
 
@@ -228,6 +230,27 @@ public final class RandomTestCaseGenerator {
      */
     public Map<OperationId, String> untestableOperations() {
         return untestable;
+    }
+
+    /**
+     * The lists this run was given and will not draw a single value from.
+     *
+     * <p>One thing puts a list here: being named for pushing at the API in a run told to do no
+     * pushing. Somebody has asked for two things that cancel, and one of them is probably a
+     * mistake - which is exactly when saying so is worth the line. Named once however many lists
+     * answer to it, since the name is all anybody could act on.
+     *
+     * @return the names, empty when every list given will be used
+     */
+    public java.util.List<String> listsGivenButNotUsed() {
+        if (!sourcesThatPushAtTheApi().isEmpty()) {
+            return List.of();
+        }
+        return given.stream()
+                .map(Dictionary::name)
+                .filter(PUSHES_AT_THE_API::equals)
+                .distinct()
+                .toList();
     }
 
     /** Where values come from, in the order they are asked. */
@@ -378,8 +401,9 @@ public final class RandomTestCaseGenerator {
         List<Strategy> ways = new ArrayList<>();
         if (pushing.isEmpty() || awkwardShare == 0) {
             // A list the plan names for pushing is not folded into ordinary requests when there is
-            // no pushing to do: its values were gathered for a different job. Whoever asked for
-            // none of that is told the list went unused rather than left to wonder.
+            // no pushing to do: its values were gathered for a different job, and sending them as
+            // though somebody believed in them is not what anybody asked for. What was asked for
+            // and then made impossible is reported instead, by listsGivenButNotUsed.
             return List.of(new Strategy("nominal", 100, false, nominal));
         }
         // Counted against each other rather than out of a hundred, so that asking for a quarter is

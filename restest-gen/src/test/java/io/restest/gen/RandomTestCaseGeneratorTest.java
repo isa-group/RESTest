@@ -535,6 +535,25 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
+    @DisplayName("a list to push with, in a run told to do no pushing, is named as one nothing "
+            + "will be sent from")
+    void a_list_that_cancels_itself_out_is_named() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+
+        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)), 0)
+                .listsGivenButNotUsed())
+                .describedAs("two things were asked for that cancel, and one of them is probably a "
+                        + "mistake")
+                .containsExactly("fuzzing");
+        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(awkward("", -1)), 25)
+                .listsGivenButNotUsed()).isEmpty();
+        assertThat(new RandomTestCaseGenerator(pets, 1L, List.of(), 0)
+                .listsGivenButNotUsed()).isEmpty();
+    }
+
+    @Test
     @DisplayName("a run given no list to push with builds every request to work")
     void without_such_a_list_nothing_pushes() {
         Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(

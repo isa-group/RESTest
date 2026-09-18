@@ -131,9 +131,11 @@ public final class Dictionaries {
         List<Dictionary> found = new ArrayList<>();
         List<String> problems = new ArrayList<>();
 
+        boolean shippedWasRead = true;
         try {
             found.add(shipped());
         } catch (IOException | JsonException beyondHelp) {
+            shippedWasRead = false;
             problems.add("RESTest's own list of values to push with could not be read, so nothing "
                     + "will be pushed at the API. This is a fault in this build of the tool, not in "
                     + "anything you did: " + beyondHelp.getMessage());
@@ -147,7 +149,7 @@ public final class Dictionaries {
                 });
             }
         }
-        reportNamesUsedTwice(found, problems);
+        reportNamesUsedTwice(found.stream().skip(shippedWasRead ? 1 : 0).toList(), problems);
         return new Found(found, problems);
     }
 
@@ -157,8 +159,13 @@ public final class Dictionaries {
      * <p>A name is not decoration. It is how a plan says which lists a kind of request draws on,
      * and it is what a report prints beside a value to say where it came from - so two lists
      * answering to one name leave a plan with nothing to point at and a report unable to tell them
-     * apart. It is easy to do by accident, because the way to have a list of your own pushed at an
-     * API is to call it what the built-in plan already names.
+     * apart.
+     *
+     * <p>The list RESTest carries is left out of the count on purpose. Giving a list of your own the
+     * same name as that one is the documented way to have it pushed at an API, so it is the one
+     * collision that is somebody following instructions rather than making a mistake. It costs what
+     * every shared name costs - a value from either reads as having come from the same place - and
+     * the plan of M2.10, where each is named separately, is what ends that.
      */
     private static void reportNamesUsedTwice(List<Dictionary> found, List<String> problems) {
         java.util.Set<String> seen = new java.util.LinkedHashSet<>();
