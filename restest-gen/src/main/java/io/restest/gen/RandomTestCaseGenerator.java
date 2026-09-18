@@ -366,9 +366,9 @@ public final class RandomTestCaseGenerator {
      * here that has to be settled by running campaigns rather than by argument, and it lives in one
      * place so that settling it is a one-line change.
      *
-     * <p>A dictionary that expects its values to be refused earns a way of building requests of its
-     * own. One that does not is offered alongside the document's own answers instead, because its
-     * values are meant to work.
+     * <p>Which lists feed which kind of request is the plan's decision, taken by naming them. There
+     * is no plan to read yet, so the built-in one names one list for pushing and gives every other
+     * list to ordinary requests.
      */
     private static List<Strategy> strategiesFor(List<Dictionary> dictionaries, int awkwardShare,
             ValueProvider nominal, ValueProvider invention, RandomGenerator random) {
@@ -377,6 +377,9 @@ public final class RandomTestCaseGenerator {
                 .toList();
         List<Strategy> ways = new ArrayList<>();
         if (pushing.isEmpty() || awkwardShare == 0) {
+            // A list the plan names for pushing is not folded into ordinary requests when there is
+            // no pushing to do: its values were gathered for a different job. Whoever asked for
+            // none of that is told the list went unused rather than left to wonder.
             return List.of(new Strategy("nominal", 100, false, nominal));
         }
         // Counted against each other rather than out of a hundred, so that asking for a quarter is

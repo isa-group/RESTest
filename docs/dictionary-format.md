@@ -79,9 +79,14 @@ values:
   uuid:  [123e4567-e89b-12d3-a456-426614174000]
 ```
 
-Quote a value where YAML would otherwise read it as something else. Unquoted, `2026-09-18` is a
-*date* to YAML rather than a piece of text, and RESTest refuses it rather than guessing at what to
-send — the message says so.
+Nothing here needs quoting to be safe. YAML's own older rules turn a startling number of ordinary
+words into something else — `no`, `off` and `n` into false, `yes`, `on` and `y` into true, an
+unquoted date into a date — so a list of country codes holding `NO` would send `false` and never say
+so. RESTest recognises only what JSON itself has: `true`, `false`, `null`, a whole number and a
+number. Everything else is a piece of text, which is what somebody writing a list of values meant.
+
+Numbers keep every digit the file wrote, rather than the nearest value sixty-four bits can hold, so
+a deliberately enormous one arrives as it was written.
 
 ### Naming an operation
 

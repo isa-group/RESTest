@@ -153,18 +153,60 @@ class DictionaryDocumentTest {
     }
 
     @Test
-    @DisplayName("a value of a kind no request could carry is refused, rather than guessed at")
-    void a_value_yaml_has_and_json_does_not_is_refused() {
+    @DisplayName("an unquoted word is a word, whatever YAML's older rules would have made of it")
+    void words_that_look_like_something_else_stay_words() {
+        ValueDictionary dictionary = read("""
+                version: 1
+                name: d
+                keyedBy: type
+                values:
+                  string: [no, "NO", on, off, yes, y, n, 2026-09-18, .inf, .nan]
+                """);
+
+        // YAML's older rules turn seven of these into true or false, silently. A list of country
+        // codes holding NO would send false, and nothing would say so. Only what JSON itself has is
+        // recognised here, so a word stays a word.
+        assertThat(dictionary.valuesFor(asking("q", StringSchema.of())))
+                .containsExactly(JsonValue.of("no"), JsonValue.of("NO"), JsonValue.of("on"),
+                        JsonValue.of("off"), JsonValue.of("yes"), JsonValue.of("y"),
+                        JsonValue.of("n"), JsonValue.of("2026-09-18"), JsonValue.of(".inf"),
+                        JsonValue.of(".nan"));
+    }
+
+    @Test
+    @DisplayName("true, false and null still mean what they mean, and numbers keep every digit")
+    void what_json_has_is_still_read_as_json_reads_it() {
+        ValueDictionary dictionary = read("""
+                version: 1
+                name: d
+                keyedBy: type
+                values:
+                  any: [null]
+                  boolean: [true, false]
+                  number: [99999999999999999999999999999999.999999, 1e308]
+                """);
+
+        assertThat(dictionary.valuesFor(asking("q", io.restest.core.schema.BooleanSchema.of())))
+                .containsExactly(JsonValue.TRUE, JsonValue.FALSE, JsonValue.NULL);
+        assertThat(dictionary.valuesFor(asking("q", NumberSchema.of(NumberKind.NUMBER))))
+                .describedAs("read as the nearest value sixty-four bits can hold, the first of "
+                        + "these would come out a different number entirely")
+                .contains(JsonValue.of(new java.math.BigDecimal(
+                        "99999999999999999999999999999999.999999")));
+    }
+
+    @Test
+    @DisplayName("a number the file tags as one and that is not a number is refused, not thrown at")
+    void something_tagged_a_number_that_is_not_one_is_refused() {
         assertThatExceptionOfType(JsonException.class)
                 .isThrownBy(() -> read("""
                         version: 1
                         name: d
                         keyedBy: type
                         values:
-                          string: [2026-09-18]
+                          number: [!!float .inf]
                         """))
-                .describedAs("YAML reads that as a date, and a date is not something to send")
-                .withMessageContaining("not something that can be sent");
+                .withMessageContaining("is not a number a request could carry");
     }
 
     @Test

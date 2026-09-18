@@ -162,6 +162,38 @@ class DictionariesTest {
                 .contains("never be used");
     }
 
+    @Test
+    @DisplayName("two lists answering to one name is said out loud, because a name is how a plan "
+            + "picks one and how a report names one")
+    void two_lists_with_one_name_are_reported(@TempDir Path directory) throws IOException {
+        write(directory.resolve("a.yaml"), "same", "type");
+        write(directory.resolve("b.yaml"), "same", "name");
+
+        assertThat(Dictionaries.gather(List.of(directory), PET_SHOP).problems())
+                .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
+                .contains("more than one list of values is called 'same'");
+    }
+
+    @Test
+    @DisplayName("a list holding values YAML would have turned into something else keeps them")
+    void a_list_of_ordinary_words_survives_being_read(@TempDir Path directory) throws IOException {
+        Files.writeString(directory.resolve("codes.yaml"), """
+                version: 1
+                name: codes
+                keyedBy: name
+                values:
+                  country: [NO, SE, "ON"]
+                """);
+
+        Dictionary codes = Dictionaries.gather(List.of(directory), PET_SHOP)
+                .named("codes").orElseThrow();
+
+        assertThat(codes.valuesFor(ValueRequest.of(OperationId.of("GET /x"), "country",
+                ParameterLocation.QUERY, StringSchema.of())))
+                .describedAs("Norway is a country, not the word false")
+                .containsExactly(JsonValue.of("NO"), JsonValue.of("SE"), JsonValue.of("ON"));
+    }
+
     private static void write(Path file, String name, String keyedBy) throws IOException {
         Files.writeString(file, """
                 version: 1

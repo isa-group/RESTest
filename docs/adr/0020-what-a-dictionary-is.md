@@ -129,7 +129,40 @@ refusal — a refusal is a perfectly good answer and often the right one — so 
 a refusal cannot be attributed to any one parameter": true, and no longer needing a value of its own
 to say it.
 
-### 4. A share divides the budget; a weight divides one value
+### 4. What is asked first, and why an enumeration is not asked at all
+
+Among the lists feeding ordinary requests, the order is how much each source knows about **this**
+value:
+
+```
+the closed list of values the document says it accepts     nothing overrides this
+a list keyed by operationAndParameter or by parameter name knows about one value
+the document's own samples and stated default
+a list keyed by schema, format or type                     knows about a kind of value
+whatever can be invented from the shape
+```
+
+Two of those positions were each got wrong once and are worth keeping the argument for.
+
+**An enumeration is not ranked against anything.** ADR-0013 §2 wrote it as `exclusive: [enum]  # if
+it answers, the choice is made`, and that still holds: where a document names the only values an API
+will take, everything else is a value it has said is not allowed - a dictionary somebody wrote
+included. A first attempt put dictionaries in front of it, and a list keyed by parameter name then
+sent a value outside the enumeration on every request for that parameter.
+
+With one exception, which is the same one every source here makes: an enumeration none of whose
+values can be put where the value goes - all of them empty, in a path - is read as no enumeration at
+all, and the run falls through to whatever else can answer. The choice is between sending something
+the document did not sanction and never testing the operation at all, and the second is worse: the
+document has contradicted itself, and the operation is still there.
+
+**A shape is about a kind, not about one value.** A document declares a shape once and however many
+parameters refer to it get the same one, so a list written for `Owner` says less about *this*
+parameter than the parameter's own sample does. That keeps ADR-0019's rule - a parameter's own sample
+is the most particular thing a document says about it - true for dictionaries as well. A first
+attempt had `schema` on the other side.
+
+### 5. A share divides the budget; a weight divides one value
 
 ADR-0013 §2 has two mechanisms and its own notation separates them: `share: 40m` on a strategy, and
 `weighted: {observed: 30, example: 20}` between sources. They are different units because they divide
@@ -187,7 +220,7 @@ all.
 The advice until then is the one the format document gives: key a list to the parameters you mean,
 and a list keyed to a whole kind of value will be the only thing sent for that kind.
 
-### 5. Three quarters against one, and a way to say otherwise
+### 6. Three quarters against one, and a way to say otherwise
 
 The split between ordinary and awkward requests is ADR-0013's own open question, and it says plainly
 that it "cannot be argued into place: it is measured". A quarter is a starting point, in one constant,
@@ -198,15 +231,17 @@ proved it had to: there was no way for a user to express "do not send those", an
 cannot turn off is one they cannot manage. Design principle 1 is "zero configuration to start; full
 configuration available", and this is the second half. **This amends ADR-0015.**
 
-### 6. The list we ship is ours
+### 7. The list we ship is ours
 
 Written here, not copied from RESTest 1.x, which keeps the hard rule against copying 1.x intact with
 no exception to argue about and redistributes nobody's data. The idea and the shape are taken — keyed
 by JSON type, with a bucket that applies to everything — and the content is wider: empty and
 whitespace-only text, a very long string, control characters and a line break, emoji and
 right-to-left text, quotes and angle brackets; the int32 and int64 edges and one past each, a huge
-decimal, a negative zero, text where a number belongs; the wrong-typed neighbours of a boolean; empty
-lists and objects.
+decimal kept to its last digit, text where a number belongs; the wrong-typed neighbours of a
+boolean; empty lists and objects. A negative zero was on that list and is not: the value model
+normalises it to zero, which the list already carries, so it was a value that could never have
+reached the wire as written.
 
 ## Consequences
 
@@ -240,10 +275,12 @@ lists and objects.
   refusal, an acceptance, or the API falling over — is not something the tool can claim in advance.
 - **Which oracles can judge a request depends on how it was built, and the design already carries
   that — through the intent, not through the strategy.** The question is worth answering here because
-  it looks like it needs a new mechanism and does not. A request that pushes at an API can only be
-  judged by the oracle that notices the API falling over; one built from values somebody believes in
-  can be judged by "this should have been accepted"; one built by breaking exactly one thing can be
-  judged by "this should have been refused". Those three are exactly ADR-0013 §3's three intents, and
+  it looks like it needs a new mechanism and does not. A request that pushes at an API cannot be
+  judged by the two oracles that turn on whether it deserved to be accepted - though every oracle
+  about the *reply* still applies to it, schema conformance included, which is how such a request
+  already earns findings today; one built from values somebody believes in can be judged by "this
+  should have been accepted"; one built by breaking exactly one thing can be judged by "this should
+  have been refused". Those three are exactly ADR-0013 §3's three intents, and
   §3 gives three reasons for carrying the intent rather than a list of oracles: the intent is small
   and still while the catalogue is large and moving, one strategy produces several intents, and
   `restest recheck` has to be able to apply an oracle invented *after* a run to that run — which a

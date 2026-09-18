@@ -23,10 +23,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
+import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.ScalarNode;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.resolver.Resolver;
 
 /**
  * Reads a dictionary out of the text of a file.
@@ -121,9 +129,9 @@ final class DictionaryDocument {
     /**
      * Refuses a file with a member nobody here recognises.
      *
-     * <p>Strict on purpose, and easier to be strict now than later. A misspelled {@code expects} or
-     * {@code keyedBy} would otherwise leave a file that loads without complaint and then quietly
-     * does nothing at all - which is the outcome this format goes out of its way to prevent
+     * <p>Strict on purpose, and easier to be strict now than later. A misspelled {@code keyedBy}
+     * would otherwise leave a file that loads without complaint and then quietly does nothing at
+     * all - which is the outcome this format goes out of its way to prevent
      * everywhere else. Accepting unknown members can be allowed later without breaking anybody's
      * file; refusing them later cannot.
      */
@@ -136,8 +144,8 @@ final class DictionaryDocument {
             throw new JsonException(describedAs + " has " + unrecognised.size()
                     + " thing(s) in it this version does not recognise ("
                     + String.join(", ", unrecognised) + "), which is usually a misspelling - and a "
-                    + "misspelled 'keyedBy' or 'expects' would leave a dictionary that loads and "
-                    + "then does nothing");
+                    + "misspelled 'keyedBy' would leave a dictionary that loads and then does "
+                    + "nothing");
         }
     }
 
@@ -154,9 +162,68 @@ final class DictionaryDocument {
         LoaderOptions options = new LoaderOptions();
         options.setAllowDuplicateKeys(false);
         try {
-            return asValue(new Yaml(new SafeConstructor(options)).load(text), describedAs);
+            DumperOptions writing = new DumperOptions();
+            return asValue(new Yaml(new AsWritten(options, describedAs), new Representer(writing),
+                    writing, options, new OnlyWhatJsonHas()).load(text), describedAs);
         } catch (YAMLException notYaml) {
             throw new JsonException(describedAs + " could not be read: " + notYaml.getMessage());
+        }
+    }
+
+    /**
+     * Decides what an unquoted word in the file is, and decides it the way JSON would.
+     *
+     * <p>YAML's older rules turn a surprising number of ordinary words into something else. {@code
+     * no}, {@code off} and {@code n} become false and {@code yes}, {@code on} and {@code y} become
+     * true, so a list of country codes containing {@code NO} sends {@code false} and a parameter
+     * actually called {@code no} files its values under {@code "false"} and never matches anything.
+     * Nothing warns you: the file loads, and the values are simply wrong.
+     *
+     * <p>So only what JSON itself has is recognised - {@code true}, {@code false}, {@code null}, a
+     * whole number and a number - and everything else is a piece of text, which is what somebody
+     * writing a list of values meant. It also makes the promise that a file written as JSON reads
+     * the same way true of a file written as YAML.
+     */
+    private static final class OnlyWhatJsonHas extends Resolver {
+
+        @Override
+        protected void addImplicitResolvers() {
+            addImplicitResolver(Tag.BOOL, Pattern.compile("^(?:true|false)$"), "tf");
+            addImplicitResolver(Tag.NULL, Pattern.compile("^(?:null)$"), "n");
+            addImplicitResolver(Tag.NULL, Pattern.compile("^$"), null);
+            addImplicitResolver(Tag.INT, Pattern.compile("^-?(?:0|[1-9][0-9]*)$"), "-0123456789");
+            addImplicitResolver(Tag.FLOAT,
+                    Pattern.compile("^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][-+]?[0-9]+)?$"),
+                    "-0123456789");
+        }
+    }
+
+    /**
+     * Keeps a number exactly as the file wrote it.
+     *
+     * <p>Read the ordinary way, a number becomes the nearest value a computer can hold in sixty-four
+     * bits, and a list of values for pushing at an API is precisely where somebody writes a number
+     * too long for that on purpose. Taking the digits as they were written keeps every one of them.
+     */
+    private static final class AsWritten extends SafeConstructor {
+
+        AsWritten(LoaderOptions options, String describedAs) {
+            super(options);
+            yamlConstructors.put(Tag.FLOAT, new AbstractConstruct() {
+                @Override
+                public Object construct(Node node) {
+                    String written = ((ScalarNode) node).getValue();
+                    try {
+                        return new BigDecimal(written);
+                    } catch (NumberFormatException notANumber) {
+                        // Reachable only when the file tags a value as a number itself, since
+                        // nothing else is read as one. `!!float .inf` is the way in.
+                        throw new JsonException(describedAs + " holds '" + written
+                                + "' where a number belongs, and that is not a number a request "
+                                + "could carry");
+                    }
+                }
+            });
         }
     }
 
@@ -168,6 +235,7 @@ final class DictionaryDocument {
             case Integer whole -> JsonValue.of(whole.longValue());
             case Long whole -> JsonValue.of(whole);
             case java.math.BigInteger whole -> JsonValue.of(new BigDecimal(whole));
+            case BigDecimal exact -> JsonValue.of(exact);
             case Double fractional -> JsonValue.of(BigDecimal.valueOf(fractional));
             case Float fractional -> JsonValue.of(BigDecimal.valueOf(fractional));
             case String text -> JsonValue.of(text);

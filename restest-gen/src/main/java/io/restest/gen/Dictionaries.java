@@ -147,7 +147,28 @@ public final class Dictionaries {
                 });
             }
         }
+        reportNamesUsedTwice(found, problems);
         return new Found(found, problems);
+    }
+
+    /**
+     * Says so when two lists are called the same thing.
+     *
+     * <p>A name is not decoration. It is how a plan says which lists a kind of request draws on,
+     * and it is what a report prints beside a value to say where it came from - so two lists
+     * answering to one name leave a plan with nothing to point at and a report unable to tell them
+     * apart. It is easy to do by accident, because the way to have a list of your own pushed at an
+     * API is to call it what the built-in plan already names.
+     */
+    private static void reportNamesUsedTwice(List<Dictionary> found, List<String> problems) {
+        java.util.Set<String> seen = new java.util.LinkedHashSet<>();
+        for (Dictionary dictionary : found) {
+            if (!seen.add(dictionary.name())) {
+                problems.add("more than one list of values is called '" + dictionary.name()
+                        + "', so nothing can say which of them a value came from, and a plan naming "
+                        + "it would have two things to point at");
+            }
+        }
     }
 
     private static Optional<Dictionary> read(Path file, List<String> problems) {
