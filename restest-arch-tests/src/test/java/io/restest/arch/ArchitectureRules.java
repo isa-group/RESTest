@@ -123,6 +123,27 @@ final class ArchitectureRules {
     }
 
     /**
+     * The same rule for a library two modules are allowed to hold.
+     *
+     * <p>One library, one module is the usual shape and the one to prefer. A second module is
+     * allowed only where the library arrives on its own account rather than being reached for: the
+     * reader of a document format is the case, since the specifications a run is pointed at and the
+     * lists of values it is given are both written in it.
+     */
+    static ArchRule onlyTheseModulesDependOn(String root, java.util.Set<String> modules,
+            String forbiddenPackage) {
+        var outside = noClasses().that().resideInAPackage(root + "..");
+        for (String module : modules) {
+            outside = outside.and().resideOutsideOfPackage(root + "." + module + "..");
+        }
+        return outside
+                .should().dependOnClassesThat().resideInAPackage(forbiddenPackage)
+                .as("only " + modules.stream().sorted().map(module -> root + "." + module)
+                        .collect(java.util.stream.Collectors.joining(" and "))
+                        + " depend on " + forbiddenPackage + " (ADR-0004)");
+    }
+
+    /**
      * RESTest is usable as a library, embedded inside someone else's program, so nothing but its own
      * command-line module may end the whole process. A library that ends the process takes its host
      * program down with it.

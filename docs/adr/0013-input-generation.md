@@ -497,8 +497,11 @@ for no gain. The implementation relies on that: it multiplies one side rather th
 other, so that asking for a quarter is a quarter whether one list of awkward values is in play or
 thirty.
 
-The file format the five dictionaries share is [ADR-0020](0020-what-a-dictionary-is.md), which adds a
-fifth keying this record missed — the name of the shape, which is how a whole request body is indexed.
+The file format the five dictionaries share is [ADR-0020](0020-what-a-dictionary-is.md). It is YAML,
+it adds a fifth keying this record missed — the name of the shape, which is how a whole request body
+is indexed — and it deliberately carries **no** statement about what the API will make of its values,
+because a file of values cannot know: which lists a strategy draws on is named in the plan, as §2
+already has it.
 
 ### What it costs
 

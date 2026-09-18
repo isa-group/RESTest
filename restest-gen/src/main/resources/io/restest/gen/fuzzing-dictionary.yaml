@@ -1,0 +1,74 @@
+# Values to push at an API with, rather than values meant to work.
+#
+# Nothing here is claimed to be invalid. A great many APIs accept an empty word, a zero or an
+# empty list quite happily, and whether any of these is acceptable depends on the parameter it
+# fills - which a list indexed by the kind of value cannot know. What they have in common is
+# that they are the values careless code falls over on, and an API falling over is a fault
+# whatever was sent.
+#
+# Written for RESTest 2.0. Extend it with a file of your own rather than editing this one.
+
+version: 1
+name: fuzzing
+description: >-
+  Values to push at an API with. Not claimed to be invalid: many APIs accept an empty word or a
+  zero, and what these have in common is that they are what careless code falls over on.
+keyedBy: type
+
+values:
+  any:
+    - null
+  string:
+    - ""
+    - " "
+    - "\t"
+    - "\n"
+    - "\u0000"
+    - "\u001b[31m"
+    - "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    - "0"
+    - "-1"
+    - "null"
+    - "true"
+    - "undefined"
+    - "NaN"
+    - "🙂🙂🙂"
+    - "مرحبا"
+    - "'"
+    - "\""
+    - "<>"
+    - "%00"
+    - "../.."
+    - "   surrounded by spaces   "
+  integer:
+    - -1
+    - 0
+    - 2147483647
+    - 2147483648
+    - -2147483648
+    - -2147483649
+    - 9223372036854775807
+    - -9223372036854775808
+    - 99999999999999999999999999999999
+  number:
+    - -1
+    - 0
+    - 0.0000000001
+    - -0.0
+    - 2147483648
+    - 1e308
+    - -1e308
+    - 99999999999999999999999999999999.999999
+  boolean:
+    - "true"
+    - "yes"
+    - 0
+    - 1
+    - 2147483648
+  array:
+    - []
+    - [null]
+    - ["", "", ""]
+  object:
+    - {}
+    - {"": null}

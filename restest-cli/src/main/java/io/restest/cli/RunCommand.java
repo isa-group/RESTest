@@ -139,20 +139,20 @@ final class RunCommand implements Callable<Integer> {
     @Option(
             names = "--dictionary",
             paramLabel = "<file-or-directory>",
-            description = "A file of values to send, or a directory of them. Repeat for several. "
-                    + "Values good enough to be worth keeping belong next to the specification "
-                    + "they were worked out for. RESTest always uses its own list of deliberately "
-                    + "awkward values on top of whatever is given here.")
+            description = "A file of values to send, in YAML, or a directory of them. Repeat for "
+                    + "several. Values good enough to be worth keeping belong next to the "
+                    + "specification they were worked out for. RESTest always uses its own list of "
+                    + "values to push with on top of whatever is given here.")
     private List<Path> dictionaries = new ArrayList<>();
 
     @Option(
             names = "--fuzzing",
             paramLabel = "<percentage>",
             defaultValue = "" + RandomTestCaseGenerator.AWKWARD_SHARE,
-            description = "How much of the time to spend on requests built from values chosen to "
-                    + "be awkward - empty text, enormous numbers, the wrong kind of value - which "
-                    + "a healthy API turns away and a fragile one falls over on. 0 sends none of "
-                    + "them. Default: ${DEFAULT-VALUE}.")
+            description = "How much of the time to spend pushing at the API with values nobody "
+                    + "sensible would send - empty text, enormous numbers, the wrong kind of value "
+                    + "entirely. A healthy API takes them or turns them away; a fragile one falls "
+                    + "over. 0 sends none of them. Default: ${DEFAULT-VALUE}.")
     private int fuzzingShare;
 
     @Option(
@@ -222,7 +222,7 @@ final class RunCommand implements Callable<Integer> {
             PrintWriter err) {
         Path reportFile = directory.resolve("report.json");
         Path runFile = directory.resolve("run.sqlite");
-        ConsoleReport console = ConsoleReport.to(out, generator.sourcesExpectingRefusal());
+        ConsoleReport console = ConsoleReport.to(out, generator.sourcesThatPushAtTheApi());
 
         RunLoop.Outcome outcome = null;
         EventStream events = null;

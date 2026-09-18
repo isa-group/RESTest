@@ -119,15 +119,52 @@ class DictionaryDocumentTest {
     }
 
     @Test
-    @DisplayName("a dictionary that says nothing about what it expects has not been checked")
-    void an_unstated_expectation_is_unknown() {
-        assertThat(read("""
-                {"version": 1, "name": "d", "keyedBy": "type", "values": {}}""").expects())
-                .isEqualTo(Dictionary.Expectation.UNKNOWN);
-        assertThat(read("""
-                {"version": 1, "name": "d", "keyedBy": "type", "expects": "refusal",
-                 "values": {}}""").expects())
-                .isEqualTo(Dictionary.Expectation.REFUSAL);
+    @DisplayName("a file written in YAML and the same file written in JSON are the same dictionary")
+    void yaml_and_json_are_read_the_same_way() {
+        ValueDictionary asYaml = read("""
+                version: 1
+                name: d
+                keyedBy: type
+                values:
+                  string: [a, b]
+                """);
+        ValueDictionary asJson = read("""
+                {"version": 1, "name": "d", "keyedBy": "type", "values": {"string": ["a", "b"]}}""");
+
+        assertThat(asYaml.valuesFor(asking("q", StringSchema.of())))
+                .describedAs("JSON is a subset of YAML, so nobody has to be told which to write")
+                .isEqualTo(asJson.valuesFor(asking("q", StringSchema.of())))
+                .containsExactly(JsonValue.of("a"), JsonValue.of("b"));
+    }
+
+    @Test
+    @DisplayName("a key written twice is refused, rather than the second quietly replacing the first")
+    void a_key_written_twice_is_refused() {
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: d
+                        keyedBy: type
+                        values:
+                          string: [a]
+                          string: [b]
+                        """))
+                .withMessageContaining("duplicate");
+    }
+
+    @Test
+    @DisplayName("a value of a kind no request could carry is refused, rather than guessed at")
+    void a_value_yaml_has_and_json_does_not_is_refused() {
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("""
+                        version: 1
+                        name: d
+                        keyedBy: type
+                        values:
+                          string: [2026-09-18]
+                        """))
+                .describedAs("YAML reads that as a date, and a date is not something to send")
+                .withMessageContaining("not something that can be sent");
     }
 
     @Test
@@ -143,10 +180,16 @@ class DictionaryDocumentTest {
     @Test
     @DisplayName("what is wrong with a file is said in words, naming the file")
     void what_is_wrong_is_said_plainly() {
+        // Plain text is a perfectly good YAML document - it is one long word - so what is wrong
+        // with it is not that it could not be read but that what was read is not a dictionary.
         assertThatExceptionOfType(JsonException.class)
-                .isThrownBy(() -> read("this is not JSON at all"))
+                .isThrownBy(() -> read("this is a sentence, not a dictionary"))
                 .withMessageContaining("a dictionary somebody wrote")
-                .withMessageContaining("not JSON");
+                .withMessageContaining("is not an object");
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> read("values: [unclosed"))
+                .withMessageContaining("a dictionary somebody wrote")
+                .withMessageContaining("could not be read");
         assertThatExceptionOfType(JsonException.class)
                 .isThrownBy(() -> read("""
                         {"version": 1, "name": "d", "keyedBy": "horoscope", "values": {}}"""))

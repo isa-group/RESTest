@@ -16,6 +16,7 @@
 module io.restest.gen {
     requires io.restest.core;
     requires io.restest.idl;
+    requires org.yaml.snakeyaml;
 
     exports io.restest.gen;
 }

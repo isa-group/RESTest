@@ -28,6 +28,20 @@
         </dependency>
 
         <!--
+            Reads the lists of values a run is given. YAML rather than JSON because those files are
+            the part of this tool somebody is most likely to write by hand, and because the
+            specifications they sit beside are written in it too. A YAML reader also reads JSON,
+            which is a subset of it, so a file written either way is read either way.
+
+            Pinned in the parent, where it already was: it arrives through swagger-parser as well,
+            and the two have to move together.
+        -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+
+        <!--
           Test scope only, and deliberately so. Nothing this module publishes depends on the parser -
           the architecture rules read production bytecode and would fail if it did. But the question
           "does generation work against real specifications?" can only be answered by reading real

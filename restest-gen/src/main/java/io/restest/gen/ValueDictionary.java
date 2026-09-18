@@ -82,16 +82,13 @@ public final class ValueDictionary implements Dictionary {
 
     private final String name;
     private final Keying keying;
-    private final Expectation expects;
     private final Map<String, List<JsonValue>> values;
     private final Map<String, Map<String, List<JsonValue>>> perOperation;
 
-    ValueDictionary(String name, Keying keying, Expectation expects,
-            Map<String, List<JsonValue>> values,
+    ValueDictionary(String name, Keying keying, Map<String, List<JsonValue>> values,
             Map<String, Map<String, List<JsonValue>>> perOperation) {
         this.name = Objects.requireNonNull(name, "name");
         this.keying = Objects.requireNonNull(keying, "keying");
-        this.expects = Objects.requireNonNull(expects, "expects");
         // Not Map.copyOf, whose iteration order is randomised per process. The order these were
         // written in is what a run quotes back when it says a dictionary names operations this API
         // does not have, and the same command has to explain itself the same way twice.
@@ -167,11 +164,6 @@ public final class ValueDictionary implements Dictionary {
     @Override
     public String name() {
         return name;
-    }
-
-    @Override
-    public Expectation expects() {
-        return expects;
     }
 
     @Override

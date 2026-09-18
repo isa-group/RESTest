@@ -1,4 +1,4 @@
-# ADR-0020: A dictionary is a named list of values with one key, and a strategy is a share of the budget
+# ADR-0020: A dictionary is a named list of values with one key, and the plan decides what each list is for
 
 **Status:** Accepted
 **Date:** 2026-09-18
@@ -44,15 +44,26 @@ existed since M1.6 and needs nothing new to be useful: a 5xx is a fault whatever
 
 ### 1. The file declares its own keying, and there is one dictionary per file
 
-```json
-{
-  "version": 1,
-  "name": "petshop-ids",
-  "keyedBy": "operationAndParameter",
-  "expects": "acceptance",
-  "values": { "getOwner": { "ownerId": [1, 2, 3] } }
-}
+```yaml
+version: 1
+name: petshop-ids
+keyedBy: operationAndParameter
+values:
+  getOwner:
+    ownerId: [1, 2, 3]
 ```
+
+**YAML, not JSON.** A dictionary is the part of this tool somebody is most likely to write by hand,
+and the specifications it sits beside are written in YAML. JSON is a subset of YAML, so nobody has to
+be told which to write and a file produced by a script is read the same way. It costs `restest-gen` a
+third-party dependency it did not have, which an architecture rule now names — the same treatment
+every other library in this project gets — and it buys one thing beyond legibility: a key written
+twice is refused rather than allowed to replace itself quietly, which the JSON reader could not do
+because a duplicate key means something different in a stored interaction.
+
+It costs one thing too. YAML has kinds JSON does not, so an unquoted `2026-09-18` is a *date* rather
+than a piece of text. Such a value is refused with a message naming the problem, rather than being
+turned into something plausible.
 
 `version` is the version of the *format*. Called that rather than `dictionary` because a field named
 after the thing it sits in says nothing, and not `format` because that collides with the `format`
@@ -87,50 +98,36 @@ silently does nothing.
 A parameter is named by name alone. One name declared in two locations gets the entry in both — a
 documented limit, because a qualifier nobody would use is worse than a stated edge.
 
-### 3. `expects` is written down now, and absent means nobody checked
+### 3. A dictionary says nothing about what the API will make of its values
 
-`acceptance`, `refusal` or `unknown`, stated per file, and it decides when the values are asked for.
-A list that expects refusal earns a way of building requests of its own and is kept out of ordinary
-ones. Every other list is asked alongside what the document itself says, **in an order set by how
-much it knows about the value**:
+A first version of this record had a field on the file saying whether its values should be accepted
+or refused. It was wrong twice over, and both are worth writing down because the mistake is an easy
+one.
 
-```
-the closed list of values the document says it accepts        nothing may override this
-a list keyed by operation-and-parameter, or by parameter name knows about one value
-the document's own samples and stated default
-a list keyed by schema, format or type                        knows about a kind of value
-whatever can be invented from the shape
-```
+**A dictionary cannot know.** A value can be perfectly good and the request still refused, for a rule
+about some *other* parameter that the value knows nothing about. Whether a request is accepted is a
+property of the request, not of one value in it.
 
-Two of those positions were argued and are worth keeping the argument for.
+**And our own list could not have made the claim honestly.** It was marked as values meant to be
+refused, and it contains an empty word, a zero, an empty list and an empty object — every one of
+which a great many APIs accept quite happily. Whether an empty word is acceptable depends on the
+parameter it fills, which a list indexed by the kind of value does not see.
 
-**An enumeration is not ranked against anything.** ADR-0013 §2 wrote it as `exclusive: [enum]  # if
-it answers, the choice is made`, and that still holds: where a document names the only values an API
-will take, everything else is a value it has said is not allowed — a dictionary somebody wrote
-included. A first attempt put dictionaries in front of it, and a `name`-keyed list then sent a value
-outside the enumeration on every request for that parameter.
+So there is no such field. What a list is *for* is decided by **the plan that names it**, which is
+ADR-0013 §2's own shape: a strategy lists its sources by name, and a dictionary carries a name. The
+plan knows what it is building; the file does not.
 
-With one exception, which is the same one every source here makes: an enumeration none of whose
-values can be put where the value goes — all of them empty, in a path — is read as no enumeration at
-all, and the run falls through to whatever else can answer. The choice is between sending something
-the document did not sanction and never testing the operation at all, and the second is worse: the
-document has contradicted itself, and the operation is still there.
+There is no plan to read yet, so the built-in one names one list — `fuzzing`, the one RESTest carries
+and any a user adds under the same name — for the requests that push at the API, and gives every
+other list to ordinary requests. M2.10 is where the plan becomes a file, and where one list can feed
+two strategies, or two lists one strategy, which is the point of naming them.
 
-**A shape is about a kind, not about one value.** A document declares a shape once and however many
-parameters refer to it get the same one, so a list written for `Owner` says less about *this*
-parameter than the parameter's own sample does. That keeps ADR-0019's rule — a parameter's own sample
-is the most particular thing a document says about it — true for dictionaries as well.
-
-Absent means `unknown`, which is the ordinary
-case and an honest answer rather than a placeholder — ADR-0013 §3 defends exactly that value: *"the
-honest intent of a value invented from a schema, because an API may refuse it for a rule the document
-does not express"*.
-
-This is `intent` as *data*, settled now because the format is published and adding a field to it later
-is a change to everybody's files. It is not `intent` on the test case, which stays out: nothing reads
-it until M3.1b, `--store` is off by default, and the stored layout already moved in 2.2. What a run
-recorded in this version cannot distinguish is a 4xx the tool asked for from one it did not, per
-request — the summary reports the count, and that is all.
+**And `intent` still stays out of the test case**, for the same reason as before: nothing reads it
+until M3.1b. It is now clearer what it will say. A request built to push at an API is not expecting a
+refusal — a refusal is a perfectly good answer and often the right one — so its intent is ADR-0013
+§3's third value, *I do not know*. That refines §4, which says such a request's intent "records that
+a refusal cannot be attributed to any one parameter": true, and no longer needing a value of its own
+to say it.
 
 ### 4. A share divides the budget; a weight divides one value
 
@@ -238,8 +235,20 @@ lists and objects.
   the operation has been chosen, before any value has been. Every number written down before this
   version names a different run. The test that exists to make this impossible to do by accident was
   re-baselined on purpose, which is what taking the decision looks like.
-- **The summary gained a line**, because a quarter of the requests being refused on purpose would
-  otherwise read as an API turning away ordinary traffic.
+- **The summary gained a line**, saying how many requests were pushing at the API rather than trying
+  to work. It says only that, because that is what is known: whatever those requests earned — a
+  refusal, an acceptance, or the API falling over — is not something the tool can claim in advance.
+- **Which oracles can judge a request depends on how it was built, and the design already carries
+  that — through the intent, not through the strategy.** The question is worth answering here because
+  it looks like it needs a new mechanism and does not. A request that pushes at an API can only be
+  judged by the oracle that notices the API falling over; one built from values somebody believes in
+  can be judged by "this should have been accepted"; one built by breaking exactly one thing can be
+  judged by "this should have been refused". Those three are exactly ADR-0013 §3's three intents, and
+  §3 gives three reasons for carrying the intent rather than a list of oracles: the intent is small
+  and still while the catalogue is large and moving, one strategy produces several intents, and
+  `restest recheck` has to be able to apply an oracle invented *after* a run to that run — which a
+  stored list of oracle names would forbid. Whether a plan should additionally be able to *configure*
+  which oracles run per strategy, as M3.4 does per operation, is a separate question and an open one.
 - **A dictionary is an interface, not a file reader.** The file-backed one is one implementation; the
   values a run observes in replies (4.2) will be another, filled by a listener on the event stream and
   never asked of the store, as ADR-0013 §5 requires. Nothing that asks a dictionary a question knows
@@ -255,7 +264,7 @@ lists and objects.
 ## Alternatives considered
 
 - **One file holding several dictionaries.** More comfortable for a user who wants one place to look,
-  and it makes `keyedBy` and `expects` per-entry rather than per-file. Rejected: the file RESTest
+  and it makes `keyedBy` per-entry rather than per-file. Rejected: the file RESTest
   ships cannot live inside the user's anyway, so there is more than one file in play regardless, and a
   repeatable option plus a directory covers the comfort without a second shape in a published format.
 - **Both shapes accepted.** Rejected for the reason a published format exists: two ways of writing the
@@ -266,18 +275,29 @@ lists and objects.
 - **Hard-coding the awkward values in Java** and leaving the file format to 2.7. Faster, and it gives
   up the half of the value that matters — that somebody can add the values their own API falls over on
   without touching the tool. Design principle 8.
+- **A field on the file saying whether its values should be accepted or refused.** What the first
+  version of this record decided, and wrong for the two reasons in §3. Kept in the alternatives
+  because the mistake is natural: the file is where the author is, so it feels like the place to say
+  it — but what the author knows is what the values *are*, and what the tool needs to know is what
+  they are *for*, which is the plan's business.
+- **A field saying what the list is for — `use: ordinary | fuzzing`.** The obvious repair, and it
+  puts in the file a decision the plan already owns. Two strategies drawing on one list could not be
+  expressed, and the file would have to be edited to change how a run uses it. Naming sources in the
+  plan is ADR-0013 §2's design and costs nothing extra.
 - **Copying 1.x's `fuzzing-dictionary.json`.** Same research group, same licence, and it would keep
   continuity with 1.x's published experiments. Rejected because it needs an exception to "no code from
   1.x is copied" that nobody has written, for about forty values that took an hour to better.
 - **Adding `intent` to the test case now.** It is ADR-0013's design and this is the first increment
-  that deliberately sends values it expects to be refused. Rejected as the mechanism-before-its-
+  that deliberately sends values nobody sensible would send. Rejected as the mechanism-before-its-
   consumer mistake ADR-0013 names twice: no oracle reads it before M3.1b, and the summary's count is
   the honest interim.
 - **Weighted groups now.** Half an hour of work, and weights over a list of one.
 - **Recognising a strategy built to be refused by its name.** What the first version did, and wrong:
   a strategy's name is a dictionary's name, which comes out of somebody else's file and may be
-  anything at all — including `nominal`. A strategy carries what it expects instead.
+  anything at all — including `nominal`. A strategy says for itself whether it is pushing at the
+  API, and which lists it draws on is the plan's decision rather than the file's.
 - **Accepting members a dictionary file does not define.** The lenient reading, and it re-creates the
-  failure this format spends a paragraph preventing elsewhere: a misspelled `keyedBy` or `expects`
-  would load without complaint and then quietly do nothing. Unknown members are refused, which can be
-  relaxed later without breaking anybody's file; the reverse cannot.
+  failure this format spends a paragraph preventing elsewhere: a misspelled `keyedBy` would load
+  without complaint and then quietly do nothing. Unknown members are refused, which can be relaxed
+  later without breaking anybody's file; the reverse cannot. A key written twice is refused for the
+  same reason, which is something the YAML reader can be asked to check and the JSON one could not.

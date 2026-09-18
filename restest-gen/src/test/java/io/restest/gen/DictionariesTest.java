@@ -53,8 +53,9 @@ class DictionariesTest {
     void the_shipped_dictionary_is_readable() throws IOException {
         Dictionary fuzzing = Dictionaries.shipped();
 
-        assertThat(fuzzing.name()).isEqualTo("fuzzing");
-        assertThat(fuzzing.expects()).isEqualTo(Dictionary.Expectation.REFUSAL);
+        assertThat(fuzzing.name())
+                .describedAs("the built-in plan names this list, so the name is load-bearing")
+                .isEqualTo("fuzzing");
         // A file of ours that failed to load used to leave the tool quietly doing less than it
         // says it does, with nothing in the output to mention it. This is what makes that a broken
         // build rather than a disappointing run.
@@ -94,8 +95,8 @@ class DictionariesTest {
     @Test
     @DisplayName("a directory of files is read, every .json in it, in a settled order")
     void a_directory_is_read(@TempDir Path directory) throws IOException {
-        write(directory.resolve("b-second.json"), "second", "type");
-        write(directory.resolve("a-first.json"), "first", "type");
+        write(directory.resolve("b-second.yaml"), "second", "type");
+        write(directory.resolve("a-first.yml"), "first", "type");
         Files.writeString(directory.resolve("notes.txt"), "not a dictionary");
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
@@ -110,15 +111,15 @@ class DictionariesTest {
     @Test
     @DisplayName("a file that cannot be read costs its values and is said out loud, not the run")
     void an_unreadable_file_is_reported_and_survived(@TempDir Path directory) throws IOException {
-        write(directory.resolve("good.json"), "good", "type");
-        Files.writeString(directory.resolve("broken.json"), "{ this is not JSON");
+        write(directory.resolve("good.yaml"), "good", "type");
+        Files.writeString(directory.resolve("broken.yaml"), "key: [unclosed");
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
 
         assertThat(found.dictionaries()).extracting(Dictionary::name)
                 .containsExactly("fuzzing", "good");
         assertThat(found.problems()).singleElement(org.assertj.core.api.InstanceOfAssertFactories
-                .STRING).contains("broken.json");
+                .STRING).contains("broken.yaml");
     }
 
     @Test
@@ -129,7 +130,7 @@ class DictionariesTest {
                 .contains("no dictionary at");
         assertThat(Dictionaries.gather(List.of(directory), PET_SHOP).problems())
                 .singleElement(org.assertj.core.api.InstanceOfAssertFactories.STRING)
-                .contains("holds no .json dictionary");
+                .contains("holds no .yaml, .yml or .json dictionary");
     }
 
     @Test
@@ -137,11 +138,16 @@ class DictionariesTest {
             + "says so instead of silently doing nothing")
     void a_dictionary_naming_unknown_operations_is_reported(@TempDir Path directory)
             throws IOException {
-        Files.writeString(directory.resolve("ids.json"), """
-                {"version": 1, "name": "ids", "keyedBy": "operationAndParameter", "values": {
-                   "GET /owners/{ownerId}": {"ownerId": [1]},
-                   "getOwnerRenamedSince": {"ownerId": [2]}
-                }}""");
+        Files.writeString(directory.resolve("ids.yaml"), """
+                version: 1
+                name: ids
+                keyedBy: operationAndParameter
+                values:
+                  "GET /owners/{ownerId}":
+                    ownerId: [1]
+                  getOwnerRenamedSince:
+                    ownerId: [2]
+                """);
 
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
 
@@ -158,8 +164,12 @@ class DictionariesTest {
 
     private static void write(Path file, String name, String keyedBy) throws IOException {
         Files.writeString(file, """
-                {"version": 1, "name": "%s", "keyedBy": "%s", "values": {"string": ["x"]}}"""
-                .formatted(name, keyedBy));
+                version: 1
+                name: %s
+                keyedBy: %s
+                values:
+                  string: [x]
+                """.formatted(name, keyedBy));
     }
 
     private static ValueRequest asking(CanonicalSchema schema) {

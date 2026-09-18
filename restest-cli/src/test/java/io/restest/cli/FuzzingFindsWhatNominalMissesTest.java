@@ -101,9 +101,10 @@ class FuzzingFindsWhatNominalMissesTest {
                         + "this API breaks on it")
                 .contains("answered 500");
         assertThat(withAwkwardValues)
-                .describedAs("the summary says how many requests were meant to be refused, so the "
-                        + "refusals do not read as the API turning away ordinary traffic")
-                .contains("carried values meant to be refused");
+                .describedAs("the summary separates the requests that were pushing from the rest, "
+                        + "so whatever they earned does not read as the API's behaviour towards "
+                        + "ordinary traffic")
+                .contains("were pushing at the API");
         assertThat(withoutThem)
                 .describedAs("every value invented from this document is a word, and a word works")
                 .doesNotContain("answered 500");
@@ -113,9 +114,13 @@ class FuzzingFindsWhatNominalMissesTest {
     @DisplayName("a value out of a file somebody wrote for this API is actually sent")
     void a_value_from_a_users_own_file_is_sent(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
-        Path mine = Files.writeString(directory.resolve("mine.json"), """
-                {"version": 1, "name": "mine", "keyedBy": "name", "expects": "acceptance",
-                 "values": {"q": ["ZZMINEZZ"]}}""");
+        Path mine = Files.writeString(directory.resolve("mine.yaml"), """
+                version: 1
+                name: mine
+                keyedBy: name
+                values:
+                  q: [ZZMINEZZ]
+                """);
 
         run(directory.resolve("out"), document, "--fuzzing", "0",
                 "--dictionary", mine.toString());
@@ -134,12 +139,12 @@ class FuzzingFindsWhatNominalMissesTest {
     @DisplayName("a file that cannot be read is said out loud and the run carries on without it")
     void an_unreadable_dictionary_does_not_end_the_run(@TempDir Path directory) throws IOException {
         Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
-        Path broken = Files.writeString(directory.resolve("broken.json"), "{ not a dictionary");
+        Path broken = Files.writeString(directory.resolve("broken.yaml"), "values: [unclosed");
 
         String screen = run(directory.resolve("out"), document, "--fuzzing", "0",
                 "--dictionary", broken.toString());
 
-        assertThat(screen).contains("broken.json");
+        assertThat(screen).contains("broken.yaml");
         assertThat(screen)
                 .describedAs("a file nobody could read costs the values in it, not the run")
                 .contains("requests to 1 operations");

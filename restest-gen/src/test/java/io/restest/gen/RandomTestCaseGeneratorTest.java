@@ -365,8 +365,8 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("part of a run is spent on requests built entirely from values meant to be refused")
-    void some_requests_are_built_to_be_refused() {
+    @DisplayName("part of a run is spent pushing at the API with values nobody would send")
+    void some_requests_push_at_the_api() {
         Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
                 Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of()),
                 Parameter.of("age", ParameterLocation.QUERY, true,
@@ -376,28 +376,28 @@ class RandomTestCaseGeneratorTest {
                 ApiModel.of("Pets", "1.0", List.of(search)), 4242L,
                 List.of(awkward("", -1)));
 
-        int builtToBeRefused = 0;
+        int pushing = 0;
         for (int draw = 0; draw < 200; draw++) {
             TestCase testCase = generator.generate(search).orElseThrow();
-            boolean fromTheAwkwardList = testCase.parameterValues().stream()
+            boolean fromTheListToPushWith = testCase.parameterValues().stream()
                     .map(io.restest.core.execution.ParameterValue::origin)
                     .anyMatch(origin -> origin.equals(
-                            new io.restest.core.execution.ValueOrigin.Generated("awkward")));
-            if (fromTheAwkwardList) {
-                builtToBeRefused++;
+                            new io.restest.core.execution.ValueOrigin.Generated("fuzzing")));
+            if (fromTheListToPushWith) {
+                pushing++;
                 // Every parameter at once, never a mixture: an API stops reading at the first thing
                 // it does not like, so a request with one awkward value among good ones would teach
                 // nothing that this one does not.
                 assertThat(testCase.parameterValues()).allSatisfy(value ->
                         assertThat(value.origin()).isEqualTo(
-                                new io.restest.core.execution.ValueOrigin.Generated("awkward")));
+                                new io.restest.core.execution.ValueOrigin.Generated("fuzzing")));
             }
         }
 
-        assertThat(builtToBeRefused)
+        assertThat(pushing)
                 .describedAs("a quarter of 200 is 50, and a draw this size lands within a few of it")
                 .isBetween(30, 75);
-        assertThat(generator.sourcesExpectingRefusal()).containsExactly("awkward");
+        assertThat(generator.sourcesThatPushAtTheApi()).containsExactly("fuzzing");
     }
 
     @Test
@@ -425,12 +425,12 @@ class RandomTestCaseGeneratorTest {
         Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
                 Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
         List<Dictionary> awkward = IntStream.range(0, lists)
-                .mapToObj(each -> awkward("", -1, "awkward" + each))
+                .mapToObj(each -> awkward("", -1, "fuzzing"))
                 .map(Dictionary.class::cast)
                 .toList();
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
                 ApiModel.of("Pets", "1.0", List.of(search)), 20260918L, awkward, share);
-        java.util.Set<String> refusing = generator.sourcesExpectingRefusal();
+        java.util.Set<String> refusing = generator.sourcesThatPushAtTheApi();
 
         return (int) IntStream.range(0, 1000)
                 .mapToObj(draw -> generator.generate(search).orElseThrow())
@@ -531,19 +531,18 @@ class RandomTestCaseGeneratorTest {
             default -> "string";
         };
         return DictionaryDocument.read("""
-                {"version": 1, "name": "ours", "keyedBy": "%s", "expects": "acceptance",
-                 "values": {"%s": ["%s"]}}""".formatted(keyedBy, key, value), "ours");
+                {"version": 1, "name": "ours", "keyedBy": "%s", "values": {"%s": ["%s"]}}""".formatted(keyedBy, key, value), "ours");
     }
 
     @Test
-    @DisplayName("a run given no list of awkward values sends nothing it expects to be refused")
-    void without_such_a_list_nothing_is_built_to_be_refused() {
+    @DisplayName("a run given no list to push with builds every request to work")
+    void without_such_a_list_nothing_pushes() {
         Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
                 Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
                 ApiModel.of("Pets", "1.0", List.of(search)), 4242L, List.of());
 
-        assertThat(generator.sourcesExpectingRefusal()).isEmpty();
+        assertThat(generator.sourcesThatPushAtTheApi()).isEmpty();
         for (int draw = 0; draw < 50; draw++) {
             assertThat(generator.generate(search).orElseThrow().parameterValues())
                     .allSatisfy(value -> assertThat(value.origin())
@@ -552,9 +551,9 @@ class RandomTestCaseGeneratorTest {
         }
     }
 
-    /** A list of values somebody put together expecting the API to turn every one of them away. */
+    /** A list of values to push at an API with, named the way the built-in plan names one. */
     private static Dictionary awkward(String forText, long forWholeNumbers) {
-        return awkward(forText, forWholeNumbers, "awkward");
+        return awkward(forText, forWholeNumbers, "fuzzing");
     }
 
     private static Dictionary awkward(String forText, long forWholeNumbers, String called) {
@@ -570,11 +569,6 @@ class RandomTestCaseGeneratorTest {
             @Override
             public String name() {
                 return called;
-            }
-
-            @Override
-            public Expectation expects() {
-                return Expectation.REFUSAL;
             }
 
             @Override

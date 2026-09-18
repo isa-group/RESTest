@@ -39,22 +39,14 @@ import java.util.List;
  * run goes along, out of the API's own replies, and nothing that asks a dictionary a question needs
  * to know which kind it is holding.
  *
- * <p>A dictionary also says what it believes about its own values: that the API should accept them,
- * that it should refuse them, or that nobody has checked. That last one is the ordinary case and is
- * not an admission of failure - a list of plausible surnames is a genuinely useful thing to have
- * without anybody having confirmed that this particular API takes any of them.
+ * <p>What a dictionary does <em>not</em> say is what the API will make of its values. It cannot: a
+ * value can be perfectly good and the request still be refused for a rule about some other
+ * parameter, and a value chosen to look outrageous - an empty word, a zero, a list with nothing in
+ * it - is one a great many APIs accept quite happily. What a value is worth is decided by whoever
+ * builds a request out of it, and which lists a run draws on for which kind of request is decided by
+ * the plan it is running, where the lists are named.
  */
 public interface Dictionary {
-
-    /** What a dictionary believes about the values it holds. */
-    enum Expectation {
-        /** Somebody checked, or the API itself supplied them: these should be accepted. */
-        ACCEPTANCE,
-        /** These are meant to be refused, and a reply that is neither a refusal nor a failure is news. */
-        REFUSAL,
-        /** Nobody has checked against this API. The ordinary case, and an honest answer. */
-        UNKNOWN
-    }
 
     /**
      * The values this dictionary offers for one input, in the order it holds them.
@@ -70,13 +62,6 @@ public interface Dictionary {
      * @return the name
      */
     String name();
-
-    /**
-     * What this dictionary believes about its own values.
-     *
-     * @return the expectation
-     */
-    Expectation expects();
 
     /**
      * Whether this dictionary is about one value in particular rather than a whole kind of them.

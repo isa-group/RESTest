@@ -16,35 +16,41 @@
 package io.restest.gen;
 
 import io.restest.core.json.JsonException;
-import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.yaml.snakeyaml.LoaderOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.error.YAMLException;
 
 /**
  * Reads a dictionary out of the text of a file.
  *
- * <p>Deliberately plain JSON, because a dictionary is the part of this tool somebody is most likely
- * to want to write by hand or produce from a script of their own.
+ * <p>Written in YAML, because a dictionary is the part of this tool somebody is most likely to write
+ * by hand and because the specifications it sits beside are written in it too. JSON is a subset of
+ * YAML, so a file written that way is read the same way without anybody being told.
  *
  * <pre>{@code
- * {
- *   "version": 1,
- *   "name": "fuzzing",
- *   "keyedBy": "type",
- *   "expects": "refusal",
- *   "values": {
- *     "any":    [null],
- *     "string": ["", "   "]
- *   }
- * }
+ * version: 1
+ * name: fuzzing
+ * keyedBy: type
+ * values:
+ *   any:
+ *     - null
+ *   string:
+ *     - ""
+ *     - "   "
  * }</pre>
  *
  * <p>A file this version cannot read is refused by name rather than half-read: a dictionary that
  * silently lost half its values would be worse than one that was never loaded, because nobody would
- * know to go and look.
+ * know to go and look. The same goes for a key written twice, which YAML allows and which would
+ * otherwise leave the first list quietly replaced by the second.
  */
 final class DictionaryDocument {
 
@@ -53,7 +59,7 @@ final class DictionaryDocument {
 
     /** The members a dictionary may have. Anything else is a typo, and a typo is worth saying. */
     private static final List<String> MEMBERS =
-            List.of("version", "name", "description", "keyedBy", "expects", "values");
+            List.of("version", "name", "description", "keyedBy", "values");
 
     private DictionaryDocument() {
     }
@@ -84,12 +90,6 @@ final class DictionaryDocument {
 
         String name = text(document, "name", describedAs);
         ValueDictionary.Keying keying = keying(text(document, "keyedBy", describedAs), describedAs);
-        Dictionary.Expectation expects = document.member("expects")
-                .map(stated -> expectation(asText(stated, "expects", describedAs), describedAs))
-                // Not stated is the ordinary case and an honest answer: most lists of values are
-                // things somebody thought were plausible, not things anybody checked against this
-                // API.
-                .orElse(Dictionary.Expectation.UNKNOWN);
 
         JsonValue.JsonObject stated = asObject(
                 document.member("values").orElseThrow(() -> new JsonException(
@@ -115,7 +115,7 @@ final class DictionaryDocument {
             stated.members().forEach((key, held) ->
                     values.put(key, listOf(held, key, describedAs)));
         }
-        return new ValueDictionary(name, keying, expects, values, perOperation);
+        return new ValueDictionary(name, keying, values, perOperation);
     }
 
     /**
@@ -141,12 +141,52 @@ final class DictionaryDocument {
         }
     }
 
+    /**
+     * The document a file's text describes, as the values the rest of RESTest speaks in.
+     *
+     * <p>Read as YAML, which reads JSON too. A key written twice is refused rather than allowed to
+     * replace itself quietly, because a list of values is exactly the kind of file where somebody
+     * writes {@code string:} twice by accident and never finds out that only the second one is
+     * used. Nothing in the file is treated as an instruction to build anything - only the six kinds
+     * of value JSON has come out of it.
+     */
     private static JsonValue parse(String text, String describedAs) {
+        LoaderOptions options = new LoaderOptions();
+        options.setAllowDuplicateKeys(false);
         try {
-            return JsonText.read(text);
-        } catch (JsonException notJson) {
-            throw new JsonException(describedAs + " is not JSON: " + notJson.getMessage());
+            return asValue(new Yaml(new SafeConstructor(options)).load(text), describedAs);
+        } catch (YAMLException notYaml) {
+            throw new JsonException(describedAs + " could not be read: " + notYaml.getMessage());
         }
+    }
+
+    /** One thing the reader handed back, as the value model the rest of RESTest speaks in. */
+    private static JsonValue asValue(Object read, String describedAs) {
+        return switch (read) {
+            case null -> JsonValue.NULL;
+            case Boolean yesOrNo -> JsonValue.of(yesOrNo);
+            case Integer whole -> JsonValue.of(whole.longValue());
+            case Long whole -> JsonValue.of(whole);
+            case java.math.BigInteger whole -> JsonValue.of(new BigDecimal(whole));
+            case Double fractional -> JsonValue.of(BigDecimal.valueOf(fractional));
+            case Float fractional -> JsonValue.of(BigDecimal.valueOf(fractional));
+            case String text -> JsonValue.of(text);
+            case List<?> list -> {
+                List<JsonValue> elements = new ArrayList<>();
+                list.forEach(element -> elements.add(asValue(element, describedAs)));
+                yield JsonValue.array(elements);
+            }
+            case Map<?, ?> map -> {
+                Map<String, JsonValue> members = new LinkedHashMap<>();
+                map.forEach((key, held) ->
+                        members.put(String.valueOf(key), asValue(held, describedAs)));
+                yield JsonValue.object(members);
+            }
+            // A date, a set, a binary blob: YAML has kinds JSON does not, and a value RESTest could
+            // not put in a request is not a value worth keeping.
+            default -> throw new JsonException(describedAs + " holds a "
+                    + read.getClass().getSimpleName() + ", which is not something that can be sent");
+        };
     }
 
     private static List<JsonValue> listOf(JsonValue value, String key, String describedAs) {
@@ -167,16 +207,6 @@ final class DictionaryDocument {
             default -> throw new JsonException(describedAs + " says its values are keyed by '"
                     + stated + "', which is not one of type, format, schema, name or "
                     + "operationAndParameter");
-        };
-    }
-
-    private static Dictionary.Expectation expectation(String stated, String describedAs) {
-        return switch (stated) {
-            case "acceptance" -> Dictionary.Expectation.ACCEPTANCE;
-            case "refusal" -> Dictionary.Expectation.REFUSAL;
-            case "unknown" -> Dictionary.Expectation.UNKNOWN;
-            default -> throw new JsonException(describedAs + " says it expects '" + stated
-                    + "', which is not one of acceptance, refusal or unknown");
         };
     }
 

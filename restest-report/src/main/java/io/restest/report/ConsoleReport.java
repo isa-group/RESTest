@@ -82,7 +82,7 @@ public final class ConsoleReport implements RunListener {
     private int attempts;
     private int faults;
 
-    /** The names of the lists of values that were meant to be refused. */
+    /** The names of the lists a run pushes at the API with, rather than tries to work with. */
     private final Set<String> awkwardSources;
 
     /** How many requests carried at least one value from one of them. */
@@ -99,16 +99,15 @@ public final class ConsoleReport implements RunListener {
     }
 
     /**
-     * A report that writes wherever you tell it to, and knows which lists of values were meant to
-     * be refused.
+     * A report that writes wherever you tell it to, and knows which lists a run pushes with.
      *
-     * <p>Part of a run is spent on requests built from values chosen to be awkward, which an API is
-     * supposed to turn away. Those refusals land in the same count as every other refusal, and a
-     * summary that did not say so would read as though the API were rejecting far more ordinary
-     * requests than it is.
+     * <p>Part of a run is spent on requests built from values nobody sensible would send. Whatever
+     * those earn - a refusal, or an acceptance, or the API falling over - lands in the same counts
+     * as everything else, and a summary that did not separate them would read as though the API
+     * were behaving that way towards ordinary traffic.
      *
      * @param out where to write
-     * @param awkwardSources the names of the lists whose values are meant to be refused
+     * @param awkwardSources the names of the lists a run pushes at the API with
      * @return the report
      */
     public static ConsoleReport to(Appendable out, Set<String> awkwardSources) {
@@ -211,7 +210,7 @@ public final class ConsoleReport implements RunListener {
     }
 
 
-    /** Whether any value in this attempt came from a list of values meant to be refused. */
+    /** Whether any value in this attempt came from a list the run pushes at the API with. */
     private boolean carriedSomethingAwkward(io.restest.core.execution.Interaction interaction) {
         if (awkwardSources.isEmpty()) {
             return false;
@@ -237,13 +236,16 @@ public final class ConsoleReport implements RunListener {
                 .map(entry -> entry.getValue() + " " + entry.getKey())
                 .collect(java.util.stream.Collectors.joining(", ")));
         if (awkward > 0) {
-            // The sentence exists to explain refusals, so it is written where there are refusals to
-            // explain. An API that accepted everything anyway has nothing here to account for, and
-            // the line would be pointing at a number that is not on the screen.
+            // What the line says is what is known: how many requests were pushing rather than
+            // trying to work. It does not say those requests should have been refused, because
+            // nobody knows that - an empty word or a zero is a perfectly good value in a great many
+            // APIs. The refusals are mentioned only where there are refusals on the screen to
+            // account for.
             long refusals = repliesByClass.getOrDefault("4xx", 0);
-            write("  " + awkward + " of them carried values meant to be refused"
-                    + (refusals > 0 ? ", so a good share of the " + refusals + " refusals above are "
-                            + "ones RESTest asked for" : ""));
+            write("  " + awkward + " of them were pushing at the API with values nobody sensible "
+                    + "would send" + (refusals > 0
+                            ? ", which accounts for some of the " + refusals + " refusals above"
+                            : ""));
         }
         if (!serverErrors.none()) {
             write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "

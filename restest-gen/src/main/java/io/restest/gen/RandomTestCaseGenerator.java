@@ -82,6 +82,16 @@ public final class RandomTestCaseGenerator {
     private static final double OPTIONAL_PARAMETER_CHANCE = 0.5;
 
     /**
+     * The list this run pushes at the API with, until a plan says otherwise.
+     *
+     * <p>A plan names the lists each way of building a request draws on, which is what lets one run
+     * push with two lists, or push with one and fill ordinary requests from another. There is no
+     * plan to read yet, so the built-in one names this: the list called {@code fuzzing}, which is
+     * the one RESTest carries, and any a user adds under the same name.
+     */
+    private static final String PUSHES_AT_THE_API = "fuzzing";
+
+    /**
      * How much of the testing time goes on requests built from values chosen to be awkward, unless
      * somebody says otherwise.
      *
@@ -226,17 +236,18 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * The names of the lists of values this run will send expecting them to be refused.
+     * The names of the lists this run draws on when it is pushing at the API rather than trying to
+     * work.
      *
-     * <p>A report wants these so it can say how many of a run's refusals were asked for. Without
-     * them, a run that deliberately sends awkward values reads as though the API were turning away
-     * far more ordinary requests than it is.
+     * <p>A report wants these so it can say how many requests were of that kind. Without them, a run
+     * that spends a quarter of its time sending values nobody sensible would send reads as though
+     * the API were turning away far more ordinary traffic than it is.
      *
-     * @return the names, empty when this run sends nothing it expects to be refused
+     * @return the names, empty when this run sends nothing of the kind
      */
-    public java.util.Set<String> sourcesExpectingRefusal() {
+    public java.util.Set<String> sourcesThatPushAtTheApi() {
         return strategies.stream()
-                .filter(way -> way.expects() == Dictionary.Expectation.REFUSAL)
+                .filter(Strategy::pushesAtTheApi)
                 .map(Strategy::name)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
@@ -361,23 +372,22 @@ public final class RandomTestCaseGenerator {
      */
     private static List<Strategy> strategiesFor(List<Dictionary> dictionaries, int awkwardShare,
             ValueProvider nominal, ValueProvider invention, RandomGenerator random) {
-        List<Dictionary> refusing = dictionaries.stream()
-                .filter(held -> held.expects() == Dictionary.Expectation.REFUSAL)
+        List<Dictionary> pushing = dictionaries.stream()
+                .filter(held -> held.name().equals(PUSHES_AT_THE_API))
                 .toList();
         List<Strategy> ways = new ArrayList<>();
-        if (refusing.isEmpty() || awkwardShare == 0) {
-            return List.of(new Strategy("nominal", 100, Dictionary.Expectation.UNKNOWN, nominal));
+        if (pushing.isEmpty() || awkwardShare == 0) {
+            return List.of(new Strategy("nominal", 100, false, nominal));
         }
         // Counted against each other rather than out of a hundred, so that asking for a quarter is
         // a quarter whether one list of awkward values is in play or thirty. Giving each list a
         // share of its own and dividing would round the quarter into something else; multiplying
         // the other side instead keeps it exact whatever the arithmetic.
         if (awkwardShare < 100) {
-            ways.add(new Strategy("nominal", (100 - awkwardShare) * refusing.size(),
-                    Dictionary.Expectation.UNKNOWN, nominal));
+            ways.add(new Strategy("nominal", (100 - awkwardShare) * pushing.size(), false, nominal));
         }
-        for (Dictionary dictionary : refusing) {
-            ways.add(new Strategy(dictionary.name(), awkwardShare, dictionary.expects(),
+        for (Dictionary dictionary : pushing) {
+            ways.add(new Strategy(dictionary.name(), awkwardShare, true,
                     ValueProviderChain.of(new DictionaryValueProvider(dictionary, random),
                             invention)));
         }
@@ -420,7 +430,7 @@ public final class RandomTestCaseGenerator {
     private static void addAsking(List<ValueProvider> asked, List<Dictionary> dictionaries,
             RandomGenerator random, boolean aboutOneValue) {
         for (Dictionary dictionary : dictionaries) {
-            if (dictionary.expects() != Dictionary.Expectation.REFUSAL
+            if (!dictionary.name().equals(PUSHES_AT_THE_API)
                     && dictionary.isAboutOneValueInParticular() == aboutOneValue) {
                 asked.add(new DictionaryValueProvider(dictionary, random));
             }

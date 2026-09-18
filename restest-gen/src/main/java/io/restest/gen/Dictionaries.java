@@ -34,15 +34,15 @@ import java.util.stream.Stream;
 /**
  * Finds the dictionaries a run should use, and says what went wrong with the ones it could not.
  *
- * <p>Two kinds arrive. One travels with the tool - today that is the list of deliberately awkward
- * values - and is always there. The rest are files somebody points the tool at, typically kept next
+ * <p>Two kinds arrive. One travels with the tool - today that is the list of values to push at an
+ * API with - and is always there. The rest are files somebody points the tool at, typically kept next
  * to the specification they belong to so that the good values somebody worked out for an API are
  * committed alongside it rather than living in one person's head.
  *
- * <p>One dictionary per file. A file says once what decides which of its values apply and once what
- * it believes about them, and letting several share a file would make both of those statements
- * meaningless. Pointing at a directory reads every {@code .json} file in it, which is the
- * comfortable way to keep several.
+ * <p>One dictionary per file. A file says once what decides which of its values apply, and letting
+ * several share a file would make that statement meaningless. Pointing at a directory reads every
+ * {@code .yaml}, {@code .yml} and {@code .json} file in it, which is the comfortable way to keep
+ * several.
  *
  * <p>Nothing here ends a run. A file that cannot be read costs the values in it and is reported, and
  * the run carries on with the others - the same bargain the tool makes with a specification it
@@ -50,11 +50,12 @@ import java.util.stream.Stream;
  */
 public final class Dictionaries {
 
-    /** The dictionary of awkward values that travels with the tool. */
-    private static final String SHIPPED_FUZZING = "fuzzing-dictionary.json";
+    /** The list of values to push at an API with that travels with the tool. */
+    private static final String SHIPPED_FUZZING = "fuzzing-dictionary.yaml";
 
     /** How the shipped dictionary is named when something is wrong with it, which would be our bug. */
-    private static final String SHIPPED_DESCRIPTION = "the fuzzing dictionary built into RESTest";
+    private static final String SHIPPED_DESCRIPTION =
+            "the list of values to push with that is built into RESTest";
 
     private Dictionaries() {
     }
@@ -133,9 +134,9 @@ public final class Dictionaries {
         try {
             found.add(shipped());
         } catch (IOException | JsonException beyondHelp) {
-            problems.add("RESTest's own dictionary of awkward values could not be read, so nothing "
-                    + "will be fuzzed. This is a fault in this build of the tool, not in anything "
-                    + "you did: " + beyondHelp.getMessage());
+            problems.add("RESTest's own list of values to push with could not be read, so nothing "
+                    + "will be pushed at the API. This is a fault in this build of the tool, not in "
+                    + "anything you did: " + beyondHelp.getMessage());
         }
 
         for (Path location : locations) {
@@ -160,8 +161,14 @@ public final class Dictionaries {
         return Optional.empty();
     }
 
+    /** Whether a file in a directory is one to try reading as a dictionary. */
+    private static boolean looksLikeADictionary(Path file) {
+        String name = file.getFileName().toString();
+        return name.endsWith(".yaml") || name.endsWith(".yml") || name.endsWith(".json");
+    }
+
     /**
-     * The files to read at one place the user named: the file itself, or every {@code .json} in a
+     * The files to read at one place the user named: the file itself, or every dictionary in a
      * directory.
      */
     private static List<Path> filesUnder(Path location, List<String> problems) {
@@ -169,11 +176,11 @@ public final class Dictionaries {
             try (Stream<Path> inIt = Files.list(location)) {
                 List<Path> files = inIt
                         .filter(Files::isRegularFile)
-                        .filter(file -> file.getFileName().toString().endsWith(".json"))
+                        .filter(Dictionaries::looksLikeADictionary)
                         .sorted()
                         .toList();
                 if (files.isEmpty()) {
-                    problems.add(location + " holds no .json dictionary");
+                    problems.add(location + " holds no .yaml, .yml or .json dictionary");
                 }
                 return files;
             } catch (IOException | UncheckedIOException unreadable) {

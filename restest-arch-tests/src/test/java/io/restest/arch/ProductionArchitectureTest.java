@@ -82,6 +82,17 @@ class ProductionArchitectureTest {
         check(ArchitectureRules.onlyOneModuleDependsOn(ROOT, "core", "com.fasterxml.."));
     }
 
+    // The YAML reader stays inside the module that reads the lists of values a run is given. It
+    // also arrives through the specification parser, which is why the rule names the two modules
+    // allowed to hold it rather than one: leaking it anywhere else would put a second document
+    // reader into a module that already has one. See ADR-0020.
+    @Test
+    @DisplayName("only restest-gen and restest-spec reference the YAML reader (ADR-0004)")
+    void only_restest_gen_and_restest_spec_reference_the_yaml_reader() {
+        check(ArchitectureRules.onlyTheseModulesDependOn(ROOT, java.util.Set.of("gen", "spec"),
+                "org.yaml.."));
+    }
+
     // The schema validator, and the JSON library it brings with it, stay inside the module that
     // decides whether a reply matched its declared shape. tools.jackson is named as well as the
     // validator's own package because it arrives with the validator, and letting it leak would put
