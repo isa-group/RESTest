@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-54 increments in 9 milestones, 20 of them delivered. One increment = one branch = one pull request
+54 increments in 9 milestones, 21 of them delivered. One increment = one branch = one pull request
 into `v2`. Take them in order unless told otherwise.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
@@ -27,7 +27,7 @@ nothing in them is an increment of its own.
 |---|---|---|
 | M0 | Foundations | 3 / 3 ✅ |
 | M1 | Walking skeleton | 13 / 13 ✅ |
-| M2 | Specification fidelity and input generation | 4 / 12 |
+| M2 | Specification fidelity and input generation | 5 / 12 |
 | M3 | Oracles, faults and reporting | 0 / 8 |
 | M4 | Stateful testing | 0 / 6 |
 | M5 | IDL and constraint-based generation | 0 / 5 |
@@ -74,7 +74,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.1b ✅ [#308](https://github.com/isa-group/RESTest/pull/308) | `oneOf` / `anyOf` as a shape of their own (ADR-0018). Discriminators deliberately not included: they cost no request, and reading the corpus's one real hierarchy as a plain object would produce a shape quietly missing the property that identifies it | An operation whose parameter may be a number *or* a text stops being skipped |
 | 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers now send those identifiers instead of inventing ones |
 | 2.3 → [3.1b](#m3--oracles-faults-and-reporting) | The deterministic boundary walk. Deferred at 2.7a, not dropped: it returns as the mutation operator that steps outside a documented bound by exactly one | Reproducible edge-case tests, not luck |
-| 2.4a | Values that match the kind of text a document names (ADR-0021): dates and times worked out from the clock so they never go stale, a fresh identifier every time, web and e-mail addresses under a domain nobody can own. Eighteen kinds in all; a name we do not recognise is left to invention rather than guessed at, and a shape that contradicts itself is answered with silence. A user's own list keyed by `format` is still asked first | A parameter described as a timestamp stops being sent an ordinary word the API was always going to refuse |
+| 2.4a ✅ [#312](https://github.com/isa-group/RESTest/pull/312) | Values that match the kind of text a document names (ADR-0021): dates and times worked out from the clock so they never go stale, a fresh identifier every time, web and e-mail addresses under a domain nobody can own. Eighteen kinds in all; a name we do not recognise is left to invention rather than guessed at, and a shape that contradicts itself is answered with silence. A user's own list keyed by `format` is still asked first | A parameter described as a timestamp stops being sent an ordinary word the API was always going to refuse |
 | 2.4b | Strings built from a declared `pattern`: the regular-expression engine that needs, and the rule for what wins when one string declares both a pattern and a kind of text | The parameters pet-clinic constrains by pattern stop being refused |
 | 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
