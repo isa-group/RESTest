@@ -406,6 +406,8 @@ public final class RandomTestCaseGenerator {
         // The closed list of values a document says it accepts is not advice and is not ranked
         // against anything: where one exists, it is the whole set of values the API will take, so
         // offering anything else there would be sending a value the document says is not allowed.
+        // Unless not one of them could be put where the value goes - every one of them empty, in a
+        // path - in which case there is nothing here to honour, and the rest of the chain answers.
         asked.add(DeclaredValueProvider.onlyTheAcceptedList(random));
         addAsking(asked, dictionaries, random, true);
         asked.add(fromTheDocument);

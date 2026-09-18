@@ -75,10 +75,12 @@ public final class DeclaredValueProvider implements ValueProvider {
     /**
      * A provider that offers only the closed list of values a document says it accepts.
      *
-     * <p>Kept apart from the default because the two are asked at different moments. A closed list
-     * is not advice, it is the whole set of values the API will take, so nothing else may be
-     * offered where one exists - not a list somebody else wrote, and not a value we invented. A
-     * default is advice, and takes its turn among the rest.
+     * <p>Separable from the default because the two are asked at different moments. A closed list is
+     * not advice, it is the whole set of values the API will take, so nothing else may be offered
+     * where one exists - not a list somebody else wrote, and not a value we invented. A default is
+     * advice, and takes its turn among the rest, which is why the provider asked later still reads
+     * both: inside a value, where nothing has gone first, a nested list of accepted values has to be
+     * honoured there or nowhere.
      *
      * @param random where the choice among several allowed values comes from
      * @return the provider
@@ -87,15 +89,6 @@ public final class DeclaredValueProvider implements ValueProvider {
         return new DeclaredValueProvider(random, true, false);
     }
 
-    /**
-     * A provider that offers only the value a document says the API uses when none is sent.
-     *
-     * @param random unused here, and taken so that both halves are built the same way
-     * @return the provider
-     */
-    public static DeclaredValueProvider onlyTheDefault(RandomGenerator random) {
-        return new DeclaredValueProvider(random, false, true);
-    }
 
     @Override
     public Optional<GeneratedValue> offer(ValueRequest request) {

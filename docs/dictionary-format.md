@@ -146,13 +146,17 @@ every parameter referring to it gets the same one.
 
 Where a parameter declares an `enum`, nothing in your file is used for it. That list is not advice:
 it is the whole set of values the API says it takes, and sending anything else would be sending a
-value the document has already refused.
+value the document has already refused. The one exception is an enumeration none of whose values
+could be put where that parameter goes — every one of them empty, in a path — which is read as no
+enumeration at all, because the alternative is an operation that can never be tested.
 
-> **A list keyed by `type` or `format` replaces what RESTest would otherwise invent for that kind of
-> value — it is not added to it.** A file offering two surnames under `string` makes every string
-> parameter in the API send one of those two, for the whole run. If you want your values used
-> *alongside* invented ones, key them to the parameters you mean (`name`, or
-> `operationAndParameter`), where only those parameters are affected.
+> **A list replaces what RESTest would otherwise have sent for the values it covers — it is not added
+> to it.** A file offering two surnames under `string` makes *every* string parameter in the API send
+> one of those two, for the whole run. Keying narrowly does not change that; it changes how much it
+> covers. A list keyed by `name` or `operationAndParameter` replaces the values of the parameters you
+> name and leaves the rest of the API alone, which is usually what somebody adding "a few good names"
+> wants. Having your values sent *as well as* invented ones is a different thing, and RESTest cannot
+> do it yet.
 
 `unknown` — the default — says nobody has checked. It is not an admission of failure: a list of
 plausible surnames is a genuinely useful thing to have without anybody having confirmed that this

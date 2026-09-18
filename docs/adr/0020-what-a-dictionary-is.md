@@ -110,6 +110,12 @@ will take, everything else is a value it has said is not allowed — a dictionar
 included. A first attempt put dictionaries in front of it, and a `name`-keyed list then sent a value
 outside the enumeration on every request for that parameter.
 
+With one exception, which is the same one every source here makes: an enumeration none of whose
+values can be put where the value goes — all of them empty, in a path — is read as no enumeration at
+all, and the run falls through to whatever else can answer. The choice is between sending something
+the document did not sanction and never testing the operation at all, and the second is worse: the
+document has contradicted itself, and the operation is still there.
+
 **A shape is about a kind, not about one value.** A document declares a shape once and however many
 parameters refer to it get the same one, so a list written for `Owner` says less about *this*
 parameter than the parameter's own sample does. That keeps ADR-0019's rule — a parameter's own sample
