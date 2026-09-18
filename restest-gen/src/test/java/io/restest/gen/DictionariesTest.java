@@ -85,6 +85,21 @@ class DictionariesTest {
     }
 
     @Test
+    @DisplayName("what there is and whose it is are two answers that cannot come to disagree")
+    void the_two_answers_are_one_answer(@TempDir Path directory) throws IOException {
+        write(directory.resolve("mine.yaml"), "mine", "type");
+
+        Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
+
+        assertThat(found.dictionaries())
+                .describedAs("worked out from the two halves rather than held beside them")
+                .containsExactlyElementsOf(java.util.stream.Stream.concat(
+                        found.shipped().stream(), found.fromTheUser().stream()).toList());
+        assertThat(found.shipped()).isPresent();
+        assertThat(found.namesFromTheUser()).containsExactly("mine");
+    }
+
+    @Test
     @DisplayName("a run always has the awkward values, whether or not it was given any file")
     void the_shipped_one_is_always_there(@TempDir Path directory) {
         assertThat(Dictionaries.gather(List.of(), PET_SHOP).dictionaries())
@@ -202,8 +217,7 @@ class DictionariesTest {
                   country: [NO, SE, "ON"]
                 """);
 
-        Dictionary codes = Dictionaries.gather(List.of(directory), PET_SHOP)
-                .named("codes").orElseThrow();
+        Dictionary codes = Dictionaries.gather(List.of(directory), PET_SHOP).fromTheUser().get(0);
 
         assertThat(codes.valuesFor(ValueRequest.of(OperationId.of("GET /x"), "country",
                 ParameterLocation.QUERY, StringSchema.of())))

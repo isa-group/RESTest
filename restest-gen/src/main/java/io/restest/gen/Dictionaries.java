@@ -63,29 +63,39 @@ public final class Dictionaries {
     /**
      * What was found when the dictionaries were gathered.
      *
-     * @param dictionaries every one that could be read, the one RESTest carries first
+     * @param shipped the list RESTest carries, absent only when this build cannot read its own
      * @param fromTheUser the ones somebody handed over, which is a different question from which
      *     ones there are: a message about a file nobody wrote is a message nobody can act on
      * @param problems what went wrong, in the words a person should read, empty when nothing did
      */
-    public record Found(List<Dictionary> dictionaries, List<Dictionary> fromTheUser,
+    public record Found(Optional<Dictionary> shipped, List<Dictionary> fromTheUser,
             List<String> problems) {
 
         public Found {
-            dictionaries = List.copyOf(Objects.requireNonNull(dictionaries, "dictionaries"));
+            Objects.requireNonNull(shipped, "shipped");
             fromTheUser = List.copyOf(Objects.requireNonNull(fromTheUser, "fromTheUser"));
             problems = List.copyOf(Objects.requireNonNull(problems, "problems"));
+        }
+
+        /**
+         * Every list this run should use, the one RESTest carries first.
+         *
+         * <p>Worked out from the two halves rather than held beside them, so that "which lists are
+         * there" and "which of them were handed over" cannot come to disagree. Which they would,
+         * eventually: this answer has had to learn the difference twice already.
+         *
+         * @return the lists
+         */
+        public List<Dictionary> dictionaries() {
+            List<Dictionary> all = new ArrayList<>(shipped.map(List::of).orElse(List.of()));
+            all.addAll(fromTheUser);
+            return List.copyOf(all);
         }
 
         /** The names of the lists somebody handed over, as against the one RESTest carries. */
         public java.util.Set<String> namesFromTheUser() {
             return fromTheUser.stream().map(Dictionary::name)
                     .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        }
-
-        /** The one named, if it was among those found. */
-        public Optional<Dictionary> named(String name) {
-            return dictionaries.stream().filter(held -> held.name().equals(name)).findFirst();
         }
     }
 
@@ -138,12 +148,12 @@ public final class Dictionaries {
     public static Found gather(List<Path> locations, ApiModel model) {
         Objects.requireNonNull(locations, "locations");
         Objects.requireNonNull(model, "model");
-        List<Dictionary> found = new ArrayList<>();
         List<String> problems = new ArrayList<>();
-
+        Optional<Dictionary> carried;
         try {
-            found.add(shipped());
+            carried = Optional.of(shipped());
         } catch (IOException | JsonException beyondHelp) {
+            carried = Optional.empty();
             problems.add("RESTest's own list of values to push with could not be read, so nothing "
                     + "will be pushed at the API. This is a fault in this build of the tool, not in "
                     + "anything you did: " + beyondHelp.getMessage());
@@ -153,14 +163,13 @@ public final class Dictionaries {
         for (Path location : locations) {
             for (Path file : filesUnder(location, problems)) {
                 read(file, problems).ifPresent(dictionary -> {
-                    found.add(dictionary);
                     fromTheUser.add(dictionary);
                     reportKeysThatMatchNothing(dictionary, model, file, problems);
                 });
             }
         }
         reportNamesUsedTwice(fromTheUser, problems);
-        return new Found(found, fromTheUser, problems);
+        return new Found(carried, fromTheUser, problems);
     }
 
     /**
