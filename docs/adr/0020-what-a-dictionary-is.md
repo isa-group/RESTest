@@ -92,9 +92,28 @@ documented limit, because a qualifier nobody would use is worse than a stated ed
 `acceptance`, `refusal` or `unknown`, stated per file, and it decides when the values are asked for.
 A list that expects refusal earns a way of building requests of its own and is kept out of ordinary
 ones. Every other list is asked alongside what the document itself says, **in an order set by how
-much it knows**: a list written for a named parameter, a named shape or a named operation is asked
-before the document's own sample of that value, and a list written for a whole kind of value — every
-date, every piece of text — is asked after it. Invention remains last.
+much it knows about the value**:
+
+```
+the closed list of values the document says it accepts        nothing may override this
+a list keyed by operation-and-parameter, or by parameter name knows about one value
+the document's own samples and stated default
+a list keyed by schema, format or type                        knows about a kind of value
+whatever can be invented from the shape
+```
+
+Two of those positions were argued and are worth keeping the argument for.
+
+**An enumeration is not ranked against anything.** ADR-0013 §2 wrote it as `exclusive: [enum]  # if
+it answers, the choice is made`, and that still holds: where a document names the only values an API
+will take, everything else is a value it has said is not allowed — a dictionary somebody wrote
+included. A first attempt put dictionaries in front of it, and a `name`-keyed list then sent a value
+outside the enumeration on every request for that parameter.
+
+**A shape is about a kind, not about one value.** A document declares a shape once and however many
+parameters refer to it get the same one, so a list written for `Owner` says less about *this*
+parameter than the parameter's own sample does. That keeps ADR-0019's rule — a parameter's own sample
+is the most particular thing a document says about it — true for dictionaries as well.
 
 Absent means `unknown`, which is the ordinary
 case and an honest answer rather than a placeholder — ADR-0013 §3 defends exactly that value: *"the
@@ -140,12 +159,28 @@ and 2 divide the budget into quarters exactly as 25, 25 and 50 would, which is w
 lists of awkward values share one quarter between them without the arithmetic rounding it into
 something else.
 
-**Weighted groups are not built.** Nothing meaningful competes yet: the nominal chain is exclusive by
-design. The one case where two sources already answer for the same value is a schema with both a
-`default` and a sample and no enumeration, and that is **26 parameters of 5,119, every one in a single
-document of the fifty**; order resolves them deterministically and defensibly. The real second
-competitor is 2.4's format dictionary, and that is the increment where a weighted group earns its
-keep.
+**Weighted groups are not built, and this increment is the strongest argument yet for building them.**
+
+At the time this was planned, nothing competed: the nominal chain was exclusive by design, and the one
+case where two sources answered for the same value was a schema with both a `default` and a sample and
+no enumeration — **26 parameters of 5,119, every one in a single document of the fifty**, resolved by
+order deterministically and defensibly.
+
+Reading a user's dictionaries into that chain created a real competitor, which the review of this
+increment demonstrated. A `type`-keyed list of values somebody believes in **replaces** invention for
+that kind of value, because the chain is exclusive: a file offering two surnames for `string` makes
+every string parameter in the API send one of those two, for the whole run. That is literally what an
+exclusive chain means and literally what the file asks for, so it is not wrong — but it is not what
+somebody adding "a few good names" expects either, and the format document now says so in as many
+words.
+
+Left exclusive here all the same. A weighted group would be a second mechanism arriving in the same
+increment as the format it configures, with its numbers hard-coded because the file that supplies
+them is a later increment; and the honest answer to "how much of the time should your surnames be
+used instead of an invented word?" is a number nobody has measured. 2.4 brings the format dictionary,
+which competes for every string with a declared `format`, and it brings the weighted group with it.
+The advice until then is the one the format document gives: key a list to the parameters you mean,
+and a list keyed to a whole kind of value will be the only thing sent for that kind.
 
 ### 5. Three quarters against one, and a way to say otherwise
 
@@ -200,7 +235,10 @@ lists and objects.
 - **A dictionary is an interface, not a file reader.** The file-backed one is one implementation; the
   values a run observes in replies (4.2) will be another, filled by a listener on the event stream and
   never asked of the store, as ADR-0013 §5 requires. Nothing that asks a dictionary a question knows
-  which kind it holds.
+  which kind it holds — which is why a dictionary says for itself whether it is about one value or a
+  whole kind of them, rather than having it read off a keying only the file-backed one has. A first
+  attempt worked it out by asking what class the dictionary was, and the observed-values dictionary
+  would have landed on the right side of the rule by luck.
 - `ValueRequest` gained the shape's declared name, without which the `schema` keying would be
   decoration. It survives a reference being resolved and is dropped when a source steps into a piece
   of the value, like the samples beside it.

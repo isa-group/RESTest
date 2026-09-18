@@ -476,8 +476,14 @@ what lets a plan put something after it one day.
 
 ### What changed
 
-`share` is a percentage. The example in §2 now reads `share: 75`. Nothing else in §2 moves: exclusive
-and weighted groups, and the renormalising of weights among the sources that answered, are unaffected.
+`share` is a percentage. The example in §2 now reads `share: 75`. Exclusive and weighted groups are
+unchanged as concepts, and so is the renormalising of weights among the sources that answered.
+
+One of them is now built and one is not. **The exclusive group is what the ordinary way of building a
+request is**, and §2's `exclusive: [enum]` is honoured exactly as written: the closed list of values a
+document says it accepts is asked first and nothing may override it, a dictionary somebody wrote
+included. **The weighted group is not built**, and ADR-0020 §4 records why, along with the competitor
+this increment created and the advice that stands until 2.4 brings it.
 
 One thing §2 says needs reading carefully now that both numbers are percentages, because it is true
 of one of them and not the other. **Weights within a group must sum to 100 and are validated**, as §2

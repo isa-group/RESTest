@@ -328,6 +328,11 @@ public final class RandomTestCaseGenerator {
                 return Optional.of("the parameter '" + parameter.name() + "' is required and its "
                         + "description could not be read: " + unsupported.reason());
             }
+            // Asked of the ordinary way of building a request, always - even in a run spending all
+            // its time on values meant to be refused. The question is whether a value anybody
+            // believes in can be found for this parameter, and a list of awkward values answers for
+            // anything at all: a word of no letters satisfies nothing, and offering it here would
+            // report every operation as testable whatever its document said.
             if (values.offer(ask(operation, parameter)).isEmpty()) {
                 return Optional.of("no value could be found for the required parameter '"
                         + parameter.name() + "'");
@@ -388,12 +393,20 @@ public final class RandomTestCaseGenerator {
      * to a particular value come first, the document speaks next, and the lists keyed to a kind of
      * value come after it - with invention last, for anything nobody had an answer for.
      *
+     * <p>Ahead of all of it sits the closed list of values a document says it accepts, which is the
+     * one statement nothing may override: where a document names the only values the API will take,
+     * anything else is a value it has said is not allowed.
+     *
      * <p>A list whose values are meant to be refused is not here. Those belong to requests built to
      * be refused, all the way through, and mixing one into an ordinary request would spoil both.
      */
     private static ValueProvider nominal(List<Dictionary> dictionaries,
             ValueProvider fromTheDocument, ValueProvider invention, RandomGenerator random) {
         List<ValueProvider> asked = new ArrayList<>();
+        // The closed list of values a document says it accepts is not advice and is not ranked
+        // against anything: where one exists, it is the whole set of values the API will take, so
+        // offering anything else there would be sending a value the document says is not allowed.
+        asked.add(DeclaredValueProvider.onlyTheAcceptedList(random));
         addAsking(asked, dictionaries, random, true);
         asked.add(fromTheDocument);
         addAsking(asked, dictionaries, random, false);
@@ -405,12 +418,8 @@ public final class RandomTestCaseGenerator {
     private static void addAsking(List<ValueProvider> asked, List<Dictionary> dictionaries,
             RandomGenerator random, boolean aboutOneValue) {
         for (Dictionary dictionary : dictionaries) {
-            if (dictionary.expects() == Dictionary.Expectation.REFUSAL) {
-                continue;
-            }
-            boolean particular = !(dictionary instanceof ValueDictionary values)
-                    || values.keyedBy().isAboutOneValueInParticular();
-            if (particular == aboutOneValue) {
+            if (dictionary.expects() != Dictionary.Expectation.REFUSAL
+                    && dictionary.isAboutOneValueInParticular() == aboutOneValue) {
                 asked.add(new DictionaryValueProvider(dictionary, random));
             }
         }

@@ -67,15 +67,16 @@ public final class ValueDictionary implements Dictionary {
         /**
          * Whether this picks out one value in particular rather than a whole kind of them.
          *
-         * <p>It decides when a list gets asked. One written for a named parameter, a named shape or
-         * a named operation knows more about that value than the document's own sample does, so it
-         * is asked first; one written for every date or every piece of text knows less, so it is
-         * asked after the document has had its say.
+         * <p>A parameter's name and the pair of operation and parameter both name a value somebody
+         * meant. A shape does not: a document declares a shape once and however many parameters
+         * refer to it get the same one, so a list written for a shape is a list about a kind of
+         * value, and belongs beside the ones written for a format or a type. The document's own
+         * sample of one parameter is the more particular statement, and goes first.
          *
          * @return whether it is about one value in particular
          */
         public boolean isAboutOneValueInParticular() {
-            return this == SCHEMA || this == NAME || this == OPERATION_AND_PARAMETER;
+            return this == NAME || this == OPERATION_AND_PARAMETER;
         }
     }
 
@@ -95,7 +96,11 @@ public final class ValueDictionary implements Dictionary {
         // written in is what a run quotes back when it says a dictionary names operations this API
         // does not have, and the same command has to explain itself the same way twice.
         this.values = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(values));
-        this.perOperation = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(perOperation));
+        Map<String, Map<String, List<JsonValue>>> byOperation = new LinkedHashMap<>();
+        perOperation.forEach((operation, parameters) ->
+                byOperation.put(operation, java.util.Collections.unmodifiableMap(
+                        new LinkedHashMap<>(parameters))));
+        this.perOperation = java.util.Collections.unmodifiableMap(byOperation);
     }
 
     @Override
@@ -167,6 +172,11 @@ public final class ValueDictionary implements Dictionary {
     @Override
     public Expectation expects() {
         return expects;
+    }
+
+    @Override
+    public boolean isAboutOneValueInParticular() {
+        return keying.isAboutOneValueInParticular();
     }
 
     /** What decides which of this dictionary's values apply. */

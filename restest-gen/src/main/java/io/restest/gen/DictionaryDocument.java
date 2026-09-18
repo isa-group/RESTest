@@ -51,6 +51,10 @@ final class DictionaryDocument {
     /** The version of the file format this build writes and reads. */
     static final long VERSION = 1;
 
+    /** The members a dictionary may have. Anything else is a typo, and a typo is worth saying. */
+    private static final List<String> MEMBERS =
+            List.of("version", "name", "description", "keyedBy", "expects", "values");
+
     private DictionaryDocument() {
     }
 
@@ -67,13 +71,17 @@ final class DictionaryDocument {
         Objects.requireNonNull(describedAs, "describedAs");
         JsonValue.JsonObject document = asObject(parse(text, describedAs), "a dictionary",
                 describedAs);
-        rejectAnythingUnrecognised(document, describedAs);
-
+        // The version is read before anything else is judged. A file written in a later version of
+        // the format will have members this build does not know - that is what a later version is -
+        // and telling its author they have made a spelling mistake would be the one message that is
+        // certainly wrong about it.
         long version = wholeNumber(document, "version", describedAs);
         if (version != VERSION) {
             throw new JsonException(describedAs + " is a dictionary written in version " + version
                     + " of the format, and this version of RESTest reads version " + VERSION);
         }
+        rejectAnythingUnrecognised(document, describedAs);
+
         String name = text(document, "name", describedAs);
         ValueDictionary.Keying keying = keying(text(document, "keyedBy", describedAs), describedAs);
         Dictionary.Expectation expects = document.member("expects")
@@ -109,10 +117,6 @@ final class DictionaryDocument {
         }
         return new ValueDictionary(name, keying, expects, values, perOperation);
     }
-
-    /** The members a dictionary may have. Anything else is a typo, and a typo is worth saying. */
-    private static final List<String> MEMBERS =
-            List.of("version", "name", "description", "keyedBy", "expects", "values");
 
     /**
      * Refuses a file with a member nobody here recognises.

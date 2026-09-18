@@ -478,11 +478,44 @@ class RandomTestCaseGeneratorTest {
                 .describedAs("a list for every piece of text knows less than the document's own "
                         + "sample of this one")
                 .isEqualTo("from the document");
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
+                List.of(keyed("schema", "for this shape")), 0), search))
+                .describedAs("a document declares a shape once and however many parameters refer "
+                        + "to it get the same one, so a list for a shape is about a kind of value "
+                        + "and the document's sample of this parameter still goes first")
+                .isEqualTo("from the document");
+    }
+
+    @Test
+    @DisplayName("nothing overrides the closed list of values a document says it accepts")
+    void a_closed_list_of_accepted_values_is_never_overridden() {
+        io.restest.core.schema.CanonicalSchema onlyThese = new StringSchema(
+                SchemaMetadata.none().withEnumeration(List.of(
+                        io.restest.core.json.JsonValue.of("available"),
+                        io.restest.core.json.JsonValue.of("sold"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("status", ParameterLocation.QUERY, true, onlyThese)));
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+        // Written for this very parameter, so by every other rule here it would win. A closed list
+        // is not advice, though: it is the whole set of values the API takes, and sending anything
+        // else is sending a value the document says is not allowed.
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(pets, 4242L,
+                List.of(keyed("name", "not on the list")), 0);
+
+        for (int draw = 0; draw < 50; draw++) {
+            assertThat(sent(generator, search, "status")).isIn("available", "sold");
+        }
     }
 
     private static String sent(RandomTestCaseGenerator generator, Operation operation) {
+        return sent(generator, operation, "name");
+    }
+
+    private static String sent(RandomTestCaseGenerator generator, Operation operation,
+            String parameter) {
         return ((io.restest.core.json.JsonValue.JsonString) generator.generate(operation)
-                .orElseThrow().parameterValue("name", ParameterLocation.QUERY).orElseThrow()
+                .orElseThrow().parameterValue(parameter, ParameterLocation.QUERY).orElseThrow()
                 .value()).value();
     }
 
@@ -492,10 +525,14 @@ class RandomTestCaseGeneratorTest {
     }
 
     private static Dictionary keyed(String keyedBy, String value) {
+        String key = switch (keyedBy) {
+            case "name" -> "name";
+            case "schema" -> "Status";
+            default -> "string";
+        };
         return DictionaryDocument.read("""
                 {"version": 1, "name": "ours", "keyedBy": "%s", "expects": "acceptance",
-                 "values": {"%s": ["%s"]}}"""
-                .formatted(keyedBy, "name".equals(keyedBy) ? "name" : "string", value), "ours");
+                 "values": {"%s": ["%s"]}}""".formatted(keyedBy, key, value), "ours");
     }
 
     @Test
@@ -538,6 +575,11 @@ class RandomTestCaseGeneratorTest {
             @Override
             public Expectation expects() {
                 return Expectation.REFUSAL;
+            }
+
+            @Override
+            public boolean isAboutOneValueInParticular() {
+                return false;
             }
         };
     }

@@ -77,4 +77,20 @@ public interface Dictionary {
      * @return the expectation
      */
     Expectation expects();
+
+    /**
+     * Whether this dictionary is about one value in particular rather than a whole kind of them.
+     *
+     * <p>It decides when the dictionary gets asked. One written for a named parameter or a named
+     * operation knows more about that value than the document's own sample of it, so it is asked
+     * first; one written for every date or every piece of text knows less, so it is asked after the
+     * document has had its say.
+     *
+     * <p>Every dictionary answers this for itself rather than having it worked out from the outside,
+     * because the ones that are not files - a list filled in from the API's own replies as a run
+     * goes along - have no keying to read it from.
+     *
+     * @return whether it is about one value in particular
+     */
+    boolean isAboutOneValueInParticular();
 }

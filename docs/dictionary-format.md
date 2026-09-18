@@ -132,14 +132,27 @@ ordinary traffic.
 alongside the document's own answers, in an order set by how much it knows about the value:
 
 ```
-a list keyed by operation-and-parameter, name or schema   knows about one value
-the document's own examples, enumerations and defaults
-a list keyed by format or type                            knows about a kind of value
+the closed list of values the document says it accepts     nothing overrides this
+a list keyed by operationAndParameter or by name           knows about one value
+the document's own examples and defaults
+a list keyed by schema, format or type                     knows about a kind of value
 whatever RESTest can invent
 ```
 
-So a file of real identifiers for `getOwner`'s `ownerId` beats the document's sample of it, and a file
-of plausible surnames for every piece of text does not.
+So a file of real identifiers for `getOwner`'s `ownerId` beats the document's sample of that
+parameter, and a file of plausible surnames for every piece of text does not. A list keyed by
+`schema` is on the second side rather than the first because a document declares a shape once and
+every parameter referring to it gets the same one.
+
+Where a parameter declares an `enum`, nothing in your file is used for it. That list is not advice:
+it is the whole set of values the API says it takes, and sending anything else would be sending a
+value the document has already refused.
+
+> **A list keyed by `type` or `format` replaces what RESTest would otherwise invent for that kind of
+> value — it is not added to it.** A file offering two surnames under `string` makes every string
+> parameter in the API send one of those two, for the whole run. If you want your values used
+> *alongside* invented ones, key them to the parameters you mean (`name`, or
+> `operationAndParameter`), where only those parameters are affected.
 
 `unknown` — the default — says nobody has checked. It is not an admission of failure: a list of
 plausible surnames is a genuinely useful thing to have without anybody having confirmed that this
