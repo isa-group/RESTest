@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -201,11 +202,19 @@ public final class InteractionDocument {
      * Where a value came from: the document said so, something invented it, or it was taken out of an
      * earlier reply. The last of those is what makes a run explainable afterwards - it says which
      * request handed this one the identifier it used.
+     *
+     * <p>A value the document stated also says which of the things a document states it was read
+     * from, under {@code stated}. That member is left out rather than guessed at for a run recorded
+     * before RESTest kept the three apart, so an older file still reads.
      */
     private static JsonValue of(ValueOrigin origin) {
         Map<String, JsonValue> document = new LinkedHashMap<>();
         switch (origin) {
-            case ValueOrigin.Declared ignored -> document.put("kind", JsonValue.of("declared"));
+            case ValueOrigin.Declared declared -> {
+                document.put("kind", JsonValue.of("declared"));
+                declared.statement().ifPresent(statement -> document.put("stated",
+                        JsonValue.of(statement.name().toLowerCase(Locale.ROOT))));
+            }
             case ValueOrigin.Generated generated -> {
                 document.put("kind", JsonValue.of("generated"));
                 document.put("source", JsonValue.of(generated.source()));
@@ -219,11 +228,25 @@ public final class InteractionDocument {
         return JsonValue.object(document);
     }
 
+    /** Which of the things a document states a stored value was read from. */
+    private static ValueOrigin.Declared.Statement toStatement(String stated) {
+        return switch (stated) {
+            case "default" -> ValueOrigin.Declared.Statement.DEFAULT;
+            case "enumeration" -> ValueOrigin.Declared.Statement.ENUMERATION;
+            case "example" -> ValueOrigin.Declared.Statement.EXAMPLE;
+            default -> throw new JsonException("A value was stated as '" + stated
+                    + "', which is not something this version knows");
+        };
+    }
+
     private static ValueOrigin toOrigin(JsonValue value) {
         JsonValue.JsonObject document = object(value, "where a value came from");
         String kind = string(document, "kind");
         return switch (kind) {
-            case "declared" -> ValueOrigin.DECLARED;
+            case "declared" -> document.member("stated")
+                    .map(stated -> (ValueOrigin) ValueOrigin.declared(
+                            toStatement(text(stated, "stated"))))
+                    .orElse(ValueOrigin.DECLARED);
             case "generated" -> new ValueOrigin.Generated(string(document, "source"));
             case "derived" -> new ValueOrigin.Derived(
                     InteractionId.of(string(document, "from")), string(document, "description"));

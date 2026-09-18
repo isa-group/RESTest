@@ -101,7 +101,8 @@ class ValueProviderChainTest {
         GeneratedValue value = chain.offer(Schemas.asking(declaredAsPending)).orElseThrow();
 
         assertThat(((JsonValue.JsonString) value.value()).value()).isEqualTo("pending");
-        assertThat(value.origin()).isEqualTo(io.restest.core.execution.ValueOrigin.DECLARED);
+        assertThat(value.origin()).isEqualTo(io.restest.core.execution.ValueOrigin.declared(
+                io.restest.core.execution.ValueOrigin.Declared.Statement.DEFAULT));
     }
 
     @Test
@@ -129,7 +130,8 @@ class ValueProviderChainTest {
     }
 
     private ValueProvider saying(String who, String what) {
-        return named(who, request -> Optional.of(GeneratedValue.declared(JsonValue.of(what))));
+        return named(who, request -> Optional.of(GeneratedValue.declared(JsonValue.of(what),
+                io.restest.core.execution.ValueOrigin.Declared.Statement.DEFAULT)));
     }
 
     private ValueProvider silent(String who) {

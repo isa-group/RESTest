@@ -15,6 +15,7 @@
  */
 package io.restest.gen;
 
+import io.restest.core.execution.ValueOrigin;
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
@@ -26,7 +27,7 @@ import java.util.Optional;
 import java.util.random.RandomGenerator;
 
 /**
- * Offers the values the specification itself states.
+ * Offers the values the specification says the API accepts.
  *
  * <p>A specification often says exactly what to send: a default to use when the caller says nothing,
  * or a closed list of the only values the API will accept - {@code available}, {@code pending},
@@ -37,6 +38,10 @@ import java.util.random.RandomGenerator;
  * than always the first, so a run exercises the whole list rather than one member of it. Asked about
  * anything the specification says nothing concrete about, it says nothing and lets the next source
  * answer.
+ *
+ * <p>Sample values are a third thing a document can state, and they belong to a source of their
+ * own rather than here, because they are offered in preference to a default and the two would
+ * otherwise have to be ranked inside one class.
  *
  * <p>A stated default is different, and worth knowing about: it is one value, so every request that
  * includes that parameter carries the same one, and the run never varies it. That is the right
@@ -64,9 +69,11 @@ public final class DeclaredValueProvider implements ValueProvider {
         SchemaMetadata metadata = request.schema().metadata();
         List<JsonValue> allowed = metadata.enumeration();
         if (!allowed.isEmpty()) {
-            return Optional.of(GeneratedValue.declared(allowed.get(random.nextInt(allowed.size()))));
+            return Optional.of(GeneratedValue.declared(allowed.get(random.nextInt(allowed.size())),
+                    ValueOrigin.Declared.Statement.ENUMERATION));
         }
-        return metadata.defaultValue().map(GeneratedValue::declared);
+        return metadata.defaultValue().map(value ->
+                GeneratedValue.declared(value, ValueOrigin.Declared.Statement.DEFAULT));
     }
 
     @Override

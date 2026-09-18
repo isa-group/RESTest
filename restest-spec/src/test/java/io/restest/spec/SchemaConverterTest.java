@@ -458,6 +458,102 @@ class SchemaConverterTest {
         assertThat(convert(empty)).isInstanceOf(StringSchema.class);
     }
 
+    @Test
+    @DisplayName("a sample value is read from the singular spelling OpenAPI 3.0 uses")
+    void a_single_sample_is_read() {
+        Schema<Object> named = stringSchema();
+        named.setExample("Davis");
+
+        assertThat(convert(named).metadata().examples()).containsExactly(JsonValue.of("Davis"));
+    }
+
+    @Test
+    @DisplayName("a sample value is read from the list OpenAPI 3.1 uses, and from both at once")
+    void several_samples_are_read() {
+        Schema<Object> several = stringSchema();
+        several.setExamples(List.of("Jane Doe", "John Roe"));
+
+        assertThat(convert(several).metadata().examples())
+                .containsExactly(JsonValue.of("Jane Doe"), JsonValue.of("John Roe"));
+
+        Schema<Object> both = stringSchema();
+        both.setExample("Davis");
+        both.setExamples(List.of("Jane Doe", "Davis"));
+
+        assertThat(convert(both).metadata().examples())
+                .describedAs("a document writing the same value under both spellings offers one "
+                        + "sample, not the same one twice")
+                .containsExactly(JsonValue.of("Davis"), JsonValue.of("Jane Doe"));
+    }
+
+    @Test
+    @DisplayName("samples arrive as the parser holds them, and the same value written twice is one")
+    void samples_are_read_the_way_the_parser_hands_them_over(@org.junit.jupiter.api.io.TempDir
+            java.nio.file.Path directory) throws java.io.IOException {
+        // What a real 3.1 document produces: the list holds the parser's own document nodes, not
+        // plain Java values, so a converter reading only the latter would find nothing at all.
+        io.restest.core.model.ApiModel api = parse(directory, """
+                openapi: 3.1.0
+                info: {title: samples, version: "1"}
+                paths:
+                  /owners:
+                    get:
+                      operationId: listOwners
+                      parameters:
+                        - name: lastName
+                          in: query
+                          schema:
+                            type: string
+                            example: Davis
+                            examples: [Davis, Roe]
+                      responses: {"200": {description: ok}}
+                """);
+
+        assertThat(api.operation(io.restest.core.model.OperationId.of("listOwners")).orElseThrow()
+                .parameter("lastName", io.restest.core.model.ParameterLocation.QUERY).orElseThrow()
+                .schema().metadata().examples())
+                .describedAs("the same value under both spellings is one sample, not two")
+                .containsExactly(JsonValue.of("Davis"), JsonValue.of("Roe"));
+    }
+
+    @Test
+    @DisplayName("a shape offering no sample says so, rather than offering the word null")
+    void no_sample_is_no_sample() {
+        assertThat(convert(stringSchema()).metadata().examples()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a sample written as null is the author saying null, and is kept")
+    void a_sample_that_is_null_is_still_a_sample() {
+        Schema<Object> nothing = stringSchema();
+        nothing.setExample(null);
+        nothing.setExampleSetFlag(true);
+
+        assertThat(convert(nothing).metadata().examples()).containsExactly(JsonValue.NULL);
+    }
+
+    @Test
+    @DisplayName("a sample the document wrote as a date is offered the way the document wrote it")
+    void a_sample_is_offered_as_the_document_wrote_it() {
+        Schema<Object> day = stringSchema();
+        day.setFormat("date");
+        day.setExample(java.util.Date.from(java.time.LocalDate.of(2020, 1, 31)
+                .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()));
+        day.setExampleSetFlag(true);
+
+        assertThat(convert(day).metadata().examples())
+                .describedAs("printed the ordinary way this would be a sentence no API accepts")
+                .containsExactly(JsonValue.of("2020-01-31"));
+    }
+
+    /** A document written to a file, because the parser is given a place to read from. */
+    private static io.restest.core.model.ApiModel parse(java.nio.file.Path directory,
+            String document) throws java.io.IOException {
+        java.nio.file.Path file = directory.resolve("openapi.yaml");
+        java.nio.file.Files.writeString(file, document);
+        return new SwaggerSpecificationParser().parse(file.toString());
+    }
+
     private static Schema<Object> stringSchema() {
         Schema<Object> schema = new Schema<>();
         schema.setType("string");

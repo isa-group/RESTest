@@ -110,7 +110,7 @@ final class AllOfMerger {
 
     /** The one shape a value must have to satisfy both of the given shapes. */
     static CanonicalSchema merge(CanonicalSchema first, CanonicalSchema second) {
-        return withoutADefaultThatNoLongerFits(mergeShapes(first, second));
+        return withoutStatedValuesThatNoLongerFit(mergeShapes(first, second));
     }
 
     private static CanonicalSchema mergeShapes(CanonicalSchema first, CanonicalSchema second) {
@@ -324,6 +324,11 @@ final class AllOfMerger {
      * The facts both halves state about the value whatever its type. Every one of them narrows:
      * {@code null} is acceptable only if both halves accept it, and the set of allowed values is
      * whatever appears in both lists.
+     *
+     * <p>Sample values are the exception, because they are the one thing here that constrains
+     * nothing. Two halves offering a sample each are offering two, so the combination keeps both,
+     * in the order they were written. Whichever of them the combined shape turns out to refuse is
+     * dropped afterwards, along with a default in the same position.
      */
     private static SchemaMetadata mergeMetadata(SchemaMetadata first, SchemaMetadata second) {
         List<JsonValue> enumeration;
@@ -335,11 +340,14 @@ final class AllOfMerger {
             enumeration = new ArrayList<>(first.enumeration());
             enumeration.retainAll(second.enumeration());
         }
+        Set<JsonValue> examples = new LinkedHashSet<>(first.examples());
+        examples.addAll(second.examples());
         return new SchemaMetadata(
                 first.description().or(second::description),
                 first.nullable() && second.nullable(),
                 enumeration,
                 first.defaultValue().or(second::defaultValue),
+                List.copyOf(examples),
                 first.deprecated() || second.deprecated(),
                 stricterAccess(first.access(), second.access()));
     }
@@ -454,25 +462,35 @@ final class AllOfMerger {
     }
 
     /**
-     * The same shape without a default value it would itself refuse.
+     * The same shape without the concrete values it would itself refuse - its default, and any of
+     * the samples it offers.
      *
-     * <p>A default is inherited from whichever half stated one, and the other half may well forbid
-     * it: a half saying the value defaults to ten characters, combined with one saying it may be at
-     * most three, leaves a shape whose own default breaks it. Left in place that default is not a
-     * harmless annotation - it is offered first when a value is needed, so RESTest would send a value
-     * its own model says is wrong, read the refusal as the API's fault, and report it. Dropping it is
-     * the same answer the parser already gives to a default it cannot read: the shape then says it
-     * has no default, which is true.
+     * <p>Each of those is inherited from whichever half stated it, and the other half may well
+     * forbid it: a half saying the value defaults to ten characters, combined with one saying it
+     * may be at most three, leaves a shape whose own default breaks it. Left in place that default
+     * is not a harmless annotation - it is offered when a value is needed, so RESTest would send a
+     * value its own model says is wrong, read the refusal as the API's fault, and report it.
+     * Dropping it is the same answer the parser already gives to a default it cannot read: the
+     * shape then says it has no default, which is true.
+     *
+     * <p>Only values a combination made impossible are dropped. A document stating a sample its own
+     * plain shape refuses keeps it, because there the author contradicted themselves and nothing
+     * here can tell which of the two they meant; here the contradiction is one we manufactured by
+     * putting the halves together, so removing it restores what the document said rather than
+     * overruling it.
      */
-    private static CanonicalSchema withoutADefaultThatNoLongerFits(CanonicalSchema schema) {
-        Optional<JsonValue> declared = schema.metadata().defaultValue();
-        if (declared.isEmpty() || accepts(schema, declared.get())) {
+    private static CanonicalSchema withoutStatedValuesThatNoLongerFit(CanonicalSchema schema) {
+        SchemaMetadata stated = schema.metadata();
+        Optional<JsonValue> fallback = stated.defaultValue()
+                .filter(value -> accepts(schema, value));
+        List<JsonValue> samples = stated.examples().stream()
+                .filter(value -> accepts(schema, value))
+                .toList();
+        if (fallback.equals(stated.defaultValue()) && samples.size() == stated.examples().size()) {
             return schema;
         }
-        SchemaMetadata without = new SchemaMetadata(schema.metadata().description(),
-                schema.metadata().nullable(), schema.metadata().enumeration(), Optional.empty(),
-                schema.metadata().deprecated(), schema.metadata().access());
-        return withMetadata(schema, without);
+        return withMetadata(schema, new SchemaMetadata(stated.description(), stated.nullable(),
+                stated.enumeration(), fallback, samples, stated.deprecated(), stated.access()));
     }
 
     /**

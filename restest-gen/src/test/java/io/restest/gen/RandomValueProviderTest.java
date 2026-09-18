@@ -392,12 +392,39 @@ class RandomValueProviderTest {
                 .hasSizeGreaterThan(5);
     }
 
+    @Test
+    @DisplayName("a sample for a whole list is not offered again for each of its elements")
+    void a_sample_of_a_list_is_not_a_sample_of_its_elements() {
+        // The question reaches this provider carrying the parameter's own sample, which is what
+        // happens once anything ahead of it in the chain declines. Every element must be invented;
+        // handing the whole list down would make each element a copy of the list.
+        io.restest.core.gen.ValueRequest tags = new io.restest.core.gen.ValueRequest(
+                io.restest.core.model.OperationId.of("GET /pets"), "tags",
+                io.restest.core.model.ParameterLocation.QUERY,
+                ArraySchema.of(StringSchema.of()),
+                List.of(JsonValue.array(JsonValue.of("cat"), JsonValue.of("dog"))));
+        // Asked about what is inside a value, the same sources the run asks are asked - the one
+        // that reads samples included, which is what a real run wires up.
+        RandomValueProvider askingAboutSamplesToo = new RandomValueProvider(EMPTY,
+                Schemas.fixedRandom(), new ExampleValueProvider(Schemas.fixedRandom()));
+
+        JsonValue built = askingAboutSamplesToo.offer(tags).orElseThrow().value();
+
+        assertThat(built).isInstanceOf(JsonValue.JsonArray.class);
+        assertThat(((JsonValue.JsonArray) built).elements())
+                .describedAs("a sample list of two words is a sample of the list, not of each "
+                        + "word in it")
+                .isNotEmpty()
+                .allSatisfy(element -> assertThat(element)
+                        .isInstanceOf(JsonValue.JsonString.class));
+    }
+
     @RepeatedTest(30)
     @DisplayName("a value that goes in the path is never nothing at all")
     void a_path_value_is_never_nothing() {
         StringSchema nullable = new StringSchema(SchemaMetadata.none().withNullable(true),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-        io.restest.core.gen.ValueRequest inThePath = new io.restest.core.gen.ValueRequest(
+        io.restest.core.gen.ValueRequest inThePath = io.restest.core.gen.ValueRequest.of(
                 io.restest.core.model.OperationId.of("GET /pets/{petId}"), "petId",
                 io.restest.core.model.ParameterLocation.PATH, nullable);
 
@@ -440,7 +467,7 @@ class RandomValueProviderTest {
         // How OpenAPI 3.1 says "or null", there being no `nullable` keyword any more.
         ChoiceSchema aWordOrNothing = ChoiceSchema.of(List.of(
                 StringSchema.of(), new NullSchema(SchemaMetadata.none())));
-        io.restest.core.gen.ValueRequest inThePath = new io.restest.core.gen.ValueRequest(
+        io.restest.core.gen.ValueRequest inThePath = io.restest.core.gen.ValueRequest.of(
                 io.restest.core.model.OperationId.of("GET /pets/{petId}"), "petId",
                 io.restest.core.model.ParameterLocation.PATH, aWordOrNothing);
 

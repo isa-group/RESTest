@@ -15,7 +15,9 @@
  */
 package io.restest.core.model;
 
+import io.restest.core.json.JsonValue;
 import io.restest.core.schema.CanonicalSchema;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -38,6 +40,10 @@ import java.util.Optional;
  * @param mediaType the media type the value is serialised as, when the document declares one
  *     instead of a style
  * @param description what the document says it is for
+ * @param examples sample values the document offers for this parameter itself, in the order it
+ *     wrote them, empty when it offers none. Kept apart from the ones on {@link #schema()} because
+ *     a shape declared once and named may be used by dozens of parameters, while these belong to
+ *     this one; OpenAPI says a parameter's own sample value takes precedence over its shape's
  */
 public record Parameter(
         String name,
@@ -47,7 +53,8 @@ public record Parameter(
         ParameterStyle style,
         boolean explode,
         Optional<String> mediaType,
-        Optional<String> description) {
+        Optional<String> description,
+        List<JsonValue> examples) {
 
     public Parameter {
         Objects.requireNonNull(name, "name");
@@ -56,6 +63,8 @@ public record Parameter(
         Objects.requireNonNull(style, "style");
         Objects.requireNonNull(mediaType, "mediaType");
         Objects.requireNonNull(description, "description");
+        Objects.requireNonNull(examples, "examples");
+        examples = List.copyOf(examples);
         // Normalised like every other media type in the model, and for the same reason: a document
         // writing APPLICATION/JSON or application/json; charset=utf-8 means application/json, and a
         // serialiser comparing this literally would fall through to a default.
@@ -78,7 +87,7 @@ public record Parameter(
             CanonicalSchema schema) {
         ParameterStyle style = ParameterStyle.defaultFor(location);
         return new Parameter(name, location, required, schema, style, style.explodesByDefault(),
-                Optional.empty(), Optional.empty());
+                Optional.empty(), Optional.empty(), List.of());
     }
 
     /** A parameter whose value is serialised as the given media type rather than by style. */
@@ -86,11 +95,18 @@ public record Parameter(
             CanonicalSchema schema, String mediaType) {
         return new Parameter(name, location, required, schema,
                 ParameterStyle.defaultFor(location), false,
-                Optional.of(Objects.requireNonNull(mediaType, "mediaType")), Optional.empty());
+                Optional.of(Objects.requireNonNull(mediaType, "mediaType")), Optional.empty(),
+                List.of());
     }
 
     /** Whether the value is serialised as a media type rather than by style and explode. */
     public boolean isContentSerialised() {
         return mediaType.isPresent();
+    }
+
+    /** The same parameter, with the given sample values of its own. */
+    public Parameter withExamples(List<JsonValue> values) {
+        return new Parameter(name, location, required, schema, style, explode, mediaType,
+                description, values);
     }
 }

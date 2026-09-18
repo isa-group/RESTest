@@ -57,12 +57,35 @@ class SchemaMetadataTest {
                 .withDescription("the pet's status")
                 .withNullable(true)
                 .withEnumeration(List.of(JsonValue.of("sold")))
-                .withDefault(JsonValue.of("sold"));
+                .withDefault(JsonValue.of("sold"))
+                .withExamples(List.of(JsonValue.of("pending")));
 
         assertThat(metadata.description()).contains("the pet's status");
         assertThat(metadata.nullable()).isTrue();
         assertThat(metadata.enumeration()).containsExactly(JsonValue.of("sold"));
         assertThat(metadata.defaultValue()).contains(JsonValue.of("sold"));
+        assertThat(metadata.examples()).containsExactly(JsonValue.of("pending"));
+    }
+
+    @Test
+    @DisplayName("a shape states no sample values until it is given some")
+    void samples_start_empty() {
+        assertThat(SchemaMetadata.none().examples()).isEmpty();
+        assertThat(SchemaMetadata.none().withExamples(List.of(JsonValue.of("Davis"))).examples())
+                .containsExactly(JsonValue.of("Davis"));
+    }
+
+    @Test
+    @DisplayName("changing the list the sample values came from does not change the metadata")
+    void samples_are_copied() {
+        List<JsonValue> values = new ArrayList<>(List.of(JsonValue.of("Davis")));
+
+        SchemaMetadata metadata = SchemaMetadata.none().withExamples(values);
+        values.add(JsonValue.of("Roe"));
+
+        assertThat(metadata.examples()).hasSize(1);
+        assertThatExceptionOfType(UnsupportedOperationException.class)
+                .isThrownBy(() -> metadata.examples().add(JsonValue.of("Roe")));
     }
 
     @Test

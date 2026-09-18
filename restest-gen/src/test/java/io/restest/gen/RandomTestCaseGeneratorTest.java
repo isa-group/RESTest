@@ -97,7 +97,8 @@ class RandomTestCaseGeneratorTest {
                 .orElseThrow();
 
         assertThat(testCase.parameterValue("status", ParameterLocation.QUERY).orElseThrow()
-                .origin()).isEqualTo(ValueOrigin.DECLARED);
+                .origin()).isEqualTo(
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.ENUMERATION));
         assertThat(testCase.parameterValue("name", ParameterLocation.QUERY).orElseThrow().origin())
                 .isEqualTo(new ValueOrigin.Generated("random"));
         assertThat(testCase.parameterValues()).allSatisfy(value ->
@@ -164,11 +165,31 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
+    @DisplayName("an operation whose sample identifier is nothing at all still sends requests")
+    void a_sample_that_is_nothing_does_not_cost_an_operation_its_whole_budget() {
+        Operation getOwner = Operation.of(HttpMethod.GET, "/owners/{ownerId}", List.of(
+                Parameter.of("ownerId", ParameterLocation.PATH, true, StringSchema.of())
+                        .withExamples(List.of(JsonValue.NULL))));
+        RandomTestCaseGenerator generator = generatorFor(getOwner);
+
+        assertThat(generator.untestableOperations()).isEmpty();
+        for (int draw = 0; draw < 20; draw++) {
+            TestCase testCase = generator.generate(getOwner).orElseThrow();
+            // Assembling is what would throw: an empty piece of a path closes the gap instead of
+            // filling it, and every request for the operation would be thrown away unattributed.
+            assertThat(RequestBuilder.build(getOwner, testCase, "http://localhost:8080").url())
+                    .startsWith("http://localhost:8080/owners/")
+                    .isNotEqualTo("http://localhost:8080/owners/");
+        }
+    }
+
+    @Test
     @DisplayName("an operation whose parameters cannot be written into a request is reported")
     void an_operation_that_cannot_be_assembled_is_reported() {
         Operation deepObject = Operation.of(HttpMethod.GET, "/search", List.of(
                 new Parameter("filter", ParameterLocation.QUERY, false, ObjectSchema.of(Map.of()),
-                        ParameterStyle.DEEP_OBJECT, true, Optional.empty(), Optional.empty())));
+                        ParameterStyle.DEEP_OBJECT, true, Optional.empty(), Optional.empty(),
+                        List.of())));
 
         assertThat(generatorFor(deepObject).untestableOperations())
                 .containsOnlyKeys(deepObject.id());

@@ -176,8 +176,44 @@ public final class RequestBuilder {
         return headers;
     }
 
+    /**
+     * Whether a request carrying this value in this place could be assembled at all.
+     *
+     * <p>Two values cannot be sent, whatever anybody thinks of them. One that writes out as nothing
+     * closes a gap in the path rather than filling it, so {@code /owners/{ownerId}} becomes a
+     * request for every owner. One carrying a line break, sent as a header, ends that header and
+     * starts another, so the request that goes out is not the request that was recorded. Either way
+     * the whole attempt is thrown away when it is assembled, and an operation whose every attempt is
+     * thrown away sends nothing for as long as the run lasts while still being counted among the
+     * operations being tested.
+     *
+     * <p>Whoever is choosing a value can avoid that only by asking the same question this class
+     * asks, of the same code, so this answers it by writing the value out rather than by looking at
+     * its shape. The two do not agree: a list of one empty word is a list with something in it and
+     * writes out as nothing, and a line break may sit inside one member of an object. Whether the
+     * value is spread out or written as one piece changes neither answer, so it is asked as though
+     * it were written as one piece.
+     *
+     * @param value the value being considered
+     * @param location where in the request it would go
+     * @return whether a request could be assembled with it
+     */
+    static boolean canBeSentFrom(JsonValue value, ParameterLocation location) {
+        String written = joined(value, false, ",");
+        return switch (location) {
+            case PATH -> !written.isEmpty();
+            case HEADER -> !wouldSplitTheRequest(written);
+            // Both are percent-encoded on the way out, so nothing in them can end anything early.
+            case QUERY, COOKIE -> true;
+        };
+    }
+
     /** One value written as a single string, which is what a path, a header and a cookie need. */
     private static String joined(JsonValue value, Parameter parameter, String separator) {
+        return joined(value, parameter.explode(), separator);
+    }
+
+    private static String joined(JsonValue value, boolean explode, String separator) {
         return switch (value) {
             case JsonValue.JsonArray array -> array.elements().stream()
                     .map(RequestBuilder::scalar)
@@ -185,7 +221,7 @@ public final class RequestBuilder {
                     .orElse("");
             case JsonValue.JsonObject object -> {
                 StringJoiner written = new StringJoiner(separator);
-                String pairing = parameter.explode() ? "=" : separator;
+                String pairing = explode ? "=" : separator;
                 object.members().forEach((member, held) ->
                         written.add(member + pairing + scalar(held)));
                 yield written.toString();
@@ -252,11 +288,16 @@ public final class RequestBuilder {
      * request that was recorded.
      */
     private static String headerValue(String name, String value) {
-        if (value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\0') >= 0) {
+        if (wouldSplitTheRequest(value)) {
             throw new IllegalArgumentException("the value for the header '" + name + "' contains a "
                     + "line break, which would split the request into two");
         }
         return value;
+    }
+
+    /** Whether this text, written as a header value, would end that header and start another. */
+    private static boolean wouldSplitTheRequest(String value) {
+        return value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\0') >= 0;
     }
 
     /**

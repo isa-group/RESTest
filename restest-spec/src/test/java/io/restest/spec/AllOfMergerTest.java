@@ -442,6 +442,37 @@ class AllOfMergerTest {
         assertThat(AllOfMerger.merge(AnySchema.of(), aNumberOrAWord)).isEqualTo(aNumberOrAWord);
     }
 
+    @Test
+    @DisplayName("both halves' sample values survive being combined, because a sample narrows nothing")
+    void samples_from_both_halves_are_kept() {
+        StringSchema named = new StringSchema(
+                SchemaMetadata.none().withExamples(List.of(JsonValue.of("Davis"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        StringSchema alsoNamed = new StringSchema(
+                SchemaMetadata.none().withExamples(List.of(JsonValue.of("Roe"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+
+        assertThat(AllOfMerger.merge(named, alsoNamed).metadata().examples())
+                .containsExactly(JsonValue.of("Davis"), JsonValue.of("Roe"));
+    }
+
+    @Test
+    @DisplayName("a sample the combination itself rules out is dropped, as a default in the same "
+            + "position already is")
+    void a_sample_the_combination_rules_out_is_dropped() {
+        StringSchema sampled = new StringSchema(
+                SchemaMetadata.none().withExamples(List.of(
+                        JsonValue.of("a much longer word"), JsonValue.of("ok"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        StringSchema short_ = new StringSchema(SchemaMetadata.none(), Optional.empty(),
+                Optional.of(4), Optional.empty(), Optional.empty());
+
+        assertThat(AllOfMerger.merge(sampled, short_).metadata().examples())
+                .describedAs("we made this contradiction by putting the halves together, so "
+                        + "removing it restores what the document said")
+                .containsExactly(JsonValue.of("ok"));
+    }
+
     private static StringSchema string() {
         return new StringSchema(SchemaMetadata.none(), Optional.empty(), Optional.empty(),
                 Optional.empty(), Optional.empty());
