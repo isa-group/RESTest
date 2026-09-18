@@ -59,12 +59,14 @@ import java.util.random.RandomGenerator;
  * from the specification and its contents are made up.
  *
  * <p>Two limits are worth knowing, because they are visible in the results. A specification can
- * describe the <em>characters</em> a string must be made of - a date, an e-mail address, a pattern -
- * and this pays no attention to that yet, so those parameters get an ordinary word and the API will
- * often refuse it. And a shape the specification describes in a way the parser could not read is
- * declined outright rather than guessed at, which means the parameter is left out if the API allows
- * that and the operation is reported as untestable if it does not - an honest gap rather than a
- * request that was never going to work.
+ * describe the <em>characters</em> a string must be made of, and this pays no attention to that.
+ * Where it names a kind of text - a date, an e-mail address, an identifier - {@link
+ * FormatValueProvider} answers before this is ever reached, so the gap does not show; where it gives
+ * a pattern the text must match, nothing yet answers, and the parameter gets an ordinary word the
+ * API will often refuse. And a shape the specification describes in a way the parser could not read
+ * is declined outright rather than guessed at, which means the parameter is left out if the API
+ * allows that and the operation is reported as untestable if it does not - an honest gap rather than
+ * a request that was never going to work.
  *
  * <p>Everything it invents is kept small on purpose. A specification may permit a string of two
  * million characters or a list nested twelve deep, and building one would cost the run its budget and

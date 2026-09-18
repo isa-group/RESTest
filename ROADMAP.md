@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-53 increments in 9 milestones, 20 of them delivered. One increment = one branch = one pull request
+54 increments in 9 milestones, 21 of them delivered. One increment = one branch = one pull request
 into `v2`. Take them in order unless told otherwise.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
@@ -27,7 +27,7 @@ nothing in them is an increment of its own.
 |---|---|---|
 | M0 | Foundations | 3 / 3 ✅ |
 | M1 | Walking skeleton | 13 / 13 ✅ |
-| M2 | Specification fidelity and input generation | 4 / 11 |
+| M2 | Specification fidelity and input generation | 5 / 12 |
 | M3 | Oracles, faults and reporting | 0 / 8 |
 | M4 | Stateful testing | 0 / 6 |
 | M5 | IDL and constraint-based generation | 0 / 5 |
@@ -74,7 +74,8 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.1b ✅ [#308](https://github.com/isa-group/RESTest/pull/308) | `oneOf` / `anyOf` as a shape of their own (ADR-0018). Discriminators deliberately not included: they cost no request, and reading the corpus's one real hierarchy as a plain object would produce a shape quietly missing the property that identifies it | An operation whose parameter may be a number *or* a text stops being skipped |
 | 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers now send those identifiers instead of inventing ones |
 | 2.3 → [3.1b](#m3--oracles-faults-and-reporting) | The deterministic boundary walk. Deferred at 2.7a, not dropped: it returns as the mutation operator that steps outside a documented bound by exactly one | Reproducible edge-case tests, not luck |
-| 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
+| 2.4a ✅ [#312](https://github.com/isa-group/RESTest/pull/312) | Values that match the kind of text a document names (ADR-0021): dates and times worked out from the clock so they never go stale, a fresh identifier every time, web and e-mail addresses under a domain nobody can own. Twenty kinds in all; a name we do not recognise is left to invention rather than guessed at, and a shape that contradicts itself is answered with silence. A user's own list keyed by `format` is still asked first | A parameter described as a timestamp stops being sent an ordinary word the API was always going to refuse |
+| 2.4b | Strings built from a declared `pattern`: the regular-expression engine that needs, and the rule for what wins when one string declares both a pattern and a kind of text | The parameters pet-clinic constrains by pattern stop being refused |
 | 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
 | 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): YAML, one file, one keying, values that may be whole objects, and no claim about what an API will make of them — which list feeds which kind of request is named in the plan. `--dictionary`, repeatable. The list of values RESTest ships to push at an API with, as the first thing written in that format, sent for the share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
@@ -91,6 +92,20 @@ and setting several parameters outside their bounds at once teaches nothing attr
 halves also need M3.1's oracles to pay off at all. Measured before deferring: 327 of 4,916 corpus
 parameters declare any limit, and in the priority corpus that is pet-clinic 25, kafka 2,
 flight-search 1, the other two none.
+
+**2.4 — one row that became two, and where its value actually lands.** The row read "format-aware
+and pattern-based generators". The two halves need different machinery — a document naming a kind of
+text can be answered from what that kind is, while a pattern has to be read as a regular expression
+and built from — so they are 2.4a and 2.4b.
+
+Measured before building 2.4a, and worth knowing before reading its numbers: across the fifty
+documents, **23 parameters** declare a kind of text it can build, and **none of them is in the five
+APIs the tool is measured on**. Those five are full of dates and identifiers — `departureTime`,
+`birthDate`, `entryDate` — and every one sits in a shape reached from a request body or a reply
+rather than from a parameter. So 2.4a is groundwork: its return arrives with **2.5**, which builds
+bodies, and which inherits it at no cost because the source is in the chain asked for values nested
+inside an invented one. Delivered first rather than folded into 2.5 so that bodies are not built
+while every date in them is an ordinary word.
 
 **2.5 — an `Accept` header, and the samples a body declares.** ADR-0017 asks for the header, built
 from the media types the operation's own 2XX responses declare; we send none today, and one of the
