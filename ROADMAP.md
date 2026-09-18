@@ -73,11 +73,26 @@ layout).
 | 2.7b | Dictionary writer and disk cache | Good values computed once are kept, rather than worked out again every run. Waits for something that computes values at a cost worth saving: the solver of 5.2, or the external providers of 2.8 |
 | 2.8 | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
 | 2.9 | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts |
+| 2.10 | The scheduler and the campaign file that tells it what to do (ADR-0013 §2 and §6): named strategies, each with a share of the budget and an ordered list of groups over named sources, where a group either stops at the first answer or **samples among the sources that answered, by weight** — the second half of §2, unbuilt since it was written. The scheduler becomes the one component that knows what time it is, and carries the filters §6 gives it: which HTTP methods to exercise, whether to keep to the ones HTTP calls *safe*, and named operations to restrict a campaign to. The shares and weights 2.7a left as constants move into the file, and ADR-0013's open question gets the campaigns that answer it | A campaign is described rather than compiled in: how much of the time goes on each kind of request, which lists of values are preferred for which kinds of value and how often, and which operations and methods to touch at all — so a run against an API somebody cares about can be told to keep to the methods that only read |
 
 The two rows that were one. 2.7 read "value dictionary format, reader, writer, disk cache", and the
 writer and the cache exist to keep values the tool worked out at a cost — of which it currently
 computes none. Splitting it was the alternative to shipping half a row silently, and 2.7a carries the
 half that has a consumer today.
+
+**2.10 comes after 2.4, and here is the dependency.** A weighted group divides one value between the
+sources that answered for it, so it needs two sources that answer for the same value before it means
+anything. Until 2.4 there is essentially one: measured over the corpus, the only place two sources
+compete today is a schema declaring both a `default` and a sample and no enumeration — 26 parameters
+of 5,119, every one of them in a single document of the fifty. 2.4's format dictionary answers for
+every string with a declared `format`, which is the competitor that makes weights worth having.
+
+2.7a built the first half of §2 — strategies with shares — because a run had to divide its time
+between ordinary requests and requests built to be refused before it could send either. It left the
+numbers as constants in code, and 2.10 is where they become a file somebody can edit. It also left a
+footgun that 2.10 closes: with only exclusive groups, a list of values keyed to a kind of value
+*replaces* what the tool would otherwise have invented for that kind rather than being sent alongside
+it, which is what a weighted group is for (ADR-0020 §4).
 
 2.8's own "never blocking" guarantee is proved at that increment, by its own test (a slow provider
 must not stall the run) — not by waiting for M6.2's overhead regression test, which lands much later

@@ -183,8 +183,10 @@ words.
 Left exclusive here all the same. A weighted group would be a second mechanism arriving in the same
 increment as the format it configures, with its numbers hard-coded because the file that supplies
 them is a later increment; and the honest answer to "how much of the time should your surnames be
-used instead of an invented word?" is a number nobody has measured. 2.4 brings the format dictionary,
-which competes for every string with a declared `format`, and it brings the weighted group with it.
+used instead of an invented word?" is a number nobody has measured. **M2.10 owns it**, after 2.4
+brings the format dictionary that competes for every string with a declared `format`; until this
+increment, neither the weighted group nor the file that configures it belonged to any increment at
+all.
 The advice until then is the one the format document gives: key a list to the parameters you mean,
 and a list keyed to a whole kind of value will be the only thing sent for that kind.
 

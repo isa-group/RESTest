@@ -311,7 +311,8 @@ different splits, answers it.
 > **First number, M2.7a.** Fuzzing takes a quarter and nominal the rest, in one constant, with
 > `--fuzzing <percentage>` to change it. It is a starting point and is still unmeasured: the campaign
 > this paragraph asks for needs a real API and has not been run. Mutation does not exist yet, so the
-> split is between two things rather than three.
+> split is between two things rather than three. **M2.10 owns the answer**, along with the file that
+> makes the number something a person can set rather than something a build fixes.
 
 ## Amendment (M1.11)
 
