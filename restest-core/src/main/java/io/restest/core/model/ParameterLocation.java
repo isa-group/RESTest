@@ -16,17 +16,26 @@
 package io.restest.core.model;
 
 /**
- * Where a parameter travels in the request.
+ * Where a value travels in the request.
  *
- * <p>These four are what OpenAPI 3.x defines, and a parameter is identified by its name together
- * with one of them: {@code id} in the query string and {@code id} in the path are two different
- * parameters, which is why {@link Operation#parameter(String, ParameterLocation)} asks for both.
+ * <p>The first four are what OpenAPI 3.x defines for a parameter, and a parameter is identified by
+ * its name together with one of them: {@code id} in the query string and {@code id} in the path are
+ * two different parameters, which is why {@link Operation#parameter(String, ParameterLocation)} asks
+ * for both.
  *
- * <p>The older OpenAPI 2.0 format has two more locations, {@code body} and {@code formData}, and
- * they are deliberately absent here: a body is not treated as a parameter in this model, it is
- * {@link Operation#requestBody()}. A document written in that older format must be converted into
- * this shape when it is read, and it is worth writing down how, because only one of the two
- * conversions is obvious:
+ * <p>{@link #BODY} is not one of those, and nothing in this model treats it as one. A body is
+ * {@link Operation#requestBody()}, and the value chosen for it is a
+ * {@link io.restest.core.execution.BodyValue}; {@link Parameter} and
+ * {@link io.restest.core.execution.ParameterValue} both refuse this case outright, so "a parameter
+ * in the body" is a sentence this model cannot say. It is here because whoever is asked to suggest
+ * a value has to know where that value is going - what can be written into a path is not what can
+ * be written into a header, and a body will carry anything at all.
+ *
+ * <p>The older OpenAPI 2.0 format has two locations of its own, {@code body} and {@code formData},
+ * and neither of them is this one: both describe the body of a request in a format where a body was
+ * written as a parameter. A document written in that older format must be converted into this shape
+ * when it is read, and it is worth writing down how, because only one of the two conversions is
+ * obvious:
  *
  * <ul>
  *   <li>{@code in: body} becomes a {@link RequestBodyModel} whose schema is the parameter's. The
@@ -50,5 +59,7 @@ public enum ParameterLocation {
     /** As a request header. */
     HEADER,
     /** Inside the {@code Cookie} header. */
-    COOKIE
+    COOKIE,
+    /** The body of the request, which is not a parameter and holds any value at all. */
+    BODY
 }

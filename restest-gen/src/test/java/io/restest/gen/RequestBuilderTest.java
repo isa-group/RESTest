@@ -18,6 +18,7 @@ package io.restest.gen;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
+import io.restest.core.execution.BodyValue;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
@@ -28,11 +29,15 @@ import io.restest.core.model.Operation;
 import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.ParameterStyle;
+import io.restest.core.model.RequestBodyModel;
+import io.restest.core.model.ResponseModel;
 import io.restest.core.schema.ArraySchema;
+import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.StringSchema;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -287,6 +292,119 @@ class RequestBuilderTest {
                 value("session", ParameterLocation.COOKIE, JsonValue.of("a; theme=dark")));
 
         assertThat(request.headerValues("Cookie")).containsExactly("session=a%3B%20theme%3Ddark");
+    }
+
+    @Test
+    @DisplayName("a JSON body travels as JSON, and the request says so")
+    void a_json_body_is_written_out() {
+        Operation operation = Operation.of(HttpMethod.POST, "/pets")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), true));
+        BodyValue body = new BodyValue("application/json",
+                JsonValue.object(Map.of("name", JsonValue.of("Bobby"))),
+                new ValueOrigin.Generated("test"));
+
+        HttpRequestRecord request = RequestBuilder.build(operation,
+                TestCase.of(operation.id(), List.of(), body), BASE);
+
+        assertThat(new String(request.body().orElseThrow().content(), StandardCharsets.UTF_8))
+                .isEqualTo("{\"name\":\"Bobby\"}");
+        assertThat(request.body().orElseThrow().mediaType()).isEqualTo("application/json");
+        assertThat(request.headerValues("Content-Type")).containsExactly("application/json");
+    }
+
+    @Test
+    @DisplayName("a form body travels as the fields of a form, encoded")
+    void a_form_body_is_written_out() {
+        Operation operation = Operation.of(HttpMethod.POST, "/features")
+                .withRequestBody(RequestBodyModel.ofShapes(true,
+                        Map.of("application/x-www-form-urlencoded", ObjectSchema.of(Map.of()))));
+        Map<String, JsonValue> fields = new LinkedHashMap<>();
+        fields.put("name", JsonValue.of("a name with spaces & an ampersand"));
+        fields.put("tags", JsonValue.array(List.of(JsonValue.of("one"), JsonValue.of("two"))));
+        BodyValue body = new BodyValue("application/x-www-form-urlencoded",
+                JsonValue.object(fields), new ValueOrigin.Generated("test"));
+
+        HttpRequestRecord request = RequestBuilder.build(operation,
+                TestCase.of(operation.id(), List.of(), body), BASE);
+
+        assertThat(new String(request.body().orElseThrow().content(), StandardCharsets.UTF_8))
+                .isEqualTo("name=a%20name%20with%20spaces%20%26%20an%20ampersand&tags=one&tags=two");
+        assertThat(request.headerValues("Content-Type"))
+                .containsExactly("application/x-www-form-urlencoded");
+    }
+
+    @Test
+    @DisplayName("a body that is not an object cannot be written as a web form")
+    void a_form_body_has_to_be_an_object() {
+        Operation operation = Operation.of(HttpMethod.POST, "/features")
+                .withRequestBody(RequestBodyModel.ofShapes(true,
+                        Map.of("application/x-www-form-urlencoded", StringSchema.of())));
+        BodyValue body = new BodyValue("application/x-www-form-urlencoded",
+                JsonValue.of("just a word"), new ValueOrigin.Generated("test"));
+
+        assertThatIllegalArgumentException().isThrownBy(() -> RequestBuilder.build(operation,
+                TestCase.of(operation.id(), List.of(), body), BASE));
+    }
+
+    @Test
+    @DisplayName("the request says what it will accept, from what the operation says it returns")
+    void the_request_declares_what_it_accepts() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets")
+                .withResponses(List.of(
+                        new ResponseModel("200", Map.of("application/vnd.example.v2+json",
+                                ObjectSchema.of(Map.of())), Map.of(), Optional.empty()),
+                        new ResponseModel("404", Map.of("application/problem+json",
+                                ObjectSchema.of(Map.of())), Map.of(), Optional.empty())));
+
+        assertThat(build(operation).headerValues("Accept"))
+                .describedAs("only what a successful answer would be written in")
+                .containsExactly("application/vnd.example.v2+json");
+    }
+
+    @Test
+    @DisplayName("an operation that declares nothing it returns asks for nothing in particular")
+    void a_request_may_say_nothing_about_what_it_accepts() {
+        assertThat(build(Operation.of(HttpMethod.GET, "/pets")).headerValues("Accept")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a document that declares an Accept header of its own keeps the value it chose")
+    void a_declared_accept_header_is_not_overwritten() {
+        Operation operation = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("Accept", ParameterLocation.HEADER, true, StringSchema.of())))
+                .withResponses(List.of(ResponseModel.json("200", ObjectSchema.of(Map.of()))));
+
+        HttpRequestRecord request = build(operation,
+                value("Accept", ParameterLocation.HEADER, JsonValue.of("text/csv")));
+
+        assertThat(request.headerValues("Accept")).containsExactly("text/csv");
+    }
+
+    @Test
+    @DisplayName("JSON is preferred, a range is answered with JSON, and a file upload with nothing")
+    void the_media_type_to_send_is_chosen_from_what_the_document_offers() {
+        Map<String, CanonicalSchema> both = new LinkedHashMap<>();
+        both.put("application/xml", ObjectSchema.of(Map.of()));
+        both.put("application/json", ObjectSchema.of(Map.of()));
+
+        assertThat(RequestBuilder.mediaTypeToSend(RequestBodyModel.ofShapes(true, both)))
+                .describedAs("JSON wherever it is offered, whatever order the document wrote")
+                .contains("application/json");
+        assertThat(RequestBuilder.mediaTypeToSend(RequestBodyModel.ofShapes(true,
+                Map.of("application/vnd.example.v2+json", ObjectSchema.of(Map.of())))))
+                .describedAs("a versioned JSON media type is JSON, and is declared as written")
+                .contains("application/vnd.example.v2+json");
+        assertThat(RequestBuilder.mediaTypeToSend(RequestBodyModel.ofShapes(true,
+                Map.of("*/*", ObjectSchema.of(Map.of())))))
+                .describedAs("a range is a promise to accept several things; one has to be named")
+                .contains("application/json");
+        assertThat(RequestBuilder.mediaTypeToSend(RequestBodyModel.ofShapes(true,
+                Map.of("application/x-www-form-urlencoded", ObjectSchema.of(Map.of())))))
+                .contains("application/x-www-form-urlencoded");
+        assertThat(RequestBuilder.mediaTypeToSend(RequestBodyModel.ofShapes(true,
+                Map.of("multipart/form-data", ObjectSchema.of(Map.of())))))
+                .describedAs("a file upload is not written yet, and is not guessed at")
+                .isEmpty();
     }
 
     private static HttpRequestRecord build(Operation operation, ParameterValue... values) {

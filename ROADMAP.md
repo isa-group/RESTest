@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-53 increments in 9 milestones, 20 of them delivered. One increment = one branch = one pull request
+54 increments in 9 milestones, 20 of them delivered. One increment = one branch = one pull request
 into `v2`. Take them in order unless told otherwise.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
@@ -27,7 +27,7 @@ nothing in them is an increment of its own.
 |---|---|---|
 | M0 | Foundations | 3 / 3 ✅ |
 | M1 | Walking skeleton | 13 / 13 ✅ |
-| M2 | Specification fidelity and input generation | 4 / 11 |
+| M2 | Specification fidelity and input generation | 4 / 12 |
 | M3 | Oracles, faults and reporting | 0 / 8 |
 | M4 | Stateful testing | 0 / 6 |
 | M5 | IDL and constraint-based generation | 0 / 5 |
@@ -75,7 +75,8 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers now send those identifiers instead of inventing ones |
 | 2.3 → [3.1b](#m3--oracles-faults-and-reporting) | The deterministic boundary walk. Deferred at 2.7a, not dropped: it returns as the mutation operator that steps outside a documented bound by exactly one | Reproducible edge-case tests, not luck |
 | 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
-| 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
+| 2.5a | Request bodies, built from the shape the document declares and the samples it writes down (ADR-0021): JSON and form encoding, the media type stated in `Content-Type`, an `Accept` header built from the operation's own 2XX responses, and a property the API only ever returns never sent. XML and multipart deferred with the measurement beside them — XML wins no operation in the corpus and multipart wins one | Write operations become testable: 103 operations of the corpus, 34 of them in the priority corpus, which is 23% of its whole surface |
+| 2.5b | The memory of what the API has returned, as dictionaries under the two keyings the format already has — one leaf by its name, a whole resource by its shape — filled by a listener on the event stream (ADR-0021 §6). With it, the operator that changes one leaf of an observed resource and sends it back. **Brings forward the runtime resource pool of 4.2**, and is the first strategy in the tool reproduced by replay rather than from the seed | A body stops being invented from nothing wherever the API has already shown what a real one looks like: 92% of the leaves in the corpus's bodies carry a name some reply also carries |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
 | 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): YAML, one file, one keying, values that may be whole objects, and no claim about what an API will make of them — which list feeds which kind of request is named in the plan. `--dictionary`, repeatable. The list of values RESTest ships to push at an API with, as the first thing written in that format, sent for the share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
 | 2.7b | Dictionary writer and disk cache. **Not taken in its numbered place:** it waits until the tool computes a value at a cost worth saving, which is the solver of 5.2 or the external providers of 2.8. Skip it and go on to 2.8 | Good values computed once are kept, rather than worked out again every run |
@@ -92,12 +93,34 @@ halves also need M3.1's oracles to pay off at all. Measured before deferring: 32
 parameters declare any limit, and in the priority corpus that is pet-clinic 25, kafka 2,
 flight-search 1, the other two none.
 
-**2.5 — an `Accept` header, and the samples a body declares.** ADR-0017 asks for the header, built
-from the media types the operation's own 2XX responses declare; we send none today, and one of the
-five specifications in the priority corpus serves a versioned media type. The samples come from 2.2,
-which read every sample a document writes for a *parameter* and deliberately left the ones on a
-request body alone, because bodies are not generated until 2.5 and `RequestBodyModel` has nowhere to
-put them (ADR-0019 §5).
+**2.5 — one row that became two, and a promise narrowed on evidence.** ADR-0021 settles how a body
+is built and splits the row: 2.5a builds bodies from the schema and the document's own samples, with
+no memory, so a run of it is still reproduced from its seed; 2.5b gives the tool the memory of what
+the API returned, which is what changes that promise. They are in that order because there is nothing
+to observe until bodies are being sent.
+
+The row promised four media types. Measured over the 46 documents of the corpus, 300 of the 340
+body-taking operations offer JSON alone, 9 offer only a form, 1 only multipart, and **XML is never
+offered without JSON beside it** — so a generator for it wins no operation anywhere in the corpus.
+2.5a sends JSON and form encoding, which between them reach 337 of the 340, and the two that are
+left out are named in ADR-0021 with the numbers, so that reversing either is a decision somebody
+takes on evidence.
+
+Both halves of the original note survive. ADR-0017 asks for the `Accept` header, built from the media
+types the operation's own 2XX responses declare; we send none today, and one of the five
+specifications in the priority corpus serves a versioned media type. The samples come from 2.2, which
+read every sample a document writes for a *parameter* and deliberately left the ones on a request
+body alone, because bodies were not generated yet and `RequestBodyModel` had nowhere to put them
+(ADR-0019 §5).
+
+**2.5b — why the mutation is of a leaf and not of a resource.** The question it answers is whether a
+body is better built from the shape the document declares or from a resource the API has already
+handed back. Measured: the body's named shape is also returned by some 2XX for 16 of the 44 named
+bodies in the priority corpus — and for **none** of the 9 in flight-search or the 12 in
+kafka-rest-proxy — while 92% of the leaves inside those bodies carry a property name that some reply
+also carries. So what is observed is reused leaf by leaf, whole resources are one source among
+several rather than the mechanism, and neither needs a new interface: both are the dictionary of
+ADR-0020 under a keying it already has.
 
 **2.7 — one row that became two.** It read "value dictionary format, reader, writer, disk cache",
 and the writer and the cache exist to keep values the tool worked out at a cost — of which it
@@ -203,6 +226,11 @@ names split on case and separators, a gate on schema and format compatibility, a
 table of synonyms carried as versioned data. 4.1 owes one measurement and one ADR of its own:
 annotate the correct matches across the golden corpus by hand, compare this mechanism against a
 table of word vectors, and record the threshold and the outcome.
+
+**4.2 — the resource pool arrives at 2.5b, and what is left here is the choosing.** The row reads
+"runtime resource pool and value-source selection", and ADR-0021 brings the pool forward: bodies
+cannot be built well without the memory of what the API returned, and that memory is one listener and
+two dictionary keyings. What stays here is the half that needs 4.1's graph.
 
 **4.2 — it receives those candidates and chooses among them.** Whether that choice may be scored by
 what the API answered is one of [ADR-0017's open questions](#the-three-open-questions), because it

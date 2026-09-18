@@ -27,6 +27,7 @@ import io.restest.core.schema.NullSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
+import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
@@ -179,6 +180,16 @@ final class SchemaSatisfaction {
         }
         Map<String, JsonValue> members = object.members();
         for (String required : schema.required()) {
+            // A property the document says is only ever returned is not required of a request, even
+            // where the same shape lists it as required: OpenAPI is explicit that `required` takes
+            // effect on the response only when a property is `readOnly`. One document in the corpus
+            // does exactly this - a pet's own identifier, required and read-only in the shape its
+            // API both returns and accepts - and demanding it here would be asking a request to
+            // carry the identifier the API is about to hand out.
+            if (schema.property(required).map(shape -> shape.metadata().access())
+                    .orElse(SchemaMetadata.Access.READ_WRITE) == SchemaMetadata.Access.READ_ONLY) {
+                continue;
+            }
             require(members.containsKey(required),
                     where + " is missing '" + required + "', which is required", found);
         }

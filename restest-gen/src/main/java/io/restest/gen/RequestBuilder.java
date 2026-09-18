@@ -15,23 +15,30 @@
  */
 package io.restest.gen;
 
+import io.restest.core.execution.BodyValue;
 import io.restest.core.execution.Header;
 import io.restest.core.execution.HttpRequestRecord;
 import io.restest.core.execution.ParameterValue;
+import io.restest.core.execution.Payload;
 import io.restest.core.execution.TestCase;
+import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.Operation;
 import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.ParameterStyle;
+import io.restest.core.model.RequestBodyModel;
+import io.restest.core.model.ResponseModel;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
 
 /**
@@ -48,8 +55,18 @@ import java.util.StringJoiner;
  * <p>Everything that goes into a URL is percent-encoded - the {@code %20} treatment - so a value
  * containing a space, a slash or a word in a non-Latin alphabet produces a request that means what it
  * says instead of an accidentally different one.
+ *
+ * <p>It also writes the body, for the operations that take one, and says what the request is willing
+ * to receive back. A body travels either as JSON or as the fields of a web form, which are the two
+ * ways nearly every API in the world accepts one; which of the two, and which exact media type to
+ * declare, is read off the document. And every request carries an {@code Accept} header naming the
+ * media types the operation's own successful responses declare, so that an API serving more than one
+ * - a versioned one, say - is not left guessing what this client can read.
  */
 public final class RequestBuilder {
+
+    /** The media type of a body written as the fields of a web form. */
+    private static final String FORM = "application/x-www-form-urlencoded";
 
     private RequestBuilder() {
     }
@@ -72,8 +89,9 @@ public final class RequestBuilder {
         String path = fillIn(operation, testCase);
         String query = queryString(operation, testCase);
         String url = base(baseUrl) + path + (query.isEmpty() ? "" : "?" + query);
-        return new HttpRequestRecord(operation.method(), url, headers(operation, testCase),
-                Optional.empty());
+        Optional<Payload> body = testCase.body().map(RequestBuilder::written);
+        return new HttpRequestRecord(operation.method(), url,
+                headers(operation, testCase, body), body);
     }
 
     /**
@@ -139,27 +157,43 @@ public final class RequestBuilder {
      * one piece per element - which is what "exploded" means, and what the specification decides.
      */
     private static List<String> asQuery(Parameter parameter, JsonValue value) {
+        return pairs(parameter.name(), value, parameter.explode());
+    }
+
+    /**
+     * One named value as the {@code name=value} pieces it contributes, to a query string or to the
+     * fields of a form - the two places where the same rules apply.
+     */
+    private static List<String> pairs(String name, JsonValue value, boolean explode) {
         List<String> pieces = new ArrayList<>();
-        String name = encode(parameter.name());
+        String written = encode(name);
         switch (value) {
-            case JsonValue.JsonArray array when parameter.explode() ->
+            case JsonValue.JsonArray array when explode ->
                     array.elements().forEach(element ->
-                            pieces.add(name + "=" + encode(scalar(element))));
-            case JsonValue.JsonObject object when parameter.explode() ->
+                            pieces.add(written + "=" + encode(scalar(element))));
+            case JsonValue.JsonObject object when explode ->
                     object.members().forEach((member, held) ->
                             pieces.add(encode(member) + "=" + encode(scalar(held))));
-            default -> pieces.add(name + "=" + encode(joined(value, parameter, ",")));
+            default -> pieces.add(written + "=" + encode(joined(value, explode, ",")));
         }
         return pieces;
     }
 
-    private static List<Header> headers(Operation operation, TestCase testCase) {
+    private static List<Header> headers(Operation operation, TestCase testCase,
+            Optional<Payload> body) {
         List<Header> headers = new ArrayList<>();
         for (Parameter parameter : operation.parameters(ParameterLocation.HEADER)) {
             testCase.parameterValue(parameter.name(), ParameterLocation.HEADER).ifPresent(value ->
                     headers.add(Header.of(parameter.name(), headerValue(parameter.name(),
                             joined(value.value(), parameter, ",")))));
         }
+        // Written out rather than left to the HTTP client to add. The client would add the same
+        // thing, but only to what goes on the wire - and then the request we recorded, reported and
+        // print as a curl command would be missing a header the API actually received.
+        body.ifPresent(payload -> addUnlessDeclared(headers, "Content-Type", payload.mediaType()));
+        // A document that declares an Accept header of its own has said what it wants sent there,
+        // and a value has already been chosen for it above.
+        willAccept(operation).ifPresent(types -> addUnlessDeclared(headers, "Accept", types));
 
         Map<String, String> cookies = new LinkedHashMap<>();
         for (Parameter parameter : operation.parameters(ParameterLocation.COOKIE)) {
@@ -174,6 +208,105 @@ public final class RequestBuilder {
             headers.add(Header.of("Cookie", jar.toString()));
         }
         return headers;
+    }
+
+    private static void addUnlessDeclared(List<Header> headers, String name, String value) {
+        if (headers.stream().noneMatch(header -> header.name().equalsIgnoreCase(name))) {
+            headers.add(Header.of(name, value));
+        }
+    }
+
+    /**
+     * What the request says it is willing to receive, from the media types the operation's own
+     * successful responses declare.
+     *
+     * <p>Sending nothing leaves content negotiation to whatever the server does by default, which is
+     * usually the right thing and occasionally a 406 against a client that never said what it could
+     * read. An API serving a versioned media type - {@code application/vnd.example.v2+json} - is
+     * entitled to refuse a request that did not ask for it.
+     *
+     * <p>Only the successful responses, because an error shape is not what the request is for; every
+     * one of them, in the order the document wrote them, because an API free to choose among them is
+     * an API doing what its author documented.
+     *
+     * @return the header's value, or nothing when the operation declares no successful media type
+     */
+    private static Optional<String> willAccept(Operation operation) {
+        Set<String> offered = new LinkedHashSet<>();
+        for (ResponseModel response : operation.responses()) {
+            if (response.status().startsWith("2")) {
+                offered.addAll(response.content().keySet());
+            }
+        }
+        return offered.isEmpty() ? Optional.empty() : Optional.of(String.join(", ", offered));
+    }
+
+    /**
+     * The media type a body would be sent as, out of the ones the document offers for it.
+     *
+     * <p>JSON where it is offered, a web form otherwise. Those are the two this writes, and the
+     * preference is not a coin toss: an API offering both describes the same resource twice, and
+     * JSON is the one that can carry a shape with anything nested inside it.
+     *
+     * <p>A document that names no exact type but leaves the door open - {@code *&#47;*} or {@code
+     * application/*} - is answered with JSON, which is a media type both of those ranges include.
+     *
+     * @param body what the operation accepts
+     * @return the media type to declare and write, or nothing when the body is only offered in ways
+     *     this cannot write
+     */
+    static Optional<String> mediaTypeToSend(RequestBodyModel body) {
+        Objects.requireNonNull(body, "body");
+        Optional<String> json = body.mediaTypes().stream()
+                .filter(RequestBuilder::isJson)
+                .findFirst();
+        if (json.isPresent()) {
+            return json.map(RequestBuilder::exactly);
+        }
+        return body.mediaTypes().stream().filter(RequestBuilder::isForm).findFirst();
+    }
+
+    /** Whether a body of this media type is written as the fields of a web form. */
+    static boolean isForm(String mediaType) {
+        return FORM.equals(mediaType);
+    }
+
+    private static boolean isJson(String mediaType) {
+        return "application/json".equals(mediaType) || mediaType.endsWith("+json")
+                || isARangeIncludingJson(mediaType);
+    }
+
+    private static boolean isARangeIncludingJson(String mediaType) {
+        return "*/*".equals(mediaType) || "application/*".equals(mediaType);
+    }
+
+    /** A range is a promise to accept several things; one of them has to be named on the wire. */
+    private static String exactly(String mediaType) {
+        return isARangeIncludingJson(mediaType) ? "application/json" : mediaType;
+    }
+
+    /**
+     * One chosen body, written out as the bytes that travel.
+     *
+     * <p>A form body is a query string that happens to be in the body rather than in the URL, so it
+     * is written by the same rules and with the same limits - including what happens to a value with
+     * something nested inside it, which no form encoding agrees on.
+     */
+    private static Payload written(BodyValue body) {
+        String text = isForm(body.mediaType()) ? asForm(body.value()) : JsonText.write(body.value());
+        return Payload.of(text.getBytes(StandardCharsets.UTF_8), body.mediaType());
+    }
+
+    private static String asForm(JsonValue value) {
+        if (!(value instanceof JsonValue.JsonObject object)) {
+            // The fields of a form are the members of an object; there is nothing else to name them
+            // after. Refused here rather than written as something unnamed, which no API reads.
+            throw new IllegalArgumentException("a web form is written as the fields of an object, "
+                    + "and this body is not one");
+        }
+        StringJoiner written = new StringJoiner("&");
+        object.members().forEach((name, held) -> pairs(name, held, true).forEach(written::add));
+        return written.toString();
     }
 
     /**
@@ -206,6 +339,8 @@ public final class RequestBuilder {
             case HEADER -> !cannotTravelInAHeader(written);
             // Both are percent-encoded on the way out, so nothing in them can end anything early.
             case QUERY, COOKIE -> true;
+            // A body carries whatever JSON can carry, which is everything this model can express.
+            case BODY -> true;
         };
     }
 

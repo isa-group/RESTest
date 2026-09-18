@@ -24,6 +24,7 @@ import io.restest.core.model.ApiModel;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.Parameter;
+import io.restest.core.schema.CanonicalSchema;
 import io.restest.spec.SwaggerSpecificationParser;
 import java.net.URI;
 import java.nio.file.Files;
@@ -42,21 +43,20 @@ import org.junit.jupiter.params.provider.CsvSource;
  * expected: the one with no schema at all, the one whose name collides with a path segment, the one
  * required in the path but described as optional.
  *
- * <p>The counts below are pinned deliberately. 116 of these five APIs' 150 operations can be
- * attempted today; the other 34 all need a request body, which is not invented yet, and every one of
- * them is named with that reason rather than quietly skipped. If a change makes more operations
- * testable, that is good news and the number should be raised on purpose; if it makes fewer, that is
- * a regression this test exists to catch.
+ * <p>The counts below are pinned deliberately. All 150 operations of these five APIs can now be
+ * attempted: the 34 that need a request body used to be skipped for want of one, and bodies are
+ * built now. If a change makes fewer operations testable, that is a regression this test exists to
+ * catch; if it somehow makes more, there are none left to gain here and the document has changed.
  */
 class GoldenCorpusGenerationTest {
 
     @ParameterizedTest(name = "{0}: {1} of {2} operations can be attempted")
     @CsvSource({
-            "flight-search,     31, 40",
-            "gestao-hospital,   12, 20",
+            "flight-search,     40, 40",
+            "gestao-hospital,   20, 20",
             "kafka-rest-proxy,  50, 50",
-            "notebook-manager,   3,  5",
-            "pet-clinic,        20, 35",
+            "notebook-manager,   5,  5",
+            "pet-clinic,        35, 35",
     })
     @DisplayName("every operation that can be attempted produces a request that could be sent")
     void every_testable_operation_produces_a_sendable_request(String api, int testable, int total) {
@@ -146,6 +146,13 @@ class GoldenCorpusGenerationTest {
                     .describedAs("%s sent '%s' as %s", operation.id(), value.value(), value.name())
                     .isEmpty();
         }
+        testCase.body().ifPresent(body -> {
+            CanonicalSchema shape = operation.requestBody().orElseThrow()
+                    .schemaFor(body.mediaType()).orElseThrow();
+            assertThat(SchemaSatisfaction.violations(body.value(), shape, model))
+                    .describedAs("%s sent '%s' as its body", operation.id(), body.value())
+                    .isEmpty();
+        });
     }
 
     private static void assertEveryRequiredParameterIsFilled(Operation operation,

@@ -23,6 +23,7 @@ import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
+import io.restest.core.model.RequestBodyModel;
 import io.restest.core.model.SpecificationIssue;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -355,6 +356,74 @@ class OperationConverterTest {
         public String getType() {
             throw new IllegalStateException("nobody saw this coming");
         }
+    }
+
+    @Test
+    @DisplayName("the sample bodies written beside a media type are read, in both spellings")
+    void the_samples_a_body_declares_are_read() {
+        MediaType json = new MediaType()
+                .schema(new Schema<>().type("object"))
+                .example(java.util.Map.of("name", "Bobby"));
+        MediaType form = new MediaType().schema(new Schema<>().type("object"))
+                .examples(new java.util.LinkedHashMap<>());
+        form.getExamples().put("first", new Example().value(java.util.Map.of("name", "Alba")));
+        form.getExamples().put("second", new Example().value(java.util.Map.of("name", "Nube")));
+        Content content = new Content();
+        content.addMediaType("application/json", json);
+        content.addMediaType("application/x-www-form-urlencoded", form);
+
+        Operation operation = onlyOperation(apiWithPath("/pets",
+                new PathItem().post(new io.swagger.v3.oas.models.Operation()
+                        .operationId("addPet")
+                        .requestBody(new RequestBody().required(true).content(content)))));
+
+        RequestBodyModel body = operation.requestBody().orElseThrow();
+        assertThat(body.contentFor("application/json").orElseThrow().examples())
+                .containsExactly(JsonValue.object(java.util.Map.of("name", JsonValue.of("Bobby"))));
+        assertThat(body.contentFor("application/x-www-form-urlencoded").orElseThrow().examples())
+                .describedAs("named samples in the order the document wrote them")
+                .containsExactly(JsonValue.object(java.util.Map.of("name", JsonValue.of("Alba"))),
+                        JsonValue.object(java.util.Map.of("name", JsonValue.of("Nube"))));
+    }
+
+    @Test
+    @DisplayName("a sample body kept among the document's reusable pieces is followed")
+    void a_sample_body_declared_once_and_named_is_followed() {
+        MediaType json = new MediaType().schema(new Schema<>().type("object"))
+                .examples(new java.util.LinkedHashMap<>());
+        json.getExamples().put("theUsualOne", new Example().$ref("#/components/examples/NewPet"));
+        Content content = new Content();
+        content.addMediaType("application/json", json);
+        OpenAPI api = apiWithPath("/pets", new PathItem().post(
+                new io.swagger.v3.oas.models.Operation().operationId("addPet")
+                        .requestBody(new RequestBody().required(true).content(content))));
+        api.setComponents(new io.swagger.v3.oas.models.Components()
+                .addExamples("NewPet", new Example().value(java.util.Map.of("name", "Bobby"))));
+
+        OperationConverter.Result result = OperationConverter.convert(api, java.util.Map.of());
+
+        assertThat(result.operations().get(0).requestBody().orElseThrow()
+                .contentFor("application/json").orElseThrow().examples())
+                .containsExactly(JsonValue.object(java.util.Map.of("name", JsonValue.of("Bobby"))));
+    }
+
+    @Test
+    @DisplayName("a sample only a web address points at is left out, and costs the body nothing")
+    void a_sample_body_behind_a_web_address_is_left_out() {
+        MediaType json = new MediaType().schema(new Schema<>().type("object"))
+                .examples(new java.util.LinkedHashMap<>());
+        json.getExamples().put("elsewhere",
+                new Example().externalValue("https://example.com/pet.json"));
+        Content content = new Content();
+        content.addMediaType("application/json", json);
+
+        Operation operation = onlyOperation(apiWithPath("/pets",
+                new PathItem().post(new io.swagger.v3.oas.models.Operation()
+                        .operationId("addPet")
+                        .requestBody(new RequestBody().required(true).content(content)))));
+
+        assertThat(operation.requestBody().orElseThrow().contentFor("application/json")
+                .orElseThrow().examples()).isEmpty();
     }
 
     private static OpenAPI apiWithPath(String path, PathItem pathItem) {

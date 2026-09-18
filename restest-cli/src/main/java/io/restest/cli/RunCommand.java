@@ -65,7 +65,14 @@ import picocli.CommandLine.Spec;
  */
 @Command(
         name = "run",
-        description = "Tests an API described by an OpenAPI document and reports what is wrong.",
+        description = {
+                "Tests an API described by an OpenAPI document and reports what is wrong.",
+                "",
+                "The requests are real, and so is what they do: an operation that creates, changes "
+                        + "or deletes something is tested by creating, changing or deleting "
+                        + "something. An API left under test for a whole budget has data in it "
+                        + "afterwards. Point this at a deployment you are willing to have written "
+                        + "to."},
         mixinStandardHelpOptions = true,
         versionProvider = ToolVersion.class,
         sortOptions = false)
