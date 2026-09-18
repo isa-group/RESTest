@@ -61,9 +61,10 @@ the shape is used. OpenAPI says a parameter's own sample takes precedence over i
 rule is applied where the value is chosen, not where the document is read.
 
 So the parameter's samples travel with the question, as a component of `ValueRequest`. They follow
-that question into a shape looked up by name — still the same value — and are left behind when a
-source steps into one property of an object, because a sample owner is not a sample of the owner's
-first name.
+that question into a shape looked up by name — still the same value — and are left behind whenever a
+source steps into a *piece* of that value, whether a named property or one element of a list: a
+sample owner is not a sample of the owner's first name, and a sample list of three numbers is not a
+sample of each number in it.
 
 ### 2. Both spellings are read, and a value that cannot be written down exactly is left out
 
@@ -109,12 +110,33 @@ closest and turned out to be answered by measurement. Across the corpus there ar
 FDIC writing `download: false`, a boolean, where the parameter accepts only the *words* `"true"` and
 `"false"` — and every one of them is on a parameter restricted to a fixed list, which this source
 stands aside from. So the number of values RESTest takes from a sample and that the shape refuses is
-**nought**, and a test over all fifty documents now says so and will say the day it changes.
+**nought**, and a test over all fifty documents now says so and will say the day it changes. That
+test asks more of a sample than the equivalent check asks of an invented value — the pattern a shape
+states included, which the shared check leaves alone because matching a stated pattern while
+*inventing* a value is M2.4's job.
 
-Filtering them out anyway was considered and rejected on two grounds. When an author's concrete
-sample disagrees with the author's own bound, nothing here can tell which of the two they meant.
-And if the API refuses the value its own document tells callers to send, that is worth finding out
-rather than hiding — it is the kind of disagreement this tool exists to surface.
+Filtering them out anyway was considered and rejected because when an author's concrete sample
+disagrees with the author's own abstract rule, nothing here can tell which of the two they meant,
+and the sample is at least as good evidence about what the API accepts.
+
+There is a second argument that reads well and is not yet true, so it is recorded as an argument and
+not as a reason: if the API refuses the value its own document tells callers to send, that is a
+disagreement worth surfacing. Nothing surfaces it today — such a reply is an ordinary refusal to
+every oracle that exists — and no roadmap row owns it. The decision above stands on the first ground
+alone.
+
+Three kinds of sample are never offered, and none of them is a judgement about whether the author
+was right:
+
+- **Any sample for a value restricted to a fixed list**, as above.
+- **Any sample for a shape that accepts no value at all.** There the document contradicts itself
+  outright, and every other source already believes the half that says nothing fits.
+- **A sample that writes out as nothing, where it belongs in the path.** An empty piece of a path
+  closes the gap instead of filling it: `/owners/{ownerId}` becomes `/owners`, a request for every
+  owner judged afterwards against the promise made about one. The generator already refuses to
+  invent nothing there for exactly this reason, and a sample has to obey the same rule — the 3.1
+  spelling makes `examples: [Jane Doe, null]` an ordinary thing to write, and this repository's own
+  3.1 fixture writes one. Elsewhere an empty value is perfectly ordinary and is sent.
 
 The narrow exception already in the code stays and is extended to samples: when *we* combine two
 halves of an `allOf`, a contradiction we manufactured is removed, exactly as a default in the same
@@ -146,8 +168,10 @@ existed. M2.5 reads them, beside the `Accept` header it already owes.
 
 ## Consequences
 
-- The two APIs in the priority corpus that write sample identifiers now address resources that
-  exist. What that is worth against a running API is a campaign's measurement, not this record's.
+- The two APIs in the priority corpus that write sample identifiers now send those identifiers
+  instead of invented ones. Whether the resources they name exist in a given deployment, and what
+  that is worth, is a campaign's measurement against a running instance, not this record's — and
+  neither of those two APIs is one the smoke run starts.
 - 212 parameters across the corpus change what they are sent. No operation becomes testable or
   untestable: every one of them already had *some* value.
 - Adding this source cost one class and one line in the chain, which is the property ADR-0013
@@ -164,6 +188,11 @@ existed. M2.5 reads them, beside the `Accept` header it already owes.
   fourth. Named here so the decision is deliberate when it comes.
 - Reading a sample is reading the document, not inferring anything, which is the line ADR-0013 drew
   when it rejected semantic dictionaries.
+- **`ValueRequest.about` had to grow a second form.** A parameter's samples follow the question into
+  a shape looked up by name but must not follow it into one *element* of a list — a sample list of
+  three numbers is a sample of the list, not of each number. Objects already had the distinction,
+  because a property is reached by name; elements had nothing, and the invariant the record's
+  documentation states was broken by its only caller until this was added.
 
 ## Alternatives considered
 

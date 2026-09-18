@@ -71,9 +71,8 @@ class SchemaMetadataTest {
     @DisplayName("a shape states no sample values until it is given some")
     void samples_start_empty() {
         assertThat(SchemaMetadata.none().examples()).isEmpty();
-        assertThat(SchemaMetadata.none().hasExamples()).isFalse();
-        assertThat(SchemaMetadata.none().withExamples(List.of(JsonValue.of("Davis")))
-                .hasExamples()).isTrue();
+        assertThat(SchemaMetadata.none().withExamples(List.of(JsonValue.of("Davis"))).examples())
+                .containsExactly(JsonValue.of("Davis"));
     }
 
     @Test

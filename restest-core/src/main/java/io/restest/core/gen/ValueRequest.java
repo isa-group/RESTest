@@ -96,4 +96,15 @@ public record ValueRequest(
     public ValueRequest about(String property, CanonicalSchema value) {
         return new ValueRequest(operation, property, location, value, List.of());
     }
+
+    /**
+     * The same question about an unnamed piece of a larger shape - one element of a list.
+     *
+     * <p>Like a named piece, and for the same reason: a sample list of three numbers is a sample of
+     * the list, not of each number in it. The name stays, there being no better one to give an
+     * element than the name of the list it belongs to.
+     */
+    public ValueRequest aboutAPieceOf(CanonicalSchema value) {
+        return new ValueRequest(operation, name, location, value, List.of());
+    }
 }

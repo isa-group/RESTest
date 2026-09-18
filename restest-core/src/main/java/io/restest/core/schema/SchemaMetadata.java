@@ -128,9 +128,4 @@ public record SchemaMetadata(
     public boolean isEnumerated() {
         return !enumeration.isEmpty();
     }
-
-    /** Whether the document offers at least one sample value. */
-    public boolean hasExamples() {
-        return !examples.isEmpty();
-    }
 }

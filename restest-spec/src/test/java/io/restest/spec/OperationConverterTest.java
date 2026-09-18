@@ -288,6 +288,31 @@ class OperationConverterTest {
     }
 
     @Test
+    @DisplayName("a named sample that points at nothing, or at itself, costs the parameter nothing")
+    void a_sample_pointing_nowhere_is_read_without_crashing() {
+        io.swagger.v3.oas.models.parameters.Parameter parameter =
+                new io.swagger.v3.oas.models.parameters.Parameter()
+                        .name("status").in("query").schema(new Schema<>().type("string"))
+                        .examples(new java.util.LinkedHashMap<>());
+        parameter.getExamples().put("missing",
+                new Example().$ref("#/components/examples/NeverDeclared"));
+        parameter.getExamples().put("itself", new Example().$ref("#/components/examples/Loop"));
+        parameter.getExamples().put("here", new Example().value("sold"));
+        OpenAPI api = apiWithPath("/pets", new PathItem().get(
+                new io.swagger.v3.oas.models.Operation().operationId("listPets")
+                        .parameters(List.of(parameter))));
+        api.setComponents(new io.swagger.v3.oas.models.Components()
+                .addExamples("Loop", new Example().$ref("#/components/examples/Loop")));
+
+        OperationConverter.Result result = OperationConverter.convert(api, java.util.Map.of());
+
+        assertThat(result.operations().get(0).parameter("status", ParameterLocation.QUERY)
+                .orElseThrow().examples())
+                .describedAs("a document that points at nothing costs a suggestion, not the run")
+                .containsExactly(JsonValue.of("sold"));
+    }
+
+    @Test
     @DisplayName("a sample that is only a web address is left alone, and costs the parameter nothing")
     void a_sample_kept_elsewhere_on_the_web_is_not_fetched() {
         io.swagger.v3.oas.models.parameters.Parameter parameter =

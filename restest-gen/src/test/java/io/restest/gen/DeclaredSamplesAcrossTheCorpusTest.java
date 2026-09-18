@@ -58,7 +58,8 @@ import org.junit.jupiter.api.Test;
  * a parameter restricted to a fixed list, and a fixed list is precisely what makes RESTest ignore
  * the sample and walk the list instead. So the number of values taken from a sample and refused by
  * the shape it belongs to is nought, and this test is what says so the day a document arrives that
- * changes it.
+ * changes it. It asks more of a sample than the same check asks of an invented value, the pattern a
+ * shape states included, because a sample is not something RESTest had to work out.
  */
 class DeclaredSamplesAcrossTheCorpusTest {
 
@@ -102,9 +103,10 @@ class DeclaredSamplesAcrossTheCorpusTest {
                     // parameter's several samples the seed happened to land on.
                     for (JsonValue sample : samplesFor(model, parameter)) {
                         if (offers(samples, model, operation, parameter)
-                                && !SchemaSatisfaction.violations(sample, shape, model).isEmpty()) {
+                                && !whatTheShapeRefuses(sample, shape, model).isEmpty()) {
                             refused.add(document.getParent().getFileName() + " " + operation.id()
-                                    + " " + parameter.name() + " = " + sample);
+                                    + " " + parameter.name() + " = " + sample + " -> "
+                                    + whatTheShapeRefuses(sample, shape, model));
                         }
                     }
                 }
@@ -149,6 +151,32 @@ class DeclaredSamplesAcrossTheCorpusTest {
                 .describedAs("the document says an owner is numbered 1; inventing a number instead "
                         + "addresses an owner that does not exist")
                 .isEqualTo(JsonValue.of(1L));
+    }
+
+    /**
+     * What a shape holds against a value: the shared check, and the pattern it does not cover.
+     *
+     * <p>The shared one deliberately leaves patterns alone, because it also guards the values
+     * RESTest invents and inventing a value that matches a stated pattern is a later increment's
+     * job. A sample is not invented, so nothing excuses it from a pattern its own shape declares,
+     * and checking it here rather than there keeps the stricter rule where it belongs.
+     */
+    private static List<String> whatTheShapeRefuses(JsonValue sample, CanonicalSchema shape,
+            ApiModel model) {
+        List<String> against = new ArrayList<>(SchemaSatisfaction.violations(sample, shape, model));
+        if (shape instanceof io.restest.core.schema.StringSchema text
+                && text.pattern().isPresent()
+                && sample instanceof JsonValue.JsonString written) {
+            try {
+                if (!java.util.regex.Pattern.compile(text.pattern().get())
+                        .matcher(written.value()).find()) {
+                    against.add("does not match " + text.pattern().get());
+                }
+            } catch (java.util.regex.PatternSyntaxException cannotBeJudged) {
+                // A pattern Java will not compile is one this cannot check, not one nothing meets.
+            }
+        }
+        return against;
     }
 
     private static boolean offers(ExampleValueProvider samples, ApiModel model,

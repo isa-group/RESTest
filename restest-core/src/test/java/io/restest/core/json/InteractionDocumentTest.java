@@ -157,6 +157,22 @@ class InteractionDocumentTest {
     }
 
     @Test
+    @DisplayName("a value stated in a way nobody recognises is refused, not guessed at")
+    void an_unrecognised_statement_is_refused() {
+        TestCase testCase = TestCase.of(OperationId.of("GET /pets"), List.of(
+                ParameterValue.of("status", ParameterLocation.QUERY, JsonValue.of("sold"),
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.EXAMPLE))));
+        String written = JsonText.write(InteractionDocument.of(
+                Interaction.answered(testCase, request(), HttpResponseRecord.of(200),
+                        Instant.EPOCH, Duration.ofMillis(5))))
+                .replace("\"stated\":\"example\"", "\"stated\":\"a horoscope\"");
+
+        assertThatExceptionOfType(JsonException.class)
+                .isThrownBy(() -> InteractionDocument.toInteraction(JsonText.read(written)))
+                .withMessageContaining("a horoscope");
+    }
+
+    @Test
     @DisplayName("a request body and where it came from survive")
     void a_request_body_survives() {
         TestCase testCase = TestCase.of(OperationId.of("POST /pets"), List.of(),

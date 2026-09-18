@@ -165,6 +165,44 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
+    @DisplayName("an operation whose sample identifier is nothing at all still sends requests")
+    void a_sample_that_is_nothing_does_not_cost_an_operation_its_whole_budget() {
+        Operation getOwner = Operation.of(HttpMethod.GET, "/owners/{ownerId}", List.of(
+                Parameter.of("ownerId", ParameterLocation.PATH, true, StringSchema.of())
+                        .withExamples(List.of(JsonValue.NULL))));
+        RandomTestCaseGenerator generator = generatorFor(getOwner);
+
+        assertThat(generator.untestableOperations()).isEmpty();
+        for (int draw = 0; draw < 20; draw++) {
+            TestCase testCase = generator.generate(getOwner).orElseThrow();
+            // Assembling is what would throw: an empty piece of a path closes the gap instead of
+            // filling it, and every request for the operation would be thrown away unattributed.
+            assertThat(RequestBuilder.build(getOwner, testCase, "http://localhost:8080").url())
+                    .startsWith("http://localhost:8080/owners/")
+                    .isNotEqualTo("http://localhost:8080/owners/");
+        }
+    }
+
+    @Test
+    @DisplayName("a sample for a whole list is not offered again for each of its elements")
+    void a_sample_of_a_list_is_not_a_sample_of_its_elements() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("tags", ParameterLocation.QUERY, true,
+                                io.restest.core.schema.ArraySchema.of(StringSchema.of()))
+                        .withExamples(List.of(JsonValue.array(
+                                JsonValue.of("cat"), JsonValue.of("dog"))))));
+
+        JsonValue sent = generatorFor(search).generate(search).orElseThrow()
+                .parameterValue("tags", ParameterLocation.QUERY).orElseThrow().value();
+
+        assertThat(sent).isEqualTo(JsonValue.array(JsonValue.of("cat"), JsonValue.of("dog")));
+        assertThat(((JsonValue.JsonArray) sent).elements())
+                .describedAs("a sample list of two words is a sample of the list, not of each "
+                        + "word in it")
+                .allSatisfy(element -> assertThat(element).isInstanceOf(JsonValue.JsonString.class));
+    }
+
+    @Test
     @DisplayName("an operation whose parameters cannot be written into a request is reported")
     void an_operation_that_cannot_be_assembled_is_reported() {
         Operation deepObject = Operation.of(HttpMethod.GET, "/search", List.of(

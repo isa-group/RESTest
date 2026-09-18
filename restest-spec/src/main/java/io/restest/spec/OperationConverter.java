@@ -341,11 +341,16 @@ final class OperationConverter {
      * with repeats removed.
      *
      * <p>A parameter may write one value under {@code example} or several named ones under
-     * {@code examples}, and both spellings mean the same thing here. A named one may point at a
-     * sample kept among the document's reusable pieces, which is followed; one that only gives a
-     * web address for its value is left out, because reading it would mean fetching something over
-     * the network while a document is being read, and nothing about parsing a document is allowed
-     * to depend on the network being there.
+     * {@code examples}, and both spellings are read. A document writing both gives us only the
+     * named ones: the library that reads the document drops the single value when named ones are
+     * present, saying so as it goes, and that is its decision rather than one made here. Both are
+     * still read, because the branch costs one line and the day that library keeps both, so will
+     * this.
+     *
+     * <p>A named sample may point at one kept among the document's reusable pieces, which is
+     * followed; one that only gives a web address for its value is left out, because reading it
+     * would mean fetching something over the network while a document is being read, and nothing
+     * about parsing a document is allowed to depend on the network being there.
      *
      * <p>Nothing here is reported as a problem with the document. A sample value that could not be
      * read costs a suggestion, not an operation: the parameter is still tested, with a value

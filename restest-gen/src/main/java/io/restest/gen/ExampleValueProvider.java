@@ -20,6 +20,8 @@ import io.restest.core.gen.GeneratedValue;
 import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.ParameterLocation;
+import io.restest.core.schema.NothingSchema;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,9 +41,23 @@ import java.util.random.RandomGenerator;
  * and picks among however many are left at random rather than always the first, so a run exercises
  * all of them.
  *
- * <p>It stands aside for a value the document restricts to a fixed list. Every sample it could
- * offer there is already one of the listed values, and offering it would pin the run to that one
- * member of a list the tool is meant to walk through.
+ * <p>A sample is offered as the author wrote it, even where the document's own rules about the
+ * value would refuse it. When a concrete sample and an abstract rule disagree, there is no telling
+ * which of the two the author meant, and the sample is at least as good evidence about what the API
+ * accepts. Three kinds of sample are not offered, each for a reason of its own:
+ *
+ * <ul>
+ *   <li><b>Any sample for a value restricted to a fixed list.</b> Every sample it could offer is
+ *       already one of the listed values, and using it would pin the run to that one member of a
+ *       list the tool is meant to walk through.</li>
+ *   <li><b>Any sample for a value the document says has no acceptable value at all.</b> There the
+ *       document contradicts itself outright, and the half that says "nothing fits here" is the
+ *       half every other source already believes.</li>
+ *   <li><b>A sample that writes out as nothing, where it belongs in the path.</b> An empty piece of
+ *       a path closes the gap instead of filling it, turning a request for one pet into a request
+ *       for every pet - and the reply would then be judged against the wrong promise. Elsewhere an
+ *       empty value is a perfectly ordinary thing to send.</li>
+ * </ul>
  */
 public final class ExampleValueProvider implements ValueProvider {
 
@@ -60,17 +76,39 @@ public final class ExampleValueProvider implements ValueProvider {
     @Override
     public Optional<GeneratedValue> offer(ValueRequest request) {
         Objects.requireNonNull(request, "request");
-        if (request.schema().metadata().isEnumerated()) {
+        if (request.schema().metadata().isEnumerated()
+                || request.schema() instanceof NothingSchema) {
             return Optional.empty();
         }
-        List<JsonValue> samples = request.examples().isEmpty()
+        List<JsonValue> stated = request.examples().isEmpty()
                 ? request.schema().metadata().examples()
                 : request.examples();
-        if (samples.isEmpty()) {
+        List<JsonValue> usable = request.location() == ParameterLocation.PATH
+                ? stated.stream().filter(ExampleValueProvider::fillsAGapInThePath).toList()
+                : stated;
+        if (usable.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(GeneratedValue.declared(samples.get(random.nextInt(samples.size())),
+        return Optional.of(GeneratedValue.declared(usable.get(random.nextInt(usable.size())),
                 ValueOrigin.Declared.Statement.EXAMPLE));
+    }
+
+    /**
+     * Whether this value, written into a path, would leave something between the slashes.
+     *
+     * <p>Judged from the value's shape rather than by writing it out, because what writes out as
+     * nothing is the same short list either way: no value at all, a word of no letters, and a list
+     * or an object with nothing in it.
+     */
+    private static boolean fillsAGapInThePath(JsonValue value) {
+        return switch (value) {
+            case JsonValue.JsonNull ignored -> false;
+            case JsonValue.JsonString text -> !text.value().isEmpty();
+            case JsonValue.JsonArray list -> !list.elements().isEmpty();
+            case JsonValue.JsonObject object -> !object.members().isEmpty();
+            case JsonValue.JsonBoolean ignored -> true;
+            case JsonValue.JsonNumber ignored -> true;
+        };
     }
 
     @Override

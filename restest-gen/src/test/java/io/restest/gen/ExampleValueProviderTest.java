@@ -101,6 +101,64 @@ class ExampleValueProviderTest {
     }
 
     @Test
+    @DisplayName("a sample the shape itself refuses is still offered, as the author wrote it")
+    void a_sample_its_own_shape_refuses_is_still_offered() {
+        CanonicalSchema tooLongForItself = new StringSchema(
+                SchemaMetadata.none().withExamples(List.of(JsonValue.of("a much longer word"))),
+                Optional.empty(), Optional.of(4), Optional.empty(), Optional.empty());
+
+        assertThat(provider.offer(Schemas.asking(tooLongForItself)).orElseThrow().value())
+                .describedAs("when a concrete sample and an abstract rule disagree there is no "
+                        + "telling which the author meant, and the sample is the better evidence")
+                .isEqualTo(JsonValue.of("a much longer word"));
+    }
+
+    @Test
+    @DisplayName("a shape that accepts no value at all is offered no sample")
+    void a_shape_that_accepts_nothing_is_offered_nothing() {
+        ValueRequest impossible = new ValueRequest(OperationId.of("GET /widgets"), "widgetId",
+                ParameterLocation.QUERY, io.restest.core.schema.NothingSchema.of(),
+                List.of(JsonValue.of("anything")));
+
+        assertThat(provider.offer(impossible))
+                .describedAs("the document contradicts itself, and every other source believes "
+                        + "the half that says nothing fits here")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a sample that writes out as nothing is never put in the path")
+    void a_sample_that_is_nothing_never_fills_a_gap_in_the_path() {
+        for (JsonValue nothing : List.of(JsonValue.NULL, JsonValue.of(""),
+                JsonValue.array(List.of()), JsonValue.object(java.util.Map.of()))) {
+            ValueRequest inThePath = new ValueRequest(OperationId.of("GET /owners/{ownerId}"),
+                    "ownerId", ParameterLocation.PATH, StringSchema.of(), List.of(nothing));
+
+            assertThat(provider.offer(inThePath))
+                    .describedAs("%s in the path would turn a request for one owner into a "
+                            + "request for every owner", nothing)
+                    .isEmpty();
+            assertThat(provider.offer(new ValueRequest(OperationId.of("GET /owners"), "q",
+                    ParameterLocation.QUERY, StringSchema.of(), List.of(nothing))))
+                    .describedAs("elsewhere %s is an ordinary thing to send", nothing)
+                    .isPresent();
+        }
+    }
+
+    @Test
+    @DisplayName("a usable sample is still found when another of them could not fill the path")
+    void the_usable_samples_are_the_ones_chosen_among() {
+        ValueRequest inThePath = new ValueRequest(OperationId.of("GET /owners/{ownerId}"),
+                "ownerId", ParameterLocation.PATH, StringSchema.of(),
+                List.of(JsonValue.NULL, JsonValue.of("1")));
+
+        for (int attempt = 0; attempt < 50; attempt++) {
+            assertThat(provider.offer(inThePath).orElseThrow().value())
+                    .isEqualTo(JsonValue.of("1"));
+        }
+    }
+
+    @Test
     @DisplayName("the source names itself in a word a report can print")
     void the_source_has_a_name() {
         assertThat(provider.name()).isEqualTo("example");

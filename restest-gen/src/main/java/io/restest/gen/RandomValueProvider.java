@@ -334,7 +334,8 @@ public final class RandomValueProvider implements ValueProvider {
             List<JsonValue> already) {
         int attempts = schema.uniqueItems() ? UNIQUE_ATTEMPTS : 1;
         for (int attempt = 0; attempt < attempts; attempt++) {
-            Optional<JsonValue> element = value(request, schema.items(), depth + 1);
+            Optional<JsonValue> element =
+                    value(request.aboutAPieceOf(schema.items()), schema.items(), depth + 1);
             if (element.isEmpty()) {
                 return Optional.empty();
             }
