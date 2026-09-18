@@ -183,6 +183,44 @@ class FuzzingFindsWhatNominalMissesTest {
                 .contains("answered 500");
     }
 
+    @Test
+    @DisplayName("turning pushing off names the list of yours that then goes unused, and stays "
+            + "quiet about lists that had nothing to do with pushing")
+    void what_goes_unused_is_named_and_nothing_else_is(@TempDir Path directory) throws IOException {
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
+        Path pushes = Files.writeString(directory.resolve("pushes.yaml"), """
+                version: 1
+                name: fuzzing
+                keyedBy: type
+                values:
+                  string: [ZZPUSHZZ]
+                """);
+        Path ordinary = Files.writeString(directory.resolve("ordinary.yaml"), """
+                version: 1
+                name: my-terms
+                keyedBy: name
+                values:
+                  q: [kitten]
+                """);
+
+        assertThat(run(directory.resolve("a"), document, "--fuzzing", "0",
+                "--dictionary", pushes.toString()))
+                .describedAs("two things were asked for that cancel, and one is probably a mistake")
+                .contains("the list of values called 'fuzzing'")
+                .containsOnlyOnce("--fuzzing 0 asks for no pushing");
+
+        assertThat(run(directory.resolve("b"), document, "--fuzzing", "0",
+                "--dictionary", ordinary.toString()))
+                .describedAs("my own good values and nothing strange at somebody else's API is the "
+                        + "most sensible way to use these two together, and warning about a file "
+                        + "they never wrote is a message they could not act on")
+                .doesNotContain("asks for no pushing");
+
+        assertThat(run(directory.resolve("c"), document, "--fuzzing", "0"))
+                .describedAs("asking for no pushing, on its own, is a plain request")
+                .doesNotContain("asks for no pushing");
+    }
+
     private static String run(Path out, Path document, String... extra) {
         java.util.List<String> arguments = new java.util.ArrayList<>(java.util.List.of(
                 "run", document.toString(),

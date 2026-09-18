@@ -199,15 +199,14 @@ final class RunCommand implements Callable<Integer> {
                 err.println("restest: " + outOfRange.getMessage());
                 return ExitCode.BAD_COMMAND_LINE;
             }
-            // Only where the user handed a file over. Turning pushing off on its own is a plain
-            // request with nothing surprising in it, and RESTest's own list going unused is not
-            // news to somebody who just asked for exactly that.
-            if (!dictionaries.isEmpty()) {
-                generator.listsGivenButNotUsed().forEach(unused -> err.println("restest: the list "
-                        + "of values called '" + unused + "' is one this run pushes at the API "
-                        + "with, and --fuzzing 0 asks for no pushing, so nothing in it will be "
-                        + "sent"));
-            }
+            // Only about lists somebody handed over. RESTest's own going unused is not news to
+            // whoever asked for exactly that, and a message naming a file they never wrote is one
+            // they could not act on.
+            java.util.Set<String> theirs = found.namesFromTheUser();
+            generator.listsGivenButNotUsed().stream().filter(theirs::contains)
+                    .forEach(unused -> err.println("restest: the list of values called '" + unused
+                            + "' is one this run pushes at the API with, and --fuzzing 0 asks for "
+                            + "no pushing, so nothing in it will be sent"));
             List<Operation> testable = generator.testableOperations();
             if (testable.isEmpty()) {
                 return nothingToTest(err, model, generator);

@@ -63,14 +63,24 @@ public final class Dictionaries {
     /**
      * What was found when the dictionaries were gathered.
      *
-     * @param dictionaries the ones that could be read, shipped first
+     * @param dictionaries every one that could be read, the one RESTest carries first
+     * @param fromTheUser the ones somebody handed over, which is a different question from which
+     *     ones there are: a message about a file nobody wrote is a message nobody can act on
      * @param problems what went wrong, in the words a person should read, empty when nothing did
      */
-    public record Found(List<Dictionary> dictionaries, List<String> problems) {
+    public record Found(List<Dictionary> dictionaries, List<Dictionary> fromTheUser,
+            List<String> problems) {
 
         public Found {
             dictionaries = List.copyOf(Objects.requireNonNull(dictionaries, "dictionaries"));
+            fromTheUser = List.copyOf(Objects.requireNonNull(fromTheUser, "fromTheUser"));
             problems = List.copyOf(Objects.requireNonNull(problems, "problems"));
+        }
+
+        /** The names of the lists somebody handed over, as against the one RESTest carries. */
+        public java.util.Set<String> namesFromTheUser() {
+            return fromTheUser.stream().map(Dictionary::name)
+                    .collect(java.util.stream.Collectors.toUnmodifiableSet());
         }
 
         /** The one named, if it was among those found. */
@@ -131,26 +141,26 @@ public final class Dictionaries {
         List<Dictionary> found = new ArrayList<>();
         List<String> problems = new ArrayList<>();
 
-        boolean shippedWasRead = true;
         try {
             found.add(shipped());
         } catch (IOException | JsonException beyondHelp) {
-            shippedWasRead = false;
             problems.add("RESTest's own list of values to push with could not be read, so nothing "
                     + "will be pushed at the API. This is a fault in this build of the tool, not in "
                     + "anything you did: " + beyondHelp.getMessage());
         }
 
+        List<Dictionary> fromTheUser = new ArrayList<>();
         for (Path location : locations) {
             for (Path file : filesUnder(location, problems)) {
                 read(file, problems).ifPresent(dictionary -> {
                     found.add(dictionary);
+                    fromTheUser.add(dictionary);
                     reportKeysThatMatchNothing(dictionary, model, file, problems);
                 });
             }
         }
-        reportNamesUsedTwice(found.stream().skip(shippedWasRead ? 1 : 0).toList(), problems);
-        return new Found(found, problems);
+        reportNamesUsedTwice(fromTheUser, problems);
+        return new Found(found, fromTheUser, problems);
     }
 
     /**
@@ -161,11 +171,11 @@ public final class Dictionaries {
      * answering to one name leave a plan with nothing to point at and a report unable to tell them
      * apart.
      *
-     * <p>The list RESTest carries is left out of the count on purpose. Giving a list of your own the
-     * same name as that one is the documented way to have it pushed at an API, so it is the one
-     * collision that is somebody following instructions rather than making a mistake. It costs what
-     * every shared name costs - a value from either reads as having come from the same place - and
-     * the plan of M2.10, where each is named separately, is what ends that.
+     * <p>Only the lists somebody handed over are counted. Giving one of your own the same name as
+     * the list RESTest carries is the documented way to have it pushed at an API, so that collision
+     * is somebody following instructions rather than making a mistake. It costs what every shared
+     * name costs - a value from either reads as having come from the same place - and the plan that
+     * names each list separately is what ends it.
      */
     private static void reportNamesUsedTwice(List<Dictionary> found, List<String> problems) {
         java.util.Set<String> seen = new java.util.LinkedHashSet<>();
