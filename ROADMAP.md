@@ -1,6 +1,6 @@
 # RESTest 2.0 — roadmap
 
-54 increments in 9 milestones, 20 of them delivered. One increment = one branch = one pull request
+54 increments in 9 milestones, 21 of them delivered. One increment = one branch = one pull request
 into `v2`. Take them in order unless told otherwise.
 
 Design rationale: [`docs/DESIGN.md`](docs/DESIGN.md). Decisions: [`docs/adr/`](docs/adr/).
@@ -27,7 +27,7 @@ nothing in them is an increment of its own.
 |---|---|---|
 | M0 | Foundations | 3 / 3 ✅ |
 | M1 | Walking skeleton | 13 / 13 ✅ |
-| M2 | Specification fidelity and input generation | 4 / 12 |
+| M2 | Specification fidelity and input generation | 5 / 12 |
 | M3 | Oracles, faults and reporting | 0 / 8 |
 | M4 | Stateful testing | 0 / 6 |
 | M5 | IDL and constraint-based generation | 0 / 5 |
@@ -75,7 +75,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers now send those identifiers instead of inventing ones |
 | 2.3 → [3.1b](#m3--oracles-faults-and-reporting) | The deterministic boundary walk. Deferred at 2.7a, not dropped: it returns as the mutation operator that steps outside a documented bound by exactly one | Reproducible edge-case tests, not luck |
 | 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
-| 2.5a | Request bodies, built from the shape the document declares and the samples it writes down (ADR-0021): JSON and form encoding, the media type stated in `Content-Type`, an `Accept` header built from the operation's own 2XX responses, and a property the API only ever returns never sent. XML and multipart deferred with the measurement beside them — XML wins no operation in the corpus and multipart wins one | Write operations become testable: 103 operations of the corpus, 34 of them in the priority corpus, which is 23% of its whole surface |
+| 2.5a ✅ [#313](https://github.com/isa-group/RESTest/pull/313) | Request bodies, built from the shape the document declares and the samples it writes down (ADR-0021): JSON and form encoding, the media type stated in `Content-Type`, an `Accept` header built from the operation's own 2XX responses, and a property the API only ever returns never sent. XML and multipart deferred with the measurement beside them — XML wins no operation in the corpus and multipart wins one | Write operations become testable: 103 operations of the corpus, 34 of them in the priority corpus, which is 23% of its whole surface |
 | 2.5b | The memory of what the API has returned, as dictionaries under the two keyings the format already has — one leaf by its name, a whole resource by its shape — filled by a listener on the event stream (ADR-0021 §6). With it, the operator that changes one leaf of an observed resource and sends it back. **Brings forward the runtime resource pool of 4.2**, and is the first strategy in the tool reproduced by replay rather than from the seed | A body stops being invented from nothing wherever the API has already shown what a real one looks like: 92% of the leaves in the corpus's bodies carry a name some reply also carries |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
 | 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): YAML, one file, one keying, values that may be whole objects, and no claim about what an API will make of them — which list feeds which kind of request is named in the plan. `--dictionary`, repeatable. The list of values RESTest ships to push at an API with, as the first thing written in that format, sent for the share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
