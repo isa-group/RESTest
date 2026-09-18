@@ -21,6 +21,7 @@ import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.CanonicalSchema;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * A question put to whoever might know a good value: "for this parameter of this operation, whose
@@ -33,7 +34,9 @@ import java.util.Objects;
  *
  * <p>The schema handed over is always a real shape, never a pointer to one named elsewhere: chasing
  * those down is done once, before anyone is asked, so that no answerer has to know how the
- * specification was organised.
+ * specification was organised. What survives that chase is the shape's <em>name</em>, when the
+ * document gave it one, because "this is a Pet" is worth knowing to anybody keeping a list of
+ * values that worked for a Pet.
  *
  * @param operation the operation whose request is being built
  * @param name the parameter's name, as the specification writes it
@@ -43,13 +46,16 @@ import java.util.Objects;
  * @param examples sample values the document offers for the parameter itself rather than for its
  *     shape, in the order it wrote them. Empty for anything nested inside that shape, since a
  *     sample of the whole is not a sample of one of its parts
+ * @param shape the name the document gave this shape, when it declared it once and referred to it
+ *     by name. Absent when the shape was written out where it is used, which has no name to give
  */
 public record ValueRequest(
         OperationId operation,
         String name,
         ParameterLocation location,
         CanonicalSchema schema,
-        List<JsonValue> examples) {
+        List<JsonValue> examples,
+        Optional<String> shape) {
 
     public ValueRequest {
         Objects.requireNonNull(operation, "operation");
@@ -57,6 +63,7 @@ public record ValueRequest(
         Objects.requireNonNull(location, "location");
         Objects.requireNonNull(schema, "schema");
         Objects.requireNonNull(examples, "examples");
+        Objects.requireNonNull(shape, "shape");
         examples = List.copyOf(examples);
         if (name.isBlank()) {
             throw new IllegalArgumentException("a value is asked for by the name of a parameter");
@@ -74,7 +81,22 @@ public record ValueRequest(
      */
     public static ValueRequest of(OperationId operation, String name, ParameterLocation location,
             CanonicalSchema schema) {
-        return new ValueRequest(operation, name, location, schema, List.of());
+        return new ValueRequest(operation, name, location, schema, List.of(), Optional.empty());
+    }
+
+    /**
+     * A question about a parameter the document offers sample values of its own for.
+     *
+     * @param operation the operation whose request is being built
+     * @param name the parameter's name, as the specification writes it
+     * @param location where the value goes in the request
+     * @param schema the shape the value has to satisfy
+     * @param examples the sample values the document offers for the parameter itself
+     * @return the question
+     */
+    public static ValueRequest of(OperationId operation, String name, ParameterLocation location,
+            CanonicalSchema schema, List<JsonValue> examples) {
+        return new ValueRequest(operation, name, location, schema, examples, Optional.empty());
     }
 
     /**
@@ -84,7 +106,20 @@ public record ValueRequest(
      * shape named elsewhere is looked up, not how a piece of one is reached.
      */
     public ValueRequest about(CanonicalSchema value) {
-        return new ValueRequest(operation, name, location, value, examples);
+        return new ValueRequest(operation, name, location, value, examples, shape);
+    }
+
+    /**
+     * The same question about the shape the document declared under this name.
+     *
+     * <p>Still the same value - a pointer to a shape has been followed to the shape itself - so
+     * what the document said about the value still applies, and the name now travels with it. That
+     * is what lets a list of values that worked for a {@code Pet} be found again the next time a
+     * {@code Pet} is wanted.
+     */
+    public ValueRequest aboutTheShapeNamed(String named, CanonicalSchema value) {
+        return new ValueRequest(operation, name, location, value, examples,
+                Optional.of(Objects.requireNonNull(named, "named")));
     }
 
     /**
@@ -94,7 +129,7 @@ public record ValueRequest(
      * not a sample of the owner's first name.
      */
     public ValueRequest about(String property, CanonicalSchema value) {
-        return new ValueRequest(operation, property, location, value, List.of());
+        return new ValueRequest(operation, property, location, value, List.of(), Optional.empty());
     }
 
     /**
@@ -105,6 +140,6 @@ public record ValueRequest(
      * element than the name of the list it belongs to.
      */
     public ValueRequest aboutAPieceOf(CanonicalSchema value) {
-        return new ValueRequest(operation, name, location, value, List.of());
+        return new ValueRequest(operation, name, location, value, List.of(), Optional.empty());
     }
 }

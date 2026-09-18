@@ -52,28 +52,78 @@ import java.util.random.RandomGenerator;
 public final class DeclaredValueProvider implements ValueProvider {
 
     private final RandomGenerator random;
+    private final boolean readsTheList;
+    private final boolean readsTheDefault;
 
     /**
-     * A provider that picks among declared values with the given source of randomness.
+     * A provider that offers both the closed list of accepted values and the stated default.
      *
      * @param random where the choice among several allowed values comes from. Sharing one seeded
      *     source across the whole run is what makes a run repeatable
      */
     public DeclaredValueProvider(RandomGenerator random) {
-        this.random = Objects.requireNonNull(random, "random");
+        this(random, true, true);
     }
+
+    private DeclaredValueProvider(RandomGenerator random, boolean readsTheList,
+            boolean readsTheDefault) {
+        this.random = Objects.requireNonNull(random, "random");
+        this.readsTheList = readsTheList;
+        this.readsTheDefault = readsTheDefault;
+    }
+
+    /**
+     * A provider that offers only the closed list of values a document says it accepts.
+     *
+     * <p>Separable from the default because the two are asked at different moments. A closed list is
+     * not advice, it is the whole set of values the API will take, so nothing else may be offered
+     * where one exists - not a list somebody else wrote, and not a value we invented. A default is
+     * advice, and takes its turn among the rest, which is why the provider asked later still reads
+     * both: inside a value, where nothing has gone first, a nested list of accepted values has to be
+     * honoured there or nowhere.
+     *
+     * @param random where the choice among several allowed values comes from
+     * @return the provider
+     */
+    public static DeclaredValueProvider onlyTheAcceptedList(RandomGenerator random) {
+        return new DeclaredValueProvider(random, true, false);
+    }
+
 
     @Override
     public Optional<GeneratedValue> offer(ValueRequest request) {
         Objects.requireNonNull(request, "request");
         SchemaMetadata metadata = request.schema().metadata();
-        List<JsonValue> allowed = metadata.enumeration();
-        if (!allowed.isEmpty()) {
-            return Optional.of(GeneratedValue.declared(allowed.get(random.nextInt(allowed.size())),
-                    ValueOrigin.Declared.Statement.ENUMERATION));
+        if (readsTheList) {
+            List<JsonValue> allowed = sendable(metadata.enumeration(), request);
+            if (!allowed.isEmpty()) {
+                return Optional.of(GeneratedValue.declared(
+                        allowed.get(random.nextInt(allowed.size())),
+                        ValueOrigin.Declared.Statement.ENUMERATION));
+            }
         }
-        return metadata.defaultValue().map(value ->
-                GeneratedValue.declared(value, ValueOrigin.Declared.Statement.DEFAULT));
+        if (!readsTheDefault) {
+            return Optional.empty();
+        }
+        return metadata.defaultValue()
+                .filter(value -> RequestBuilder.canBeSentFrom(value, request.location()))
+                .map(value -> GeneratedValue.declared(value,
+                        ValueOrigin.Declared.Statement.DEFAULT));
+    }
+
+    /**
+     * The values of the list that a request could actually be built with.
+     *
+     * <p>A document may allow a value that cannot be put where this one goes - a list of accepted
+     * values with an empty word among them, for a parameter that fills a gap in the path. Offering
+     * it would close the gap instead of filling it, and the whole attempt would be thrown away when
+     * the request was put together. Standing aside for that one value leaves the others usable,
+     * which is better than losing the parameter and better than losing the request.
+     */
+    private static List<JsonValue> sendable(List<JsonValue> values, ValueRequest request) {
+        return values.stream()
+                .filter(value -> RequestBuilder.canBeSentFrom(value, request.location()))
+                .toList();
     }
 
     @Override

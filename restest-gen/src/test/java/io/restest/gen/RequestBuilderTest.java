@@ -255,7 +255,26 @@ class RequestBuilderTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> build(operation, value("X-Trace", ParameterLocation.HEADER,
                         JsonValue.of("a\r\nX-Injected: 1"))))
-                .withMessageContaining("line break");
+                .withMessageContaining("no header can carry");
+    }
+
+    @Test
+    @DisplayName("a value only a header could not carry is turned down for a header and nowhere else")
+    void what_a_header_cannot_carry_is_not_chosen_for_one() {
+        // The engine refuses a header value outside printable ASCII and the request is never sent.
+        // Asking the same question here is what keeps a list of deliberately awkward values from
+        // spending a run on requests that cannot leave the machine - and it is asked of the header
+        // only, because a query string is percent-encoded and carries anything.
+        for (String refused : List.of("\u001b[31m", "\ud83d\ude42", "مرحبا", "a\nb", "\u0000")) {
+            assertThat(RequestBuilder.canBeSentFrom(JsonValue.of(refused), ParameterLocation.HEADER))
+                    .describedAs("a header cannot carry %s", refused).isFalse();
+            assertThat(RequestBuilder.canBeSentFrom(JsonValue.of(refused), ParameterLocation.QUERY))
+                    .describedAs("a query string carries %s, encoded", refused).isTrue();
+        }
+        for (String carried : List.of("", " ", "\t", "plain", "'\"<>", "../..")) {
+            assertThat(RequestBuilder.canBeSentFrom(JsonValue.of(carried), ParameterLocation.HEADER))
+                    .describedAs("a header carries %s", carried).isTrue();
+        }
     }
 
     @Test

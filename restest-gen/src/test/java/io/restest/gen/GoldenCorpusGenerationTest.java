@@ -61,7 +61,7 @@ class GoldenCorpusGenerationTest {
     @DisplayName("every operation that can be attempted produces a request that could be sent")
     void every_testable_operation_produces_a_sendable_request(String api, int testable, int total) {
         ApiModel model = parse(api);
-        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260912L);
+        RandomTestCaseGenerator generator = nominalOnly(model, 20260912L);
 
         assertThat(model.operations()).hasSize(total);
         assertThat(generator.testableOperations())
@@ -110,12 +110,27 @@ class GoldenCorpusGenerationTest {
 
     private static List<String> urlsFrom(ApiModel model, long seed) {
         RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, seed);
+        // Deliberately the ordinary generator, fuzzing included: repeating a run exactly has to
+        // hold for everything a run does, not only for the part of it meant to be accepted.
         return java.util.stream.IntStream.range(0, 25)
                 .mapToObj(i -> generator.generate().orElseThrow())
                 .map(testCase -> RequestBuilder.build(
                         model.operation(testCase.operation()).orElseThrow(), testCase,
                         "http://localhost:8080").url())
                 .toList();
+    }
+
+    /**
+     * A generator that only builds requests meant to be accepted.
+     *
+     * <p>Used wherever this file asks whether a value satisfies the shape the document declares for
+     * it. A run also spends part of its time on requests built from values chosen to be awkward,
+     * and those break that shape on purpose - so asking the question of a whole run would be asking
+     * it of two different things at once and getting an answer about neither. The awkward half has
+     * its own test, which asserts the opposite.
+     */
+    private static RandomTestCaseGenerator nominalOnly(ApiModel model, long seed) {
+        return new RandomTestCaseGenerator(model, seed, List.of());
     }
 
     /**
@@ -158,7 +173,7 @@ class GoldenCorpusGenerationTest {
                 .resolve("openapi.yaml");
         assertThat(document).exists();
         ApiModel model = new SwaggerSpecificationParser().parse(document.toString());
-        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(model, 20260917L);
+        RandomTestCaseGenerator generator = nominalOnly(model, 20260917L);
 
         assertThat(generator.untestableOperations()).isEmpty();
         for (String id : List.of("actions/get-workflow", "actions/disable-workflow",

@@ -81,10 +81,33 @@ public final class RandomTestCaseGenerator {
     /** How often a parameter the API does not require is included anyway. */
     private static final double OPTIONAL_PARAMETER_CHANCE = 0.5;
 
+    /**
+     * The list this run pushes at the API with, until a plan says otherwise.
+     *
+     * <p>A plan names the lists each way of building a request draws on, which is what lets one run
+     * push with two lists, or push with one and fill ordinary requests from another. There is no
+     * plan to read yet, so the built-in one names this: the list called {@code fuzzing}, which is
+     * the one RESTest carries, and any a user adds under the same name.
+     */
+    private static final String PUSHES_AT_THE_API = "fuzzing";
+
+    /**
+     * How much of the testing time goes on requests built from values chosen to be awkward, unless
+     * somebody says otherwise.
+     *
+     * <p>A quarter against three is a starting point rather than a measurement. It is the one
+     * number here that has to be settled by running campaigns rather than by argument, and it lives
+     * in one place so that settling it is a one-line change.
+     */
+    public static final int AWKWARD_SHARE = 25;
+
     private final ApiModel model;
     private final long seed;
     private final RandomGenerator random;
     private final ValueProvider values;
+    private final List<Dictionary> given;
+    private final List<Strategy> strategies;
+    private final int sharesInTotal;
     private final List<Operation> testable;
     private final Map<OperationId, String> untestable;
 
@@ -98,15 +121,51 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * A generator for this API that will make the same decisions every time it is given the same
-     * number.
+     * A generator for this API using only the dictionaries that travel with the tool.
      *
      * @param model the API to test
      * @param seed the number the whole run's randomness is derived from
      */
     public RandomTestCaseGenerator(ApiModel model, long seed) {
+        this(model, seed, Dictionaries.fuzzing().map(List::of).orElse(List.of()));
+    }
+
+    /**
+     * A generator for this API using these lists of values, with the usual share of its requests
+     * built to be refused.
+     *
+     * @param model the API to test
+     * @param seed the number the whole run's randomness is derived from
+     * @param dictionaries the lists of values to draw on
+     */
+    public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries) {
+        this(model, seed, dictionaries, AWKWARD_SHARE);
+    }
+
+    /**
+     * A generator for this API, using these lists of values and spending this much of its time on
+     * requests built to be refused.
+     *
+     * <p>The same number produces the same decisions every time, this one included.
+     *
+     * @param model the API to test
+     * @param seed the number the whole run's randomness is derived from
+     * @param dictionaries the lists of values to draw on. The ones whose values are meant to be
+     *     refused earn a way of building requests of their own; the rest are asked alongside what
+     *     the document itself says
+     * @param awkwardShare how much of the time, as a percentage, goes on requests built entirely
+     *     from values meant to be refused. Nought sends none of them
+     * @throws IllegalArgumentException if that is not a percentage
+     */
+    public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries,
+            int awkwardShare) {
         this.model = Objects.requireNonNull(model, "model");
+        if (awkwardShare < 0 || awkwardShare > 100) {
+            throw new IllegalArgumentException("the share of requests built to be refused is a "
+                    + "percentage, so it is between 0 and 100: " + awkwardShare);
+        }
         this.seed = seed;
+        Objects.requireNonNull(dictionaries, "dictionaries");
         // Built directly rather than asked for by the name of an algorithm. The better-sounding
         // names - L64X128MixRandom and the rest of that family - are only compulsory from Java 23
         // on. On 21 and 22 they live in a separate, optional module, jdk.random, which the official
@@ -123,9 +182,11 @@ public final class RandomTestCaseGenerator {
         ValueProvider fromTheDocument = ValueProviderChain.of(
                 new ExampleValueProvider(random),
                 new DeclaredValueProvider(random));
-        this.values = ValueProviderChain.of(
-                fromTheDocument,
-                new RandomValueProvider(model, random, fromTheDocument));
+        ValueProvider invention = new RandomValueProvider(model, random, fromTheDocument);
+        this.values = nominal(dictionaries, fromTheDocument, invention, random);
+        this.given = List.copyOf(dictionaries);
+        this.strategies = strategiesFor(dictionaries, awkwardShare, this.values, invention, random);
+        this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
 
         List<Operation> canBeTried = new ArrayList<>();
         Map<OperationId, String> cannot = new LinkedHashMap<>();
@@ -171,9 +232,47 @@ public final class RandomTestCaseGenerator {
         return untestable;
     }
 
+    /**
+     * The lists this run was given and will not draw a single value from.
+     *
+     * <p>One thing puts a list here: being named for pushing at the API in a run told to do no
+     * pushing. Somebody has asked for two things that cancel, and one of them is probably a
+     * mistake - which is exactly when saying so is worth the line. Named once however many lists
+     * answer to it, since the name is all anybody could act on.
+     *
+     * @return the names, empty when every list given will be used
+     */
+    public java.util.List<String> listsGivenButNotUsed() {
+        if (!sourcesThatPushAtTheApi().isEmpty()) {
+            return List.of();
+        }
+        return given.stream()
+                .map(Dictionary::name)
+                .filter(PUSHES_AT_THE_API::equals)
+                .distinct()
+                .toList();
+    }
+
     /** Where values come from, in the order they are asked. */
     public ValueProvider values() {
         return values;
+    }
+
+    /**
+     * The names of the lists this run draws on when it is pushing at the API rather than trying to
+     * work.
+     *
+     * <p>A report wants these so it can say how many requests were of that kind. Without them, a run
+     * that spends a quarter of its time sending values nobody sensible would send reads as though
+     * the API were turning away far more ordinary traffic than it is.
+     *
+     * @return the names, empty when this run sends nothing of the kind
+     */
+    public java.util.Set<String> sourcesThatPushAtTheApi() {
+        return strategies.stream()
+                .filter(Strategy::pushesAtTheApi)
+                .map(Strategy::name)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     /**
@@ -208,12 +307,16 @@ public final class RandomTestCaseGenerator {
     }
 
     private Optional<TestCase> fill(Operation operation) {
+        return fill(operation, nextStrategy());
+    }
+
+    private Optional<TestCase> fill(Operation operation, Strategy strategy) {
         List<ParameterValue> chosen = new ArrayList<>();
         for (Parameter parameter : operation.parameters()) {
             if (!parameter.required() && random.nextDouble() >= OPTIONAL_PARAMETER_CHANCE) {
                 continue;
             }
-            Optional<GeneratedValue> value = values.offer(ask(operation, parameter));
+            Optional<GeneratedValue> value = strategy.values().offer(ask(operation, parameter));
             if (value.isPresent()) {
                 chosen.add(ParameterValue.of(parameter.name(), parameter.location(),
                         value.get().value(), value.get().origin()));
@@ -259,12 +362,126 @@ public final class RandomTestCaseGenerator {
                 return Optional.of("the parameter '" + parameter.name() + "' is required and its "
                         + "description could not be read: " + unsupported.reason());
             }
+            // Asked of the ordinary way of building a request, always - even in a run spending all
+            // its time on values meant to be refused. The question is whether a value anybody
+            // believes in can be found for this parameter, and a list of awkward values answers for
+            // anything at all: a word of no letters satisfies nothing, and offering it here would
+            // report every operation as testable whatever its document said.
             if (values.offer(ask(operation, parameter)).isEmpty()) {
                 return Optional.of("no value could be found for the required parameter '"
                         + parameter.name() + "'");
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * The ways this run will put a request together, and how the time divides between them.
+     *
+     * <p>Most of it goes on requests meant to be accepted. The rest goes on requests built entirely
+     * from a dictionary of values designed to be refused - every parameter at once, on purpose,
+     * because an API stops reading at the first thing it does not like and there is no sense
+     * pretending a refusal could be pinned on any one of them. What such a request is good for is
+     * the other answer: a server error is a fault whatever was sent, and unexpected input is how
+     * they are found.
+     *
+     * <p>Three quarters against one is a starting point, not a measurement. It is the one number
+     * here that has to be settled by running campaigns rather than by argument, and it lives in one
+     * place so that settling it is a one-line change.
+     *
+     * <p>Which lists feed which kind of request is the plan's decision, taken by naming them. There
+     * is no plan to read yet, so the built-in one names one list for pushing and gives every other
+     * list to ordinary requests.
+     */
+    private static List<Strategy> strategiesFor(List<Dictionary> dictionaries, int awkwardShare,
+            ValueProvider nominal, ValueProvider invention, RandomGenerator random) {
+        List<Dictionary> pushing = dictionaries.stream()
+                .filter(held -> held.name().equals(PUSHES_AT_THE_API))
+                .toList();
+        List<Strategy> ways = new ArrayList<>();
+        if (pushing.isEmpty() || awkwardShare == 0) {
+            // A list the plan names for pushing is not folded into ordinary requests when there is
+            // no pushing to do: its values were gathered for a different job, and sending them as
+            // though somebody believed in them is not what anybody asked for. What was asked for
+            // and then made impossible is reported instead, by listsGivenButNotUsed.
+            return List.of(new Strategy("nominal", 100, false, nominal));
+        }
+        // Counted against each other rather than out of a hundred, so that asking for a quarter is
+        // a quarter whether one list of awkward values is in play or thirty. Giving each list a
+        // share of its own and dividing would round the quarter into something else; multiplying
+        // the other side instead keeps it exact whatever the arithmetic.
+        if (awkwardShare < 100) {
+            ways.add(new Strategy("nominal", (100 - awkwardShare) * pushing.size(), false, nominal));
+        }
+        for (Dictionary dictionary : pushing) {
+            ways.add(new Strategy(dictionary.name(), awkwardShare, true,
+                    ValueProviderChain.of(new DictionaryValueProvider(dictionary, random),
+                            invention)));
+        }
+        return List.copyOf(ways);
+    }
+
+    /**
+     * Where the values in an ordinary request come from, in the order they are asked.
+     *
+     * <p>The order is about how much each source knows. A list somebody wrote for <em>this</em>
+     * parameter of <em>this</em> operation knows more about it than the document's own sample,
+     * which in turn knows more than a list of values that suit any text at all. So the lists keyed
+     * to a particular value come first, the document speaks next, and the lists keyed to a kind of
+     * value come after it - with invention last, for anything nobody had an answer for.
+     *
+     * <p>Ahead of all of it sits the closed list of values a document says it accepts, which is the
+     * one statement nothing may override: where a document names the only values the API will take,
+     * anything else is a value it has said is not allowed.
+     *
+     * <p>A list whose values are meant to be refused is not here. Those belong to requests built to
+     * be refused, all the way through, and mixing one into an ordinary request would spoil both.
+     */
+    private static ValueProvider nominal(List<Dictionary> dictionaries,
+            ValueProvider fromTheDocument, ValueProvider invention, RandomGenerator random) {
+        List<ValueProvider> asked = new ArrayList<>();
+        // The closed list of values a document says it accepts is not advice and is not ranked
+        // against anything: where one exists, it is the whole set of values the API will take, so
+        // offering anything else there would be sending a value the document says is not allowed.
+        // Unless not one of them could be put where the value goes - every one of them empty, in a
+        // path - in which case there is nothing here to honour, and the rest of the chain answers.
+        asked.add(DeclaredValueProvider.onlyTheAcceptedList(random));
+        addAsking(asked, dictionaries, random, true);
+        asked.add(fromTheDocument);
+        addAsking(asked, dictionaries, random, false);
+        asked.add(invention);
+        return ValueProviderChain.of(asked);
+    }
+
+    /** The lists that speak about one value in particular, or the ones that speak about a kind. */
+    private static void addAsking(List<ValueProvider> asked, List<Dictionary> dictionaries,
+            RandomGenerator random, boolean aboutOneValue) {
+        for (Dictionary dictionary : dictionaries) {
+            if (!dictionary.name().equals(PUSHES_AT_THE_API)
+                    && dictionary.isAboutOneValueInParticular() == aboutOneValue) {
+                asked.add(new DictionaryValueProvider(dictionary, random));
+            }
+        }
+    }
+
+    /**
+     * Which way this request is being built.
+     *
+     * <p>Drawn once per request rather than once per value, because the whole point of the division
+     * is that one request is built one way throughout.
+     */
+    private Strategy nextStrategy() {
+        if (strategies.size() == 1) {
+            return strategies.get(0);
+        }
+        int drawn = random.nextInt(sharesInTotal);
+        for (Strategy way : strategies) {
+            drawn -= way.share();
+            if (drawn < 0) {
+                return way;
+            }
+        }
+        return strategies.get(strategies.size() - 1);
     }
 
     /**
@@ -275,8 +492,13 @@ public final class RandomTestCaseGenerator {
      * sample belongs to the one that declared it.
      */
     private ValueRequest ask(Operation operation, Parameter parameter) {
+        // The name survives being resolved: a shape the document declared once and named is worth
+        // recognising again, because whoever keeps a list of values that worked for an Owner wants
+        // to be asked about an Owner, not about "an object with four properties".
+        Optional<String> shape = parameter.schema() instanceof SchemaReference reference
+                ? Optional.of(reference.name()) : Optional.empty();
         return new ValueRequest(operation.id(), parameter.name(), parameter.location(),
-                resolved(parameter.schema()), parameter.examples());
+                resolved(parameter.schema()), parameter.examples(), shape);
     }
 
     /**

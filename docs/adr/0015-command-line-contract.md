@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7 and M1.8
+**Status:** Accepted, amended at M1.7, M1.8 and M2.7a
 **Date:** 2026-09-14 (amended 2026-09-15)
 
 ## Context
@@ -358,3 +358,27 @@ promise files it did not finish writing. That is an increment with an ADR of its
 added in passing, and it is **M3.7** in the roadmap - after the reports increment, because what a
 run cut short should leave behind is a question about what a run writes.
 
+
+
+## Amendment (M2.7a)
+
+**Date:** 2026-09-18
+
+**Two options: `--dictionary`, repeatable, and `--fuzzing`.**
+
+`--dictionary <file-or-directory>` names a list of values to send, and may be repeated; a directory
+contributes every `.yaml`, `.yml` and `.json` in it, in name order. Values good enough to be worth
+keeping belong beside the specification they were worked out for, and until now there was no way to
+hand them to a run. The format is in `docs/dictionary-format.md`.
+
+`--fuzzing <percentage>` says how much of the time goes on requests built from values chosen to be
+awkward. It defaults to 25 and `--fuzzing 0` sends none.
+
+The second one is here because writing the test that compares a run with and without such values
+showed it had to be: there was no way to express "do not send those", and a capability a user cannot
+turn off is one they cannot manage. Design principle 1 is "zero configuration to start; full
+configuration available", and a tool that deliberately sends bad data to somebody's API should be
+able to be told not to.
+
+Neither changes an exit code, and neither is required. A run with no options at all behaves as it did
+except that a quarter of its requests now carry awkward values, which is the increment.

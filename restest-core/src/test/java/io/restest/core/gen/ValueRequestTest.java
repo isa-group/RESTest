@@ -45,7 +45,7 @@ class ValueRequestTest {
     @Test
     @DisplayName("looking up a shape the document named keeps the parameter's own sample values")
     void samples_follow_the_same_value_into_a_named_shape() {
-        ValueRequest request = new ValueRequest(OPERATION, "owner", ParameterLocation.QUERY,
+        ValueRequest request = ValueRequest.of(OPERATION, "owner", ParameterLocation.QUERY,
                 StringSchema.of(), List.of(JsonValue.of("Davis")));
 
         assertThat(request.about(ObjectSchema.of(Map.of())).examples())
@@ -56,7 +56,7 @@ class ValueRequestTest {
     @Test
     @DisplayName("stepping into one piece of a shape leaves the whole value's sample behind")
     void samples_do_not_follow_into_a_property() {
-        ValueRequest request = new ValueRequest(OPERATION, "owner", ParameterLocation.QUERY,
+        ValueRequest request = ValueRequest.of(OPERATION, "owner", ParameterLocation.QUERY,
                 ObjectSchema.of(Map.of("firstName", StringSchema.of())),
                 List.of(JsonValue.of("Davis")));
 

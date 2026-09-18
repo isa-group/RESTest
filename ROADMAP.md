@@ -65,13 +65,34 @@ layout).
 | 2.1a ✅ [#307](https://github.com/isa-group/RESTest/pull/307) | `allOf` folded into the canonical schema: halves combined, the stricter bound kept, a combination nothing satisfies and one we cannot work out each said plainly | The inheritance idiom real APIs describe their resources with stops being ignored |
 | 2.1b ✅ [#308](https://github.com/isa-group/RESTest/pull/308) | `oneOf` / `anyOf` as a shape of their own (ADR-0018). Discriminators deliberately not included: they cost no request, and reading the corpus's one real hierarchy as a plain object would produce a shape quietly missing the property that identifies it | An operation whose parameter may be a number *or* a text stops being skipped |
 | 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers now send those identifiers instead of inventing ones |
-| 2.3 | Deterministic boundary walk: every documented limit probed exactly | Reproducible edge-case tests, not luck |
+| 2.3 | *Deferred at M2.7a, not dropped — it returns as part of [3.1b](#m3--oracles-faults-and-reporting).* The deterministic boundary walk goes where ADR-0013 §4 puts it, with the mutation operator: stepping outside a documented bound is a change to a request the API already accepted, and setting several parameters outside their bounds at once teaches nothing attributable. Both halves also need M3.1's oracles to pay off at all. Measured before deferring: 327 of 4,916 corpus parameters declare any limit, and in the priority corpus that is pet-clinic 25, kafka 2, flight-search 1, the other two none | Reproducible edge-case tests, not luck |
 | 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
 | 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
-| 2.7 | Value dictionary format, reader, writer, disk cache | Good values computed once, reused for ever, committed next to the specification |
+| 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): YAML, one file, one keying, values that may be whole objects, and no claim about what an API will make of them — which list feeds which kind of request is named in the plan. `--dictionary`, repeatable. The list of values RESTest ships to push at an API with, as the first thing written in that format, sent for a share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
+| 2.7b | Dictionary writer and disk cache | Good values computed once are kept, rather than worked out again every run. Waits for something that computes values at a cost worth saving: the solver of 5.2, or the external providers of 2.8 |
 | 2.8 | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
 | 2.9 | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts |
+| 2.10 | The scheduler and the campaign file that tells it what to do (ADR-0013 §2 and §6): named strategies, each with a share of the budget and an ordered list of groups over named sources, where a group either stops at the first answer or **samples among the sources that answered, by weight** — the second half of §2, unbuilt since it was written. The scheduler becomes the one component that knows what time it is, and carries the filters §6 gives it: which HTTP methods to exercise, whether to keep to the ones HTTP calls *safe*, and named operations to restrict a campaign to. The shares and weights 2.7a left as constants move into the file, and ADR-0013's open question gets the campaigns that answer it | A campaign is described rather than compiled in: how much of the time goes on each kind of request, which lists of values are preferred for which kinds of value and how often, and which operations and methods to touch at all — so a run against an API somebody cares about can be told to keep to the methods that only read |
+
+The two rows that were one. 2.7 read "value dictionary format, reader, writer, disk cache", and the
+writer and the cache exist to keep values the tool worked out at a cost — of which it currently
+computes none. Splitting it was the alternative to shipping half a row silently, and 2.7a carries the
+half that has a consumer today.
+
+**2.10 comes after 2.4, and here is the dependency.** A weighted group divides one value between the
+sources that answered for it, so it needs two sources that answer for the same value before it means
+anything. Until 2.4 there is essentially one: measured over the corpus, the only place two sources
+compete today is a schema declaring both a `default` and a sample and no enumeration — 26 parameters
+of 5,119, every one of them in a single document of the fifty. 2.4's format dictionary answers for
+every string with a declared `format`, which is the competitor that makes weights worth having.
+
+2.7a built the first half of §2 — strategies with shares — because a run had to divide its time
+between ordinary requests and requests built to be refused before it could send either. It left the
+numbers as constants in code, and 2.10 is where they become a file somebody can edit. It also left a
+footgun that 2.10 closes: with only exclusive groups, a list of values keyed to a kind of value
+*replaces* what the tool would otherwise have invented for that kind rather than being sent alongside
+it, which is what a weighted group is for (ADR-0020 §5).
 
 2.8's own "never blocking" guarantee is proved at that increment, by its own test (a slow provider
 must not stall the run) — not by waiting for M6.2's overhead regression test, which lands much later
@@ -101,6 +122,7 @@ cheapest thing in M2 to find out.
 | # | Increment | What it enables |
 |---|---|---|
 | 3.1 | WFC catalogue, first tranche: status-code conformance, content type, response headers, negative-data rejection, positive-data acceptance, missing required header, unsupported method | Many more kinds of bug detected |
+| 3.1b | **Deliberate violations, as mutations of requests the API accepted** (ADR-0013 §4). The test case gains the *intent* §3 describes — I believe these values are acceptable, I expect this refused and here is what I broke, or I do not know — which is the obligation §3 gave M1.6 and nobody has met. A listener on the event stream keeps a bounded index of the test cases that actually returned 2XX (§5), and operators take one of those and change exactly one thing: drop a required parameter, send the wrong type, step outside a documented bound, break an enumeration, break a pattern, and ADR-0017's send a required parameter in a location it was not declared in. **M2.3's deterministic boundary walk returns here**, as the operator that steps outside a documented limit by exactly one. The third share of the budget arrives with it | The tool stops only being able to ask "does this work?" and starts being able to ask "does it refuse what it should?" — and when an API accepts a request RESTest deliberately broke, the fault names the one thing that was changed |
 | 3.2 | HTTP-semantics and REST-design oracles (WFC 900–909 and 950–965) | Protocol-level bugs nobody else on our side detects |
 | 3.3 | `CorpusOracle` interface and `restest recheck <run>` | Re-examine a finished run with new oracles, offline, no API calls |
 | 3.4 | Per-operation oracle configuration + published JSON Schema for the config file | False positives silenced per operation instead of the tool being switched off |
@@ -108,12 +130,31 @@ cheapest thing in M2 to find out.
 | 3.6 | Replies that no rule could judge counted, and said out loud in the summary, the JSON report and the exit code | A clean bill of health stops being ambiguous: a run that could not check something says so, instead of saying nothing was wrong |
 | 3.7 | What a run writes when it is cut short: Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not (ADR-0015 lists the three candidate answers) | Stopping a long run early stops costing you everything it had already found |
 
+**3.1b is in M3 although the code is generator-side**, and it is numbered after 3.1 rather than given
+a number of its own because that is the order it has to be taken in: 3.1 supplies the two oracles
+that make a broken request worth sending at all — negative data must be refused, positive data must
+be accepted. Built before them, every deliberate violation would earn a 4XX that nothing reads and no
+finding anybody could act on.
+
+It is also where two debts written into earlier increments come due. The **intent** of ADR-0013 §3
+was assigned to M1.6 and never built; M2.2 and M2.7a each left it out again for the same reason, that
+no oracle reads it — so 3.1b is the first increment where it is not a mechanism waiting for a
+consumer. And **M2.3's boundary walk** was deferred here: §4 says stepping outside a documented bound
+is a change to a request the API already accepted, so the walk needs the memory of accepted requests
+that this increment builds.
+
+One promise changes shape, and ADR-0013 §7 already says how. A strategy with a memory is not
+reproduced from the seed — what gets mutated depends on what the API answered and when — so a run
+using it is reproduced by replaying the stored requests instead. The seed keeps its other three jobs:
+deterministic tests, reproducing a failure that happens before any request exists, and the fixed
+workload M6.2's overhead test compares commits against.
+
 ADR-0017 adds one mutation operator, under ADR-0013 §4: send a *required* parameter in a location it
 was not declared in — query, header, cookie. The API is then missing something it said it needs, so a
-refusal is correct and a 2XX is attributable to that one change. The operator is generator-side; 3.1
-supplies the oracle that judges it. Restricting it to required parameters is what keeps it inside
-§4's contract, and it is why ADR-0017 refuses the companion operator that sends parameters the
-document never declared: there, both answers are defensible and no oracle can call it.
+refusal is correct and a 2XX is attributable to that one change. Restricting it to required parameters
+is what keeps it inside §4's contract, and it is why ADR-0017 refuses the companion operator that
+sends parameters the document never declared: there, both answers are defensible and no oracle can
+call it.
 
 v2.0's own reports are raw: every fault is counted on its own and none is ever declared to be the
 same problem as another. What the JSON report bounds (M1.7b) is how many faults of one kind, on one

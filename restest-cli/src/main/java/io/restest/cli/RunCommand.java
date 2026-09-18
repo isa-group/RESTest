@@ -25,6 +25,7 @@ import io.restest.core.model.SpecificationIssue;
 import io.restest.core.spec.SpecificationParser;
 import io.restest.core.store.InteractionStore;
 import io.restest.exec.OkHttpEngine;
+import io.restest.gen.Dictionaries;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.oracles.OracleListener;
 import io.restest.report.ConsoleReport;
@@ -37,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -135,6 +137,25 @@ final class RunCommand implements Callable<Integer> {
     private Path outputDirectory;
 
     @Option(
+            names = "--dictionary",
+            paramLabel = "<file-or-directory>",
+            description = "A file of values to send, in YAML, or a directory of them. Repeat for "
+                    + "several. Values good enough to be worth keeping belong next to the "
+                    + "specification they were worked out for. RESTest always uses its own list of "
+                    + "values to push with on top of whatever is given here.")
+    private List<Path> dictionaries = new ArrayList<>();
+
+    @Option(
+            names = "--fuzzing",
+            paramLabel = "<percentage>",
+            defaultValue = "" + RandomTestCaseGenerator.AWKWARD_SHARE,
+            description = "How much of the time to spend pushing at the API with values nobody "
+                    + "sensible would send - empty text, enormous numbers, the wrong kind of value "
+                    + "entirely. A healthy API takes them or turns them away; a fragile one falls "
+                    + "over. 0 sends none of them. Default: ${DEFAULT-VALUE}.")
+    private int fuzzingShare;
+
+    @Option(
             names = "--store",
             description = "Keep every request and reply in run.sqlite, so the run can be examined "
                     + "again later without asking the API anything. Off unless asked for: a minute "
@@ -165,9 +186,27 @@ final class RunCommand implements Callable<Integer> {
         // run reports itself as flawless.
         try (HttpEngine engine = new OkHttpEngine(engineSettings)) {
             ApiModel model = parser.parse(specification);
-            RandomTestCaseGenerator generator = seed == null
-                    ? new RandomTestCaseGenerator(model)
-                    : new RandomTestCaseGenerator(model, seed);
+            Dictionaries.Found found = Dictionaries.gather(dictionaries, model);
+            found.problems().forEach(problem -> err.println("restest: " + problem));
+            RandomTestCaseGenerator generator;
+            try {
+                generator = new RandomTestCaseGenerator(model,
+                        seed == null ? new java.util.SplittableRandom().nextLong() : seed,
+                        found.dictionaries(), fuzzingShare);
+            } catch (IllegalArgumentException outOfRange) {
+                // Asking for something the command line does not offer, which is the same kind of
+                // mistake as misspelling an option and answers with the same number.
+                err.println("restest: " + outOfRange.getMessage());
+                return ExitCode.BAD_COMMAND_LINE;
+            }
+            // Only about lists somebody handed over. RESTest's own going unused is not news to
+            // whoever asked for exactly that, and a message naming a file they never wrote is one
+            // they could not act on.
+            java.util.Set<String> theirs = found.namesFromTheUser();
+            generator.listsGivenButNotUsed().stream().filter(theirs::contains)
+                    .forEach(unused -> err.println("restest: the list of values called '" + unused
+                            + "' is one this run pushes at the API with, and --fuzzing 0 asks for "
+                            + "no pushing, so nothing in it will be sent"));
             List<Operation> testable = generator.testableOperations();
             if (testable.isEmpty()) {
                 return nothingToTest(err, model, generator);
@@ -191,7 +230,7 @@ final class RunCommand implements Callable<Integer> {
             PrintWriter err) {
         Path reportFile = directory.resolve("report.json");
         Path runFile = directory.resolve("run.sqlite");
-        ConsoleReport console = ConsoleReport.to(out);
+        ConsoleReport console = ConsoleReport.to(out, generator.sourcesThatPushAtTheApi());
 
         RunLoop.Outcome outcome = null;
         EventStream events = null;

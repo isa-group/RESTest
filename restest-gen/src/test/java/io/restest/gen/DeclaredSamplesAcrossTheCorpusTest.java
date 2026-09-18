@@ -127,7 +127,7 @@ class DeclaredSamplesAcrossTheCorpusTest {
                 io.restest.core.model.OperationId.of("getOwner")).orElseThrow();
         ExampleValueProvider samples = new ExampleValueProvider(Schemas.fixedRandom());
 
-        GeneratedValue value = samples.offer(new ValueRequest(owner.id(), "ownerId",
+        GeneratedValue value = samples.offer(ValueRequest.of(owner.id(), "ownerId",
                 io.restest.core.model.ParameterLocation.PATH,
                 resolved(model, owner.parameters().get(0).schema()),
                 owner.parameters().get(0).examples())).orElseThrow();
@@ -181,7 +181,7 @@ class DeclaredSamplesAcrossTheCorpusTest {
 
     private static boolean offers(ExampleValueProvider samples, ApiModel model,
             Operation operation, Parameter parameter) {
-        return samples.offer(new ValueRequest(operation.id(), parameter.name(),
+        return samples.offer(ValueRequest.of(operation.id(), parameter.name(),
                 parameter.location(), resolved(model, parameter.schema()), parameter.examples()))
                 .isPresent();
     }

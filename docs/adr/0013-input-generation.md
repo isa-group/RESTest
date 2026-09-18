@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted
+**Status:** Accepted, amended at M1.11 and M2.7a
 **Date:** 2026-09-13
 
 ## Context
@@ -60,7 +60,7 @@ say nothing. Eight sources, of which three exist today:
 | default dictionary | always, for a type we have values for |
 | custom dictionary | the user's file has an entry for this operation and parameter |
 | observed values | this run has seen a value for a parameter of this name |
-| fuzzing dictionary | always — values designed to be refused |
+| fuzzing dictionary | always — values designed to be refused. **Built at M2.7a** |
 | constraint-directed construction | always, as the last resort |
 
 The four dictionaries are **one class with a different key**: the JSON type, the declared `format`,
@@ -72,7 +72,7 @@ them, and it is a published format (design principle 8).
 ```yaml
 strategies:
   - name: nominal-custom
-    share: 40m
+    share: 75          # amended at M2.7a: a proportion, not the `40m` first written here
     sources:
       - exclusive: [enum]           # if it answers, the choice is made
       - weighted:                   # ask all, sample among those that answered
@@ -221,7 +221,9 @@ becomes deterministic and the random arithmetic goes away.
   produced a 2xx. Without one of them, a varied dictionary is a lottery for anything but a single
   parameter.
 - Two increments already planned inherit obligations. **M1.6** publishes the event stream and adds the
-  intent to the test case, which is a store layout change — supported, since the file records the layout
+  intent to the test case — it published the event stream and did not add the intent, and the
+  obligation moved to M3.1b, the first increment with an oracle that reads one — which is a store
+  layout change — supported, since the file records the layout
   that wrote it. **M1.7** keeps the loop in the command-line module, so that generation never gains a
   dependency on the engine or the store.
 - **Evaluation integrity.** The default strategy must not depend on data curated for the five APIs the
@@ -307,6 +309,12 @@ the tool's own waste and a sequential loop waiting on the API is never idle.
 mutation and fuzzing is the one number here that cannot be argued into place: it is measured. When the
 pieces exist, one afternoon of campaigns against the five specifications in the corpus, with three
 different splits, answers it.
+
+> **First number, M2.7a.** Fuzzing takes a quarter and nominal the rest, in one constant, with
+> `--fuzzing <percentage>` to change it. It is a starting point and is still unmeasured: the campaign
+> this paragraph asks for needs a real API and has not been run. Mutation does not exist yet, so the
+> split is between two things rather than three. **M2.10 owns the answer**, along with the file that
+> makes the number something a person can set rather than something a build fixes.
 
 ## Amendment (M1.11)
 
@@ -448,3 +456,54 @@ replayed instead, is unaffected by where the randomness comes from.
 - **Take whatever the platform prefers**, which is what `RandomGenerator.getDefault()` does.
   Rejected in M1.5 and rejected again: it also names one of the optional generators, so it fails in
   the same place, and where it works it makes a seed mean whatever that runtime preferred.
+
+
+## Amendment (M2.7a)
+
+**Date:** 2026-09-18
+
+**A strategy's share is a proportion of the budget, not a stretch of the clock. Every source is named,
+the last resort included. And the dictionaries these decisions describe now have a format.**
+
+### Why
+
+`share: 40m` in §2 is a duration, and it collides with the budget the user sets. A file asking for
+forty minutes has no sensible meaning under `--budget 10m`: cut it, ignore the budget, or refuse to
+run, and all three are worse than the question not arising. A proportion makes the same division serve
+a thirty-second check and the two-hour campaign M8 needs, which is what a file of strategies is for.
+
+The sources listed in §1 are referred to by name in §2's plan, and one of them — "constraint-directed
+construction, always, as the last resort" — reads as though it were special. It is not. Being the last
+resort is where a strategy puts a source, not a property of the source, and treating it as ordinary is
+what lets a plan put something after it one day.
+
+### What changed
+
+`share` is a percentage. The example in §2 now reads `share: 75`. Exclusive and weighted groups are
+unchanged as concepts, and so is the renormalising of weights among the sources that answered.
+
+One of them is now built and one is not. **The exclusive group is what the ordinary way of building a
+request is**, and §2's `exclusive: [enum]` is honoured exactly as written: the closed list of values a
+document says it accepts is asked first and nothing may override it, a dictionary somebody wrote
+included. **The weighted group is not built**, and ADR-0020 §5 records why, along with the competitor
+this increment created and the advice that stands until 2.4 brings it.
+
+One thing §2 says needs reading carefully now that both numbers are percentages, because it is true
+of one of them and not the other. **Weights within a group must sum to 100 and are validated**, as §2
+says. **Shares between strategies are counted against each other and need not.** They divide one
+budget between all the strategies there are, so three strategies asking for 1, 1 and 2 divide it into
+quarters exactly as 25, 25 and 50 would; requiring a total would be requiring arithmetic of somebody
+for no gain. The implementation relies on that: it multiplies one side rather than dividing the
+other, so that asking for a quarter is a quarter whether one list of awkward values is in play or
+thirty.
+
+The file format the five dictionaries share is [ADR-0020](0020-what-a-dictionary-is.md). It is YAML,
+it adds a fifth keying this record missed — the name of the shape, which is how a whole request body
+is indexed — and it deliberately carries **no** statement about what the API will make of its values,
+because a file of values cannot know: which lists a strategy draws on is named in the plan, as §2
+already has it.
+
+### What it costs
+
+Nothing yet, because no file of strategies exists to be rewritten. Recorded now because it is cheaper
+to amend a sentence than a format.
