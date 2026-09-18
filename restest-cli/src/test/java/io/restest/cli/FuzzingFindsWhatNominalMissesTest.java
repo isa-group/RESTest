@@ -64,6 +64,17 @@ class FuzzingFindsWhatNominalMissesTest {
                     "200": {description: results}
             """;
 
+    /**
+     * How long this stand-in takes to answer, in milliseconds.
+     *
+     * <p>Not for realism. Against an API on the same machine answering instantly, a few seconds of
+     * testing is a few hundred thousand requests, and this file runs several of those - which is
+     * minutes of build time and, when every one of them is a fault, more of them held in memory at
+     * once than a build agent has room for. A pause no human would notice brings a run down to
+     * hundreds of requests, which is plenty to show the difference these tests are about.
+     */
+    private static final int ANSWERS_IN = 20;
+
     private static WireMockServer api;
 
     @BeforeAll
@@ -72,11 +83,11 @@ class FuzzingFindsWhatNominalMissesTest {
         api.start();
         // Anything with at least one character is fine.
         api.stubFor(get(urlPathEqualTo("/search")).withQueryParam("q", matching(".+"))
-                .willReturn(aResponse().withStatus(200)
+                .willReturn(aResponse().withStatus(200).withFixedDelay(ANSWERS_IN)
                         .withHeader("Content-Type", "application/json").withBody("[]")));
         // An empty one is not. A real bug of exactly this shape is a query assembled by hand.
         api.stubFor(get(urlPathEqualTo("/search")).withQueryParam("q", matching("^$"))
-                .willReturn(aResponse().withStatus(500)
+                .willReturn(aResponse().withStatus(500).withFixedDelay(ANSWERS_IN)
                         .withHeader("Content-Type", "text/plain")
                         .withBody("java.lang.StringIndexOutOfBoundsException")));
     }
@@ -225,7 +236,7 @@ class FuzzingFindsWhatNominalMissesTest {
         java.util.List<String> arguments = new java.util.ArrayList<>(java.util.List.of(
                 "run", document.toString(),
                 "--url", api.baseUrl(),
-                "--budget", "3s",
+                "--budget", "2s",
                 "--out", out.toString()));
         arguments.addAll(java.util.List.of(extra));
         StringWriter screen = new StringWriter();
