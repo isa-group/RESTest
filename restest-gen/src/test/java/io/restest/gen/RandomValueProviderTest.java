@@ -416,8 +416,7 @@ class RandomValueProviderTest {
                         + "word in it")
                 .isNotEmpty()
                 .allSatisfy(element -> assertThat(element)
-                        .isInstanceOf(JsonValue.JsonString.class)
-                        .isNotEqualTo(JsonValue.array(JsonValue.of("cat"), JsonValue.of("dog"))));
+                        .isInstanceOf(JsonValue.JsonString.class));
     }
 
     @RepeatedTest(30)

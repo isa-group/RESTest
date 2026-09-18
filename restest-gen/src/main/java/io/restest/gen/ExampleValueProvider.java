@@ -53,10 +53,14 @@ import java.util.random.RandomGenerator;
  *   <li><b>Any sample for a value the document says has no acceptable value at all.</b> There the
  *       document contradicts itself outright, and the half that says "nothing fits here" is the
  *       half every other source already believes.</li>
- *   <li><b>A sample that writes out as nothing, where it belongs in the path.</b> An empty piece of
- *       a path closes the gap instead of filling it, turning a request for one pet into a request
- *       for every pet - and the reply would then be judged against the wrong promise. Elsewhere an
- *       empty value is a perfectly ordinary thing to send.</li>
+ *   <li><b>Any sample no request could be assembled with, from where the value goes.</b> A value
+ *       that writes out as nothing closes a gap in the path instead of filling it, turning a
+ *       request for one pet into a request for every pet; a value carrying a line break, sent as a
+ *       header, ends that header and starts another. Both are thrown away when the request is put
+ *       together, and a sample that is always thrown away is worse than no sample: it would win
+ *       every draw, and the operation would send nothing at all for as long as the run lasts while
+ *       still being counted among those being tested. Neither value is a problem anywhere else,
+ *       and neither is refused anywhere else.</li>
  * </ul>
  */
 public final class ExampleValueProvider implements ValueProvider {
@@ -95,13 +99,12 @@ public final class ExampleValueProvider implements ValueProvider {
     }
 
     /**
-     * The samples that could actually be sent from where this value goes.
+     * The samples a request could actually be assembled with, from where this value goes.
      *
-     * <p>Everywhere but the path, all of them. In the path, the ones that write out as something:
-     * the question is asked of the very code that will write the value later, rather than guessed
-     * at from the value's shape, because the two disagree. A list holding one empty word is a list
-     * with something in it and writes out as nothing; a list holding two writes out as the
-     * separator between them, and so writes out as something.
+     * <p>The question is put to the very code that will write the value into the request, rather
+     * than guessed at from the value's shape, because the two disagree - and because a sample
+     * nothing could send is worse than no sample at all: it would win every draw and every attempt
+     * at that operation would be thrown away, for as long as the run lasts.
      *
      * <p>Asked of a value nested inside one that goes in the path, this is stricter than it needs
      * to be - a property whose value is empty is still written with its own name beside it. Nothing
@@ -109,11 +112,8 @@ public final class ExampleValueProvider implements ValueProvider {
      * than a rule that is occasionally shy.
      */
     private static List<JsonValue> usable(List<JsonValue> samples, ParameterLocation location) {
-        if (location != ParameterLocation.PATH) {
-            return samples;
-        }
         return samples.stream()
-                .filter(sample -> !RequestBuilder.writesAsNothingInAPath(sample))
+                .filter(sample -> RequestBuilder.canBeSentFrom(sample, location))
                 .toList();
     }
 

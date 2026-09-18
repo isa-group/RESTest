@@ -187,6 +187,29 @@ class ExampleValueProviderTest {
                 .isEqualTo(JsonValue.of("1"));
     }
 
+    @Test
+    @DisplayName("a sample carrying a line break is never sent as a header")
+    void a_sample_with_a_line_break_is_never_sent_as_a_header() {
+        JsonValue broken = JsonValue.of("one\ntwo");
+
+        assertThat(provider.offer(new ValueRequest(OperationId.of("GET /pets"), "X-Trace",
+                ParameterLocation.HEADER, StringSchema.of(), List.of(broken))))
+                .describedAs("a line break ends the header and starts another, so the request "
+                        + "that went out would not be the request that was recorded")
+                .isEmpty();
+        assertThat(provider.offer(new ValueRequest(OperationId.of("GET /pets"), "X-Trace",
+                ParameterLocation.HEADER, StringSchema.of(),
+                List.of(JsonValue.array(JsonValue.of("a"), broken)))))
+                .describedAs("the break may be inside one element, which the written value shows "
+                        + "and the value's shape does not")
+                .isEmpty();
+        assertThat(provider.offer(new ValueRequest(OperationId.of("GET /pets"), "q",
+                ParameterLocation.QUERY, StringSchema.of(), List.of(broken))))
+                .describedAs("a query string is encoded on the way out, so nothing in it ends "
+                        + "anything early")
+                .isPresent();
+    }
+
     private static ValueRequest inThePath(JsonValue sample) {
         return new ValueRequest(OperationId.of("GET /pets/{ids}"), "ids", ParameterLocation.PATH,
                 io.restest.core.schema.ArraySchema.of(StringSchema.of()), List.of(sample));

@@ -177,20 +177,35 @@ public final class RequestBuilder {
     }
 
     /**
-     * Whether this value, written into a path, would leave nothing between the slashes.
+     * Whether a request carrying this value in this place could be assembled at all.
      *
-     * <p>Answered by writing it out rather than by looking at its shape, because the two do not
-     * agree: a list of one empty word is a list with something in it and writes out as nothing,
-     * while a list of two writes out as the separator between them and so writes out as something.
-     * Whether the value is spread out or written as one piece makes no difference to this question,
-     * so it is asked as though it were written as one piece.
+     * <p>Two values cannot be sent, whatever anybody thinks of them. One that writes out as nothing
+     * closes a gap in the path rather than filling it, so {@code /owners/{ownerId}} becomes a
+     * request for every owner. One carrying a line break, sent as a header, ends that header and
+     * starts another, so the request that goes out is not the request that was recorded. Either way
+     * the whole attempt is thrown away when it is assembled, and an operation whose every attempt is
+     * thrown away sends nothing for as long as the run lasts while still being counted among the
+     * operations being tested.
      *
-     * <p>It matters because an empty piece of a path closes the gap rather than filling it, and
-     * whoever is choosing a value can avoid that only if it can ask the same question this class
-     * will ask later.
+     * <p>Whoever is choosing a value can avoid that only by asking the same question this class
+     * asks, of the same code, so this answers it by writing the value out rather than by looking at
+     * its shape. The two do not agree: a list of one empty word is a list with something in it and
+     * writes out as nothing, and a line break may sit inside one member of an object. Whether the
+     * value is spread out or written as one piece changes neither answer, so it is asked as though
+     * it were written as one piece.
+     *
+     * @param value the value being considered
+     * @param location where in the request it would go
+     * @return whether a request could be assembled with it
      */
-    static boolean writesAsNothingInAPath(JsonValue value) {
-        return joined(value, false, ",").isEmpty();
+    static boolean canBeSentFrom(JsonValue value, ParameterLocation location) {
+        String written = joined(value, false, ",");
+        return switch (location) {
+            case PATH -> !written.isEmpty();
+            case HEADER -> !wouldSplitTheRequest(written);
+            // Both are percent-encoded on the way out, so nothing in them can end anything early.
+            case QUERY, COOKIE -> true;
+        };
     }
 
     /** One value written as a single string, which is what a path, a header and a cookie need. */
@@ -273,11 +288,16 @@ public final class RequestBuilder {
      * request that was recorded.
      */
     private static String headerValue(String name, String value) {
-        if (value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\0') >= 0) {
+        if (wouldSplitTheRequest(value)) {
             throw new IllegalArgumentException("the value for the header '" + name + "' contains a "
                     + "line break, which would split the request into two");
         }
         return value;
+    }
+
+    /** Whether this text, written as a header value, would end that header and start another. */
+    private static boolean wouldSplitTheRequest(String value) {
+        return value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\0') >= 0;
     }
 
     /**

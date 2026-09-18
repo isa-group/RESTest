@@ -131,19 +131,25 @@ was right:
 - **Any sample for a value restricted to a fixed list**, as above.
 - **Any sample for a shape that accepts no value at all.** There the document contradicts itself
   outright, and every other source already believes the half that says nothing fits.
-- **A sample that writes out as nothing, where it belongs in the path.** An empty piece of a path
-  closes the gap instead of filling it: `/owners/{ownerId}` becomes `/owners`, a request for every
-  owner judged afterwards against the promise made about one, and every request for that operation
-  thrown away for the whole budget while the operation is still advertised as testable. The
-  generator already refuses to invent nothing there for exactly this reason, and a sample has to
-  obey the same rule — the 3.1 spelling makes `examples: [Jane Doe, null]` an ordinary thing to
-  write, and this repository's own 3.1 fixture writes one. Elsewhere an empty value is perfectly
-  ordinary and is sent.
+- **Any sample no request could be assembled with, from where the value goes.** There are exactly
+  two: a value that writes out as nothing, in the path, which closes the gap instead of filling it
+  so `/owners/{ownerId}` becomes a request for every owner; and a value carrying a line break, in a
+  header, which ends that header and starts another so the request that goes out is not the request
+  that was recorded. A sample like that is worse than no sample, because it wins every draw: the
+  operation sends nothing for the whole budget while still being counted among those being tested,
+  and the failures are thrown away unattributed. Neither value is a problem anywhere else and
+  neither is refused anywhere else — a query string and a cookie are percent-encoded on the way out.
 
-  The question is put to the very code that writes the value into the path, not answered from the
-  value's shape, because the two disagree: a list holding one empty word is a list with something
-  in it and writes out as nothing, while a list holding two writes out as the separator between
-  them. A first attempt judged by shape and let that case through.
+  The question is put to the very code that writes the value into the request, not answered from
+  the value's shape, because the two disagree: a list holding one empty word is a list with
+  something in it and writes out as nothing, while a list holding two writes out as the separator
+  between them, and a line break may sit inside one member of an object. Two attempts judged by
+  shape and let one of those through each time, which is why the rule now lives beside the code
+  that refuses the value rather than in the source that chooses it.
+
+  This is the only thing here that is a rule about the *tool* rather than about the document. It is
+  not a judgement that the author was wrong — the value is simply one this tool cannot put on the
+  wire.
 
 Precedence and this rule interact, and the order matters: a parameter's own samples win only where
 it has one that can be used. A parameter writing an unusable sample over a shape that writes a good
