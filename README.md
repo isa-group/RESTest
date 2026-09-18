@@ -97,6 +97,16 @@ a fast API keeps hundreds of megabytes, and nothing in an ordinary run reads the
 holds one run: starting another in the same place replaces what is there, so a run worth keeping is
 given a directory of its own with `--out`.
 
+A quarter of the requests in a run are not meant to work. They are built from values nobody sensible
+would send — an empty word, a number one past the end of a 32-bit integer, text where a number
+belongs — because an API that falls over on one of those is a fault whatever was sent, and ordinary
+requests never ask. The summary says how many requests were of that kind, so their refusals do not
+read as the API turning away ordinary traffic. `--fuzzing 40` changes the share and `--fuzzing 0`
+sends none of them. The other way round, the values *you* know are good — real identifiers, the
+surnames the API actually holds — go in a YAML file next to the specification and are handed over
+with `--dictionary`, which takes a file or a directory and may be repeated;
+[docs/dictionary-format.md](docs/dictionary-format.md) is the format.
+
 Nothing else is required. `--url` is only needed when the document does not name an address you can
 reach, and `--budget` defaults to a minute. The whole of that budget is used, reading the document
 included — the percentage the run reports is how much of the time RESTest had nothing in flight,

@@ -367,9 +367,9 @@ run cut short should leave behind is a question about what a run writes.
 **Two options: `--dictionary`, repeatable, and `--fuzzing`.**
 
 `--dictionary <file-or-directory>` names a list of values to send, and may be repeated; a directory
-contributes every `.json` in it. Values good enough to be worth keeping belong beside the
-specification they were worked out for, and until now there was no way to hand them to a run. The
-format is in `docs/dictionary-format.md`.
+contributes every `.yaml`, `.yml` and `.json` in it, in name order. Values good enough to be worth
+keeping belong beside the specification they were worked out for, and until now there was no way to
+hand them to a run. The format is in `docs/dictionary-format.md`.
 
 `--fuzzing <percentage>` says how much of the time goes on requests built from values chosen to be
 awkward. It defaults to 25 and `--fuzzing 0` sends none.

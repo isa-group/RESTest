@@ -108,7 +108,7 @@ class DictionariesTest {
     }
 
     @Test
-    @DisplayName("a directory of files is read, every .json in it, in a settled order")
+    @DisplayName("a directory of files is read, every .yaml, .yml and .json in it, in a settled order")
     void a_directory_is_read(@TempDir Path directory) throws IOException {
         write(directory.resolve("b-second.yaml"), "second", "type");
         write(directory.resolve("a-first.yml"), "first", "type");
