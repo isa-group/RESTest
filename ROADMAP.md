@@ -78,7 +78,7 @@ The comparison against RESTest 1.x and the published field is not part of 1.9; i
 | 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
 | 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): YAML, one file, one keying, values that may be whole objects, and no claim about what an API will make of them — which list feeds which kind of request is named in the plan. `--dictionary`, repeatable. The list of values RESTest ships to push at an API with, as the first thing written in that format, sent for the share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
-| 2.7b | Dictionary writer and disk cache | Good values computed once are kept, rather than worked out again every run |
+| 2.7b | Dictionary writer and disk cache. **Not taken in its numbered place:** it waits until the tool computes a value at a cost worth saving, which is the solver of 5.2 or the external providers of 2.8. Skip it and go on to 2.8 | Good values computed once are kept, rather than worked out again every run |
 | 2.8 | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
 | 2.9 | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts |
 | 2.10 | The scheduler and the campaign file that tells it what to do (ADR-0013 §2 and §6): named strategies, each with a share of the budget and an ordered list of groups over named sources, where a group either stops at the first answer or **samples among the sources that answered, by weight**. The scheduler becomes the one component that knows what time it is, and carries the filters §6 gives it: which HTTP methods to exercise, whether to keep to the ones HTTP calls *safe*, and named operations to restrict a campaign to. The shares and weights 2.7a left as constants move into the file, and ADR-0013's open question gets the campaigns that answer it | A campaign is described rather than compiled in: how much of the time goes on each kind of request, which lists of values are preferred for which kinds of value and how often, and which operations and methods to touch at all — so a run against an API somebody cares about can be told to keep to the methods that only read |
@@ -102,8 +102,9 @@ put them (ADR-0019 §5).
 **2.7 — one row that became two.** It read "value dictionary format, reader, writer, disk cache",
 and the writer and the cache exist to keep values the tool worked out at a cost — of which it
 currently computes none. Splitting it was the alternative to shipping half a row silently, and 2.7a
-carries the half that has a consumer today. 2.7b waits for something that computes values at a cost
-worth saving: the solver of 5.2, or the external providers of 2.8.
+carries the half that has a consumer today. Every value the tool has now is either already on disk
+or free to work out again, so a cache would keep things that cost nothing — which is why 2.7b waits
+for a consumer rather than being taken in its numbered place.
 
 **2.8 — "never blocking" is proved here, by its own test.** A slow provider must not stall the
 run. Not by waiting for M6.2's overhead regression test, which lands much later and checks the
