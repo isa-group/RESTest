@@ -31,7 +31,6 @@ import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.RequestBodyModel;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.NothingSchema;
-import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.UnsupportedSchema;
 import java.util.ArrayList;
