@@ -24,7 +24,7 @@ grammar and the test corpus do.
 
 ## Scope
 
-| | |
+| Dimension | Decision |
 |---|---|
 | Specification formats | OpenAPI 2.0 (by conversion), 3.0.x and 3.1.x, through a single parser backend. Not 3.2, which is too recent to justify a second backend, and not 4.x, which has no specification text |
 | Testing style | Black-box only: the specification and the API's responses, never its source |
@@ -43,6 +43,7 @@ Terms used throughout the repository, in commit messages and in pull requests.
 |---|---|
 | **OAS** (OpenAPI Specification) | The standard file — YAML or JSON — that describes an API: its operations, their parameters, and the shape of their responses. Our only mandatory input. |
 | **Black-box testing** | Testing an API from the outside, using only its description and its responses. We never look at the API's source code. |
+| **White-box testing** | Testing that also instruments the API's source code or bytecode, usually to get coverage feedback and steer the search with it. Some tools offer both modes; RESTest is black-box only. |
 | **Test oracle** | The rule that decides whether a response is right or wrong. "A valid request must not return a server error" is an oracle. Generating requests is half the problem; oracles are the other half. |
 | **Stateless / stateful testing** | Stateless: each test is a single, independent request. Stateful: a test is a *sequence* — create a resource, read it, update it, delete it — where each step depends on the previous one. |
 | **Inter-parameter dependency** | A rule constraining how parameters can be combined, e.g. "if `location` is given, `radius` must be given too". Not expressible in OAS, which is why IDL exists. |
@@ -67,17 +68,18 @@ Terms used throughout the repository, in commit messages and in pull requests.
 Ten, in priority order. They are quoted in `CLAUDE.md` and several are enforced mechanically; the
 enforcement is listed under [Quality gates](#quality-gates).
 
-1. Zero configuration to start; full configuration available.
-2. Never crash on a bad specification — skip the offending operation and report it.
-3. Interpret, don't generate. Test cases are data; emitting code is a *report*, never the execution
-   path.
-4. One event stream, many listeners.
-5. Narrow interfaces, discovered implementations, enforced module boundaries.
-6. No global mutable state. Two runs must coexist in one JVM.
-7. The request loop is never blocked by computation; idle time is measured and reported.
-8. Open formats in, open formats out.
-9. The tool runs standalone; evaluation harnesses live in a repository of their own, not in this one.
-10. English everywhere; Apache-2.0; semantic versioning; published on every tag.
+| # | Principle | Recorded in |
+|---|---|---|
+| 1 | Zero configuration to start; full configuration available | |
+| 2 | Never crash on a bad specification — skip the offending operation and report it | [ADR-0007](adr/0007-specification-parser-boundary.md), [ADR-0012](adr/0012-canonical-model.md) |
+| 3 | Interpret, don't generate. Test cases are data; emitting code is a *report*, never the execution path | [ADR-0005](adr/0005-interpreted-test-model.md) |
+| 4 | One event stream, many listeners — reports, metrics, feedback and oracles all subscribe | [ADR-0006](adr/0006-event-stream-and-store.md) |
+| 5 | Narrow interfaces, discovered implementations, enforced module boundaries | [ADR-0004](adr/0004-module-structure.md), [ADR-0008](adr/0008-extension-points-no-ai-abstractions.md) |
+| 6 | No global mutable state. Two runs must coexist in one JVM | An architecture test |
+| 7 | The request loop is never blocked by computation; idle time is measured and reported | [ADR-0009](adr/0009-non-blocking-engine.md) |
+| 8 | Open formats in, open formats out | |
+| 9 | The tool runs standalone; evaluation harnesses live in a repository of their own, not in this one | [ADR-0011](adr/0011-evaluation-harness.md), amended at M1.9 |
+| 10 | English everywhere; Apache-2.0; semantic versioning; published on every tag | [ADR-0002](adr/0002-rewrite-not-refactor.md) |
 
 ## Architecture
 
@@ -104,29 +106,22 @@ restest-arch-tests   architecture rules. No main sources, never published.
 
 A run is a loop, not a batch. The specification is parsed into a canonical model of our own — not
 the parser library's types — operations are scheduled, requests are generated and sent, responses
-are captured verbatim, oracles judge them, and every step is announced on the event stream. Asked to, a run
-also persists everything observed, which is what makes offline re-analysis possible.
+are captured verbatim, oracles judge them, and every step is announced on the event stream.
 
-### Key decisions
+### The interaction store
 
-1. **Interpret, don't generate.** Test cases are data executed by an HTTP client. Emitting JUnit,
-   REST-Assured, `curl` or overlay documents is a *report*, not the execution path.
-   [ADR-0005](adr/0005-interpreted-test-model.md)
-2. **One event stream, many listeners.** Reports, metrics, feedback and oracles all subscribe.
-   [ADR-0006](adr/0006-event-stream-and-store.md)
-3. **Persist everything, when asked to.** The interaction store is what makes offline re-checking,
-   corpus oracles and honest post-hoc analysis possible. One run is one SQLite file, readable by
-   anything that reads SQLite; NDJSON is one of the report formats at M3.5, not a second store.
-   Measured at M1.7, keeping a run costs 661 MiB at the default budget and nothing in an ordinary
-   run reads it back, so it is kept only when `--store` asks — and generation never reads it either
-   way ([ADR-0013](adr/0013-input-generation.md)).
-   [ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4 and M1.7
-4. **No global mutable state.** Two runs coexist in one JVM. Enforced by an architecture test.
-5. **The loop is never blocked; idle time is reported.** [ADR-0009](adr/0009-non-blocking-engine.md)
-6. **Narrow SPIs, service discovery, module boundaries.** A new oracle or provider is one class.
-7. **The tool is standalone.** A specification and a base URL are all it ever requires. Evaluation
-   harnesses live in a repository of their own, outside this one, and no file here builds against,
-   depends on or names one. [ADR-0011](adr/0011-evaluation-harness.md), amended at M1.9
+The one architectural choice the principles above do not state. A run may persist everything it
+observed, which is what makes offline re-checking, corpus oracles and honest post-hoc analysis
+possible: one run is one SQLite file, readable by anything that reads SQLite. NDJSON is one of the
+report formats at M3.5, not a second store.
+
+It is off unless `--store` asks for it. Measured at M1.7, keeping a run costs 661 MiB at the default
+budget and nothing in an ordinary run reads it back. Generation never reads it either way: the parts
+of the tool that need a memory listen to the event stream and keep their own bounded index, because
+they want what happened *recently* rather than everything, and querying the store would put a
+database inside the request loop. The store is for looking back; the event stream is for reacting
+([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4 and M1.7;
+[ADR-0013](adr/0013-input-generation.md) §5).
 
 ## Extension points
 
@@ -166,8 +161,8 @@ how to reproduce it locally.
   composition chains and OAS 3.1 type arrays — asserting "parses without throwing, and reports
   exactly N skipped operations".
 - **Per-request overhead regression test** against a local stub with fixed latency. The comparison
-  is against our own measured overhead, not an arbitrary throughput floor, because throughput depends
-  on the API's response time and a fixed threshold would punish us for slow APIs.
+  is against our own measured overhead, not an arbitrary throughput floor, because throughput
+  depends on the API's response time and a fixed threshold would punish us for slow APIs.
 - **Native binary smoke test that actually runs the binary**, because a native build that succeeds
   and then dies on first use is the classic failure mode.
 
@@ -202,51 +197,45 @@ count is only meaningful next to somebody else's fault count.
 
 ## Related tools
 
-This section maps the REST API testing landscape for readers new to the field. The tools listed
-here are those most frequently compared with RESTest in academic evaluations and benchmarks. Brief
-descriptions are followed by a comparison table that uses the same dimensions as the table in the
-[Evaluation](#evaluation) section above.
-
-**Glossary for this section.** *Stateless testing* — techniques applied at the level of a single
-HTTP operation in isolation. *Stateful testing* — techniques that chain multiple operations to model
-resource creation, retrieval, update and deletion flows. *Black-box (B)* — the tool uses only the
-API specification and the API's HTTP responses; no access to the application source code is needed.
-*White-box (W)* — the tool additionally instruments the application's source code or bytecode to
-obtain coverage feedback and steer the search.
+This section maps the REST API testing landscape for readers new to the field: the tools most often
+compared with RESTest in academic evaluations and benchmarks, one paragraph each, followed by a
+[comparison table](#comparison) whose columns are explained above it. The terms it uses — stateless
+and stateful testing, black-box and white-box — are in the [glossary](#glossary).
 
 ### AutoRestTest
 
 [AutoRestTest](https://github.com/selab-gatech/autoresttest), from Georgia Tech, won all three
 challenges of the REST League tool competition at SBFT 2026 — fault detection, efficiency and
-effectiveness. It works in two phases. Before testing begins it
-builds a dependency graph by comparing the *names* of parameters, body properties and response
-properties across operations — with a table of static word vectors, not a language model — and it
-asks a language model for a pool of candidate values for every parameter, refining them with the
-error replies of a couple of probe requests. The testing phase is then a sequential loop over six
-learned tables, one for each decision a request needs: which operation, which parameters, which
-values, which body properties, which dependency, which credentials. Its own ablation study removes one
-component at a time and reports that removing the learning costs it more than removing the language
-model. [ADR-0017](adr/0017-what-we-take-from-autoresttest.md) records what RESTest 2.0 takes from it,
-what it refuses, and what that ablation does and does not establish.
+effectiveness. It works in two phases. Before testing begins it builds a dependency graph by
+comparing the *names* of parameters, body properties and response properties across operations —
+with a table of static word vectors, not a language model — and it asks a language model for a pool
+of candidate values for every parameter, refining them with the error replies of a couple of probe
+requests. The testing phase is then a sequential loop over six learned tables, one for each decision
+a request needs: which operation, which parameters, which values, which body properties, which
+dependency, which credentials. Its own ablation study removes one component at a time and reports
+that removing the learning costs it more than removing the language model.
+[ADR-0017](adr/0017-what-we-take-from-autoresttest.md) records what RESTest 2.0 takes from it, what
+it refuses, and what that ablation does and does not establish.
 
 ### EvoMaster
 
 [EvoMaster](https://github.com/EMResearch/EvoMaster) applies evolutionary search to REST API
-testing. Its MIO (Many-Independent-Objective) algorithm treats each coverage target as an independent
-optimisation objective, which avoids the stalling that affects single-objective search. A white-box
-mode instruments the application at the bytecode level and feeds coverage feedback directly into the
-search; a black-box mode operates on the specification alone. Stateful testing works by inferring
-which operations produce resources that others consume and constructing call sequences from that
-dependency graph. EvoMaster adopts the WFC fault catalogue and participates in the SBFT REST League.
+testing. Its MIO (Many-Independent-Objective) algorithm treats each coverage target as an
+independent optimisation objective, which avoids the stalling that affects single-objective search.
+A white-box mode instruments the application at the bytecode level and feeds coverage feedback
+directly into the search; a black-box mode operates on the specification alone. Stateful testing
+works by inferring which operations produce resources that others consume and constructing call
+sequences from that dependency graph. EvoMaster adopts the WFC fault catalogue and participates in
+the SBFT REST League.
 
 ### RESTler
 
 [RESTler](https://github.com/microsoft/restler-fuzzer), from Microsoft Research, introduced
 coverage-guided stateful REST fuzzing. It infers *producer-consumer* relationships from the
-specification — observing that `POST /orders` produces an order identifier that `DELETE /orders/{id}`
-later consumes — and uses those relationships to chain operations automatically. The fuzzer maintains
-a dictionary of type-appropriate values, extends it with values extracted from live API responses,
-and replays sequences to surface 500 errors and resource-state inconsistencies.
+specification — observing that `POST /orders` produces an order identifier that `DELETE
+/orders/{id}` later consumes — and uses those relationships to chain operations automatically. The
+fuzzer maintains a dictionary of type-appropriate values, extends it with values extracted from live
+API responses, and replays sequences to surface 500 errors and resource-state inconsistencies.
 
 ### Schemathesis
 
@@ -260,8 +249,8 @@ fault codes, and follows OAS 3.x `links` for stateful testing.
 
 [RestTestGen](https://github.com/SeUniVr/RestTestGen), from the University of Verona, focuses on
 *nominal* and *error* flow testing. It constructs CRUD sequences (create a resource, retrieve it,
-update it, delete it) and systematically mutates valid inputs to trigger error responses. It supports
-IDL-based inter-parameter constraints and emits results as JUnit 5 tests.
+update it, delete it) and systematically mutates valid inputs to trigger error responses. It
+supports IDL-based inter-parameter constraints and emits results as JUnit 5 tests.
 
 ### CATS
 
@@ -329,10 +318,15 @@ re-architecting — which is the point of listing them at all.
 Three of these rows have an open question against them, all raised by
 [ADR-0017](adr/0017-what-we-take-from-autoresttest.md) after studying the tool that won the 2026
 competition, and all of the same kind: each would have a run learn from what it has already seen.
-Whether the choice of which operation to call next may be steered by counters over what each
-operation has been answering; whether the choice among inferred dependency candidates may be scored
-by what the API answered; and whether a warm-up may read the *text* of an error reply rather than
-only its status code. None is taken here, and none is started without explicit approval.
+
+- Whether the choice of which operation to call next may be steered by counters over what each
+  operation has been answering.
+- Whether the choice among inferred dependency candidates may be scored by what the API answered.
+- Whether a warm-up may read the *text* of an error reply rather than only its status code.
+
+None is taken here, and none is started without explicit approval. What each would cost, and how
+narrow a version of it would still be worth having, is argued under "The three open questions" in
+[`ROADMAP.md`](../ROADMAP.md).
 
 ## Stack
 
@@ -351,7 +345,7 @@ Versions are pinned here and in the root POM; the two are expected to agree.
 | IDL parser | ANTLR4 | 4.13.x |
 | Constraint solver | Choco, behind an interface | 4.10.x |
 | Interaction store | SQLite (`org.xerial:sqlite-jdbc`), one file per run ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.4) | 3.50.3.0 |
-| JSON text, in `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | `com.fasterxml.jackson.core:jackson-core` | 2.22.1 |
+| JSON reader and writer | `com.fasterxml.jackson.core:jackson-core`, confined to `restest-core` ([ADR-0006](adr/0006-event-stream-and-store.md), amended at M1.6) | 2.22.1 |
 | Unit tests | JUnit Jupiter | 6.1.3 |
 | Assertions | AssertJ | 3.27.7 |
 | Container-based integration tests | Testcontainers | 2.0.5 |
@@ -372,7 +366,8 @@ Standards:
 
 Evaluation:
 
-- RESTGym, the benchmark infrastructure used for milestone campaigns — https://github.com/restgym/restgym
+- RESTGym, the benchmark infrastructure used for milestone campaigns —
+  https://github.com/restgym/restgym
 - The RESTest adapter and campaign scripts for it, private until the replication package is
   published — https://github.com/isa-group/restgym-restest2
 

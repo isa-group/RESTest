@@ -276,21 +276,20 @@ Do not start any of these without explicit approval, even where one looks easy. 
 extension point it will use, so none of them requires re-architecting. The full table, with the seam
 named for each, is under "Out of scope for v2.0" in [`docs/DESIGN.md`](docs/DESIGN.md).
 
-| Item | Extension point |
-|---|---|
-| Re-integrating the LangGraph / small-model data generator | External provider |
-| Fine-tuned small models for input values | External provider |
-| Refining values from the API's own error messages | External provider + feedback |
-| Inferring inter-parameter dependencies and injecting them as IDL during the run | Constraint source |
-| Semantic oracles inferred from request/response corpora | Corpus oracles + store + `recheck` |
-| Semantic oracles inferred from the specification | Corpus oracles |
-| Metamorphic relations | Corpus oracles |
-| Failure deduplication and clustering | Interaction store + an event-stream listener |
-| Predicting whether a request will be accepted before sending it | Feedback |
-| Search-based or reinforcement-learning scheduling | Feedback |
-| Surrogate coverage goals for black-box search | Feedback |
-| Security oracles (injection, SSRF, authorisation bypass) | Oracle interface |
-| Flow discovery from execution traces | Flow source |
+- Re-integrating the LangGraph / small-model data generator → external provider
+- Fine-tuned small models for input values → external provider
+- Refining values from the API's own error messages → external provider + feedback
+- Inferring inter-parameter dependencies and injecting them as IDL during the run → constraint
+  source
+- Semantic oracles inferred from request/response corpora → corpus oracles + store + `recheck`
+- Semantic oracles inferred from the specification → corpus oracles
+- Metamorphic relations → corpus oracles
+- Failure deduplication and clustering → interaction store + an event-stream listener
+- Predicting whether a request will be accepted before sending it → feedback
+- Search-based or reinforcement-learning scheduling → feedback
+- Surrogate coverage goals for black-box search → feedback
+- Security oracles (injection, SSRF, authorisation bypass) → oracle interface
+- Flow discovery from execution traces → flow source
 
 ### The three open questions
 
