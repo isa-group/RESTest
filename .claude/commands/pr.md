@@ -59,6 +59,10 @@ the same branch:
 
     | 1.7b ✅ [#297](https://github.com/isa-group/RESTest/pull/297) | ... |
 
+In the same commit, move the increment's count on in the two places that carry a total: the opening
+line ("53 increments in 9 milestones, N of them delivered") and its milestone's row in the "Where the
+work stands" table.
+
 This is the step the roadmap's own header asks for — "an increment is marked in its own pull request,
 so the table and the branch history never drift apart" — and it is the easy one to forget, because the
 number it needs does not exist until the pull request has been opened. Forgotten, the roadmap quietly
