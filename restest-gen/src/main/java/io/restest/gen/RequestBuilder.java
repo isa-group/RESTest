@@ -181,11 +181,12 @@ public final class RequestBuilder {
      *
      * <p>Two values cannot be sent, whatever anybody thinks of them. One that writes out as nothing
      * closes a gap in the path rather than filling it, so {@code /owners/{ownerId}} becomes a
-     * request for every owner. One carrying a line break, sent as a header, ends that header and
-     * starts another, so the request that goes out is not the request that was recorded. Either way
-     * the whole attempt is thrown away when it is assembled, and an operation whose every attempt is
-     * thrown away sends nothing for as long as the run lasts while still being counted among the
-     * operations being tested.
+     * request for every owner. One carrying a character a header cannot hold - a line break, which
+     * ends that header and starts another; a control character; anything outside plain ASCII, which
+     * is all HTTP allows a header to be written in - is refused by the engine before it is sent.
+     * Either way the whole attempt is thrown away when it is assembled, and an operation whose every
+     * attempt is thrown away sends nothing for as long as the run lasts while still being counted
+     * among the operations being tested.
      *
      * <p>Whoever is choosing a value can avoid that only by asking the same question this class
      * asks, of the same code, so this answers it by writing the value out rather than by looking at
@@ -202,7 +203,7 @@ public final class RequestBuilder {
         String written = joined(value, false, ",");
         return switch (location) {
             case PATH -> !written.isEmpty();
-            case HEADER -> !wouldSplitTheRequest(written);
+            case HEADER -> !cannotTravelInAHeader(written);
             // Both are percent-encoded on the way out, so nothing in them can end anything early.
             case QUERY, COOKIE -> true;
         };
@@ -280,24 +281,34 @@ public final class RequestBuilder {
     }
 
     /**
-     * Refuses a header value that would break the request in two.
+     * Refuses a header value that no request could carry.
      *
      * <p>A line break inside a header value ends that header as far as HTTP is concerned and starts
-     * whatever follows as another one. A specification stating such a value as a default is the one
-     * way that can happen here, and sending it would mean the request that goes out is not the
-     * request that was recorded.
+     * whatever follows as another one, so the request that went out would not be the request that
+     * was recorded. Anything else outside plain ASCII - a control character, an emoji, a word in a
+     * script other than Latin - is refused by the engine, and the request is never sent at all. Both
+     * are caught here, where the same rule decides whether a value is worth choosing in the first
+     * place, so that a run does not spend its time on requests that cannot leave the machine.
      */
     private static String headerValue(String name, String value) {
-        if (wouldSplitTheRequest(value)) {
+        if (cannotTravelInAHeader(value)) {
             throw new IllegalArgumentException("the value for the header '" + name + "' contains a "
-                    + "line break, which would split the request into two");
+                    + "character no header can carry - a line break, a control character or "
+                    + "anything outside plain ASCII");
         }
         return value;
     }
 
-    /** Whether this text, written as a header value, would end that header and start another. */
-    private static boolean wouldSplitTheRequest(String value) {
-        return value.indexOf('\r') >= 0 || value.indexOf('\n') >= 0 || value.indexOf('\0') >= 0;
+    /**
+     * Whether this text, written as a header value, could not be sent.
+     *
+     * <p>The rule is the one the engine applies: a header value is made of printable ASCII, the
+     * space and the tab. A line break would split the request in two; everything else outside that
+     * range is refused before the request leaves, so choosing such a value buys nothing but a
+     * request that is thrown away.
+     */
+    private static boolean cannotTravelInAHeader(String value) {
+        return value.chars().anyMatch(c -> (c < 0x20 && c != '\t') || c > 0x7e);
     }
 
     /**

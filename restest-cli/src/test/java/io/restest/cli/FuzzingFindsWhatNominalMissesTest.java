@@ -232,6 +232,43 @@ class FuzzingFindsWhatNominalMissesTest {
                 .doesNotContain("asks for no pushing");
     }
 
+    @Test
+    @DisplayName("every awkward value chosen for a header is one the request can carry, so pushing "
+            + "at a header sends every request rather than throwing a share of them away")
+    void awkward_values_reach_a_header(@TempDir Path directory) throws IOException {
+        // The list of awkward values holds text a header cannot hold - an escape sequence, emoji, a
+        // word in Arabic - and the engine refuses such a header before anything is sent. Those
+        // attempts used to be counted as the API not replying, which read as the API's fault and
+        // spent a share of the run on requests that never left the machine.
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), """
+                openapi: 3.0.3
+                info: {title: Traced search, version: "1.0"}
+                paths:
+                  /search:
+                    get:
+                      operationId: search
+                      parameters:
+                        - name: X-Trace
+                          in: header
+                          required: true
+                          schema: {type: string}
+                        - name: q
+                          in: query
+                          required: true
+                          schema: {type: string}
+                      responses:
+                        "200": {description: results}
+                """);
+
+        String screen = run(directory.resolve("out"), document, "--fuzzing", "100");
+
+        assertThat(screen)
+                .describedAs("a request that could not be assembled is not a reply the API failed "
+                        + "to give, and none should have been attempted")
+                .doesNotContain("no reply");
+        assertThat(screen).contains("were pushing at the API");
+    }
+
     private static String run(Path out, Path document, String... extra) {
         java.util.List<String> arguments = new java.util.ArrayList<>(java.util.List.of(
                 "run", document.toString(),
