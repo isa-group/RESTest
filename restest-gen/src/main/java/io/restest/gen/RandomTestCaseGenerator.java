@@ -500,20 +500,24 @@ public final class RandomTestCaseGenerator {
         // Asked of the ordinary way of building a request, for the same reason a parameter is: the
         // question is whether a body anybody believes in can be found, and a list of awkward values
         // answers for anything at all.
-        if (values.offer(askForBody(operation, declared, mediaType.get())).isEmpty()) {
-            return Optional.of("no value could be found for the request body this operation "
-                    + "requires");
-        }
         // Asked of the value rather than of the shape. A document describing a web form as anything
         // but an object describes a request with no fields to name - but a shape that allows
         // several things, or anything at all, can still produce an object, and refusing those on
         // sight would skip operations this can perfectly well test.
-        if (writableBody(operation, declared, mediaType.get(), values).isEmpty()) {
+        if (writableBody(operation, declared, mediaType.get(), values).isPresent()) {
+            return Optional.empty();
+        }
+        // Nothing usable came out, and there are two reasons that can happen. Told apart by asking
+        // once more, and only on this path: a body nobody has a value for at all, or - for a web
+        // form alone, since anything at all can be written as JSON - values that keep coming out
+        // as something with no fields to name.
+        if (RequestBuilder.isForm(mediaType.get())
+                && values.offer(askForBody(operation, declared, mediaType.get())).isPresent()) {
             return Optional.of("it requires a request body sent as the fields of a web form, and "
                     + "what can be built for that body is not an object, so there are no fields to "
                     + "name");
         }
-        return Optional.empty();
+        return Optional.of("no value could be found for the request body this operation requires");
     }
 
     /**

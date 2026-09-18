@@ -55,7 +55,8 @@ check that this stays true.
 
 RESTest reads the document, invents requests from it, sends them for as long as you gave it, judges
 every reply against what the document promised, and prints each disagreement with a `curl` command
-that does it again:
+that does it again. This is the shape of what it prints, from one run of the command above; the
+numbers in it are that run's and yours will be different:
 
 ```
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
