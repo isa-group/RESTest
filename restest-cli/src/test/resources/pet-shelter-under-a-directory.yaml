@@ -1,0 +1,28 @@
+# The Pet Shelter again, described the way plenty of real APIs describe themselves: served from
+# under a directory rather than from the top of a server. The 2027 REST League's pet-clinic is one
+# of these, and testing it against an address that named only the machine used to send every
+# request to a path that did not exist.
+openapi: 3.0.3
+info:
+  title: Pet Shelter
+  version: 1.0.0
+servers:
+  - url: http://localhost:9966/shelter/api
+paths:
+  /pets:
+    get:
+      operationId: listPets
+      responses:
+        "200":
+          description: every pet
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string

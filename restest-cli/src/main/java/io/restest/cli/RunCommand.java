@@ -115,8 +115,11 @@ final class RunCommand implements Callable<Integer> {
     @Option(
             names = "--url",
             paramLabel = "<base>",
-            description = "Where the API is running, for instance http://localhost:8080/api/v3. "
-                    + "Taken from the document when it names a usable address and this is omitted.")
+            description = "Which machine the API is running on, for instance "
+                    + "http://localhost:8080. Taken from the document when it names a usable "
+                    + "address and this is omitted. Given without a path, the directory the "
+                    + "document says the API is served from is kept; given with one, such as "
+                    + "http://localhost:8080/api/v3, that replaces it.")
     private String baseUrl;
 
     @Option(

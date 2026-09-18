@@ -17,6 +17,8 @@ package io.restest.cli;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -88,6 +90,31 @@ class RestestTest {
         assertThat(directory.resolve("report.json")).exists();
         assertThat(screen.toString())
                 .contains("report written to " + directory.resolve("report.json"));
+    }
+
+    @Test
+    @DisplayName("an API served from under a directory is tested there, not at the top of its server")
+    void the_directory_the_document_declares_is_where_the_requests_go(@TempDir Path directory) {
+        // Only under the directory. Anything asked for anywhere else on this server is answered the
+        // way a real server answers a path it has never heard of, so a run that lost the directory
+        // produces exactly what the benchmark produced before this was fixed: everything refused.
+        api.stubFor(get(urlMatching("/shelter/api/pets")).willReturn(aResponse()
+                .withStatus(200)
+                .withHeader("Content-Type", "application/json")
+                .withBody("[{\"id\": 7, \"name\": \"Rex\"}]")));
+
+        int answer = run("run", "pet-shelter-under-a-directory.yaml", "--url", api.baseUrl(),
+                "--budget", "1s", "--seed", "20260918", "--out", directory.toString());
+
+        assertThat(answer)
+                .describedAs("nothing here is broken - though this says only that the run finished, "
+                        + "not that it arrived anywhere; the two assertions below say that")
+                .isZero();
+        assertThat(screen.toString())
+                .describedAs("the address it settled on is the first thing a run says, so losing "
+                        + "the directory is visible before any request goes out")
+                .contains("RESTest testing Pet Shelter at " + api.baseUrl() + "/shelter/api");
+        api.verify(moreThanOrExactly(1), getRequestedFor(urlMatching("/shelter/api/pets")));
     }
 
     @Test
