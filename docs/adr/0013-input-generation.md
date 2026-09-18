@@ -221,7 +221,9 @@ becomes deterministic and the random arithmetic goes away.
   produced a 2xx. Without one of them, a varied dictionary is a lottery for anything but a single
   parameter.
 - Two increments already planned inherit obligations. **M1.6** publishes the event stream and adds the
-  intent to the test case, which is a store layout change — supported, since the file records the layout
+  intent to the test case — it published the event stream and did not add the intent, and the
+  obligation moved to M3.1b, the first increment with an oracle that reads one — which is a store
+  layout change — supported, since the file records the layout
   that wrote it. **M1.7** keeps the loop in the command-line module, so that generation never gains a
   dependency on the engine or the store.
 - **Evaluation integrity.** The default strategy must not depend on data curated for the five APIs the

@@ -65,7 +65,7 @@ layout).
 | 2.1a ✅ [#307](https://github.com/isa-group/RESTest/pull/307) | `allOf` folded into the canonical schema: halves combined, the stricter bound kept, a combination nothing satisfies and one we cannot work out each said plainly | The inheritance idiom real APIs describe their resources with stops being ignored |
 | 2.1b ✅ [#308](https://github.com/isa-group/RESTest/pull/308) | `oneOf` / `anyOf` as a shape of their own (ADR-0018). Discriminators deliberately not included: they cost no request, and reading the corpus's one real hierarchy as a plain object would produce a shape quietly missing the property that identifies it | An operation whose parameter may be a number *or* a text stops being skipped |
 | 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers now send those identifiers instead of inventing ones |
-| 2.3 | *Deferred at M2.7a, not dropped.* The deterministic boundary walk returns with the mutation operator, where ADR-0013 §4 puts it: stepping outside a documented bound is a change to a request the API already accepted, and setting several parameters outside their bounds at once teaches nothing attributable. Both halves also need M3.1's oracles to pay off at all. Measured before deferring: 327 of 4,916 corpus parameters declare any limit, and in the priority corpus that is pet-clinic 25, kafka 2, flight-search 1, the other two none | Reproducible edge-case tests, not luck |
+| 2.3 | *Deferred at M2.7a, not dropped — it returns as part of [3.1b](#m3--oracles-faults-and-reporting).* The deterministic boundary walk goes where ADR-0013 §4 puts it, with the mutation operator: stepping outside a documented bound is a change to a request the API already accepted, and setting several parameters outside their bounds at once teaches nothing attributable. Both halves also need M3.1's oracles to pay off at all. Measured before deferring: 327 of 4,916 corpus parameters declare any limit, and in the priority corpus that is pet-clinic 25, kafka 2, flight-search 1, the other two none | Reproducible edge-case tests, not luck |
 | 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
 | 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
@@ -122,6 +122,7 @@ cheapest thing in M2 to find out.
 | # | Increment | What it enables |
 |---|---|---|
 | 3.1 | WFC catalogue, first tranche: status-code conformance, content type, response headers, negative-data rejection, positive-data acceptance, missing required header, unsupported method | Many more kinds of bug detected |
+| 3.1b | **Deliberate violations, as mutations of requests the API accepted** (ADR-0013 §4). The test case gains the *intent* §3 describes — I believe these values are acceptable, I expect this refused and here is what I broke, or I do not know — which is the obligation §3 gave M1.6 and nobody has met. A listener on the event stream keeps a bounded index of the test cases that actually returned 2XX (§5), and operators take one of those and change exactly one thing: drop a required parameter, send the wrong type, step outside a documented bound, break an enumeration, break a pattern, and ADR-0017's send a required parameter in a location it was not declared in. **M2.3's deterministic boundary walk returns here**, as the operator that steps outside a documented limit by exactly one. The third share of the budget arrives with it | The tool stops only being able to ask "does this work?" and starts being able to ask "does it refuse what it should?" — and when an API accepts a request RESTest deliberately broke, the fault names the one thing that was changed |
 | 3.2 | HTTP-semantics and REST-design oracles (WFC 900–909 and 950–965) | Protocol-level bugs nobody else on our side detects |
 | 3.3 | `CorpusOracle` interface and `restest recheck <run>` | Re-examine a finished run with new oracles, offline, no API calls |
 | 3.4 | Per-operation oracle configuration + published JSON Schema for the config file | False positives silenced per operation instead of the tool being switched off |
@@ -129,12 +130,31 @@ cheapest thing in M2 to find out.
 | 3.6 | Replies that no rule could judge counted, and said out loud in the summary, the JSON report and the exit code | A clean bill of health stops being ambiguous: a run that could not check something says so, instead of saying nothing was wrong |
 | 3.7 | What a run writes when it is cut short: Ctrl-C leaves the summary, the report and a closed store behind, or says plainly that it could not (ADR-0015 lists the three candidate answers) | Stopping a long run early stops costing you everything it had already found |
 
+**3.1b is in M3 although the code is generator-side**, and it is numbered after 3.1 rather than given
+a number of its own because that is the order it has to be taken in: 3.1 supplies the two oracles
+that make a broken request worth sending at all — negative data must be refused, positive data must
+be accepted. Built before them, every deliberate violation would earn a 4XX that nothing reads and no
+finding anybody could act on.
+
+It is also where two debts written into earlier increments come due. The **intent** of ADR-0013 §3
+was assigned to M1.6 and never built; M2.2 and M2.7a each left it out again for the same reason, that
+no oracle reads it — so 3.1b is the first increment where it is not a mechanism waiting for a
+consumer. And **M2.3's boundary walk** was deferred here: §4 says stepping outside a documented bound
+is a change to a request the API already accepted, so the walk needs the memory of accepted requests
+that this increment builds.
+
+One promise changes shape, and ADR-0013 §7 already says how. A strategy with a memory is not
+reproduced from the seed — what gets mutated depends on what the API answered and when — so a run
+using it is reproduced by replaying the stored requests instead. The seed keeps its other three jobs:
+deterministic tests, reproducing a failure that happens before any request exists, and the fixed
+workload M6.2's overhead test compares commits against.
+
 ADR-0017 adds one mutation operator, under ADR-0013 §4: send a *required* parameter in a location it
 was not declared in — query, header, cookie. The API is then missing something it said it needs, so a
-refusal is correct and a 2XX is attributable to that one change. The operator is generator-side; 3.1
-supplies the oracle that judges it. Restricting it to required parameters is what keeps it inside
-§4's contract, and it is why ADR-0017 refuses the companion operator that sends parameters the
-document never declared: there, both answers are defensible and no oracle can call it.
+refusal is correct and a 2XX is attributable to that one change. Restricting it to required parameters
+is what keeps it inside §4's contract, and it is why ADR-0017 refuses the companion operator that
+sends parameters the document never declared: there, both answers are defensible and no oracle can
+call it.
 
 v2.0's own reports are raw: every fault is counted on its own and none is ever declared to be the
 same problem as another. What the JSON report bounds (M1.7b) is how many faults of one kind, on one

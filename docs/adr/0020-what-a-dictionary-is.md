@@ -128,7 +128,7 @@ does not express"*.
 
 This is `intent` as *data*, settled now because the format is published and adding a field to it later
 is a change to everybody's files. It is not `intent` on the test case, which stays out: nothing reads
-it until M3.1, `--store` is off by default, and the stored layout already moved in 2.2. What a run
+it until M3.1b, `--store` is off by default, and the stored layout already moved in 2.2. What a run
 recorded in this version cannot distinguish is a 4xx the tool asked for from one it did not, per
 request — the summary reports the count, and that is all.
 
@@ -271,7 +271,7 @@ lists and objects.
   1.x is copied" that nobody has written, for about forty values that took an hour to better.
 - **Adding `intent` to the test case now.** It is ADR-0013's design and this is the first increment
   that deliberately sends values it expects to be refused. Rejected as the mechanism-before-its-
-  consumer mistake ADR-0013 names twice: no oracle reads it before M3.1, and the summary's count is
+  consumer mistake ADR-0013 names twice: no oracle reads it before M3.1b, and the summary's count is
   the honest interim.
 - **Weighted groups now.** Half an hour of work, and weights over a list of one.
 - **Recognising a strategy built to be refused by its name.** What the first version did, and wrong:
