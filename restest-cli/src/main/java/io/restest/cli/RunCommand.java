@@ -25,6 +25,7 @@ import io.restest.core.model.SpecificationIssue;
 import io.restest.core.spec.SpecificationParser;
 import io.restest.core.store.InteractionStore;
 import io.restest.exec.OkHttpEngine;
+import io.restest.gen.Dictionaries;
 import io.restest.gen.RandomTestCaseGenerator;
 import io.restest.oracles.OracleListener;
 import io.restest.report.ConsoleReport;
@@ -37,6 +38,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
@@ -135,6 +137,25 @@ final class RunCommand implements Callable<Integer> {
     private Path outputDirectory;
 
     @Option(
+            names = "--dictionary",
+            paramLabel = "<file-or-directory>",
+            description = "A file of values to send, or a directory of them. Repeat for several. "
+                    + "Values good enough to be worth keeping belong next to the specification "
+                    + "they were worked out for. RESTest always uses its own list of deliberately "
+                    + "awkward values on top of whatever is given here.")
+    private List<Path> dictionaries = new ArrayList<>();
+
+    @Option(
+            names = "--fuzzing",
+            paramLabel = "<percentage>",
+            defaultValue = "" + RandomTestCaseGenerator.AWKWARD_SHARE,
+            description = "How much of the time to spend on requests built from values chosen to "
+                    + "be awkward - empty text, enormous numbers, the wrong kind of value - which "
+                    + "a healthy API turns away and a fragile one falls over on. 0 sends none of "
+                    + "them. Default: ${DEFAULT-VALUE}.")
+    private int fuzzingShare;
+
+    @Option(
             names = "--store",
             description = "Keep every request and reply in run.sqlite, so the run can be examined "
                     + "again later without asking the API anything. Off unless asked for: a minute "
@@ -165,9 +186,17 @@ final class RunCommand implements Callable<Integer> {
         // run reports itself as flawless.
         try (HttpEngine engine = new OkHttpEngine(engineSettings)) {
             ApiModel model = parser.parse(specification);
-            RandomTestCaseGenerator generator = seed == null
-                    ? new RandomTestCaseGenerator(model)
-                    : new RandomTestCaseGenerator(model, seed);
+            Dictionaries.Found found = Dictionaries.gather(dictionaries, model);
+            found.problems().forEach(problem -> err.println("restest: " + problem));
+            RandomTestCaseGenerator generator;
+            try {
+                generator = new RandomTestCaseGenerator(model,
+                        seed == null ? new java.util.SplittableRandom().nextLong() : seed,
+                        found.dictionaries(), fuzzingShare);
+            } catch (IllegalArgumentException outOfRange) {
+                err.println("restest: " + outOfRange.getMessage());
+                return ExitCode.NOTHING_TO_TEST;
+            }
             List<Operation> testable = generator.testableOperations();
             if (testable.isEmpty()) {
                 return nothingToTest(err, model, generator);
@@ -191,7 +220,7 @@ final class RunCommand implements Callable<Integer> {
             PrintWriter err) {
         Path reportFile = directory.resolve("report.json");
         Path runFile = directory.resolve("run.sqlite");
-        ConsoleReport console = ConsoleReport.to(out);
+        ConsoleReport console = ConsoleReport.to(out, generator.sourcesExpectingRefusal());
 
         RunLoop.Outcome outcome = null;
         EventStream events = null;

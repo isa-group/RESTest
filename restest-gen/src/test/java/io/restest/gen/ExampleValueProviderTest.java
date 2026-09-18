@@ -52,7 +52,7 @@ class ExampleValueProviderTest {
     @Test
     @DisplayName("a sample the parameter itself offers wins over one its shape offers")
     void a_parameters_own_sample_wins() {
-        ValueRequest request = new ValueRequest(OperationId.of("GET /clusters/{cluster_id}"),
+        ValueRequest request = ValueRequest.of(OperationId.of("GET /clusters/{cluster_id}"),
                 "cluster_id", ParameterLocation.PATH, sampled("from the shape"),
                 List.of(JsonValue.of("cluster-1")));
 
@@ -95,7 +95,7 @@ class ExampleValueProviderTest {
                         + "it would pin the run to one member of a list meant to be walked")
                 .isEmpty();
 
-        ValueRequest withItsOwnSample = new ValueRequest(OperationId.of("GET /widgets"), "download",
+        ValueRequest withItsOwnSample = ValueRequest.of(OperationId.of("GET /widgets"), "download",
                 ParameterLocation.QUERY, listed, List.of(JsonValue.of("false")));
         assertThat(provider.offer(withItsOwnSample)).isEmpty();
     }
@@ -116,7 +116,7 @@ class ExampleValueProviderTest {
     @Test
     @DisplayName("a shape that accepts no value at all is offered no sample")
     void a_shape_that_accepts_nothing_is_offered_nothing() {
-        ValueRequest impossible = new ValueRequest(OperationId.of("GET /widgets"), "widgetId",
+        ValueRequest impossible = ValueRequest.of(OperationId.of("GET /widgets"), "widgetId",
                 ParameterLocation.QUERY, io.restest.core.schema.NothingSchema.of(),
                 List.of(JsonValue.of("anything")));
 
@@ -131,14 +131,14 @@ class ExampleValueProviderTest {
     void a_sample_that_is_nothing_never_fills_a_gap_in_the_path() {
         for (JsonValue nothing : List.of(JsonValue.NULL, JsonValue.of(""),
                 JsonValue.array(List.of()), JsonValue.object(java.util.Map.of()))) {
-            ValueRequest inThePath = new ValueRequest(OperationId.of("GET /owners/{ownerId}"),
+            ValueRequest inThePath = ValueRequest.of(OperationId.of("GET /owners/{ownerId}"),
                     "ownerId", ParameterLocation.PATH, StringSchema.of(), List.of(nothing));
 
             assertThat(provider.offer(inThePath))
                     .describedAs("%s in the path would turn a request for one owner into a "
                             + "request for every owner", nothing)
                     .isEmpty();
-            assertThat(provider.offer(new ValueRequest(OperationId.of("GET /owners"), "q",
+            assertThat(provider.offer(ValueRequest.of(OperationId.of("GET /owners"), "q",
                     ParameterLocation.QUERY, StringSchema.of(), List.of(nothing))))
                     .describedAs("elsewhere %s is an ordinary thing to send", nothing)
                     .isPresent();
@@ -165,7 +165,7 @@ class ExampleValueProviderTest {
     @Test
     @DisplayName("a usable sample is still found when another of them could not fill the path")
     void the_usable_samples_are_the_ones_chosen_among() {
-        ValueRequest inThePath = new ValueRequest(OperationId.of("GET /owners/{ownerId}"),
+        ValueRequest inThePath = ValueRequest.of(OperationId.of("GET /owners/{ownerId}"),
                 "ownerId", ParameterLocation.PATH, StringSchema.of(),
                 List.of(JsonValue.NULL, JsonValue.of("1")));
 
@@ -178,7 +178,7 @@ class ExampleValueProviderTest {
     @Test
     @DisplayName("a parameter whose only sample cannot be used falls back on its shape's")
     void an_unusable_sample_does_not_shadow_a_usable_one() {
-        ValueRequest request = new ValueRequest(OperationId.of("GET /owners/{ownerId}"), "ownerId",
+        ValueRequest request = ValueRequest.of(OperationId.of("GET /owners/{ownerId}"), "ownerId",
                 ParameterLocation.PATH, sampled("1"), List.of(JsonValue.of("")));
 
         assertThat(provider.offer(request).orElseThrow().value())
@@ -192,18 +192,18 @@ class ExampleValueProviderTest {
     void a_sample_with_a_line_break_is_never_sent_as_a_header() {
         JsonValue broken = JsonValue.of("one\ntwo");
 
-        assertThat(provider.offer(new ValueRequest(OperationId.of("GET /pets"), "X-Trace",
+        assertThat(provider.offer(ValueRequest.of(OperationId.of("GET /pets"), "X-Trace",
                 ParameterLocation.HEADER, StringSchema.of(), List.of(broken))))
                 .describedAs("a line break ends the header and starts another, so the request "
                         + "that went out would not be the request that was recorded")
                 .isEmpty();
-        assertThat(provider.offer(new ValueRequest(OperationId.of("GET /pets"), "X-Trace",
+        assertThat(provider.offer(ValueRequest.of(OperationId.of("GET /pets"), "X-Trace",
                 ParameterLocation.HEADER, StringSchema.of(),
                 List.of(JsonValue.array(JsonValue.of("a"), broken)))))
                 .describedAs("the break may be inside one element, which the written value shows "
                         + "and the value's shape does not")
                 .isEmpty();
-        assertThat(provider.offer(new ValueRequest(OperationId.of("GET /pets"), "q",
+        assertThat(provider.offer(ValueRequest.of(OperationId.of("GET /pets"), "q",
                 ParameterLocation.QUERY, StringSchema.of(), List.of(broken))))
                 .describedAs("a query string is encoded on the way out, so nothing in it ends "
                         + "anything early")
@@ -211,7 +211,7 @@ class ExampleValueProviderTest {
     }
 
     private static ValueRequest inThePath(JsonValue sample) {
-        return new ValueRequest(OperationId.of("GET /pets/{ids}"), "ids", ParameterLocation.PATH,
+        return ValueRequest.of(OperationId.of("GET /pets/{ids}"), "ids", ParameterLocation.PATH,
                 io.restest.core.schema.ArraySchema.of(StringSchema.of()), List.of(sample));
     }
 

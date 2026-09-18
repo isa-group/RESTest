@@ -1,0 +1,182 @@
+/*
+ * Copyright 2026 ISA Research Group, Universidad de Sevilla.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package io.restest.gen;
+
+import io.restest.core.json.JsonException;
+import io.restest.core.json.JsonText;
+import io.restest.core.json.JsonValue;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * Reads a dictionary out of the text of a file.
+ *
+ * <p>The format is written down in {@code docs/dictionary-format.md} and is deliberately plain
+ * JSON, because a dictionary is the one part of this tool a user is most likely to want to write by
+ * hand or produce from a script of their own.
+ *
+ * <pre>{@code
+ * {
+ *   "version": 1,
+ *   "name": "fuzzing",
+ *   "keyedBy": "type",
+ *   "expects": "refusal",
+ *   "values": {
+ *     "any":    [null],
+ *     "string": ["", "   "]
+ *   }
+ * }
+ * }</pre>
+ *
+ * <p>A file this version cannot read is refused by name rather than half-read: a dictionary that
+ * silently lost half its values would be worse than one that was never loaded, because nobody would
+ * know to go and look.
+ */
+final class DictionaryDocument {
+
+    /** The version of the file format this build writes and reads. */
+    static final long VERSION = 1;
+
+    private DictionaryDocument() {
+    }
+
+    /**
+     * The dictionary a file's text describes.
+     *
+     * @param text the file's contents
+     * @param describedAs where it came from, for saying so when it cannot be read
+     * @return the dictionary
+     * @throws JsonException if the text is not a dictionary this version can read
+     */
+    static ValueDictionary read(String text, String describedAs) {
+        Objects.requireNonNull(text, "text");
+        Objects.requireNonNull(describedAs, "describedAs");
+        JsonValue.JsonObject document = asObject(parse(text, describedAs), "a dictionary",
+                describedAs);
+
+        long version = wholeNumber(document, "version", describedAs);
+        if (version != VERSION) {
+            throw new JsonException(describedAs + " is a dictionary written in version " + version
+                    + " of the format, and this version of RESTest reads version " + VERSION);
+        }
+        String name = text(document, "name", describedAs);
+        ValueDictionary.Keying keying = keying(text(document, "keyedBy", describedAs), describedAs);
+        Dictionary.Expectation expects = document.member("expects")
+                .map(stated -> expectation(asText(stated, "expects", describedAs), describedAs))
+                // Not stated is the ordinary case and an honest answer: most lists of values are
+                // things somebody thought were plausible, not things anybody checked against this
+                // API.
+                .orElse(Dictionary.Expectation.UNKNOWN);
+
+        JsonValue.JsonObject stated = asObject(
+                document.member("values").orElseThrow(() -> new JsonException(
+                        describedAs + " is a dictionary with no 'values' in it")),
+                "the values of a dictionary", describedAs);
+
+        Map<String, List<JsonValue>> values = new LinkedHashMap<>();
+        Map<String, Map<String, List<JsonValue>>> perOperation = new LinkedHashMap<>();
+        if (keying == ValueDictionary.Keying.OPERATION_AND_PARAMETER) {
+            stated.members().forEach((operation, parameters) -> {
+                if (ValueDictionary.ANY.equals(operation)) {
+                    values.put(operation, listOf(parameters, operation, describedAs));
+                    return;
+                }
+                Map<String, List<JsonValue>> named = new LinkedHashMap<>();
+                asObject(parameters, "the parameters of '" + operation + "'", describedAs)
+                        .members()
+                        .forEach((parameter, held) ->
+                                named.put(parameter, listOf(held, parameter, describedAs)));
+                perOperation.put(operation, Map.copyOf(named));
+            });
+        } else {
+            stated.members().forEach((key, held) ->
+                    values.put(key, listOf(held, key, describedAs)));
+        }
+        return new ValueDictionary(name, keying, expects, values, perOperation);
+    }
+
+    private static JsonValue parse(String text, String describedAs) {
+        try {
+            return JsonText.read(text);
+        } catch (JsonException notJson) {
+            throw new JsonException(describedAs + " is not JSON: " + notJson.getMessage());
+        }
+    }
+
+    private static List<JsonValue> listOf(JsonValue value, String key, String describedAs) {
+        if (value instanceof JsonValue.JsonArray array) {
+            return array.elements();
+        }
+        throw new JsonException(describedAs + " holds something other than a list of values under '"
+                + key + "'");
+    }
+
+    private static ValueDictionary.Keying keying(String stated, String describedAs) {
+        return switch (stated) {
+            case "type" -> ValueDictionary.Keying.TYPE;
+            case "format" -> ValueDictionary.Keying.FORMAT;
+            case "schema" -> ValueDictionary.Keying.SCHEMA;
+            case "name" -> ValueDictionary.Keying.NAME;
+            case "operationAndParameter" -> ValueDictionary.Keying.OPERATION_AND_PARAMETER;
+            default -> throw new JsonException(describedAs + " says its values are keyed by '"
+                    + stated + "', which is not one of type, format, schema, name or "
+                    + "operationAndParameter");
+        };
+    }
+
+    private static Dictionary.Expectation expectation(String stated, String describedAs) {
+        return switch (stated.toLowerCase(Locale.ROOT)) {
+            case "acceptance" -> Dictionary.Expectation.ACCEPTANCE;
+            case "refusal" -> Dictionary.Expectation.REFUSAL;
+            case "unknown" -> Dictionary.Expectation.UNKNOWN;
+            default -> throw new JsonException(describedAs + " says it expects '" + stated
+                    + "', which is not one of acceptance, refusal or unknown");
+        };
+    }
+
+    private static JsonValue.JsonObject asObject(JsonValue value, String what, String describedAs) {
+        if (value instanceof JsonValue.JsonObject object) {
+            return object;
+        }
+        throw new JsonException(describedAs + ": " + what + " is not an object");
+    }
+
+    private static String text(JsonValue.JsonObject document, String member, String describedAs) {
+        return asText(document.member(member).orElseThrow(() -> new JsonException(
+                describedAs + " is a dictionary with no '" + member + "' in it")), member,
+                describedAs);
+    }
+
+    private static String asText(JsonValue value, String member, String describedAs) {
+        if (value instanceof JsonValue.JsonString string) {
+            return string.value();
+        }
+        throw new JsonException(describedAs + "'s '" + member + "' is not text");
+    }
+
+    private static long wholeNumber(JsonValue.JsonObject document, String member,
+            String describedAs) {
+        JsonValue value = document.member(member).orElseThrow(() -> new JsonException(
+                describedAs + " is a dictionary with no '" + member + "' in it"));
+        if (value instanceof JsonValue.JsonNumber number) {
+            return number.value().longValue();
+        }
+        throw new JsonException(describedAs + "'s '" + member + "' is not a number");
+    }
+}

@@ -48,10 +48,15 @@ class RandomTestCaseGeneratorTest {
      * The operations seed 20260912 picks, in order, from three that carry no parameters.
      *
      * <p>Recorded from a run, not derived from anything. It is the seed's meaning written down.
+     *
+     * <p>Rewritten once, on purpose, when a run stopped building every request the same way and
+     * started deciding first what kind of request it was making. That decision draws on the run's
+     * randomness before anything else does, so every number written down before it names a
+     * different run now. Changing this line is what taking that decision looks like.
      */
     private static final String PINNED_ORDER =
-            "stores stores vets stores stores vets pets vets vets stores "
-            + "stores vets stores pets pets stores stores vets stores stores";
+            "stores vets stores pets vets stores stores pets stores stores "
+            + "vets stores pets vets vets stores pets pets vets vets";
 
     private static final Operation LIST_PETS = Operation.of(HttpMethod.GET, "/pets", List.of(
             Parameter.of("status", ParameterLocation.QUERY, true, StringSchema.of()),
@@ -331,30 +336,108 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("an object with nothing declared in it can never fill a gap in a path")
-    void an_empty_object_in_a_path_never_assembles() {
-        Operation operation = Operation.of(HttpMethod.GET, "/pets/{petId}", List.of(
-                Parameter.of("petId", ParameterLocation.PATH, true, ObjectSchema.of(Map.of()))));
-        RandomTestCaseGenerator generator = generatorFor(operation);
-
-        // A value is found, so the operation is offered as testable, and that is the whole of the
-        // problem: the value is always the empty object, which writes as nothing, and a gap in a
-        // path filled with nothing addresses the collection instead of the item. Every draw, not
-        // most of them - an object with no declared properties has nothing to put inside it - so
-        // this operation is counted among the ones that can be tested and is then never tested.
+    @DisplayName("an operation whose only possible value could never be sent is said to be "
+            + "untestable, rather than counted and never tested")
+    void a_value_that_could_never_be_sent_is_not_offered() {
+        // An object with nothing declared in it has nothing to put inside, so the only value
+        // anybody could invent for it is the empty object - and an empty piece of a path closes
+        // the gap instead of filling it, turning a request for one pet into a request for every
+        // pet. The same is true of a string allowed no characters and a list allowed no items.
         //
-        // Pinned rather than fixed. Deciding a value exists and deciding it can be written into a
-        // web address are two different questions, and the second one belongs with the work that
-        // makes values fit their place. Written down here so that it is a known gap rather than a
-        // surprise, and so that closing it has a test waiting.
-        assertThat(generator.testableOperations()).containsExactly(operation);
-        for (int draw = 0; draw < 20; draw++) {
-            TestCase testCase = generator.generate(operation).orElseThrow();
-            assertThatExceptionOfType(IllegalArgumentException.class)
-                    .isThrownBy(() -> RequestBuilder.build(operation, testCase,
-                            "https://api.example"))
-                    .withMessageContaining("empty");
+        // This used to be a known gap, written down here as one: a value was found, the operation
+        // was offered as testable, and every request it ever produced was thrown away when it was
+        // assembled - for the whole of the run. Saying "no value could be found" is the honest
+        // answer, and it puts the operation in the list the run reports rather than in the list it
+        // claims to be testing.
+        for (io.restest.core.schema.CanonicalSchema nothingSendable : List.of(
+                ObjectSchema.of(Map.of()),
+                new StringSchema(SchemaMetadata.none(), Optional.empty(), Optional.of(0),
+                        Optional.empty(), Optional.empty()),
+                new io.restest.core.schema.ArraySchema(SchemaMetadata.none(), StringSchema.of(),
+                        Optional.empty(), Optional.of(0), false))) {
+            Operation operation = Operation.of(HttpMethod.GET, "/pets/{petId}", List.of(
+                    Parameter.of("petId", ParameterLocation.PATH, true, nothingSendable)));
+
+            assertThat(generatorFor(operation).untestableOperations())
+                    .describedAs("%s in a path", nothingSendable.getClass().getSimpleName())
+                    .containsOnlyKeys(operation.id());
         }
+    }
+
+    @Test
+    @DisplayName("part of a run is spent on requests built entirely from values meant to be refused")
+    void some_requests_are_built_to_be_refused() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of()),
+                Parameter.of("age", ParameterLocation.QUERY, true,
+                        io.restest.core.schema.NumberSchema.of(
+                                io.restest.core.schema.NumberKind.INTEGER))));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                ApiModel.of("Pets", "1.0", List.of(search)), 4242L,
+                List.of(awkward("", -1)));
+
+        int builtToBeRefused = 0;
+        for (int draw = 0; draw < 200; draw++) {
+            TestCase testCase = generator.generate(search).orElseThrow();
+            boolean fromTheAwkwardList = testCase.parameterValues().stream()
+                    .map(io.restest.core.execution.ParameterValue::origin)
+                    .anyMatch(origin -> origin.equals(
+                            new io.restest.core.execution.ValueOrigin.Generated("awkward")));
+            if (fromTheAwkwardList) {
+                builtToBeRefused++;
+                // Every parameter at once, never a mixture: an API stops reading at the first thing
+                // it does not like, so a request with one awkward value among good ones would teach
+                // nothing that this one does not.
+                assertThat(testCase.parameterValues()).allSatisfy(value ->
+                        assertThat(value.origin()).isEqualTo(
+                                new io.restest.core.execution.ValueOrigin.Generated("awkward")));
+            }
+        }
+
+        assertThat(builtToBeRefused)
+                .describedAs("about a quarter of the time, and never all of it or none of it")
+                .isBetween(20, 120);
+        assertThat(generator.sourcesExpectingRefusal()).containsExactly("awkward");
+    }
+
+    @Test
+    @DisplayName("a run given no list of awkward values sends nothing it expects to be refused")
+    void without_such_a_list_nothing_is_built_to_be_refused() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                ApiModel.of("Pets", "1.0", List.of(search)), 4242L, List.of());
+
+        assertThat(generator.sourcesExpectingRefusal()).isEmpty();
+        for (int draw = 0; draw < 50; draw++) {
+            assertThat(generator.generate(search).orElseThrow().parameterValues())
+                    .allSatisfy(value -> assertThat(value.origin())
+                            .isNotEqualTo(new io.restest.core.execution.ValueOrigin
+                                    .Generated("awkward")));
+        }
+    }
+
+    /** A list of values somebody put together expecting the API to turn every one of them away. */
+    private static Dictionary awkward(String forText, long forWholeNumbers) {
+        return new Dictionary() {
+            @Override
+            public List<io.restest.core.json.JsonValue> valuesFor(
+                    io.restest.core.gen.ValueRequest request) {
+                return request.schema() instanceof StringSchema
+                        ? List.of(io.restest.core.json.JsonValue.of(forText))
+                        : List.of(io.restest.core.json.JsonValue.of(forWholeNumbers));
+            }
+
+            @Override
+            public String name() {
+                return "awkward";
+            }
+
+            @Override
+            public Expectation expects() {
+                return Expectation.REFUSAL;
+            }
+        };
     }
 
     private static RandomTestCaseGenerator generatorFor(Operation... operations) {

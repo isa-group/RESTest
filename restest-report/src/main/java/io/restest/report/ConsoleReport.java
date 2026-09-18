@@ -82,13 +82,37 @@ public final class ConsoleReport implements RunListener {
     private int attempts;
     private int faults;
 
-    private ConsoleReport(Appendable out) {
+    /** The names of the lists of values that were meant to be refused. */
+    private final Set<String> awkwardSources;
+
+    /** How many requests carried at least one value from one of them. */
+    private long awkward;
+
+    private ConsoleReport(Appendable out, Set<String> awkwardSources) {
         this.out = Objects.requireNonNull(out, "out");
+        this.awkwardSources = Set.copyOf(Objects.requireNonNull(awkwardSources, "awkwardSources"));
     }
 
     /** A report that writes wherever you tell it to. */
     public static ConsoleReport to(Appendable out) {
-        return new ConsoleReport(out);
+        return new ConsoleReport(out, Set.of());
+    }
+
+    /**
+     * A report that writes wherever you tell it to, and knows which lists of values were meant to
+     * be refused.
+     *
+     * <p>Part of a run is spent on requests built from values chosen to be awkward, which an API is
+     * supposed to turn away. Those refusals land in the same count as every other refusal, and a
+     * summary that did not say so would read as though the API were rejecting far more ordinary
+     * requests than it is.
+     *
+     * @param out where to write
+     * @param awkwardSources the names of the lists whose values are meant to be refused
+     * @return the report
+     */
+    public static ConsoleReport to(Appendable out, Set<String> awkwardSources) {
+        return new ConsoleReport(out, awkwardSources);
     }
 
     /**
@@ -109,6 +133,9 @@ public final class ConsoleReport implements RunListener {
             }
             case RunEvent.InteractionCompleted completed -> {
                 attempts++;
+                if (carriedSomethingAwkward(completed.interaction())) {
+                    awkward++;
+                }
                 operations.add(completed.interaction().testCase().operation());
                 repliesByClass.merge(classOf(completed.interaction()), 1, Integer::sum);
                 serverErrors.note(completed.interaction());
@@ -184,6 +211,17 @@ public final class ConsoleReport implements RunListener {
     }
 
 
+    /** Whether any value in this attempt came from a list of values meant to be refused. */
+    private boolean carriedSomethingAwkward(io.restest.core.execution.Interaction interaction) {
+        if (awkwardSources.isEmpty()) {
+            return false;
+        }
+        return interaction.testCase().parameterValues().stream()
+                .map(io.restest.core.execution.ParameterValue::origin)
+                .anyMatch(origin -> origin instanceof io.restest.core.execution.ValueOrigin.Generated
+                        made && awkwardSources.contains(made.source()));
+    }
+
     private void summarise(RunEvent.RunFinished finished) {
         write(attempts + " requests to " + operations.size() + " operations in "
                 + readable(finished.elapsed()) + ", "
@@ -198,6 +236,10 @@ public final class ConsoleReport implements RunListener {
                 .sorted(Map.Entry.comparingByKey())
                 .map(entry -> entry.getValue() + " " + entry.getKey())
                 .collect(java.util.stream.Collectors.joining(", ")));
+        if (awkward > 0) {
+            write("  " + awkward + " of them carried values meant to be refused, so a good share "
+                    + "of the refusals above are ones RESTest asked for");
+        }
         if (!serverErrors.none()) {
             write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "
                     + serverErrors.operationsAnsweringAny5xx() + " answered some 5xx");

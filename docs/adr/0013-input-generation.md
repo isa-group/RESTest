@@ -1,6 +1,6 @@
 # ADR-0013: Where input values come from, and how a campaign is put together
 
-**Status:** Accepted
+**Status:** Accepted, amended at M1.11 and M2.7a
 **Date:** 2026-09-13
 
 ## Context
@@ -60,7 +60,7 @@ say nothing. Eight sources, of which three exist today:
 | default dictionary | always, for a type we have values for |
 | custom dictionary | the user's file has an entry for this operation and parameter |
 | observed values | this run has seen a value for a parameter of this name |
-| fuzzing dictionary | always — values designed to be refused |
+| fuzzing dictionary | always — values designed to be refused. **Built at M2.7a** |
 | constraint-directed construction | always, as the last resort |
 
 The four dictionaries are **one class with a different key**: the JSON type, the declared `format`,
@@ -72,7 +72,7 @@ them, and it is a published format (design principle 8).
 ```yaml
 strategies:
   - name: nominal-custom
-    share: 40m
+    share: 75          # amended at M2.7a: a proportion, not the `40m` first written here
     sources:
       - exclusive: [enum]           # if it answers, the choice is made
       - weighted:                   # ask all, sample among those that answered
@@ -308,6 +308,11 @@ mutation and fuzzing is the one number here that cannot be argued into place: it
 pieces exist, one afternoon of campaigns against the five specifications in the corpus, with three
 different splits, answers it.
 
+> **First number, M2.7a.** Fuzzing takes a quarter and nominal the rest, in one constant, with
+> `--fuzzing <percentage>` to change it. It is a starting point and is still unmeasured: the campaign
+> this paragraph asks for needs a real API and has not been run. Mutation does not exist yet, so the
+> split is between two things rather than three.
+
 ## Amendment (M1.11)
 
 **Date:** 2026-09-16
@@ -448,3 +453,37 @@ replayed instead, is unaffected by where the randomness comes from.
 - **Take whatever the platform prefers**, which is what `RandomGenerator.getDefault()` does.
   Rejected in M1.5 and rejected again: it also names one of the optional generators, so it fails in
   the same place, and where it works it makes a seed mean whatever that runtime preferred.
+
+
+## Amendment (M2.7a)
+
+**Date:** 2026-09-18
+
+**A strategy's share is a proportion of the budget, not a stretch of the clock. Every source is named,
+the last resort included. And the dictionaries these decisions describe now have a format.**
+
+### Why
+
+`share: 40m` in §2 is a duration, and it collides with the budget the user sets. A file asking for
+forty minutes has no sensible meaning under `--budget 10m`: cut it, ignore the budget, or refuse to
+run, and all three are worse than the question not arising. A proportion makes the same division serve
+a thirty-second check and the two-hour campaign M8 needs, which is what a file of strategies is for.
+
+The sources listed in §1 are referred to by name in §2's plan, and one of them — "constraint-directed
+construction, always, as the last resort" — reads as though it were special. It is not. Being the last
+resort is where a strategy puts a source, not a property of the source, and treating it as ordinary is
+what lets a plan put something after it one day.
+
+### What changed
+
+`share` is a percentage. The example in §2 now reads `share: 75`. Nothing else in §2 moves: exclusive
+and weighted groups, the renormalising of weights among the sources that answered, and the validation
+that percentages sum to 100 are all unaffected.
+
+The file format the five dictionaries share is [ADR-0020](0020-what-a-dictionary-is.md), which adds a
+fifth keying this record missed — the name of the shape, which is how a whole request body is indexed.
+
+### What it costs
+
+Nothing yet, because no file of strategies exists to be rewritten. Recorded now because it is cheaper
+to amend a sentence than a format.

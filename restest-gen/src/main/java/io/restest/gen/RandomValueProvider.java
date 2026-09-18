@@ -113,6 +113,9 @@ public final class RandomValueProvider implements ValueProvider {
     /** How many times a fresh element is attempted for a list whose items must all differ. */
     private static final int UNIQUE_ATTEMPTS = 8;
 
+    /** How many times a value is invented again after one that could not be put in the request. */
+    private static final int SENDABLE_ATTEMPTS = 8;
+
     private final ApiModel model;
     private final RandomGenerator random;
     private final ValueProvider inside;
@@ -148,8 +151,23 @@ public final class RandomValueProvider implements ValueProvider {
     @Override
     public Optional<GeneratedValue> offer(ValueRequest request) {
         Objects.requireNonNull(request, "request");
-        return value(request, request.schema(), 0)
-                .map(value -> GeneratedValue.generatedBy(value, name()));
+        // Invented again when what came out could not be put in the request - a word of no letters
+        // where the path needs one, a line break on its way into a header. Most shapes that can
+        // produce such a value can also produce a usable one, so trying again costs nothing and
+        // usually works; a shape that can produce nothing else - a string allowed no characters, a
+        // list allowed no items - runs out of attempts and says it has no value to offer. Saying
+        // so is the point: the operation is then reported as one that cannot be tested, instead of
+        // being counted among those being tested while every one of its requests is thrown away.
+        for (int attempt = 0; attempt < SENDABLE_ATTEMPTS; attempt++) {
+            Optional<JsonValue> invented = value(request, request.schema(), 0);
+            if (invented.isEmpty()) {
+                return Optional.empty();
+            }
+            if (RequestBuilder.canBeSentFrom(invented.get(), request.location())) {
+                return Optional.of(GeneratedValue.generatedBy(invented.get(), name()));
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -446,6 +464,7 @@ public final class RandomValueProvider implements ValueProvider {
             return Optional.empty();
         }
         return model.resolve(reference)
-                .flatMap(schema -> value(request, schema, depth + 1));
+                .flatMap(schema -> value(request.aboutTheShapeNamed(reference.name(), schema),
+                        schema, depth + 1));
     }
 }

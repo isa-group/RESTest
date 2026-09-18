@@ -85,6 +85,8 @@ public final class RandomTestCaseGenerator {
     private final long seed;
     private final RandomGenerator random;
     private final ValueProvider values;
+    private final List<Strategy> strategies;
+    private final int sharesInTotal;
     private final List<Operation> testable;
     private final Map<OperationId, String> untestable;
 
@@ -98,15 +100,43 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
+     * A generator for this API using only the dictionaries that travel with the tool.
+     *
+     * @param model the API to test
+     * @param seed the number the whole run's randomness is derived from
+     */
+    public RandomTestCaseGenerator(ApiModel model, long seed) {
+        this(model, seed, Dictionaries.fuzzing().map(List::of).orElse(List.of()));
+    }
+
+    /**
+     * A generator for this API using these lists of values, with the usual share of its requests
+     * built to be refused.
+     *
+     * @param model the API to test
+     * @param seed the number the whole run's randomness is derived from
+     * @param dictionaries the lists of values to draw on
+     */
+    public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries) {
+        this(model, seed, dictionaries, AWKWARD_SHARE);
+    }
+
+    /**
      * A generator for this API that will make the same decisions every time it is given the same
      * number.
      *
      * @param model the API to test
      * @param seed the number the whole run's randomness is derived from
      */
-    public RandomTestCaseGenerator(ApiModel model, long seed) {
+    public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries,
+            int awkwardShare) {
         this.model = Objects.requireNonNull(model, "model");
+        if (awkwardShare < 0 || awkwardShare > 100) {
+            throw new IllegalArgumentException("the share of requests built to be refused is a "
+                    + "percentage, so it is between 0 and 100: " + awkwardShare);
+        }
         this.seed = seed;
+        Objects.requireNonNull(dictionaries, "dictionaries");
         // Built directly rather than asked for by the name of an algorithm. The better-sounding
         // names - L64X128MixRandom and the rest of that family - are only compulsory from Java 23
         // on. On 21 and 22 they live in a separate, optional module, jdk.random, which the official
@@ -123,9 +153,10 @@ public final class RandomTestCaseGenerator {
         ValueProvider fromTheDocument = ValueProviderChain.of(
                 new ExampleValueProvider(random),
                 new DeclaredValueProvider(random));
-        this.values = ValueProviderChain.of(
-                fromTheDocument,
-                new RandomValueProvider(model, random, fromTheDocument));
+        ValueProvider invention = new RandomValueProvider(model, random, fromTheDocument);
+        this.values = ValueProviderChain.of(fromTheDocument, invention);
+        this.strategies = strategiesFor(dictionaries, awkwardShare, this.values, invention, random);
+        this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
 
         List<Operation> canBeTried = new ArrayList<>();
         Map<OperationId, String> cannot = new LinkedHashMap<>();
@@ -177,6 +208,22 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
+     * The names of the lists of values this run will send expecting them to be refused.
+     *
+     * <p>A report wants these so it can say how many of a run's refusals were asked for. Without
+     * them, a run that deliberately sends awkward values reads as though the API were turning away
+     * far more ordinary requests than it is.
+     *
+     * @return the names, empty when this run sends nothing it expects to be refused
+     */
+    public java.util.Set<String> sourcesExpectingRefusal() {
+        return strategies.stream()
+                .filter(way -> !way.name().equals("nominal"))
+                .map(Strategy::name)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    }
+
+    /**
      * A test case for one of the operations that can be attempted, chosen at random.
      *
      * @return the test case, or empty if this API has no operation that can be attempted at all, or
@@ -208,12 +255,16 @@ public final class RandomTestCaseGenerator {
     }
 
     private Optional<TestCase> fill(Operation operation) {
+        return fill(operation, nextStrategy());
+    }
+
+    private Optional<TestCase> fill(Operation operation, Strategy strategy) {
         List<ParameterValue> chosen = new ArrayList<>();
         for (Parameter parameter : operation.parameters()) {
             if (!parameter.required() && random.nextDouble() >= OPTIONAL_PARAMETER_CHANCE) {
                 continue;
             }
-            Optional<GeneratedValue> value = values.offer(ask(operation, parameter));
+            Optional<GeneratedValue> value = strategy.values().offer(ask(operation, parameter));
             if (value.isPresent()) {
                 chosen.add(ParameterValue.of(parameter.name(), parameter.location(),
                         value.get().value(), value.get().origin()));
@@ -268,6 +319,74 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
+     * How much of the testing time goes on requests built from values chosen to be awkward, unless
+     * somebody says otherwise.
+     *
+     * <p>A quarter against three is a starting point rather than a measurement. It is the one
+     * number here that has to be settled by running campaigns rather than by argument, and it lives
+     * in one place so that settling it is a one-line change.
+     */
+    public static final int AWKWARD_SHARE = 25;
+
+    /**
+     * The ways this run will put a request together, and how the time divides between them.
+     *
+     * <p>Most of it goes on requests meant to be accepted. The rest goes on requests built entirely
+     * from a dictionary of values designed to be refused - every parameter at once, on purpose,
+     * because an API stops reading at the first thing it does not like and there is no sense
+     * pretending a refusal could be pinned on any one of them. What such a request is good for is
+     * the other answer: a server error is a fault whatever was sent, and unexpected input is how
+     * they are found.
+     *
+     * <p>Three quarters against one is a starting point, not a measurement. It is the one number
+     * here that has to be settled by running campaigns rather than by argument, and it lives in one
+     * place so that settling it is a one-line change.
+     *
+     * <p>A dictionary that expects its values to be refused earns a way of building requests of its
+     * own. One that does not is offered alongside the document's own answers instead, because its
+     * values are meant to work.
+     */
+    private static List<Strategy> strategiesFor(List<Dictionary> dictionaries, int awkwardShare,
+            ValueProvider nominal, ValueProvider invention, RandomGenerator random) {
+        List<Strategy> ways = new ArrayList<>();
+        ways.add(new Strategy("nominal", 100 - awkwardShare, nominal));
+        if (awkwardShare == 0) {
+            return List.copyOf(ways);
+        }
+        List<Dictionary> refusing = dictionaries.stream()
+                .filter(held -> held.expects() == Dictionary.Expectation.REFUSAL)
+                .toList();
+        for (Dictionary dictionary : refusing) {
+            // Shared between them rather than given to each, so asking for a quarter means a
+            // quarter whether one list of awkward values is in play or three.
+            ways.add(new Strategy(dictionary.name(), Math.max(1, awkwardShare / refusing.size()),
+                    ValueProviderChain.of(new DictionaryValueProvider(dictionary, random),
+                            invention)));
+        }
+        return List.copyOf(ways);
+    }
+
+    /**
+     * Which way this request is being built.
+     *
+     * <p>Drawn once per request rather than once per value, because the whole point of the division
+     * is that one request is built one way throughout.
+     */
+    private Strategy nextStrategy() {
+        if (strategies.size() == 1) {
+            return strategies.get(0);
+        }
+        int drawn = random.nextInt(sharesInTotal);
+        for (Strategy way : strategies) {
+            drawn -= way.share();
+            if (drawn < 0) {
+                return way;
+            }
+        }
+        return strategies.get(strategies.size() - 1);
+    }
+
+    /**
      * What to ask the sources of values about one parameter of one operation.
      *
      * <p>The parameter's own sample values travel with the question rather than being folded into
@@ -275,8 +394,13 @@ public final class RandomTestCaseGenerator {
      * sample belongs to the one that declared it.
      */
     private ValueRequest ask(Operation operation, Parameter parameter) {
+        // The name survives being resolved: a shape the document declared once and named is worth
+        // recognising again, because whoever keeps a list of values that worked for an Owner wants
+        // to be asked about an Owner, not about "an object with four properties".
+        Optional<String> shape = parameter.schema() instanceof SchemaReference reference
+                ? Optional.of(reference.name()) : Optional.empty();
         return new ValueRequest(operation.id(), parameter.name(), parameter.location(),
-                resolved(parameter.schema()), parameter.examples());
+                resolved(parameter.schema()), parameter.examples(), shape);
     }
 
     /**

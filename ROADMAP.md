@@ -65,13 +65,19 @@ layout).
 | 2.1a ✅ [#307](https://github.com/isa-group/RESTest/pull/307) | `allOf` folded into the canonical schema: halves combined, the stricter bound kept, a combination nothing satisfies and one we cannot work out each said plainly | The inheritance idiom real APIs describe their resources with stops being ignored |
 | 2.1b ✅ [#308](https://github.com/isa-group/RESTest/pull/308) | `oneOf` / `anyOf` as a shape of their own (ADR-0018). Discriminators deliberately not included: they cost no request, and reading the corpus's one real hierarchy as a plain object would produce a shape quietly missing the property that identifies it | An operation whose parameter may be a number *or* a text stops being skipped |
 | 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers now send those identifiers instead of inventing ones |
-| 2.3 | Deterministic boundary walk: every documented limit probed exactly | Reproducible edge-case tests, not luck |
+| 2.3 | *Deferred at M2.7a, not dropped.* The deterministic boundary walk returns with the mutation operator, where ADR-0013 §4 puts it: stepping outside a documented bound is a change to a request the API already accepted, and setting several parameters outside their bounds at once teaches nothing attributable. Both halves also need M3.1's oracles to pay off at all. Measured before deferring: 327 of 4,916 corpus parameters declare any limit, and in the priority corpus that is pet-clinic 25, kafka 2, flight-search 1, the other two none | Reproducible edge-case tests, not luck |
 | 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
 | 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
 | 2.6 | Authentication inferred from `securitySchemes` (API key, bearer, basic, OAuth2 client credentials) | Protected APIs stop returning 401 for everything |
-| 2.7 | Value dictionary format, reader, writer, disk cache | Good values computed once, reused for ever, committed next to the specification |
+| 2.7a ✅ [#311](https://github.com/isa-group/RESTest/pull/311) | The dictionary format and its reader (ADR-0020): one file, one keying, values that may be whole objects. `--dictionary`, repeatable. The list of deliberately awkward values RESTest ships, as the first thing written in that format, sent for a share of the budget that `--fuzzing` sets. Strategies as named shares of the budget, which is ADR-0013 §2's first half | A run finds the server errors that only unexpected input reaches, and good values for an API can be committed next to its specification instead of living in one person's head |
+| 2.7b | Dictionary writer and disk cache | Good values computed once are kept, rather than worked out again every run. Waits for something that computes values at a cost worth saving: the solver of 5.2, or the external providers of 2.8 |
 | 2.8 | `ExternalDataProvider` interface: file-based implementation + out-of-process transport, asynchronous, never blocking | Any program in any language can suggest input values without slowing the run |
 | 2.9 | How many optional parameters to send drawn first, from a distribution favouring small numbers, and only then which ones — replacing the separate coin flip per parameter | The request an API is most likely to accept, the one carrying only what it requires, stops being drawn once in 2ⁿ attempts |
+
+The two rows that were one. 2.7 read "value dictionary format, reader, writer, disk cache", and the
+writer and the cache exist to keep values the tool worked out at a cost — of which it currently
+computes none. Splitting it was the alternative to shipping half a row silently, and 2.7a carries the
+half that has a consumer today.
 
 2.8's own "never blocking" guarantee is proved at that increment, by its own test (a slow provider
 must not stall the run) — not by waiting for M6.2's overhead regression test, which lands much later

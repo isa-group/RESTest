@@ -398,7 +398,7 @@ class RandomValueProviderTest {
         // The question reaches this provider carrying the parameter's own sample, which is what
         // happens once anything ahead of it in the chain declines. Every element must be invented;
         // handing the whole list down would make each element a copy of the list.
-        io.restest.core.gen.ValueRequest tags = new io.restest.core.gen.ValueRequest(
+        io.restest.core.gen.ValueRequest tags = io.restest.core.gen.ValueRequest.of(
                 io.restest.core.model.OperationId.of("GET /pets"), "tags",
                 io.restest.core.model.ParameterLocation.QUERY,
                 ArraySchema.of(StringSchema.of()),
