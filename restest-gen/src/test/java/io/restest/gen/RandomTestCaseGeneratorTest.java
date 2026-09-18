@@ -31,6 +31,8 @@ import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.ParameterStyle;
 import io.restest.core.model.RequestBodyModel;
+import io.restest.core.schema.ChoiceSchema;
+import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.SchemaMetadata;
@@ -741,6 +743,76 @@ class RandomTestCaseGeneratorTest {
                 .contains(JsonValue.object(new java.util.LinkedHashMap<>(Map.of(
                         "firstName", JsonValue.of("George"),
                         "lastName", JsonValue.of("Franklin")))));
+    }
+
+    @Test
+    @DisplayName("a body whose description allows no value at all is named, one reason each")
+    void a_body_nothing_could_satisfy_is_reported() {
+        Operation allowsNothing = Operation.of(HttpMethod.POST, "/a")
+                .withRequestBody(RequestBodyModel.json(NothingSchema.of(), true));
+        Operation unreadable = Operation.of(HttpMethod.POST, "/b")
+                .withRequestBody(RequestBodyModel.json(
+                        UnsupportedSchema.of("oneOf is not folded in yet"), true));
+        Operation nothingCanFill = Operation.of(HttpMethod.POST, "/c")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of("token",
+                        new StringSchema(SchemaMetadata.none(), Optional.of(50_000),
+                                Optional.empty(), Optional.empty(), Optional.empty())),
+                        Set.of("token")), true));
+        Operation notAnObject = Operation.of(HttpMethod.POST, "/d")
+                .withRequestBody(RequestBodyModel.ofShapes(true,
+                        Map.of("application/x-www-form-urlencoded", StringSchema.of())));
+
+        Map<OperationId, String> refused = new RandomTestCaseGenerator(
+                model(allowsNothing, unreadable, nothingCanFill, notAnObject), 20260918L)
+                .untestableOperations();
+
+        assertThat(refused.get(allowsNothing.id())).contains("allows no value at all");
+        assertThat(refused.get(unreadable.id())).contains("could not be read");
+        assertThat(refused.get(nothingCanFill.id())).contains("no value could be found");
+        assertThat(refused.get(notAnObject.id()))
+                .describedAs("a web form is named after the fields of an object, and a word has "
+                        + "none")
+                .contains("no fields to name");
+    }
+
+    @Test
+    @DisplayName("a web form described as a choice between objects is tested, not refused on sight")
+    void a_form_body_that_could_be_an_object_is_not_refused() {
+        Operation createOwner = Operation.of(HttpMethod.POST, "/owners")
+                .withRequestBody(RequestBodyModel.ofShapes(true,
+                        Map.of("application/x-www-form-urlencoded", ChoiceSchema.of(List.of(
+                                ObjectSchema.of(Map.of("firstName", StringSchema.of())),
+                                ObjectSchema.of(Map.of("company", StringSchema.of())))))));
+        RandomTestCaseGenerator generator =
+                new RandomTestCaseGenerator(model(createOwner), 20260918L, List.of());
+
+        assertThat(generator.untestableOperations())
+                .describedAs("a shape saying the body is one object or another produces objects, "
+                        + "and refusing it for not being an object itself would skip an operation "
+                        + "this can test")
+                .isEmpty();
+        assertThat(generator.generate(createOwner).orElseThrow().body().orElseThrow().value())
+                .isInstanceOf(JsonValue.JsonObject.class);
+    }
+
+    @Test
+    @DisplayName("a body is pushed at the API as often as any other value is")
+    void part_of_the_time_the_body_pushes_at_the_api() {
+        RandomTestCaseGenerator generator = generatorFor(CREATE_PET);
+
+        List<Boolean> anObjectWithAName = IntStream.range(0, 60)
+                .mapToObj(draw -> generator.generate(CREATE_PET).orElseThrow().body().orElseThrow()
+                        .value())
+                .map(body -> body instanceof JsonValue.JsonObject object
+                        && object.members().containsKey("name"))
+                .distinct()
+                .toList();
+
+        assertThat(anObjectWithAName)
+                .describedAs("a run spends part of its time pushing at the API, and a whole body "
+                        + "drawn from the list of awkward values - a null, an empty object - is "
+                        + "what that looks like for an operation that takes one")
+                .containsExactlyInAnyOrder(true, false);
     }
 
     private static RandomTestCaseGenerator generatorFor(Operation... operations) {

@@ -210,9 +210,16 @@ public final class RequestBuilder {
         return headers;
     }
 
+    /**
+     * One header this class adds itself, unless the document declared a header of that name and a
+     * value has already been chosen for it.
+     *
+     * <p>Checked like any other header value. Both of these are built out of media types the
+     * document wrote, and a document is free to write anything at all.
+     */
     private static void addUnlessDeclared(List<Header> headers, String name, String value) {
         if (headers.stream().noneMatch(header -> header.name().equalsIgnoreCase(name))) {
-            headers.add(Header.of(name, value));
+            headers.add(Header.of(name, headerValue(name, value)));
         }
     }
 
@@ -225,9 +232,16 @@ public final class RequestBuilder {
      * read. An API serving a versioned media type - {@code application/vnd.example.v2+json} - is
      * entitled to refuse a request that did not ask for it.
      *
-     * <p>Only the successful responses, because an error shape is not what the request is for; every
-     * one of them, in the order the document wrote them, because an API free to choose among them is
-     * an API doing what its author documented.
+     * <p>Only the successful responses, because an error shape is not what the request is for.
+     *
+     * <p>All of them, but not equally: the ones RESTest can read back are asked for first and the
+     * rest are asked for at a lower quality, which is what HTTP's {@code q} is. This matters more
+     * than it looks. Several documents in the corpus offer XML before JSON - the pet shop the smoke
+     * run starts is one - and a server that honours the client's order would then answer XML, which
+     * nothing on our side can judge against the shape the document declares. The reply would be
+     * neither checked nor reported: worse than the default this header was added to improve on. The
+     * lower quality still asks for them, so an API that serves nothing else is not refused a
+     * reply.
      *
      * @return the header's value, or nothing when the operation declares no successful media type
      */
@@ -235,10 +249,23 @@ public final class RequestBuilder {
         Set<String> offered = new LinkedHashSet<>();
         for (ResponseModel response : operation.responses()) {
             if (response.status().startsWith("2")) {
-                offered.addAll(response.content().keySet());
+                response.content().keySet().stream()
+                        .filter(mediaType -> !cannotTravelInAHeader(mediaType))
+                        .forEach(offered::add);
             }
         }
-        return offered.isEmpty() ? Optional.empty() : Optional.of(String.join(", ", offered));
+        if (offered.isEmpty()) {
+            return Optional.empty();
+        }
+        List<String> readable = offered.stream().filter(RequestBuilder::isJson).toList();
+        if (readable.isEmpty()) {
+            return Optional.of(String.join(", ", offered));
+        }
+        StringJoiner written = new StringJoiner(", ");
+        readable.forEach(written::add);
+        offered.stream().filter(mediaType -> !isJson(mediaType))
+                .forEach(mediaType -> written.add(mediaType + ";q=0.5"));
+        return Optional.of(written.toString());
     }
 
     /**
@@ -257,13 +284,17 @@ public final class RequestBuilder {
      */
     static Optional<String> mediaTypeToSend(RequestBodyModel body) {
         Objects.requireNonNull(body, "body");
-        Optional<String> json = body.mediaTypes().stream()
-                .filter(RequestBuilder::isJson)
-                .findFirst();
+        // A media type is written into a header, so one that could not travel in a header is one no
+        // request could carry. Refused here rather than thrown at the point of sending, where the
+        // operation would already have been reported as one this run is testing.
+        List<String> offered = body.mediaTypes().stream()
+                .filter(mediaType -> !cannotTravelInAHeader(mediaType))
+                .toList();
+        Optional<String> json = offered.stream().filter(RequestBuilder::isJson).findFirst();
         if (json.isPresent()) {
             return json.map(RequestBuilder::exactly);
         }
-        return body.mediaTypes().stream().filter(RequestBuilder::isForm).findFirst();
+        return offered.stream().filter(RequestBuilder::isForm).findFirst();
     }
 
     /** Whether a body of this media type is written as the fields of a web form. */

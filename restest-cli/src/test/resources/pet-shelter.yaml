@@ -15,6 +15,21 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Pet'
+    post:
+      operationId: addPet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPet'
+      responses:
+        "201":
+          description: the pet that was taken in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
   /pets/{petId}:
     get:
       operationId: getPet
@@ -49,6 +64,14 @@ paths:
                     type: integer
 components:
   schemas:
+    NewPet:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        tag:
+          type: string
     Pet:
       type: object
       required: [id, name]

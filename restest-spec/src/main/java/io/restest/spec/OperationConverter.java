@@ -394,8 +394,8 @@ final class OperationConverter {
     }
 
     /**
-     * OpenAPI 2.0's {@code in: body} and {@code in: formData} - the two locations {@link
-     * ParameterLocation} deliberately has no case for - never reach here: {@code swagger-parser}
+     * OpenAPI 2.0's {@code in: body} and {@code in: formData} - neither of which is a place this
+     * model lets a parameter be declared in - never reach here: {@code swagger-parser}
      * converts a 2.0 document to a 3.0 one, request body and all, before this class ever sees it
      * (confirmed empirically against the corpus). A location string outside the four this format
      * actually defines, or absent entirely, should not occur; defaulting to {@code QUERY} keeps the

@@ -362,6 +362,35 @@ class RequestBuilderTest {
     }
 
     @Test
+    @DisplayName("what we can read back is asked for first, and the rest at a lower quality")
+    void a_reply_we_could_judge_is_preferred() {
+        Map<String, CanonicalSchema> served = new LinkedHashMap<>();
+        served.put("application/xml", ObjectSchema.of(Map.of()));
+        served.put("application/json", ObjectSchema.of(Map.of()));
+        Operation operation = Operation.of(HttpMethod.GET, "/pets")
+                .withResponses(List.of(new ResponseModel("200", served, Map.of(),
+                        Optional.empty())));
+
+        assertThat(build(operation).headerValues("Accept"))
+                .describedAs("several documents in the corpus offer XML before JSON, and a reply "
+                        + "in XML is one no oracle here can judge against the declared shape")
+                .containsExactly("application/json, application/xml;q=0.5");
+    }
+
+    @Test
+    @DisplayName("an API that serves nothing we can read is still asked for what it does serve")
+    void a_reply_we_cannot_judge_is_still_asked_for() {
+        Operation operation = Operation.of(HttpMethod.GET, "/report")
+                .withResponses(List.of(new ResponseModel("200",
+                        Map.of("text/csv", StringSchema.of()), Map.of(), Optional.empty())));
+
+        assertThat(build(operation).headerValues("Accept"))
+                .describedAs("asking for nothing but JSON would earn a 406 from an API that never "
+                        + "offered any")
+                .containsExactly("text/csv");
+    }
+
+    @Test
     @DisplayName("an operation that declares nothing it returns asks for nothing in particular")
     void a_request_may_say_nothing_about_what_it_accepts() {
         assertThat(build(Operation.of(HttpMethod.GET, "/pets")).headerValues("Accept")).isEmpty();

@@ -43,8 +43,10 @@ One command, an OpenAPI document and an address:
     --url https://petstore3.swagger.io/api/v3 --budget 10s --seed 20260914
 ```
 
-That last one is somebody else's public demonstration server, so it is worth being a guest there:
-keep the budget short, and point `--url` at your own copy for anything longer.
+That last one is somebody else's public demonstration server, and RESTest tests an operation that
+creates something by creating something: a run leaves pets, orders and users behind wherever it is
+pointed. Keep the budget short if you are a guest there, and point `--url` at a copy of your own for
+anything longer — or for anything you would mind having written to.
 
 Building needs a JDK; running what was built does not: RESTest runs on a plain Java 21 runtime, an
 `eclipse-temurin:21-jre` image included. A build that asks for containers — `./mvnw verify -Pit`, and
@@ -58,7 +60,7 @@ that does it again:
 ```
 RESTest testing Swagger Petstore - OpenAPI 3.0 at https://petstore3.swagger.io/api/v3
 
-17 of 19 operations can be tested, seed 20260914, budget 10s
+19 of 19 operations can be tested, seed 20260914, budget 10s
 
 F100  HTTP Status 500
       deleteOrder - DELETE https://petstore3.swagger.io/api/v3/store/order/207  ->  500
@@ -67,7 +69,7 @@ F100  HTTP Status 500
 
 ... more faults are being found; every one of them is counted in the run's report and in the total below
 
-816 requests to 17 operations in 10.3s, 12% of it idle
+816 requests to 19 operations in 10.3s, 12% of it idle
   196 2xx, 332 4xx, 288 5xx
   4 operation(s) answered 500, 5 answered some 5xx
 384 faults:

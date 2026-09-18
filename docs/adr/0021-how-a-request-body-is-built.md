@@ -114,6 +114,16 @@ It gains one: a body is the most permissive place a value can go — it can be n
 object — and the rules that depend on location, such as a value that cannot be written into a path,
 answer accordingly rather than by exception.
 
+The constant goes on `ParameterLocation`, the enum the specification model already uses, rather than
+on a new type of generation's own. What that costs is worth writing down, because it is a real cost:
+three of the things in the model that consume the enum refuse the new case outright — a `Parameter`
+cannot be declared in the body, a `ParameterValue` cannot record one, and a body has a media type
+rather than a parameter style — so the model now carries a member that most of its own users reject,
+and every later exhaustive `switch` over a location has to write a case that can never occur. What
+it buys is that there is one answer to "where is this value going" rather than two that have to be
+kept in step, and that the compiler names every place that has to decide. A second type would be the
+alternative if a third consumer ever has to refuse it.
+
 There is no body generator, no body grammar, and no second interface. Adding one would be the third
 place in the tool that knows how to turn a shape into a value.
 
@@ -122,6 +132,16 @@ place in the tool that knows how to turn a shape into a value.
 One media type is chosen per request, from the ones the body declares, JSON preferred where it is
 offered. `Content-Type` states it. `Accept` is built from the media types the operation's own 2XX
 responses declare, which is ADR-0017's item 2 and is owed whether a body is sent or not.
+
+**The ones we can read back are asked for first, and the rest at a lower quality.** This is not
+politeness, it is the difference between a reply that gets judged and one that does not. Several
+documents in the corpus list XML before JSON — the pet shop the smoke gate starts is one of them,
+on seven operations — and a server that honours the client's order would answer XML to an `Accept`
+that merely repeated the document's order. `ResponseSchemaOracle` judges a reply only when its
+content type is JSON, so those replies would stop being checked at all, which is worse than the
+server default this header was added to improve on. Hence: the JSON-ish types first, everything else
+after them at `q=0.5`. An API that serves nothing we can read is still asked for what it does serve,
+because a request asking only for JSON earns a 406 from an API that never offered any.
 
 ### 3. Two families are sent, two are refused, and the roadmap row is narrowed to say so
 
@@ -135,12 +155,20 @@ one operation in the corpus, against boundary framing and binary parts. Both are
 the measurement beside them so that reversing either is a decision somebody takes on evidence, and
 the roadmap row that promised four families is amended rather than quietly half-delivered.
 
-### 4. The samples a body declares are read, and completed rather than sent bare
+### 4. The samples a body declares are read, and sent as the author wrote them
 
 `RequestBodyModel` gains somewhere to put them, and they are offered for the body the way a
-parameter's samples are offered for a parameter. A sample that does not cover the whole shape is
-completed from the chain rather than discarded, which is what Schemathesis's examples phase does and
-what makes a partial sample worth having at all.
+parameter's samples are offered for a parameter — by the same source, under the same rule ADR-0019
+settled: a sample is sent as written, even where the document's own rules about the value would
+refuse it, because when a concrete sample and an abstract rule disagree there is no telling which
+the author meant.
+
+An earlier draft of this record said a sample that does not cover the whole shape would be completed
+from the chain, which is what Schemathesis's examples phase does. It is not built, and the reason is
+that it would contradict the rule above for the sake of nothing measurable: of the 134 media types
+in the corpus that carry a body sample, **not one** writes a sample missing a required property the
+API would have to be sent. The day a document does, completing it is a change to one source and this
+paragraph is the record of why it was not made earlier.
 
 ### 5. A property the API only ever returns is never sent
 
@@ -188,8 +216,10 @@ and in `--help`; whoever takes 2.10 knows it became more urgent here.
 ## Consequences
 
 - **103 operations of the corpus become testable, 34 of them in the priority corpus** — 23% of its
-  whole surface, and the largest single unlock left in M2. The smoke run gains write operations
-  against both containerised APIs, which is where the claim gets checked rather than asserted.
+  whole surface, and the largest single unlock left in M2. That a body really reaches a server, with
+  the media type declared and the property the document insists on inside it, is checked against a
+  running HTTP server rather than asserted about the model; the containerised gate exercises the
+  same path against two real APIs on every pull request.
 - **ADR-0013's claim that "adding a source of values is one class and one line in a plan" gets its
   second test**, and this time the source is not new at all: an observed-value dictionary is the
   existing dictionary class with a different filling. If that turns out to need an interface change,
@@ -207,6 +237,12 @@ and in `--help`; whoever takes 2.10 knows it became more urgent here.
 - **A run that uses 2.5b is reproduced by replay, not by its seed.** Already decided, now real for
   the first time: every strategy in the tool today is seed-reproducible, and this is the one that
   ends that.
+- **A quarter of every body is drawn from the list of awkward values**, not built from the shape.
+  That follows from ADR-0013 §2 and the shares 2.7a set: a body is one more value, so the strategy
+  that pushes at the API replaces the whole of it — a `null`, an empty object, an object with one
+  empty name. It is deliberate and it is where server errors on write operations will come from, but
+  it means the nominal bodies this record is about are three quarters of what a default run sends.
+  Whoever measures the effect of bodies on coverage measures that split too.
 - **The tool starts writing to the API under test in earnest**, with no way yet to tell it not to.
 - **The roadmap row for 2.5 is narrowed and split**, with the numbers above beside it.
 
