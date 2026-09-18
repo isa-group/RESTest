@@ -194,8 +194,10 @@ final class RunCommand implements Callable<Integer> {
                         seed == null ? new java.util.SplittableRandom().nextLong() : seed,
                         found.dictionaries(), fuzzingShare);
             } catch (IllegalArgumentException outOfRange) {
+                // Asking for something the command line does not offer, which is the same kind of
+                // mistake as misspelling an option and answers with the same number.
                 err.println("restest: " + outOfRange.getMessage());
-                return ExitCode.NOTHING_TO_TEST;
+                return ExitCode.BAD_COMMAND_LINE;
             }
             List<Operation> testable = generator.testableOperations();
             if (testable.isEmpty()) {

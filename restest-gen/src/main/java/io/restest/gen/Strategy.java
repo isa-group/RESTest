@@ -39,12 +39,17 @@ import java.util.Objects;
  * @param share how much of the testing time it gets, as a proportion of the whole. The shares of a
  *     run's strategies are counted against each other, so they need not add up to anything in
  *     particular
+ * @param expects what the requests it builds are meant to earn: acceptance, refusal, or nobody
+ *     knows. Carried here rather than recognised from the name, because a name comes from a file
+ *     somebody else wrote and may be anything at all - including the name of another strategy
  * @param values where the values in its requests come from, asked in order until one answers
  */
-public record Strategy(String name, int share, ValueProvider values) {
+public record Strategy(String name, int share, Dictionary.Expectation expects,
+        ValueProvider values) {
 
     public Strategy {
         Objects.requireNonNull(name, "name");
+        Objects.requireNonNull(expects, "expects");
         Objects.requireNonNull(values, "values");
         if (name.isBlank()) {
             throw new IllegalArgumentException("a strategy has a name, which a report prints");

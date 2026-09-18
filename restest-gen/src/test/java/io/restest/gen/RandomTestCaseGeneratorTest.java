@@ -395,9 +395,107 @@ class RandomTestCaseGeneratorTest {
         }
 
         assertThat(builtToBeRefused)
-                .describedAs("about a quarter of the time, and never all of it or none of it")
-                .isBetween(20, 120);
+                .describedAs("a quarter of 200 is 50, and a draw this size lands within a few of it")
+                .isBetween(30, 75);
         assertThat(generator.sourcesExpectingRefusal()).containsExactly("awkward");
+    }
+
+    @Test
+    @DisplayName("the share asked for is the share delivered, whatever it is and however many "
+            + "lists of awkward values are in play")
+    void the_share_asked_for_is_the_share_delivered() {
+        // The number people will change first, so it is the number that has to be right. Bands are
+        // wide enough that a fair draw never trips them and narrow enough that a share of one and
+        // a share of three could not both pass.
+        assertThat(howOftenRefused(0, 1)).isZero();
+        assertThat(howOftenRefused(25, 1)).isBetween(180, 320);
+        assertThat(howOftenRefused(50, 1)).isBetween(430, 570);
+        assertThat(howOftenRefused(75, 1)).isBetween(680, 820);
+        assertThat(howOftenRefused(100, 1)).isEqualTo(1000);
+
+        // Three lists divide the same quarter between them rather than taking a quarter each.
+        assertThat(howOftenRefused(25, 3))
+                .describedAs("asking for a quarter has to mean a quarter whether one list of "
+                        + "awkward values is in play or three")
+                .isBetween(180, 320);
+    }
+
+    /** How many of a thousand requests were built to be refused, at this share and this many lists. */
+    private static int howOftenRefused(int share, int lists) {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
+        List<Dictionary> awkward = IntStream.range(0, lists)
+                .mapToObj(each -> awkward("", -1, "awkward" + each))
+                .map(Dictionary.class::cast)
+                .toList();
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                ApiModel.of("Pets", "1.0", List.of(search)), 20260918L, awkward, share);
+        java.util.Set<String> refusing = generator.sourcesExpectingRefusal();
+
+        return (int) IntStream.range(0, 1000)
+                .mapToObj(draw -> generator.generate(search).orElseThrow())
+                .filter(testCase -> testCase.parameterValues().stream()
+                        .map(io.restest.core.execution.ParameterValue::origin)
+                        .anyMatch(origin -> origin instanceof io.restest.core.execution.ValueOrigin
+                                .Generated made && refusing.contains(made.source())))
+                .count();
+    }
+
+    @Test
+    @DisplayName("a list of values somebody wrote for this API is actually sent, which is the whole "
+            + "point of being able to hand one over")
+    void a_list_of_good_values_is_used() {
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, StringSchema.of())));
+        RandomTestCaseGenerator generator = new RandomTestCaseGenerator(
+                ApiModel.of("Pets", "1.0", List.of(search)), 4242L,
+                List.of(ofOurOwn("Leo")), 0);
+
+        assertThat(generator.generate(search).orElseThrow()
+                .parameterValue("name", ParameterLocation.QUERY).orElseThrow().value())
+                .isEqualTo(io.restest.core.json.JsonValue.of("Leo"));
+    }
+
+    @Test
+    @DisplayName("a list written for one named parameter is asked before the document's own sample, "
+            + "and a list written for a whole kind of value is asked after it")
+    void how_much_a_list_knows_decides_when_it_is_asked() {
+        io.restest.core.schema.CanonicalSchema sampled = new StringSchema(
+                SchemaMetadata.none().withExamples(
+                        List.of(io.restest.core.json.JsonValue.of("from the document"))),
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        Operation search = Operation.of(HttpMethod.GET, "/pets", List.of(
+                Parameter.of("name", ParameterLocation.QUERY, true, sampled)));
+        ApiModel pets = ApiModel.of("Pets", "1.0", List.of(search));
+
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
+                List.of(keyed("name", "for this parameter")), 0), search))
+                .describedAs("somebody wrote it for this parameter, so it knows more than a sample "
+                        + "written for the shape")
+                .isEqualTo("for this parameter");
+        assertThat(sent(new RandomTestCaseGenerator(pets, 4242L,
+                List.of(keyed("type", "for any text at all")), 0), search))
+                .describedAs("a list for every piece of text knows less than the document's own "
+                        + "sample of this one")
+                .isEqualTo("from the document");
+    }
+
+    private static String sent(RandomTestCaseGenerator generator, Operation operation) {
+        return ((io.restest.core.json.JsonValue.JsonString) generator.generate(operation)
+                .orElseThrow().parameterValue("name", ParameterLocation.QUERY).orElseThrow()
+                .value()).value();
+    }
+
+    /** A list of values somebody put together believing the API takes them. */
+    private static Dictionary ofOurOwn(String value) {
+        return keyed("type", value);
+    }
+
+    private static Dictionary keyed(String keyedBy, String value) {
+        return DictionaryDocument.read("""
+                {"version": 1, "name": "ours", "keyedBy": "%s", "expects": "acceptance",
+                 "values": {"%s": ["%s"]}}"""
+                .formatted(keyedBy, "name".equals(keyedBy) ? "name" : "string", value), "ours");
     }
 
     @Test
@@ -419,6 +517,10 @@ class RandomTestCaseGeneratorTest {
 
     /** A list of values somebody put together expecting the API to turn every one of them away. */
     private static Dictionary awkward(String forText, long forWholeNumbers) {
+        return awkward(forText, forWholeNumbers, "awkward");
+    }
+
+    private static Dictionary awkward(String forText, long forWholeNumbers, String called) {
         return new Dictionary() {
             @Override
             public List<io.restest.core.json.JsonValue> valuesFor(
@@ -430,7 +532,7 @@ class RandomTestCaseGeneratorTest {
 
             @Override
             public String name() {
-                return "awkward";
+                return called;
             }
 
             @Override

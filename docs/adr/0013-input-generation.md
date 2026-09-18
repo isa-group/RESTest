@@ -477,8 +477,16 @@ what lets a plan put something after it one day.
 ### What changed
 
 `share` is a percentage. The example in §2 now reads `share: 75`. Nothing else in §2 moves: exclusive
-and weighted groups, the renormalising of weights among the sources that answered, and the validation
-that percentages sum to 100 are all unaffected.
+and weighted groups, and the renormalising of weights among the sources that answered, are unaffected.
+
+One thing §2 says needs reading carefully now that both numbers are percentages, because it is true
+of one of them and not the other. **Weights within a group must sum to 100 and are validated**, as §2
+says. **Shares between strategies are counted against each other and need not.** They divide one
+budget between all the strategies there are, so three strategies asking for 1, 1 and 2 divide it into
+quarters exactly as 25, 25 and 50 would; requiring a total would be requiring arithmetic of somebody
+for no gain. The implementation relies on that: it multiplies one side rather than dividing the
+other, so that asking for a quarter is a quarter whether one list of awkward values is in play or
+thirty.
 
 The file format the five dictionaries share is [ADR-0020](0020-what-a-dictionary-is.md), which adds a
 fifth keying this record missed — the name of the shape, which is how a whole request body is indexed.

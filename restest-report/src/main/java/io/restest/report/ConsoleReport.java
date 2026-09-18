@@ -237,8 +237,13 @@ public final class ConsoleReport implements RunListener {
                 .map(entry -> entry.getValue() + " " + entry.getKey())
                 .collect(java.util.stream.Collectors.joining(", ")));
         if (awkward > 0) {
-            write("  " + awkward + " of them carried values meant to be refused, so a good share "
-                    + "of the refusals above are ones RESTest asked for");
+            // The sentence exists to explain refusals, so it is written where there are refusals to
+            // explain. An API that accepted everything anyway has nothing here to account for, and
+            // the line would be pointing at a number that is not on the screen.
+            long refusals = repliesByClass.getOrDefault("4xx", 0);
+            write("  " + awkward + " of them carried values meant to be refused"
+                    + (refusals > 0 ? ", so a good share of the " + refusals + " refusals above are "
+                            + "ones RESTest asked for" : ""));
         }
         if (!serverErrors.none()) {
             write("  " + serverErrors.operationsAnswering500() + " operation(s) answered 500, "

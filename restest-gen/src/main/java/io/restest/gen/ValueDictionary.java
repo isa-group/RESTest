@@ -62,7 +62,21 @@ public final class ValueDictionary implements Dictionary {
         /** The parameter's name, wherever it appears - every {@code petId} in the API. */
         NAME,
         /** One named parameter of one named operation, which is as specific as it gets. */
-        OPERATION_AND_PARAMETER
+        OPERATION_AND_PARAMETER;
+
+        /**
+         * Whether this picks out one value in particular rather than a whole kind of them.
+         *
+         * <p>It decides when a list gets asked. One written for a named parameter, a named shape or
+         * a named operation knows more about that value than the document's own sample does, so it
+         * is asked first; one written for every date or every piece of text knows less, so it is
+         * asked after the document has had its say.
+         *
+         * @return whether it is about one value in particular
+         */
+        public boolean isAboutOneValueInParticular() {
+            return this == SCHEMA || this == NAME || this == OPERATION_AND_PARAMETER;
+        }
     }
 
     private final String name;

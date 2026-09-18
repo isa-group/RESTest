@@ -20,16 +20,14 @@ import io.restest.core.json.JsonText;
 import io.restest.core.json.JsonValue;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
 /**
  * Reads a dictionary out of the text of a file.
  *
- * <p>The format is written down in {@code docs/dictionary-format.md} and is deliberately plain
- * JSON, because a dictionary is the one part of this tool a user is most likely to want to write by
- * hand or produce from a script of their own.
+ * <p>Deliberately plain JSON, because a dictionary is the part of this tool somebody is most likely
+ * to want to write by hand or produce from a script of their own.
  *
  * <pre>{@code
  * {
@@ -69,6 +67,7 @@ final class DictionaryDocument {
         Objects.requireNonNull(describedAs, "describedAs");
         JsonValue.JsonObject document = asObject(parse(text, describedAs), "a dictionary",
                 describedAs);
+        rejectAnythingUnrecognised(document, describedAs);
 
         long version = wholeNumber(document, "version", describedAs);
         if (version != VERSION) {
@@ -102,13 +101,40 @@ final class DictionaryDocument {
                         .members()
                         .forEach((parameter, held) ->
                                 named.put(parameter, listOf(held, parameter, describedAs)));
-                perOperation.put(operation, Map.copyOf(named));
+                perOperation.put(operation, named);
             });
         } else {
             stated.members().forEach((key, held) ->
                     values.put(key, listOf(held, key, describedAs)));
         }
         return new ValueDictionary(name, keying, expects, values, perOperation);
+    }
+
+    /** The members a dictionary may have. Anything else is a typo, and a typo is worth saying. */
+    private static final List<String> MEMBERS =
+            List.of("version", "name", "description", "keyedBy", "expects", "values");
+
+    /**
+     * Refuses a file with a member nobody here recognises.
+     *
+     * <p>Strict on purpose, and easier to be strict now than later. A misspelled {@code expects} or
+     * {@code keyedBy} would otherwise leave a file that loads without complaint and then quietly
+     * does nothing at all - which is the outcome this format goes out of its way to prevent
+     * everywhere else. Accepting unknown members can be allowed later without breaking anybody's
+     * file; refusing them later cannot.
+     */
+    private static void rejectAnythingUnrecognised(JsonValue.JsonObject document,
+            String describedAs) {
+        List<String> unrecognised = document.members().keySet().stream()
+                .filter(member -> !MEMBERS.contains(member))
+                .toList();
+        if (!unrecognised.isEmpty()) {
+            throw new JsonException(describedAs + " has " + unrecognised.size()
+                    + " thing(s) in it this version does not recognise ("
+                    + String.join(", ", unrecognised) + "), which is usually a misspelling - and a "
+                    + "misspelled 'keyedBy' or 'expects' would leave a dictionary that loads and "
+                    + "then does nothing");
+        }
     }
 
     private static JsonValue parse(String text, String describedAs) {
@@ -141,7 +167,7 @@ final class DictionaryDocument {
     }
 
     private static Dictionary.Expectation expectation(String stated, String describedAs) {
-        return switch (stated.toLowerCase(Locale.ROOT)) {
+        return switch (stated) {
             case "acceptance" -> Dictionary.Expectation.ACCEPTANCE;
             case "refusal" -> Dictionary.Expectation.REFUSAL;
             case "unknown" -> Dictionary.Expectation.UNKNOWN;
@@ -175,7 +201,14 @@ final class DictionaryDocument {
         JsonValue value = document.member(member).orElseThrow(() -> new JsonException(
                 describedAs + " is a dictionary with no '" + member + "' in it"));
         if (value instanceof JsonValue.JsonNumber number) {
-            return number.value().longValue();
+            try {
+                // Exactly, not by rounding: a file declaring version 1.9 is not a version 1 file,
+                // and reading it as one is the half-reading this refuses everywhere else.
+                return number.value().longValueExact();
+            } catch (ArithmeticException notWhole) {
+                throw new JsonException(describedAs + "'s '" + member + "' is " + number.value()
+                        + ", and a version is a whole number");
+            }
         }
         throw new JsonException(describedAs + "'s '" + member + "' is not a number");
     }

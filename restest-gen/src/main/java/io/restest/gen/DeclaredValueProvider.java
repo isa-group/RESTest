@@ -67,13 +67,30 @@ public final class DeclaredValueProvider implements ValueProvider {
     public Optional<GeneratedValue> offer(ValueRequest request) {
         Objects.requireNonNull(request, "request");
         SchemaMetadata metadata = request.schema().metadata();
-        List<JsonValue> allowed = metadata.enumeration();
+        List<JsonValue> allowed = sendable(metadata.enumeration(), request);
         if (!allowed.isEmpty()) {
             return Optional.of(GeneratedValue.declared(allowed.get(random.nextInt(allowed.size())),
                     ValueOrigin.Declared.Statement.ENUMERATION));
         }
-        return metadata.defaultValue().map(value ->
-                GeneratedValue.declared(value, ValueOrigin.Declared.Statement.DEFAULT));
+        return metadata.defaultValue()
+                .filter(value -> RequestBuilder.canBeSentFrom(value, request.location()))
+                .map(value -> GeneratedValue.declared(value,
+                        ValueOrigin.Declared.Statement.DEFAULT));
+    }
+
+    /**
+     * The values of the list that a request could actually be built with.
+     *
+     * <p>A document may allow a value that cannot be put where this one goes - a list of accepted
+     * values with an empty word among them, for a parameter that fills a gap in the path. Offering
+     * it would close the gap instead of filling it, and the whole attempt would be thrown away when
+     * the request was put together. Standing aside for that one value leaves the others usable,
+     * which is better than losing the parameter and better than losing the request.
+     */
+    private static List<JsonValue> sendable(List<JsonValue> values, ValueRequest request) {
+        return values.stream()
+                .filter(value -> RequestBuilder.canBeSentFrom(value, request.location()))
+                .toList();
     }
 
     @Override

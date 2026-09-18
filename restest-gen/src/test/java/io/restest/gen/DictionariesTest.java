@@ -146,7 +146,9 @@ class DictionariesTest {
         Dictionaries.Found found = Dictionaries.gather(List.of(directory), PET_SHOP);
 
         assertThat(found.dictionaries()).extracting(Dictionary::name)
-                .describedAs("still used: the entries that do match are perfectly good")
+                .describedAs("kept, because the entries that do match are perfectly good; whether "
+                        + "they are then asked for values is the generator's business, and its own "
+                        + "tests say so")
                 .contains("ids");
         assertThat(found.problems()).singleElement(org.assertj.core.api.InstanceOfAssertFactories
                 .STRING)

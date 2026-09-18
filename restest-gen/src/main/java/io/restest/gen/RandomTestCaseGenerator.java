@@ -81,6 +81,16 @@ public final class RandomTestCaseGenerator {
     /** How often a parameter the API does not require is included anyway. */
     private static final double OPTIONAL_PARAMETER_CHANCE = 0.5;
 
+    /**
+     * How much of the testing time goes on requests built from values chosen to be awkward, unless
+     * somebody says otherwise.
+     *
+     * <p>A quarter against three is a starting point rather than a measurement. It is the one
+     * number here that has to be settled by running campaigns rather than by argument, and it lives
+     * in one place so that settling it is a one-line change.
+     */
+    public static final int AWKWARD_SHARE = 25;
+
     private final ApiModel model;
     private final long seed;
     private final RandomGenerator random;
@@ -122,11 +132,19 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * A generator for this API that will make the same decisions every time it is given the same
-     * number.
+     * A generator for this API, using these lists of values and spending this much of its time on
+     * requests built to be refused.
+     *
+     * <p>The same number produces the same decisions every time, this one included.
      *
      * @param model the API to test
      * @param seed the number the whole run's randomness is derived from
+     * @param dictionaries the lists of values to draw on. The ones whose values are meant to be
+     *     refused earn a way of building requests of their own; the rest are asked alongside what
+     *     the document itself says
+     * @param awkwardShare how much of the time, as a percentage, goes on requests built entirely
+     *     from values meant to be refused. Nought sends none of them
+     * @throws IllegalArgumentException if that is not a percentage
      */
     public RandomTestCaseGenerator(ApiModel model, long seed, List<Dictionary> dictionaries,
             int awkwardShare) {
@@ -154,7 +172,7 @@ public final class RandomTestCaseGenerator {
                 new ExampleValueProvider(random),
                 new DeclaredValueProvider(random));
         ValueProvider invention = new RandomValueProvider(model, random, fromTheDocument);
-        this.values = ValueProviderChain.of(fromTheDocument, invention);
+        this.values = nominal(dictionaries, fromTheDocument, invention, random);
         this.strategies = strategiesFor(dictionaries, awkwardShare, this.values, invention, random);
         this.sharesInTotal = this.strategies.stream().mapToInt(Strategy::share).sum();
 
@@ -218,7 +236,7 @@ public final class RandomTestCaseGenerator {
      */
     public java.util.Set<String> sourcesExpectingRefusal() {
         return strategies.stream()
-                .filter(way -> !way.name().equals("nominal"))
+                .filter(way -> way.expects() == Dictionary.Expectation.REFUSAL)
                 .map(Strategy::name)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
@@ -319,16 +337,6 @@ public final class RandomTestCaseGenerator {
     }
 
     /**
-     * How much of the testing time goes on requests built from values chosen to be awkward, unless
-     * somebody says otherwise.
-     *
-     * <p>A quarter against three is a starting point rather than a measurement. It is the one
-     * number here that has to be settled by running campaigns rather than by argument, and it lives
-     * in one place so that settling it is a one-line change.
-     */
-    public static final int AWKWARD_SHARE = 25;
-
-    /**
      * The ways this run will put a request together, and how the time divides between them.
      *
      * <p>Most of it goes on requests meant to be accepted. The rest goes on requests built entirely
@@ -348,22 +356,64 @@ public final class RandomTestCaseGenerator {
      */
     private static List<Strategy> strategiesFor(List<Dictionary> dictionaries, int awkwardShare,
             ValueProvider nominal, ValueProvider invention, RandomGenerator random) {
-        List<Strategy> ways = new ArrayList<>();
-        ways.add(new Strategy("nominal", 100 - awkwardShare, nominal));
-        if (awkwardShare == 0) {
-            return List.copyOf(ways);
-        }
         List<Dictionary> refusing = dictionaries.stream()
                 .filter(held -> held.expects() == Dictionary.Expectation.REFUSAL)
                 .toList();
+        List<Strategy> ways = new ArrayList<>();
+        if (refusing.isEmpty() || awkwardShare == 0) {
+            return List.of(new Strategy("nominal", 100, Dictionary.Expectation.UNKNOWN, nominal));
+        }
+        // Counted against each other rather than out of a hundred, so that asking for a quarter is
+        // a quarter whether one list of awkward values is in play or thirty. Giving each list a
+        // share of its own and dividing would round the quarter into something else; multiplying
+        // the other side instead keeps it exact whatever the arithmetic.
+        if (awkwardShare < 100) {
+            ways.add(new Strategy("nominal", (100 - awkwardShare) * refusing.size(),
+                    Dictionary.Expectation.UNKNOWN, nominal));
+        }
         for (Dictionary dictionary : refusing) {
-            // Shared between them rather than given to each, so asking for a quarter means a
-            // quarter whether one list of awkward values is in play or three.
-            ways.add(new Strategy(dictionary.name(), Math.max(1, awkwardShare / refusing.size()),
+            ways.add(new Strategy(dictionary.name(), awkwardShare, dictionary.expects(),
                     ValueProviderChain.of(new DictionaryValueProvider(dictionary, random),
                             invention)));
         }
         return List.copyOf(ways);
+    }
+
+    /**
+     * Where the values in an ordinary request come from, in the order they are asked.
+     *
+     * <p>The order is about how much each source knows. A list somebody wrote for <em>this</em>
+     * parameter of <em>this</em> operation knows more about it than the document's own sample,
+     * which in turn knows more than a list of values that suit any text at all. So the lists keyed
+     * to a particular value come first, the document speaks next, and the lists keyed to a kind of
+     * value come after it - with invention last, for anything nobody had an answer for.
+     *
+     * <p>A list whose values are meant to be refused is not here. Those belong to requests built to
+     * be refused, all the way through, and mixing one into an ordinary request would spoil both.
+     */
+    private static ValueProvider nominal(List<Dictionary> dictionaries,
+            ValueProvider fromTheDocument, ValueProvider invention, RandomGenerator random) {
+        List<ValueProvider> asked = new ArrayList<>();
+        addAsking(asked, dictionaries, random, true);
+        asked.add(fromTheDocument);
+        addAsking(asked, dictionaries, random, false);
+        asked.add(invention);
+        return ValueProviderChain.of(asked);
+    }
+
+    /** The lists that speak about one value in particular, or the ones that speak about a kind. */
+    private static void addAsking(List<ValueProvider> asked, List<Dictionary> dictionaries,
+            RandomGenerator random, boolean aboutOneValue) {
+        for (Dictionary dictionary : dictionaries) {
+            if (dictionary.expects() == Dictionary.Expectation.REFUSAL) {
+                continue;
+            }
+            boolean particular = !(dictionary instanceof ValueDictionary values)
+                    || values.keyedBy().isAboutOneValueInParticular();
+            if (particular == aboutOneValue) {
+                asked.add(new DictionaryValueProvider(dictionary, random));
+            }
+        }
     }
 
     /**

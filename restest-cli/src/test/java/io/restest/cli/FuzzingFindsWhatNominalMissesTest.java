@@ -109,6 +109,75 @@ class FuzzingFindsWhatNominalMissesTest {
                 .doesNotContain("answered 500");
     }
 
+    @Test
+    @DisplayName("a value out of a file somebody wrote for this API is actually sent")
+    void a_value_from_a_users_own_file_is_sent(@TempDir Path directory) throws IOException {
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
+        Path mine = Files.writeString(directory.resolve("mine.json"), """
+                {"version": 1, "name": "mine", "keyedBy": "name", "expects": "acceptance",
+                 "values": {"q": ["ZZMINEZZ"]}}""");
+
+        run(directory.resolve("out"), document, "--fuzzing", "0",
+                "--dictionary", mine.toString());
+
+        // Being read, validated and listed is not the same as being used, and only this says which.
+        com.github.tomakehurst.wiremock.client.WireMock.configureFor(api.port());
+        com.github.tomakehurst.wiremock.client.WireMock.verify(
+                com.github.tomakehurst.wiremock.client.WireMock.moreThanOrExactly(1),
+                com.github.tomakehurst.wiremock.client.WireMock
+                        .getRequestedFor(urlPathEqualTo("/search"))
+                        .withQueryParam("q", com.github.tomakehurst.wiremock.client.WireMock
+                                .equalTo("ZZMINEZZ")));
+    }
+
+    @Test
+    @DisplayName("a file that cannot be read is said out loud and the run carries on without it")
+    void an_unreadable_dictionary_does_not_end_the_run(@TempDir Path directory) throws IOException {
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
+        Path broken = Files.writeString(directory.resolve("broken.json"), "{ not a dictionary");
+
+        String screen = run(directory.resolve("out"), document, "--fuzzing", "0",
+                "--dictionary", broken.toString());
+
+        assertThat(screen).contains("broken.json");
+        assertThat(screen)
+                .describedAs("a file nobody could read costs the values in it, not the run")
+                .contains("requests to 1 operations");
+    }
+
+    @Test
+    @DisplayName("asking for a share that is not a percentage is a mistake in the command line, "
+            + "and answers the way every other mistake in the command line answers")
+    void a_share_that_is_not_a_percentage_is_a_command_line_mistake(@TempDir Path directory)
+            throws IOException {
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
+        StringWriter screen = new StringWriter();
+        int code;
+        try (PrintWriter writer = new PrintWriter(screen, true)) {
+            code = Restest.run(new String[] {"run", document.toString(), "--url", api.baseUrl(),
+                    "--budget", "1s", "--out", directory.resolve("out").toString(),
+                    "--fuzzing", "200"}, writer, writer);
+        }
+
+        assertThat(code)
+                .describedAs("2 is what a command line nobody could act on answers; 3 means the "
+                        + "document held nothing to test, which is a different thing entirely")
+                .isEqualTo(2);
+        assertThat(screen.toString()).contains("between 0 and 100");
+    }
+
+    @Test
+    @DisplayName("every request can be built to be refused, which is the other end of the same dial")
+    void the_whole_run_can_be_built_to_be_refused(@TempDir Path directory) throws IOException {
+        Path document = Files.writeString(directory.resolve("openapi.yaml"), SPECIFICATION);
+
+        String screen = run(directory.resolve("out"), document, "--fuzzing", "100");
+
+        assertThat(screen)
+                .describedAs("0 turns them off, so 100 is the symmetric request and has to work")
+                .contains("answered 500");
+    }
+
     private static String run(Path out, Path document, String... extra) {
         java.util.List<String> arguments = new java.util.ArrayList<>(java.util.List.of(
                 "run", document.toString(),

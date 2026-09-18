@@ -43,6 +43,9 @@ A file that cannot be read costs the values in it and is reported. It never ends
 | `expects` | optional | What you believe about these values: `acceptance`, `refusal` or `unknown`. **Left out means `unknown`**, which is the ordinary case |
 | `values` | required | The values themselves, under their keys |
 
+Anything else in the file is refused by name. A misspelled `expects` or `keyedBy` would otherwise
+leave a dictionary that loads without complaint and then never contributes a value.
+
 **One dictionary per file.** A file states once what decides which of its values apply and once what
 you believe about them, and letting several share a file would make both statements meaningless. Keep
 several by keeping several files.
@@ -107,9 +110,14 @@ rather than any field of it.
 ```
 
 RESTest picks among the values that apply at random rather than always the first, so a run works
-through the whole list. A value that could not actually be put in the request — one that would leave
-a gap in a path empty, or carry a line break into a header — is skipped for that place and used
-elsewhere.
+through the whole list.
+
+A value that could not actually be put in the request — one that would leave a gap in a path empty, or
+carry a line break into a header — is skipped for that place and used elsewhere.
+
+One thing to watch for, because nothing can warn you about it: **two entries under the same key**, as
+in `{"string": ["a"], "string": ["b"]}`, are not an error in JSON, and the second silently replaces
+the first. Most editors will point it out.
 
 ## What `expects` is for
 
@@ -120,7 +128,18 @@ among good ones would teach nothing that a request of all bad values does not. T
 how many requests were of that kind, so the refusals they earn do not read as the API turning away
 ordinary traffic.
 
-`acceptance` says you have checked, or the values came from the API itself.
+`acceptance` says you have checked, or the values came from the API itself. Such a list is asked
+alongside the document's own answers, in an order set by how much it knows about the value:
+
+```
+a list keyed by operation-and-parameter, name or schema   knows about one value
+the document's own examples, enumerations and defaults
+a list keyed by format or type                            knows about a kind of value
+whatever RESTest can invent
+```
+
+So a file of real identifiers for `getOwner`'s `ownerId` beats the document's sample of it, and a file
+of plausible surnames for every piece of text does not.
 
 `unknown` — the default — says nobody has checked. It is not an admission of failure: a list of
 plausible surnames is a genuinely useful thing to have without anybody having confirmed that this

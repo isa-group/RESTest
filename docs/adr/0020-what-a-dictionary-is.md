@@ -89,7 +89,14 @@ documented limit, because a qualifier nobody would use is worse than a stated ed
 
 ### 3. `expects` is written down now, and absent means nobody checked
 
-`acceptance`, `refusal` or `unknown`, stated per file. Absent means `unknown`, which is the ordinary
+`acceptance`, `refusal` or `unknown`, stated per file, and it decides when the values are asked for.
+A list that expects refusal earns a way of building requests of its own and is kept out of ordinary
+ones. Every other list is asked alongside what the document itself says, **in an order set by how
+much it knows**: a list written for a named parameter, a named shape or a named operation is asked
+before the document's own sample of that value, and a list written for a whole kind of value — every
+date, every piece of text — is asked after it. Invention remains last.
+
+Absent means `unknown`, which is the ordinary
 case and an honest answer rather than a placeholder — ADR-0013 §3 defends exactly that value: *"the
 honest intent of a value invented from a schema, because an API may refuse it for a rule the document
 does not express"*.
@@ -123,9 +130,15 @@ it, not a property of it.
 Two strategies exist today:
 
 ```
-nominal   share 75   enum, then the document's samples and defaults, then invention
+nominal   share 75   the lists written for one value, then what the document says,
+                     then the lists written for a kind of value, then invention
 fuzzing   share 25   the awkward values, then invention for anything they do not cover
 ```
+
+Shares are counted against each other rather than out of a hundred. Three strategies asking for 1, 1
+and 2 divide the budget into quarters exactly as 25, 25 and 50 would, which is what lets several
+lists of awkward values share one quarter between them without the arithmetic rounding it into
+something else.
 
 **Weighted groups are not built.** Nothing meaningful competes yet: the nominal chain is exclusive by
 design. The one case where two sources already answer for the same value is a schema with both a
@@ -157,19 +170,31 @@ lists and objects.
 
 ## Consequences
 
-- **A value that could not be sent is never chosen.** `RequestBuilder.canBeSentFrom`, added in 2.2,
-  filters the dictionary's offerings. That matters more here than anywhere: a list of awkward values
-  is full of exactly the values that cannot fill a gap in a path or cross into a header, and one of
-  them winning the draw would have the whole attempt thrown away.
+- **A value that could not be sent is never chosen, by any source.** `RequestBuilder.canBeSentFrom`,
+  added in 2.2, now filters every source that picks a value from a list somebody else wrote: the
+  document's samples, its enumerations and defaults, the dictionaries, and invention. That matters
+  most for a list of awkward values, which is full of exactly the values that cannot fill a gap in a
+  path or cross into a header — but a document is free to allow an empty word among the values of a
+  path parameter too, and a source that did not filter would have every request for that operation
+  thrown away.
+- **Whether an operation can be tested is no longer a property of the document alone.** Invention is
+  asked up to eight times for a value that can be sent, so a shape that usually produces a sendable
+  value and occasionally does not — an object in a path with one optional property — is declared
+  untestable about once in every few hundred runs, with a message that is then not quite true. The
+  alternative is worse in the common case: reasoning about which shapes can only produce unsendable
+  values means re-deriving, in the generator, what the request builder decides, and the two would
+  drift. The pinned counts in the corpus tests are therefore pinned against a seed, which they
+  already were.
 - **The same rule closed a pre-existing bug.** Invention could produce an unsendable value of its own
   — `maxLength: 0` or `maxItems: 0` on a path parameter — and the operation was counted as testable
   while every request it made was discarded, for the whole run. It now says it has no value to offer,
   and the operation is reported as untestable. A test that pinned this as a known gap now asserts it
   is closed.
-- **What a seed means has changed, deliberately.** A run now decides first what kind of request it is
-  making, and that decision draws on the run's randomness before anything else. Every number written
-  down before this version names a different run. The test that exists to make this impossible to do
-  by accident was re-baselined on purpose, which is what taking the decision looks like.
+- **What a seed means has changed, deliberately.** Building a request now begins by deciding what
+  kind of request it is, and that decision draws on the run's randomness where nothing used to — after
+  the operation has been chosen, before any value has been. Every number written down before this
+  version names a different run. The test that exists to make this impossible to do by accident was
+  re-baselined on purpose, which is what taking the decision looks like.
 - **The summary gained a line**, because a quarter of the requests being refused on purpose would
   otherwise read as an API turning away ordinary traffic.
 - **A dictionary is an interface, not a file reader.** The file-backed one is one implementation; the
@@ -203,3 +228,10 @@ lists and objects.
   consumer mistake ADR-0013 names twice: no oracle reads it before M3.1, and the summary's count is
   the honest interim.
 - **Weighted groups now.** Half an hour of work, and weights over a list of one.
+- **Recognising a strategy built to be refused by its name.** What the first version did, and wrong:
+  a strategy's name is a dictionary's name, which comes out of somebody else's file and may be
+  anything at all — including `nominal`. A strategy carries what it expects instead.
+- **Accepting members a dictionary file does not define.** The lenient reading, and it re-creates the
+  failure this format spends a paragraph preventing elsewhere: a misspelled `keyedBy` or `expects`
+  would load without complaint and then quietly do nothing. Unknown members are refused, which can be
+  relaxed later without breaking anybody's file; the reverse cannot.
