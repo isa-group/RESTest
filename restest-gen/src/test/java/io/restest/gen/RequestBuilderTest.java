@@ -96,10 +96,10 @@ class RequestBuilderTest {
     void a_list_is_written_the_way_the_document_asks() {
         Parameter exploded = new Parameter("tags", ParameterLocation.QUERY, false,
                 ArraySchema.of(StringSchema.of()), ParameterStyle.FORM, true, Optional.empty(),
-                Optional.empty());
+                Optional.empty(), List.of());
         Parameter joined = new Parameter("tags", ParameterLocation.QUERY, false,
                 ArraySchema.of(StringSchema.of()), ParameterStyle.FORM, false, Optional.empty(),
-                Optional.empty());
+                Optional.empty(), List.of());
         JsonValue tags = JsonValue.array(JsonValue.of("cat"), JsonValue.of("dog"));
 
         assertThat(build(Operation.of(HttpMethod.GET, "/pets", List.of(exploded)),
@@ -115,7 +115,7 @@ class RequestBuilderTest {
     void an_object_is_written_as_its_members() {
         Parameter filter = new Parameter("filter", ParameterLocation.QUERY, false,
                 ObjectSchema.of(Map.of()), ParameterStyle.FORM, true, Optional.empty(),
-                Optional.empty());
+                Optional.empty(), List.of());
         Map<String, JsonValue> members = new LinkedHashMap<>();
         members.put("colour", JsonValue.of("black"));
         members.put("age", JsonValue.of(3));
@@ -189,7 +189,7 @@ class RequestBuilderTest {
     void an_unsupported_style_is_named() {
         Parameter deepObject = new Parameter("filter", ParameterLocation.QUERY, false,
                 ObjectSchema.of(Map.of()), ParameterStyle.DEEP_OBJECT, true, Optional.empty(),
-                Optional.empty());
+                Optional.empty(), List.of());
         Parameter asJson = Parameter.ofContent("filter", ParameterLocation.QUERY, false,
                 ObjectSchema.of(Map.of()), "application/json");
 

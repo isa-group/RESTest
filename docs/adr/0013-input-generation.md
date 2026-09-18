@@ -211,7 +211,9 @@ becomes deterministic and the random arithmetic goes away.
   That reasoning has a hole worth naming before M2.2 meets it: a schema whose default is also one of
   its enumerated values — `default: available` among `[available, pending, sold]`, which is the common
   shape — leaves the two indistinguishable by comparison. Whoever adds the third case decides whether
-  that is worth a sub-kind.
+  that is worth a sub-kind. **Decided at M2.2: it is.** A value the document stated now names which
+  statement it was read from, and the name is optional so that a run recorded before the change still
+  reads. See [ADR-0019](0019-the-samples-a-document-writes-down.md) §4.
 - **A varied dictionary has an arithmetic problem worth stating.** With twenty entries and a parameter
   that wants an e-mail address, one draw in twenty fits; with three such parameters in one request, all
   three fit once in eight thousand. Two cheap mitigations, both in this decision: index on `format` when

@@ -397,7 +397,7 @@ class RandomValueProviderTest {
     void a_path_value_is_never_nothing() {
         StringSchema nullable = new StringSchema(SchemaMetadata.none().withNullable(true),
                 Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-        io.restest.core.gen.ValueRequest inThePath = new io.restest.core.gen.ValueRequest(
+        io.restest.core.gen.ValueRequest inThePath = io.restest.core.gen.ValueRequest.of(
                 io.restest.core.model.OperationId.of("GET /pets/{petId}"), "petId",
                 io.restest.core.model.ParameterLocation.PATH, nullable);
 
@@ -440,7 +440,7 @@ class RandomValueProviderTest {
         // How OpenAPI 3.1 says "or null", there being no `nullable` keyword any more.
         ChoiceSchema aWordOrNothing = ChoiceSchema.of(List.of(
                 StringSchema.of(), new NullSchema(SchemaMetadata.none())));
-        io.restest.core.gen.ValueRequest inThePath = new io.restest.core.gen.ValueRequest(
+        io.restest.core.gen.ValueRequest inThePath = io.restest.core.gen.ValueRequest.of(
                 io.restest.core.model.OperationId.of("GET /pets/{petId}"), "petId",
                 io.restest.core.model.ParameterLocation.PATH, aWordOrNothing);
 

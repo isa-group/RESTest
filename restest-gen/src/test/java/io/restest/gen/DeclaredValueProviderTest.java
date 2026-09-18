@@ -49,7 +49,8 @@ class DeclaredValueProviderTest {
 
         assertThat(((JsonValue.JsonString) value.value()).value())
                 .isIn("available", "pending", "sold");
-        assertThat(value.origin()).isEqualTo(ValueOrigin.DECLARED);
+        assertThat(value.origin())
+                .isEqualTo(ValueOrigin.declared(ValueOrigin.Declared.Statement.ENUMERATION));
     }
 
     @Test

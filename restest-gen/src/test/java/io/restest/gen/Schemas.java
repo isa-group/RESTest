@@ -30,7 +30,7 @@ final class Schemas {
 
     /** A question about one parameter, which is all any source of values is ever given. */
     static ValueRequest asking(CanonicalSchema schema) {
-        return new ValueRequest(OperationId.of("GET /widgets"), "widgetId",
+        return ValueRequest.of(OperationId.of("GET /widgets"), "widgetId",
                 ParameterLocation.QUERY, schema);
     }
 

@@ -38,9 +38,17 @@ public record GeneratedValue(JsonValue value, ValueOrigin origin) {
         Objects.requireNonNull(origin, "origin");
     }
 
-    /** A value the specification itself states: a default, or one of the values it allows. */
-    public static GeneratedValue declared(JsonValue value) {
-        return new GeneratedValue(value, ValueOrigin.DECLARED);
+    /**
+     * A value the specification itself states.
+     *
+     * @param value what to send
+     * @param statement which of the things a document states this was read from - the value used
+     *     when none is sent, one of the values it allows, or a sample its author wrote down
+     * @return the value and its origin
+     */
+    public static GeneratedValue declared(JsonValue value,
+            ValueOrigin.Declared.Statement statement) {
+        return new GeneratedValue(value, ValueOrigin.declared(statement));
     }
 
     /**

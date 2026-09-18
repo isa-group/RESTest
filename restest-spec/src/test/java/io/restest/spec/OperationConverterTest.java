@@ -17,6 +17,7 @@ package io.restest.spec;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
@@ -26,6 +27,7 @@ import io.restest.core.model.SpecificationIssue;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.media.MediaType;
 import io.swagger.v3.oas.models.media.Schema;
@@ -234,6 +236,88 @@ class OperationConverterTest {
             // Worded so that nobody goes looking in the document for a fault that is ours.
             assertThat(issue.message()).contains("fault of the tool");
         });
+    }
+
+    @Test
+    @DisplayName("a parameter's own sample values are read, in both the spellings a document uses")
+    void a_parameters_own_samples_are_read() {
+        io.swagger.v3.oas.models.parameters.Parameter single =
+                new io.swagger.v3.oas.models.parameters.Parameter()
+                        .name("cluster_id").in("path").required(true).example("cluster-1")
+                        .schema(new Schema<>().type("string"));
+        io.swagger.v3.oas.models.parameters.Parameter named =
+                new io.swagger.v3.oas.models.parameters.Parameter()
+                        .name("status").in("query")
+                        .schema(new Schema<>().type("string"))
+                        .examples(new java.util.LinkedHashMap<>(java.util.Map.of()));
+        named.getExamples().put("first", new Example().value("sold"));
+        named.getExamples().put("second", new Example().value("pending"));
+
+        Operation operation = onlyOperation(apiWithPath("/clusters/{cluster_id}",
+                new PathItem().get(new io.swagger.v3.oas.models.Operation()
+                        .operationId("getCluster")
+                        .parameters(List.of(single, named)))));
+
+        assertThat(operation.parameter("cluster_id", ParameterLocation.PATH).orElseThrow()
+                .examples()).containsExactly(JsonValue.of("cluster-1"));
+        assertThat(operation.parameter("status", ParameterLocation.QUERY).orElseThrow()
+                .examples())
+                .describedAs("named samples are offered in the order the document wrote them")
+                .containsExactly(JsonValue.of("sold"), JsonValue.of("pending"));
+    }
+
+    @Test
+    @DisplayName("a named sample kept among the document's reusable pieces is followed")
+    void a_sample_declared_once_and_named_is_followed() {
+        io.swagger.v3.oas.models.parameters.Parameter parameter =
+                new io.swagger.v3.oas.models.parameters.Parameter()
+                        .name("status").in("query").schema(new Schema<>().type("string"))
+                        .examples(new java.util.LinkedHashMap<>());
+        parameter.getExamples().put("theUsualOne",
+                new Example().$ref("#/components/examples/Sold"));
+        OpenAPI api = apiWithPath("/pets", new PathItem().get(
+                new io.swagger.v3.oas.models.Operation().operationId("listPets")
+                        .parameters(List.of(parameter))));
+        api.setComponents(new io.swagger.v3.oas.models.Components()
+                .addExamples("Sold", new Example().value("sold")));
+
+        OperationConverter.Result result = OperationConverter.convert(api, java.util.Map.of());
+
+        assertThat(result.operations().get(0).parameter("status", ParameterLocation.QUERY)
+                .orElseThrow().examples()).containsExactly(JsonValue.of("sold"));
+    }
+
+    @Test
+    @DisplayName("a sample that is only a web address is left alone, and costs the parameter nothing")
+    void a_sample_kept_elsewhere_on_the_web_is_not_fetched() {
+        io.swagger.v3.oas.models.parameters.Parameter parameter =
+                new io.swagger.v3.oas.models.parameters.Parameter()
+                        .name("status").in("query").schema(new Schema<>().type("string"))
+                        .examples(new java.util.LinkedHashMap<>());
+        parameter.getExamples().put("elsewhere",
+                new Example().externalValue("https://example.com/sold.json"));
+        parameter.getExamples().put("here", new Example().value("sold"));
+
+        Operation operation = onlyOperation(apiWithPath("/pets", new PathItem().get(
+                new io.swagger.v3.oas.models.Operation().operationId("listPets")
+                        .parameters(List.of(parameter)))));
+
+        assertThat(operation.parameter("status", ParameterLocation.QUERY).orElseThrow().examples())
+                .describedAs("reading a document must not depend on the network being there")
+                .containsExactly(JsonValue.of("sold"));
+    }
+
+    @Test
+    @DisplayName("a parameter offering no sample offers none, rather than offering the word null")
+    void a_parameter_without_a_sample_offers_none() {
+        Operation operation = onlyOperation(apiWithPath("/pets/{id}", new PathItem().get(
+                new io.swagger.v3.oas.models.Operation().operationId("getPet")
+                        .parameters(List.of(new io.swagger.v3.oas.models.parameters.Parameter()
+                                .name("id").in("path").required(true)
+                                .schema(new Schema<>().type("string")))))));
+
+        assertThat(operation.parameter("id", ParameterLocation.PATH).orElseThrow().examples())
+                .isEmpty();
     }
 
     /**

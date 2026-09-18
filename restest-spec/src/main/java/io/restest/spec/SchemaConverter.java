@@ -525,7 +525,32 @@ final class SchemaConverter {
                 : Boolean.TRUE.equals(schema.getWriteOnly())
                         ? SchemaMetadata.Access.WRITE_ONLY
                         : SchemaMetadata.Access.READ_WRITE;
-        return new SchemaMetadata(description, nullable, enumeration, defaultValue, deprecated, access);
+        return new SchemaMetadata(description, nullable, enumeration, defaultValue,
+                examplesOf(schema), deprecated, access);
+    }
+
+    /**
+     * The sample values a shape offers, in the order the document wrote them and with repeats
+     * removed.
+     *
+     * <p>Two spellings, one meaning. OpenAPI 3.0 lets a shape state one {@code example}; 3.1
+     * replaced it with a list of {@code examples} and left the singular in place as an older
+     * spelling that documents still use - so both are read, and a document using both contributes
+     * both. A shape stating {@code example: null} means it, which is why the singular is taken from
+     * a flag rather than from the value being absent: read the other way, "the author says null is
+     * a sensible value here" would be indistinguishable from "the author said nothing".
+     */
+    static List<JsonValue> examplesOf(Schema<?> schema) {
+        List<JsonValue> stated = new ArrayList<>();
+        if (schema.getExampleSetFlag()) {
+            toJsonValue(schema.getExample()).ifPresent(stated::add);
+        }
+        if (schema.getExamples() != null) {
+            for (Object example : schema.getExamples()) {
+                toJsonValue(example).ifPresent(stated::add);
+            }
+        }
+        return List.copyOf(new LinkedHashSet<>(stated));
     }
 
     /**
@@ -562,7 +587,7 @@ final class SchemaConverter {
      * would have anyway; a schema with a made-up default is one that sends rubbish and blames the
      * API for refusing it.
      */
-    private static Optional<JsonValue> toJsonValue(Object value) {
+    static Optional<JsonValue> toJsonValue(Object value) {
         return switch (value) {
             case null -> Optional.of(JsonValue.NULL);
             case Boolean b -> Optional.of(JsonValue.of(b));

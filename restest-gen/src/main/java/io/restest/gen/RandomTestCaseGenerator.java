@@ -115,9 +115,17 @@ public final class RandomTestCaseGenerator {
         // asking by name means the tool cannot start on the oldest runtime it promises to run on.
         // This one is in java.base on every release, which every runtime has by definition.
         this.random = new SplittableRandom(seed);
+        // What the document itself says about a value, in the order of preference the document's own
+        // words imply: a closed list of accepted values leaves nothing to choose; a sample the author
+        // wrote down is a value that worked against a real API; a default is what the API uses when
+        // the caller says nothing. The same list answers questions about anything nested inside a
+        // value as well as about the value itself, which is why it is built once and shared.
+        ValueProvider fromTheDocument = ValueProviderChain.of(
+                new ExampleValueProvider(random),
+                new DeclaredValueProvider(random));
         this.values = ValueProviderChain.of(
-                new DeclaredValueProvider(random),
-                new RandomValueProvider(model, random));
+                fromTheDocument,
+                new RandomValueProvider(model, random, fromTheDocument));
 
         List<Operation> canBeTried = new ArrayList<>();
         Map<OperationId, String> cannot = new LinkedHashMap<>();
@@ -205,8 +213,7 @@ public final class RandomTestCaseGenerator {
             if (!parameter.required() && random.nextDouble() >= OPTIONAL_PARAMETER_CHANCE) {
                 continue;
             }
-            Optional<GeneratedValue> value = values.offer(new ValueRequest(operation.id(),
-                    parameter.name(), parameter.location(), resolved(parameter.schema())));
+            Optional<GeneratedValue> value = values.offer(ask(operation, parameter));
             if (value.isPresent()) {
                 chosen.add(ParameterValue.of(parameter.name(), parameter.location(),
                         value.get().value(), value.get().origin()));
@@ -252,13 +259,24 @@ public final class RandomTestCaseGenerator {
                 return Optional.of("the parameter '" + parameter.name() + "' is required and its "
                         + "description could not be read: " + unsupported.reason());
             }
-            if (values.offer(new ValueRequest(operation.id(), parameter.name(),
-                    parameter.location(), schema)).isEmpty()) {
+            if (values.offer(ask(operation, parameter)).isEmpty()) {
                 return Optional.of("no value could be found for the required parameter '"
                         + parameter.name() + "'");
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * What to ask the sources of values about one parameter of one operation.
+     *
+     * <p>The parameter's own sample values travel with the question rather than being folded into
+     * the shape, because a shape the document named once may be used by dozens of parameters and a
+     * sample belongs to the one that declared it.
+     */
+    private ValueRequest ask(Operation operation, Parameter parameter) {
+        return new ValueRequest(operation.id(), parameter.name(), parameter.location(),
+                resolved(parameter.schema()), parameter.examples());
     }
 
     /**

@@ -15,9 +15,11 @@
  */
 package io.restest.core.gen;
 
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.schema.CanonicalSchema;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,30 +40,60 @@ import java.util.Objects;
  * @param location where the value goes in the request: the path, the query string, a header or a
  *     cookie
  * @param schema the shape the value has to satisfy
+ * @param examples sample values the document offers for the parameter itself rather than for its
+ *     shape, in the order it wrote them. Empty for anything nested inside that shape, since a
+ *     sample of the whole is not a sample of one of its parts
  */
 public record ValueRequest(
         OperationId operation,
         String name,
         ParameterLocation location,
-        CanonicalSchema schema) {
+        CanonicalSchema schema,
+        List<JsonValue> examples) {
 
     public ValueRequest {
         Objects.requireNonNull(operation, "operation");
         Objects.requireNonNull(name, "name");
         Objects.requireNonNull(location, "location");
         Objects.requireNonNull(schema, "schema");
+        Objects.requireNonNull(examples, "examples");
+        examples = List.copyOf(examples);
         if (name.isBlank()) {
             throw new IllegalArgumentException("a value is asked for by the name of a parameter");
         }
     }
 
-    /** The same question about a different shape, for an answerer working through a nested one. */
-    public ValueRequest about(CanonicalSchema value) {
-        return new ValueRequest(operation, name, location, value);
+    /**
+     * A question about a parameter the document offers no sample value of its own for.
+     *
+     * @param operation the operation whose request is being built
+     * @param name the parameter's name, as the specification writes it
+     * @param location where the value goes in the request
+     * @param schema the shape the value has to satisfy
+     * @return the question
+     */
+    public static ValueRequest of(OperationId operation, String name, ParameterLocation location,
+            CanonicalSchema schema) {
+        return new ValueRequest(operation, name, location, schema, List.of());
     }
 
-    /** The same question about a named piece of a larger shape - one property of an object. */
+    /**
+     * The same question about a different shape, for an answerer working through a nested one.
+     *
+     * <p>Still the same value, so a sample the document offered for it still applies: this is how a
+     * shape named elsewhere is looked up, not how a piece of one is reached.
+     */
+    public ValueRequest about(CanonicalSchema value) {
+        return new ValueRequest(operation, name, location, value, examples);
+    }
+
+    /**
+     * The same question about a named piece of a larger shape - one property of an object.
+     *
+     * <p>A different value, so the samples offered for the whole are left behind: a sample owner is
+     * not a sample of the owner's first name.
+     */
     public ValueRequest about(String property, CanonicalSchema value) {
-        return new ValueRequest(operation, property, location, value);
+        return new ValueRequest(operation, property, location, value, List.of());
     }
 }

@@ -97,7 +97,8 @@ class RandomTestCaseGeneratorTest {
                 .orElseThrow();
 
         assertThat(testCase.parameterValue("status", ParameterLocation.QUERY).orElseThrow()
-                .origin()).isEqualTo(ValueOrigin.DECLARED);
+                .origin()).isEqualTo(
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.ENUMERATION));
         assertThat(testCase.parameterValue("name", ParameterLocation.QUERY).orElseThrow().origin())
                 .isEqualTo(new ValueOrigin.Generated("random"));
         assertThat(testCase.parameterValues()).allSatisfy(value ->
@@ -168,7 +169,8 @@ class RandomTestCaseGeneratorTest {
     void an_operation_that_cannot_be_assembled_is_reported() {
         Operation deepObject = Operation.of(HttpMethod.GET, "/search", List.of(
                 new Parameter("filter", ParameterLocation.QUERY, false, ObjectSchema.of(Map.of()),
-                        ParameterStyle.DEEP_OBJECT, true, Optional.empty(), Optional.empty())));
+                        ParameterStyle.DEEP_OBJECT, true, Optional.empty(), Optional.empty(),
+                        List.of())));
 
         assertThat(generatorFor(deepObject).untestableOperations())
                 .containsOnlyKeys(deepObject.id());

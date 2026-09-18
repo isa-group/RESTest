@@ -74,12 +74,27 @@ class ParameterTest {
         Parameter deepObject = new Parameter("filter", ParameterLocation.QUERY, false,
                 ObjectSchema.of(Map.of("status", StringSchema.of())),
                 ParameterStyle.DEEP_OBJECT, true, java.util.Optional.empty(),
-                java.util.Optional.of("a structured filter"));
+                java.util.Optional.of("a structured filter"), java.util.List.of());
 
         assertThat(deepObject.style()).isEqualTo(ParameterStyle.DEEP_OBJECT);
         assertThat(deepObject.explode()).isTrue();
         assertThat(deepObject.description()).contains("a structured filter");
         assertThat(ParameterStyle.DEEP_OBJECT.explodesByDefault()).isFalse();
+    }
+
+    @Test
+    @DisplayName("a parameter carries the sample values the document wrote for it, unchanged")
+    void a_parameter_carries_its_own_samples() {
+        java.util.List<io.restest.core.json.JsonValue> samples = new java.util.ArrayList<>(
+                java.util.List.of(io.restest.core.json.JsonValue.of("cluster-1")));
+        Parameter cluster = Parameter.of("cluster_id", ParameterLocation.PATH, true,
+                StringSchema.of()).withExamples(samples);
+        samples.add(io.restest.core.json.JsonValue.of("cluster-2"));
+
+        assertThat(Parameter.of("x", ParameterLocation.QUERY, false, StringSchema.of()).examples())
+                .isEmpty();
+        assertThat(cluster.examples())
+                .containsExactly(io.restest.core.json.JsonValue.of("cluster-1"));
     }
 
     @Test

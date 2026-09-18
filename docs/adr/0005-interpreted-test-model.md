@@ -1,7 +1,7 @@
 # ADR-0005: Test cases are data, executed directly — not generated source code
 
-**Status:** Accepted, amended at M1.1b
-**Date:** 2026-09-11 (amended 2026-09-12)
+**Status:** Accepted, amended at M1.1b and M2.2
+**Date:** 2026-09-11 (amended 2026-09-12, 2026-09-18)
 
 ## Context
 
@@ -232,6 +232,13 @@ examples will be a third case the document can supply. Left alone for now: the s
 reachable from the operation, still holds the default and the enumeration, so a consumer wanting the
 distinction can compare the chosen value against them directly; nothing is lost, only left for a
 consumer to derive rather than being restated here.
+
+> **Changed at M2.2.** The third case arrived, and with it the reason: a run has to be able to answer
+> *did the document's own samples help?*, which comparing values against the schema cannot do. The
+> substitute offered above also fails for the commonest shape, a default that is one of the
+> enumerated values. `Declared` now carries which statement it was read from, optionally — absent
+> means a run recorded before the distinction was kept, so older runs still read.
+> See [ADR-0019](0019-the-samples-a-document-writes-down.md) §4.
 
 ### Consequences
 

@@ -15,6 +15,7 @@
  */
 package io.restest.spec;
 
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.HeaderModel;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
@@ -32,6 +33,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.Content;
 import io.swagger.v3.oas.models.parameters.RequestBody;
@@ -316,6 +318,7 @@ final class OperationConverter {
         ParameterLocation parameterLocation = parameterLocation(parameter.getIn());
         boolean required = Boolean.TRUE.equals(parameter.getRequired());
         Optional<String> description = Optional.ofNullable(parameter.getDescription());
+        List<JsonValue> examples = examplesOf(parameter, components);
         if (parameter.getContent() != null && !parameter.getContent().isEmpty()) {
             Map.Entry<String, io.swagger.v3.oas.models.media.MediaType> entry =
                     parameter.getContent().entrySet().iterator().next();
@@ -323,14 +326,55 @@ final class OperationConverter {
                     components);
             return Optional.of(new Parameter(parameter.getName(), parameterLocation, required, schema,
                     ParameterStyle.defaultFor(parameterLocation), false, Optional.of(entry.getKey()),
-                    description));
+                    description, examples));
         }
         CanonicalSchema schema = SchemaConverter.convert(parameter.getSchema(), components);
         ParameterStyle style = parameterStyle(parameter.getStyle(), parameterLocation);
         boolean explode = parameter.getExplode() != null
                 ? parameter.getExplode() : style.explodesByDefault();
         return Optional.of(new Parameter(parameter.getName(), parameterLocation, required, schema,
-                style, explode, Optional.empty(), description));
+                style, explode, Optional.empty(), description, examples));
+    }
+
+    /**
+     * The sample values a parameter offers for itself, in the order the document wrote them and
+     * with repeats removed.
+     *
+     * <p>A parameter may write one value under {@code example} or several named ones under
+     * {@code examples}, and both spellings mean the same thing here. A named one may point at a
+     * sample kept among the document's reusable pieces, which is followed; one that only gives a
+     * web address for its value is left out, because reading it would mean fetching something over
+     * the network while a document is being read, and nothing about parsing a document is allowed
+     * to depend on the network being there.
+     *
+     * <p>Nothing here is reported as a problem with the document. A sample value that could not be
+     * read costs a suggestion, not an operation: the parameter is still tested, with a value
+     * invented for it exactly as it would have been. Reporting each one would bury the issues that
+     * do cost an operation - one real document in the corpus alone would add hundreds of lines.
+     */
+    private static List<JsonValue> examplesOf(
+            io.swagger.v3.oas.models.parameters.Parameter parameter, Components components) {
+        List<JsonValue> stated = new ArrayList<>();
+        // Absent rather than empty: unlike a shape, a parameter carries no flag saying whether its
+        // author wrote a sample at all, so nothing here can tell "no sample" from the sample being
+        // the word null - and reading the first as the second would put nothing in the request
+        // where a value belongs. A parameter whose author really did write `example: null` loses
+        // that sample; no document in the corpus writes one, and a value that is nothing is the one
+        // sample that teaches nothing anyway.
+        if (parameter.getExample() != null) {
+            SchemaConverter.toJsonValue(parameter.getExample()).ifPresent(stated::add);
+        }
+        if (parameter.getExamples() != null) {
+            Map<String, Example> pool = components == null ? null : components.getExamples();
+            for (Example named : parameter.getExamples().values()) {
+                Example resolved = resolveChain(named, Example::get$ref, pool);
+                if (resolved == null || resolved.getValue() == null) {
+                    continue;
+                }
+                SchemaConverter.toJsonValue(resolved.getValue()).ifPresent(stated::add);
+            }
+        }
+        return List.copyOf(new LinkedHashSet<>(stated));
     }
 
     /**

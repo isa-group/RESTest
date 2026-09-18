@@ -37,9 +37,20 @@ class ValueOriginTest {
     }
 
     @Test
-    @DisplayName("a declared origin has no components: every instance is equal")
-    void declared_is_a_single_value() {
-        assertThat(new ValueOrigin.Declared()).isEqualTo(ValueOrigin.DECLARED);
+    @DisplayName("a declared origin that does not say which statement produced it is the shared one")
+    void declared_without_a_statement_is_a_single_value() {
+        assertThat(new ValueOrigin.Declared(java.util.Optional.empty()))
+                .isEqualTo(ValueOrigin.DECLARED);
+    }
+
+    @Test
+    @DisplayName("a declared origin names which of the document's statements produced the value")
+    void declared_names_its_statement() {
+        assertThat(ValueOrigin.declared(ValueOrigin.Declared.Statement.EXAMPLE).statement())
+                .contains(ValueOrigin.Declared.Statement.EXAMPLE);
+        assertThat(ValueOrigin.declared(ValueOrigin.Declared.Statement.EXAMPLE))
+                .isNotEqualTo(ValueOrigin.declared(ValueOrigin.Declared.Statement.DEFAULT))
+                .isNotEqualTo(ValueOrigin.DECLARED);
     }
 
     @Test

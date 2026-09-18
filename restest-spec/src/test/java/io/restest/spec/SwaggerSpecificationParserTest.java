@@ -84,6 +84,11 @@ class SwaggerSpecificationParserTest {
 
         NumberSchema balance = (NumberSchema) accountSchema.property("balance").orElseThrow();
         assertThat(balance.exclusiveMinimum()).contains(java.math.BigDecimal.ZERO);
+
+        assertThat(displayName.metadata().examples())
+                .describedAs("3.1 writes sample values as a list, where 3.0 wrote a single one")
+                .containsExactly(io.restest.core.json.JsonValue.of("Jane Doe"),
+                        io.restest.core.json.JsonValue.NULL);
     }
 
     @Test

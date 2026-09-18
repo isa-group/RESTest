@@ -64,7 +64,7 @@ layout).
 |---|---|---|
 | 2.1a ✅ [#307](https://github.com/isa-group/RESTest/pull/307) | `allOf` folded into the canonical schema: halves combined, the stricter bound kept, a combination nothing satisfies and one we cannot work out each said plainly | The inheritance idiom real APIs describe their resources with stops being ignored |
 | 2.1b ✅ [#308](https://github.com/isa-group/RESTest/pull/308) | `oneOf` / `anyOf` as a shape of their own (ADR-0018). Discriminators deliberately not included: they cost no request, and reading the corpus's one real hierarchy as a plain object would produce a shape quietly missing the property that identifies it | An operation whose parameter may be a number *or* a text stops being skipped |
-| 2.2 | Declared examples harvested, in both the 3.0 and the 3.1 shapes | The specification's own sample values get used |
+| 2.2 ✅ [#310](https://github.com/isa-group/RESTest/pull/310) | Declared examples harvested, in both the 3.0 and the 3.1 shapes, on the shape and on the parameter (ADR-0019). A value the document stated now names which of its statements it came from — default, allowed list or sample — closing the question ADR-0005 parked and ADR-0013 reopened | The specification's own sample values get used: the two APIs in the priority corpus that write sample identifiers address resources that exist instead of inventing ones that do not |
 | 2.3 | Deterministic boundary walk: every documented limit probed exactly | Reproducible edge-case tests, not luck |
 | 2.4 | Format-aware and pattern-based generators (date, e-mail, UUID, regular expressions) | Values real APIs accept |
 | 2.5 | Request bodies: JSON, form encoding, multipart, XML | Write operations become testable |
@@ -81,6 +81,11 @@ ADR-0017 studies the tool that won the 2026 competition and says what we take fr
 follow for M2. **2.5** also sends an `Accept` header built from the media types the operation's own
 2XX responses declare; we send none today, and one of the five specifications in the golden corpus
 serves a versioned media type. And **2.9** exists because of it.
+
+**2.5** inherits one more thing, from 2.2 rather than from ADR-0017: the sample values a media type
+declares. 2.2 read every sample a document writes for a *parameter* and deliberately left the ones
+on a request body alone, because bodies are not generated until 2.5 and `RequestBodyModel` has
+nowhere to put them (ADR-0019 §5).
 
 2.9 is last in the table and depends on nothing in it, so it can be taken whenever. What makes it
 worth taking early is this: `RandomTestCaseGenerator` decides each optional parameter with its own

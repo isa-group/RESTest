@@ -112,6 +112,51 @@ class InteractionDocumentTest {
     }
 
     @Test
+    @DisplayName("which of the document's statements a value came from survives")
+    void which_statement_a_value_came_from_survives() {
+        TestCase testCase = TestCase.of(OperationId.of("GET /owners/{ownerId}"), List.of(
+                ParameterValue.of("ownerId", ParameterLocation.PATH, JsonValue.of(1),
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.EXAMPLE)),
+                ParameterValue.of("status", ParameterLocation.QUERY, JsonValue.of("sold"),
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.ENUMERATION)),
+                ParameterValue.of("limit", ParameterLocation.QUERY, JsonValue.of(10),
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.DEFAULT))));
+        Interaction original = Interaction.answered(testCase, request(),
+                HttpResponseRecord.of(200), Instant.EPOCH, Duration.ofMillis(5));
+
+        Interaction read = InteractionDocument.toInteraction(InteractionDocument.of(original));
+
+        assertThat(read.testCase().parameterValues()).extracting(ParameterValue::origin)
+                .containsExactly(
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.EXAMPLE),
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.ENUMERATION),
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.DEFAULT));
+    }
+
+    @Test
+    @DisplayName("a run recorded before RESTest kept those apart still reads")
+    void a_declared_value_without_a_statement_still_reads() {
+        TestCase testCase = TestCase.of(OperationId.of("GET /pets"), List.of(
+                ParameterValue.of("status", ParameterLocation.QUERY, JsonValue.of("sold"),
+                        ValueOrigin.declared(ValueOrigin.Declared.Statement.ENUMERATION))));
+        JsonValue.JsonObject written = (JsonValue.JsonObject) InteractionDocument.of(
+                Interaction.answered(testCase, request(), HttpResponseRecord.of(200),
+                        Instant.EPOCH, Duration.ofMillis(5)));
+
+        assertThat(JsonText.write(written))
+                .describedAs("which statement a value came from is written down")
+                .contains("\"stated\":\"enumeration\"");
+
+        Interaction older = InteractionDocument.toInteraction(
+                JsonText.read(JsonText.write(written)
+                        .replace(",\"stated\":\"enumeration\"", "")));
+
+        assertThat(older.testCase().parameterValues()).extracting(ParameterValue::origin)
+                .describedAs("an older run says the document stated the value, and no more")
+                .containsExactly(ValueOrigin.DECLARED);
+    }
+
+    @Test
     @DisplayName("a request body and where it came from survive")
     void a_request_body_survives() {
         TestCase testCase = TestCase.of(OperationId.of("POST /pets"), List.of(),

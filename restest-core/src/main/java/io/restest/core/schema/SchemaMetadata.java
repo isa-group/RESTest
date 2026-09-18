@@ -23,16 +23,21 @@ import java.util.Optional;
 /**
  * The facts JSON Schema states about a value whatever its type.
  *
- * <p>They are held once, here, rather than repeated as six components on each of the ten schema
- * variants. {@code enum} is the clearest case: it constrains a string, a number and an object
- * identically, and a generator asking "is this value one of a fixed set?" should not have to ask it
- * ten times.
+ * <p>They are held once, here, rather than repeated as seven components on each of the eleven
+ * schema variants. {@code enum} is the clearest case: it constrains a string, a number and an
+ * object identically, and a generator asking "is this value one of a fixed set?" should not have to
+ * ask it eleven times.
  *
  * @param description what the document says the value is for, if anything
  * @param nullable whether {@code null} is an accepted value. Written as {@code nullable: true} in
  *     OpenAPI 3.0 and as a {@code "null"} member of a type array in 3.1; both arrive here
  * @param enumeration the fixed set of accepted values, empty when the value is not enumerated
  * @param defaultValue the value the API uses when none is sent
+ * @param examples sample values the document offers for this value, in the order it wrote them,
+ *     empty when it offers none. Written as a single {@code example} in OpenAPI 3.0 and as a list
+ *     of {@code examples} in 3.1; both arrive here. Unlike everything else on this record they
+ *     constrain nothing - they are suggestions, and a document is free to suggest a value its own
+ *     rules would refuse
  * @param deprecated whether the document marks the value as on its way out
  * @param access whether the value may be sent, returned, or both
  */
@@ -41,6 +46,7 @@ public record SchemaMetadata(
         boolean nullable,
         List<JsonValue> enumeration,
         Optional<JsonValue> defaultValue,
+        List<JsonValue> examples,
         boolean deprecated,
         SchemaMetadata.Access access) {
 
@@ -61,52 +67,70 @@ public record SchemaMetadata(
         WRITE_ONLY
     }
 
-    private static final SchemaMetadata NONE = new SchemaMetadata(
-            Optional.empty(), false, List.of(), Optional.empty(), false, Access.READ_WRITE);
+    private static final SchemaMetadata NONE = new SchemaMetadata(Optional.empty(), false,
+            List.of(), Optional.empty(), List.of(), false, Access.READ_WRITE);
 
     public SchemaMetadata {
         Objects.requireNonNull(description, "description");
         Objects.requireNonNull(enumeration, "enumeration");
         Objects.requireNonNull(defaultValue, "defaultValue");
+        Objects.requireNonNull(examples, "examples");
         Objects.requireNonNull(access, "access");
         enumeration = List.copyOf(enumeration);
+        examples = List.copyOf(examples);
     }
 
-    /** Nothing stated: not nullable, not enumerated, no default, readable and writable. */
+    /**
+     * Nothing stated: not nullable, not enumerated, no default, no sample values, readable and
+     * writable.
+     */
     public static SchemaMetadata none() {
         return NONE;
     }
 
     /** The same facts, with {@code nullable} set as given. */
     public SchemaMetadata withNullable(boolean value) {
-        return new SchemaMetadata(description, value, enumeration, defaultValue, deprecated, access);
+        return new SchemaMetadata(description, value, enumeration, defaultValue, examples,
+                deprecated, access);
     }
 
     /** The same facts, enumerated by the given values. */
     public SchemaMetadata withEnumeration(List<JsonValue> values) {
-        return new SchemaMetadata(description, nullable, values, defaultValue, deprecated, access);
+        return new SchemaMetadata(description, nullable, values, defaultValue, examples, deprecated,
+                access);
     }
 
     /** The same facts, with the given default value. */
     public SchemaMetadata withDefault(JsonValue value) {
         return new SchemaMetadata(description, nullable, enumeration,
-                Optional.of(Objects.requireNonNull(value, "value")), deprecated, access);
+                Optional.of(Objects.requireNonNull(value, "value")), examples, deprecated, access);
+    }
+
+    /** The same facts, with the given sample values. */
+    public SchemaMetadata withExamples(List<JsonValue> values) {
+        return new SchemaMetadata(description, nullable, enumeration, defaultValue, values,
+                deprecated, access);
     }
 
     /** The same facts, with the given description. */
     public SchemaMetadata withDescription(String text) {
         return new SchemaMetadata(Optional.of(Objects.requireNonNull(text, "text")), nullable,
-                enumeration, defaultValue, deprecated, access);
+                enumeration, defaultValue, examples, deprecated, access);
     }
 
     /** The same facts, with the given access. */
     public SchemaMetadata withAccess(Access value) {
-        return new SchemaMetadata(description, nullable, enumeration, defaultValue, deprecated,
-                Objects.requireNonNull(value, "value"));
+        return new SchemaMetadata(description, nullable, enumeration, defaultValue, examples,
+                deprecated, Objects.requireNonNull(value, "value"));
     }
 
     /** Whether the value is restricted to a fixed set. */
     public boolean isEnumerated() {
         return !enumeration.isEmpty();
+    }
+
+    /** Whether the document offers at least one sample value. */
+    public boolean hasExamples() {
+        return !examples.isEmpty();
     }
 }

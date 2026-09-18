@@ -458,6 +458,65 @@ class SchemaConverterTest {
         assertThat(convert(empty)).isInstanceOf(StringSchema.class);
     }
 
+    @Test
+    @DisplayName("a sample value is read from the singular spelling OpenAPI 3.0 uses")
+    void a_single_sample_is_read() {
+        Schema<Object> named = stringSchema();
+        named.setExample("Davis");
+
+        assertThat(convert(named).metadata().examples()).containsExactly(JsonValue.of("Davis"));
+    }
+
+    @Test
+    @DisplayName("a sample value is read from the list OpenAPI 3.1 uses, and from both at once")
+    void several_samples_are_read() {
+        Schema<Object> several = stringSchema();
+        several.setExamples(List.of("Jane Doe", "John Roe"));
+
+        assertThat(convert(several).metadata().examples())
+                .containsExactly(JsonValue.of("Jane Doe"), JsonValue.of("John Roe"));
+
+        Schema<Object> both = stringSchema();
+        both.setExample("Davis");
+        both.setExamples(List.of("Jane Doe", "Davis"));
+
+        assertThat(convert(both).metadata().examples())
+                .describedAs("a document writing the same value under both spellings offers one "
+                        + "sample, not the same one twice")
+                .containsExactly(JsonValue.of("Davis"), JsonValue.of("Jane Doe"));
+    }
+
+    @Test
+    @DisplayName("a shape offering no sample says so, rather than offering the word null")
+    void no_sample_is_no_sample() {
+        assertThat(convert(stringSchema()).metadata().examples()).isEmpty();
+        assertThat(convert(stringSchema()).metadata().hasExamples()).isFalse();
+    }
+
+    @Test
+    @DisplayName("a sample written as null is the author saying null, and is kept")
+    void a_sample_that_is_null_is_still_a_sample() {
+        Schema<Object> nothing = stringSchema();
+        nothing.setExample(null);
+        nothing.setExampleSetFlag(true);
+
+        assertThat(convert(nothing).metadata().examples()).containsExactly(JsonValue.NULL);
+    }
+
+    @Test
+    @DisplayName("a sample the document wrote as a date is offered the way the document wrote it")
+    void a_sample_is_offered_as_the_document_wrote_it() {
+        Schema<Object> day = stringSchema();
+        day.setFormat("date");
+        day.setExample(java.util.Date.from(java.time.LocalDate.of(2020, 1, 31)
+                .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant()));
+        day.setExampleSetFlag(true);
+
+        assertThat(convert(day).metadata().examples())
+                .describedAs("printed the ordinary way this would be a sentence no API accepts")
+                .containsExactly(JsonValue.of("2020-01-31"));
+    }
+
     private static Schema<Object> stringSchema() {
         Schema<Object> schema = new Schema<>();
         schema.setType("string");
