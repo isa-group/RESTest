@@ -1,6 +1,6 @@
 # ADR-0015: One command, a time budget spent in full, and an exit code that means something
 
-**Status:** Accepted, amended at M1.7, M1.8 and M2.7a
+**Status:** Accepted, amended at M1.7, M1.8, M2.7a and again for what `--url` throws away
 **Date:** 2026-09-14 (amended 2026-09-15)
 
 ## Context
@@ -48,7 +48,9 @@ configuration to start, and the tool's own zero-configuration example passes no 
 `--url` defaults to the first server the document declares that is absolute and has a host. A
 document with no `servers:` block is given `/` by the parser, which is not an address anything can be
 sent to; that is refused with a message asking for `--url`, rather than assembled into a request the
-engine will reject much later.
+engine will reject much later. **Amended later: `--url` names the machine, and an address given
+without a path of its own keeps the directory the document declares — see the last amendment, which
+also says what that cost before it was fixed.**
 
 `--out` defaults to `restest-out/`, and a run writes ~~two files~~ its files into it: `report.json`
 and — **amended at M1.7: only when `--store` asks for it** — `run.sqlite`, the latter accompanied,
@@ -382,3 +384,130 @@ able to be told not to.
 
 Neither changes an exit code, and neither is required. A run with no options at all behaves as it did
 except that a quarter of its requests now carry awkward values, which is the increment.
+
+## Amendment (fixing what `--url` throws away)
+
+**Date:** 2026-09-18
+
+**`--url` says which machine, not which directory. An address given without a path of its own keeps
+the path the document declares; an address given with one replaces it entirely.**
+
+### Why
+
+"The surface" above says `--url` "defaults to the first server the document declares that is absolute
+and has a host", and says nothing about what happens to that server when somebody does pass the
+option. The code answered the question by accident: the address given replaced the declared one
+whole, path included.
+
+For most documents that is invisible, because most declare a server with no path. For the ones that
+do declare a path it loses the API completely. Measured, rather than imagined: a five-minute run
+against the `pet-clinic` API of the 2027 REST League, which declares
+`http://localhost:9966/petclinic/api` and is served on a port the harness chooses. Every request went
+to `/pets` rather than `/petclinic/api/pets`. 43,549 requests, 43,549 answers of 404, zero operations
+covered, 3.5% of the code reached - and a summary reading "no faults found", which was true and
+worthless. One of the five APIs the tool is evaluated on scored nothing at all, and nothing in the
+output said why.
+
+The rule this amendment adopts is the one a person would expect. Somebody who says the API has moved
+to another machine is telling us the machine. They are not saying the directory it is served from has
+gone away — and if they were, they could say so, because an address with a path in it still replaces
+the declared one.
+
+### How
+
+`BaseAddress` decides it, before a single request is assembled, which is where the rest of this
+decision's address checking already lives.
+
+An address is treated as naming no directory when its path is empty or is nothing but slashes. A
+trailing slash is somebody finishing an address, not a claim that the API sits at the very root of the
+server, so `http://host:8080/` keeps the declared directory exactly as `http://host:8080` does — and
+neither does a second slash change the answer, because a rule whose result depends on a typing habit
+is not a rule.
+
+Which directory is three readings of the document, in this order.
+
+**If the document describes the very machine it was pointed at, it has already answered** — same
+protocol, same host, same port, with a port left unwritten counting as the one its protocol implies.
+A document that lists `https://api.example.com/v2` and then `http://localhost:8080` is saying
+something precise about each, and somebody testing the local one should not have production's
+directory bolted on. This reading includes the answer "no directory".
+
+It sees only addresses that can be read at all, as every reading below does, so an address this
+decision would refuse cannot settle anything by being listed first — and it can only recognise a
+machine in an address written out whole. One carrying a blank the document never filled in,
+`https://{customer}.example.com/v2`, or anything else no parser will take, names no machine that
+could be compared; it is matched by nothing, and its directory is used only if no other reading
+answers.
+
+No document in the corpus this tool is measured against declares more than one server, so this
+reading changes nothing there. It is for documents in the wild, which routinely list production
+beside a local address, and it is written down because the alternative was to leave the ordering of
+somebody else's `servers:` block deciding where our requests go.
+
+**Otherwise it comes from the address the run would have used had nobody said anything** — the first
+one the document declares that requests could actually be sent to. If that address names no
+directory then there is none, whatever a later one says. A document that declares
+`http://localhost:8080` and then `https://api.example.com/v1`, which is what a generated document
+next to a published address looks like, is tested at the root on both readings; borrowing the second
+address's directory would send every request somewhere the first says does not exist.
+
+**Only when the document declares no address anything could be sent to does the search go further**,
+and then the first directory that can be read from any of them is used. That is a different rule and
+it is the right one there: such a document cannot start a run at all without `--url`, so there is no
+second reading to disagree with, and what the document says about the directory is all there is.
+Two ordinary shapes land here — `- url: /api/v3`, and the `//api.example.com/v2` that reading an
+older document with no `schemes` produces — and both now contribute a directory where before they
+were ignored entirely.
+
+What cannot be read is refused rather than guessed at, and each refusal is a way of being wrong that
+was found rather than imagined:
+
+- **A path still carrying a blank nobody filled in.** `http://{host}/{context}/api` has a directory
+  reading `/{context}/api`, and sending that to a server gets exactly the same nothing as sending
+  the wrong path — the very failure this amendment exists to remove. The document's own defaults are
+  applied first, so `https://{region}.example.com/v2` with a default for `region` contributes `/v2`.
+  A blank in the machine's name does not hide the directory beside it: `https://{customer}.example
+  .com/v2` still says `/v2`, and that is the case where `--url` was compulsory anyway. What is
+  refused is anything that would not be a legal path on its own - a blank, a space, a half-written
+  escape - whatever made it one.
+- **An address served over something other than the web**, since nothing would be sent there — and
+  one that names a protocol without naming a machine after it, `http:/example.com/v2` with a slash
+  missing, whose every character after the colon would otherwise read as a directory made out of a
+  machine's name.
+- **A path that does not begin at the root.** `- url: api.example/v2` might mean a machine or a
+  directory, and reading it as one would splice a machine's name into every request.
+- **An address carrying a query string or a fragment**, which this same decision refuses when a
+  person types one; reading half of one the document wrote would be no more consistent.
+
+The path is taken exactly as the document wrote it, escapes included. Spelling `%2F` out as a slash
+would name a different resource than the document does, and spelling `%3F` out would bolt a query
+string onto an address that had none.
+
+### Consequences
+
+- A document that declares a path, tested against an address that does not, now reaches the API. That
+  is the whole point, and it changes the result of every such run - from nothing to something.
+- **There is no way to say "the root of this server, never mind the directory".** That is a real
+  cost and it is worth stating plainly: 25 of the corpus's 46 documents declare a directory, and
+  anyone running one of those against a deployment that does not have it — a container serving the
+  API at its root, a proxy that strips the prefix — can no longer say so. The obvious spelling,
+  `--url http://host:8080/`, deliberately does not mean it: a trailing slash is what people type when
+  they finish an address, and reading it as a command would silently lose the directory in the common
+  case to serve the rare one. Nothing is invented here to fill the gap, because an option nobody has
+  asked for yet would be a guess at what they would want it to do — but the gap is now a known one
+  rather than an accident, and a `--url` that could say "exactly this and nothing more" is where it
+  would be filled. One spelling does work today, by accident rather than by design and tested by
+  nothing: `--url http://host:8080/.` carries a path, so it replaces the declared directory, and the
+  dot segment is removed before the request goes out. It is recorded here so that whoever fills the
+  gap knows it is there, not as an answer.
+- Two addresses that disagree about the directory still resolve to the first. A document declaring
+  both `https://api.example/v2` and `https://api.example/v3` gets `/v2`, as it already did when no
+  `--url` was given.
+- The run's own header prints the address it settled on, so what this decides is visible in the first
+  line of every run rather than inferrable from the traffic.
+
+### What this does not fix
+
+A run where every single request is refused still reads much like a run against an API that refuses
+everything. Telling "the API said no to all of it" from "we never found the API" is a question about
+what a run says when nothing could be judged, which is M3.6's, not this one's.

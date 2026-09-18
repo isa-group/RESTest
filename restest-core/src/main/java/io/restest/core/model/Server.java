@@ -30,8 +30,10 @@ import java.util.regex.Pattern;
  * report should show, and the resolved form is what a request is sent to.
  *
  * <p>Choosing between several declared servers, or overriding them, stays a decision for the command
- * line - {@code restest run} takes {@code --url} precisely so that a user can ignore whatever the
- * document claims.
+ * line - {@code restest run} takes {@code --url} precisely so that a user can say where the API is
+ * whatever the document claims. One part of the claim survives: an address given without a path of
+ * its own keeps the directory the document declares, because moving an API to another machine
+ * rarely moves it out of its own directory.
  *
  * @param url the base URL, possibly templated
  * @param variables what the document says each template variable may hold, by name

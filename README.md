@@ -110,10 +110,11 @@ surnames the API actually holds — go in a YAML file next to the specification 
 with `--dictionary`, which takes a file or a directory and may be repeated;
 [docs/dictionary-format.md](docs/dictionary-format.md) is the format.
 
-Nothing else is required. `--url` is only needed when the document does not name an address you can
-reach, and `--budget` defaults to a minute. The whole of that budget is used, reading the document
-included — the percentage the run reports is how much of the time RESTest had nothing in flight,
-which is the number this project measures itself on.
+Nothing else is required. `--url` is only needed when the document does not name an address you
+can reach; it says which machine, so an API the document describes as living under a directory is
+still tested there unless you give a path of your own. `--budget` defaults to a minute. The whole
+of that budget is used, reading the document included — the percentage the run reports is how much
+of the time RESTest had nothing in flight, which is the number this project measures itself on.
 
 The command answers `0` when it found nothing wrong, `1` when it found a fault, and something else
 when it could not do its job; [ADR-0015](docs/adr/0015-command-line-contract.md) says exactly what
