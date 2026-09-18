@@ -24,13 +24,19 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * A question put to whoever might know a good value: "for this parameter of this operation, whose
- * shape is this, what should I send?"
+ * A question put to whoever might know a good value: "for this part of this operation's request,
+ * whose shape is this, what should I send?"
  *
  * <p>Everything a knowledgeable answerer might use is here. The name matters because a parameter
  * called {@code email} wants an e-mail address whatever its schema says; the operation matters
  * because the same name can mean different things in different places; the schema matters because
  * whatever is sent has to satisfy it.
+ *
+ * <p>Usually the part in question is a parameter. It can also be the <em>whole request body</em>,
+ * which is asked about in exactly the same way: the location is then the body, the shape is the one
+ * the document declares for the media type being sent, and the name is the word {@code body} -
+ * there being no name of its own to use, since OpenAPI 3.x gives a body none. An answerer that
+ * keeps whole objects, rather than single words and numbers, is answering this kind of question.
  *
  * <p>The schema handed over is always a real shape, never a pointer to one named elsewhere: chasing
  * those down is done once, before anyone is asked, so that no answerer has to know how the
@@ -39,13 +45,15 @@ import java.util.Optional;
  * values that worked for a Pet.
  *
  * @param operation the operation whose request is being built
- * @param name the parameter's name, as the specification writes it
- * @param location where the value goes in the request: the path, the query string, a header or a
- *     cookie
+ * @param name the parameter's name, as the specification writes it, or {@code body} for the request
+ *     body itself
+ * @param location where the value goes in the request: the path, the query string, a header, a
+ *     cookie, or the body
  * @param schema the shape the value has to satisfy
- * @param examples sample values the document offers for the parameter itself rather than for its
- *     shape, in the order it wrote them. Empty for anything nested inside that shape, since a
- *     sample of the whole is not a sample of one of its parts
+ * @param examples sample values the document offers for the parameter itself - or, for a body, for
+ *     the media type being sent - rather than for its shape, in the order it wrote them. Empty for
+ *     anything nested inside that shape, since a sample of the whole is not a sample of one of its
+ *     parts
  * @param shape the name the document gave this shape, when it declared it once and referred to it
  *     by name. Absent when the shape was written out where it is used, which has no name to give
  */

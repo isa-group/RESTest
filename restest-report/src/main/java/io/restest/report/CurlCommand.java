@@ -107,8 +107,8 @@ public final class CurlCommand {
      * <p>That second form is a best effort and not a promise. A shell drops zero bytes and trailing
      * blank lines on their way through, so a body holding either arrives slightly changed. Sending
      * one of those faithfully needs a file beside the command rather than a command on its own.
-     * RESTest does not invent request bodies at all yet; when it does, this is the line that has to
-     * grow a file alongside it.
+     * The bodies RESTest builds are JSON and web forms, which hold neither, so the printed command
+     * reproduces every one of them today; a body of raw bytes is what would need the file.
      */
     private static String bodyOf(Payload body) {
         return asText(body.content())

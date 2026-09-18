@@ -81,7 +81,7 @@ class RestestTest {
         assertThat(answer).isEqualTo(1);
         assertThat(screen.toString())
                 .contains("RESTest testing Pet Shelter at " + api.baseUrl())
-                .contains("3 of 3 operations can be tested, seed 20260914, budget 1s")
+                .contains("4 of 4 operations can be tested, seed 20260914, budget 1s")
                 .contains("F100")
                 .contains("listPets - GET " + api.baseUrl() + "/pets")
                 .containsPattern("\\d+ requests to \\d+ operations in .+, \\d+% of it idle");
@@ -353,6 +353,16 @@ class RestestTest {
                 .contains("--url")
                 .contains("--budget")
                 .contains("60s");
+    }
+
+    @Test
+    @DisplayName("the help says plainly that a run writes to the API it is pointed at")
+    void the_help_says_that_a_run_writes() {
+        assertThat(run("run", "--help")).isZero();
+        assertThat(screen.toString())
+                .describedAs("an operation that creates something is tested by creating something, "
+                        + "and whoever runs this should know before they run it")
+                .contains("willing to have written to");
     }
 
     private int run(String... arguments) {

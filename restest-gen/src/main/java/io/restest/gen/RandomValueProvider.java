@@ -31,6 +31,7 @@ import io.restest.core.schema.NullSchema;
 import io.restest.core.schema.NumberKind;
 import io.restest.core.schema.NumberSchema;
 import io.restest.core.schema.ObjectSchema;
+import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
@@ -374,6 +375,14 @@ public final class RandomValueProvider implements ValueProvider {
         Map<String, JsonValue> members = new LinkedHashMap<>();
         List<Map.Entry<String, CanonicalSchema>> optional = new ArrayList<>();
         for (Map.Entry<String, CanonicalSchema> property : schema.properties().entrySet()) {
+            // A property the document says is only ever returned is not ours to send. Skipped even
+            // where it is also marked as required, because "required" in a shape an API both
+            // returns and accepts is a statement about the replies: the API promises to send it,
+            // not to be sent it. A sample the author wrote out in full is a different matter and is
+            // still sent exactly as written - the author showed a whole body that works.
+            if (property.getValue().metadata().access() == SchemaMetadata.Access.READ_ONLY) {
+                continue;
+            }
             if (schema.isRequired(property.getKey())) {
                 Optional<JsonValue> value =
                         value(request.about(property.getKey(), property.getValue()), depth + 1);

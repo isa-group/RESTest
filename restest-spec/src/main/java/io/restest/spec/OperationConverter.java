@@ -16,6 +16,7 @@
 package io.restest.spec;
 
 import io.restest.core.json.JsonValue;
+import io.restest.core.model.BodyContent;
 import io.restest.core.model.HeaderModel;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
@@ -359,20 +360,30 @@ final class OperationConverter {
      */
     private static List<JsonValue> examplesOf(
             io.swagger.v3.oas.models.parameters.Parameter parameter, Components components) {
+        return samplesWritten(parameter.getExample(), parameter.getExamples(), components);
+    }
+
+    /**
+     * The sample values written in one place of a document - beside a parameter, or beside one media
+     * type of a request body - in the order they were written and with repeats removed.
+     *
+     * <p>Absent rather than empty: unlike a shape, neither a parameter nor a media type carries a
+     * flag saying whether its author wrote a sample at all, so nothing here can tell "no sample"
+     * from the sample being the word null - and reading the first as the second would put nothing in
+     * the request where a value belongs. An author who really did write {@code example: null} loses
+     * that sample; no document in the corpus writes one, and a value that is nothing is the one
+     * sample that teaches nothing anyway.
+     */
+    private static List<JsonValue> samplesWritten(Object single, Map<String, Example> named,
+            Components components) {
         List<JsonValue> stated = new ArrayList<>();
-        // Absent rather than empty: unlike a shape, a parameter carries no flag saying whether its
-        // author wrote a sample at all, so nothing here can tell "no sample" from the sample being
-        // the word null - and reading the first as the second would put nothing in the request
-        // where a value belongs. A parameter whose author really did write `example: null` loses
-        // that sample; no document in the corpus writes one, and a value that is nothing is the one
-        // sample that teaches nothing anyway.
-        if (parameter.getExample() != null) {
-            SchemaConverter.toJsonValue(parameter.getExample()).ifPresent(stated::add);
+        if (single != null) {
+            SchemaConverter.toJsonValue(single).ifPresent(stated::add);
         }
-        if (parameter.getExamples() != null) {
+        if (named != null) {
             Map<String, Example> pool = components == null ? null : components.getExamples();
-            for (Example named : parameter.getExamples().values()) {
-                Example resolved = resolveChain(named, Example::get$ref, pool);
+            for (Example sample : named.values()) {
+                Example resolved = resolveChain(sample, Example::get$ref, pool);
                 if (resolved == null || resolved.getValue() == null) {
                     continue;
                 }
@@ -383,8 +394,8 @@ final class OperationConverter {
     }
 
     /**
-     * OpenAPI 2.0's {@code in: body} and {@code in: formData} - the two locations {@link
-     * ParameterLocation} deliberately has no case for - never reach here: {@code swagger-parser}
+     * OpenAPI 2.0's {@code in: body} and {@code in: formData} - neither of which is a place this
+     * model lets a parameter be declared in - never reach here: {@code swagger-parser}
      * converts a 2.0 document to a 3.0 one, request body and all, before this class ever sees it
      * (confirmed empirically against the corpus). A location string outside the four this format
      * actually defines, or absent entirely, should not occur; defaulting to {@code QUERY} keeps the
@@ -432,8 +443,8 @@ final class OperationConverter {
             return Optional.empty();
         }
         boolean required = Boolean.TRUE.equals(resolved.getRequired());
-        Map<String, CanonicalSchema> content = convertContent(resolved.getContent(), components);
-        return Optional.of(new RequestBodyModel(required, content,
+        return Optional.of(new RequestBodyModel(required,
+                convertBodyContent(resolved.getContent(), components),
                 Optional.ofNullable(resolved.getDescription())));
     }
 
@@ -544,6 +555,25 @@ final class OperationConverter {
         return null;
     }
 
+    /**
+     * What a request body accepts for each media type: the shape, and the samples written beside it.
+     *
+     * <p>A sample written against the media type is the author showing a whole body that works.
+     * Kept apart from the ones inside the shape, because a shape may be used by a dozen operations
+     * while this one belongs to this body.
+     */
+    private static Map<String, BodyContent> convertBodyContent(Content content,
+            Components components) {
+        if (content == null) {
+            return Map.of();
+        }
+        Map<String, BodyContent> converted = new LinkedHashMap<>();
+        content.forEach((mediaType, value) -> converted.put(mediaType, new BodyContent(
+                SchemaConverter.convert(value.getSchema(), components),
+                samplesWritten(value.getExample(), value.getExamples(), components))));
+        return converted;
+    }
+
     private static Map<String, CanonicalSchema> convertContent(Content content,
             Components components) {
         if (content == null) {
@@ -604,7 +634,7 @@ final class OperationConverter {
             }
         }
         if (operation.requestBody().isPresent()
-                && operation.requestBody().get().content().values().stream()
+                && operation.requestBody().get().content().values().stream().map(BodyContent::schema)
                         .anyMatch(schema -> SchemaConverter.hasUnsupportedConstruct(schema, schemas))) {
             return true;
         }

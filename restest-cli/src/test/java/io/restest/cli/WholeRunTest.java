@@ -17,6 +17,9 @@ package io.restest.cli;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlMatching;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,8 +56,13 @@ import org.junit.jupiter.api.io.TempDir;
  * <p>The API is a stand-in that answers exactly as this test tells it to, so there is no network, no
  * waiting, and no chance of the test failing because somebody's real server had a bad day. It is
  * wrong in two different ways on purpose - one operation falls over, one lies about the shape of
- * what it returns - and a third operation is perfectly well behaved, so that "found two kinds of
- * fault" is not the same sentence as "complained about everything".
+ * what it returns - and two more are perfectly well behaved, so that "found two kinds of fault" is
+ * not the same sentence as "complained about everything".
+ *
+ * <p>One of those two well-behaved operations takes a request body, and it is here for a reason of
+ * its own: it is the one operation that cannot be attempted at all unless the tool can build a body,
+ * and this test checks what actually arrived at the server - the media type declared, what the
+ * request said it would accept back, and the property the document insists on.
  */
 class WholeRunTest {
 
@@ -76,6 +84,13 @@ class WholeRunTest {
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
                 .withBody("{\"id\": \"seven\", \"name\": \"Rex\"}")));
+
+        // Takes in a pet, and says what it took in. Behaves perfectly, and is the one operation
+        // here that cannot be attempted at all without a request body.
+        api.stubFor(post(urlMatching("/pets")).willReturn(aResponse()
+                .withStatus(201)
+                .withHeader("Content-Type", "application/json")
+                .withBody("{\"id\": 7, \"name\": \"Rex\"}")));
 
         // Behaves perfectly.
         api.stubFor(get(urlMatching("/shelters")).willReturn(aResponse()
@@ -122,8 +137,22 @@ class WholeRunTest {
                 .describedAs("two kinds of fault, and only the two that were planted")
                 .containsExactlyInAnyOrder(100, 200);
         assertThat(totalIn(report, "operations"))
-                .describedAs("all three operations were exercised, including the healthy one")
-                .isEqualTo(3);
+                .describedAs("all four operations were exercised, the healthy ones included")
+                .isEqualTo(4);
+
+        List<com.github.tomakehurst.wiremock.verification.LoggedRequest> posted =
+                api.findAll(postRequestedFor(urlEqualTo("/pets")));
+        assertThat(posted)
+                .describedAs("the operation that takes a body was attempted, which is the whole "
+                        + "of what a request body buys")
+                .isNotEmpty();
+        assertThat(posted).anySatisfy(request -> {
+            assertThat(request.getHeader("Content-Type")).isEqualTo("application/json");
+            assertThat(request.getHeader("Accept")).isEqualTo("application/json");
+            assertThat(request.getBodyAsString())
+                    .describedAs("the property the document insists on arrived in the body")
+                    .contains("\"name\"");
+        });
         assertThat(stored(directory.resolve("run.sqlite")))
                 .describedAs("every attempt is kept, faulty or not")
                 .isEqualTo(totalIn(report, "requests"));

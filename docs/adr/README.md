@@ -58,3 +58,4 @@ licence. Do not write one for ordinary implementation choices — those belong i
 | [0018](0018-a-choice-between-shapes.md) | A choice between shapes is one more shape | Accepted |
 | [0019](0019-the-samples-a-document-writes-down.md) | A document's own sample values are read, sent as written, and named in the record | Accepted |
 | [0020](0020-what-a-dictionary-is.md) | A dictionary is a named list of values with one key, and a strategy is a share of the budget | Accepted |
+| [0021](0021-how-a-request-body-is-built.md) | A request body is one more value, and what the API returns is reused leaf by leaf | Accepted |

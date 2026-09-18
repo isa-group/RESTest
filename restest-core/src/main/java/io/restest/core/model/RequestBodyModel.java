@@ -16,6 +16,7 @@
 package io.restest.core.model;
 
 import io.restest.core.schema.CanonicalSchema;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,12 +34,13 @@ import java.util.Set;
  * both conversions.
  *
  * @param required whether the API refuses a request that has no body
- * @param content the shape accepted for each media type, keyed by the normalised media type
+ * @param content what is accepted for each media type - the shape, and the samples written beside
+ *     it - keyed by the normalised media type
  * @param description what the document says the body is for
  */
 public record RequestBodyModel(
         boolean required,
-        Map<String, CanonicalSchema> content,
+        Map<String, BodyContent> content,
         Optional<String> description) {
 
     public RequestBodyModel {
@@ -56,17 +58,40 @@ public record RequestBodyModel(
 
     /** A body of the given shape, sent as {@code application/json}. */
     public static RequestBodyModel json(CanonicalSchema schema, boolean required) {
-        return new RequestBodyModel(required, Map.of("application/json", schema), Optional.empty());
+        return new RequestBodyModel(required, Map.of("application/json", BodyContent.of(schema)),
+                Optional.empty());
     }
 
     /**
-     * The shape accepted for the given media type.
+     * A body offering these shapes, with no samples written beside any of them.
+     *
+     * @param required whether the API refuses a request that has no body
+     * @param shapes the shape accepted for each media type
+     * @return the body
+     */
+    public static RequestBodyModel ofShapes(boolean required,
+            Map<String, CanonicalSchema> shapes) {
+        Map<String, BodyContent> content = new LinkedHashMap<>();
+        Objects.requireNonNull(shapes, "shapes")
+                .forEach((mediaType, schema) -> content.put(mediaType, BodyContent.of(schema)));
+        return new RequestBodyModel(required, content, Optional.empty());
+    }
+
+    /**
+     * What is accepted for the given media type: the shape, and the samples written beside it.
      *
      * <p>Exact match first, then the ranges the document may have used instead - {@code
      * application/*}, then <code>*&#47;*</code> - and whatever case and parameters either was written with.
      */
-    public Optional<CanonicalSchema> schemaFor(String mediaType) {
+    public Optional<BodyContent> contentFor(String mediaType) {
         return MediaTypes.lookup(content, mediaType);
+    }
+
+    /**
+     * The shape accepted for the given media type, found the same way {@link #contentFor} finds it.
+     */
+    public Optional<CanonicalSchema> schemaFor(String mediaType) {
+        return contentFor(mediaType).map(BodyContent::schema);
     }
 
     /** The media types this body can be sent as, normalised, in declaration order. */

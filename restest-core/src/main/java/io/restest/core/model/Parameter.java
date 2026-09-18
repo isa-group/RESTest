@@ -72,6 +72,15 @@ public record Parameter(
         if (name.isBlank()) {
             throw new IllegalArgumentException("a parameter has a name");
         }
+        // A body is not a parameter. OpenAPI 3.x describes it with `requestBody`, this model with
+        // RequestBodyModel, and the value chosen for it with BodyValue; ParameterLocation carries
+        // the case for the sake of whoever is asked to suggest a value, not so that a parameter can
+        // claim it. Refused here rather than tolerated, because a parameter that said it lived in
+        // the body would be looked for on the wire where nothing ever writes it.
+        if (location == ParameterLocation.BODY) {
+            throw new IllegalArgumentException("'" + name + "' is declared in the body, and a body "
+                    + "is not a parameter: it is the operation's request body");
+        }
         // A path parameter is required by definition - the request cannot be assembled without it,
         // whatever the document says. OpenAPI requires `required: true` there, and a large share of
         // real documents omit it anyway. Reading them charitably costs nothing and keeps operations

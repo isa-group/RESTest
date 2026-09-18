@@ -15,15 +15,20 @@
  */
 package io.restest.gen;
 
+import io.restest.core.execution.BodyValue;
 import io.restest.core.execution.ParameterValue;
 import io.restest.core.execution.TestCase;
 import io.restest.core.gen.GeneratedValue;
 import io.restest.core.gen.ValueProvider;
 import io.restest.core.gen.ValueRequest;
+import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.BodyContent;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
 import io.restest.core.model.Parameter;
+import io.restest.core.model.ParameterLocation;
+import io.restest.core.model.RequestBodyModel;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.SchemaReference;
@@ -48,10 +53,15 @@ import java.util.random.RandomGenerator;
  * and left out the rest, because an API behaves differently depending on which of them arrive and a
  * tool that always sent all of them would only ever see one of those behaviours.
  *
- * <p>Not every operation can be attempted yet, and the ones that cannot are named rather than quietly
- * skipped: an operation that requires a body, one whose parameters are written in a way requests
- * cannot yet be assembled for, and one that requires a value nothing can invent are each reported
- * with the reason. A run that tests eleven of an API's twenty operations should say so.
+ * <p>Operations that take a body get one: the shape the document declares is filled in the same way
+ * every other value is, so creating and updating things is tested rather than skipped. The body is
+ * sent as JSON where the document offers it and as the fields of a web form otherwise.
+ *
+ * <p>Not every operation can be attempted even so, and the ones that cannot are named rather than
+ * quietly skipped: one whose parameters are written in a way requests cannot yet be assembled for,
+ * one that requires a value nothing can invent, and one whose body is only offered in a form this
+ * cannot write - a file upload, say - are each reported with the reason. A run that tests eleven of
+ * an API's twenty operations should say so.
  *
  * <p>Every generator is given a number to start from, and the same number produces the same
  * requests, carrying the same values, in the same order, on any machine and on any Java runtime.
@@ -80,6 +90,18 @@ public final class RandomTestCaseGenerator {
 
     /** How often a parameter the API does not require is included anyway. */
     private static final double OPTIONAL_PARAMETER_CHANCE = 0.5;
+
+    /**
+     * The name a request body is asked for under.
+     *
+     * <p>A body has no name of its own in OpenAPI 3.x, and whoever might suggest a value for it
+     * needs one to be asked by: this is what a list of values written for a particular operation
+     * names to speak about its body.
+     */
+    private static final String THE_BODY = "body";
+
+    /** How many bodies are drawn while looking for one that can be written as its media type. */
+    private static final int WRITABLE_BODY_ATTEMPTS = 8;
 
     /**
      * The list this run pushes at the API with, until a plan says otherwise.
@@ -299,8 +321,8 @@ public final class RandomTestCaseGenerator {
         Objects.requireNonNull(operation, "operation");
         if (untestable.containsKey(operation.id())) {
             // Asked for one of the operations this generator has already said it cannot attempt.
-            // Building a test case anyway would produce a request nobody could send - a write with
-            // no body, or a parameter written in a way the request cannot carry.
+            // Building a test case anyway would produce a request nobody could send - a body that
+            // cannot be written, or a parameter written in a way the request cannot carry.
             return Optional.empty();
         }
         return fill(operation);
@@ -324,14 +346,82 @@ public final class RandomTestCaseGenerator {
                 return Optional.empty();
             }
         }
-        return Optional.of(TestCase.of(operation.id(), chosen));
+        Optional<RequestBodyModel> declared = operation.requestBody();
+        if (declared.isEmpty()) {
+            return Optional.of(TestCase.of(operation.id(), chosen));
+        }
+        Optional<BodyValue> body = body(operation, declared.get(), strategy);
+        if (body.isEmpty()) {
+            // An API that says it needs a body will refuse a request without one whatever else is
+            // in it, so there is nothing to learn from sending it.
+            return declared.get().required()
+                    ? Optional.empty() : Optional.of(TestCase.of(operation.id(), chosen));
+        }
+        return Optional.of(TestCase.of(operation.id(), chosen, body.get()));
+    }
+
+    /**
+     * The body to send with this request, if one is to be sent at all.
+     *
+     * <p>A body the API insists on is always sent. One it merely accepts is sent as often as an
+     * optional parameter is included, because an operation behaves differently depending on whether
+     * a body arrived, and a tool that always sent one would only ever see one of those behaviours.
+     */
+    private Optional<BodyValue> body(Operation operation, RequestBodyModel declared,
+            Strategy strategy) {
+        if (!declared.required() && random.nextDouble() >= OPTIONAL_PARAMETER_CHANCE) {
+            return Optional.empty();
+        }
+        Optional<String> mediaType = RequestBuilder.mediaTypeToSend(declared);
+        if (mediaType.isEmpty()) {
+            return Optional.empty();
+        }
+        return writableBody(operation, declared, mediaType.get(), strategy.values())
+                .map(value -> new BodyValue(mediaType.get(), value.value(), value.origin()));
+    }
+
+    /**
+     * A body for this media type that can actually be written out as it.
+     *
+     * <p>Drawn more than once, because whether it can is a property of the value rather than of the
+     * shape: a document describing a web form as a shape that allows anything is describing one
+     * that is sometimes an object with fields to name and sometimes a bare word with none. Asking
+     * once would report such an operation as untestable whenever the first draw came out badly.
+     * The same eight attempts invention already makes when it is looking for a value a request
+     * could carry.
+     */
+    private Optional<GeneratedValue> writableBody(Operation operation, RequestBodyModel declared,
+            String mediaType, ValueProvider from) {
+        for (int attempt = 0; attempt < WRITABLE_BODY_ATTEMPTS; attempt++) {
+            Optional<GeneratedValue> offered = from.offer(askForBody(operation, declared,
+                    mediaType));
+            if (offered.isEmpty()) {
+                return Optional.empty();
+            }
+            if (canBeWrittenAs(mediaType, offered.get().value())) {
+                return offered;
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Whether a value can be written out as this media type at all.
+     *
+     * <p>The fields of a web form are the members of an object, and there is nothing else to name
+     * them after; a document describing such a body as anything but an object describes a request
+     * nobody could send. Asked of the value rather than of the shape, because a shape allowing
+     * anything can produce either.
+     */
+    private static boolean canBeWrittenAs(String mediaType, JsonValue value) {
+        return !RequestBuilder.isForm(mediaType) || value instanceof JsonValue.JsonObject;
     }
 
     /**
      * Why this operation cannot be attempted, if it cannot.
      *
      * <p>Three things stand in the way today, and each is a limit of what has been built rather than
-     * a fault in the specification: a body that must be sent, since bodies are not invented yet; a
+     * a fault in the specification: a body that must be sent and cannot be written or filled in; a
      * parameter written down in a way requests cannot be assembled for; and a required parameter no
      * value can be found for - because its description allows none, because the parser could not
      * read it, or because nothing available knows how to satisfy it.
@@ -342,8 +432,9 @@ public final class RandomTestCaseGenerator {
      * testable - is the outcome this check exists to prevent.
      */
     private Optional<String> whatStandsInTheWay(Operation operation) {
-        if (operation.requiresBody()) {
-            return Optional.of("it requires a request body, and bodies are not invented yet");
+        Optional<String> body = whatStandsInTheWayOfTheBody(operation);
+        if (body.isPresent()) {
+            return body;
         }
         Optional<String> unassemblable = RequestBuilder.whatCannotBeAssembled(operation);
         if (unassemblable.isPresent()) {
@@ -373,6 +464,60 @@ public final class RandomTestCaseGenerator {
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Why an operation's body stands in the way of attempting it, if it does.
+     *
+     * <p>Only a body the API insists on can stand in the way. One it merely accepts is left out of
+     * the requests that cannot carry it, and the operation is tested without it - which is a request
+     * the document says is legitimate.
+     *
+     * <p>Three things stop a required body: it is only offered in a shape this cannot write, such as
+     * a file upload; its description allows no value at all, or could not be read; or nothing has a
+     * value to offer for it. The last is decided by trying once, exactly as a required parameter is.
+     */
+    private Optional<String> whatStandsInTheWayOfTheBody(Operation operation) {
+        if (!operation.requiresBody()) {
+            return Optional.empty();
+        }
+        RequestBodyModel declared = operation.requestBody().orElseThrow();
+        Optional<String> mediaType = RequestBuilder.mediaTypeToSend(declared);
+        if (mediaType.isEmpty()) {
+            return Optional.of("it requires a request body, and the only way it is offered is "
+                    + String.join(", ", declared.mediaTypes()) + ", which cannot be written yet");
+        }
+        CanonicalSchema schema =
+                resolved(declared.contentFor(mediaType.get()).orElseThrow().schema());
+        if (schema instanceof NothingSchema) {
+            return Optional.of("it requires a request body and the description of that body allows "
+                    + "no value at all");
+        }
+        if (schema instanceof UnsupportedSchema unsupported) {
+            return Optional.of("it requires a request body and the description of that body could "
+                    + "not be read: " + unsupported.reason());
+        }
+        // Asked of the ordinary way of building a request, for the same reason a parameter is: the
+        // question is whether a body anybody believes in can be found, and a list of awkward values
+        // answers for anything at all.
+        // Asked of the value rather than of the shape. A document describing a web form as anything
+        // but an object describes a request with no fields to name - but a shape that allows
+        // several things, or anything at all, can still produce an object, and refusing those on
+        // sight would skip operations this can perfectly well test.
+        if (writableBody(operation, declared, mediaType.get(), values).isPresent()) {
+            return Optional.empty();
+        }
+        // Nothing usable came out, and there are two reasons that can happen. Told apart by asking
+        // once more, and only on this path: a body nobody has a value for at all, or - for a web
+        // form alone, since anything at all can be written as JSON - values that keep coming out
+        // as something with no fields to name.
+        if (RequestBuilder.isForm(mediaType.get())
+                && values.offer(askForBody(operation, declared, mediaType.get())).isPresent()) {
+            return Optional.of("it requires a request body sent as the fields of a web form, and "
+                    + "what can be built for that body is not an object, so there are no fields to "
+                    + "name");
+        }
+        return Optional.of("no value could be found for the request body this operation requires");
     }
 
     /**
@@ -499,6 +644,22 @@ public final class RandomTestCaseGenerator {
                 ? Optional.of(reference.name()) : Optional.empty();
         return new ValueRequest(operation.id(), parameter.name(), parameter.location(),
                 resolved(parameter.schema()), parameter.examples(), shape);
+    }
+
+    /**
+     * What to ask the sources of values about the body of a request.
+     *
+     * <p>The same question a parameter gets, with the body's shape and the samples the document
+     * wrote beside that media type - a whole body an author showed working, which is the most
+     * valuable thing a document can offer here. The shape's name travels too, so that a list of
+     * values written for an {@code Owner} answers when an {@code Owner} is what the API wants sent.
+     */
+    private ValueRequest askForBody(Operation operation, RequestBodyModel body, String mediaType) {
+        BodyContent content = body.contentFor(mediaType).orElseThrow();
+        Optional<String> shape = content.schema() instanceof SchemaReference reference
+                ? Optional.of(reference.name()) : Optional.empty();
+        return new ValueRequest(operation.id(), THE_BODY, ParameterLocation.BODY,
+                resolved(content.schema()), content.examples(), shape);
     }
 
     /**

@@ -43,4 +43,13 @@ class ParameterValueTest {
         assertThatIllegalArgumentException().isThrownBy(() -> ParameterValue.of(" ",
                 ParameterLocation.QUERY, JsonValue.of(1L), ValueOrigin.DECLARED));
     }
+
+    @Test
+    @DisplayName("the value chosen for a body is a BodyValue, not a parameter value")
+    void the_body_is_not_a_parameter_value() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> ParameterValue.of("body", ParameterLocation.BODY,
+                        JsonValue.of("{}"), ValueOrigin.DECLARED))
+                .withMessageContaining("BodyValue");
+    }
 }

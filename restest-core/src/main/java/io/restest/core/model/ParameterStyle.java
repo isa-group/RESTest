@@ -49,6 +49,11 @@ public enum ParameterStyle {
         return switch (Objects.requireNonNull(location, "location")) {
             case PATH, HEADER -> SIMPLE;
             case QUERY, COOKIE -> FORM;
+            // A style says how a parameter is written into a URL or a header. A body is not written
+            // that way and is not a parameter at all - what it is written as is its media type, and
+            // that is RequestBodyModel's business.
+            case BODY -> throw new IllegalArgumentException(
+                    "a request body has a media type rather than a parameter style");
         };
     }
 

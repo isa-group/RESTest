@@ -43,6 +43,13 @@ public record ParameterValue(String name, ParameterLocation location, JsonValue 
         if (name.isBlank()) {
             throw new IllegalArgumentException("a parameter value has a name");
         }
+        // The value chosen for a body is a BodyValue, which carries the media type it was sent as.
+        // Recorded here instead, it would reach a stored run as a parameter nobody can find on the
+        // wire, and with no media type to say how it was written.
+        if (location == ParameterLocation.BODY) {
+            throw new IllegalArgumentException("'" + name + "' is a value for the request body, "
+                    + "which is recorded as a BodyValue rather than as a parameter");
+        }
     }
 
     /** The value chosen for a parameter, with its origin. */

@@ -18,10 +18,12 @@ package io.restest.core.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
+import io.restest.core.json.JsonValue;
 import io.restest.core.schema.CanonicalSchema;
 import io.restest.core.schema.ObjectSchema;
 import io.restest.core.schema.StringSchema;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -46,8 +48,7 @@ class MediaTypeLookupTest {
     @Test
     @DisplayName("a body declared in capitals is found when asked for in lower case")
     void case_does_not_hide_a_media_type() {
-        RequestBodyModel body = new RequestBodyModel(true,
-                Map.of("APPLICATION/JSON", PET), Optional.empty());
+        RequestBodyModel body = RequestBodyModel.ofShapes(true, Map.of("APPLICATION/JSON", PET));
 
         assertThat(body.schemaFor("application/json")).contains(PET);
         assertThat(body.mediaTypes()).containsExactly("application/json");
@@ -56,7 +57,7 @@ class MediaTypeLookupTest {
     @Test
     @DisplayName("a body declared under */* is found when asked for by an exact media type")
     void a_wildcard_range_is_resolved() {
-        RequestBodyModel body = new RequestBodyModel(true, Map.of("*/*", PET), Optional.empty());
+        RequestBodyModel body = RequestBodyModel.ofShapes(true, Map.of("*/*", PET));
 
         assertThat(body.schemaFor("application/json")).contains(PET);
         assertThat(body.schemaFor("text/plain")).contains(PET);
@@ -70,7 +71,7 @@ class MediaTypeLookupTest {
         content.put("*/*", StringSchema.of());
         content.put("application/*", PET);
         content.put("application/json", exact);
-        RequestBodyModel body = new RequestBodyModel(true, content, Optional.empty());
+        RequestBodyModel body = RequestBodyModel.ofShapes(true, content);
 
         assertThat(body.schemaFor("application/json")).contains(exact);
         assertThat(body.schemaFor("application/xml")).contains(PET);
@@ -80,7 +81,7 @@ class MediaTypeLookupTest {
     @Test
     @DisplayName("a media type with no subtype resolves to the fully wild range or to nothing")
     void a_malformed_media_type_does_not_throw() {
-        RequestBodyModel wild = new RequestBodyModel(true, Map.of("*/*", PET), Optional.empty());
+        RequestBodyModel wild = RequestBodyModel.ofShapes(true, Map.of("*/*", PET));
         RequestBodyModel exact = RequestBodyModel.json(PET, true);
 
         assertThat(wild.schemaFor("nonsense")).contains(PET);
@@ -100,9 +101,9 @@ class MediaTypeLookupTest {
     @DisplayName("a body that must be sent but declares no media type could never be sent")
     void an_unsendable_required_body_is_refused() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new RequestBodyModel(true, Map.of(), Optional.empty()));
+                .isThrownBy(() -> RequestBodyModel.ofShapes(true, Map.of()));
 
-        assertThat(new RequestBodyModel(false, Map.of(), Optional.empty()).mediaTypes()).isEmpty();
+        assertThat(RequestBodyModel.ofShapes(false, Map.of()).mediaTypes()).isEmpty();
     }
 
     @Test
@@ -113,7 +114,7 @@ class MediaTypeLookupTest {
         content.put("application/json; charset=utf-8", StringSchema.of());
 
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new RequestBodyModel(true, content, Optional.empty()))
+                .isThrownBy(() -> RequestBodyModel.ofShapes(true, content))
                 .withMessageContaining("application/json");
     }
 
@@ -148,5 +149,25 @@ class MediaTypeLookupTest {
         assertThat(withBody.requiresBody()).isTrue();
         assertThat(withOptionalBody.requiresBody()).isFalse();
         assertThat(Operation.of(HttpMethod.GET, "/pets").requiresBody()).isFalse();
+    }
+
+    @Test
+    @DisplayName("the samples written beside a media type are found with its shape")
+    void samples_travel_with_the_shape_they_belong_to() {
+        JsonValue sample = JsonValue.object(Map.of("name", JsonValue.of("Bobby")));
+        RequestBodyModel body = new RequestBodyModel(true,
+                Map.of("application/json", new BodyContent(PET, List.of(sample))),
+                Optional.empty());
+
+        assertThat(body.contentFor("application/json; charset=utf-8").orElseThrow().examples())
+                .containsExactly(sample);
+        assertThat(body.schemaFor("application/json")).contains(PET);
+    }
+
+    @Test
+    @DisplayName("a shape declared with no sample beside it has none")
+    void a_shape_may_stand_alone() {
+        assertThat(RequestBodyModel.json(PET, true).contentFor("application/json").orElseThrow()
+                .examples()).isEmpty();
     }
 }

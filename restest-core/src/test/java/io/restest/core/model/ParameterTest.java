@@ -123,4 +123,20 @@ class ParameterTest {
         assertThat(Parameter.of("limit", ParameterLocation.QUERY, false, StringSchema.of())
                 .isContentSerialised()).isFalse();
     }
+
+    @Test
+    @DisplayName("nothing is a parameter in the body, whatever a caller passes")
+    void a_parameter_is_never_in_the_body() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> Parameter.of("pet", ParameterLocation.BODY, true,
+                        StringSchema.of()))
+                .withMessageContaining("request body");
+    }
+
+    @Test
+    @DisplayName("a body has a media type rather than a parameter style")
+    void the_body_has_no_style() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> ParameterStyle.defaultFor(ParameterLocation.BODY));
+    }
 }

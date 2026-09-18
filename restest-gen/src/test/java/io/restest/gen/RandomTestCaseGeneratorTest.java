@@ -23,6 +23,7 @@ import io.restest.core.execution.TestCase;
 import io.restest.core.execution.ValueOrigin;
 import io.restest.core.json.JsonValue;
 import io.restest.core.model.ApiModel;
+import io.restest.core.model.BodyContent;
 import io.restest.core.model.HttpMethod;
 import io.restest.core.model.Operation;
 import io.restest.core.model.OperationId;
@@ -30,13 +31,17 @@ import io.restest.core.model.Parameter;
 import io.restest.core.model.ParameterLocation;
 import io.restest.core.model.ParameterStyle;
 import io.restest.core.model.RequestBodyModel;
+import io.restest.core.schema.ChoiceSchema;
+import io.restest.core.schema.NothingSchema;
 import io.restest.core.schema.ObjectSchema;
+import io.restest.core.schema.SchemaReference;
 import io.restest.core.schema.SchemaMetadata;
 import io.restest.core.schema.StringSchema;
 import io.restest.core.schema.UnsupportedSchema;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -61,6 +66,16 @@ class RandomTestCaseGeneratorTest {
     private static final Operation LIST_PETS = Operation.of(HttpMethod.GET, "/pets", List.of(
             Parameter.of("status", ParameterLocation.QUERY, true, StringSchema.of()),
             Parameter.of("limit", ParameterLocation.QUERY, false, StringSchema.of())));
+
+    /** An operation whose body must be sent, and can be: an ordinary JSON one. */
+    private static final Operation CREATE_PET = Operation.of(HttpMethod.POST, "/pets")
+            .withRequestBody(RequestBodyModel.json(
+                    ObjectSchema.of(Map.of("name", StringSchema.of()), Set.of("name")), true));
+
+    /** An operation whose body must be sent and is offered only as a file upload. */
+    private static final Operation UPLOAD_PHOTO = Operation.of(HttpMethod.POST, "/pets/photo")
+            .withRequestBody(RequestBodyModel.ofShapes(true,
+                    Map.of("multipart/form-data", ObjectSchema.of(Map.of()))));
 
     @Test
     @DisplayName("every parameter the API requires is given a value")
@@ -156,17 +171,126 @@ class RandomTestCaseGeneratorTest {
     }
 
     @Test
-    @DisplayName("an operation that needs a body cannot be attempted yet, and says so by name")
-    void an_operation_needing_a_body_is_reported() {
-        Operation createPet = Operation.of(HttpMethod.POST, "/pets")
-                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), true));
-        RandomTestCaseGenerator generator = generatorFor(LIST_PETS, createPet);
+    @DisplayName("an operation that needs a body is given one, in the media type it asks for")
+    void an_operation_needing_a_body_is_given_one() {
+        RandomTestCaseGenerator generator = generatorFor(LIST_PETS, CREATE_PET);
+
+        assertThat(generator.untestableOperations()).isEmpty();
+        TestCase testCase = generator.generate(CREATE_PET).orElseThrow();
+        assertThat(testCase.body()).isPresent();
+        assertThat(testCase.body().orElseThrow().mediaType()).isEqualTo("application/json");
+        assertThat(testCase.body().orElseThrow().value())
+                .isInstanceOf(JsonValue.JsonObject.class);
+        assertThat(((JsonValue.JsonObject) testCase.body().orElseThrow().value()).members())
+                .describedAs("the property the document requires is in every body sent")
+                .containsKey("name");
+    }
+
+    @Test
+    @DisplayName("an operation that only accepts a body is sent one some of the time")
+    void an_optional_body_is_sometimes_left_out() {
+        Operation search = Operation.of(HttpMethod.POST, "/pets/search")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(
+                        Map.of("term", StringSchema.of())), false));
+        RandomTestCaseGenerator generator = generatorFor(search);
+
+        List<Boolean> sent = IntStream.range(0, 40)
+                .mapToObj(draw -> generator.generate(search).orElseThrow().body().isPresent())
+                .distinct()
+                .toList();
+
+        assertThat(sent)
+                .describedAs("an API answers differently with and without a body, and a tool that "
+                        + "always sent one would only ever see one of those answers")
+                .containsExactlyInAnyOrder(true, false);
+    }
+
+    @Test
+    @DisplayName("a body offered only as a web form is sent as one")
+    void a_form_body_is_sent_as_a_form() {
+        Operation addFeature = Operation.of(HttpMethod.POST, "/features")
+                .withRequestBody(RequestBodyModel.ofShapes(true, Map.of(
+                        "application/x-www-form-urlencoded",
+                        ObjectSchema.of(Map.of("name", StringSchema.of()), Set.of("name")))));
+        RandomTestCaseGenerator generator = generatorFor(addFeature);
+
+        TestCase testCase = generator.generate(addFeature).orElseThrow();
+
+        assertThat(testCase.body().orElseThrow().mediaType())
+                .isEqualTo("application/x-www-form-urlencoded");
+    }
+
+    @Test
+    @DisplayName("a body offered only in a way that cannot be written is named, not guessed at")
+    void a_body_we_cannot_write_is_reported_by_its_media_type() {
+        RandomTestCaseGenerator generator = generatorFor(LIST_PETS, UPLOAD_PHOTO);
 
         assertThat(generator.testableOperations()).containsExactly(LIST_PETS);
         assertThat(generator.untestableOperations())
-                .containsOnlyKeys(createPet.id())
-                .extractingByKey(createPet.id(), org.assertj.core.api.InstanceOfAssertFactories
-                        .STRING).contains("requires a request body");
+                .containsOnlyKeys(UPLOAD_PHOTO.id())
+                .extractingByKey(UPLOAD_PHOTO.id(), org.assertj.core.api.InstanceOfAssertFactories
+                        .STRING).contains("multipart/form-data");
+    }
+
+    @Test
+    @DisplayName("an operation that merely accepts a body we cannot write is still tested without one")
+    void an_optional_body_we_cannot_write_costs_nothing() {
+        Operation upload = Operation.of(HttpMethod.POST, "/pets/{petId}/photo", List.of(
+                Parameter.of("petId", ParameterLocation.PATH, true, StringSchema.of())))
+                .withRequestBody(RequestBodyModel.ofShapes(false,
+                        Map.of("multipart/form-data", ObjectSchema.of(Map.of()))));
+        RandomTestCaseGenerator generator = generatorFor(upload);
+
+        assertThat(generator.untestableOperations()).isEmpty();
+        assertThat(generator.generate(upload).orElseThrow().body())
+                .describedAs("the document says a body may be left out, and leaving it out is a "
+                        + "request worth sending")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("a property the API only ever returns is never sent in a body")
+    void a_read_only_property_is_never_sent() {
+        Operation createPet = Operation.of(HttpMethod.POST, "/pets")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of(
+                        "id", new StringSchema(
+                                SchemaMetadata.none().withAccess(SchemaMetadata.Access.READ_ONLY),
+                                Optional.empty(), Optional.empty(), Optional.empty(),
+                                Optional.empty()),
+                        "name", StringSchema.of()), Set.of("id", "name")), true));
+        // Only the requests meant to be accepted. The rest of a run pushes at the API with values
+        // chosen to be refused, and a body that is not an object at all is one of them.
+        RandomTestCaseGenerator generator =
+                new RandomTestCaseGenerator(model(createPet), 20260912L, List.of());
+
+        for (int draw = 0; draw < 20; draw++) {
+            JsonValue body = generator.generate(createPet).orElseThrow().body().orElseThrow()
+                    .value();
+            assertThat(((JsonValue.JsonObject) body).members())
+                    .describedAs("an identifier the API hands out is not ours to send, even where "
+                            + "the shape calls it required")
+                    .containsKey("name")
+                    .doesNotContainKey("id");
+        }
+    }
+
+    @Test
+    @DisplayName("a sample body the document writes down is sent as the author wrote it")
+    void a_sample_body_is_sent() {
+        JsonValue sample = JsonValue.object(Map.of("name", JsonValue.of("Bobby")));
+        Operation createPet = Operation.of(HttpMethod.POST, "/pets")
+                .withRequestBody(new RequestBodyModel(true, Map.of("application/json",
+                        new BodyContent(ObjectSchema.of(Map.of("name", StringSchema.of())),
+                                List.of(sample))), Optional.empty()));
+        RandomTestCaseGenerator generator = generatorFor(createPet);
+
+        List<JsonValue> bodies = IntStream.range(0, 20)
+                .mapToObj(draw -> generator.generate(createPet).orElseThrow().body().orElseThrow()
+                        .value())
+                .distinct()
+                .toList();
+
+        assertThat(bodies).contains(sample);
     }
 
     @Test
@@ -245,10 +369,7 @@ class RandomTestCaseGeneratorTest {
     @Test
     @DisplayName("an API with nothing that can be attempted says so instead of failing")
     void an_api_with_nothing_testable_generates_nothing() {
-        Operation needsBody = Operation.of(HttpMethod.POST, "/pets")
-                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), true));
-
-        assertThat(generatorFor(needsBody).generate()).isEmpty();
+        assertThat(generatorFor(UPLOAD_PHOTO).generate()).isEmpty();
     }
 
     @Test
@@ -272,13 +393,11 @@ class RandomTestCaseGeneratorTest {
     @Test
     @DisplayName("an operation already reported as untestable is not quietly attempted anyway")
     void an_untestable_operation_is_not_attempted() {
-        Operation createPet = Operation.of(HttpMethod.POST, "/pets")
-                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of()), true));
-        RandomTestCaseGenerator generator = generatorFor(createPet);
+        RandomTestCaseGenerator generator = generatorFor(UPLOAD_PHOTO);
 
-        assertThat(generator.generate(createPet))
-                .describedAs("a body-less POST to an operation that requires one is a request "
-                        + "nobody could send, not a test")
+        assertThat(generator.generate(UPLOAD_PHOTO))
+                .describedAs("a request whose body could not be written is not a test, and asking "
+                        + "for one anyway does not produce a half-built one")
                 .isEmpty();
     }
 
@@ -595,6 +714,105 @@ class RandomTestCaseGeneratorTest {
                 return false;
             }
         };
+    }
+
+    @Test
+    @DisplayName("a list of values written for a named shape is sent as a whole body")
+    void a_dictionary_keyed_by_shape_answers_for_a_body() {
+        Operation createOwner = Operation.of(HttpMethod.POST, "/owners")
+                .withRequestBody(RequestBodyModel.json(SchemaReference.to("Owner"), true));
+        ApiModel model = ApiModel.of("Test API", "1.0", List.of(createOwner))
+                .withSchemas(Map.of("Owner", ObjectSchema.of(
+                        Map.of("firstName", StringSchema.of()), Set.of("firstName"))));
+        ValueDictionary written = DictionaryDocument.read("""
+                {"version": 1, "name": "owners", "keyedBy": "schema", "values": {
+                   "Owner": [{"firstName": "George", "lastName": "Franklin"}]
+                }}""", "a dictionary somebody wrote");
+        RandomTestCaseGenerator generator =
+                new RandomTestCaseGenerator(model, 20260918L, List.of(written));
+
+        List<JsonValue> bodies = IntStream.range(0, 20)
+                .mapToObj(draw -> generator.generate(createOwner).orElseThrow().body().orElseThrow()
+                        .value())
+                .distinct()
+                .toList();
+
+        assertThat(bodies)
+                .describedAs("the format already said a value may be a whole object; this is the "
+                        + "first thing that wanted one")
+                .contains(JsonValue.object(new java.util.LinkedHashMap<>(Map.of(
+                        "firstName", JsonValue.of("George"),
+                        "lastName", JsonValue.of("Franklin")))));
+    }
+
+    @Test
+    @DisplayName("a body whose description allows no value at all is named, one reason each")
+    void a_body_nothing_could_satisfy_is_reported() {
+        Operation allowsNothing = Operation.of(HttpMethod.POST, "/a")
+                .withRequestBody(RequestBodyModel.json(NothingSchema.of(), true));
+        Operation unreadable = Operation.of(HttpMethod.POST, "/b")
+                .withRequestBody(RequestBodyModel.json(
+                        UnsupportedSchema.of("oneOf is not folded in yet"), true));
+        Operation nothingCanFill = Operation.of(HttpMethod.POST, "/c")
+                .withRequestBody(RequestBodyModel.json(ObjectSchema.of(Map.of("token",
+                        new StringSchema(SchemaMetadata.none(), Optional.of(50_000),
+                                Optional.empty(), Optional.empty(), Optional.empty())),
+                        Set.of("token")), true));
+        Operation notAnObject = Operation.of(HttpMethod.POST, "/d")
+                .withRequestBody(RequestBodyModel.ofShapes(true,
+                        Map.of("application/x-www-form-urlencoded", StringSchema.of())));
+
+        Map<OperationId, String> refused = new RandomTestCaseGenerator(
+                model(allowsNothing, unreadable, nothingCanFill, notAnObject), 20260918L)
+                .untestableOperations();
+
+        assertThat(refused.get(allowsNothing.id())).contains("allows no value at all");
+        assertThat(refused.get(unreadable.id())).contains("could not be read");
+        assertThat(refused.get(nothingCanFill.id())).contains("no value could be found");
+        assertThat(refused.get(notAnObject.id()))
+                .describedAs("a web form is named after the fields of an object, and a word has "
+                        + "none")
+                .contains("no fields to name");
+    }
+
+    @Test
+    @DisplayName("a web form described as a choice between objects is tested, not refused on sight")
+    void a_form_body_that_could_be_an_object_is_not_refused() {
+        Operation createOwner = Operation.of(HttpMethod.POST, "/owners")
+                .withRequestBody(RequestBodyModel.ofShapes(true,
+                        Map.of("application/x-www-form-urlencoded", ChoiceSchema.of(List.of(
+                                ObjectSchema.of(Map.of("firstName", StringSchema.of())),
+                                ObjectSchema.of(Map.of("company", StringSchema.of())))))));
+        RandomTestCaseGenerator generator =
+                new RandomTestCaseGenerator(model(createOwner), 20260918L, List.of());
+
+        assertThat(generator.untestableOperations())
+                .describedAs("a shape saying the body is one object or another produces objects, "
+                        + "and refusing it for not being an object itself would skip an operation "
+                        + "this can test")
+                .isEmpty();
+        assertThat(generator.generate(createOwner).orElseThrow().body().orElseThrow().value())
+                .isInstanceOf(JsonValue.JsonObject.class);
+    }
+
+    @Test
+    @DisplayName("a body is pushed at the API as often as any other value is")
+    void part_of_the_time_the_body_pushes_at_the_api() {
+        RandomTestCaseGenerator generator = generatorFor(CREATE_PET);
+
+        List<Boolean> anObjectWithAName = IntStream.range(0, 60)
+                .mapToObj(draw -> generator.generate(CREATE_PET).orElseThrow().body().orElseThrow()
+                        .value())
+                .map(body -> body instanceof JsonValue.JsonObject object
+                        && object.members().containsKey("name"))
+                .distinct()
+                .toList();
+
+        assertThat(anObjectWithAName)
+                .describedAs("a run spends part of its time pushing at the API, and a whole body "
+                        + "drawn from the list of awkward values - a null, an empty object - is "
+                        + "what that looks like for an operation that takes one")
+                .containsExactlyInAnyOrder(true, false);
     }
 
     private static RandomTestCaseGenerator generatorFor(Operation... operations) {
