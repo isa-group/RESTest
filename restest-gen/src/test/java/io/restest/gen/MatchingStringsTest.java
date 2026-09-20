@@ -296,8 +296,9 @@ class MatchingStringsTest {
         }
     }
 
-    /** Asked with no preference for a shorter value, so what comes back is what the rule allows. */
+    /** Asked with no preference of its own, so what comes back is whatever the rule allows. */
     private static Optional<MatchingStrings> reading(String rule, long shortest, long longest) {
-        return MatchingStrings.reading(rule, shortest, longest, longest, RANDOM);
+        MatchLength lengths = new MatchLength(shortest, longest);
+        return MatchingStrings.reading(rule, lengths, lengths, RANDOM);
     }
 }

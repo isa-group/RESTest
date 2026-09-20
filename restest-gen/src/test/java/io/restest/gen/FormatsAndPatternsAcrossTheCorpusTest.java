@@ -193,8 +193,10 @@ class FormatsAndPatternsAcrossTheCorpusTest {
                 long shortest = place.shape().minLength().orElse(1);
                 long longest = place.shape().maxLength().map(Integer::longValue)
                         .orElse(Long.MAX_VALUE);
-                Optional<MatchingStrings> spellings = MatchingStrings.reading(rule.get(), shortest,
-                        longest, Math.max(shortest, Math.min(longest, 64)), random);
+                Optional<MatchingStrings> spellings = MatchingStrings.reading(rule.get(),
+                        new MatchLength(shortest, longest),
+                        new MatchLength(Math.max(1, shortest), Math.max(shortest,
+                                Math.min(longest, 64))), random);
                 if (spellings.isEmpty()) {
                     unreadable.add(document + " " + place.where() + ": " + rule.get());
                     continue;

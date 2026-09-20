@@ -105,55 +105,61 @@ final class MatchingStrings {
     private final String expression;
     private final RgxGen shapes;
     private final Pattern checked;
-    private final long shortest;
-    private final long longest;
-    private final long preferred;
+    private final MatchLength possible;
+    private final MatchLength allowed;
+    private final MatchLength preferred;
     private final int attempts;
 
-    private MatchingStrings(String expression, RgxGen shapes, Pattern checked, long shortest,
-            long longest, long preferred) {
+    private MatchingStrings(String expression, RgxGen shapes, Pattern checked, MatchLength possible,
+            MatchLength allowed, MatchLength preferred) {
         this.expression = expression;
         this.shapes = shapes;
         this.checked = checked;
-        this.shortest = shortest;
-        this.longest = longest;
+        this.possible = possible;
+        this.allowed = allowed;
         this.preferred = preferred;
         this.attempts = (int) Math.min(MOST_ATTEMPTS,
-                Math.max(LEAST_ATTEMPTS, ATTEMPTS_PER_CHARACTER * shortest));
+                Math.max(LEAST_ATTEMPTS, ATTEMPTS_PER_CHARACTER * allowed.shortest()));
+    }
+
+    /** The preferred lengths, kept inside what the shape actually allows. */
+    private static MatchLength narrowedTo(MatchLength preferred, long shortest, long ceiling) {
+        return new MatchLength(Math.min(Math.max(preferred.shortest(), shortest), ceiling),
+                Math.max(Math.min(preferred.longest(), ceiling), shortest));
     }
 
     /**
      * The strings one stated rule allows, ready to be drawn from.
      *
      * @param expression the rule, exactly as the specification wrote it
-     * @param shortest the fewest characters the value may have
-     * @param longest the most it may have, which is the shape's own limit. A rule demanding a long
-     *     value is the document demanding it, exactly as a stated minimum length would be
-     * @param preferred the length beyond which a value is accepted only when nothing shorter turned
-     *     up. A value nobody can read teaches nothing a short one does not, but losing the value
-     *     altogether teaches less still
+     * @param allowed the lengths the shape itself permits. A rule demanding a long value is the
+     *     document demanding it, exactly as a stated minimum length would be
+     * @param preferred the lengths worth having: not too long to read, and not the empty string
+     *     where anything else would do. Only a preference - a value outside it is taken when
+     *     nothing inside it exists, because no value at all is worse than an awkward one
      * @param random where the trial values come from while the rule is being judged
      * @return a way of drawing strings, or nothing at all when there is nothing here to read - in
      *     which case the caller should build a value as though no rule had been stated. Lengths
      *     that contradict each other answer the same way, which is safe because the only caller
      *     works them out from one shape and cannot produce a pair that does
      */
-    static Optional<MatchingStrings> reading(String expression, long shortest, long longest,
-            long preferred, RandomGenerator random) {
+    static Optional<MatchingStrings> reading(String expression, MatchLength allowed,
+            MatchLength preferred, RandomGenerator random) {
         Objects.requireNonNull(expression, "expression");
         Objects.requireNonNull(random, "random");
-        long allowed = Math.min(longest, LONGEST);
-        if (shortest > allowed) {
+        long shortest = allowed.shortest();
+        long ceiling = Math.min(allowed.longest(), LONGEST);
+        if (shortest > ceiling) {
             return Optional.empty();
         }
-        int repetitions = repetitionLimit(shortest, allowed);
+        int repetitions = repetitionLimit(shortest, ceiling);
         // Asked before a single character is built, because the answer decides whether building is
         // safe at all. A rule may legally demand nine hundred million characters, or reach the same
         // number by repeating a repetition, and neither of the two readings below would object: a
         // short rule compiles instantly and parses instantly, and the memory goes when the value is
         // made. That is an error rather than an exception, so no amount of catching helps.
-        java.util.OptionalLong couldBe = LongestMatch.of(expression, repetitions);
-        if (couldBe.isEmpty() || couldBe.getAsLong() > allowed) {
+        Optional<MatchLength> couldBe = MatchLength.of(expression, repetitions);
+        if (couldBe.isEmpty() || couldBe.orElseThrow().longest() > ceiling) {
             return Optional.empty();
         }
         try {
@@ -162,8 +168,8 @@ final class MatchingStrings {
             RgxGenOption.INFINITE_PATTERN_REPETITION
                     .setInProperties(howFarRepetitionsRun, repetitions);
             MatchingStrings reading = new MatchingStrings(expression,
-                    RgxGen.parse(howFarRepetitionsRun, expression), checked, shortest, allowed,
-                    Math.max(shortest, Math.min(preferred, allowed)));
+                    RgxGen.parse(howFarRepetitionsRun, expression), checked, couldBe.orElseThrow(),
+                    new MatchLength(shortest, ceiling), narrowedTo(preferred, shortest, ceiling));
             return reading.bothReadingsAgree(random) ? Optional.of(reading) : Optional.empty();
         } catch (RuntimeException cannotRead) {
             // The library throws its own kind for a rule it cannot read, and this platform throws
@@ -207,10 +213,19 @@ final class MatchingStrings {
      */
     Optional<String> next(RandomGenerator random) {
         Objects.requireNonNull(random, "random");
-        // The shortest acceptable value seen so far, kept in case nothing shorter than the length
-        // worth sending ever turns up. A long value is a poor thing to send and no value at all is
-        // worse, so the search settles for the best it found rather than going away empty-handed.
-        String shortestSoFar = null;
+        // Nothing this rule builds could be of an acceptable length, which is known from the rule
+        // rather than discovered by drawing from it a few thousand times.
+        if (possible.longest() < allowed.shortest() || possible.shortest() > allowed.longest()) {
+            return Optional.empty();
+        }
+        // Whether a value short enough to be worth reading exists at all. Where one does, it is
+        // worth drawing again for; where the rule cannot build one - it demands a hundred and
+        // twenty-eight characters, say - the first acceptable value is the answer, and looking for
+        // a prettier one would spend half a millisecond of the run's own thread on every value.
+        boolean somethingPreferableExists = possible.shortest() <= preferred.longest()
+                && possible.longest() >= preferred.shortest();
+
+        String best = null;
         long built = 0;
         for (int attempt = 0; attempt < attempts && built < CHARACTERS_BUILT; attempt++) {
             String candidate;
@@ -220,18 +235,22 @@ final class MatchingStrings {
                 break;
             }
             built += candidate.length();
-            if (candidate.length() < shortest || candidate.length() > longest
+            if (candidate.length() < allowed.shortest() || candidate.length() > allowed.longest()
                     || !accepts(candidate)) {
                 continue;
             }
-            if (candidate.length() <= preferred) {
+            if (candidate.length() >= preferred.shortest()
+                    && candidate.length() <= preferred.longest()) {
                 return Optional.of(candidate);
             }
-            if (shortestSoFar == null || candidate.length() < shortestSoFar.length()) {
-                shortestSoFar = candidate;
+            if (best == null || closerToWhatIsWanted(candidate, best)) {
+                best = candidate;
+            }
+            if (!somethingPreferableExists) {
+                return Optional.of(best);
             }
         }
-        return Optional.ofNullable(shortestSoFar);
+        return Optional.ofNullable(best);
     }
 
     /**
@@ -242,6 +261,18 @@ final class MatchingStrings {
      */
     boolean allows(String value) {
         return accepts(value);
+    }
+
+    /** Whether the first candidate misses the lengths worth having by less than the second. */
+    private boolean closerToWhatIsWanted(String candidate, String best) {
+        return howFarOut(candidate.length()) < howFarOut(best.length());
+    }
+
+    private long howFarOut(int length) {
+        if (length < preferred.shortest()) {
+            return preferred.shortest() - length;
+        }
+        return Math.max(0, length - preferred.longest());
     }
 
     /**

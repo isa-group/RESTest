@@ -45,6 +45,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Whatever this invents has to satisfy the description it was invented from. Most of these run many
@@ -576,6 +578,19 @@ class RandomValueProviderTest {
             assertThat(provider.offer(Schemas.asking(impossible)))
                     .describedAs("a value the document itself refuses is worse than no value")
                     .isEmpty();
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"", "^$", "$", "^", "(?:)"})
+        @DisplayName("a rule that refuses nothing still leaves a value to send")
+        void a_rule_that_refuses_nothing_still_yields_a_value(String refusesNothing) {
+            // Every one of these accepts every string there is - an empty rule, and four ways of
+            // saying "somewhere in the value". The builder answers all of them with the empty
+            // string, which is shorter than the one character an undescribed value gets; read as a
+            // limit rather than a preference, that left the parameter with no value at all.
+            assertThat(provider.offer(Schemas.asking(spelled(refusesNothing))))
+                    .describedAs("a rule refusing nothing cannot be the reason there is no value")
+                    .isPresent();
         }
 
         @RepeatedTest(10)

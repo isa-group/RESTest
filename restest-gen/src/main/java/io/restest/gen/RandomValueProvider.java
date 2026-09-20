@@ -259,8 +259,13 @@ public final class RandomValueProvider implements ValueProvider {
 
         // Read before the kind is asked for, because the rule is also what vets the kind's answer,
         // and because reading it is done once per run rather than once per value.
-        Optional<MatchingStrings> spelling = schema.pattern()
-                .flatMap(rule -> spellingsFor(rule, lowest, stated));
+        // The lengths the shape permits, and the lengths worth having. "At least one character" is
+        // the second of those and not the first: a rule that can only build the empty string - an
+        // empty rule, or one asking only where the value ends, both of which refuse nothing - would
+        // otherwise leave the parameter with no value at all.
+        Optional<MatchingStrings> spelling = schema.pattern().flatMap(rule -> spellingsFor(rule,
+                new MatchLength(schema.minLength().orElse(0), stated),
+                new MatchLength(lowest, longestWorthSending(lowest, stated))));
 
         Optional<String> ofTheKindNamed = schema.format()
                 .flatMap(kind -> FormattedStrings.of(kind, random))
@@ -291,19 +296,19 @@ public final class RandomValueProvider implements ValueProvider {
      * Two runs in the same program keep their own, which is what lets them be two runs. It cannot
      * grow without bound either: there are only as many entries as the document has rules.
      */
-    private Optional<MatchingStrings> spellingsFor(String rule, long shortest, long longest) {
-        return spellings.computeIfAbsent(new Spelling(rule, shortest, longest),
-                asked -> MatchingStrings.reading(asked.rule(), asked.shortest(), asked.longest(),
-                        longestWorthSending(asked.shortest(), asked.longest()), random));
+    private Optional<MatchingStrings> spellingsFor(String rule, MatchLength allowed,
+            MatchLength preferred) {
+        return spellings.computeIfAbsent(new Spelling(rule, allowed, preferred), asked ->
+                MatchingStrings.reading(asked.rule(), asked.allowed(), asked.preferred(), random));
     }
 
     /**
-     * A spelling rule together with the lengths it has to fit inside.
+     * A spelling rule together with the lengths it has to fit inside and the ones worth having.
      *
-     * <p>All three, because the lengths change the answer: the same rule asked for a string of forty
-     * characters and for one of three is two different questions.
+     * <p>All of them, because the lengths change the answer: the same rule asked for a string of
+     * forty characters and for one of three is two different questions.
      */
-    private record Spelling(String rule, long shortest, long longest) {
+    private record Spelling(String rule, MatchLength allowed, MatchLength preferred) {
     }
 
     /**

@@ -125,36 +125,51 @@ Correctness is therefore a checked property of each value rather than a claim ab
 a disagreement between two readings of a dialect costs a value instead of producing a wrong one. A
 rule this platform will not compile is declined for the same reason: nothing could check it.
 
-`MatchingStrings` adds the five things the library cannot know about. Four of the five are there
-because a review of this increment demonstrated the failure each one prevents, on real input.
+`MatchingStrings` adds the things the library cannot know about. Every one of them is there
+because a review of this increment demonstrated the failure it prevents, on real input, three passes
+running.
 
 - **How far a repetition runs.** Its own answer is a hundred, and repetitions *multiply*: four nested
   "one or more" groups is a hundred to the fourth power, and a rule of that shape produced 868,356
   characters. Eight is the default here, with the shape's own lower length winning over it — a
   specification insisting on two hundred characters is insisting — and its upper length capping both.
-- **The longest value worth reading, as a preference rather than a rule.** Sixty-four characters is
-  what every other invented string keeps to, and a candidate longer than that is set aside while
-  shorter ones are looked for — but taken in the end if none turns up. It cannot be a hard limit: a
-  rule asking for a hundred and twenty-eight hexadecimal digits is the *document* asking, exactly as
-  a stated minimum length would be, and an earlier attempt that treated it as a limit made the tool
-  quietly send a word the document refuses. The hard limit is the shape's own `maxLength`, and ten
-  thousand characters where it states none.
+- **The lengths worth having, as a preference rather than a rule.** Not longer than the sixty-four
+  characters every other invented string keeps to, and not the empty string where anything else would
+  do. A candidate outside that is set aside while better ones are looked for, and taken in the end if
+  none turns up. Neither end can be a hard limit, and both were, once: a rule asking for a hundred and
+  twenty-eight hexadecimal digits is the *document* asking, and treating sixty-four as a limit made the
+  tool quietly send a word the document refuses; while `pattern: "$"` refuses nothing at all, builds
+  only the empty string, and — with "at least one character" read as a limit — left the parameter with
+  no value. The hard limits are the shape's own, and ten thousand characters where it states no
+  maximum.
 - **How long the rule could possibly run**, worked out from the rule before a character is built.
-  This is the one defence that actually holds, and it took three attempts to arrive at, each of the
-  first two demonstrated inadequate by review on real input. A cap on repetitions does not bound the
-  value, because a rule may state its own counts: `[a-z]{1000000}` is a megabyte. Reading counts off
-  the rule one at a time does not bound it either, because counts *multiply* — nine "repeat this
-  nine times" written inside one another is 387 million characters in a rule thirty characters long,
-  and `{900000000,}` states no upper count to read at all. So `LongestMatch` counts what the rule
-  could produce at its very worst: pieces in a row add up, a choice takes the longer, a repetition
-  multiplies, arithmetic saturates rather than wrapping, and anything it cannot read through it
-  refuses to answer for. A rule whose worst is longer than the value may be is declined unbuilt.
-  Deliberately generous: a rule it passes is certainly safe, and one it refuses may merely have
-  looked dangerous, which costs a spelling rule rather than the run.
+  This is the defence that holds, and it took four attempts, each of the first three demonstrated
+  inadequate by review on real input. A cap on repetitions does not bound the value, because a rule
+  may state its own counts: `[a-z]{1000000}` is a megabyte. Reading counts off the rule one at a
+  time does not bound it either, because counts *multiply* — nine "repeat this nine times" written
+  inside one another is 387 million characters in a rule thirty characters long, and `{900000000,}`
+  states no upper count to read at all. And reading the rule *as the notation defines it* does not
+  bound it, because the builder does not: a question about what comes next matches no characters by
+  the notation's rules and the builder builds every one of them, so `(?=[a-z]{900000000})x` — 21
+  characters — was counted as one.
+
+  So `MatchLength` counts what the **builder** will make at its very worst: pieces in a row add up, a
+  choice takes the widest span, a repetition multiplies, counts written one after another multiply
+  too, arithmetic saturates rather than wrapping, a group that asks about what surrounds it costs
+  what is inside it, and anything it cannot read through — or whose length depends on what was
+  matched elsewhere, which is what a back-reference is — it refuses to answer for. A rule whose worst
+  is longer than the value may be is declined unbuilt. Deliberately generous: a rule it refuses may
+  merely have looked dangerous, which costs a spelling rule rather than the run.
+
+  It also counts the **shortest** the rule could build, which answers a different question: whether a
+  value short enough to be worth reading exists at all. Where one does not — a rule asking for a
+  hundred and twenty-eight characters — the first acceptable value is taken and the search stops,
+  instead of spending half a millisecond of the run's own thread hunting for a shorter one that
+  cannot exist.
 - **Which reader to trust first.** This platform compiles the rule *before* the library parses it.
   It refuses a rule nested twenty thousand deep in microseconds, where the library goes looking for
-  memory it cannot have. It is a cheap first filter and nothing more: a short rule demanding a
-  hundred million characters compiles instantly, which is why the count above exists.
+  memory it cannot have. A cheap first filter and nothing more: a short rule demanding a hundred
+  million characters compiles instantly, which is why the count above exists.
 - **Whether the two readings agree at all.** The library does not understand lookahead, so
   `^(?=.*[A-Z])[A-Za-z0-9]{8}$` — an ordinary password rule — parses without complaint and produces
   ten characters where the rule demands eight. Every candidate would then be refused one by one and
@@ -173,6 +188,14 @@ because a review of this increment demonstrated the failure each one prevents, o
   bites before the attempts do — is about seven in ten. Beyond that the tool reports that no value
   could be found, which is honest about the tool and not quite honest about the shape. Nothing in
   the corpus demands more than 40.
+
+The three things that are **not** here are worth naming too, because each was considered and left.
+Nothing tells the run when a rule was refused for being dangerous rather than for being unreadable,
+so the API sees an ordinary word and nobody learns why; that belongs with the rest of what a run says
+about a document it could not fully use. Whether the two readers agree is decided once and kept, so a
+rule they agree about only rarely is settled by eight draws taken at one arbitrary moment. And a rule
+naming more than a hundred groups is refused whether they are nested or side by side, because the
+count that keeps the reading off the end of its own stack does not distinguish the two.
 
 The kinds of value are **not** a library. `UUID`, `DateTimeFormatter`, `Base64` and `URI` are in
 `java.base`, and a regular expression for `date-time` would cheerfully produce `8336-00-95T06:87:98Z`
